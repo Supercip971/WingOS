@@ -12,6 +12,6 @@ extern "C" void kernel_start(stivale_struct *bootloader_data){
     com_write_str("hello world");
     com_write_str("init gdt");
     setup_gdt();
-    com_write_str("init gdt : OK");
+    com_write_str("init gdt : ✅");
     _start(bootloader_data);
 }

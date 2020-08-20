@@ -34,7 +34,16 @@ void com_write_str( const char *buffer)
     
     com_putc(COM_PORT::COM1,'\n');
 }
-
+void com_write_strl( const char *buffer)
+{
+    int i = 0;
+    while (buffer[i] != 0)
+    {
+        com_putc(COM_PORT::COM1,buffer[i]);
+        i++;
+    }
+    
+}
 void com_initialize(COM_PORT port)
 {
     outb(port + 2, 0);

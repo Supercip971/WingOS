@@ -1,33 +1,41 @@
 ENTRY(kernel_start)
 
+OUTPUT_FORMAT(elf64-x86-64)
 SECTIONS
 {
     kernel_phys_offset = 0xffffffff80000000;
     . = kernel_phys_offset + 0x100000;
 
-    .stivalehdr ALIGN(4K) :
+    .stivalehdr BLOCK(4K) : ALIGN(4K) 
     {
         KEEP(*(.stivalehdr))
     }
 
-    .text ALIGN(4K) :
+    .text BLOCK(4K) : ALIGN(4K) 
     {
-        KEEP(*(.text*))
+        *(.text)
+                *(.text*)
+		*(.init)
+		*(.fini)
+		*(.ctors)
+		*(.dtors)
     }
 
-    .rodata ALIGN(4K) :
+    .rodata BLOCK(4K) : ALIGN(4K) 
     {
-        KEEP(*(.rodata*))
+       
+                *(.rodata)
+                *(.rodata*)
     }
 
-    .data ALIGN(4K) :
+    .data BLOCK(4K) : ALIGN(4K) 
     {
-        KEEP(*(.data*))
+        *(.data)
     }
 
-    .bss ALIGN(4K) :
+    .bss BLOCK(4K) : ALIGN(4K) 
     {
-        KEEP(*(COMMON))
-        KEEP(*(.bss*))
+        *(.bss)
+                *(COMMON)
     }
 }

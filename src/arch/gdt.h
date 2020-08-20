@@ -1,23 +1,67 @@
 #include <stdint.h>
-struct gdt_pointer {
-    uint16_t limit;
-    uint32_t base;
-} __attribute__((packed));
+#include <stivale.h>
 
-struct gdt_descriptor {
-    uint16_t limit_low16;  // The low 16 bits of the limit of the segment
-    uint16_t base_low16;   // The low 16 bits of the base of the segment
-    uint8_t  base_mid8;    // The middle 8 bits of the base of the segment
-    uint8_t access_byte;        // Flags, more info below
-    uint8_t Granularity;        // Flags, more info below
-    uint8_t  base_high8;   // the high 8 bits of the base of the segment
-} __attribute__((packed));
+#define GDT_DESCRIPTORS 7
 
-struct tss {
-    uint32_t reserved0; uint64_t rsp0;      uint64_t rsp1;
-    uint64_t rsp2;      uint64_t reserved1; uint64_t ist1;
-    uint64_t ist2;      uint64_t ist3;      uint64_t ist4;
-    uint64_t ist5;      uint64_t ist6;      uint64_t ist7;
-    uint64_t reserved2; uint16_t reserved3; uint16_t iopb_offset;
-} ;
-void setup_gdt();
+#define SLTR_NULL        0x0000
+#define SLTR_KERNEL_CODE 0x0008
+#define SLTR_KERNEL_DATA 0x0010
+#define SLTR_USER_DATA   0x0018
+#define SLTR_USER_CODE   0x0020
+#define SLTR_TSS         0x0028 /* occupies two GDT descriptors */
+
+#define RPL0 0x0
+#define RPL1 0x1
+#define RPL2 0x2
+#define RPL3 0x3
+
+typedef struct
+{
+  uint16_t len;
+  uint64_t addr;
+} __attribute__((__packed__)) gdtr_t;
+
+typedef struct
+{
+  uint16_t limit_low;
+  uint16_t base_low;
+  uint8_t  base_mid;
+  uint8_t  flags;
+  uint8_t  granularity; /* and high limit */
+  uint8_t  base_high;
+} __attribute__((__packed__)) gdt_descriptor_t;
+
+typedef struct
+{
+  gdt_descriptor_t low;
+  struct
+  {
+    uint32_t base_xhigh;
+    uint32_t reserved;
+  } high;
+} __attribute__((__packed__)) gdt_xdescriptor_t;
+
+void gdt_init(void);
+
+void setup_gdt(uintptr_t);
+
+
+typedef struct
+{
+  uint32_t reserved0 __attribute__((aligned(16)));
+  uint64_t rsp0;
+  uint64_t rsp1;
+  uint64_t rsp2;
+  uint64_t reserved1;
+  uint64_t ist1;
+  uint64_t ist2;
+  uint64_t ist3;
+  uint64_t ist4;
+  uint64_t ist5;
+  uint64_t ist6;
+  uint64_t ist7;
+  uint64_t reserved2;
+  uint16_t reserved3;
+  uint16_t iomap_base;
+} __attribute__((__packed__)) tss_t;
+void tss_init(uint64_t i);

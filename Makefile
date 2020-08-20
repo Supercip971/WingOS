@@ -14,7 +14,9 @@ CHARDFLAGS := $(CFLAGS)               \
 	-g \
 	-masm=intel                    \
 	-fno-pic                       \
+	-no-pie \
 	-mno-sse                       \
+	-m64 \
 	-mno-sse2                      \
 	-mno-mmx                       \
 	-mno-80387                     \
@@ -36,7 +38,7 @@ LDHARDFLAGS := $(LDFLAGS)        \
 
 disk: $(KERNEL_HDD)
 run: $(KERNEL_HDD)
-	qemu-system-x86_64 -m 2G -debugcon stdio -hda $(KERNEL_HDD)
+	qemu-system-x86_64 -m 2G -s -device pvpanic -serial stdio -enable-kvm --no-reboot panic=-1 -d int -d guest_errors -hda $(KERNEL_HDD)
 runvbox: $(KERNEL_HDD)
 	@VBoxManage -q startvm --putenv VBOX_GUI_DBG_ENABLED=true wingOS64
 	@nc localhost 1234
@@ -51,9 +53,9 @@ super:
 	$(CC) $(CHARDFLAGS) -c $< -o $@
 %.o: %.asm
 	@echo "nasm [BUILD] $<"
-	@nasm $< -o $@ -f elf64 
+	@nasm $< -o $@ -felf64 -F dwarf -g -w+all -Werror
 $(KERNEL_ELF): $(OBJFILES) $(ASMOBJFILES)
-	$(LD) $(LDHARDFLAGS) $(OBJFILES) $(ASMOBJFILES) -o $@
+	@ld $(LDHARDFLAGS) $(OBJFILES) $(ASMOBJFILES) -o $@
 
 $(KERNEL_HDD): $(KERNEL_ELF)
 	-mkdir build

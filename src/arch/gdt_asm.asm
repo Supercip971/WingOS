@@ -1,14 +1,20 @@
 
 bits 64
-global gdt_flush
-gdt_flush: 
-    mov ax, 0x10 ; We can't write to the segment registers directly
-    mov ds, ax
-    mov es, ax
-    mov ax, 0x0
-    mov ss, ax
-    mov ax, 0x10
-    mov gs, ax
-    mov fs, ax
-    ret
-   
+global gdtr_install
+gdtr_install:
+  push rbp
+  mov rbp, rsp
+  lgdt [rdi]
+  mov ax, 16
+  mov ss, ax
+  mov ds, ax
+  mov es, ax
+  mov fs, ax
+  mov gs, ax
+  mov rax, qword .trampoline
+  push rsi
+  push rax
+  o64 retf
+.trampoline:
+  pop rbp
+  ret

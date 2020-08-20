@@ -14,3 +14,5 @@ void com_write_str(const char* buffer);
 
 void com_initialize(COM_PORT port);
 
+
+void com_write_strl( const char *buffer);

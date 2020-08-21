@@ -1,3 +1,4 @@
+#pragma once
 struct stivale_header {
 	//stack pointer that's going to be loaded
     uint64_t stack;
@@ -33,3 +34,17 @@ struct stivale_struct {
     uint64_t flags;       // bit 0: 1 if booted with BIOS, 0 if booted with UEFI
 } __attribute__((packed));
 
+#define MEMMAP_USABLE                 1
+#define MEMMAP_RESERVED               2
+#define MEMMAP_ACPI_RECLAIMABLE       3
+#define MEMMAP_ACPI_NVS               4
+#define MEMMAP_BAD_MEMORY             5
+#define MEMMAP_BOOTLOADER_RECLAIMABLE 0x1000
+#define MEMMAP_KERNEL_AND_MODULES     0x1001
+
+struct e820_entry_t {
+    uint64_t base;
+    uint64_t length;
+    uint32_t type;
+    uint32_t unused;
+} __attribute__((packed));

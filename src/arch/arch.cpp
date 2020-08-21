@@ -3,6 +3,7 @@
 #include <com.h>
 #include <arch/gdt.h>
 #include <arch/interrupt.h>
+#include <arch/mem/virtual.h>
 static char stack[4096] = {0};
 
 __attribute__((section(".stivalehdr"), used))
@@ -32,5 +33,7 @@ extern "C" void kernel_start(stivale_struct *bootloader_data){
     com_write_str("init tss");
     tss_init((uintptr_t)stack + sizeof(char)*4096);
     com_write_str("init tss : OK");
+    com_write_str("init paging");
+    init_virtual_memory(bootloader_data);
     _start(bootloader_data);
 }

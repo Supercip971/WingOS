@@ -1,4 +1,5 @@
 #pragma once
+#include <int_value.h>
 struct stivale_header {
 	//stack pointer that's going to be loaded
     uint64_t stack;

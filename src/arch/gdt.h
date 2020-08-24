@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include <stivale.h>
-
+#include <int_value.h>
 #define GDT_DESCRIPTORS 7
 
 #define SLTR_NULL        0x0000

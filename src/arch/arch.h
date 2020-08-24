@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include <int_value.h>
 #define X64
 
 #ifdef X64

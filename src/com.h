@@ -1,5 +1,5 @@
-#include <stdint.h>
-
+#pragma once
+#include <int_value.h>
 
 enum COM_PORT
 {

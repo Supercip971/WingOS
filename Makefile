@@ -19,9 +19,9 @@ CHARDFLAGS := $(CFLAGS)               \
 	-m64 \
 	-mno-sse2                      \
 	-mno-mmx                       \
+	-mcmodel=kernel \
 	-mno-80387                     \
 	-mno-red-zone                  \
-	-mcmodel=large                \
 	-ffreestanding                 \
 	-fno-stack-protector           \
 	-fno-omit-frame-pointer        \
@@ -38,7 +38,7 @@ LDHARDFLAGS := $(LDFLAGS)        \
 
 disk: $(KERNEL_HDD)
 run: $(KERNEL_HDD)
-	qemu-system-x86_64 -m 2G -s -device pvpanic -serial stdio -enable-kvm --no-reboot panic=-1 -d int -d guest_errors -hda $(KERNEL_HDD)
+	qemu-system-x86_64 -m 2G -s -device pvpanic -serial stdio -enable-kvm --no-reboot -d int -d guest_errors -hda $(KERNEL_HDD)
 runvbox: $(KERNEL_HDD)
 	@VBoxManage -q startvm --putenv VBOX_GUI_DBG_ENABLED=true wingOS64
 	@nc localhost 1234
@@ -69,3 +69,5 @@ $(KERNEL_HDD): $(KERNEL_ELF)
 
 clean:
 	-rm -f $(KERNEL_HDD) $(KERNEL_ELF) $(OBJ)
+all: 
+	make -C . super

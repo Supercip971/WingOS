@@ -1,4 +1,4 @@
-#include <stdint.h>
+#include <int_value.h>
 #include <stivale.h>
 
 #define VGA_ADDRESS 0xb8000
@@ -26,7 +26,7 @@
 
 
 void _start(struct stivale_struct *bootloader_data) {
-    
+
     volatile uint16_t *vga_buffer = (uint16_t*)VGA_ADDRESS;
     vga_buffer[0] = VGA_COLOR('h', VGA_GREEN);
     vga_buffer[1] = VGA_COLOR('e', VGA_GREEN);

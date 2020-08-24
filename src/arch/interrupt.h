@@ -1,5 +1,6 @@
 #pragma once
 #include <arch/arch.h>
+#include <int_value.h>
 typedef struct {
     uint16_t offset_low16;
     uint16_t cs;

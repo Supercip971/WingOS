@@ -79,7 +79,7 @@ void init_idt(){
     com_write_str("loading pic : OK");
     com_write_str("loading idt : OK");
     
-com_write_str("turning on interrupt : OK ");
+    com_write_str("turning on interrupt : OK ");
 };
 
 const char* exception_messages[] = {
@@ -131,6 +131,7 @@ void dump1(uint64_t reg, const char* name){
         com_write_strl(buff2);
 }
 void dumpregister(InterruptStackFrame* stck){
+    // this is the least readable code EVER
     com_write_str(" ===== cpu dump =====");
     com_write_str(" ===== cs and ss =====");
     dump1(stck->cs, "cs");
@@ -194,13 +195,14 @@ bool is_error(int intno){
         return false;
     }
     return true;
-    
 }
 extern "C" void interrupts_handler( InterruptStackFrame* stackframe){
     com_write_str("receive an interrupt");
     if (is_error(stackframe->int_no))
     {
-        
+        for(int i = 0; i < stackframe->int_no * 320; i++){
+            is_error(stackframe->int_no);
+        }
         com_write_str("error fatal");
         com_write_str(exception_messages[stackframe->int_no]);
         dumpregister(stackframe);

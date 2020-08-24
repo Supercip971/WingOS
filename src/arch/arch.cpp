@@ -1,4 +1,5 @@
 #include <arch/arch.h>
+#include <stivale.h>
 #include <kernel.h>
 #include <com.h>
 #include <arch/gdt.h>
@@ -7,7 +8,7 @@
 static char stack[4096] = {0};
 
 __attribute__((section(".stivalehdr"), used))
-struct stivale_header header = {
+ stivale_header header = {
     .stack = (uintptr_t)stack + (sizeof(char)*4096),
     .flags = 0,
     .framebuffer_width = 0,
@@ -35,5 +36,9 @@ extern "C" void kernel_start(stivale_struct *bootloader_data){
     com_write_str("init tss : OK");
     com_write_str("init paging");
     init_virtual_memory(bootloader_data);
+    com_write_str("init paging : OK");
+    com_write_str("mapping");
+    set_paging_dir((uint64_t)pl4_table);
+    com_write_str("mapping ok");
     _start(bootloader_data);
 }

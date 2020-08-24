@@ -1,4 +1,4 @@
-
+#include <int_value.h>
 
 inline void kitoa(char* buf, int base, int d)
 {

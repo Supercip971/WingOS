@@ -6,12 +6,12 @@ SECTIONS
     kernel_phys_offset = 0xffffffff80000000;
     . = kernel_phys_offset + 0x100000;
 
-    .stivalehdr BLOCK(4K) : ALIGN(4K) 
+    .stivalehdr ALIGN(4K):
     {
         KEEP(*(.stivalehdr))
     }
 
-    .text BLOCK(4K) : ALIGN(4K) 
+    .text ALIGN(4K):
     {
         *(.text)
                 *(.text*)
@@ -21,22 +21,24 @@ SECTIONS
 		*(.dtors)
     }
 
-    .rodata BLOCK(4K) : ALIGN(4K) 
+    .rodata  ALIGN(4K):
     {
        
                 *(.rodata)
                 *(.rodata*)
     }
 
-    .data BLOCK(4K) : ALIGN(4K) 
+    .data  ALIGN(4K):
     {
         *(.data)
+        *(.data*)
     }
 
-    .bss BLOCK(4K) : ALIGN(4K) 
+    .bss  ALIGN(4K) :
     {
         *(.bss)
-                *(COMMON)
+        *(COMMON)
+        *(.bss*)
     }
 
 

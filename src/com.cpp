@@ -1,5 +1,6 @@
 #include <com.h>
 #include <arch/arch.h>
+#pragma GCC optimize ("-O0")
 inline void com_wait_write(COM_PORT port)
 {
     while ((inb(port + 5) & 0x20) == 0)

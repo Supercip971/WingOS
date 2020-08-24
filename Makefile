@@ -1,6 +1,6 @@
 CFILES    := $(shell find src/ -type f -name '*.cpp')
-CC         = gcc
-LD         = ld
+CC         = ./cross_compiler/bin/x86_64-pc-elf-g++
+LD         = ./cross_compiler/bin/x86_64-pc-elf-ld
 OBJ := $(shell find src/ -type f -name '*.o')
 KERNEL_HDD = build/disk.hdd
 KERNEL_ELF = kernel.elf
@@ -9,29 +9,30 @@ ASMFILES := $(shell find src/ -type f -name '*.asm')
 OBJFILES := $(patsubst %.cpp,%.o,$(CFILES))
 ASMOBJFILES := $(patsubst %.asm,%.o,$(ASMFILES))
 CHARDFLAGS := $(CFLAGS)               \
-	-DBUILD_TIME='"$(BUILD_TIME)"' \
-	-std=c++17                     \
-	-g \
-	-masm=intel                    \
-	-fno-pic                       \
-	-no-pie \
-	-mno-sse                       \
-	-m64 \
-	-mno-sse2                      \
-	-mno-mmx                       \
-	-mcmodel=kernel \
-	-mno-80387                     \
-	-mno-red-zone                  \
-	-ffreestanding                 \
-	-fno-stack-protector           \
-	-fno-omit-frame-pointer        \
-	-Isrc/                         \
+        -DBUILD_TIME='"$(BUILD_TIME)"' \
+        -std=c++20                     \
+        -g \
+        -masm=intel                    \
+        -fno-pic                       \
+        -no-pie \
+        -mno-sse                       \
+        -m64 \
+        -O3 \
+        -mno-sse2                      \
+        -mno-mmx                       \
+        -mcmodel=kernel \
+        -mno-80387                     \
+        -mno-red-zone                  \
+        -ffreestanding                 \
+        -fno-stack-protector           \
+        -fno-omit-frame-pointer        \
+        -Isrc/                         \
 
 LDHARDFLAGS := $(LDFLAGS)        \
-	-nostdlib                 \
-	-no-pie                   \
-	-z max-page-size=0x1000   \
-	-T src/linker.ld
+        -nostdlib                 \
+        -no-pie                   \
+        -z max-page-size=0x1000   \
+        -T src/linker.ld
 
 .PHONY: clean
 .DEFAULT_GOAL = $(KERNEL_HDD)
@@ -55,7 +56,7 @@ super:
 	@echo "nasm [BUILD] $<"
 	@nasm $< -o $@ -felf64 -F dwarf -g -w+all -Werror
 $(KERNEL_ELF): $(OBJFILES) $(ASMOBJFILES)
-	@ld $(LDHARDFLAGS) $(OBJFILES) $(ASMOBJFILES) -o $@
+	ld $(LDHARDFLAGS) $(OBJFILES) $(ASMOBJFILES) -o $@
 
 $(KERNEL_HDD): $(KERNEL_ELF)
 	-mkdir build
@@ -69,5 +70,5 @@ $(KERNEL_HDD): $(KERNEL_ELF)
 
 clean:
 	-rm -f $(KERNEL_HDD) $(KERNEL_ELF) $(OBJ)
-all: 
+all:
 	make -C . super

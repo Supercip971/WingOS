@@ -1,6 +1,6 @@
 
 #pragma once
-
+#include <arch/mem/virtual.h>
 #include <stdint.h>
 /** \defgroup ALLOCHOOKS liballoc hooks 
  *
@@ -56,7 +56,8 @@ inline int liballoc_unlock(){
  * \return A pointer to the allocated memory.
  */
 inline void* liballoc_alloc(int d){ // alloc x page
-    return nullptr;
+
+    return alloc_multiple_frame(d,  true );
 }
 
 /** This frees previously allocated memory. The void* parameter passed
@@ -68,6 +69,7 @@ inline void* liballoc_alloc(int d){ // alloc x page
  * \return 0 if the memory was successfully freed.
  */
 inline int liballoc_free(void* addr,int d){
+    pmm_free(addr, d);
     return 0;
 }
 

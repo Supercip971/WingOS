@@ -1,3 +1,4 @@
 build/*
 kernel.elf
 *.o
+cross_compiler/*

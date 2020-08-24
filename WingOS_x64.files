@@ -1,8 +1,10 @@
 LICENSE
+Makefile
 README.md
 build/disk.hdd
 kernel.elf
 kernel.map
+make_cross_compiler.sh
 qloader2.cfg
 src/arch/64bit.h
 src/arch/arch.cpp
@@ -21,6 +23,10 @@ src/arch/mem/virtual.h
 src/arch/utility.asm
 src/com.cpp
 src/com.h
+src/device/graphic.cpp
+src/device/graphic.h
+src/device/pit.cpp
+src/device/pit.h
 src/int_value.h
 src/kernel.cpp
 src/kernel.h

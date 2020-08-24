@@ -5,7 +5,6 @@
 
 #ifdef X64
 
-
 inline void outb(uint16_t port, uint8_t value)
 {
 	asm volatile("out  dx, al"::"a"(value), "d"(port));
@@ -35,4 +34,10 @@ inline uint16_t inw(uint16_t port)
 		: "d"(port));
 	return ret;
 }
+inline void wait(){
+    for(int i = 0; i < 40; i ++){
+        inw(i);
+    }
+}
+
 #endif // DEBUG

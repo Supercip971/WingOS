@@ -3,7 +3,9 @@
 #include <arch/64bit.h>
 #include <com.h>
 #include <kernel.h>
+#include <device/pit.h>
 #include <utility.h>
+
 #define IDT_ENTRY(__offset, __selector, __type)            \
     (idt_entry_t)                                             \
     {                                                      \
@@ -196,13 +198,19 @@ bool is_error(int intno){
     }
     return true;
 }
+static int dd = 0;
 extern "C" void interrupts_handler( InterruptStackFrame* stackframe){
-    com_write_str("receive an interrupt");
     if (is_error(stackframe->int_no))
     {
         for(int i = 0; i < stackframe->int_no * 320; i++){
             is_error(stackframe->int_no);
         }
+
+        memzero(buff, 64);
+        kitoa(buff, 'd', stackframe->int_no);
+
+        com_write_str("id :");
+        com_write_str(buff);
         com_write_str("error fatal");
         com_write_str(exception_messages[stackframe->int_no]);
         dumpregister(stackframe);
@@ -210,20 +218,14 @@ extern "C" void interrupts_handler( InterruptStackFrame* stackframe){
         kitoaT<uint64_t>(buff, 'x', stackframe->rip);
         com_write_str("rip :");
         com_write_str(buff);
-        asm volatile("hlt");
+        while(true){
+
+        }
     }
-    
+    if(stackframe->int_no == 32){
+        PIT::the()->update();
+    }
     pic_ack(stackframe->int_no);
-    memzero(buff, 64);
-    kitoa(buff, 'd', stackframe->int_no);
-    
-    com_write_str("id :");
-    com_write_str(buff);
 
 
-    memzero(buff, 64);
-    kitoaT<uint64_t>(buff, 'x', stackframe->rip);
-
-    com_write_str("rip :");
-    com_write_str(buff);
 }

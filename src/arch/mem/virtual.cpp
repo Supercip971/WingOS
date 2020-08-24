@@ -163,18 +163,15 @@ void init_frame(uint64_t lenght, stivale_struct* sti_struct){
                              continue;
              if (addr >= (MEMORY_BASE + frames_counter * PAGE_SIZE)) {
 
-                 com_write_str("realocatte bitmap");
                              /* Reallocate bitmap */
                              size_t cur_bitmap_size_in_pages = ((frames_counter / 32) * sizeof(uint32_t)) / PAGE_SIZE;
                              size_t new_bitmap_size_in_pages = cur_bitmap_size_in_pages + 1;
 
-                             com_write_str("realocatte bitmap 1");
                              temp_frame_table = (uint32_t*)alloc_multiple_frame_zero(new_bitmap_size_in_pages);
 
                              temp_frame_table = (uint32_t *)(get_mem_addr((uint64_t)temp_frame_table));
                              /* Copy over previous bitmap */
 
-                             com_write_str("realocatte bitmap 2");
                              for (uint64_t i = 0;
                                   i < (cur_bitmap_size_in_pages * PAGE_SIZE) / sizeof(uint32_t);
                                   i++){
@@ -186,13 +183,10 @@ void init_frame(uint64_t lenght, stivale_struct* sti_struct){
                                   i++){
                                  temp_frame_table[i] = 0xffffffff;
                              }
-                             com_write_str("realocatte bitmap 3");
                              frames_counter += ((PAGE_SIZE / sizeof(uint32_t)) * 32) * 1;
                              uint32_t *old_bitmap = (uint32_t *)(get_rmem_addr((uint64_t)frames));
                              frames = temp_frame_table;
-                             com_write_str("realocatte bitmap 3.5");
                              pmm_free((old_bitmap), cur_bitmap_size_in_pages);
-                             com_write_str("realocatte bitmap 4");
               }
 
                 if (entry->type == MEMMAP_USABLE) {

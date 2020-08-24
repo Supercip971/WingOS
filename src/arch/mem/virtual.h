@@ -26,7 +26,7 @@ void* alloc_frame();
 void* alloc_multiple_frame(uint64_t count, bool fast = false );
 void* alloc_multiple_frame_zero(uint64_t count, bool fast = false );
 void virt_map(uint64_t vaddress, uint64_t paddress, uint64_t flags );
-
+void pmm_free(void *ptr, uint64_t pg_count);
 inline void set_paging_dir(uint64_t pd){
 
     asm volatile ("mov %0, %%cr3":: "a"(pd): "memory");

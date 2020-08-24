@@ -1,37 +1,44 @@
 #include <int_value.h>
 #include <stivale.h>
-
-#define VGA_ADDRESS 0xb8000
-#define VGA_COLOR(character, color) ((uint16_t) (character) | (uint16_t) (color) << 8)
-#define VGA_BLACK        0
-#define VGA_BLUE         1
-#define VGA_GREEN        2
-#define VGA_CYAN         3
-#define VGA_RED          4
-#define VGA_PURPLE       5
-#define VGA_BROWN        6
-#define VGA_GRAY         7
-#define VGA_DARK_GRAY    8
-#define VGA_LIGHT_BLUE   9
-#define VGA_LIGH_GREEN   10
-#define VGA_LIGHT_CYAN   11
-#define VGA_LIGHT_RED    12
-#define VGA_LIGHT_PURPLE 13
-#define VGA_YELLOW       14
-#define VGA_WHITE        15
-
-/**
- * Stack for bootstrapping the kernel
- */
-
-
+#include <kernel.h>
+#include <utility.h>
+#include <com.h>
+#include <device/pit.h>
+/*
+    pour le moment tout ce qui est ici est un test
+    for the moment everything here is for test
+*/
 void _start(struct stivale_struct *bootloader_data) {
 
-    volatile uint16_t *vga_buffer = (uint16_t*)VGA_ADDRESS;
-    vga_buffer[0] = VGA_COLOR('h', VGA_GREEN);
-    vga_buffer[1] = VGA_COLOR('e', VGA_GREEN);
-    vga_buffer[2] = VGA_COLOR('e', VGA_GREEN);
-    vga_buffer[3] = VGA_COLOR('e', VGA_GREEN);
-    vga_buffer[4] = VGA_COLOR('o', VGA_GREEN);
-    asm volatile ("hlt");
+    asm volatile("sti");
+    PIT::the()->init_PIT();
+    uint64_t current_screen_pos = 0;
+    uint32_t d = 100;
+    char buffer[32]; // counter
+    uint32_t* dd = (uint32_t*)
+            bootloader_data->framebuffer_addr;
+    uint64_t update_tick = 0;
+    uint64_t started_sec = 0;
+    while(true){
+        for(uint64_t i = 0; i < bootloader_data->framebuffer_width * bootloader_data->framebuffer_height; i++){
+
+            dd[i] = d;
+        }
+        update_tick++;
+        if(PIT::the()->passed_sec != started_sec){
+            started_sec = PIT::the()->passed_sec;
+            memzero(buffer, 32);
+
+            kitoaT<uint64_t>(buffer, 'd',update_tick);
+            com_write_strl("fps  : ");
+            com_write_str(buffer);
+            update_tick = 0;
+        }
+
+
+
+
+        d++;
+
+    }
 }

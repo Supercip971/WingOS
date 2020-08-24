@@ -1,6 +1,7 @@
 #include <arch/gdt.h>
 #include <kernel.h>
 #include <stddef.h>
+#pragma GCC optimize ("-O0")
 /* flags */
 #define GDT_CS       0x18
 #define GDT_DS       0x10

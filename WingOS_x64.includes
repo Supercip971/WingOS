@@ -842,3 +842,5 @@ qloader2/toolchain/lib/gcc/i386-elf/10.1.0/plugin/include/config/i386
 src
 src/arch
 src/arch/mem
+src/device
+.

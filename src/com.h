@@ -9,10 +9,9 @@ enum COM_PORT
     COM4 = 0x2E8,
 };
 
-
-void com_write_str(const char* buffer);
+void com_write_str(const char *buffer);
+void com_write_reg(const char *buffer, uint64_t value);
 
 void com_initialize(COM_PORT port);
 
-
-void com_write_strl( const char *buffer);
+void com_write_strl(const char *buffer);

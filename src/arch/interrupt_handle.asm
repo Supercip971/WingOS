@@ -126,6 +126,7 @@ INTERRUPT_NOERR 31
 extern get_current_esp
 extern get_next_esp
 extern task_update_switch
+extern pit_callback
 global irq0_first_jump
 __interrupt32:
     cli
@@ -158,7 +159,7 @@ irq0_first_jump:
 
     call task_update_switch
 
-
+    call pit_callback
     mov al, 0x20
     out 0x20, al
 

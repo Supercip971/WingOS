@@ -1,4 +1,5 @@
 CFILES    := $(shell find src/ -type f -name '*.cpp')
+HFILES    := $(shell find src/ -type f -name '*.h')
 CC         = ./cross_compiler/bin/x86_64-pc-elf-g++
 LD         = ./cross_compiler/bin/x86_64-pc-elf-ld
 OBJ := $(shell find src/ -type f -name '*.o')
@@ -17,7 +18,7 @@ CHARDFLAGS := $(CFLAGS)               \
         -no-pie \
         -mno-sse                       \
         -m64 \
-        -O0 \
+        -O3 \
         -mno-sse2                      \
         -mno-mmx                       \
         -mcmodel=kernel \
@@ -43,15 +44,19 @@ run: $(KERNEL_HDD)
 runvbox: $(KERNEL_HDD)
 	@VBoxManage -q startvm --putenv VBOX_GUI_DBG_ENABLED=true wingOS64
 	@nc localhost 1234
+format:
+	@clang-format -i --verbose --style=file $(CFILES) $(HFILES)
 super:
+	make format
 	-rm -f $(KERNEL_HDD) $(KERNEL_ELF) $(OBJ)  $(OBJFILES) $(ASMOBJFILES)
 	make
 
 	@objdump kernel.elf -f -s -d --source > kernel.map
 	make runvbox
-%.o: %.cpp
+%.o: %.cpp %.h
 	@echo "cpp [BUILD] $<"
 	$(CC) $(CHARDFLAGS) -c $< -o $@
+
 %.o: %.asm
 	@echo "nasm [BUILD] $<"
 	@nasm $< -o $@ -felf64 -F dwarf -g -w+all -Werror

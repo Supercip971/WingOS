@@ -1,6 +1,3 @@
 #include "graphic.h"
 
-graphic::graphic()
-{
-
-}
+graphic::graphic() {}

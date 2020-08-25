@@ -4,11 +4,12 @@
 #include <utility.h>
 #include <com.h>
 #include <device/pit.h>
+#include <arch/process.h>
 /*
     pour le moment tout ce qui est ici est un test
     for the moment everything here is for test
 */
-void _start(struct stivale_struct *bootloader_data) {
+void _start( stivale_struct *bootloader_data) {
 
     asm volatile("sti");
     PIT::the()->init_PIT();
@@ -19,6 +20,7 @@ void _start(struct stivale_struct *bootloader_data) {
             bootloader_data->framebuffer_addr;
     uint64_t update_tick = 0;
     uint64_t started_sec = 0;
+    unlock_process();
     while(true){
         for(uint64_t i = 0; i < bootloader_data->framebuffer_width * bootloader_data->framebuffer_height; i++){
 

@@ -34,7 +34,8 @@ extern "C" {
  * failure.
  */
 inline int liballoc_lock(){
-    asm volatile("cli");
+    //asm volatile("cli");
+    return 0;
 };
 
 /** This function unlocks what was previously locked by the liballoc_lock
@@ -45,7 +46,8 @@ inline int liballoc_lock(){
  */
 inline int liballoc_unlock(){
 
-    asm volatile("sti");
+    //asm volatile("sti");
+    return 0;
 }
 
 /** This is the hook into the local system which allocates pages. It

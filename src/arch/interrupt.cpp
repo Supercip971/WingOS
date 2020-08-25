@@ -1,5 +1,6 @@
 #include <arch/arch.h>
 #include <arch/interrupt.h>
+#include <arch/process.h>
 #include <arch/64bit.h>
 #include <com.h>
 #include <kernel.h>
@@ -198,8 +199,19 @@ bool is_error(int intno){
     }
     return true;
 }
+uint64_t rip_count[16];
+uint32_t rip_counter = 0;
+void add_rip(uint64_t addr){
+    rip_count[rip_counter++] = addr;
+    if(rip_counter == 15){
+        rip_counter= 0;
+    }
+}
+
 static int dd = 0;
 extern "C" void interrupts_handler( InterruptStackFrame* stackframe){
+
+    add_rip(stackframe->rip);
     if (is_error(stackframe->int_no))
     {
         for(int i = 0; i < stackframe->int_no * 320; i++){
@@ -216,16 +228,25 @@ extern "C" void interrupts_handler( InterruptStackFrame* stackframe){
         dumpregister(stackframe);
         memzero(buff, 64);
         kitoaT<uint64_t>(buff, 'x', stackframe->rip);
+        com_write_str(" ===== ");
         com_write_str("rip :");
         com_write_str(buff);
+        for(uint64_t iz = 0; iz < 16; iz ++){
+
+            memzero(buff, 64);
+            kitoaT<uint64_t>(buff, 'x', rip_count[iz]);
+            com_write_str("rip :");
+            com_write_str(buff);
+        }
         while(true){
 
         }
     }
     if(stackframe->int_no == 32){
         PIT::the()->update();
+        irq_0_process_handler(stackframe);
+
     }
+
     pic_ack(stackframe->int_no);
-
-
 }

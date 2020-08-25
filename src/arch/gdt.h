@@ -43,7 +43,7 @@ typedef struct
 
 void gdt_init(void);
 
-void setup_gdt(uintptr_t);
+void setup_gdt(unsigned long i);
 
 
 typedef struct
@@ -64,4 +64,6 @@ typedef struct
   uint16_t reserved3;
   uint16_t iomap_base;
 } __attribute__((__packed__)) tss_t;
+tss_t* get_tss();
 void tss_init(uint64_t i);
+void tss_set_rsp0(uint64_t rsp0);

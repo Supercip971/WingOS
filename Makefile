@@ -17,7 +17,7 @@ CHARDFLAGS := $(CFLAGS)               \
         -no-pie \
         -mno-sse                       \
         -m64 \
-        -O3 \
+        -O0 \
         -mno-sse2                      \
         -mno-mmx                       \
         -mcmodel=kernel \

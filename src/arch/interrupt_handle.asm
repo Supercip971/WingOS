@@ -123,7 +123,62 @@ INTERRUPT_NOERR 29
 INTERRUPT_ERR   30
 INTERRUPT_NOERR 31
 
-INTERRUPT_NOERR 32
+extern get_current_esp
+extern get_next_esp
+extern task_update_switch
+global irq0_first_jump
+__interrupt32:
+    cli
+
+    push rax
+    push rbx
+    push rcx
+    push rdx
+    push rsi
+    push rdi
+    push rbp
+    push r8
+    push r9
+    push r10
+    push r11
+    push r12
+    push r13
+    push r14
+    push r15
+    call get_current_esp
+
+    mov [rax], rsp
+irq0_first_jump:
+    call get_next_esp
+
+
+    mov rsp, [rax]
+
+    mov rdi, rax
+
+    call task_update_switch
+
+
+    mov al, 0x20
+    out 0x20, al
+
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop r11
+    pop r10
+    pop r9
+    pop r8
+    pop rbp
+    pop rdi
+    pop rsi
+    pop rdx
+    pop rcx
+    pop rbx
+    pop rax
+    sti
+    iretq
 INTERRUPT_NOERR 33
 INTERRUPT_NOERR 34
 INTERRUPT_NOERR 35

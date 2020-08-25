@@ -20,6 +20,8 @@ src/arch/mem/liballoc.cpp
 src/arch/mem/liballoc.h
 src/arch/mem/virtual.cpp
 src/arch/mem/virtual.h
+src/arch/process.cpp
+src/arch/process.h
 src/arch/utility.asm
 src/com.cpp
 src/com.h

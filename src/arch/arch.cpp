@@ -5,6 +5,7 @@
 #include <arch/gdt.h>
 #include <arch/interrupt.h>
 #include <arch/mem/virtual.h>
+#include <arch/process.h>
 #include <arch/mem/liballoc.h>
 static char stack[4096] = {0};
 
@@ -25,7 +26,7 @@ extern "C" void kernel_start(stivale_struct *bootloader_data){
    
     com_write_str("hello world");
     com_write_str("init gdt");
-    setup_gdt((uintptr_t)stack + (sizeof(char)*4096));
+    setup_gdt((uint64_t)stack + (sizeof(char)*4096));
     com_write_str("init gdt : ✅");
     com_write_str("init idt");
     
@@ -43,6 +44,12 @@ extern "C" void kernel_start(stivale_struct *bootloader_data){
     com_write_str("mapping");
     set_paging_dir((uint64_t)pl4_table);
     com_write_str("mapping ok");
+
+
+    com_write_str("init process");
+    init_multi_process();
+
+    com_write_str("init process OK");
     com_write_str("testing with memory");
     uint8_t* m = ( uint8_t*)malloc(sizeof (uint8_t)* 128);
     com_write_str("testing with memory 2 ");

@@ -248,7 +248,14 @@ extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
         com_write_str(" ===== ");
         com_write_str("rip :");
         com_write_str(buff);
-        for (uint64_t iz = 0; iz < 16; iz++)
+        for (uint64_t iz = rip_counter + 1; iz < 16; iz++)
+        {
+            memzero(buff, 64);
+            kitoaT<uint64_t>(buff, 'x', rip_count[iz]);
+            com_write_str("rip :");
+            com_write_str(buff);
+        }
+        for (uint64_t iz = 0; iz <= rip_counter; iz++)
         {
             memzero(buff, 64);
             kitoaT<uint64_t>(buff, 'x', rip_count[iz]);

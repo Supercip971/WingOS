@@ -56,14 +56,16 @@ void com_initialize(COM_PORT port)
     outb(port + 4, 0x0B); // No idea what this does either
 };
 
-char temp_buffer[64];
+char temp_buffer[17];
+uint64_t last_count = 17;
 void com_write_reg(const char *buffer, uint64_t value)
 {
-    for (uint64_t tb = 0; tb < 64; tb++)
+    for (uint64_t tb = 0; tb < last_count; tb++)
     {
         temp_buffer[tb] = 0;
     }
     kitoaT(temp_buffer, 'x', value);
+
     com_write_strl(buffer);
     com_write_str(temp_buffer);
 }

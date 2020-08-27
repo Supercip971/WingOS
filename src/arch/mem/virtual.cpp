@@ -2,13 +2,13 @@
 #include <arch/mem/liballoc.h>
 #include <arch/mem/virtual.h>
 #include <com.h>
+#include <device/acpi.h>
 #include <kernel.h>
 #include <stivale.h>
 #include <utility.h>
-
 #define MEMORY_BASE 0x1000000
 #define BITMAP_BASE (MEMORY_BASE / PAGE_SIZE)
-
+#define FULL_FRAME_USED 0xffffffff
 uint64_t max_mem = 0;
 extern "C" uint64_t kernel_end;
 uint64_t frame_end = 0;
@@ -18,24 +18,12 @@ uint64_t heap_start = 0;
 uint64_t heap_end = 0;
 uint64_t frame_cursor_pos = 0;
 
-uint8_t temp_alloc_ptr[0x2000000]; // 33 megs of data so
 uint32_t temp_alloc_current_cursor = 0;
 bool paging_is_initialized;
 
 uint64_t align_up(uint64_t num, uint64_t multiple)
 {
     return ((num + multiple - 1) / multiple) * multiple;
-}
-
-void frame_set(uint64_t address)
-{
-    address -= BITMAP_BASE;
-    uint64_t frame = address / PAGE_SIZE;
-
-    uint64_t idx = INDEX_FROM_BIT(frame);
-
-    uint64_t offset = OFFSET_FROM_BIT(frame);
-    frames[idx] |= (0x1 << offset);
 }
 
 int test_frame_bit(uint64_t offset)
@@ -123,7 +111,7 @@ void init_frame(uint64_t lenght, stivale_struct *sti_struct)
     temp_frame_table = (uint32_t *)(get_mem_addr((uint64_t)temp_frame_table));
     for (uint64_t i = 0; i < (PAGE_SIZE) / sizeof(uint32_t); i++)
     {
-        temp_frame_table[i] = 0xffffffff;
+        temp_frame_table[i] = FULL_FRAME_USED;
     }
     frames = temp_frame_table;
 
@@ -182,7 +170,7 @@ void init_frame(uint64_t lenght, stivale_struct *sti_struct)
                      i < (new_bitmap_size_in_pages * PAGE_SIZE) / sizeof(uint32_t);
                      i++)
                 {
-                    temp_frame_table[i] = 0xffffffff;
+                    temp_frame_table[i] = FULL_FRAME_USED;
                 }
                 frames_counter += ((PAGE_SIZE / sizeof(uint32_t)) * 32) * 1;
                 uint32_t *old_bitmap = (uint32_t *)(get_rmem_addr((uint64_t)frames));
@@ -222,17 +210,6 @@ uint64_t frame_find_first()
 
 void free_frame(uint64_t ptr) { frame_clear(ptr); }
 
-void *alloc_frame()
-{
-    uint64_t frame = frame_find_first();
-    if (frame == 0)
-    {
-        com_write_str("error not enought frame :^(");
-        return 0x0; // never reached
-    }
-    frame_set(frame * PAGE_SIZE);
-    return (void *)(frame * PAGE_SIZE);
-}
 void *alloc_multiple_frame(uint64_t count, bool use_fast)
 {
     if (use_fast)
@@ -301,15 +278,6 @@ void *alloc_multiple_frame_zero(uint64_t count, bool use_fast)
     return d;
 }
 
-#define PAGE_FRAME 0xFFFFFFFFFF000
-
-inline void SetPageFrame(uint64_t *page, uint64_t addr)
-{
-    *page = (*page & ~PAGE_FRAME) | (addr & PAGE_FRAME);
-}
-
-inline void SetPageFlags(uint64_t *page, uint64_t flags) { *page |= flags; }
-
 void init_paging(stivale_struct *sti_struct)
 {
     com_write_str("loading paging 1");
@@ -320,26 +288,20 @@ void init_paging(stivale_struct *sti_struct)
         uint64_t addr = i * PAGE_SIZE;
         virt_map(addr, addr, 0x03);
         virt_map(addr, get_mem_addr(addr), 0x03);
-        virt_map(addr, get_kern_addr(addr), 0x03 | (1 << 8));
+        virt_map(addr, get_kern_addr(addr), 0x03);
     }
 
+    for (uint64_t i = 0; i < (0x100000000); i += 0x200000)
+    {
+
+        Huge_virt_map(i, get_mem_addr(i), 0x03);
+    }
     com_write_str("loading paging 2");
     set_paging_dir(get_rmem_addr((uint64_t)pl4_table));
 
-    uint64_t framebuffer_lenght = sti_struct->framebuffer_width *
-                                  sti_struct->framebuffer_height *
-                                  sti_struct->framebuffer_bpp;
-    for (uint64_t i = (sti_struct->framebuffer_addr) / PAGE_SIZE;
-         i <
-         ((framebuffer_lenght + sti_struct->framebuffer_addr) / PAGE_SIZE) + 1;
-         i++)
-    {
-        uint64_t addr = i * PAGE_SIZE;
-
-        virt_map(addr, get_mem_addr(addr), 0x03);
-    }
-    com_write_str("loading paging 3");
     e820_entry_t *mementry = (e820_entry_t *)sti_struct->memory_map_addr;
+
+    com_write_str("loading paging 3");
     for (uint64_t i = 0; i < sti_struct->memory_map_entries; i++)
     {
         e820_entry_t *entry = &mementry[i];
@@ -354,15 +316,23 @@ void init_paging(stivale_struct *sti_struct)
             size_t addr = base_aligned + j * PAGE_SIZE;
 
             /* Skip over first 4 GiB */
-            if (addr < 0xffffffff)
+            if (addr < 0x100000000)
+            {
                 continue;
-
+            }
             virt_map(addr, get_mem_addr(addr), 0x03);
         }
     }
-    set_paging_dir((uint64_t)pl4_table);
+    set_paging_dir(get_rmem_addr((uint64_t)pl4_table));
     com_write_str("loading paging done");
 }
+
+void update_paging()
+{
+
+    set_paging_dir(get_rmem_addr((uint64_t)pl4_table));
+}
+
 void init_virtual_memory(stivale_struct *sti_struct)
 {
     e820_entry_t *mementry = (e820_entry_t *)sti_struct->memory_map_addr;
@@ -381,9 +351,9 @@ void init_virtual_memory(stivale_struct *sti_struct)
             com_write_str("kernel");
             break;
         default:
-            continue;
             break;
         }
+        com_write_reg("memory type ", mementry[i].type);
         max_mem += mementry[i].length;
         kitoaT<uint64_t>(buffer, 'x', mementry[i].base);
         com_write_str(" memory start : ");
@@ -457,4 +427,74 @@ void virt_map(uint64_t vaddress, uint64_t paddress, uint64_t flags)
         pd[_pd_offset] = (uint64_t)(get_rmem_addr((uint64_t)pt) | 0b111);
     }
     pt[_pt_offset] = (uint64_t)(paddress | flags);
+}
+void Huge_virt_map(uint64_t paddress, uint64_t vaddress, uint64_t flags)
+{
+    uint64_t _pml4e_offset = PML4_GET_INDEX(vaddress);
+    uint64_t _pdpt_offset = PDPT_GET_INDEX(vaddress);
+    uint64_t _pd_offset = PAGE_DIR_GET_INDEX(vaddress);
+
+    uint64_t *pdpt = 0x0;
+    if (pl4_table[_pml4e_offset] & 0x1)
+    {
+        pdpt = (uint64_t *)get_mem_addr(
+            (pl4_table[_pml4e_offset] & 0xfffffffffffff000));
+    }
+    else
+    {
+        pdpt =
+            (uint64_t *)get_mem_addr((uint64_t)alloc_multiple_frame_zero(1, true));
+        pl4_table[_pml4e_offset] =
+            (uint64_t)(get_rmem_addr((uint64_t)pdpt) | 0b111);
+    }
+
+    uint64_t *pd = 0x0;
+    if (pdpt[_pdpt_offset] & 0x1)
+    {
+        pd = (uint64_t *)get_mem_addr((pdpt[_pdpt_offset] & 0xfffffffffffff000));
+    }
+    else
+    {
+        pd = (uint64_t *)get_mem_addr((uint64_t)alloc_multiple_frame_zero(1, true));
+        pdpt[_pdpt_offset] = (uint64_t)(get_rmem_addr((uint64_t)pd) | 0b111);
+    }
+    pdpt[_pdpt_offset] = (uint64_t)(paddress | flags | (1ull << 7));
+}
+uint64_t get_physical_address(uint64_t virtual_address)
+{
+    uint64_t _pml4e_offset = PML4_GET_INDEX(virtual_address);
+    uint64_t _pdpt_offset = PDPT_GET_INDEX(virtual_address);
+    uint64_t _pd_offset = PAGE_DIR_GET_INDEX(virtual_address);
+    uint64_t _pt_offset = PAGE_TABLE_GET_INDEX(virtual_address);
+    uint64_t *pdpt = 0x0;
+    if (pl4_table[_pml4e_offset] & 0x1)
+    {
+        pdpt = (uint64_t *)get_mem_addr(
+            (pl4_table[_pml4e_offset] & 0xfffffffffffff000));
+    }
+    else
+    {
+        return 0;
+    }
+
+    uint64_t *pd = 0x0;
+    if (pdpt[_pdpt_offset] & 0x1)
+    {
+        pd = (uint64_t *)get_mem_addr((pdpt[_pdpt_offset] & 0xfffffffffffff000));
+    }
+    else
+    {
+        return 0;
+    }
+
+    uint64_t *pt = 0x0;
+    if (pdpt[_pd_offset] & 0x1)
+    {
+        pt = (uint64_t *)get_mem_addr((pd[_pd_offset] & 0xfffffffffffff000));
+    }
+    else
+    {
+        return 0;
+    }
+    return pt[_pt_offset] & ~(0xfff | 1ull << 63);
 }

@@ -47,7 +47,7 @@ gcc_file="gcc-$gcc_version.tar.xz"
                                                       --with-sysroot 		\
                                                   --disable-nls 		\
                                                       --disable-werror
-   sudo make -j11
+           sudo make -j11
         sudo make install -j11
         cd ..
 

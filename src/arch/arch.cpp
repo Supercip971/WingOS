@@ -5,6 +5,7 @@
 #include <arch/mem/virtual.h>
 #include <arch/process.h>
 #include <com.h>
+#include <device/acpi.h>
 #include <kernel.h>
 #include <stivale.h>
 static char stack[4096] = {0};
@@ -36,10 +37,14 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
     com_write_str("init tss");
     tss_init((uintptr_t)stack + sizeof(char) * 4096);
     com_write_str("init tss : OK");
+    // before paging
+    acpi::the()->init(((stivale_struct *)bootdat)->rsdp);
+
     com_write_str("init paging");
     init_virtual_memory(bootloader_data);
     com_write_str("init paging : OK");
 
+    acpi::the()->getFACP();
     com_write_str("mapping");
     set_paging_dir((uint64_t)pl4_table);
     com_write_str("mapping ok");
@@ -54,7 +59,6 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
 }
 void start_process()
 {
-
     com_write_reg(" frame buffer address 2", ((stivale_struct *)bootdat)->framebuffer_addr);
     com_write_str("init process OK");
     com_write_str("testing with memory");
@@ -65,6 +69,5 @@ void start_process()
         m[i] = i;
     }
     com_write_str("testing with memory 3 ");
-
     _start((stivale_struct *)bootdat);
 }

@@ -25,8 +25,12 @@ src/arch/process.h
 src/arch/utility.asm
 src/com.cpp
 src/com.h
+src/device/acpi.cpp
+src/device/acpi.h
 src/device/graphic.cpp
 src/device/graphic.h
+src/device/madt.cpp
+src/device/madt.h
 src/device/pit.cpp
 src/device/pit.h
 src/int_value.h

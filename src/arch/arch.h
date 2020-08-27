@@ -4,7 +4,7 @@
 #define X64
 
 #ifdef X64
-
+#define STACK_SIZE 4096
 inline void outb(uint16_t port, uint8_t value)
 {
     asm volatile("out  dx, al" ::"a"(value), "d"(port));

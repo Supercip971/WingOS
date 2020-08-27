@@ -1,3 +1,4 @@
+#pragma once
 #include <int_value.h>
 #include <stdint.h>
 #include <stivale.h>

@@ -7,7 +7,7 @@
 extern "C" void irq0_first_jump();
 process *process_array;
 process kernel_process;
-process *current_process = 0x0;
+process *current_process = nullptr;
 bool process_locked = true;
 bool process_loaded = false;
 void lock_process() { process_locked = true; }
@@ -98,16 +98,16 @@ process *init_process(func entry_point)
         }
     }
     com_write_str("no free process found");
-    return 0x0;
+    return nullptr;
 }
 
 void switch_context(InterruptStackFrame *current_Isf, process *next)
 {
-    if (next == 0)
+    if (next == NULL)
     {
         return; // early return
     }
-    if (current_process == 0x0)
+    if (current_process == NULL)
     {
         current_Isf = (InterruptStackFrame *)next->rsp;
         next->current_process_state = process_state::PROCESS_RUNNING;
@@ -153,7 +153,7 @@ process *get_next_process(uint64_t current_id)
         }
     }
     com_write_str("no process found");
-    return 0x0;
+    return nullptr;
 }
 
 void irq_0_process_handler(InterruptStackFrame *isf)
@@ -162,7 +162,7 @@ void irq_0_process_handler(InterruptStackFrame *isf)
     {
         return;
     }
-    if (current_process == 0x0)
+    if (current_process == NULL)
     {
         process *i = get_next_process(0);
         if (i == 0)
@@ -174,7 +174,7 @@ void irq_0_process_handler(InterruptStackFrame *isf)
     else
     {
         process *i = get_next_process(current_process->pid);
-        if (i == 0)
+        if (i == nullptr)
         {
             return;
         }
@@ -185,10 +185,10 @@ char temp_esp[8192];
 process *nxt;
 extern "C" uint64_t get_current_esp()
 {
-    if (current_process == 0x0)
+    if (current_process == nullptr)
     {
         com_write_str("oh ow");
-        return (uint64_t)temp_esp + 8192;
+        return (uint64_t)temp_esp + PROCESS_STACK_SIZE;
     }
     else
     {

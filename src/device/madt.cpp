@@ -5,7 +5,10 @@ madt main_madt;
 madt::madt()
 {
 }
-
+uint64_t madt::get_madt_table_lenght()
+{
+    return ((uint64_t)&madt_header->RShead) + madt_header->RShead.Length;
+}
 void madt::init()
 {
     madt_address = acpi::the()->find_entry("APIC");
@@ -14,7 +17,7 @@ void madt::init()
 
     MADT_record_table_entry *table = madt_header->MADT_table;
 
-    while (uint64_t(table) < ((uint64_t)&madt_header->RShead) + madt_header->RShead.Length)
+    while (uint64_t(table) < get_madt_table_lenght())
     {
         table = (MADT_record_table_entry *)(((uint64_t)table) + table->tlenght);
         com_write_str("madt table entry : ");
@@ -34,4 +37,9 @@ void madt::init()
 madt *madt::the()
 {
     return &main_madt;
+}
+
+MADT_record_table_entry *madt::get_madt_table_record()
+{
+    return madt_header->MADT_table;
 }

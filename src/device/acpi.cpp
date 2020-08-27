@@ -20,7 +20,7 @@ void *get_rsdp(void)
         }
     }
 
-    return 0x0;
+    return nullptr;
 }
 acpi::acpi()
 {
@@ -47,7 +47,7 @@ void *acpi::find_entry(const char *entry_name)
     }
 
     // Not found
-    return 0x0;
+    return nullptr;
 }
 void *findFACP(void *RootSDT)
 {
@@ -70,12 +70,12 @@ void *findFACP(void *RootSDT)
     }
 
     // No FACP found
-    return 0x0;
+    return nullptr;
 }
 void acpi::init(uint64_t rsdp)
 {
     com_write_str("acpi 1");
-    descriptor = (RSDPDescriptor20 *)(((uint64_t)get_rsdp()));
+    descriptor = (RSDPDescriptor20 *)((((uint64_t)get_rsdp() /* get with the offset as stivale doesn't give me the good address so fu** you stivale */)));
     com_write_str("acpi 2");
     rsdt_table = (RSDT *)(descriptor->firstPart.RSDT_address);
     com_write_str("acpi 3");

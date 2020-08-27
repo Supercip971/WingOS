@@ -84,5 +84,7 @@ class madt
 public:
     madt();
     void init();
+    uint64_t get_madt_table_lenght();
+    MADT_record_table_entry *get_madt_table_record();
     static madt *the();
 };

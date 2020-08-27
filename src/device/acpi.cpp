@@ -26,8 +26,8 @@ acpi::acpi()
 {
 }
 
-
-void *acpi::find_entry(const char* entry_name){
+void *acpi::find_entry(const char *entry_name)
+{
     RSDT *rsdt = (RSDT *)descriptor->firstPart.RSDT_address;
     int entries = (rsdt->h.Length - sizeof(rsdt->h)) / 4;
 

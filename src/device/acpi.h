@@ -47,7 +47,7 @@ public:
     void getFACP();
     void init_in_paging();
 
-    void *find_entry(const char* entry_name);
+    void *find_entry(const char *entry_name);
     void descriptor_dump();
     void init(uint64_t rsdp);
     static acpi *the();

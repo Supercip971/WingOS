@@ -6,6 +6,7 @@
 #include <arch/process.h>
 #include <com.h>
 #include <device/acpi.h>
+#include <device/madt.h>
 #include <kernel.h>
 #include <stivale.h>
 static char stack[4096] = {0};
@@ -45,6 +46,8 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
     com_write_str("init paging : OK");
 
     acpi::the()->getFACP();
+    madt::the()->init();
+
     com_write_str("mapping");
     set_paging_dir((uint64_t)pl4_table);
     com_write_str("mapping ok");

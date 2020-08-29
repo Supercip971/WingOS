@@ -1,4 +1,15 @@
-build/*
+build/
+cross_compiler/
+vscode/
+
 kernel.elf
+
 *.o
-cross_compiler/*
+*.map
+*.cflags
+*.config
+*.creator
+*.creator.user
+*.cxxflags
+*.files
+*.includes

@@ -187,7 +187,7 @@ extern "C" uint64_t get_current_esp()
 {
     if (current_process == nullptr)
     {
-        com_write_str("oh ow");
+        com_write_str("oh ow do you want some cookie ?");
         return (uint64_t)temp_esp + PROCESS_STACK_SIZE;
     }
     else

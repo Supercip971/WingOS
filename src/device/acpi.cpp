@@ -1,6 +1,7 @@
 #include <arch/mem/virtual.h>
 #include <com.h>
 #include <device/acpi.h>
+#include <device/apic.h>
 #include <utility.h>
 acpi main_acpi;
 

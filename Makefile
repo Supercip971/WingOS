@@ -3,7 +3,7 @@ HFILES    := $(shell find src/ -type f -name '*.h')
 CC         = ./cross_compiler/bin/x86_64-pc-elf-g++
 LD         = ./cross_compiler/bin/x86_64-pc-elf-ld
 OBJ := $(shell find src/ -type f -name '*.o')
-KERNEL_HDD = build/disk.hdd
+KERNEL_HDD = ./build/disk.hdd
 KERNEL_ELF = kernel.elf
 ASMFILES := $(shell find src/ -type f -name '*.asm')
 
@@ -40,15 +40,15 @@ LDHARDFLAGS := $(LDFLAGS)        \
 
 disk: $(KERNEL_HDD)
 run: $(KERNEL_HDD)
-	qemu-system-x86_64 -m 2G -s -device pvpanic -serial stdio -enable-kvm --no-reboot -d int -d guest_errors -hda $(KERNEL_HDD)
+	qemu-system-x86_64 -m 4G -s -device pvpanic -smp 4 -serial stdio -enable-kvm --no-shutdown --no-reboot -d int -d guest_errors -hda $(KERNEL_HDD)
 runvbox: $(KERNEL_HDD)
 	@VBoxManage -q startvm --putenv VBOX_GUI_DBG_ENABLED=true wingOS64
 	@nc localhost 1234
 format:
 	@clang-format -i --verbose --style=file $(CFILES) $(HFILES)
 super:
+	-killall -9 VirtualBoxVM
 	make format
-	-rm -f $(KERNEL_HDD) $(KERNEL_ELF) $(OBJ)  $(OBJFILES) $(ASMOBJFILES)
 	make
 
 	@objdump kernel.elf -f -s -d --source > kernel.map
@@ -64,13 +64,14 @@ $(KERNEL_ELF): $(OBJFILES) $(ASMOBJFILES)
 	ld $(LDHARDFLAGS) $(OBJFILES) $(ASMOBJFILES) -o $@
 
 $(KERNEL_HDD): $(KERNEL_ELF)
+	-rm -f $(KERNEL_HDD)
 	-mkdir build
-	dd if=/dev/zero bs=1M count=0 seek=64 of=$(KERNEL_HDD)
-	parted -s $(KERNEL_HDD) mklabel msdos
-	parted -s $(KERNEL_HDD) mkpart primary 1 100%
-	echfs-utils -m -p0 $(KERNEL_HDD) quick-format 32768
-	echfs-utils -m -p0 $(KERNEL_HDD) import $(KERNEL_ELF) $(KERNEL_ELF)
-	echfs-utils -m -p0 $(KERNEL_HDD) import qloader2.cfg qloader2.cfg
+	@dd if=/dev/zero bs=1M count=0 seek=64 of=$(KERNEL_HDD)
+	@parted -s $(KERNEL_HDD) mklabel msdos
+	@parted -s $(KERNEL_HDD) mkpart primary 1 100%
+	@echfs-utils -m -p0 $(KERNEL_HDD) quick-format 32768
+	@echfs-utils -m -p0 $(KERNEL_HDD) import $(KERNEL_ELF) $(KERNEL_ELF)
+	@echfs-utils -m -p0 $(KERNEL_HDD) import qloader2.cfg qloader2.cfg
 	qloader2/qloader2-install qloader2/qloader2.bin $(KERNEL_HDD)
 
 clean:

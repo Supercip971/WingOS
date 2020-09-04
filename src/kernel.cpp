@@ -3,7 +3,7 @@
 #include <device/pit.h>
 #include <int_value.h>
 #include <kernel.h>
-#include <stivale.h>
+#include <stivale_struct.h>
 #include <utility.h>
 /*
     pour le moment tout ce qui est ici est un test
@@ -12,7 +12,6 @@
 void _start(stivale_struct *bootloader_data)
 {
     asm volatile("sti");
-    PIT::the()->init_PIT();
     uint64_t current_screen_pos = 0;
     uint32_t d = 100;
     char buffer[32]; // counter

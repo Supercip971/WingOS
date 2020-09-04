@@ -16,6 +16,6 @@ public:
                            // (or compile time) so nyeh :^( it is public value
     void update();
     void init_PIT();
-
+    void Pwait(uint16_t ms_count);
     static PIT *the(); // get the global PIT
 };

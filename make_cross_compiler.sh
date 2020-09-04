@@ -11,7 +11,7 @@ download_and_extract() {
         echo "Extracting $2"
         tar xf "$2"
 }
-sudo apt install build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo
+
 
 
 bin_utils_version="2.34"

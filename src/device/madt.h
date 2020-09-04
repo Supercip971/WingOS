@@ -79,12 +79,13 @@ struct MADT_head
 class madt
 {
     void *madt_address = 0x0;
-    MADT_head *madt_header = 0x0;
 
 public:
     madt();
+    MADT_head *madt_header = 0x0;
     void init();
     uint64_t get_madt_table_lenght();
     MADT_record_table_entry *get_madt_table_record();
+    MADT_table_IOAPIC **get_madt_ioAPIC();
     static madt *the();
 };

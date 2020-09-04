@@ -1,3 +1,4 @@
+#include <arch/mem/liballoc.h>
 #include <com.h>
 #include <device/acpi.h>
 #include <device/madt.h>
@@ -33,6 +34,27 @@ void madt::init()
             com_write_reg("PROC id : ", local_apic->processor_id);
         }
     }
+}
+
+MADT_table_IOAPIC **madt::get_madt_ioAPIC()
+{
+    MADT_record_table_entry *table = madt_header->MADT_table;
+    MADT_table_IOAPIC **MTIO = (MADT_table_IOAPIC **)malloc(255);
+    uint64_t count = 0;
+    while (uint64_t(table) < get_madt_table_lenght())
+    {
+        table = (MADT_record_table_entry *)(((uint64_t)table) + table->tlenght);
+
+        if (table->ttype == MADT_type::MADT_IOAPIC)
+        {
+
+            auto local_apic = reinterpret_cast<MADT_table_IOAPIC *>(table);
+            MTIO[count] = local_apic;
+            count++;
+        }
+    }
+    MTIO[count] = 0;
+    return nullptr;
 }
 madt *madt::the()
 {

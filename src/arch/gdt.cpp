@@ -1,5 +1,6 @@
 #include <arch/gdt.h>
 #include <com.h>
+#include <device/local_data.h>
 #include <kernel.h>
 #include <stddef.h>
 #pragma GCC optimize("-O0")
@@ -13,8 +14,6 @@
 
 /* granularity */
 #define GDT_LM 0x2
-gdtr_t gdtr;
-
 tss_t tss;
 
 tss_t *get_tss() { return &tss; }
@@ -28,6 +27,7 @@ static void gdt_set_descriptor(gdt_descriptor_t *gdt_descriptors, uint16_t sel,
     descriptor->flags = flags;
     descriptor->granularity = (gran << 4) | 0x0F;
     descriptor->limit_low = 0xFFFF;
+    com_write_reg("setup gdt descriptor = ", *((uint64_t *)descriptor));
 }
 
 static void gdt_set_xdescriptor(gdt_descriptor_t *gdt_descriptors, uint16_t sel,
@@ -51,8 +51,8 @@ void __attribute__((optimize("O0"))) rgdt_init(void)
 {
     com_write_str("rgdt_init");
 
-    uint64_t tss_base = (uint64_t)&tss;
-    uint64_t tss_limit = tss_base + sizeof(tss) - 1;
+    uint64_t tss_base = (uint64_t)&get_current_data()->tss;
+    uint64_t tss_limit = tss_base + sizeof(get_current_data()->tss) - 1;
 
     com_write_str("reset gdt");
 
@@ -70,16 +70,17 @@ void __attribute__((optimize("O0"))) rgdt_init(void)
     gdt_set_xdescriptor(gdt_descriptors, SLTR_TSS, GDT_PRESENT | GDT_TSS, 0,
                         tss_base, tss_limit);
 
-    gdtr.addr = (uint64_t)&gdt_descriptors;
-    gdtr.len = sizeof(gdt_descriptors) * GDT_DESCRIPTORS - 1;
-    gdtr_install(&gdtr, SLTR_KERNEL_CODE, SLTR_KERNEL_DATA);
+    get_current_data()->gdt.addr = (uint64_t)&gdt_descriptors;
+    get_current_data()->gdt.len = sizeof(gdt_descriptors) * GDT_DESCRIPTORS - 1;
+
+    gdtr_install(&get_current_data()->gdt, SLTR_KERNEL_CODE, SLTR_KERNEL_DATA);
 }
 
 void tss_init(uint64_t i)
 {
-    memzero(&tss, sizeof(tss));
-    tss.iomap_base = sizeof(tss) - 1;
-    tss.rsp0 = (uint64_t)i;
+    memzero(&get_current_data()->tss, sizeof(tss));
+    get_current_data()->tss.iomap_base = sizeof(tss) - 1;
+    get_current_data()->tss.rsp0 = (uint64_t)i;
 
     asm volatile("mov ax, %0 \n ltr ax"
                  :
@@ -87,5 +88,5 @@ void tss_init(uint64_t i)
                  : "rax");
 }
 
-void tss_set_rsp0(uint64_t rsp0) { tss.rsp0 = rsp0; }
+void tss_set_rsp0(uint64_t rsp0) { get_current_data()->tss.rsp0 = rsp0; }
 void setup_gdt(unsigned long i) { rgdt_init(); }

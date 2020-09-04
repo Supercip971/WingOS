@@ -1,5 +1,6 @@
 #include <arch/arch.h>
 #include <com.h>
+#include <device/apic.h>
 #include <device/pit.h>
 #include <kernel.h>
 #pragma GCC optimize("-O0")
@@ -25,9 +26,32 @@ void PIT::init_PIT()
     outb(0x40, h);
     com_write_str("loaded PIT");
 }
+void PIT::Pwait(uint16_t ms)
+{
+    outb(0x43, 0x30);
+    uint16_t wait_val = PIT_START_FREQUENCY / 1000;
+    wait_val *= ms;
 
+    uint8_t l = (uint8_t)(wait_val & 0xFF);
+    wait();
+    outb(0x40, l);
+    wait();
+    uint8_t h = (uint8_t)((wait_val >> 8) & 0xFF);
+    outb(0x40, h);
+
+    while (true)
+    {
+        outb(0x43, 0xe2);
+        uint8_t status = inb(0x40);
+        if ((status & (1 << 7)) != 0)
+        {
+            break;
+        }
+    }
+}
 void PIT::update()
 {
+    apic::the()->EOI();
     total_count++;
     current_count++;
     if (current_count > PIT_TARGET_FREQUECY)

@@ -1,7 +1,7 @@
 #pragma once
 #include <com.h>
 #include <int_value.h>
-#include <stivale.h>
+#include <stivale_struct.h>
 void _start(struct stivale_struct *bootloader_data);
 
 __attribute__((optimize("O0"))) inline void memzero(void *s, uint64_t n)
@@ -21,4 +21,15 @@ __attribute__((optimize("O0"))) inline void *memset(void *data, uint8_t value,
         d[i] = value;
     }
     return data;
+}
+
+__attribute__((optimize("O0"))) inline void *memcpy(void *dst, const void *src, int64_t len)
+{
+    char *dst8 = (char *)dst;
+    const char *src8 = (char *)src;
+
+    while (len--)
+        *dst8++ = *src8++;
+
+    return dst;
 }

@@ -56,5 +56,23 @@ static inline void x86_set_cr3(uint64_t cr3)
                  : "a"(cr3)
                  : "memory");
 }
+inline static uint64_t x86_rdmsr(uint64_t msr)
+{
+    uint32_t low, high;
+    asm volatile("rdmsr"
+                 : "=a"(low), "=d"(high)
+                 : "c"(msr));
+    return ((uint64_t)high << 32) | low;
+}
 
+inline static void x86_wrmsr(uint64_t msr, uint64_t value)
+{
+    uint32_t low = value & 0xFFFFFFFF;
+    uint32_t high = value >> 32;
+    asm volatile("wrmsr"
+                 :
+                 : "c"(msr), "a"(low), "d"(high));
+}
+
+#define POKE(addr) (*((volatile uint64_t *)(addr)))
 #endif // DEBUG

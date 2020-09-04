@@ -1,7 +1,7 @@
 #pragma once
 #include <int_value.h>
 #include <stdint.h>
-#include <stivale.h>
+#include <stivale_struct.h>
 #define GDT_DESCRIPTORS 7
 
 #define SLTR_NULL 0x0000
@@ -41,6 +41,8 @@ typedef struct
         uint32_t reserved;
     } high;
 } __attribute__((__packed__)) gdt_xdescriptor_t;
+
+static gdtr_t gdtr;
 
 void gdt_init(void);
 

@@ -1,6 +1,7 @@
 #pragma once
 #include <arch/arch.h>
-#include <stivale.h>
+#include <arch/mem/physical.h>
+#include <stivale_struct.h>
 #define RMFLAGS 0x000FFFFFFFFFF000
 #define PAGE_SIZE 4096
 #define PML4_GET_INDEX(addr) (((addr) >> 39) & 0x1FF)
@@ -17,17 +18,13 @@
 typedef uint64_t pl4_paging;
 #define PAGING_TABLE_COUNT 512
 static pl4_paging *pl4_table __attribute__((aligned(4096)));
+static uint64_t default_paging = 0x0;
 void init_virtual_memory(stivale_struct *sti_struct);
 
 uint64_t get_mem_addr(uint64_t addr);
-void free_frame(uint64_t ptr);
+uint64_t get_rmem_addr(uint64_t addr);
 
-void *alloc_frame();
-
-void *alloc_multiple_frame(uint64_t count, bool fast = false);
-void *alloc_multiple_frame_zero(uint64_t count, bool fast = false);
 void virt_map(uint64_t vaddress, uint64_t paddress, uint64_t flags);
-void pmm_free(void *ptr, uint64_t pg_count);
 void Huge_virt_map(uint64_t paddress, uint64_t vaddress, uint64_t flags);
 void update_paging();
 inline void set_paging_dir(uint64_t pd)
@@ -60,3 +57,10 @@ inline void map_mem_address(uint64_t address, uint64_t page_length, bool with_of
     update_paging();
 }
 void Huge_virt_map(uint64_t paddress, uint64_t vaddress, uint64_t flags);
+inline uint64_t vmm_get_cr3()
+{
+    uint64_t ret;
+    asm volatile("movq %%cr3, %0;"
+                 : "=r"(ret));
+    return ret;
+}

@@ -1,5 +1,6 @@
 
 #pragma once
+#include <arch/mem/physical.h>
 #include <arch/mem/virtual.h>
 #include <arch/process.h>
 #include <stdint.h>
@@ -61,7 +62,7 @@ extern "C"
     inline void *liballoc_alloc(int d)
     { // alloc x page
 
-        return alloc_multiple_frame(d, true);
+        return pmm_alloc(d);
     }
 
     /** This frees previously allocated memory. The void* parameter passed

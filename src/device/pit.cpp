@@ -12,7 +12,7 @@ extern "C" void pit_callback()
 void PIT::init_PIT()
 {
     *this = PIT();
-    com_write_str("loading PIT");
+    printf("loading PIT \n");
     uint16_t divisor = PIT_START_FREQUENCY /
                        PIT_TARGET_FREQUECY; // to do : make this more portable
 
@@ -24,7 +24,7 @@ void PIT::init_PIT()
     wait();
     uint8_t h = (uint8_t)((divisor >> 8) & 0xFF);
     outb(0x40, h);
-    com_write_str("loaded PIT");
+    printf("loaded PIT \n");
 }
 void PIT::Pwait(uint16_t ms)
 {
@@ -56,7 +56,7 @@ void PIT::update()
     current_count++;
     if (current_count > PIT_TARGET_FREQUECY)
     {
-        com_write_str("sec");
+        printf("sec \n");
         current_count = 0;
         passed_sec += 1;
     }

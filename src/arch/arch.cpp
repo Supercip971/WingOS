@@ -27,67 +27,72 @@ stivale_header header = {.stack = (uintptr_t)stack + (sizeof(char) * STACK_SIZE)
                          .entry_point = 0};
 
 void start_process();
+stivale_struct boot_loader_data_copy;
 extern "C" void kernel_start(stivale_struct *bootloader_data)
 {
     asm volatile("and rsp, -16");
     com_initialize(COM_PORT::COM1);
 
     com_write_reg("bootloader addr", (uint64_t)bootloader_data);
-    com_write_str("init gdt");
+    memcpy(&boot_loader_data_copy, bootloader_data, sizeof(stivale_struct));
+    printf("init gdt \n");
     setup_gdt((uint64_t)stack + (sizeof(char) * STACK_SIZE));
-    com_write_str("init gdt : ✅");
-    com_write_str("init idt");
+    printf("init gdt : ✅ \n");
+    printf("init idt \n");
 
     init_idt();
-    com_write_str("init idt : ✅");
+    printf("init idt : ✅ \n");
 
-    com_write_str("init tss");
+    printf("init tss \n");
     tss_init((uintptr_t)stack + sizeof(char) * STACK_SIZE);
-    com_write_str("init tss : OK");
+    printf("init tss : OK");
     // before paging
     acpi::the()->init(((stivale_struct *)bootdat)->rsdp);
 
-    com_write_str("init paging");
+    printf("init paging \n");
     init_virtual_memory(bootloader_data);
-    com_write_str("init paging : OK");
+    printf("init paging : OK \n");
 
-    com_write_str("loading pic ");
-    pic_init(); // load the pic first
-    com_write_str("loading pic : OK ");
-
-    com_write_str("mapping");
-    set_paging_dir((uint64_t)pl4_table);
-    com_write_str("mapping ok");
+    printf("mapping \n");
+    printf("mapping ok \n");
     PIT::the()->init_PIT();
     acpi::the()->getFACP();
     madt::the()->init();
     apic::the()->init();
     // smp is here but we doesn't use it for the moment
     smp::the()->init();
-    com_write_str("set global data ");
+
+    printf("loading pic \n");
+    pic_init(); // load the pic after
+    printf("loading pic : OK \n");
+
+    printf("set global data \n");
     set_current_data(get_current_data());
-    com_write_str("set global data : OK");
-    asm("sti");
-    bootdat = ((uint64_t)bootloader_data);
-    bootloader_data = (stivale_struct *)((uint64_t)bootloader_data);
-    com_write_reg(" frame buffer address ", (uint64_t)bootloader_data->framebuffer_addr);
-    com_write_reg(" frame buffer address 2", ((stivale_struct *)bootdat)->framebuffer_addr);
-    com_write_reg(" bootloader_data address ", (uint64_t)bootloader_data);
-    com_write_reg(" bootloader_data address 2 ", (uint64_t)bootdat);
-    com_write_str("init process");
+    printf("set global data : OK \n");
+    //virt_map((uint64_t)bootloader_data, (uint64_t)bootloader_data, 0x3);
+
+    //    bootloader_data = (stivale_struct *)get_mem_addr((uint64_t)bootloader_data);
+
+    bootdat = ((uint64_t)&boot_loader_data_copy);
+    asm volatile("sti");
+    printf(" frame buffer address %x \n", boot_loader_data_copy.framebuffer_addr);
+    printf(" frame buffer address %x \n", ((stivale_struct *)bootdat)->framebuffer_addr);
+    printf(" bootloader_data address %x \n", (uint64_t)&boot_loader_data_copy);
+    printf(" bootloader_data address %x \n ", (uint64_t)bootdat);
+    printf("init process \n");
     init_multi_process(start_process);
 }
 void start_process()
 {
-    com_write_reg(" frame buffer address 2", ((stivale_struct *)bootdat)->framebuffer_addr);
-    com_write_str("init process OK");
-    com_write_str("testing with memory");
+    printf(" frame buffer address 2 %x \n", ((stivale_struct *)bootdat)->framebuffer_addr);
+    printf("init process OK \n");
+    printf("testing with memory \n");
     uint8_t *m = (uint8_t *)malloc(sizeof(uint8_t) * 128); // just for testing
-    com_write_str("testing with memory 2 ");
+    printf("testing with memory 2 \n");
     for (uint64_t i = 0; i < 128; i++)
     {
         m[i] = i;
     }
-    com_write_str("testing with memory 3 ");
+    printf("testing with memory 3 \n");
     _start((stivale_struct *)bootdat);
 }

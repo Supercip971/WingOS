@@ -22,7 +22,7 @@ apic::apic()
 
 void apic::enable()
 {
-    write(sivr, read(sivr) | 0x100);
+    write(sivr, read(sivr) | 0x1FF);
 }
 void apic::EOI()
 {
@@ -35,22 +35,39 @@ bool apic::isloaded()
 }
 void apic::init()
 {
-    com_write_str("loading apic");
+    printf("loading apic \n");
     table = madt::the()->get_madt_ioAPIC();
     apic_addr = (void *)get_mem_addr(madt::the()->madt_header->lapic);
     if (apic_addr == nullptr)
     {
-        com_write_str("[error] can't find apic (sad)");
+        printf("[error] can't find apic (sad) \n");
         while (true)
         {
             asm("hlt");
         }
         return;
     }
-    x86_wrmsr(0x1B, x86_rdmsr(0x1B) | 0x800);
+
+    printf("loading new interrupt \n");
+
+    outb(PIC1, 0x11);
+    outb(PIC2, 0x11);
+    outb(PIC1_DATA, 0x20);
+    outb(PIC2_DATA, 0x28);
+    outb(PIC1_DATA, 0x04);
+    outb(PIC2_DATA, 0x02);
+    outb(PIC1_DATA, 0x01);
+    outb(PIC2_DATA, 0x01);
+    outb(PIC1_DATA, 0x0);
+    outb(PIC2_DATA, 0x0);
+    // bye PIC we love you <3
+    outb(PIC2_DATA, 0xFF);
+    outb(PIC1_DATA, 0xFF);
+    x86_wrmsr(0x1B, (x86_rdmsr(0x1B) | 0x800) & ~(LAPIC_ENABLE));
     enable();
-    com_write_str("loading apic : OK");
-    com_write_reg("current processor id ", get_current_processor_id());
+
+    printf("loading apic : OK \n");
+    printf("current processor id %x \n", get_current_processor_id());
     loaded = true;
 }
 

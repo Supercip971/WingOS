@@ -39,6 +39,6 @@ void pic_init()
 
     outb(PIC1_DATA, a1);
     outb(PIC2_DATA, a2);
-    outb(PIC1_DATA, 0x0); // unmask all for apic
-    outb(PIC2_DATA, 0x0);
+    outb(PIC1_DATA, 0xff); // unmask all for apic
+    outb(PIC2_DATA, 0xff);
 }

@@ -2,6 +2,7 @@
 #include <device/acpi.h>
 #include <device/madt.h>
 #include <int_value.h>
+#define LAPIC_ENABLE 0x400
 class apic
 {
     void *apic_addr;

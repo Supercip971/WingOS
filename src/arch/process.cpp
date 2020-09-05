@@ -29,9 +29,9 @@ void main_process_2()
 
 void init_multi_process(func start)
 {
-    com_write_str("loading process");
+    printf("loading process \n");
     process_array = (process *)malloc(sizeof(process) * MAX_PROCESS);
-    com_write_str("loading process 0 ");
+    printf("loading process 0 \n");
     for (int i = 0; i < MAX_PROCESS; i++)
     {
         process_array[i].pid = i;
@@ -42,11 +42,11 @@ void init_multi_process(func start)
         }
     }
 
-    com_write_str("loading process 1");
+    printf("loading process 1 \n");
     init_process(main_process_1);
-    com_write_str("loading process 3");
+    printf("loading process 3 \n");
     init_process(main_process_2);
-    com_write_str("loading process 2");
+    printf("loading process 2 \n");
     init_process(start);
     process_loaded = true;
 
@@ -97,7 +97,7 @@ process *init_process(func entry_point)
             return &process_array[i];
         }
     }
-    com_write_str("no free process found");
+    printf("no free process found \n");
     return nullptr;
 }
 
@@ -128,7 +128,7 @@ process *get_next_process(uint64_t current_id)
 {
     if (process_locked)
     {
-        com_write_str("return process cauz' they are lock");
+        printf("return process cauz' they are lock \n");
         return current_process;
     }
     for (uint64_t i = current_id; i < MAX_PROCESS; i++)
@@ -152,7 +152,7 @@ process *get_next_process(uint64_t current_id)
             return &process_array[i];
         }
     }
-    com_write_str("no process found");
+    printf("no process found \n");
     return nullptr;
 }
 
@@ -187,7 +187,7 @@ extern "C" uint64_t get_current_esp()
 {
     if (current_process == nullptr)
     {
-        com_write_str("oh ow do you want some cookie ?");
+        printf("oh ow do you want some cookie ? \n");
         return (uint64_t)temp_esp + PROCESS_STACK_SIZE;
     }
     else

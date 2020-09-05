@@ -18,7 +18,20 @@
         .offset_mid16 = ((__offset & 0xFFFF0000) >> 16),                     \
         .offset_high32 = ((__offset & 0xFFFFFFFF00000000) >> 32), .zero = 0, \
     }
+static idt_entry_t register_interrupt_handler(void *handler, uint8_t ist, uint8_t type)
+{
+    uint64_t p = (uint64_t)handler;
+    idt_entry_t idt;
+    idt.offset_low16 = (uint16_t)p;
+    idt.cs = 0x08;
+    idt.ist = ist;
+    idt.attributes = type;
+    idt.offset_mid16 = (uint16_t)(p >> 16);
+    idt.offset_high32 = (uint32_t)(p >> 32);
+    idt.zero = 0;
 
+    return idt;
+}
 #define IDT_ENTRY_COUNT 256
 #define INTGATE 0x8e
 #define TRAPGATE 0xeF
@@ -36,21 +49,15 @@ void init_idt()
 {
     com_write_str("loading idt");
     com_write_str("loading idt table");
-    get_current_data()->idt.size = sizeof(idt_entry_t) * IDT_ENTRY_COUNT;
-    get_current_data()->idt.offset = (uint64_t)&idt[0];
     for (int i = 0; i < 32 + 48; i++)
     {
-        idt[i] = IDT_ENTRY(__interrupt_vector[i], 0x08, INTGATE);
+        idt[i] = register_interrupt_handler((void *)__interrupt_vector[i], 0, 0x8e);
     }
 
     com_write_str("loading idt idt_flush");
     asm volatile("lidt [%0]"
                  :
-                 : "m"(get_current_data()->idt));
-    com_write_str("loading pic");
-    // pic_init();
-    // pic will be loaded in the IOAPIC
-    com_write_str("loading pic : OK");
+                 : "m"(idt_descriptor));
     com_write_str("loading idt : OK");
 
     com_write_str("turning on interrupt : OK ");
@@ -106,48 +113,24 @@ void dump1(uint64_t reg, const char *name)
 void dumpregister(InterruptStackFrame *stck)
 {
     // this is the least readable code EVER
-    com_write_str(" ===== cpu dump =====");
-    com_write_str(" ===== cs and ss =====");
-    dump1(stck->cs, "cs");
-    dump1(stck->ss, "ss");
-    com_write_str(" ");
-    com_write_str(" ===== rx =====");
-    dump1(stck->r8, "r8");
-    dump1(stck->r9, "r9");
-    dump1(stck->r10, "r10");
-    com_write_str(" ");
-    dump1(stck->r11, "r11");
-    dump1(stck->r12, "r12");
-    dump1(stck->r13, "r13");
-    com_write_str(" ");
-    dump1(stck->r14, "r14");
-    dump1(stck->r15, "r15");
-    com_write_str(" ");
-    com_write_str(" ===== utility =====");
-    dump1(stck->rsp, "rsp");
-    dump1(stck->rbp, "rbp");
-    dump1(stck->rdi, "rdi");
-    com_write_str(" ");
-    dump1(stck->rsi, "rsi");
-    dump1(stck->rdx, "rdx");
-    dump1(stck->rcx, "rcx");
-    com_write_str(" ");
-    dump1(stck->rbx, "rbx");
-    dump1(stck->rax, "rax");
-    com_write_str(" ");
-    com_write_str(" ===== other =====");
-    dump1(stck->error_code, "error_code");
-    dump1(stck->int_no, "int_no");
-    com_write_str(" ");
-    dump1(stck->rip, "rip");
-    dump1(stck->rflags, "rflags");
-    com_write_str(" ");
-    com_write_str(" ===== CRX =====");
+    printf(" ===== cpu dump ===== \n");
+    printf(" ===== cs and ss ===== \n");
+
+    printf("cs = %x | ss = %x \n", stck->cs, stck->ss);
+    printf(" ===== utility ===== \n");
+    printf("rsp = %x | rbp = %x | rdi = %x \n", stck->rsp, stck->rbp, stck->rdi);
+    printf("rsi = %x | rdx = %x | rcx = %x \n", stck->rsi, stck->rdx, stck->rcx);
+    printf("rbx = %x | rax = %x |  \n", stck->rbx, stck->rax);
+    printf(" ===== other ===== \n");
+    printf("error code = %x \n", stck->error_code);
+    printf("interrupt number = %x \n", stck->int_no);
+    printf("rip = %x \n", stck->rip);
+    printf("flags = %x \n", stck->rflags);
 
     uint64_t CRX;
     asm volatile("mov %%cr2, %0"
                  : "=r"(CRX));
-    dump1(CRX, "CR2");
+    printf("CR2 = %x \n", CRX);
 }
 void pic_ack(int intno)
 {
@@ -195,15 +178,11 @@ extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
             is_error(stackframe->int_no);
         }
 
-        memzero(buff, 64);
-        kitoa(buff, 'd', stackframe->int_no);
-
-        com_write_str("id :");
-        com_write_str(buff);
-        com_write_str("error fatal");
-        com_write_str(exception_messages[stackframe->int_no]);
+        printf("error fatal \n");
+        printf("id : %x \n", stackframe->int_no);
+        printf("type : %s\n", exception_messages[stackframe->int_no]);
         dumpregister(stackframe);
-        memzero(buff, 64);
+        /*memzero(buff, 64);
         kitoaT<uint64_t>(buff, 'x', stackframe->rip);
         com_write_str(" ===== ");
         com_write_str("rip :");
@@ -221,7 +200,7 @@ extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
             kitoaT<uint64_t>(buff, 'x', rip_count[iz]);
             com_write_str("rip :");
             com_write_str(buff);
-        }
+        }*/
         while (true)
         {
         }
@@ -231,6 +210,15 @@ extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
         PIT::the()->update();
         irq_0_process_handler(stackframe);
     }
-    apic::the()->EOI();
+    if (stackframe->int_no == 0xf0)
+    {
+        printf("apic : Nmi : possible hardware error :( \n");
+        apic::the()->EOI();
+    }
+    if (stackframe->int_no == 0xff)
+    {
+        printf("apic : spurr \n");
+        apic::the()->EOI();
+    }
     pic_ack(stackframe->int_no);
 }

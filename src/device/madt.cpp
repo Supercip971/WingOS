@@ -21,17 +21,17 @@ void madt::init()
     while (uint64_t(table) < get_madt_table_lenght())
     {
         table = (MADT_record_table_entry *)(((uint64_t)table) + table->tlenght);
-        com_write_str("madt table entry : ");
-        com_write_reg("type = ", table->ttype);
-        com_write_reg("lenght = ", table->tlenght);
+        printf("madt table entry :  \n");
+        printf("type = %x \n", table->ttype);
+        printf("lenght = %x \n", table->tlenght);
         if (table->ttype == MADT_type::MADT_LAPIC)
         {
 
             auto local_apic = reinterpret_cast<MADT_table_LAPIC *>(table);
 
-            com_write_str("MADT LAPIC INFO");
-            com_write_reg("APIC id : ", local_apic->apic_id);
-            com_write_reg("PROC id : ", local_apic->processor_id);
+            printf("MADT LAPIC INFO \n");
+            printf("APIC id : %x \n", local_apic->apic_id);
+            printf("PROC id : %x \n", local_apic->processor_id);
         }
     }
 }

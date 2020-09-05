@@ -15,3 +15,5 @@ void com_write_reg(const char *buffer, uint64_t value);
 void com_initialize(COM_PORT port);
 
 void com_write_strl(const char *buffer);
+
+void printf(const char *str, ...);

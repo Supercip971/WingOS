@@ -49,16 +49,16 @@ static void gdt_set_xdescriptor(gdt_descriptor_t *gdt_descriptors, uint16_t sel,
 extern "C" void gdtr_install(gdtr_t *, unsigned short, unsigned short);
 void __attribute__((optimize("O0"))) rgdt_init(void)
 {
-    com_write_str("rgdt_init");
+    printf("rgdt_init \n");
 
     uint64_t tss_base = (uint64_t)&get_current_data()->tss;
     uint64_t tss_limit = tss_base + sizeof(get_current_data()->tss) - 1;
 
-    com_write_str("reset gdt");
+    printf("reset gdt \n");
 
     memzero(&gdt_descriptors, sizeof(gdt_descriptors) * 64);
 
-    com_write_str("set gdt entries");
+    printf("set gdt entries \n");
     gdt_set_descriptor(gdt_descriptors, SLTR_KERNEL_CODE, GDT_PRESENT | GDT_CS,
                        GDT_LM);
     gdt_set_descriptor(gdt_descriptors, SLTR_KERNEL_DATA,

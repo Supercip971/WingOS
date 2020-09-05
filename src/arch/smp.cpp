@@ -22,7 +22,7 @@ bool SMPloaded = false;
 
 extern "C" void cpuupstart(void)
 {
-    com_write_str("ee");
+    printf("ee \n");
     SMPloaded = true;
     while (true)
     {
@@ -45,7 +45,7 @@ void test_func1()
 {
     while (true)
     {
-        com_write_str("hello 2");
+        printf("hello 2 \n");
     }
 }
 void smp::init()
@@ -72,15 +72,15 @@ void smp::init()
         }
     }
     processor_count--;
-    com_write_reg("total processor count detected : ", processor_count);
+    printf("total processor count detected : %x \n ", processor_count);
     if (processor_count > max_cpu)
     {
-        com_write_reg("too much processor are detected, we will only use : ", max_cpu - 1);
+        printf("too much processor are detected, we will only use : %x \n", max_cpu - 1);
     }
 
     for (int i = 0; i < processor_count; i++)
     {
-        com_write_reg("getting proc : ", mt_lapic[i]->processor_id);
+        printf("getting proc : %x \n", mt_lapic[i]->processor_id);
         if (apic::the()->get_current_processor_id() != mt_lapic[i]->processor_id)
         {
             init_cpu(mt_lapic[i]->apic_id, mt_lapic[i]->processor_id);
@@ -94,8 +94,8 @@ extern "C" uint32_t trampoline_start, trampoline_end, nstack;
 
 void smp::init_cpu(int apic, int id)
 {
-    com_write_reg("init cpu id : ", id);
-    com_write_reg("init cpu apic id : ", apic);
+    printf("init cpu id : %x \n", id);
+    printf("init cpu apic id : %x \n", apic);
     uint64_t trampoline_len = (uint64_t)&trampoline_end - (uint64_t)&trampoline_start;
     for (int i = 0; i < (trampoline_len / 4096) + 12; i++)
     {
@@ -103,7 +103,7 @@ void smp::init_cpu(int apic, int id)
     }
     virt_map(0x4000, 0x4000, 0x1 | 0x2 | 0x4);
     virt_map(0x5000, 0x5000, 0x1 | 0x2 | 0x4);
-    com_write_reg("trampoline lenght = ", trampoline_len);
+    printf("trampoline lenght = %x \n", trampoline_len);
     uint64_t end_addr = 0x4000;
     end_addr /= 4096;
     end_addr *= 4096;
@@ -130,11 +130,11 @@ void smp::init_cpu(int apic, int id)
     virt_map(saddress, saddress, 0x1 | 0x2 | 0x4);
     memset((void *)(saddress - 4096), 0, 4096);
 
-    com_write_reg("stack raddr", saddress);
-    com_write_reg("paging raddr ", get_rmem_addr((uint64_t)&pl4_table));
+    printf("stack raddr %x \n", saddress);
+    printf("paging raddr %x \n", get_rmem_addr((uint64_t)&pl4_table));
 
     memcpy((void *)0x1000, &trampoline_start, trampoline_len);
-    com_write_reg("pre init cpu id : ", id);
+    printf("pre init cpu id : %x \n", id);
     apic::the()->preinit_processor(apic);
 
     for (uint64_t i = 0; i < 1000; i++)
@@ -151,7 +151,7 @@ void smp::init_cpu(int apic, int id)
     {
         PIT::the()->Pwait(1000);
     }
-    com_write_reg("cpu loaded : ", id);
+    printf("cpu loaded : %x \n", id);
     SMPloaded = false;
 }
 smp *smp::the()

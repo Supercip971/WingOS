@@ -17,7 +17,7 @@ void _start(stivale_struct *bootloader_data)
     char buffer[32]; // counter
 
     uint32_t *dd = (uint32_t *)bootloader_data->framebuffer_addr;
-    com_write_reg(" frame buffer address ", bootloader_data->framebuffer_addr);
+    printf(" frame buffer address %x", bootloader_data->framebuffer_addr);
     uint64_t update_tick = 0;
     uint64_t started_sec = 0;
     unlock_process();
@@ -33,11 +33,7 @@ void _start(stivale_struct *bootloader_data)
         if (PIT::the()->passed_sec != started_sec)
         {
             started_sec = PIT::the()->passed_sec;
-            memzero(buffer, 32);
-
-            kitoaT<uint64_t>(buffer, 'd', update_tick);
-            com_write_strl("fps  : ");
-            com_write_str(buffer);
+            printf("fps  : %x", update_tick);
             update_tick = 0;
         }
 

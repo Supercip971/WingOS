@@ -16,6 +16,16 @@
 #define RPL2 0x2
 #define RPL3 0x3
 
+#define GDT_CS 0x18
+#define GDT_DS 0x10
+#define GDT_TSS 0x09
+#define GDT_WRITABLE 0x02
+#define GDT_USER 0x60
+#define GDT_PRESENT 0x80
+
+/* granularity */
+#define GDT_LM 0x2
+
 typedef struct
 {
     uint16_t len;

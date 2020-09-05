@@ -11,6 +11,15 @@
 
 #define ICW1_ICW4 0x01
 #define ICW1_INIT 0x10
+#define pic_wait()                    \
+    do                                \
+    {                                 \
+        asm volatile("jmp 1f\n\t"     \
+                     "1:\n\t"         \
+                     "    jmp 2f\n\t" \
+                     "2:");           \
+    } while (0)
+
 
 void pic_init();
 void pic_disable();

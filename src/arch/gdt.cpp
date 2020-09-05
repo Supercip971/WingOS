@@ -5,20 +5,15 @@
 #include <stddef.h>
 #pragma GCC optimize("-O0")
 /* flags */
-#define GDT_CS 0x18
-#define GDT_DS 0x10
-#define GDT_TSS 0x09
-#define GDT_WRITABLE 0x02
-#define GDT_USER 0x60
-#define GDT_PRESENT 0x80
-
-/* granularity */
-#define GDT_LM 0x2
 tss_t tss;
 
-tss_t *get_tss() { return &tss; }
-
 gdt_descriptor_t gdt_descriptors[64];
+
+tss_t *get_tss() { return &tss; }
+void tss_set_rsp0(uint64_t rsp0) { get_current_data()->tss.rsp0 = rsp0; }
+void rgdt_init(void);
+void setup_gdt(unsigned long i) { rgdt_init(); }
+
 static void gdt_set_descriptor(gdt_descriptor_t *gdt_descriptors, uint16_t sel,
                                uint8_t flags, uint8_t gran)
 {
@@ -36,6 +31,7 @@ static void gdt_set_xdescriptor(gdt_descriptor_t *gdt_descriptors, uint16_t sel,
 {
     gdt_xdescriptor_t *descriptor =
         (gdt_xdescriptor_t *)(&gdt_descriptors[sel / sizeof(*gdt_descriptors)]);
+
     descriptor->low.flags = flags;
     descriptor->low.granularity = (gran << 4) | ((limit >> 16) & 0x0F);
     descriptor->low.limit_low = limit & 0xFFFF;
@@ -88,5 +84,3 @@ void tss_init(uint64_t i)
                  : "rax");
 }
 
-void tss_set_rsp0(uint64_t rsp0) { get_current_data()->tss.rsp0 = rsp0; }
-void setup_gdt(unsigned long i) { rgdt_init(); }

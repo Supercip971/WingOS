@@ -7,6 +7,7 @@ acpi main_acpi;
 
 void *get_rsdp(void)
 {
+
     for (int i = get_mem_addr(0x80000); i < get_mem_addr(0x100000); i += 16)
     {
         if (i == get_mem_addr(0xa0000))
@@ -23,12 +24,14 @@ void *get_rsdp(void)
 
     return nullptr;
 }
+
 acpi::acpi()
 {
 }
 
 void *acpi::find_entry(const char *entry_name)
 {
+
     RSDT *rsdt = (RSDT *)descriptor->firstPart.RSDT_address;
     int entries = (rsdt->h.Length - sizeof(rsdt->h)) / 4;
 
@@ -41,6 +44,7 @@ void *acpi::find_entry(const char *entry_name)
             printf("skipping entry 0 \n");
             continue;
         }
+
         RSDTHeader *h = (RSDTHeader *)(rsdt->PointerToOtherSDT[i]);
 
         if (!strncmp(h->Signature, entry_name, 4))

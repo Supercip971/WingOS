@@ -10,59 +10,6 @@
 #include <kernel.h>
 #include <utility.h>
 
-#define IDT_ENTRY(__offset, __selector, __type)                              \
-    (idt_entry_t)                                                            \
-    {                                                                        \
-        .offset_low16 = (uint16_t)((__offset)&0xffff), .cs = (__selector),   \
-        .ist = 0, .attributes = (__type),                                    \
-        .offset_mid16 = ((__offset & 0xFFFF0000) >> 16),                     \
-        .offset_high32 = ((__offset & 0xFFFFFFFF00000000) >> 32), .zero = 0, \
-    }
-static idt_entry_t register_interrupt_handler(void *handler, uint8_t ist, uint8_t type)
-{
-    uint64_t p = (uint64_t)handler;
-    idt_entry_t idt;
-    idt.offset_low16 = (uint16_t)p;
-    idt.cs = 0x08;
-    idt.ist = ist;
-    idt.attributes = type;
-    idt.offset_mid16 = (uint16_t)(p >> 16);
-    idt.offset_high32 = (uint32_t)(p >> 32);
-    idt.zero = 0;
-
-    return idt;
-}
-#define IDT_ENTRY_COUNT 256
-#define INTGATE 0x8e
-#define TRAPGATE 0xeF
-
-extern uintptr_t __interrupt_vector[128];
-static idt_entry_t idt[IDT_ENTRY_COUNT];
-static idtr_t idt_descriptor = {
-    .size = sizeof(idt_entry_t) * IDT_ENTRY_COUNT,
-    .offset = (uint64_t)&idt[0],
-};
-extern "C" void idt_flush(uint64_t);
-extern "C" void syscall_asm_entry();
-
-void init_idt()
-{
-    com_write_str("loading idt");
-    com_write_str("loading idt table");
-    for (int i = 0; i < 32 + 48; i++)
-    {
-        idt[i] = register_interrupt_handler((void *)__interrupt_vector[i], 0, 0x8e);
-    }
-
-    com_write_str("loading idt idt_flush");
-    asm volatile("lidt [%0]"
-                 :
-                 : "m"(idt_descriptor));
-    com_write_str("loading idt : OK");
-
-    com_write_str("turning on interrupt : OK ");
-};
-
 const char *exception_messages[] = {"Division By Zero",
                                     "Debug",
                                     "Non Maskable Interrupt",
@@ -99,17 +46,54 @@ const char *exception_messages[] = {"Division By Zero",
                                     "Reserved",
                                     "Reserved"};
 
-char buff2[64];
-void dump1(uint64_t reg, const char *name)
+extern uintptr_t __interrupt_vector[128];
+static idt_entry_t idt[IDT_ENTRY_COUNT];
+
+static idtr_t idt_descriptor = {
+    .size = sizeof(idt_entry_t) * IDT_ENTRY_COUNT,
+    .offset = (uint64_t)&idt[0],
+};
+
+
+uint64_t rip_count[16];
+uint32_t rip_counter = 0;
+
+extern "C" void idt_flush(uint64_t);
+extern "C" void syscall_asm_entry();
+
+static idt_entry_t register_interrupt_handler(void *handler, uint8_t ist, uint8_t type)
 {
-    memzero(buff2, 64);
-    kitoaT<uint64_t>(buff2, 'x', reg);
-    com_write_strl(" | ");
-    com_write_strl(name);
-    com_write_strl(" = ");
-    com_write_strl("0x");
-    com_write_strl(buff2);
+    uint64_t p = (uint64_t)handler;
+    idt_entry_t idt;
+    idt.offset_low16 = (uint16_t)p;
+    idt.cs = 0x08;
+    idt.ist = ist;
+    idt.attributes = type;
+    idt.offset_mid16 = (uint16_t)(p >> 16);
+    idt.offset_high32 = (uint32_t)(p >> 32);
+    idt.zero = 0;
+
+    return idt;
 }
+
+void init_idt()
+{
+    printf("loading idt \n");
+    printf("loading idt table \n");
+    for (int i = 0; i < 32 + 48; i++)
+    {
+        idt[i] = register_interrupt_handler((void *)__interrupt_vector[i], 0, 0x8e);
+    }
+
+    printf("loading idt idt_flush \n");
+    asm volatile("lidt [%0]"
+                 :
+                 : "m"(idt_descriptor));
+    printf("loading idt : OK \n");
+
+    printf("turning on interrupt : OK \n");
+};
+
 void dumpregister(InterruptStackFrame *stck)
 {
     // this is the least readable code EVER
@@ -132,6 +116,7 @@ void dumpregister(InterruptStackFrame *stck)
                  : "=r"(CRX));
     printf("CR2 = %x \n", CRX);
 }
+
 void pic_ack(int intno)
 {
     if (intno >= 40)
@@ -141,7 +126,7 @@ void pic_ack(int intno)
 
     outb(PIC1_OFFSET, 0x20);
 }
-char buff[64];
+
 bool is_error(int intno)
 {
     if (intno > 31)
@@ -156,8 +141,7 @@ bool is_error(int intno)
     }
     return true;
 }
-uint64_t rip_count[16];
-uint32_t rip_counter = 0;
+
 void add_rip(uint64_t addr)
 {
     rip_count[rip_counter++] = addr;
@@ -167,7 +151,6 @@ void add_rip(uint64_t addr)
     }
 }
 
-static int dd = 0;
 extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
 {
     add_rip(stackframe->rip);
@@ -182,27 +165,10 @@ extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
         printf("id : %x \n", stackframe->int_no);
         printf("type : %s\n", exception_messages[stackframe->int_no]);
         dumpregister(stackframe);
-        /*memzero(buff, 64);
-        kitoaT<uint64_t>(buff, 'x', stackframe->rip);
-        com_write_str(" ===== ");
-        com_write_str("rip :");
-        com_write_str(buff);
-        for (uint64_t iz = rip_counter + 1; iz < 16; iz++)
-        {
-            memzero(buff, 64);
-            kitoaT<uint64_t>(buff, 'x', rip_count[iz]);
-            com_write_str("rip :");
-            com_write_str(buff);
-        }
-        for (uint64_t iz = 0; iz <= rip_counter; iz++)
-        {
-            memzero(buff, 64);
-            kitoaT<uint64_t>(buff, 'x', rip_count[iz]);
-            com_write_str("rip :");
-            com_write_str(buff);
-        }*/
+
         while (true)
         {
+            asm volatile ("hlt");
         }
     }
     if (stackframe->int_no == 32)
@@ -210,12 +176,12 @@ extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
         PIT::the()->update();
         irq_0_process_handler(stackframe);
     }
-    if (stackframe->int_no == 0xf0)
+    else if (stackframe->int_no == 0xf0)
     {
         printf("apic : Nmi : possible hardware error :( \n");
         apic::the()->EOI();
     }
-    if (stackframe->int_no == 0xff)
+    else if (stackframe->int_no == 0xff)
     {
         printf("apic : spurr \n");
         apic::the()->EOI();

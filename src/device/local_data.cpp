@@ -2,7 +2,6 @@
 #include <arch/smp.h>
 #include <device/apic.h>
 #include <device/local_data.h>
-#define LOCAL_DATA_DMSR 0xC0000100
 local_data procData[smp::max_cpu];
 
 local_data *get_current_data()

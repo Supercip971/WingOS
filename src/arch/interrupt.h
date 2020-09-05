@@ -1,6 +1,11 @@
 #pragma once
 #include <arch/arch.h>
 #include <int_value.h>
+
+#define IDT_ENTRY_COUNT 256
+#define INTGATE 0x8e
+#define TRAPGATE 0xeF
+
 typedef struct
 {
     uint16_t offset_low16;
@@ -18,3 +23,4 @@ typedef struct
 } __attribute__((packed)) idtr_t;
 
 void init_idt(void);
+

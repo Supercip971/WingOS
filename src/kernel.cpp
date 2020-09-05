@@ -12,9 +12,7 @@
 void _start(stivale_struct *bootloader_data)
 {
     asm volatile("sti");
-    uint64_t current_screen_pos = 0;
     uint32_t d = 100;
-    char buffer[32]; // counter
 
     uint32_t *dd = (uint32_t *)bootloader_data->framebuffer_addr;
     printf(" frame buffer address %x", bootloader_data->framebuffer_addr);

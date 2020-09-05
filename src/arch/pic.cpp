@@ -3,14 +3,7 @@
 #include <arch/arch.h>
 #include <arch/pic.h>
 #include <int_value.h>
-#define pic_wait()                    \
-    do                                \
-    {                                 \
-        asm volatile("jmp 1f\n\t"     \
-                     "1:\n\t"         \
-                     "    jmp 2f\n\t" \
-                     "2:");           \
-    } while (0)
+
 void pic_init()
 {
 

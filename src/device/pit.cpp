@@ -5,10 +5,12 @@
 #include <kernel.h>
 #pragma GCC optimize("-O0")
 PIT global_PIT;
+
 extern "C" void pit_callback()
 {
     PIT::the()->update();
 }
+
 void PIT::init_PIT()
 {
     *this = PIT();

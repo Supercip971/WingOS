@@ -5,9 +5,12 @@
 #include <com.h>
 #pragma GCC optimize("-O0")
 extern "C" void irq0_first_jump();
+extern "C" void reload_cr3();
 process *process_array;
 process kernel_process;
 process *current_process = nullptr;
+char temp_esp[8192];
+process *nxt;
 bool process_locked = true;
 bool process_loaded = false;
 void lock_process() { process_locked = true; }
@@ -19,6 +22,7 @@ void main_process_1()
         asm("hlt");
     }
 }
+
 void main_process_2()
 {
     while (true)
@@ -31,6 +35,7 @@ void init_multi_process(func start)
 {
     printf("loading process \n");
     process_array = (process *)malloc(sizeof(process) * MAX_PROCESS);
+
     printf("loading process 0 \n");
     for (int i = 0; i < MAX_PROCESS; i++)
     {
@@ -44,9 +49,11 @@ void init_multi_process(func start)
 
     printf("loading process 1 \n");
     init_process(main_process_1);
-    printf("loading process 3 \n");
-    init_process(main_process_2);
+
     printf("loading process 2 \n");
+    init_process(main_process_2);
+
+    printf("loading process 3 \n");
     init_process(start);
     process_loaded = true;
 
@@ -181,8 +188,7 @@ void irq_0_process_handler(InterruptStackFrame *isf)
         switch_context(isf, i);
     }
 }
-char temp_esp[8192];
-process *nxt;
+
 extern "C" uint64_t get_current_esp()
 {
     if (current_process == nullptr)
@@ -195,6 +201,7 @@ extern "C" uint64_t get_current_esp()
         return (uint64_t)current_process;
     }
 }
+
 extern "C" uint64_t get_next_esp()
 {
     if (current_process == 0)
@@ -208,7 +215,7 @@ extern "C" uint64_t get_next_esp()
         return (uint64_t)nxt;
     }
 }
-extern "C" void reload_cr3();
+
 extern "C" void task_update_switch(process *next)
 {
     tss_set_rsp0((uint64_t)nxt->stack + PROCESS_STACK_SIZE - 8);

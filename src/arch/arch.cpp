@@ -26,8 +26,10 @@ stivale_header header = {.stack = (uintptr_t)stack + (sizeof(char) * STACK_SIZE)
                          .framebuffer_bpp = 32,
                          .entry_point = 0};
 
-void start_process();
 stivale_struct boot_loader_data_copy;
+
+void start_process();
+
 extern "C" void kernel_start(stivale_struct *bootloader_data)
 {
     asm volatile("and rsp, -16");
@@ -35,6 +37,7 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
 
     com_write_reg("bootloader addr", (uint64_t)bootloader_data);
     memcpy(&boot_loader_data_copy, bootloader_data, sizeof(stivale_struct));
+
     printf("init gdt \n");
     setup_gdt((uint64_t)stack + (sizeof(char) * STACK_SIZE));
     printf("init gdt : ✅ \n");
@@ -55,11 +58,15 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
 
     printf("mapping \n");
     printf("mapping ok \n");
+
     PIT::the()->init_PIT();
+
     acpi::the()->getFACP();
+
     madt::the()->init();
+
     apic::the()->init();
-    // smp is here but we doesn't use it for the moment
+
     smp::the()->init();
 
     printf("loading pic \n");

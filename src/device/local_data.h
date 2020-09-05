@@ -4,6 +4,7 @@
 #include <arch/gdt.h>
 #include <arch/interrupt.h>
 #include <int_value.h>
+#define LOCAL_DATA_DMSR 0xC0000100
 struct local_data
 {
 

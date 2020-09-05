@@ -4,10 +4,10 @@
 #include <stivale_struct.h>
 #define RMFLAGS 0x000FFFFFFFFFF000
 #define PAGE_SIZE 4096
-#define PML4_GET_INDEX(addr) (((addr) >> 39) & 0x1FF)
-#define PDPT_GET_INDEX(addr) (((addr) >> 30) & 0x1FF)
-#define PAGE_DIR_GET_INDEX(addr) (((addr) >> 21) & 0x1FF)
-#define PAGE_TABLE_GET_INDEX(addr) (((addr) >> 12) & 0x1FF)
+#define PML4_GET_INDEX(addr) (addr & ((uint64_t)0x1ff << 39)) >> 39
+#define PDPT_GET_INDEX(addr) (addr & ((uint64_t)0x1ff << 30)) >> 30
+#define PAGE_DIR_GET_INDEX(addr) (addr & ((uint64_t)0x1ff << 21)) >> 21
+#define PAGE_TABLE_GET_INDEX(addr) (addr & ((uint64_t)0x1ff << 12)) >> 12
 #define KERNEL_START_MEMORY 0xffffffff80000000
 #define TO_PHYS_U64(ptr) ((uint64_t)ptr ^ (uint64_t)KERNEL_START_MEMORY)
 #define INDEX_FROM_BIT(a) (a / (8 * 4))

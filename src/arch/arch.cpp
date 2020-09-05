@@ -63,7 +63,7 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
     madt::the()->init();
     apic::the()->init();
     // smp is here but we doesn't use it for the moment
-    //    smp::the()->init();
+    smp::the()->init();
     com_write_str("set global data ");
     set_current_data(get_current_data());
     com_write_str("set global data : OK");

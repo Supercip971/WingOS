@@ -19,9 +19,11 @@ smp::smp()
 }
 char data[] = "hello world";
 bool SMPloaded = false;
+
 extern "C" void cpuupstart(void)
 {
     com_write_str("ee");
+    SMPloaded = true;
     while (true)
     {
     }
@@ -109,16 +111,17 @@ void smp::init_cpu(int apic, int id)
     //   uint64_t *d = (uint64_t *)TRAMPOLINE_PAGING_ADDR;
     //   *d = ((uint64_t)pl4_table);
     virt_map(0x0, 0x0, 0x1 | 0x2 | 0x4);
-    POKE(get_mem_addr(end_addr)) = ((uint64_t)pl4_table);
-    POKE((end_addr)) = ((uint64_t)pl4_table);
-    POKE((0x500)) = ((((uint64_t)pl4_table)));
-    POKE((0x540)) = ((((uint64_t)pl4_table)));
+    POKE(get_mem_addr(end_addr)) = ((uint64_t)&pl4_table);
+    POKE((end_addr)) = ((uint64_t)&pl4_table);
+    POKE((0x500)) =
+        get_rmem_addr((uint64_t)&pl4_table);
+    POKE((0x540)) = get_rmem_addr((uint64_t)&pl4_table);
 
-    virt_map(get_rmem_addr((uint64_t)pl4_table), get_rmem_addr((uint64_t)pl4_table), 0x1 | 0x2 | 0x4);
     asm volatile(" \n"
                  "sgdt [0x580]\n"
                  "sidt [0x590]\n");
     POKE((0x520)) = ((((uint64_t)&cpuupstart)));
+    virt_map(((((uint64_t)&cpuupstart))), ((((uint64_t)&cpuupstart))), 0x1 | 0x2 | 0x4);
     uint64_t saddress = 0x8000;
     saddress /= 4096;
     saddress *= 4096;
@@ -128,27 +131,27 @@ void smp::init_cpu(int apic, int id)
     memset((void *)(saddress - 4096), 0, 4096);
 
     com_write_reg("stack raddr", saddress);
-    com_write_reg("paging raddr ", ((uint64_t)&pl4_table));
+    com_write_reg("paging raddr ", get_rmem_addr((uint64_t)&pl4_table));
 
     memcpy((void *)0x1000, &trampoline_start, trampoline_len);
-    set_paging_dir(get_rmem_addr((uint64_t)pl4_table));
     com_write_reg("pre init cpu id : ", id);
     apic::the()->preinit_processor(apic);
 
     for (uint64_t i = 0; i < 1000; i++)
     {
-
-        com_write_reg(" waiting ", i);
+        for (uint64_t b = 0; b < i * 2; b++)
+        {
+            inb(0);
+        }
     }
     apic::the()->init_processor(apic, 0x1000);
-    while (true)
-    {
-    }
+
     PIT::the()->Pwait(1000);
     while (SMPloaded != true)
     {
         PIT::the()->Pwait(1000);
     }
+    com_write_reg("cpu loaded : ", id);
     SMPloaded = false;
 }
 smp *smp::the()

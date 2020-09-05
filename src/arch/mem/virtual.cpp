@@ -23,10 +23,13 @@ uint64_t frames_counter = 32;
 uint64_t heap_start = 0;
 uint64_t heap_end = 0;
 uint64_t frame_cursor_pos = 0;
-
+uint64_t previous_cr3 = 0x0;
 uint32_t temp_alloc_current_cursor = 0;
 bool paging_is_initialized;
-
+uint64_t prev_cr3()
+{
+    return previous_cr3;
+}
 uint64_t align_up(uint64_t num, uint64_t multiple)
 {
     return ((num + multiple - 1) / multiple) * multiple;
@@ -83,7 +86,7 @@ void init_paging(stivale_struct *sti_struct)
             virt_map(addr, get_mem_addr(addr), BASIC_PAGE_FLAGS);
         }
     }
-    virt_map((uint64_t)pl4_table, (uint64_t)pl4_table, BASIC_PAGE_FLAGS);
+    virt_map(get_rmem_addr((uint64_t)pl4_table), get_rmem_addr((uint64_t)pl4_table), BASIC_PAGE_FLAGS);
     set_paging_dir(get_rmem_addr((uint64_t)pl4_table));
     com_write_str("loading paging done");
 }

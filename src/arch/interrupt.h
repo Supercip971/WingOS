@@ -23,4 +23,3 @@ typedef struct
 } __attribute__((packed)) idtr_t;
 
 void init_idt(void);
-

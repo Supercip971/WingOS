@@ -59,14 +59,11 @@ void smp::init()
 
     processor_count--;
 
-
     printf("total processor count detected : %x \n ", processor_count);
     if (processor_count > max_cpu)
     {
         printf("too much processor are detected, we will only use : %x \n", max_cpu - 1);
     }
-
-
 
     for (int i = 0; i < processor_count; i++)
     {
@@ -138,7 +135,7 @@ void smp::init_cpu(int apic, int id)
 
     apic::the()->preinit_processor(apic);
 
-        // waiting a little bit
+    // waiting a little bit
 
     for (uint64_t i = 0; i < 1000; i++)
     {

@@ -22,7 +22,7 @@ static void gdt_set_descriptor(gdt_descriptor_t *gdt_descriptors, uint16_t sel,
     descriptor->flags = flags;
     descriptor->granularity = (gran << 4) | 0x0F;
     descriptor->limit_low = 0xFFFF;
-    com_write_reg("setup gdt descriptor = ", *((uint64_t *)descriptor));
+    printf("setup gdt descriptor =  %x \n", *((uint64_t *)descriptor));
 }
 
 static void gdt_set_xdescriptor(gdt_descriptor_t *gdt_descriptors, uint16_t sel,
@@ -40,6 +40,7 @@ static void gdt_set_xdescriptor(gdt_descriptor_t *gdt_descriptors, uint16_t sel,
     descriptor->low.base_high = ((base >> 24) & 0xFF);
     descriptor->high.base_xhigh = ((base >> 32) & 0xFFFFFFFF);
     descriptor->high.reserved = 0;
+    printf("setup xgdt descriptor =  %x \n", *((uint64_t *)descriptor));
 }
 
 extern "C" void gdtr_install(gdtr_t *, unsigned short, unsigned short);
@@ -83,4 +84,3 @@ void tss_init(uint64_t i)
                  : "i"(SLTR_TSS)
                  : "rax");
 }
-

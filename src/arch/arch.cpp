@@ -35,14 +35,14 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
     asm volatile("and rsp, -16");
     com_initialize(COM_PORT::COM1);
 
-    com_write_reg("bootloader addr", (uint64_t)bootloader_data);
+    printf("bootloader addr %x \n", (uint64_t)bootloader_data);
     memcpy(&boot_loader_data_copy, bootloader_data, sizeof(stivale_struct));
 
     printf("init gdt \n");
     setup_gdt((uint64_t)stack + (sizeof(char) * STACK_SIZE));
     printf("init gdt : ✅ \n");
-    printf("init idt \n");
 
+    printf("init idt \n");
     init_idt();
     printf("init idt : ✅ \n");
 

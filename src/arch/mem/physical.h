@@ -1,7 +1,6 @@
 #pragma once
+#include <arch/mem/virtual.h>
 #include <stivale_struct.h>
-
-#define PAGE_SIZE 4096
 
 void init_physical_memory(stivale_struct *bootdata);
 

@@ -601,7 +601,7 @@ void PREFIX(free)(void *ptr)
             ((min->magic & 0xFF) == (LIBALLOC_MAGIC & 0xFF)))
         {
             l_possibleOverruns += 1;
-            com_write_str("liballoc: ERROR: Possible 1-3 byte overrun for magic ");
+            printf("liballoc: ERROR: Possible 1-3 byte overrun for magic \n");
 #if defined DEBUG || defined INFO
             printf("liballoc: ERROR: Possible 1-3 byte overrun for magic %x != %x\n",
                    min->magic, LIBALLOC_MAGIC);
@@ -611,7 +611,7 @@ void PREFIX(free)(void *ptr)
 
         if (min->magic == LIBALLOC_DEAD)
         {
-            com_write_str("liballoc: ERROR: multiple (free)() attempt ");
+            printf("liballoc: ERROR: multiple (free)() attempt \n");
 #if defined DEBUG || defined INFO
             printf(
                 "liballoc: ERROR: multiple PREFIX(free)() attempt on %x from %x.\n",
@@ -621,7 +621,7 @@ void PREFIX(free)(void *ptr)
         }
         else
         {
-            com_write_str("liballoc: ERROR:bad free ");
+            printf("liballoc: ERROR:bad free \n");
 #if defined DEBUG || defined INFO
             printf("liballoc: ERROR: Bad PREFIX(free)( %x ) called from %x\n", ptr,
                    __builtin_return_address(0));

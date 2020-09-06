@@ -20,6 +20,5 @@
                      "2:");           \
     } while (0)
 
-
 void pic_init();
 void pic_disable();

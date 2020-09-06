@@ -7,16 +7,8 @@
 #include <stivale_struct.h>
 
 #include <utility.h>
-#define MEMORY_BASE 0x1000000
-#define BITMAP_BASE (MEMORY_BASE / PAGE_SIZE)
-#define FULL_FRAME_USED 0xffffffff
-#define TWO_MEGS 0x2000000
-#define FOUR_GIGS 0x100000000
-#define BASIC_PAGE_FLAGS 0b111
-#define BIT_PRESENT 0x1
-#define FRAME_ADDR 0xfffffffffffff000
-uint64_t max_mem = 0;
 extern "C" uint64_t kernel_end;
+uint64_t max_mem = 0;
 uint64_t frame_end = 0;
 uint32_t *frames = 0;
 uint64_t frames_counter = 32;
@@ -37,9 +29,11 @@ uint64_t align_up(uint64_t num, uint64_t multiple)
 
 void init_paging(stivale_struct *sti_struct)
 {
-    com_write_str("loading paging 1");
+    printf("loading paging \n");
+
     pl4_table =
         (uint64_t *)(get_mem_addr((uint64_t)pmm_alloc_zero(1)));
+
     for (uint64_t i = 0; i < (0x2000000 / PAGE_SIZE); i++)
     {
         uint64_t addr = i * PAGE_SIZE;
@@ -52,19 +46,20 @@ void init_paging(stivale_struct *sti_struct)
 
     for (uint64_t i = 0x0; i < (FOUR_GIGS); i += TWO_MEGS)
     {
-
         Huge_virt_map(i, (i), BASIC_PAGE_FLAGS);
     }
+
     uint64_t frame_buffer_size = sti_struct->framebuffer_width * sti_struct->framebuffer_height * sizeof(uint32_t) + PAGE_SIZE;
     for (uint64_t i = sti_struct->framebuffer_addr; i < sti_struct->framebuffer_addr + frame_buffer_size; i += PAGE_SIZE)
     {
         virt_map(i, i, BASIC_PAGE_FLAGS);
     }
+
     virt_map((uint64_t)(sti_struct), (uint64_t)(sti_struct), BASIC_PAGE_FLAGS);
-    com_write_str("loading paging 2");
+
     e820_entry_t *mementry = (e820_entry_t *)sti_struct->memory_map_addr;
 
-    com_write_str("loading paging 3");
+    printf("mapping address space \n");
     for (uint64_t i = 0; i < sti_struct->memory_map_entries; i++)
     {
         e820_entry_t *entry = &mementry[i];
@@ -86,9 +81,10 @@ void init_paging(stivale_struct *sti_struct)
             virt_map(addr, get_mem_addr(addr), BASIC_PAGE_FLAGS);
         }
     }
+
     virt_map(get_rmem_addr((uint64_t)pl4_table), get_rmem_addr((uint64_t)pl4_table), BASIC_PAGE_FLAGS);
     set_paging_dir(get_rmem_addr((uint64_t)pl4_table));
-    com_write_str("loading paging done");
+    printf("loading paging done \n");
 }
 
 void update_paging()
@@ -99,53 +95,36 @@ void update_paging()
 
 void init_virtual_memory(stivale_struct *sti_struct)
 {
-
+    uint64_t usable_memory = 0;
     e820_entry_t *mementry = (e820_entry_t *)sti_struct->memory_map_addr;
-    char buffer[64];
-    memzero(buffer, sizeof(buffer));
     for (int i = 0; i < sti_struct->memory_map_entries; i++)
     {
-        com_write_str(" ============== ");
+        printf(" ============== \n");
 
         switch (mementry[i].type)
         {
         case MEMMAP_USABLE:
-            com_write_str("memory usable");
+            usable_memory += mementry[i].length;
+            printf("memory usable");
             break;
         case MEMMAP_KERNEL_AND_MODULES:
-            com_write_str("kernel");
+            printf("kernel");
             break;
         default:
             break;
         }
-        com_write_reg("memory type ", mementry[i].type);
+        printf("memory type %x \n", mementry[i].type);
         max_mem += mementry[i].length;
-        kitoaT<uint64_t>(buffer, 'x', mementry[i].base);
-        com_write_str(" memory start : ");
-        com_write_str(buffer);
-        memzero(buffer, sizeof(buffer));
-        kitoaT<uint64_t>(buffer, 'x', mementry[i].length + mementry[i].base);
-        com_write_str(" memory end : ");
-        com_write_str(buffer);
-        memzero(buffer, sizeof(buffer));
-        kitoaT<uint64_t>(buffer, 'x', mementry[i].length);
-        com_write_str(" memory lenght : ");
-        com_write_str(buffer);
-        memzero(buffer, sizeof(buffer));
-        kitoaT<uint32_t>(buffer, 'x', mementry[i].type);
-        com_write_str(" memory type : ");
-        com_write_str(buffer);
-        memzero(buffer, sizeof(buffer));
+        printf("memory start : %x \n", mementry[i].base);
+        printf("memory end : %x \n", mementry[i].length + mementry[i].base);
+        printf("memory lenght : %x \n", mementry[i].length);
     }
-    memzero(buffer, sizeof(buffer));
-    kitoaT<uint64_t>(buffer, 'd', max_mem / 0xFFFFF);
-    com_write_str(" kernel memory (in Mb): ");
-    com_write_str(buffer);
-
-    com_write_str("loading physical");
+    printf("kernel total memory (in Mb) = %x \n", max_mem / 0xFFFFF);
+    printf("kernel usable memory (in Mb) = %x \n", usable_memory / 0xFFFFF);
+    printf("loading physical \n");
     init_physical_memory(sti_struct);
 
-    com_write_str("loading virtual");
+    printf("loading virtual \n");
     init_paging(sti_struct);
 }
 
@@ -174,7 +153,6 @@ void virt_map(uint64_t vaddress, uint64_t paddress, uint64_t flags)
     uint64_t *pd = 0x0;
     if (pdpt[_pdpt_offset] & BIT_PRESENT)
     {
-        //  pd = (uint64_t *)get_mem_addr((pdpt[_pdpt_offset] & FRAME_ADDR));
         pd = (uint64_t *)(get_mem_addr(
                               (pdpt[_pdpt_offset])) &
                           FRAME_ADDR);
@@ -191,7 +169,6 @@ void virt_map(uint64_t vaddress, uint64_t paddress, uint64_t flags)
         pt = (uint64_t *)(get_mem_addr(
                               (pd[_pd_offset])) &
                           FRAME_ADDR);
-        //     pt = (uint64_t *)get_mem_addr((pd[_pd_offset] & FRAME_ADDR));
     }
     else
     {

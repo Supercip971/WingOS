@@ -54,7 +54,6 @@ static idtr_t idt_descriptor = {
     .offset = (uint64_t)&idt[0],
 };
 
-
 uint64_t rip_count[16];
 uint32_t rip_counter = 0;
 
@@ -141,19 +140,10 @@ bool is_error(int intno)
     }
     return true;
 }
-
-void add_rip(uint64_t addr)
-{
-    rip_count[rip_counter++] = addr;
-    if (rip_counter == 15)
-    {
-        rip_counter = 0;
-    }
-}
+// backtrace
 
 extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
 {
-    add_rip(stackframe->rip);
     if (is_error(stackframe->int_no))
     {
         for (int i = 0; i < stackframe->int_no * 320; i++)
@@ -168,10 +158,10 @@ extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
 
         while (true)
         {
-            asm volatile ("hlt");
+            asm volatile("hlt");
         }
     }
-    if (stackframe->int_no == 32)
+    else if (stackframe->int_no == 32)
     {
         PIT::the()->update();
         irq_0_process_handler(stackframe);

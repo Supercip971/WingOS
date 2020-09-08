@@ -13,6 +13,7 @@
 #include <device/hpet.h>
 #include <device/local_data.h>
 #include <device/madt.h>
+#include <device/mboot_module.h>
 #include <device/pit.h>
 #include <kernel.h>
 #include <stivale_struct.h>
@@ -86,6 +87,8 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
     //virt_map((uint64_t)bootloader_data, (uint64_t)bootloader_data, 0x3);
 
     //    bootloader_data = (stivale_struct *)get_mem_addr((uint64_t)bootloader_data);
+
+    mboot_module::the()->init(bootloader_data);
 
     bootdat = ((uint64_t)&boot_loader_data_copy);
     printf(" frame buffer address %x \n", boot_loader_data_copy.framebuffer_addr);

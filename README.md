@@ -4,9 +4,15 @@ for the moment you can't build as Qloader is now limine (i love when someone bre
  - com
  - gdt
  - idt
- - pic
- - paging
+ - *pic* / ioapic
+ - paging (pmm + vmm)
  - memory (thank lib alloc)
+ - smp
+ - multiprocessing
+ - ioapic timer
+ - madt 
+ - apic 
+ - acpi
+ - \[insert something here]
+ 
 
-
-## i doesn't have any screen for the moment but i can fill the screen with 'random' color at more than 3000 fps

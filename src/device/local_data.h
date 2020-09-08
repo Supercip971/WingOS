@@ -17,6 +17,8 @@ struct local_data
 
     void (*apictimer_handler)(InterruptStackFrame *);
     uint8_t stack_data[8192] __attribute__((aligned(4096)));
+
+    uint64_t lapic_id;
 } __attribute__((packed));
 void set_current_data(local_data *dat);
 local_data *get_current_data();

@@ -9,6 +9,8 @@
 #include <com.h>
 #include <device/acpi.h>
 #include <device/apic.h>
+#include <device/apic_timer.h>
+#include <device/hpet.h>
 #include <device/local_data.h>
 #include <device/madt.h>
 #include <device/pit.h>
@@ -33,6 +35,7 @@ void start_process();
 extern "C" void kernel_start(stivale_struct *bootloader_data)
 {
     asm volatile("and rsp, -16");
+    asm volatile("cli");
     com_initialize(COM_PORT::COM1);
 
     printf("bootloader addr %x \n", (uint64_t)bootloader_data);
@@ -50,16 +53,15 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
     tss_init((uintptr_t)stack + sizeof(char) * STACK_SIZE);
     printf("init tss : OK");
     // before paging
-    acpi::the()->init(((stivale_struct *)bootdat)->rsdp);
 
     printf("init paging \n");
     init_virtual_memory(bootloader_data);
     printf("init paging : OK \n");
 
-    printf("mapping \n");
-    printf("mapping ok \n");
-
-    PIT::the()->init_PIT();
+    printf("loading pic \n");
+    pic_init();
+    printf("loading pic : OK \n");
+    acpi::the()->init((reinterpret_cast<stivale_struct *>(bootdat))->rsdp);
 
     acpi::the()->getFACP();
 
@@ -69,10 +71,15 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
 
     smp::the()->init();
 
-    printf("loading pic \n");
-    pic_init(); // load the pic after
-    printf("loading pic : OK \n");
+    // PIT::the()->init_PIT();
+    apic_timer::the()->init();
+    for (int i = 0; i < 15; i++)
+    {
 
+        apic::the()->set_redirect_irq(0, i, 1);
+    }
+
+    //hpet::the()->init_hpet();
     printf("set global data \n");
     set_current_data(get_current_data());
     printf("set global data : OK \n");
@@ -81,13 +88,14 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
     //    bootloader_data = (stivale_struct *)get_mem_addr((uint64_t)bootloader_data);
 
     bootdat = ((uint64_t)&boot_loader_data_copy);
-    asm volatile("sti");
     printf(" frame buffer address %x \n", boot_loader_data_copy.framebuffer_addr);
     printf(" frame buffer address %x \n", ((stivale_struct *)bootdat)->framebuffer_addr);
     printf(" bootloader_data address %x \n", (uint64_t)&boot_loader_data_copy);
     printf(" bootloader_data address %x \n ", (uint64_t)bootdat);
     printf("init process \n");
+    lock_process();
     init_multi_process(start_process);
+    asm volatile("sti");
 }
 void start_process()
 {

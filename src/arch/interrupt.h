@@ -22,4 +22,5 @@ typedef struct
     uint64_t offset; // address of the IDT
 } __attribute__((packed)) idtr_t;
 
+void pic_ack(int intno);
 void init_idt(void);

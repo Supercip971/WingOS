@@ -128,6 +128,10 @@ extern get_next_esp
 extern task_update_switch
 extern pit_callback
 global irq0_first_jump
+global lapic_eoi_ptr
+lapic_eoi_ptr:
+    dq 0
+extern lapic_eoi_ptr
 __interrupt32:
     cli
 
@@ -146,7 +150,11 @@ __interrupt32:
     push r13
     push r14
     push r15
+    call pit_callback
+
     call get_current_esp
+
+
 
     mov [rax], rsp
 irq0_first_jump:
@@ -158,10 +166,6 @@ irq0_first_jump:
     mov rdi, rax
 
     call task_update_switch
-
-    call pit_callback
-    mov al, 0x20
-    out 0x20, al
 
     pop r15
     pop r14

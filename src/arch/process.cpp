@@ -17,6 +17,8 @@ void lock_process() { process_locked = true; }
 void unlock_process() { process_locked = false; }
 void main_process_1()
 {
+    printf("process 1 \n");
+    asm("sti");
     while (true)
     {
         asm("hlt");
@@ -25,6 +27,8 @@ void main_process_1()
 
 void main_process_2()
 {
+    printf("process 2 \n");
+    asm("sti");
     while (true)
     {
         asm("hlt");
@@ -57,6 +61,7 @@ void init_multi_process(func start)
     init_process(start);
     process_loaded = true;
 
+    asm volatile("sti");
     unlock_process();
     asm volatile("jmp irq0_first_jump");
 }

@@ -9,6 +9,7 @@ PIT global_PIT;
 extern "C" void pit_callback()
 {
     PIT::the()->update();
+    apic::the()->EOI();
 }
 
 void PIT::init_PIT()
@@ -53,7 +54,6 @@ void PIT::Pwait(uint16_t ms)
 }
 void PIT::update()
 {
-    apic::the()->EOI();
     total_count++;
     current_count++;
     if (current_count > PIT_TARGET_FREQUECY)

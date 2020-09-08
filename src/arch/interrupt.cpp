@@ -74,7 +74,24 @@ static idt_entry_t register_interrupt_handler(void *handler, uint8_t ist, uint8_
 
     return idt;
 }
+__attribute__((interrupt)) static void nmi_handler(void *p)
+{
 
+    printf("## [ apic ] : NMI Interrupt \n");
+    apic::the()->EOI();
+}
+__attribute__((interrupt)) static void spurious_handler(void *p)
+{
+
+    printf("## [ apic ] : spurious \n");
+    apic::the()->EOI();
+}
+__attribute__((interrupt)) static void too_much_handler(void *p)
+{
+
+    printf("## [ apic ] : not handled interrupt \n");
+    apic::the()->EOI();
+}
 void init_idt()
 {
     printf("loading idt \n");
@@ -83,13 +100,18 @@ void init_idt()
     {
         idt[i] = register_interrupt_handler((void *)__interrupt_vector[i], 0, 0x8e);
     }
+    for (int i = 32 + 48; i < 0xff; i++)
+    {
 
+        idt[i] = register_interrupt_handler((void *)too_much_handler, 0, 0x8e);
+    }
+    idt[0xf0] = register_interrupt_handler((void *)nmi_handler, 0, 0x8e);
+    idt[0xff] = register_interrupt_handler((void *)spurious_handler, 0, 0x8e);
     printf("loading idt idt_flush \n");
     asm volatile("lidt [%0]"
                  :
                  : "m"(idt_descriptor));
     printf("loading idt : OK \n");
-
     printf("turning on interrupt : OK \n");
 };
 
@@ -144,6 +166,10 @@ bool is_error(int intno)
 
 extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
 {
+    if (stackframe->int_no != 0x24 && stackframe->int_no != 0x22)
+    {
+        printf("get interrupt id : %x \n", stackframe->int_no);
+    }
     if (is_error(stackframe->int_no))
     {
         for (int i = 0; i < stackframe->int_no * 320; i++)
@@ -166,15 +192,16 @@ extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
         PIT::the()->update();
         irq_0_process_handler(stackframe);
     }
+    else if (stackframe->int_no == 33)
+    {
+        unsigned char scan_code = inb(0x60);
+    }
     else if (stackframe->int_no == 0xf0)
     {
         printf("apic : Nmi : possible hardware error :( \n");
-        apic::the()->EOI();
     }
     else if (stackframe->int_no == 0xff)
     {
-        printf("apic : spurr \n");
-        apic::the()->EOI();
     }
-    pic_ack(stackframe->int_no);
+    apic::the()->EOI();
 }

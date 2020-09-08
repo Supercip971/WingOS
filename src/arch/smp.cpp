@@ -53,6 +53,8 @@ void smp::init()
             auto local_apic = reinterpret_cast<MADT_table_LAPIC *>(mrte);
 
             mt_lapic[processor_count] = local_apic;
+            get_current_data(processor_count)->lapic_id = mt_lapic[processor_count]->apic_id;
+
             processor_count++;
         }
     }
@@ -72,11 +74,14 @@ void smp::init()
         {
             init_cpu(mt_lapic[i]->apic_id, mt_lapic[i]->processor_id);
         }
+        else
+        {
+        }
     }
 }
 void smp::init_cpu(int apic, int id)
 {
-
+    get_current_data(id)->lapic_id = apic;
     printf("init cpu id : %x \n", id);
 
     printf("init cpu apic id : %x \n", apic);
@@ -146,12 +151,22 @@ void smp::init_cpu(int apic, int id)
     }
 
     apic::the()->init_processor(apic, 0x1000);
-
-    PIT::the()->Pwait(1000);
-
+    for (uint64_t i = 0; i < 1000; i++)
+    {
+        for (uint64_t b = 0; b < i * 2; b++)
+        {
+            inb(0);
+        }
+    }
     while (SMPloaded != true)
     {
-        PIT::the()->Pwait(1000);
+        for (uint64_t i = 0; i < 1000; i++)
+        {
+            for (uint64_t b = 0; b < i * 2; b++)
+            {
+                inb(0);
+            }
+        }
     }
 
     printf("cpu loaded : %x \n", id);

@@ -34,7 +34,7 @@ struct MADT_table_IOAPIC
     uint8_t IOAPIC_id;
     uint8_t reserved;
     uint32_t ioapic_addr;
-    uint32_t interrupt_base;
+    uint32_t gsib;
 } __attribute__((packed));
 
 // entry type 2
@@ -43,9 +43,9 @@ struct MADT_table_ISO
 {
     MADT_record_table_entry standart;
     uint8_t bus;
-    uint8_t irq;
-    uint32_t interrupt;
-    uint32_t misc_flags;
+    uint8_t irq;        // source
+    uint32_t interrupt; // gsi
+    uint16_t misc_flags;
 } __attribute__((packed));
 
 // entry type 4
@@ -81,11 +81,13 @@ class madt
     void *madt_address = 0x0;
 
 public:
+    uint64_t lapic_base = 0x0;
     madt();
     MADT_head *madt_header = 0x0;
     void init();
     uint64_t get_madt_table_lenght();
     MADT_record_table_entry *get_madt_table_record();
     MADT_table_IOAPIC **get_madt_ioAPIC();
+    MADT_table_ISO **get_madt_ISO();
     static madt *the();
 };

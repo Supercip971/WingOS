@@ -131,7 +131,6 @@ global irq0_first_jump
 global lapic_eoi_ptr
 lapic_eoi_ptr:
     dq 0
-extern lapic_eoi_ptr
 __interrupt32:
     cli
 
@@ -181,8 +180,13 @@ irq0_first_jump:
     pop rdx
     pop rcx
     pop rbx
+
+    mov rax, qword [lapic_eoi_ptr]
+    mov dword [rax], 0
     pop rax
     sti
+
+
     iretq
 INTERRUPT_NOERR 33
 INTERRUPT_NOERR 34

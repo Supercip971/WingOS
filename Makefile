@@ -46,6 +46,13 @@ runvbox: $(KERNEL_HDD)
 	@nc localhost 1234
 format:
 	@clang-format -i --verbose --style=file $(CFILES) $(HFILES)
+
+ramfs:
+	@echo "making fs"
+	@tar -zcvf build/initfs init_fs
+	@echo "making fs : done"
+
+
 super:
 	-killall -9 VirtualBoxVM
 	make format
@@ -63,7 +70,7 @@ super:
 $(KERNEL_ELF): $(OBJFILES) $(ASMOBJFILES)
 	ld $(LDHARDFLAGS) $(OBJFILES) $(ASMOBJFILES) -o $@
 
-$(KERNEL_HDD): $(KERNEL_ELF)
+$(KERNEL_HDD): $(KERNEL_ELF) ramfs
 	-rm -f $(KERNEL_HDD)
 	-mkdir build
 	@dd if=/dev/zero bs=1M count=0 seek=64 of=$(KERNEL_HDD)
@@ -71,6 +78,7 @@ $(KERNEL_HDD): $(KERNEL_ELF)
 	@parted -s $(KERNEL_HDD) mkpart primary 1 100%
 	@echfs-utils -m -p0 $(KERNEL_HDD) quick-format 32768
 	@echfs-utils -m -p0 $(KERNEL_HDD) import $(KERNEL_ELF) $(KERNEL_ELF)
+	@echfs-utils -m -p0 $(KERNEL_HDD) import ./build/initfs initfs
 	@echfs-utils -m -p0 $(KERNEL_HDD) import qloader2.cfg qloader2.cfg
 	qloader2/qloader2-install qloader2/qloader2.bin $(KERNEL_HDD)
 

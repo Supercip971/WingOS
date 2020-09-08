@@ -63,7 +63,7 @@ trampoline32:
     mov ss, bx
 
 
-    mov eax, dword 0x14000
+    mov eax, dword 0x15000
     ; pire fix de ma vie, mais ça fonctionne, pourquoi ? je ne sais pas. est ce que je demande si ta grand mère fait du vélo ? NON alors MOILA >:( 
     ; pourquoi je devrai débatre sur un fix ? JAI PASSE PLUSIEURS JOUR POUR CE TRUC ALORS TU ME TRIGGER PAS
     ; et je code comme je veux OK ? est ce que je suis salé ? oui ! POURQUOI j'ai pas fait ça plus tôt ?

@@ -97,6 +97,7 @@ uint64_t strlen(const char *d)
     return lenght;
 }
 
+char temp_buf[64];
 void printf(const char *format, ...)
 {
     va_list parameters;
@@ -160,18 +161,28 @@ void printf(const char *format, ...)
         {
             format++;
             uint64_t d = va_arg(parameters, uint64_t);
-            char temp_buf[64];
-            memzero(temp_buf, 64);
-            kitoa64(temp_buf, 'x', d);
-            uint64_t len = strlen(temp_buf);
-            if (maxrem < len)
+            if (d == 0)
             {
-                // TODO: Set errno to EOVERFLOW.
-                return;
+                com_write_strn("0", 1);
+                written += 1;
             }
-            if (!com_write_strn(temp_buf, len))
-                return;
-            written += len;
+            else
+            {
+                for (int i = 0; i < 64; i++)
+                {
+                    temp_buf[i] = 0;
+                }
+                kitoaT<uint64_t>(temp_buf, 'x', d);
+                uint64_t len = strlen(temp_buf);
+                if (maxrem < len)
+                {
+                    // TODO: Set errno to EOVERFLOW.
+                    return;
+                }
+                if (!com_write_strn(temp_buf, len))
+                    return;
+                written += len;
+            }
         }
         else
         {

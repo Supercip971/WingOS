@@ -105,10 +105,10 @@ void init_virtual_memory(stivale_struct *sti_struct)
         {
         case MEMMAP_USABLE:
             usable_memory += mementry[i].length;
-            printf("memory usable");
+            printf("memory usable \n");
             break;
         case MEMMAP_KERNEL_AND_MODULES:
-            printf("kernel");
+            printf("kernel \n");
             break;
         default:
             break;

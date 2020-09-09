@@ -9,7 +9,6 @@ PIT global_PIT;
 extern "C" void pit_callback()
 {
     PIT::the()->update();
-    apic::the()->EOI();
 }
 
 void PIT::init_PIT()

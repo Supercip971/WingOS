@@ -115,9 +115,9 @@ void smp::init_cpu(int apic, int id)
                  "sgdt [0x580]\n"
                  "sidt [0x590]\n");
 
-    POKE((0x520)) = ((((uint64_t)&cpuupstart)));
+    POKE((0x520)) = (uint64_t)&cpuupstart;
 
-    virt_map(((((uint64_t)&cpuupstart))), ((((uint64_t)&cpuupstart))), 0x1 | 0x2 | 0x4);
+    virt_map((uint64_t)&cpuupstart, (uint64_t)&cpuupstart, 0x1 | 0x2 | 0x4);
 
     uint64_t saddress = 0x8000;
     saddress /= 4096;

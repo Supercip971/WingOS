@@ -4,6 +4,7 @@ CC         = ./cross_compiler/bin/x86_64-pc-elf-g++
 LD         = ./cross_compiler/bin/x86_64-pc-elf-ld
 OBJ := $(shell find src/ -type f -name '*.o')
 KERNEL_HDD = ./build/disk.hdd
+KERNEL_RAMDISK = ./build/ramdisk.hdd
 KERNEL_ELF = kernel.elf
 ASMFILES := $(shell find src/ -type f -name '*.asm')
 
@@ -24,7 +25,9 @@ CHARDFLAGS := $(CFLAGS)               \
         -mcmodel=kernel \
         -mno-80387                     \
         -mno-red-zone                  \
-        -ffreestanding                 \
+        -fno-rtti \
+        -fno-exceptions \
+		-ffreestanding                 \
         -fno-stack-protector           \
         -fno-omit-frame-pointer        \
         -Isrc/                         \
@@ -46,12 +49,18 @@ runvbox: $(KERNEL_HDD)
 	@nc localhost 1234
 format:
 	@clang-format -i --verbose --style=file $(CFILES) $(HFILES)
-
+foreachramfs: 
+	@for f in $(shell ls ./init_fs/); do echo $${f}; echfs-utils -m -p0 $(KERNEL_RAMDISK) import $${f} $${f}; done
 ramfs:
-	@echo "making fs"
-	@tar -zcvf build/initfs init_fs
-	@echo "making fs : done"
+	-rm -r $(KERNEL_RAMDISK)
+	@dd if=/dev/zero bs=1M count=0 seek=64 of=$(KERNEL_RAMDISK)
+	@parted -s $(KERNEL_RAMDISK) mklabel msdos
+	@parted -s $(KERNEL_RAMDISK) mkpart primary 1 100%
+	@echfs-utils -m -p0 $(KERNEL_RAMDISK) format 1024
+	make -C . foreachramfs
 
+	
+	
 
 super:
 	-killall -9 VirtualBoxVM
@@ -73,12 +82,13 @@ $(KERNEL_ELF): $(OBJFILES) $(ASMOBJFILES)
 $(KERNEL_HDD): $(KERNEL_ELF) ramfs
 	-rm -f $(KERNEL_HDD)
 	-mkdir build
-	@dd if=/dev/zero bs=1M count=0 seek=64 of=$(KERNEL_HDD)
+	@dd if=/dev/zero bs=8M count=0 seek=64 of=$(KERNEL_HDD)
 	@parted -s $(KERNEL_HDD) mklabel msdos
 	@parted -s $(KERNEL_HDD) mkpart primary 1 100%
-	@echfs-utils -m -p0 $(KERNEL_HDD) quick-format 32768
+	@echfs-utils -m -p0 $(KERNEL_HDD) format 65536
 	@echfs-utils -m -p0 $(KERNEL_HDD) import $(KERNEL_ELF) $(KERNEL_ELF)
-	@echfs-utils -m -p0 $(KERNEL_HDD) import ./build/initfs initfs
+	@echfs-utils -m -p0 $(KERNEL_HDD) import $(KERNEL_RAMDISK) ramdisk
+	
 	@echfs-utils -m -p0 $(KERNEL_HDD) import qloader2.cfg qloader2.cfg
 	qloader2/qloader2-install qloader2/qloader2.bin $(KERNEL_HDD)
 

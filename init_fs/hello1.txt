@@ -1,0 +1,5 @@
+hello world
+yeah why do we use hello world ?
+why using it when we can just say
+" this is a miracle test and im just displaying text on a screen "
+i think it is beautiful 

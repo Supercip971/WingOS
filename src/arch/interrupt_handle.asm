@@ -149,6 +149,8 @@ __interrupt32:
     push r13
     push r14
     push r15
+    mov rax, qword [lapic_eoi_ptr]
+    mov dword [rax], 0
     call pit_callback
 
     call get_current_esp
@@ -181,8 +183,7 @@ irq0_first_jump:
     pop rcx
     pop rbx
 
-    mov rax, qword [lapic_eoi_ptr]
-    mov dword [rax], 0
+
     pop rax
     sti
 

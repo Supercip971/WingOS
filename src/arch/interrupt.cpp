@@ -5,6 +5,7 @@
 #include <arch/process.h>
 #include <com.h>
 #include <device/apic.h>
+#include <device/ata_driver.h>
 #include <device/local_data.h>
 #include <device/pit.h>
 #include <kernel.h>
@@ -195,6 +196,10 @@ extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
     else if (stackframe->int_no == 33)
     {
         unsigned char scan_code = inb(0x60);
+    }
+    else if (stackframe->int_no == 32 + 14 || stackframe->int_no == 32 + 15)
+    {
+        ata_driver::the()->irq_handle(stackframe->int_no - 32);
     }
     else if (stackframe->int_no == 0xf0)
     {

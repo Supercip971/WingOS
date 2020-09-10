@@ -10,6 +10,7 @@
 #include <device/acpi.h>
 #include <device/apic.h>
 #include <device/apic_timer.h>
+#include <device/ata_driver.h>
 #include <device/hpet.h>
 #include <device/local_data.h>
 #include <device/madt.h>
@@ -74,7 +75,7 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
 
     // PIT::the()->init_PIT();
     apic_timer::the()->init();
-    for (int i = 0; i < 15; i++)
+    for (int i = 0; i < 16; i++)
     {
 
         apic::the()->set_redirect_irq(0, i, 1);
@@ -89,7 +90,6 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
     //    bootloader_data = (stivale_struct *)get_mem_addr((uint64_t)bootloader_data);
 
     mboot_module::the()->init(bootloader_data);
-
     bootdat = ((uint64_t)&boot_loader_data_copy);
     printf(" frame buffer address %x \n", boot_loader_data_copy.framebuffer_addr);
     printf(" frame buffer address %x \n", ((stivale_struct *)bootdat)->framebuffer_addr);
@@ -111,6 +111,7 @@ void start_process()
     {
         m[i] = i;
     }
+    ata_driver::the()->init();
     printf("testing with memory 3 \n");
     _start((stivale_struct *)bootdat);
 }

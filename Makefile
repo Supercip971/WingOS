@@ -50,7 +50,7 @@ runvbox: $(KERNEL_HDD)
 format:
 	@clang-format -i --verbose --style=file $(CFILES) $(HFILES)
 foreachramfs: 
-	@for f in $(shell ls ./init_fs/); do echo $${f}; echfs-utils -m -p0 $(KERNEL_HDD) import $${f} $${f}; done
+	@for f in $(shell ls ./init_fs/); do echo ./init_fs/$${f}; echfs-utils -m -p0 $(KERNEL_HDD) import ./init_fs/$${f} $${f}; done
 
 
 	

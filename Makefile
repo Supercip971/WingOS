@@ -74,7 +74,7 @@ $(KERNEL_ELF): $(OBJFILES) $(ASMOBJFILES)
 	ld $(LDHARDFLAGS) $(OBJFILES) $(ASMOBJFILES) -o $@
 
 $(KERNEL_HDD): $(KERNEL_ELF)
-	-rm -f $(KERNEL_HDD)
+	-rm -rf $(KERNEL_HDD)
 	-mkdir build
 	@dd if=/dev/zero bs=8M count=0 seek=64 of=$(KERNEL_HDD)
 	@parted -s $(KERNEL_HDD) mklabel msdos

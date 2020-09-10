@@ -16,6 +16,7 @@
 #include <device/madt.h>
 #include <device/mboot_module.h>
 #include <device/pit.h>
+#include <filesystem/partition/base_partition.h>
 #include <kernel.h>
 #include <stivale_struct.h>
 
@@ -100,6 +101,7 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
     init_multi_process(start_process);
     asm volatile("sti");
 }
+MBR_partition mbr_part; // TODO : add [new] and [delete]
 void start_process()
 {
     printf(" frame buffer address 2 %x \n", ((stivale_struct *)bootdat)->framebuffer_addr);
@@ -112,6 +114,9 @@ void start_process()
         m[i] = i;
     }
     ata_driver::the()->init();
+    mbr_part = MBR_partition();
+
+    mbr_part.init();
     printf("testing with memory 3 \n");
     _start((stivale_struct *)bootdat);
 }

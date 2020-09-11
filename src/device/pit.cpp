@@ -3,6 +3,7 @@
 #include <device/apic.h>
 #include <device/pit.h>
 #include <kernel.h>
+#include <loggging.h>
 #pragma GCC optimize("-O0")
 PIT global_PIT;
 
@@ -14,7 +15,7 @@ extern "C" void pit_callback()
 void PIT::init_PIT()
 {
     *this = PIT();
-    printf("loading PIT \n");
+    log("pit", LOG_DEBUG) << "loading pit...";
     uint16_t divisor = PIT_START_FREQUENCY /
                        PIT_TARGET_FREQUECY; // to do : make this more portable
 
@@ -26,7 +27,7 @@ void PIT::init_PIT()
     wait();
     uint8_t h = (uint8_t)((divisor >> 8) & 0xFF);
     outb(0x40, h);
-    printf("loaded PIT \n");
+    log("pit", LOG_DEBUG) << "loaded pit";
 }
 void PIT::Pwait(uint16_t ms)
 {

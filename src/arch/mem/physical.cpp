@@ -1,5 +1,6 @@
 #include <arch/mem/physical.h>
 #include <com.h>
+#include <loggging.h>
 
 extern "C" uint64_t kernel_end;
 extern "C" uint64_t addr_kernel_start;
@@ -60,7 +61,7 @@ uint64_t pmm_find_free(uint64_t lenght)
             return result;
         }
     }
-    printf("error : no free protected memory found :( \n");
+    log("pmm", LOG_FATAL) << " no free protected memory found";
     while (true)
     {
         // do nothing
@@ -95,7 +96,7 @@ uint64_t pmm_find_free_fast(uint64_t lenght)
             return result;
         }
     }
-    printf("warning :  free protected memory top reached [ for fast ] \n");
+    log("pmm", LOG_INFO) << "free protected memory top reached [ for fast ]";
     last_free_byte = 0;
     return pmm_find_free(lenght);
     return 0x0;
@@ -144,6 +145,7 @@ void pmm_free(void *where, uint64_t lenght)
 }
 void init_physical_memory(stivale_struct *bootdata)
 {
+    log("pmm", LOG_DEBUG) << "loading pmm";
     e820_entry_t *mementry = (e820_entry_t *)bootdata->memory_map_addr;
     uint64_t total_memory_lenght = 0;
 
@@ -160,7 +162,8 @@ void init_physical_memory(stivale_struct *bootdata)
     }
 
     total_memory_lenght = mementry[bootdata->memory_map_entries - 1].length + mementry[bootdata->memory_map_entries - 1].base;
-    printf("finding physical memory mem map entry \n");
+
+    log("pmm", LOG_INFO) << "finding physical memory mem map entry";
     // find a free mementry, and then put the bitmap here :O
     for (uint64_t i = 0; i < bootdata->memory_map_entries; i++)
     {
@@ -168,17 +171,17 @@ void init_physical_memory(stivale_struct *bootdata)
         {
             if (mementry[i].length > (total_memory_lenght / PAGE_SIZE) / 8)
             {
-                printf("mementry used : %x \n", i);
-                printf("total bitmap lenght %x \n", (total_memory_lenght / PAGE_SIZE) / 8);
+                log("pmm", LOG_INFO) << "memory entry used " << i;
+                log("pmm", LOG_INFO) << "total bitmap length" << (total_memory_lenght / PAGE_SIZE) / 8;
 
                 bitmap_base = mementry[i].base + PAGE_SIZE;
-                printf("bitmap addr %x \n", bitmap_base);
+                log("pmm", LOG_INFO) << "bitmap addr" << bitmap_base;
                 mementry[i].base += ((total_memory_lenght / PAGE_SIZE) / 8) + PAGE_SIZE + PAGE_SIZE;
                 break;
             }
         }
     }
-    printf("loading physical memory \n");
+    log("pmm", LOG_DEBUG) << "loading pmm memory map";
     bitmap_base /= PAGE_SIZE;
     bitmap_base *= PAGE_SIZE;
     bitmap = (uint8_t *)(bitmap_base);
@@ -186,10 +189,8 @@ void init_physical_memory(stivale_struct *bootdata)
     {
         bitmap[i] = 0xFF;
     }
-    printf("loading physical memory mem map entries \n");
     for (uint64_t i = 0; i < bootdata->memory_map_entries; i++)
     {
-        printf("loading physical memory mem map entries %x \n", i);
 
         for (uint64_t ij = mementry[i].base; ij < mementry[i].length + mementry[i].base; ij += PAGE_SIZE)
         {
@@ -206,5 +207,6 @@ void init_physical_memory(stivale_struct *bootdata)
         pmm_page_entry_count += mementry[i].length / PAGE_SIZE;
     }
     uint64_t totallen = (total_memory_lenght / PAGE_SIZE) / 8;
-    printf("free memory : %x \n", available_memory);
+
+    log("pmm", LOG_INFO) << "free memory " << available_memory;
 }

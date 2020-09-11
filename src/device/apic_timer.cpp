@@ -1,6 +1,7 @@
 #include <device/apic.h>
 #include <device/apic_timer.h>
 #include <device/rtc.h>
+#include <loggging.h>
 apic_timer main_apic_timer;
 apic_timer::apic_timer()
 {
@@ -8,7 +9,7 @@ apic_timer::apic_timer()
 
 void apic_timer::init()
 {
-
+    log("apic timer", LOG_DEBUG) << "loading apic timer";
     apic::the()->write(timer_div, 0x3);
 
     uint8_t start_sec = RTC::the()->get_sec();

@@ -2,6 +2,7 @@
 #include <com.h>
 #include <device/acpi.h>
 #include <device/apic.h>
+#include <loggging.h>
 #include <utility.h>
 acpi main_acpi;
 
@@ -17,7 +18,6 @@ void *get_rsdp(void)
         }
         if (!strncmp((char *)i, "RSD PTR ", 8))
         {
-            printf("acpi: Found RSDP at %x \n", i);
             return (void *)i;
         }
     }
@@ -37,11 +37,9 @@ void *acpi::find_entry(const char *entry_name)
 
     for (int i = 0; i < entries; i++)
     {
-        printf("searching ... \n");
 
         if (rsdt->PointerToOtherSDT[i] == 0)
         {
-            printf("skipping entry 0 \n");
             continue;
         }
 
@@ -61,11 +59,8 @@ void *findFACP(void *RootSDT)
 
     for (int i = 0; i < entries; i++)
     {
-        printf("searching ... \n");
-
         if (rsdt->PointerToOtherSDT[i] == 0)
         {
-            printf("skipping entry 0 \n");
             continue;
         }
         RSDTHeader *h = (RSDTHeader *)(rsdt->PointerToOtherSDT[i]);
@@ -79,11 +74,9 @@ void *findFACP(void *RootSDT)
 }
 void acpi::init(uint64_t rsdp)
 {
-    printf("acpi 1 \n");
+    log("acpi", LOG_DEBUG) << "loading acpi";
     descriptor = (RSDPDescriptor20 *)((((uint64_t)get_rsdp() /* get with the offset as stivale doesn't give me the good address so fu** you stivale */)));
-    printf("acpi 2 \n");
     rsdt_table = (RSDT *)(descriptor->firstPart.RSDT_address);
-    printf("acpi 3 \n");
 }
 void acpi::init_in_paging()
 {
@@ -114,20 +107,13 @@ void acpi::getFACP()
 
     for (int i = 0; i < entries; i++)
     {
-        printf("searching ... \n");
 
         if (rsdt->PointerToOtherSDT[i] == 0)
         {
-            printf("skipping entry 0 \n");
             continue;
         }
         RSDTHeader *h = (RSDTHeader *)(rsdt->PointerToOtherSDT[i]);
-
-        printf(h->Signature);
-        printf(" \n");
     }
-    printf("FACP : %x \n", (uint64_t)findFACP(rsdt_table));
-    printf("acpi ok \n");
 }
 acpi *acpi::the()
 {

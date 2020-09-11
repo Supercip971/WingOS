@@ -2,6 +2,7 @@
 #include <arch/mem/liballoc.h>
 #include <com.h>
 #include <device/ata_driver.h>
+#include <loggging.h>
 ata_driver main_driver;
 bool waiting_for_irq;
 ata_driver::ata_driver()
@@ -47,6 +48,7 @@ bool ata_driver::get_ata_status()
 }
 void ata_driver::init()
 {
+    log("ata", LOG_DEBUG) << "loading ata";
     current_selected_drive = ATA_PRIMARY_MASTER;
 
     outb(ATA_PRIMARY_DCR, 0x04);
@@ -59,7 +61,7 @@ void ata_driver::init()
         temp_buffer[i] = 0;
     }
     read(0, 3, temp_buffer);
-    printf("first bytes data : \n");
+    log("ata", LOG_INFO) << "first bytes data : \n";
     for (int i = 0; i < 256 * 3; i++)
     {
         printf(" %c", temp_buffer[i]);
@@ -77,6 +79,7 @@ ata_driver *ata_driver::the()
 }
 void ata_driver::irq_handle(uint64_t irq_handle_num)
 {
+    log("ata", LOG_INFO) << "receive an ata interrupt";
     // printf("[ATA] ata driver receive an irq \n");
     if (waiting_for_irq == true)
     {
@@ -103,6 +106,8 @@ void ata_driver::irq_handle(uint64_t irq_handle_num)
 void ata_driver::read(uint32_t where, uint8_t count, uint8_t *buffer)
 {
     // printf("trying to read ata 0, in %x count %x to %x", where, count, (uint64_t)buffer);
+
+    waiting_for_irq = true;
     ata_write(true, ATA_reg_error_feature, 0);
     ata_write(true, ATA_reg_selector, 0xE0 | 0x40 | ((where >> 24) & 0x0F));
 
@@ -115,7 +120,6 @@ void ata_driver::read(uint32_t where, uint8_t count, uint8_t *buffer)
 
     int new_count = count;
     uint32_t off = 0;
-    waiting_for_irq = true;
 
     while (new_count-- > 0)
     {

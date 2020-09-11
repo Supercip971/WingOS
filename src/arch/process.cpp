@@ -21,7 +21,7 @@ void main_process_1()
     asm("sti");
     while (true)
     {
-        asm("hlt");
+        asm("int 32");
     }
 }
 
@@ -31,7 +31,8 @@ void main_process_2()
     asm("sti");
     while (true)
     {
-        asm("hlt");
+
+        asm("int 32");
     }
 }
 

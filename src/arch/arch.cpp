@@ -18,6 +18,7 @@
 #include <device/pit.h>
 #include <filesystem/partition/base_partition.h>
 #include <kernel.h>
+#include <loggging.h>
 #include <stivale_struct.h>
 
 static uint64_t bootdat;
@@ -108,11 +109,11 @@ void start_process()
     printf("init process OK \n");
     printf("testing with memory \n");
     uint8_t *m = (uint8_t *)malloc(sizeof(uint8_t) * 128); // just for testing
-    printf("testing with memory 2 \n");
     for (uint64_t i = 0; i < 128; i++)
     {
         m[i] = i;
     }
+    printf("loading with memory \n");
     ata_driver::the()->init();
     mbr_part = MBR_partition();
 

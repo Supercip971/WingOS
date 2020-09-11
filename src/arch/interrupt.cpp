@@ -170,6 +170,7 @@ extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
     if (stackframe->int_no != 0x24 && stackframe->int_no != 0x22)
     {
         printf("get interrupt id : %x \n", stackframe->int_no);
+        printf("current eip : %x \n", stackframe->rip);
     }
     if (is_error(stackframe->int_no))
     {

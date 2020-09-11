@@ -2,14 +2,15 @@
 #include <device/acpi.h>
 #include <device/apic.h>
 #include <device/hpet.h>
+#include <loggging.h>
 hpet main_hpet;
 hpet::hpet()
 {
 }
 void hpet::init_hpet()
 {
-
-    printf("initializating HPET \n");
+    // why setting up log for hpet if we doesn't use it ?
+    log("hpet", LOG_DEBUG) << "loading hpet";
     main_hpet_entry = (entry_hpet *)acpi::the()->find_entry("HPET");
     hpet_main_structure = (main_hpet_struct *)main_hpet_entry->address.address;
     uint64_t temporary_check = 0;
@@ -18,6 +19,7 @@ void hpet::init_hpet()
     uint64_t clock_period = temporary_check >> 32;
     uint64_t freq = 1000000000000000 / clock_period;
 
+    log("hpet", LOG_INFO) << "hpet frequency", freq;
     printf("HPET frequency = %x \n", freq);
 
     printf("HPET checking for validity ..\n");

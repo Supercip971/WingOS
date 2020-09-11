@@ -5,6 +5,7 @@
 #include <device/acpi.h>
 #include <device/apic.h>
 #include <device/local_data.h>
+#include <loggging.h>
 apic main_apic = apic();
 
 enum ioapic_register
@@ -50,13 +51,13 @@ bool apic::isloaded()
 }
 void apic::init()
 {
-    printf(" ========== APIC ========== \n");
-    printf("loading apic \n");
+    log("apic", LOG_DEBUG) << "loading apic";
+
     apic_addr = (void *)((uint64_t)madt::the()->lapic_base);
-    printf("apic address %x \n", apic_addr);
+    log("apic", LOG_INFO) << "apic address" << (uint64_t)apic_addr;
     if (apic_addr == nullptr)
     {
-        printf("[error] can't find apic (sad) \n");
+        log("apic", LOG_FATAL) << "can't find apic";
         while (true)
         {
             asm("hlt");
@@ -70,44 +71,50 @@ void apic::init()
     outb(PIC1_DATA, 0xff); // mask all for apic
     pic_wait();
     outb(PIC2_DATA, 0xff);
-    printf("loading apic : OK \n");
-    printf("loading io apic \n");
+    log("apic", LOG_INFO) << "current processor id " << get_current_processor_id();
+    log("io apic", LOG_DEBUG) << "loading io apic";
 
     table = madt::the()->get_madt_ioAPIC();
     for (int i = 0; table[i] != 0; i++)
     {
-        printf("getting io apic %x \n", i);
+        log("io apic", LOG_INFO) << "info for io apic" << i;
         uint64_t addr = (table[i]->ioapic_addr);
         uint32_t raw_table = (io_read(addr, version_reg));
         io_apic_version_table *tables = (io_apic_version_table *)&raw_table;
         io_version_data = *tables;
-        printf("configuring io apic %x | version %x | max entry count %x \n", i, tables->version, tables->maximum_redirection);
-        printf("gsi start %x | gsi end %x \n", table[i]->gsib, table[i]->gsib + tables->maximum_redirection);
+        //    printf("configuring io apic %x | version %x | max entry count %x \n", i, tables->version, tables->maximum_redirection);
+
+        log("io apic", LOG_INFO) << "version         : " << tables->version;
+        log("io apic", LOG_INFO) << "max redirection : " << tables->maximum_redirection;
+        log("io apic", LOG_INFO) << "gsi start       : " << table[i]->gsib;
+        log("io apic", LOG_INFO) << "gsi end         : " << table[i]->gsib + tables->maximum_redirection;
     }
+    log("iso", LOG_DEBUG) << "loading iso";
     iso_table = madt::the()->get_madt_ISO();
     for (int i = 0; iso_table[i] != 0; i++)
     {
-        printf("getting iso %x \n", i);
-        printf("source %x | target %x \n", iso_table[i]->irq, iso_table[i]->interrupt);
-        //printf("source %x | target %x \n", iso_table[i]->irq, iso_table[i]->interrupt);
+
+        log("iso", LOG_INFO) << " info for iso" << i;
+        log("iso", LOG_INFO) << "iso source : " << iso_table[i]->irq;
+        log("iso", LOG_INFO) << "iso target : " << iso_table[i]->interrupt;
+
         if (iso_table[i]->misc_flags & 0x4)
         {
-            printf("iso is active high \n");
+            log("iso", LOG_INFO) << "iso is active high";
         }
         else
         {
-            printf("iso is active low \n");
+            log("iso", LOG_INFO) << "iso is active low";
         }
         if (iso_table[i]->misc_flags & 0x100)
         {
-            printf("iso edge triggered \n");
+            log("iso", LOG_INFO) << "iso is edge triggered";
         }
         else
         {
-            printf("iso level triggered \n");
+            log("iso", LOG_INFO) << "iso is level triggered";
         }
     }
-    printf("current processor id %x \n", get_current_processor_id());
     lapic_eoi_ptr = (uint32_t *)((uint64_t)apic_addr + 0xb0);
     loaded = true;
 }
@@ -175,7 +182,8 @@ void apic::set_raw_redirect(uint8_t vector, uint32_t target_gsi, uint16_t flags,
     }
     if (io_apic_target == -1)
     {
-        printf("error while trying to setup raw redirect for io apic :( no iso table found ");
+
+        log("io apic", LOG_ERROR) << "error while trying to setup raw redirect for io apic :( no iso table found ";
         return;
     }
 
@@ -191,7 +199,6 @@ void apic::set_raw_redirect(uint8_t vector, uint32_t target_gsi, uint16_t flags,
     {
         end |= (1 << 16);
     }
-    printf("### current cpu lapic %x \n", (uint64_t)get_current_data(cpu)->lapic_id);
     end |= (((uint64_t)get_current_data(cpu)->lapic_id) << 56);
     uint32_t io_reg = (target_gsi - table[io_apic_target]->gsib) * 2 + 16;
     io_write(table[io_apic_target]->ioapic_addr, io_reg, (uint32_t)end);
@@ -200,13 +207,15 @@ void apic::set_raw_redirect(uint8_t vector, uint32_t target_gsi, uint16_t flags,
 
 void apic::set_redirect_irq(int cpu, uint8_t irq, int status)
 {
-
-    printf("setting redirect irq cpu %x irq %x status %x \n", cpu, irq, status);
+    log("io apic", LOG_INFO) << "setting redirect irq for cpu : " << cpu << " irq : " << irq << " status : " << status;
+    // printf("setting redirect irq cpu %x irq %x status %x \n", cpu, irq, status);
     for (uint64_t i = 0; iso_table[i] != 0; i++)
     {
         if (iso_table[i]->irq == irq)
         {
-            printf("found iso matching %x, mapping to source : %x, gsi %x \n", i, iso_table[i]->irq + 0x20, iso_table[i]->interrupt);
+            log("io apic", LOG_INFO) << "iso matching : " << i << " mapping to source" << iso_table[i]->irq + 0x20 << " gsi : " << iso_table[i]->interrupt;
+
+            //printf("found iso matching %x, mapping to source : %x, gsi %x \n", i, iso_table[i]->irq + 0x20, iso_table[i]->interrupt);
 
             set_raw_redirect(iso_table[i]->irq + 0x20, iso_table[i]->interrupt, iso_table[i]->misc_flags, cpu, status);
             return;

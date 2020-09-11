@@ -9,6 +9,7 @@
 #include <device/local_data.h>
 #include <device/pit.h>
 #include <kernel.h>
+#include <loggging.h>
 #define TRAMPOLINE_START 0x1000
 #define TRAMPOLINE_PAGING_ADDR 0x4000
 
@@ -26,7 +27,6 @@ smp::smp()
 
 extern "C" void cpuupstart(void)
 {
-    printf("ee \n");
     SMPloaded = true;
     while (true)
     {
@@ -35,7 +35,7 @@ extern "C" void cpuupstart(void)
 
 void smp::init()
 {
-
+    log("smp", LOG_DEBUG) << "loading smp";
     memzero(cpu_tss, sizeof(tss_t) * max_cpu);
     for (int i = 0; i < max_cpu; i++)
     {
@@ -61,15 +61,16 @@ void smp::init()
 
     processor_count--;
 
-    printf("total processor count detected : %x \n ", processor_count);
+    log("smp", LOG_INFO) << "total processor count" << processor_count;
     if (processor_count > max_cpu)
     {
-        printf("too much processor are detected, we will only use : %x \n", max_cpu - 1);
+        log("smp", LOG_ERROR) << "too much processor count we will use only " << max_cpu - 1;
     }
 
     for (int i = 0; i < processor_count; i++)
     {
-        printf("getting proc : %x \n", mt_lapic[i]->processor_id);
+
+        log("smp", LOG_INFO) << "set up processor " << mt_lapic[i]->processor_id;
         if (apic::the()->get_current_processor_id() != mt_lapic[i]->processor_id)
         {
             init_cpu(mt_lapic[i]->apic_id, mt_lapic[i]->processor_id);
@@ -81,10 +82,8 @@ void smp::init()
 }
 void smp::init_cpu(int apic, int id)
 {
+    log("smp cpu", LOG_DEBUG) << "loading smp cpu : " << id << "/ apic id :" << apic;
     get_current_data(id)->lapic_id = apic;
-    printf("init cpu id : %x \n", id);
-
-    printf("init cpu apic id : %x \n", apic);
 
     uint64_t trampoline_len = (uint64_t)&trampoline_end - (uint64_t)&trampoline_start;
 
@@ -96,7 +95,7 @@ void smp::init_cpu(int apic, int id)
     virt_map(0x4000, 0x4000, 0x1 | 0x2 | 0x4);
     virt_map(0x5000, 0x5000, 0x1 | 0x2 | 0x4);
 
-    printf("trampoline lenght = %x \n", trampoline_len);
+    log("smp cpu", LOG_INFO) << "trampoline length " << trampoline_len;
 
     uint64_t end_addr = 0x4000;
     end_addr /= 4096;
@@ -131,12 +130,11 @@ void smp::init_cpu(int apic, int id)
 
     memset((void *)(saddress - 4096), 0, 4096);
 
-    printf("stack raddr %x \n", saddress);
-    printf("paging raddr %x \n", get_rmem_addr((uint64_t)&pl4_table));
+    log("smp cpu", LOG_INFO) << "stack real address" << saddress;
+    log("smp cpu", LOG_INFO) << "paging real address" << get_rmem_addr((uint64_t)&pl4_table);
 
     memcpy((void *)0x1000, &trampoline_start, trampoline_len);
-
-    printf("pre init cpu id : %x \n", id);
+    log("smp cpu", LOG_INFO) << "pre loading cpu : " << id;
 
     apic::the()->preinit_processor(apic);
 
@@ -150,6 +148,7 @@ void smp::init_cpu(int apic, int id)
         }
     }
 
+    log("smp cpu", LOG_INFO) << " loading cpu : " << id;
     apic::the()->init_processor(apic, 0x1000);
     for (uint64_t i = 0; i < 300; i++)
     {
@@ -169,7 +168,7 @@ void smp::init_cpu(int apic, int id)
         }
     }
 
-    printf("cpu loaded : %x \n", id);
+    log("smp cpu", LOG_DEBUG) << " loaded cpu : " << id;
     SMPloaded = false;
 }
 smp *smp::the()

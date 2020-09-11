@@ -1,6 +1,7 @@
 #include <arch/arch.h>
 #include <device/rtc.h>
 #include <kernel.h>
+#include <loggging.h>
 RTC main_rtc;
 RTC::RTC()
 {
@@ -19,6 +20,7 @@ uint8_t RTC::get_sec()
 }
 void RTC::init()
 {
+    log("rtc", LOG_DEBUG) << "loading rtc...";
     outb(0x70, 0x8A);
     outb(0x71, 0x20);
 }

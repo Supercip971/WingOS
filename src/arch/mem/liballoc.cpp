@@ -1,5 +1,6 @@
 #include <arch/mem/liballoc.h>
 #include <com.h>
+#include <loggging.h>
 /**  Durand's Amazing Super Duper Memory functions.  */
 
 #pragma GCC optimize("-O0")
@@ -264,6 +265,7 @@ void *PREFIX(malloc)(size_t req_size)
 
     if (l_memRoot == NULL)
     {
+        log("liballoc", LOG_DEBUG) << "loading liballoc";
 #if defined DEBUG || defined INFO
 #ifdef DEBUG
         printf("liballoc: initialization of liballoc " VERSION "\n");
@@ -277,6 +279,7 @@ void *PREFIX(malloc)(size_t req_size)
         if (l_memRoot == NULL)
         {
             liballoc_unlock();
+            log("liballoc", LOG_FATAL) << "loading liballoc too early";
 #ifdef DEBUG
             printf("liballoc: initial l_memRoot initialization failed\n", p);
             FLUSH();
@@ -555,7 +558,7 @@ void *PREFIX(malloc)(size_t req_size)
     } // while (maj != NULL)
 
     liballoc_unlock(); // release the lock
-
+    log("liballoc", LOG_FATAL) << "no free memory";
 #ifdef DEBUG
     printf("All cases exhausted. No memory available.\n");
     FLUSH();
@@ -601,7 +604,8 @@ void PREFIX(free)(void *ptr)
             ((min->magic & 0xFF) == (LIBALLOC_MAGIC & 0xFF)))
         {
             l_possibleOverruns += 1;
-            printf("liballoc: ERROR: Possible 1-3 byte overrun for magic \n");
+            log("liballoc", LOG_ERROR) << "Possible 1-3 byte overrun for magic";
+       //     printf("liballoc: ERROR: Possible 1-3 byte overrun for magic \n");
 #if defined DEBUG || defined INFO
             printf("liballoc: ERROR: Possible 1-3 byte overrun for magic %x != %x\n",
                    min->magic, LIBALLOC_MAGIC);
@@ -611,7 +615,7 @@ void PREFIX(free)(void *ptr)
 
         if (min->magic == LIBALLOC_DEAD)
         {
-            printf("liballoc: ERROR: multiple (free)() attempt \n");
+            log("liballoc", LOG_ERROR) << " multiple free() attempt ";
 #if defined DEBUG || defined INFO
             printf(
                 "liballoc: ERROR: multiple PREFIX(free)() attempt on %x from %x.\n",
@@ -621,6 +625,7 @@ void PREFIX(free)(void *ptr)
         }
         else
         {
+            log("liballoc", LOG_ERROR) << " bad free() ";
             printf("liballoc: ERROR:bad free \n");
 #if defined DEBUG || defined INFO
             printf("liballoc: ERROR: Bad PREFIX(free)( %x ) called from %x\n", ptr,
@@ -744,6 +749,7 @@ void *PREFIX(realloc)(void *p, size_t size)
             ((min->magic & 0xFF) == (LIBALLOC_MAGIC & 0xFF)))
         {
             l_possibleOverruns += 1;
+            log("liballoc", LOG_ERROR) << "  Possible 1-3 byte overrun  ";
 #if defined DEBUG || defined INFO
             printf("liballoc: ERROR: Possible 1-3 byte overrun for magic %x != %x\n",
                    min->magic, LIBALLOC_MAGIC);
@@ -753,6 +759,7 @@ void *PREFIX(realloc)(void *p, size_t size)
 
         if (min->magic == LIBALLOC_DEAD)
         {
+            log("liballoc", LOG_ERROR) << "  multiple free attemp  ";
 #if defined DEBUG || defined INFO
             printf(
                 "liballoc: ERROR: multiple PREFIX(free)() attempt on %x from %x.\n",
@@ -762,6 +769,7 @@ void *PREFIX(realloc)(void *p, size_t size)
         }
         else
         {
+            log("liballoc", LOG_ERROR) << "  bad free  ";
 #if defined DEBUG || defined INFO
             printf("liballoc: ERROR: Bad PREFIX(free)( %x ) called from %x\n", ptr,
                    __builtin_return_address(0));

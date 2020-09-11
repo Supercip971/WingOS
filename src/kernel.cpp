@@ -3,6 +3,7 @@
 #include <device/pit.h>
 #include <int_value.h>
 #include <kernel.h>
+#include <loggging.h>
 #include <stivale_struct.h>
 #include <utility.h>
 /*
@@ -13,7 +14,7 @@ void _start(stivale_struct *bootloader_data)
 {
     asm volatile("sti");
     uint32_t d = 100;
-
+    log("test", LOG_DEBUG) << "hello world";
     uint32_t *dd = (uint32_t *)bootloader_data->framebuffer_addr;
     printf(" frame buffer address %x", bootloader_data->framebuffer_addr);
     uint64_t update_tick = 0;

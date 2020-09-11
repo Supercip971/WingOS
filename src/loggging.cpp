@@ -7,15 +7,24 @@ void loggging::set_log_type(const char *data, log_state log_state)
 {
     if (log_state == 0)
     {
-        printf("\n\033[34m [ %s ] :\033[37m ", data);
+        printf("\n\033[36m [ %s ] :\033[0m ", data);
     }
     else if (log_state == 1)
     {
-        printf("\n\033[32m [ %s ] :\033[37m ", data);
+
+        printf("\n\n\033[1m\033[32m [ %s ] :\033[0m ", data);
+    }
+    else if (log_state == 2)
+    {
+        printf("\n\033[31;1m [ %s ] :\033[0m ", data);
+    }
+    else if (log_state == LOG_WARNING)
+    {
+        printf("\n\033[31m [ %s ] :", data);
     }
     else
     {
-        printf("\n\033[31m [ %s ] :\033[37m ", data);
+        printf("\n\033[4m\033[1m\033[31m [ FATAL ] [ %s ] : [0m", data);
     }
 }
 loggging loggging::operator<<(const char *string)
@@ -25,7 +34,7 @@ loggging loggging::operator<<(const char *string)
 }
 loggging loggging::operator<<(uint64_t address)
 {
-    printf("%x", address);
+    printf(" %x ", address);
     return *this;
 }
 loggging main_logging_system;

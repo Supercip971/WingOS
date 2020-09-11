@@ -4,7 +4,9 @@ enum log_state
 {
     LOG_INFO = 0,
     LOG_DEBUG = 1,
-    LOG_ERROR = 2
+    LOG_ERROR = 2,
+    LOG_FATAL = 3,
+    LOG_WARNING = 4
 };
 
 class loggging

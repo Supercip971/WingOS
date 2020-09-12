@@ -2,6 +2,7 @@
 #include <com.h>
 #include <device/ata_driver.h>
 #include <filesystem/partition/base_partition.h>
+#include <loggging.h>
 base_partition::base_partition()
 {
 }
@@ -12,7 +13,7 @@ MBR_partition::MBR_partition()
 
 void MBR_partition::init()
 {
-    printf("loading mbr partition ....");
+    log("mbr", LOG_DEBUG) << "loading mbr partition ....";
     uint8_t *temp_buffer = (uint8_t *)malloc(512);
     ata_driver::the()->read(0, 2, temp_buffer);
 
@@ -21,24 +22,24 @@ void MBR_partition::init()
     bool is_at_least_one_valid = false;
     for (int i = 0; i < 4; i++)
     {
+        log("mbr", LOG_DEBUG) << "loading mbr partition" << i;
         if (!entry[i].type)
         {
-            printf("not valid partition %x \n", i);
+            log("mbr", LOG_INFO) << "not valid partition" << i;
         }
         else
         {
-            printf("valid partition %x \n", i);
-            printf("partition data : \n");
-            printf("first sector %x \n ", entry[i].first_sect);
-            printf("status %x \n ", entry[i].status);
-            printf("type %x \n ", entry[i].type);
-            printf("sector count %x \n ", entry[i].sect_count);
+            log("mbr", LOG_INFO) << "valid partition" << i;
+            log("mbr", LOG_INFO) << "first sector" << entry[i].first_sect;
+            log("mbr", LOG_INFO) << "status" << entry[i].status;
+            log("mbr", LOG_INFO) << "type" << entry[i].type;
+            log("mbr", LOG_INFO) << "sector count" << entry[i].sect_count;
             is_at_least_one_valid = true;
         }
     }
     if (!is_at_least_one_valid)
     {
-        printf("no valid partition found [MBR] :( \n");
+        log("mbr", LOG_ERROR) << "no valid partition found :(";
         return;
     }
 }
@@ -49,8 +50,9 @@ uint8_t MBR_partition::get_parition_count()
     {
         if (!entry[i].type)
         {
-
-        }else{
+        }
+        else
+        {
             partition_count++;
         }
     }
@@ -60,4 +62,8 @@ uint8_t MBR_partition::get_parition_count()
 uint64_t MBR_partition::get_partition_start(uint8_t partition_id)
 {
     return entry[partition_id].first_sect * 512;
+}
+uint64_t MBR_partition::get_partition_length(uint8_t partition_id)
+{
+    return entry[partition_id].sect_count * 512;
 }

@@ -4,7 +4,7 @@
 #include <device/ata_driver.h>
 #include <loggging.h>
 ata_driver main_driver;
-bool waiting_for_irq;
+int waiting_for_irq = 0;
 ata_driver::ata_driver()
 {
 }
@@ -48,18 +48,24 @@ bool ata_driver::get_ata_status()
 }
 void ata_driver::init()
 {
+    waiting_for_irq = 0;
     log("ata", LOG_DEBUG) << "loading ata";
     current_selected_drive = ATA_PRIMARY_MASTER;
 
     outb(ATA_PRIMARY_DCR, 0x04);
     outb(ATA_PRIMARY_DCR, 0x00);
-
+    uint8_t status = ata_read(true, ATA_reg_command_status);
+    while (((status & 0x80) == 0x80) && ((status & 0x01) != 0x01))
+    {
+        status = ata_read(true, ATA_reg_command_status);
+    }
     // reset
     uint8_t *temp_buffer = (uint8_t *)malloc(2048);
     for (int i = 0; i < 2048; i++)
     {
         temp_buffer[i] = 0;
     }
+
     read(0, 3, temp_buffer);
     log("ata", LOG_INFO) << "first bytes data : \n";
     for (int i = 0; i < 256 * 3; i++)
@@ -79,12 +85,13 @@ ata_driver *ata_driver::the()
 }
 void ata_driver::irq_handle(uint64_t irq_handle_num)
 {
-    log("ata", LOG_INFO) << "receive an ata interrupt";
+    //log("ata", LOG_INFO) << "receive an ata interrupt";
     // printf("[ATA] ata driver receive an irq \n");
-    if (waiting_for_irq == true)
+    if (waiting_for_irq == 1)
     {
+        //     log("ata", LOG_INFO) << "receive an ata interrupt when waiting for it";
         //    printf("it was waiting for the interrupt \n");
-        waiting_for_irq = false;
+        waiting_for_irq = 0;
     }
     if (irq_handle_num == 14)
     {
@@ -106,8 +113,8 @@ void ata_driver::irq_handle(uint64_t irq_handle_num)
 void ata_driver::read(uint32_t where, uint8_t count, uint8_t *buffer)
 {
     // printf("trying to read ata 0, in %x count %x to %x", where, count, (uint64_t)buffer);
-
-    waiting_for_irq = true;
+    //log("ata", LOG_INFO) << "reading ata where : " << where << "count : " << count;
+    waiting_for_irq = 1;
     ata_write(true, ATA_reg_error_feature, 0);
     ata_write(true, ATA_reg_selector, 0xE0 | 0x40 | ((where >> 24) & 0x0F));
 
@@ -120,22 +127,14 @@ void ata_driver::read(uint32_t where, uint8_t count, uint8_t *buffer)
 
     int new_count = count;
     uint32_t off = 0;
-
+    uint64_t wait_time = 0;
     while (new_count-- > 0)
     {
-
-        waiting_for_irq = true;
-        while (true)
+        //  log("ata", LOG_INFO) << "ata waiting";
+        uint8_t status = ata_read(true, ATA_reg_command_status);
+        while (((status & 0x80) == 0x80) && ((status & 0x01) != 0x01))
         {
-            if (waiting_for_irq != true)
-            {
-                break;
-            }
-            else
-            {
-                wait(4);
-            }
-            printf(""); // waiting a little
+            status = ata_read(true, ATA_reg_command_status);
         }
         for (uint16_t i = 0; i < 256; i++)
         {

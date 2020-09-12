@@ -16,6 +16,7 @@
 #include <device/madt.h>
 #include <device/mboot_module.h>
 #include <device/pit.h>
+#include <filesystem/echfs.h>
 #include <filesystem/partition/base_partition.h>
 #include <kernel.h>
 #include <loggging.h>
@@ -103,6 +104,7 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
     asm volatile("sti");
 }
 MBR_partition mbr_part; // TODO : add [new] and [delete]
+echfs main_start_fs;
 void start_process()
 {
     printf(" frame buffer address 2 %x \n", ((stivale_struct *)bootdat)->framebuffer_addr);
@@ -118,6 +120,9 @@ void start_process()
     mbr_part = MBR_partition();
 
     mbr_part.init();
+    main_start_fs = echfs();
+    main_start_fs.init(mbr_part.get_partition_start(0), mbr_part.get_partition_length(0));
+
     printf("testing with memory 3 \n");
     _start((stivale_struct *)bootdat);
 }

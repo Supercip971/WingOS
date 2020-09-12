@@ -50,7 +50,7 @@ runvbox: $(KERNEL_HDD)
 format:
 	@clang-format -i --verbose --style=file $(CFILES) $(HFILES)
 foreachramfs: 
-	@for f in $(shell ls ./init_fs/); do echo ./init_fs/$${f}; echfs-utils -m -p0 $(KERNEL_HDD) import ./init_fs/$${f} $${f}; done
+	@for f in $(shell ls ./init_fs/); do echfs-utils -m -p0 $(KERNEL_HDD) import ./init_fs/$${f} $${f}; done
 
 
 	
@@ -79,9 +79,8 @@ $(KERNEL_HDD): $(KERNEL_ELF)
 	@dd if=/dev/zero bs=8M count=0 seek=64 of=$(KERNEL_HDD)
 	@parted -s $(KERNEL_HDD) mklabel msdos
 	@parted -s $(KERNEL_HDD) mkpart primary 1 100%
-	@echfs-utils -m -p0 $(KERNEL_HDD) format 65536
+	@echfs-utils -m -p0 $(KERNEL_HDD) format 32768
 	@echfs-utils -m -p0 $(KERNEL_HDD) import $(KERNEL_ELF) $(KERNEL_ELF)
-	@echfs-utils -m -p0 $(KERNEL_HDD) import $(KERNEL_RAMDISK) ramdisk
 	@make -C . foreachramfs	
 	@echfs-utils -m -p0 $(KERNEL_HDD) import qloader2.cfg qloader2.cfg
 	qloader2/qloader2-install qloader2/qloader2.bin $(KERNEL_HDD)

@@ -8,7 +8,6 @@ extern "C" void irq0_first_jump();
 extern "C" void reload_cr3();
 process *process_array;
 process kernel_process;
-process *current_process = nullptr;
 char temp_esp[8192];
 process *nxt;
 bool process_locked = true;

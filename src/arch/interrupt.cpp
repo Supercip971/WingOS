@@ -172,14 +172,14 @@ extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
     }
     if (is_error(stackframe->int_no))
     {
-        for (int i = 0; i < stackframe->int_no * 320; i++)
-        {
-            is_error(stackframe->int_no);
-        }
 
         printf("error fatal \n");
         printf("id : %x \n", stackframe->int_no);
         printf("type : %s\n", exception_messages[stackframe->int_no]);
+        if (current_process != nullptr)
+        {
+            printf("in thread : %x \n", current_process->pid);
+        }
         dumpregister(stackframe);
 
         while (true)

@@ -18,6 +18,8 @@ struct process
     uint8_t stack[PROCESS_STACK_SIZE];
     uint64_t entry_point = 0x0;
 } __attribute__((packed));
+static process *current_process = nullptr;
+// TODO: make a get_current_process() function
 typedef void (*func)();
 
 process *init_process(func entry_point);

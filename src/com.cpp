@@ -87,16 +87,6 @@ void com_write_reg(const char *buffer, uint64_t value)
     com_write_str(temp_buffer);
 }
 
-uint64_t strlen(const char *d)
-{
-    uint64_t lenght = 0;
-    while (d[lenght] != 0)
-    {
-        lenght++;
-    }
-    return lenght;
-}
-
 char temp_buf[64];
 void printf(const char *format, ...)
 {

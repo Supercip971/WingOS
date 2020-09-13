@@ -1,5 +1,6 @@
+#include <arch/mem/liballoc.h>
 #include <int_value.h>
-
+#include <loggging.h>
 inline void kitoa(char *buf, int base, int d)
 {
     char *p = buf;
@@ -140,3 +141,12 @@ inline int strncmp(const char *s1, const char *s2, uint64_t n)
         return (*(unsigned char *)s1 - *(unsigned char *)s2);
     }
 }
+inline uint64_t strlen(const char *s)
+{
+    uint64_t i;
+    for (i = 0; s[i] != '\0'; i++)
+        ;
+    return i;
+}
+
+char *strtok(char *s, const char *delm);

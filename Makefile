@@ -41,7 +41,9 @@ LDHARDFLAGS := $(LDFLAGS)        \
 .PHONY: clean
 .DEFAULT_GOAL = $(KERNEL_HDD)
 
-disk: $(KERNEL_HDD)
+disk:
+	rm -rf $(KERNEL_HDD)
+	@make -C . $(KERNEL_HDD)
 run: $(KERNEL_HDD)
 	qemu-system-x86_64 -m 4G -s -device pvpanic -smp 4 -serial stdio -enable-kvm --no-shutdown --no-reboot -d int -d guest_errors -hda $(KERNEL_HDD)
 runvbox: $(KERNEL_HDD)
@@ -50,7 +52,7 @@ runvbox: $(KERNEL_HDD)
 format:
 	@clang-format -i --verbose --style=file $(CFILES) $(HFILES)
 foreachramfs: 
-	@for f in $(shell ls ./init_fs/); do echfs-utils -m -p0 $(KERNEL_HDD) import ./init_fs/$${f} $${f}; done
+	@for f in $(shell find init_fs/ -maxdepth 64 -type f); do echfs-utils -m -p0 $(KERNEL_HDD) import $${f} $${f}; done
 
 
 	

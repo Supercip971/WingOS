@@ -1,6 +1,7 @@
 build/
 cross_compiler/
 vscode/
+.vscode/
 
 kernel.elf
 

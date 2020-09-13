@@ -48,7 +48,7 @@ echfs_file_header echfs::read_directory_entry(uint64_t entry)
         }
     }
 end:
-    return nullptr;
+    return {0};
 }
 void echfs::init(uint64_t start_sector, uint64_t sector_count)
 {
@@ -162,6 +162,11 @@ end:;*/
     }
 
     log("echfs", LOG_INFO) << "found file : init_fs/test_directory/test_another.txt" << find_file("init_fs/test_directory/test_another.txt");
+
+    log("echfs", LOG_INFO) << "reading file "
+                           << "init_fs/test_directory/test_another.txt";
+    uint8_t *f = this->ech_read_file("init_fs/test_directory/test_another.txt");
+    log("echfs", LOG_INFO) << (char *)f;
 }
 char path_delimitor[] = "/";
 uint64_t echfs::get_folder(uint64_t folder_id)
@@ -305,4 +310,30 @@ redo: // yes goto are bad but if someone has a solution i take it ;)
 // return 0 when not found
 uint8_t *echfs::read_file(const char *path)
 {
+    return ech_read_file(path);
+}
+uint8_t *echfs::ech_read_file(const char *path)
+{
+    log("echfs", LOG_INFO) << "reading file " << path;
+    echfs_file_header file_to_read_header = read_directory_entry(find_file(path));
+    if (file_to_read_header.file_type == 1)
+    {
+        log("echfs", LOG_ERROR) << "trying to read a folder";
+        return nullptr;
+    }
+    log("echfs", LOG_INFO) << "reading file 1 " << path;
+    uint64_t size_to_read = file_to_read_header.size;
+    size_to_read /= header.block_length;
+    size_to_read++;
+    size_to_read *= header.block_length;
+    uint64_t block_count_to_read = size_to_read / header.block_length;
+    log("echfs", LOG_INFO) << "reading file size  " << size_to_read;
+    uint8_t *data = (uint8_t *)malloc(size_to_read);
+    uint64_t block_to_read = file_to_read_header.starting_block;
+    for (uint64_t i = 0; i < block_count_to_read; i++)
+    {
+        read_block(block_to_read + i, data + (i * header.block_length));
+    }
+
+    return data;
 }

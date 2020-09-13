@@ -3,7 +3,7 @@
 #include <int_value.h>
 #include <stivale_struct.h>
 void _start(struct stivale_struct *bootloader_data);
-
+static uint64_t imjusttired = 0;
 __attribute__((optimize("O0"))) inline void memzero(void *s, uint64_t n)
 {
     for (uint64_t i = 0; i < n; i++)

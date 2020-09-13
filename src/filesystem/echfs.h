@@ -36,7 +36,10 @@ class echfs : public file_system
     block0_header header;
     void read_block(uint64_t block_id, uint8_t *buffer);
     uint64_t main_dir_start;
-    echfs_file_header *read_directory_entry(uint64_t entry);
+    echfs_file_header read_directory_entry(uint64_t entry);
+    uint64_t find_file(const char *path);
+    uint64_t get_folder(uint64_t folder_id);
+    uint64_t get_simple_file(const char *name, uint64_t forced_parent = -1);
 
 public:
     echfs();

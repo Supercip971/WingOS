@@ -41,14 +41,13 @@ class echfs : public file_system
     uint64_t get_folder(uint64_t folder_id);
     uint64_t get_simple_file(const char *name, uint64_t forced_parent = -1);
 
-    uint8_t *ech_read_file(const char *path);
-
 public:
     echfs();
     virtual void init(uint64_t start_sector, uint64_t sector_count) override;
 
     // read a file and redirect it to an address
     // return 0 when not found
+    uint8_t *ech_read_file(const char *path);
     virtual uint8_t *read_file(const char *path) override;
 
     // mainly not implemented

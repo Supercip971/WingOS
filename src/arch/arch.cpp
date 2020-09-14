@@ -5,6 +5,7 @@
 #include <arch/mem/virtual.h>
 #include <arch/pic.h>
 #include <arch/process.h>
+#include <arch/programm_launcher.h>
 #include <arch/smp.h>
 #include <com.h>
 #include <device/acpi.h>
@@ -122,7 +123,7 @@ void start_process()
     mbr_part.init();
     main_start_fs = echfs();
     main_start_fs.init(mbr_part.get_partition_start(0), mbr_part.get_partition_length(0));
-
+    launch_programm("init_fs/test.exe", &main_start_fs);
     printf("testing with memory 3 \n");
     _start((stivale_struct *)bootdat);
 }

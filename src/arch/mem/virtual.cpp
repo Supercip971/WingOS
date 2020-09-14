@@ -44,11 +44,6 @@ void init_paging(stivale_struct *sti_struct)
 
     set_paging_dir(get_rmem_addr((uint64_t)pl4_table));
 
-    for (uint64_t i = 0x0; i < (FOUR_GIGS); i += TWO_MEGS)
-    {
-        Huge_virt_map(i, (i), BASIC_PAGE_FLAGS);
-    }
-
     uint64_t frame_buffer_size = sti_struct->framebuffer_width * sti_struct->framebuffer_height * sizeof(uint32_t) + PAGE_SIZE;
     for (uint64_t i = sti_struct->framebuffer_addr; i < sti_struct->framebuffer_addr + frame_buffer_size; i += PAGE_SIZE)
     {
@@ -62,7 +57,9 @@ void init_paging(stivale_struct *sti_struct)
     printf("mapping address space \n");
     for (uint64_t i = 0; i < sti_struct->memory_map_entries; i++)
     {
+
         e820_entry_t *entry = &mementry[i];
+
         uint64_t base_aligned = entry->base - (entry->base % PAGE_SIZE);
         uint64_t lenght_aligned = align_up(entry->length, PAGE_SIZE);
 
@@ -89,7 +86,6 @@ void init_paging(stivale_struct *sti_struct)
 
 void update_paging()
 {
-
     set_paging_dir(get_rmem_addr((uint64_t)pl4_table));
 }
 

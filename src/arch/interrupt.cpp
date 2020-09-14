@@ -87,10 +87,13 @@ __attribute__((interrupt)) static void spurious_handler(void *p)
     printf("## [ apic ] : spurious \n");
     apic::the()->EOI();
 }
-__attribute__((interrupt)) static void too_much_handler(void *p)
+__attribute__((interrupt)) static void too_much_handler(InterruptStackFrame *p)
 {
 
-    printf("## [ apic ] : not handled interrupt \n");
+    // printf("## [ apic ] : not handled interrupt \n");
+
+    // printf("un-interrupt %x", p->int_no);
+
     apic::the()->EOI();
 }
 void init_idt()
@@ -103,9 +106,12 @@ void init_idt()
     }
     for (int i = 32 + 48; i < 0xff; i++)
     {
+        //   idt[i] = register_interrupt_handler((void *)__interrupt_vector[i], 0, 0x8e);
 
         idt[i] = register_interrupt_handler((void *)too_much_handler, 0, 0x8e);
     }
+    idt[127] = register_interrupt_handler((void *)__interrupt_vector[48], 0, 0x8e);
+    ;
     idt[0xf0] = register_interrupt_handler((void *)nmi_handler, 0, 0x8e);
     idt[0xff] = register_interrupt_handler((void *)spurious_handler, 0, 0x8e);
     printf("loading idt idt_flush \n");
@@ -167,8 +173,12 @@ bool is_error(int intno)
 
 extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
 {
-    if (stackframe->int_no != 0x24 && stackframe->int_no != 0x22)
+    if (stackframe->int_no != 0x24 && stackframe->int_no != 0x22 && stackframe->int_no != 32)
     {
+        if (stackframe->int_no == 32 + 8)
+        {
+            printf("interrupt %x", stackframe->int_no);
+        }
     }
     if (is_error(stackframe->int_no))
     {

@@ -3,6 +3,7 @@
 #include <arch/mem/liballoc.h>
 #include <arch/process.h>
 #include <com.h>
+#include <loggging.h>
 #pragma GCC optimize("-O0")
 extern "C" void irq0_first_jump();
 extern "C" void reload_cr3();
@@ -52,13 +53,13 @@ void init_multi_process(func start)
     }
 
     printf("loading process 1 \n");
-    init_process(main_process_1);
+    init_process(main_process_1, true);
 
     printf("loading process 2 \n");
-    init_process(main_process_2);
+    init_process(main_process_2, true);
 
     printf("loading process 3 \n");
-    init_process(start);
+    init_process(start, true);
     process_loaded = true;
 
     asm volatile("sti");
@@ -66,14 +67,21 @@ void init_multi_process(func start)
     asm volatile("jmp irq0_first_jump");
 }
 
-process *init_process(func entry_point)
+process *init_process(func entry_point, bool start_direct)
 {
     for (int i = 0; i < MAX_PROCESS; i++)
     {
         if (process_array[i].current_process_state ==
             process_state::PROCESS_AVAILABLE)
         {
-            process_array[i].current_process_state = process_state::PROCESS_WAITING;
+            if (start_direct == true)
+            {
+                process_array[i].current_process_state = process_state::PROCESS_WAITING;
+            }
+            else
+            {
+                process_array[i].current_process_state = process_state::PROCESS_NOT_STARTED;
+            }
             process_array[i].entry_point = (uint64_t)entry_point;
             process_array[i].rsp =
                 ((uint64_t)process_array[i].stack) + PROCESS_STACK_SIZE;
@@ -105,6 +113,10 @@ process *init_process(func entry_point)
             if (current_process == 0x0)
             {
                 current_process = &process_array[i];
+            }
+            for (int j = 0; j < MAX_PROCESS_MEMORY_DATA_MAP; j++)
+            {
+                process_array[i].mmap[j].used = false;
             }
             return &process_array[i];
         }
@@ -227,4 +239,38 @@ extern "C" void task_update_switch(process *next)
     current_process->current_process_state = process_state::PROCESS_WAITING;
     current_process = nxt;
     next->current_process_state = process_state::PROCESS_RUNNING;
+    // log("process", LOG_INFO) << "process entry : " << nxt->entry_point;
+
+    for (int j = 0; j < MAX_PROCESS_MEMORY_DATA_MAP; j++)
+    {
+        if (nxt->mmap[j].used == true)
+        {
+            uint64_t mem_length = nxt->mmap[j].length;
+            for (uint64_t i = 0; i < mem_length; i++)
+            {
+                log("process", LOG_INFO) << "mmap : " << nxt->mmap[j].from + i * PAGE_SIZE << " to : " << nxt->mmap[j].to + i * PAGE_SIZE;
+                virt_map(nxt->mmap[j].from + i * PAGE_SIZE, nxt->mmap[j].to + i * PAGE_SIZE, 0x1 | 0x2 | 0x4);
+            }
+        }
+    }
+
+    update_paging();
+}
+
+void add_thread_map(process *p, uint64_t from, uint64_t to, uint64_t length)
+{
+
+    for (int j = 0; j < MAX_PROCESS_MEMORY_DATA_MAP; j++)
+    {
+        if (p->mmap[j].used == false)
+        {
+            p->mmap[j].used = true;
+
+            p->mmap[j].from = from;
+            p->mmap[j].to = to;
+            p->mmap[j].length = length;
+            return;
+        }
+    }
+    log("process", LOG_ERROR) << "cant find a free map for thread";
 }

@@ -54,11 +54,11 @@ format:
 foreachramfs: 
 	@for f in $(shell find init_fs/ -maxdepth 64 -type f); do echfs-utils -m -p0 $(KERNEL_HDD) import $${f} $${f}; done
 
-
-	
-	
+app: 
+	@make -C ./app/test all	
 
 super:
+	@make app
 	-killall -9 VirtualBoxVM
 	make format
 	make

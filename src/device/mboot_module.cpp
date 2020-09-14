@@ -41,7 +41,6 @@ stivale_module *mboot_module::get_fs_module()
     }
 
     log("mboot", LOG_ERROR) << "no detected ram disk module";
-    printf("error : no ramdisk module found :( \n");
     return nullptr;
 }
 mboot_module *mboot_module::the()

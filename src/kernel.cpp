@@ -16,7 +16,6 @@ void _start(stivale_struct *bootloader_data)
 
     uint64_t from = 0;
 
-    asm volatile("sti");
     uint32_t d = 100;
     log("test", LOG_DEBUG) << "hello world" << 0x2028332564;
     uint32_t *dd = (uint32_t *)bootloader_data->framebuffer_addr;

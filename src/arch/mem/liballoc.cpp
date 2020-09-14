@@ -605,7 +605,7 @@ void PREFIX(free)(void *ptr)
         {
             l_possibleOverruns += 1;
             log("liballoc", LOG_ERROR) << "Possible 1-3 byte overrun for magic";
-       //     printf("liballoc: ERROR: Possible 1-3 byte overrun for magic \n");
+            //     printf("liballoc: ERROR: Possible 1-3 byte overrun for magic \n");
 #if defined DEBUG || defined INFO
             printf("liballoc: ERROR: Possible 1-3 byte overrun for magic %x != %x\n",
                    min->magic, LIBALLOC_MAGIC);

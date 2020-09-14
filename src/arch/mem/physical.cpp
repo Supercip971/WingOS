@@ -1,7 +1,7 @@
 #include <arch/mem/physical.h>
 #include <com.h>
+#include <kernel.h>
 #include <loggging.h>
-
 extern "C" uint64_t kernel_end;
 extern "C" uint64_t addr_kernel_start;
 
@@ -171,6 +171,7 @@ void init_physical_memory(stivale_struct *bootdata)
         {
             if (mementry[i].length > (total_memory_lenght / PAGE_SIZE) / 8)
             {
+
                 log("pmm", LOG_INFO) << "memory entry used " << i;
                 log("pmm", LOG_INFO) << "total bitmap length" << (total_memory_lenght / PAGE_SIZE) / 8;
 

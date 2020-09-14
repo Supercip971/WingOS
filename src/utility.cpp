@@ -1,5 +1,5 @@
 #include <utility.h>
- // not used and not tested
+// not used and not tested
 char *strtok(char *s, const char *delm)
 {
     static int currIndex = 0;

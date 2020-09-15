@@ -12,6 +12,9 @@
  - madt 
  - apic 
  - acpi
+ - basic ATA driver
+ - echfs support
+ - programm launcher (only elf64 programm for the moment)
  - \[insert something here]
  
 

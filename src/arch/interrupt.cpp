@@ -9,6 +9,7 @@
 #include <device/local_data.h>
 #include <device/pit.h>
 #include <kernel.h>
+#include <loggging.h>
 #include <utility.h>
 
 const char *exception_messages[] = {"Division By Zero",
@@ -58,6 +59,7 @@ static idtr_t idt_descriptor = {
 uint64_t rip_count[16];
 uint32_t rip_counter = 0;
 
+uint64_t rip_backtrace[32];
 extern "C" void idt_flush(uint64_t);
 extern "C" void syscall_asm_entry();
 
@@ -77,18 +79,18 @@ static idt_entry_t register_interrupt_handler(void *handler, uint8_t ist, uint8_
 }
 __attribute__((interrupt)) static void nmi_handler(void *p)
 {
-
-    printf("## [ apic ] : NMI Interrupt \n");
+    log("apic", LOG_ERROR) << "nmi interrupt";
     apic::the()->EOI();
 }
 __attribute__((interrupt)) static void spurious_handler(void *p)
 {
 
-    printf("## [ apic ] : spurious \n");
+    log("apic", LOG_ERROR) << "spurrious interrupt";
     apic::the()->EOI();
 }
 __attribute__((interrupt)) static void too_much_handler(InterruptStackFrame *p)
 {
+    log("apic", LOG_ERROR) << "not handled interrupt";
 
     // printf("## [ apic ] : not handled interrupt \n");
 
@@ -98,8 +100,13 @@ __attribute__((interrupt)) static void too_much_handler(InterruptStackFrame *p)
 }
 void init_idt()
 {
-    printf("loading idt \n");
-    printf("loading idt table \n");
+    log("idt", LOG_DEBUG) << "loading idt";
+    for (int i = 0; i < 32; i++)
+    {
+        rip_backtrace[i] = -32;
+    }
+
+    log("idt", LOG_INFO) << "loading idt table";
     for (int i = 0; i < 32 + 48; i++)
     {
         idt[i] = register_interrupt_handler((void *)__interrupt_vector[i], 0, 0x8e);
@@ -114,12 +121,11 @@ void init_idt()
     ;
     idt[0xf0] = register_interrupt_handler((void *)nmi_handler, 0, 0x8e);
     idt[0xff] = register_interrupt_handler((void *)spurious_handler, 0, 0x8e);
-    printf("loading idt idt_flush \n");
+    log("idt", LOG_DEBUG) << "flushing idt";
+
     asm volatile("lidt [%0]"
                  :
                  : "m"(idt_descriptor));
-    printf("loading idt : OK \n");
-    printf("turning on interrupt : OK \n");
 };
 
 void dumpregister(InterruptStackFrame *stck)
@@ -173,6 +179,14 @@ bool is_error(int intno)
 
 extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
 {
+    if (rip_backtrace[32] != stackframe->rip)
+    {
+        for (int i = 0; i <= 31; i++)
+        {
+            rip_backtrace[i] = rip_backtrace[i + 1];
+        }
+        rip_backtrace[32] = stackframe->rip;
+    }
     if (stackframe->int_no != 0x24 && stackframe->int_no != 0x22 && stackframe->int_no != 32)
     {
         if (stackframe->int_no == 32 + 8)
@@ -183,15 +197,26 @@ extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
     if (is_error(stackframe->int_no))
     {
 
-        printf("error fatal \n");
-        printf("id : %x \n", stackframe->int_no);
-        printf("type : %s\n", exception_messages[stackframe->int_no]);
+        log("pic", LOG_FATAL) << "!!! fatal interrupt error !!!";
+        log("pic", LOG_ERROR) << "ID   : " << stackframe->int_no;
+        log("pic", LOG_ERROR) << "type : " << exception_messages[stackframe->int_no];
         if (current_process != nullptr)
         {
-            printf("in thread : %x \n", current_process->pid);
-        }
-        dumpregister(stackframe);
+            log("pic", LOG_INFO) << "in thread" << current_process->pid;
 
+            //         printf("in thread : %x \n", current_process->pid);
+        }
+        printf("\n");
+        dumpregister(stackframe);
+        printf("\n");
+        log("pic", LOG_ERROR) << "backtrace : ";
+        for (int i = 0; i <= 32; i++)
+        {
+            if (rip_backtrace[i] != -32)
+            {
+                log("pic", LOG_ERROR) << "id " << i << " = " << rip_backtrace[i];
+            }
+        }
         while (true)
         {
             asm volatile("hlt");

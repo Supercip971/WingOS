@@ -3,6 +3,7 @@
 #include <arch/interrupt.h>
 #include <arch/mem/liballoc.h>
 #include <arch/mem/virtual.h>
+#include <arch/msr_syscall.h>
 #include <arch/pic.h>
 #include <arch/process.h>
 #include <arch/programm_launcher.h>
@@ -24,7 +25,6 @@
 #include <stivale_struct.h>
 
 static uint64_t bootdat;
-static char stack[STACK_SIZE] = {0};
 
 __attribute__((section(".stivalehdr"), used))
 stivale_header header = {.stack = (uintptr_t)stack + (sizeof(char) * STACK_SIZE),
@@ -93,6 +93,7 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
 
     //    bootloader_data = (stivale_struct *)get_mem_addr((uint64_t)bootloader_data);
 
+    init_msr_syscall();
     mboot_module::the()->init(bootloader_data);
     bootdat = ((uint64_t)&boot_loader_data_copy);
     printf(" frame buffer address %x \n", boot_loader_data_copy.framebuffer_addr);

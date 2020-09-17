@@ -42,4 +42,4 @@ void init_multi_process(func start);
 void unlock_process();
 void lock_process();
 
-void irq_0_process_handler(InterruptStackFrame *isf);
+extern "C" void irq_0_process_handler(InterruptStackFrame *isf);

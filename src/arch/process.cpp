@@ -35,7 +35,7 @@ void main_process_2()
         asm("int 32");
     }
 }
-
+extern "C" void irq0_first_jump(void);
 void init_multi_process(func start)
 {
     printf("loading process \n");
@@ -64,7 +64,8 @@ void init_multi_process(func start)
 
     asm volatile("sti");
     unlock_process();
-    asm volatile("jmp irq0_first_jump");
+    irq0_first_jump();
+    //asm volatile("jmp irq0_first_jump");
 }
 
 process *init_process(func entry_point, bool start_direct)
@@ -74,6 +75,7 @@ process *init_process(func entry_point, bool start_direct)
         if (process_array[i].current_process_state ==
             process_state::PROCESS_AVAILABLE)
         {
+            log("proc", LOG_INFO) << "adding process" << i << "entry : " << (uint64_t)entry_point;
             if (start_direct == true)
             {
                 process_array[i].current_process_state = process_state::PROCESS_WAITING;
@@ -87,7 +89,8 @@ process *init_process(func entry_point, bool start_direct)
                 ((uint64_t)process_array[i].stack) + PROCESS_STACK_SIZE;
 
             uint64_t *rsp = (uint64_t *)process_array[i].rsp;
-            rsp--;
+
+            *rsp-- = 0;
             uint64_t crsp = (uint64_t)rsp;
             *rsp-- = SLTR_KERNEL_DATA;      // SS
             *rsp-- = crsp;                  // RSP
@@ -125,7 +128,7 @@ process *init_process(func entry_point, bool start_direct)
     return nullptr;
 }
 
-void switch_context(InterruptStackFrame *current_Isf, process *next)
+extern "C" void switch_context(InterruptStackFrame *current_Isf, process *next)
 {
     if (next == NULL)
     {
@@ -148,7 +151,7 @@ void switch_context(InterruptStackFrame *current_Isf, process *next)
     }
 }
 
-process *get_next_process(uint64_t current_id)
+extern "C" process *get_next_process(uint64_t current_id)
 {
     if (process_locked)
     {
@@ -163,7 +166,8 @@ process *get_next_process(uint64_t current_id)
             break;
         }
         else if (process_array[i].current_process_state ==
-                 process_state::PROCESS_WAITING)
+                     process_state::PROCESS_WAITING &&
+                 i != 0)
         {
             return &process_array[i];
         }
@@ -171,7 +175,8 @@ process *get_next_process(uint64_t current_id)
     for (uint64_t i = 0; i < current_id; i++)
     { // we do a loop
         if (process_array[i].current_process_state ==
-            process_state::PROCESS_WAITING)
+                process_state::PROCESS_WAITING &&
+            i != 0)
         {
             return &process_array[i];
         }
@@ -180,8 +185,9 @@ process *get_next_process(uint64_t current_id)
     return nullptr;
 }
 
-void irq_0_process_handler(InterruptStackFrame *isf)
+extern "C" void irq_0_process_handler(InterruptStackFrame *isf)
 {
+    log("process", LOG_INFO) << "switching ";
     if (process_locked)
     {
         return;
@@ -239,7 +245,7 @@ extern "C" void task_update_switch(process *next)
     current_process->current_process_state = process_state::PROCESS_WAITING;
     current_process = nxt;
     next->current_process_state = process_state::PROCESS_RUNNING;
-    // log("process", LOG_INFO) << "process entry : " << nxt->entry_point;
+    //   log("process", LOG_INFO) << "process entry : " << nxt->pid;
 
     for (int j = 0; j < MAX_PROCESS_MEMORY_DATA_MAP; j++)
     {

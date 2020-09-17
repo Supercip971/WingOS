@@ -68,7 +68,7 @@ static idt_entry_t register_interrupt_handler(void *handler, uint8_t ist, uint8_
     uint64_t p = (uint64_t)handler;
     idt_entry_t idt;
     idt.offset_low16 = (uint16_t)p;
-    idt.cs = 0x08;
+    idt.cs = SLTR_KERNEL_CODE;
     idt.ist = ist;
     idt.attributes = type;
     idt.offset_mid16 = (uint16_t)(p >> 16);
@@ -217,6 +217,7 @@ extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
                 log("pic", LOG_ERROR) << "id " << i << " = " << rip_backtrace[i];
             }
         }
+
         while (true)
         {
             asm volatile("hlt");

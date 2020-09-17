@@ -1,10 +1,12 @@
 #pragma once
 #include <int_value.h>
+#include <loggging.h>
 #include <stdint.h>
 #define X64
 
 #ifdef X64
-#define STACK_SIZE 4096
+#define STACK_SIZE 8192
+static char stack[STACK_SIZE] = {0};
 inline void outb(uint16_t port, uint8_t value)
 {
     asm volatile("out  dx, al" ::"a"(value), "d"(port));
@@ -58,6 +60,7 @@ static inline void x86_set_cr3(uint64_t cr3)
 }
 inline static uint64_t x86_rdmsr(uint64_t msr)
 {
+    log("rdmsr", LOG_INFO) << "reading msr : " << msr;
     uint32_t low, high;
     asm volatile("rdmsr"
                  : "=a"(low), "=d"(high)
@@ -67,6 +70,7 @@ inline static uint64_t x86_rdmsr(uint64_t msr)
 
 inline static void x86_wrmsr(uint64_t msr, uint64_t value)
 {
+    log("rdmsr", LOG_INFO) << "writing msr : " << msr << " = " << value;
     uint32_t low = value & 0xFFFFFFFF;
     uint32_t high = value >> 32;
     asm volatile("wrmsr"

@@ -9,8 +9,15 @@ tss_t tss;
 
 gdt_descriptor_t gdt_descriptors[64];
 
-tss_t *get_tss() { return &tss; }
-void tss_set_rsp0(uint64_t rsp0) { get_current_data()->tss.rsp0 = rsp0; }
+tss_t *get_tss() { return &tss; };
+
+char tss_ist1[8192] __attribute__((aligned(16)));
+char tss_ist2[8192] __attribute__((aligned(16)));
+char tss_ist3[8192] __attribute__((aligned(16)));
+void tss_set_rsp0(uint64_t rsp0)
+{
+    tss.rsp0 = rsp0;
+};
 void rgdt_init(void);
 void setup_gdt(unsigned long i) { rgdt_init(); }
 
@@ -76,8 +83,11 @@ void __attribute__((optimize("O0"))) rgdt_init(void)
 void tss_init(uint64_t i)
 {
     memzero(&get_current_data()->tss, sizeof(tss));
-    get_current_data()->tss.iomap_base = sizeof(tss) - 1;
+    get_current_data()->tss.iomap_base = sizeof(tss);
     get_current_data()->tss.rsp0 = (uint64_t)i;
+    get_current_data()->tss.ist1 = (uint64_t)tss_ist1 + 8192;
+    get_current_data()->tss.ist2 = (uint64_t)tss_ist2 + 8192;
+    get_current_data()->tss.ist3 = (uint64_t)tss_ist3 + 8192;
 
     asm volatile("mov ax, %0 \n ltr ax"
                  :

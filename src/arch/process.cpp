@@ -241,6 +241,7 @@ extern "C" uint64_t get_next_esp()
 
 extern "C" void task_update_switch(process *next)
 {
+    //  log("process", LOG_INFO) << "next : " << next->pid;
     tss_set_rsp0((uint64_t)nxt->stack + PROCESS_STACK_SIZE - 8);
     current_process->current_process_state = process_state::PROCESS_WAITING;
     current_process = nxt;
@@ -254,7 +255,7 @@ extern "C" void task_update_switch(process *next)
             uint64_t mem_length = nxt->mmap[j].length;
             for (uint64_t i = 0; i < mem_length; i++)
             {
-                log("process", LOG_INFO) << "mmap : " << nxt->mmap[j].from + i * PAGE_SIZE << " to : " << nxt->mmap[j].to + i * PAGE_SIZE;
+                //     log("process", LOG_INFO) << "mmap : " << nxt->mmap[j].from + i * PAGE_SIZE << " to : " << nxt->mmap[j].to + i * PAGE_SIZE;
                 virt_map(nxt->mmap[j].from + i * PAGE_SIZE, nxt->mmap[j].to + i * PAGE_SIZE, 0x1 | 0x2 | 0x4);
             }
         }

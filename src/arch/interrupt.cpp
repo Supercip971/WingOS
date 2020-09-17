@@ -10,6 +10,7 @@
 #include <device/pit.h>
 #include <kernel.h>
 #include <loggging.h>
+#include <syscall.h>
 #include <utility.h>
 
 const char *exception_messages[] = {"Division By Zero",
@@ -189,8 +190,9 @@ extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
     }
     if (stackframe->int_no != 0x24 && stackframe->int_no != 0x22 && stackframe->int_no != 32)
     {
-        if (stackframe->int_no == 32 + 8)
+        if (stackframe->int_no == 0x7f)
         {
+            syscall(stackframe->rdi, stackframe->r10, stackframe->r12, stackframe->r13, stackframe->r14, stackframe->r15); // don't use r11 for future use with x64 syscalls
             printf("interrupt %x", stackframe->int_no);
         }
     }

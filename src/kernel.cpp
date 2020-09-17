@@ -32,7 +32,7 @@ void _start(stivale_struct *bootloader_data)
         {
             dd[i] = ((uint32_t *)imjusttired)[i];
         }
-
+        imjusttired += sizeof(uint32_t);
         update_tick++;
 
         d++;

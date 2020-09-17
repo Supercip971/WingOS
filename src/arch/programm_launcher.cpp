@@ -7,7 +7,6 @@
 void load_segment(process *pro, uint64_t source, uint64_t size, uint64_t dest, uint64_t destsize)
 {
     uint64_t count = destsize / PAGE_SIZE;
-
     uint64_t ndest = dest / PAGE_SIZE;
     ndest *= PAGE_SIZE;
 
@@ -19,13 +18,13 @@ void load_segment(process *pro, uint64_t source, uint64_t size, uint64_t dest, u
     source /= 4096;
     source *= 4096;
 
-    for (int i = 0; i < count; i++)
+    for (uint64_t i = 0; i < count; i++)
     {
         uint64_t target_virtual = ndest + i * PAGE_SIZE;
         virt_map(target_virtual, source + PAGE_SIZE * i, 0x1 | 0x2 | 0x4);
     }
 
-    add_thread_map(pro, ndest, (uint64_t)source, count);
+    add_thread_map(pro, ndest, (uint64_t)source, count + 1);
     update_paging();
 }
 void launch_programm(const char *path, echfs *file_sys)

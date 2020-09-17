@@ -171,13 +171,14 @@ void init_physical_memory(stivale_struct *bootdata)
         {
             if (mementry[i].length > (total_memory_lenght / PAGE_SIZE) / 8)
             {
-
+                // for program when we try to map them we put generaly them at 1 meg
+                // so generaly pmm use 1M so we put it on top instead of low
                 log("pmm", LOG_INFO) << "memory entry used " << i;
                 log("pmm", LOG_INFO) << "total bitmap length" << (total_memory_lenght / PAGE_SIZE) / 8;
 
-                bitmap_base = mementry[i].base + PAGE_SIZE;
+                bitmap_base = mementry[i].length + mementry[i].base - ((total_memory_lenght / PAGE_SIZE) / 8);
                 log("pmm", LOG_INFO) << "bitmap addr" << bitmap_base;
-                mementry[i].base += ((total_memory_lenght / PAGE_SIZE) / 8) + PAGE_SIZE + PAGE_SIZE;
+                mementry[i].length -= ((total_memory_lenght / PAGE_SIZE) / 8) + PAGE_SIZE + PAGE_SIZE;
                 break;
             }
         }

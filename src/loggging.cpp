@@ -24,7 +24,7 @@ void loggging::set_log_type(const char *data, log_state log_state)
     }
     else
     {
-        printf("\n\033[4m\033[1m\033[31m [ FATAL ] [ %s ] : [0m", data);
+        printf("\n\033[4m\033[1m\033[31m [ FATAL ] [ %s ] : \033[0m", data);
     }
 }
 loggging loggging::operator<<(const char *string)

@@ -60,11 +60,12 @@ app:
 super:
 	@make app
 	-killall -9 VirtualBoxVM
+	-killall -9 qemu-system-x86_64
 	make format
 	make
 
 	@objdump kernel.elf -f -s -d --source > kernel.map
-	make runvbox
+	make run
 %.o: %.cpp %.h
 	@echo "cpp [BUILD] $<"
 	$(CC) $(CHARDFLAGS) -c $< -o $@

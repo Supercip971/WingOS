@@ -132,6 +132,8 @@ global lapic_eoi_ptr
 lapic_eoi_ptr:
     dq 0
 __interrupt32:
+    cld
+    cli
     push rax
     push rbx
     push rcx
@@ -147,6 +149,9 @@ __interrupt32:
     push r13
     push r14
     push r15
+
+    mov rax, qword [lapic_eoi_ptr]
+    mov dword [rax], 0
     call pit_callback
 
     call get_current_esp
@@ -163,6 +168,7 @@ __interrupt32:
 
     call task_update_switch
 
+
     pop r15
     pop r14
     pop r13
@@ -177,10 +183,9 @@ __interrupt32:
     pop rdx
     pop rcx
     pop rbx
-
-    mov rax, qword [lapic_eoi_ptr]
-    mov dword [rax], 0
     pop rax
+
+;add rsp, 16 ; pop errcode and int number
 
     sti
     iretq
@@ -208,9 +213,6 @@ irq0_first_jump:
         pop rdx
         pop rcx
         pop rbx
-
-        mov rax, qword [lapic_eoi_ptr]
-        mov dword [rax], 0
 
         pop rax
         sti

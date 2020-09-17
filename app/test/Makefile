@@ -1,5 +1,5 @@
 PROJECT_NAME := test
-PROJECT_DIRS := .
+PROJECT_DIRS := . ../../usr_lib
 CFILES := $(shell find $(PROJECT_DIRS) -type f -name \*.cpp)
 HFILES := $(shell find $(PROJECT_DIRS) -type f -name \*.h)
 
@@ -26,7 +26,7 @@ CHARDFLAGS := $(CFLAGS)               \
 		-ffreestanding                 \
         -fno-stack-protector           \
         -fno-omit-frame-pointer        \
-        -Isrc/                         \
+        -I../../usr_lib -I.\
 
 all: ${OBJ}
 	@$(LD) -nostdlib -no-pie -z max-page-size=0x1000 -T ../link.ld -o $(PROJECT_NAME).exe $(OBJ)

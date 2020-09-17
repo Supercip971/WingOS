@@ -192,8 +192,9 @@ extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
     {
         if (stackframe->int_no == 0x7f)
         {
-            syscall(stackframe->rdi, stackframe->r10, stackframe->r12, stackframe->r13, stackframe->r14, stackframe->r15); // don't use r11 for future use with x64 syscalls
-            printf("interrupt %x", stackframe->int_no);
+            stackframe->rax = syscall(stackframe->rax, stackframe->rbx, stackframe->rcx, stackframe->rdx, stackframe->rsi, stackframe->rdi); // don't use r11 for future use with x64 syscalls
+
+            //     printf("interrupt %x", stackframe->int_no);
         }
     }
     if (is_error(stackframe->int_no))

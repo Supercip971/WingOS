@@ -18,7 +18,7 @@ void _start(stivale_struct *bootloader_data)
 
     uint32_t d = 100;
     log("test", LOG_DEBUG) << "hello world" << 0x2028332564;
-    uint32_t *dd = (uint32_t *)bootloader_data->framebuffer_addr;
+    uint32_t *dd = (uint32_t *)get_mem_addr(bootloader_data->framebuffer_addr);
     log("graphics ", LOG_INFO) << " frame buffer address " << bootloader_data->framebuffer_addr;
     uint64_t update_tick = 0;
     uint64_t started_sec = 0;
@@ -30,7 +30,7 @@ void _start(stivale_struct *bootloader_data)
                                      bootloader_data->framebuffer_height;
              i++)
         {
-            dd[i] = ((uint32_t *)imjusttired)[i];
+            dd[i] = ((uint32_t *)get_mem_addr(imjusttired))[i];
         }
         imjusttired += sizeof(uint32_t);
         update_tick++;

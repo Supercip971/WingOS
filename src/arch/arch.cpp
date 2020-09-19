@@ -61,7 +61,9 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
     // before paging
 
     printf("init paging \n");
-    init_virtual_memory(bootloader_data);
+    init_physical_memory(bootloader_data);
+    printf("init vmm\n");
+    init_vmm(bootloader_data);
     printf("init paging : OK \n");
 
     printf("loading pic \n");
@@ -125,6 +127,8 @@ void start_process()
     main_start_fs = echfs();
     main_start_fs.init(mbr_part.get_partition_start(0), mbr_part.get_partition_length(0));
     launch_programm("init_fs/test.exe", &main_start_fs);
+   // launch_programm("init_fs/test2.exe", &main_start_fs);
+   // did you see that :O
     printf("testing with memory 3 \n");
     _start((stivale_struct *)bootdat);
 }

@@ -1,7 +1,11 @@
 #pragma once
 #include <arch/arch.h>
 #include <arch/mem/physical.h>
+#include <loggging.h>
 #include <stivale_struct.h>
+#define KERNEL_PHYS_OFFSET ((uint64_t)0xffffffff80000000)
+#define MEM_PHYS_OFFSET ((uint64_t)0xffff800000000000)
+
 #define PML4_GET_INDEX(addr) (addr & ((uint64_t)0x1ff << 39)) >> 39
 #define PDPT_GET_INDEX(addr) (addr & ((uint64_t)0x1ff << 30)) >> 30
 #define PAGE_DIR_GET_INDEX(addr) (addr & ((uint64_t)0x1ff << 21)) >> 21
@@ -11,57 +15,31 @@
 #define PAGE_SIZE 4096
 #define TWO_MEGS 0x2000000
 #define FOUR_GIGS 0x100000000
-#define BASIC_PAGE_FLAGS 0b111
+#define BASIC_PAGE_FLAGS 0x03
 #define BIT_PRESENT 0x1
+extern "C" void set_paging();
+typedef uint64_t main_page_table;
+struct pagemap
+{
+    main_page_table *pml4;
+};
 
-typedef uint64_t pl4_paging;
-
-static pl4_paging *pl4_table __attribute__((aligned(4096)));
-
-void init_virtual_memory(stivale_struct *sti_struct);
-
-uint64_t get_mem_addr(uint64_t addr);
-uint64_t get_rmem_addr(uint64_t addr);
-
-void virt_map(uint64_t vaddress, uint64_t paddress, uint64_t flags);
-void Huge_virt_map(uint64_t paddress, uint64_t vaddress, uint64_t flags);
-void update_paging();
-
+extern struct pagemap *kernel_pagemap;
 inline void set_paging_dir(uint64_t pd)
 {
-    asm volatile("mov %%rax, %%cr3" ::"a"(pd)
-                 : "memory");
+    log("paging", LOG_INFO) << "setting new paging dir : " << pd;
+    asm volatile("mov cr3, %0" ::"r"(pd));
+    //  log("paging", LOG_INFO) << "new paging dir loaded ! ";
 }
+int map_page(uint64_t, uint64_t, uint64_t);
 
-inline uint64_t vmm_get_cr3()
+inline void virt_map(uint64_t from, uint64_t to, uint64_t flags)
 {
-    uint64_t ret;
-    asm volatile("movq %%cr3, %0;"
-                 : "=r"(ret));
-    return ret;
+    log("paging", LOG_ERROR) << "HEY BUDDY ! REPLACE VIRT MAP WITH MAP PAGE !!!!!";
+    map_page(from, to, flags);
 }
+void init_vmm(stivale_struct *bootdata);
 
-inline void map_mem_address(uint64_t address, uint64_t page_length, bool with_offset = true)
-{
-    if ((address / PAGE_SIZE) * PAGE_SIZE != address)
-    {
-        address /= PAGE_SIZE;
-        address *= PAGE_SIZE;
-    }
-
-    if (with_offset)
-    {
-        for (uint64_t i = 0; i < page_length; i++)
-        {
-            virt_map(address + (i * 4096), get_mem_addr(address + (i * 4096)), 0x03);
-        }
-    }
-    else
-    {
-        for (uint64_t i = 0; i < page_length; i++)
-        {
-            virt_map(address + (i * 4096), (address + (i * 4096)), 0x03);
-        }
-    }
-    update_paging();
-}
+struct pagemap_t *new_address_space(void);
+struct pagemap_t *fork_address_space(struct pagemap_t *);
+void free_address_space(struct pagemap_t *);

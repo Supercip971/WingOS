@@ -5,6 +5,9 @@ LD         = ./cross_compiler/bin/x86_64-pc-elf-ld
 OBJ := $(shell find src/ -type f -name '*.o')
 KERNEL_HDD = ./build/disk.hdd
 KERNEL_RAMDISK = ./build/ramdisk.hdd
+
+APP_FS_CHANGE = ./usr_lib/ ./app/
+APP_FILE_CHANGE := $(shell find $(APP_FS_CHANGE) -type f -name '*.cpp')
 KERNEL_ELF = kernel.elf
 ASMFILES := $(shell find src/ -type f -name '*.asm')
 
@@ -40,6 +43,10 @@ LDHARDFLAGS := $(LDFLAGS)        \
 
 .PHONY: clean
 .DEFAULT_GOAL = $(KERNEL_HDD)
+boch:
+	-rm disk.img
+	@bximage -q -mode=convert -imgmode=flat build/disk.hdd disk.img
+	@bochs
 
 disk:
 	rm -rf $(KERNEL_HDD)
@@ -54,18 +61,19 @@ format:
 foreachramfs: 
 	@for f in $(shell find init_fs/ -maxdepth 64 -type f); do echfs-utils -m -p0 $(KERNEL_HDD) import $${f} $${f}; done
 
-app: 
+app: $(APP_FILE_CHANGE)
 	@make -C ./app/test all	
-
+	@make -C ./app/test2 all
 super:
-	@make app
+	make clean
+	make app
 	-killall -9 VirtualBoxVM
 	-killall -9 qemu-system-x86_64
 	make format
 	make
 
 	@objdump kernel.elf -f -s -d --source > kernel.map
-	make run
+	make runvbox
 %.o: %.cpp %.h
 	@echo "cpp [BUILD] $<"
 	$(CC) $(CHARDFLAGS) -c $< -o $@

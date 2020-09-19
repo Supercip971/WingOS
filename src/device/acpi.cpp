@@ -32,7 +32,7 @@ acpi::acpi()
 void *acpi::find_entry(const char *entry_name)
 {
 
-    RSDT *rsdt = (RSDT *)descriptor->firstPart.RSDT_address;
+    RSDT *rsdt = (RSDT *)get_mem_addr(descriptor->firstPart.RSDT_address);
     int entries = (rsdt->h.Length - sizeof(rsdt->h)) / 4;
 
     for (int i = 0; i < entries; i++)
@@ -43,7 +43,7 @@ void *acpi::find_entry(const char *entry_name)
             continue;
         }
 
-        RSDTHeader *h = (RSDTHeader *)(rsdt->PointerToOtherSDT[i]);
+        RSDTHeader *h = (RSDTHeader *)get_mem_addr((rsdt->PointerToOtherSDT[i]));
 
         if (!strncmp(h->Signature, entry_name, 4))
             return (void *)h;
@@ -76,7 +76,7 @@ void acpi::init(uint64_t rsdp)
 {
     log("acpi", LOG_DEBUG) << "loading acpi";
     descriptor = (RSDPDescriptor20 *)((((uint64_t)get_rsdp() /* get with the offset as stivale doesn't give me the good address so fu** you stivale */)));
-    rsdt_table = (RSDT *)(descriptor->firstPart.RSDT_address);
+    rsdt_table = (RSDT *)(get_mem_addr(descriptor->firstPart.RSDT_address));
 }
 void acpi::init_in_paging()
 {

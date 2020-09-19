@@ -23,7 +23,7 @@ void apic_timer::init()
     apic::the()->write(lvt_timer, 0x10000);
 
     uint64_t ticks = 0xFFFFFFFF - apic::the()->read(timer_current);
-    ticks /= 90;
+    ticks /= 100;
     apic::the()->write(lvt_timer, 32 | 0x20000);
     apic::the()->write(timer_div, 0x3);
     apic::the()->write(timer_init_counter, ticks);

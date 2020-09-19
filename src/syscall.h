@@ -3,9 +3,10 @@
 
 enum syscall_codes
 {
-    NULL_SYSCALL = 0,         // or debug syscall
-    SEND_SERVICE_SYSCALL = 1, // send a message to a service
-    READ_SERVICE_SYSCALL = 2, // read all message
+    NULL_SYSCALL = 0,                 // or debug syscall
+    SEND_SERVICE_SYSCALL = 1,         // send a message to a service
+    READ_SERVICE_SYSCALL = 2,         // read all message that you have
+    GET_RESPONSE_SERVICE_SYSCALL = 3, // if the message sended has been responded
 };
 
 void init_syscall();

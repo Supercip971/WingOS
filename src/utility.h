@@ -143,12 +143,9 @@ inline int strncmp(const char *s1, const char *s2, uint64_t n)
 }
 inline int strcmp(const char *s1, const char *s2)
 {
-    while (*s1 != '\0' && (*s1 == *s2))
-    {
-        s1++;
-        s2++;
-    }
-    return (s1 == s2) ? 0 : (*(unsigned char *)s1 - *(unsigned char *)s2);
+    while (*s1 && (*s1 == *s2))
+        s1++, s2++;
+    return *(const unsigned char *)s1 - *(const unsigned char *)s2;
 }
 inline uint64_t strlen(const char *s)
 {

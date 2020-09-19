@@ -22,7 +22,7 @@ CHARDFLAGS := $(CFLAGS)               \
         -no-pie \
         -mno-sse                       \
         -m64 \
-        -O3 \
+        -O0 \
         -mno-sse2                      \
         -mno-mmx                       \
         -mcmodel=kernel \
@@ -73,7 +73,7 @@ super:
 	make
 
 	@objdump kernel.elf -f -s -d --source > kernel.map
-	make runvbox
+	make run
 %.o: %.cpp %.h
 	@echo "cpp [BUILD] $<"
 	$(CC) $(CHARDFLAGS) -c $< -o $@

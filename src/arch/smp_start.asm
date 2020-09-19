@@ -63,34 +63,8 @@ trampoline32:
     mov ss, bx
 
 
-    mov eax, dword 0x14000
-    ; pire fix de ma vie, mais ça fonctionne, pourquoi ? je ne sais pas. est ce que je demande si ta grand mère fait du vélo ? NON alors MOILA >:( 
-    ; pourquoi je devrai débatre sur un fix ? JAI PASSE PLUSIEURS JOUR POUR CE TRUC ALORS TU ME TRIGGER PAS
-    ; et je code comme je veux OK ? est ce que je suis salé ? oui ! POURQUOI j'ai pas fait ça plus tôt ?
-    ; bon au moins ce morceaux de scotch tient et moila
-    ; toute personne du discord devse critiquant ce bout de code serra ban automatiquement
-    ; après je peut faire plusieurs ligne
-    ; c'est vrai que ce code est mauvait, charger la table de paging comme ça, ça devrait pas être légal
-    ; mais une addresse fixe c'est une addresse fixe
-    ; dailleurs aime tu les cookies ?
-    ; non mais sérieux je crois que ça fait plusieurs jour que je bosse dessus j'ai juste envie de mourrir
-    ; est-ce que github autorise ce code ?
-    ; meh ça m'étonnerai, sinon je ban github du discord devse
-    ; hmmm j'imagine bien un anglais traduire cette phrase en ne comprennant pas le code et en me
-    ; voyant rager comme un gamins de 3 ans et demi
-    ; moi quand j'ai commencé le développement on me disait
-    ; << c'est fun >>
-    ; BAH PARFOIS NON ! (oui révélation de ouf guedin)
-    ; et j'ai juste envie d'apprendre et de coder pas de réfléchir pendant plusieurs jour juste pour un truc a la c
-    ; surtout que l'osdev est l'un des truc les plus durs en programmation, quand tu reviens sur de la programmation normale les librairies standarts sont tellement bien
-    ; après bon ça fait déjà 14 lignes de commentaires inutiles
-    ; donc je vais m'expliquer pour ce fix
-    ;
-    ; c'était l'explication
-    ; merci pour la lecture de ce paragraphe
-    ; (que l'on viennent pas me critiquer pour le manque de commentaire dans le code, car sinon je vais te commenter moi hein !)
-    ; bon faut vraiment que je réfléchisse à quelque chose d'intelligent à faire ...
-    ; AH et aussi le système de logging pour le smp est merdique je sais michel
+    mov eax, dword [0x500]
+    ; FRICKIN BUG FIXED GUY !
 
     mov cr3, eax
 

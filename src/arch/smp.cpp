@@ -35,6 +35,7 @@ extern "C" void cpuupstart(void)
 
 void smp::init()
 {
+    SMPloaded = false;
     log("smp", LOG_DEBUG) << "loading smp";
     memzero(cpu_tss, sizeof(tss_t) * max_cpu);
     for (int i = 0; i < max_cpu; i++)
@@ -91,24 +92,22 @@ void smp::init_cpu(int apic, int id)
     {
         virt_map(0x1000 + (i * 4096), 0x1000 + (i * 4096), 0x1 | 0x2 | 0x4);
     }
-
-    virt_map(0x4000, 0x4000, 0x1 | 0x2 | 0x4);
-    virt_map(0x5000, 0x5000, 0x1 | 0x2 | 0x4);
-
+    virt_map(0, 0, 0x1 | 0x2 | 0x4);
+    set_paging_dir(get_rmem_addr((uint64_t)main_pml4));
     log("smp cpu", LOG_INFO) << "trampoline length " << trampoline_len;
 
     uint64_t end_addr = 0x4000;
     end_addr /= 4096;
     end_addr *= 4096;
 
-    virt_map((uint64_t)end_addr, end_addr, 0x1 | 0x2 | 0x4);
-    virt_map(0x0, 0x0, 0x1 | 0x2 | 0x4);
+    POKE((0x500)) =
+        get_rmem_addr((uint64_t)main_pml4);
 
-    POKE(get_mem_addr(end_addr)) = ((uint64_t)&pl4_table);
+    /*  POKE(get_mem_addr(end_addr)) = ((uint64_t)&pl4_table);
     POKE((end_addr)) = ((uint64_t)&pl4_table);
     POKE((0x500)) =
         get_rmem_addr((uint64_t)&pl4_table);
-    POKE((0x540)) = get_rmem_addr((uint64_t)&pl4_table);
+    POKE((0x540)) = get_rmem_addr((uint64_t)&pl4_table);*/
 
     asm volatile(" \n"
                  "sgdt [0x580]\n"
@@ -116,22 +115,16 @@ void smp::init_cpu(int apic, int id)
 
     POKE((0x520)) = (uint64_t)&cpuupstart;
 
-    virt_map((uint64_t)&cpuupstart, (uint64_t)&cpuupstart, 0x1 | 0x2 | 0x4);
-
+    virt_map(0x8000, 0x8000, 0x1 | 0x2 | 0x4);
+    set_paging_dir(get_rmem_addr((uint64_t)main_pml4));
     uint64_t saddress = 0x8000;
-    saddress /= 4096;
-    saddress *= 4096;
-
-    virt_map(saddress, saddress, 0x1 | 0x2 | 0x4);
 
     saddress += 4096;
-
-    virt_map(saddress, saddress, 0x1 | 0x2 | 0x4);
 
     memset((void *)(saddress - 4096), 0, 4096);
 
     log("smp cpu", LOG_INFO) << "stack real address" << saddress;
-    log("smp cpu", LOG_INFO) << "paging real address" << get_rmem_addr((uint64_t)&pl4_table);
+    //   log("smp cpu", LOG_INFO) << "paging real address" << get_rmem_addr((uint64_t)&pl4_table);
 
     memcpy((void *)0x1000, &trampoline_start, trampoline_len);
     log("smp cpu", LOG_INFO) << "pre loading cpu : " << id;

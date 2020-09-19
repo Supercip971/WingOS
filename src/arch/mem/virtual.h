@@ -16,22 +16,19 @@
 #define TWO_MEGS 0x2000000
 #define FOUR_GIGS 0x100000000
 #define BASIC_PAGE_FLAGS 0x03
+#define PAGE_TABLE_FLAGS 0x07
 #define BIT_PRESENT 0x1
 extern "C" void set_paging();
 typedef uint64_t main_page_table;
-struct pagemap
-{
-    main_page_table *pml4;
-};
 
-extern struct pagemap *kernel_pagemap;
+extern main_page_table *main_pml4;
 inline void set_paging_dir(uint64_t pd)
 {
     log("paging", LOG_INFO) << "setting new paging dir : " << pd;
     asm volatile("mov cr3, %0" ::"r"(pd));
     //  log("paging", LOG_INFO) << "new paging dir loaded ! ";
 }
-int map_page(uint64_t, uint64_t, uint64_t);
+int map_page(uint64_t phys_addr, uint64_t virt_addr, uint64_t flags);
 
 inline void virt_map(uint64_t from, uint64_t to, uint64_t flags)
 {
@@ -39,7 +36,3 @@ inline void virt_map(uint64_t from, uint64_t to, uint64_t flags)
     map_page(from, to, flags);
 }
 void init_vmm(stivale_struct *bootdata);
-
-struct pagemap_t *new_address_space(void);
-struct pagemap_t *fork_address_space(struct pagemap_t *);
-void free_address_space(struct pagemap_t *);

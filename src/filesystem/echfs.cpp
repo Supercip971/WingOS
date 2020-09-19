@@ -232,13 +232,15 @@ uint64_t echfs::find_file(const char *path)
         log("echfs", LOG_ERROR) << "with echfs file path can't get larger than 200";
         return -1;
     }
-    log("echfs", LOG_INFO) << "searching for " << path;
-    char buffer_temp[201];
-    char *path_copy = (char *)malloc(strlen(path) + 1);
+    char *buffer_temp = (char *)malloc(201);
+    char *path_copy = (char *)malloc(201);
+    memzero(path_copy, 201);
     for (int i = 0; i < strlen(path); i++)
     {
         path_copy[i] = path[i];
     }
+    log("echfs", LOG_INFO) << "searching for " << path_copy;
+
     memzero(buffer_temp, 201);
     bool is_end = false;
     echfs_file_header current_header;
@@ -253,6 +255,7 @@ redo: // yes goto are bad but if someone has a solution i take it ;)
     {
         if (*path_copy == 0)
         {
+            buffer_temp[i] = 0;
             is_end = true;
             break;
         }
@@ -275,6 +278,7 @@ redo: // yes goto are bad but if someone has a solution i take it ;)
             {
 
                 log("echfs", LOG_ERROR) << "entry use a file as a directory " << buffer_temp;
+                free(buffer_temp);
                 return -1;
             }
             current_parent = current_header.starting_block;
@@ -284,6 +288,7 @@ redo: // yes goto are bad but if someone has a solution i take it ;)
         {
 
             log("echfs", LOG_ERROR) << "entry not found" << buffer_temp;
+            free(buffer_temp);
             return -1;
         }
     }
@@ -295,12 +300,14 @@ redo: // yes goto are bad but if someone has a solution i take it ;)
         {
             current_header = read_directory_entry(next_idx);
             log("echfs", LOG_INFO) << "file found ! ";
+            free(buffer_temp);
             return next_idx;
         }
         else
         {
 
             log("echfs", LOG_ERROR) << "entry not found" << buffer_temp;
+            free(buffer_temp);
             return -1;
         }
     }

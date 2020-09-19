@@ -24,9 +24,13 @@ typedef uint64_t main_page_table;
 extern main_page_table *main_pml4;
 inline void set_paging_dir(uint64_t pd)
 {
-    log("paging", LOG_INFO) << "setting new paging dir : " << pd;
+    //log("paging", LOG_INFO) << "setting new paging dir : " << pd;
     asm volatile("mov cr3, %0" ::"r"(pd));
     //  log("paging", LOG_INFO) << "new paging dir loaded ! ";
+}
+inline void update_paging()
+{
+    set_paging_dir((uint64_t)main_pml4 - 0xffff800000000000);
 }
 int map_page(uint64_t phys_addr, uint64_t virt_addr, uint64_t flags);
 

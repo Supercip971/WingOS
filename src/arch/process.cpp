@@ -3,11 +3,12 @@
 #include <arch/mem/liballoc.h>
 #include <arch/process.h>
 #include <com.h>
+#include <kernel.h>
 #include <loggging.h>
+#include <utility.h>
 #pragma GCC optimize("-O0")
 extern "C" void irq0_first_jump();
 extern "C" void reload_cr3();
-process *process_array;
 process kernel_process;
 char temp_esp[8192];
 process *nxt;
@@ -53,13 +54,13 @@ void init_multi_process(func start)
     }
 
     printf("loading process 1 \n");
-    init_process(main_process_1, true);
+    init_process(main_process_1, true, "testing1");
 
     printf("loading process 2 \n");
-    init_process(main_process_2, true);
+    init_process(main_process_2, true, "testing2");
 
     printf("loading process 3 \n");
-    init_process(start, true);
+    init_process(start, true, "kernel process");
     process_loaded = true;
 
     asm volatile("sti");
@@ -68,14 +69,15 @@ void init_multi_process(func start)
     //asm volatile("jmp irq0_first_jump");
 }
 
-process *init_process(func entry_point, bool start_direct)
+process *init_process(func entry_point, bool start_direct, const char *name)
 {
+
     for (int i = 0; i < MAX_PROCESS; i++)
     {
         if (process_array[i].current_process_state ==
             process_state::PROCESS_AVAILABLE)
         {
-            log("proc", LOG_INFO) << "adding process" << i << "entry : " << (uint64_t)entry_point;
+            log("proc", LOG_INFO) << "adding process" << i << "entry : " << (uint64_t)entry_point << "name : " << name;
             if (start_direct == true)
             {
                 process_array[i].current_process_state = process_state::PROCESS_WAITING;
@@ -84,10 +86,21 @@ process *init_process(func entry_point, bool start_direct)
             {
                 process_array[i].current_process_state = process_state::PROCESS_NOT_STARTED;
             }
+            int iname = 0;
+            for (iname = 0; iname < 128 && name[iname] != 0; iname++)
+            {
+                process_array[i].process_name[iname] = name[iname];
+            }
+            process_array[i].last_message_used = 0;
+            process_array[i].process_name[iname] = 0;
             process_array[i].entry_point = (uint64_t)entry_point;
             process_array[i].rsp =
                 ((uint64_t)process_array[i].stack) + PROCESS_STACK_SIZE;
-
+            for (uint64_t j = 0; j < MAX_PROCESS_MESSAGE_QUEUE; j++)
+            {
+                process_array[i].msg_list[j].entry_free_to_use = true;
+                process_array[i].msg_list[j].message_id = j;
+            }
             uint64_t *rsp = (uint64_t *)process_array[i].rsp;
 
             *rsp-- = 0;
@@ -241,7 +254,9 @@ extern "C" uint64_t get_next_esp()
 
 extern "C" void task_update_switch(process *next)
 {
-    //  log("process", LOG_INFO) << "next : " << next->pid;
+    //
+
+    // log("process", LOG_INFO) << "next : " << next->process_name;
     tss_set_rsp0((uint64_t)nxt->stack + PROCESS_STACK_SIZE - 8);
     current_process->current_process_state = process_state::PROCESS_WAITING;
     current_process = nxt;
@@ -253,15 +268,17 @@ extern "C" void task_update_switch(process *next)
         if (nxt->mmap[j].used == true)
         {
             uint64_t mem_length = nxt->mmap[j].length;
+            //      log("process", LOG_INFO) << " for next : " << next->process_name;
+
             for (uint64_t i = 0; i < mem_length; i++)
             {
-                //     log("process", LOG_INFO) << "mmap : " << nxt->mmap[j].from + i * PAGE_SIZE << " to : " << nxt->mmap[j].to + i * PAGE_SIZE;
-                virt_map(nxt->mmap[j].from + i * PAGE_SIZE, nxt->mmap[j].to + i * PAGE_SIZE, 0x1 | 0x2 | 0x4);
+                //        log("process", LOG_INFO) << "mmap : " << nxt->mmap[j].from + i * PAGE_SIZE << " to : " << nxt->mmap[j].to + i * PAGE_SIZE << "for proc " << nxt->process_name;
+                map_page(nxt->mmap[j].from + i * PAGE_SIZE, nxt->mmap[j].to + i * PAGE_SIZE, 0x1 | 0x2 | 0x4);
             }
+            update_paging();
         }
     }
-
-    update_paging();
+    //  set_paging_dir(kernel_pagemap->pml4);
 }
 
 void add_thread_map(process *p, uint64_t from, uint64_t to, uint64_t length)
@@ -280,4 +297,120 @@ void add_thread_map(process *p, uint64_t from, uint64_t to, uint64_t length)
         }
     }
     log("process", LOG_ERROR) << "cant find a free map for thread";
+}
+
+process_message *send_message(uint64_t data_addr, uint64_t data_length, const char *to_process)
+{
+
+    log("process", LOG_INFO) << "sending message to " << to_process << "addr : " << data_addr << "length " << data_length;
+    for (int i = 0; i < MAX_PROCESS; i++)
+    {
+        if (process_array[i].current_process_state == PROCESS_WAITING || process_array[i].current_process_state == PROCESS_RUNNING)
+        {
+            log("process", LOG_INFO) << "checking with " << process_array[i].process_name;
+
+            if (strcmp(to_process, process_array[i].process_name) == 0)
+            {
+                for (int j = process_array[i].last_message_used; j < MAX_PROCESS_MESSAGE_QUEUE; j++)
+                {
+                    if (process_array[i].msg_list[j].entry_free_to_use == true)
+                    {
+                        process_array[i].last_message_used = j;
+                        process_message *todo = &process_array[i].msg_list[j];
+                        todo->entry_free_to_use = false;
+                        todo->has_been_readed = false;
+                        todo->content_length = data_length;
+                        uint64_t memory_kernel_copy = (uint64_t)malloc(data_length);
+                        memcpy((void *)memory_kernel_copy, (void *)data_addr, data_length);
+                        todo->content_address = memory_kernel_copy;
+                        todo->from_pid = current_process->pid;
+                        todo->to_pid = process_array[i].pid;
+                        todo->response = -1;
+                        process_message *copy = (process_message *)malloc(sizeof(process_message));
+                        *copy = *todo;
+                        copy->content_address = -1;
+                        return copy;
+                    }
+                } // every left message has been checked
+                for (int j = 0; j < MAX_PROCESS_MESSAGE_QUEUE; j++)
+                {
+                    if (process_array[i].msg_list[j].entry_free_to_use == true)
+                    {
+                        process_array[i].last_message_used = 0;
+                        process_message *todo = &process_array[i].msg_list[j];
+                        todo->entry_free_to_use = false;
+                        todo->has_been_readed = false;
+                        todo->content_length = data_length;
+                        uint64_t memory_kernel_copy = (uint64_t)malloc(data_length);
+                        memcpy((void *)memory_kernel_copy, (void *)data_addr, data_length);
+                        todo->content_address = memory_kernel_copy;
+                        todo->from_pid = current_process->pid;
+                        todo->to_pid = process_array[i].pid;
+                        todo->response = -1;
+                        process_message *copy = (process_message *)malloc(sizeof(process_message));
+                        *copy = *todo;
+                        copy->content_address = -1;
+                        return copy;
+                    }
+                }
+            }
+        }
+    }
+    log("process", LOG_ERROR) << "trying to send a message to : " << to_process << "and not founded it :(";
+
+    return nullptr;
+}
+
+process_message *read_message()
+{
+    for (uint64_t i = 0; i < MAX_PROCESS_MESSAGE_QUEUE; i++)
+    {
+        if (current_process->msg_list[i].entry_free_to_use == false)
+        {
+            if (current_process->msg_list[i].has_been_readed == false)
+            {
+                return &current_process->msg_list[i];
+            }
+        }
+    }
+    return 0x0;
+}
+uint64_t message_response(process_message *message_id)
+{
+
+    if (message_id->to_pid > MAX_PROCESS)
+    {
+        //      log("process", LOG_ERROR) << "not valid pid in message response" << message_id->to_pid;
+        return -1;
+    }
+    if (message_id->from_pid != current_process->pid)
+    {
+        log("process", LOG_ERROR) << "not valid process from";
+        return -1;
+    }
+    if (process_array[message_id->to_pid].current_process_state != PROCESS_WAITING && process_array[message_id->to_pid].current_process_state != PROCESS_RUNNING)
+    {
+        log("process", LOG_ERROR) << "trying to send a message to a not started pid" << message_id->to_pid;
+        return -1;
+    }
+
+    process_message *msg = &process_array[message_id->to_pid].msg_list[message_id->message_id];
+    if (msg->response == -1)
+    {
+   //     log("process", LOG_ERROR) << "message has not been readed";
+        return -2; // return -2 = wait again
+    }
+    else if (msg->entry_free_to_use == true)
+    {
+        log("process", LOG_ERROR) << "message has already been readed";
+        return -3;
+    }
+    else
+    {
+        msg->entry_free_to_use = true;
+        free(message_id);
+        free((void *)msg->content_address);
+        return msg->response;
+    }
+    return -1;
 }

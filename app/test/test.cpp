@@ -5,6 +5,8 @@ int main(){
     uint64_t sample_data = 0;
     sys::process_message msg_to_send = sys::process_message("init_fs/test2.exe", (uint64_t)&sample_data,sizeof (uint64_t));
     uint64_t result = 0;
+    const char* h = "hello world";
+    sys::process_message helloworld = sys::process_message("console_out", (uint64_t)h, 13);
     while (true) {
         result = msg_to_send.read();
         if(result != -2){

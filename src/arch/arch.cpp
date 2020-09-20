@@ -21,6 +21,7 @@
 #include <filesystem/echfs.h>
 #include <filesystem/partition/base_partition.h>
 #include <kernel.h>
+#include <kernel_service/kernel_service.h>
 #include <loggging.h>
 #include <stivale_struct.h>
 
@@ -114,6 +115,7 @@ void start_process()
     printf(" frame buffer address 2 %x \n", ((stivale_struct *)bootdat)->framebuffer_addr);
     printf("init process OK \n");
     printf("testing with memory \n");
+    load_kernel_service();
     uint8_t *m = (uint8_t *)malloc(sizeof(uint8_t) * 128); // just for testing
     for (uint64_t i = 0; i < 128; i++)
     {

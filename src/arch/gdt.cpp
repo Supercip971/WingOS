@@ -2,6 +2,7 @@
 #include <com.h>
 #include <device/local_data.h>
 #include <kernel.h>
+#include <loggging.h>
 #include <stddef.h>
 #pragma GCC optimize("-O0")
 /* flags */
@@ -29,7 +30,8 @@ static void gdt_set_descriptor(gdt_descriptor_t *gdt_descriptors, uint16_t sel,
     descriptor->flags = flags;
     descriptor->granularity = (gran << 4) | 0x0F;
     descriptor->limit_low = 0xFFFF;
-    printf("setup gdt descriptor =  %x \n", *((uint64_t *)descriptor));
+
+    log("gdt", LOG_INFO) << "setup gdt descriptor = " << *((uint64_t *)descriptor);
 }
 
 static void gdt_set_xdescriptor(gdt_descriptor_t *gdt_descriptors, uint16_t sel,
@@ -47,22 +49,22 @@ static void gdt_set_xdescriptor(gdt_descriptor_t *gdt_descriptors, uint16_t sel,
     descriptor->low.base_high = ((base >> 24) & 0xFF);
     descriptor->high.base_xhigh = ((base >> 32) & 0xFFFFFFFF);
     descriptor->high.reserved = 0;
-    printf("setup xgdt descriptor =  %x \n", *((uint64_t *)descriptor));
+    log("gdt", LOG_INFO) << "setup xgdt descriptor = " << *((uint64_t *)descriptor);
 }
 
 extern "C" void gdtr_install(gdtr_t *, unsigned short, unsigned short);
 void __attribute__((optimize("O0"))) rgdt_init(void)
 {
-    printf("rgdt_init \n");
+    log("gdt", LOG_DEBUG) << "loading gdt";
 
     uint64_t tss_base = (uint64_t)&get_current_data()->tss;
     uint64_t tss_limit = tss_base + sizeof(get_current_data()->tss) - 1;
 
-    printf("reset gdt \n");
+    log("gdt", LOG_INFO) << "resetting gdt";
 
     memzero(&gdt_descriptors, sizeof(gdt_descriptors) * 64);
 
-    printf("set gdt entries \n");
+    log("gdt", LOG_INFO) << "setting gdt entry";
     gdt_set_descriptor(gdt_descriptors, SLTR_KERNEL_CODE, GDT_PRESENT | GDT_CS,
                        GDT_LM);
     gdt_set_descriptor(gdt_descriptors, SLTR_KERNEL_DATA,

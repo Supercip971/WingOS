@@ -203,11 +203,15 @@ extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
         log("pic", LOG_FATAL) << "!!! fatal interrupt error !!!";
         log("pic", LOG_ERROR) << "ID   : " << stackframe->int_no;
         log("pic", LOG_ERROR) << "type : " << exception_messages[stackframe->int_no];
-        if (current_process != nullptr)
-        {
-            log("pic", LOG_INFO) << "in thread" << current_process->pid;
 
-            //         printf("in thread : %x \n", current_process->pid);
+        if (process_array != nullptr)
+        {
+            log("pic", LOG_INFO) << "running process : ";
+            for (int i = 0; i < MAX_PROCESS; i++)
+            {
+                log("pic", LOG_INFO) << "process name : " << process_array->process_name;
+                log("pic", LOG_INFO) << "state : " << process_array->current_process_state;
+            }
         }
         printf("\n");
         dumpregister(stackframe);

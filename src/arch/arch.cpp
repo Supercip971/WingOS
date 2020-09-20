@@ -44,32 +44,32 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
     asm volatile("and rsp, -16");
     asm volatile("cli");
     com_initialize(COM_PORT::COM1);
-
-    printf("bootloader addr %x \n", (uint64_t)bootloader_data);
+    // log("kernel", LOG_INFO) << ""
+    // printf("bootloader addr %x \n", (uint64_t)bootloader_data);
     memcpy(&boot_loader_data_copy, bootloader_data, sizeof(stivale_struct));
 
-    printf("init gdt \n");
+    //   printf("init gdt \n");
     setup_gdt((uint64_t)stack + (sizeof(char) * STACK_SIZE));
-    printf("init gdt : ✅ \n");
+    //   printf("init gdt : ✅ \n");
 
-    printf("init idt \n");
+    //printf("init idt \n");
     init_idt();
-    printf("init idt : ✅ \n");
+    //printf("init idt : ✅ \n");
 
-    printf("init tss \n");
+    // printf("init tss \n");
     tss_init((uintptr_t)stack + sizeof(char) * STACK_SIZE);
-    printf("init tss : OK");
+    // printf("init tss : OK");
     // before paging
 
-    printf("init paging \n");
+    //  printf("init paging \n");
     init_physical_memory(bootloader_data);
-    printf("init vmm\n");
+    //  printf("init vmm\n");
     init_vmm(bootloader_data);
-    printf("init paging : OK \n");
+    //  printf("init paging : OK \n");
 
-    printf("loading pic \n");
+    // printf("loading pic \n");
     pic_init();
-    printf("loading pic : OK \n");
+    //  printf("loading pic : OK \n");
     acpi::the()->init((reinterpret_cast<stivale_struct *>(bootdat))->rsdp);
 
     acpi::the()->getFACP();
@@ -89,9 +89,9 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
     }
 
     //hpet::the()->init_hpet();
-    printf("set global data \n");
+    // printf("set global data \n");
     set_current_data(get_current_data());
-    printf("set global data : OK \n");
+    // printf("set global data : OK \n");
     //virt_map((uint64_t)bootloader_data, (uint64_t)bootloader_data, 0x3);
 
     //    bootloader_data = (stivale_struct *)get_mem_addr((uint64_t)bootloader_data);
@@ -99,11 +99,6 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
     init_msr_syscall();
     mboot_module::the()->init(bootloader_data);
     bootdat = ((uint64_t)&boot_loader_data_copy);
-    printf(" frame buffer address %x \n", boot_loader_data_copy.framebuffer_addr);
-    printf(" frame buffer address %x \n", ((stivale_struct *)bootdat)->framebuffer_addr);
-    printf(" bootloader_data address %x \n", (uint64_t)&boot_loader_data_copy);
-    printf(" bootloader_data address %x \n ", (uint64_t)bootdat);
-    printf("init process \n");
     lock_process();
     init_multi_process(start_process);
     asm volatile("sti");
@@ -112,16 +107,12 @@ MBR_partition mbr_part; // TODO : add [new] and [delete]
 echfs main_start_fs;
 void start_process()
 {
-    printf(" frame buffer address 2 %x \n", ((stivale_struct *)bootdat)->framebuffer_addr);
-    printf("init process OK \n");
-    printf("testing with memory \n");
     load_kernel_service();
     uint8_t *m = (uint8_t *)malloc(sizeof(uint8_t) * 128); // just for testing
     for (uint64_t i = 0; i < 128; i++)
     {
         m[i] = i;
     }
-    printf("loading with memory \n");
     ata_driver::the()->init();
     mbr_part = MBR_partition();
 
@@ -130,7 +121,5 @@ void start_process()
     main_start_fs.init(mbr_part.get_partition_start(0), mbr_part.get_partition_length(0));
     launch_programm("init_fs/test2.exe", &main_start_fs);
     launch_programm("init_fs/test.exe", &main_start_fs);
-    // did you see that :O
-    printf("testing with memory 3 \n");
     _start((stivale_struct *)bootdat);
 }

@@ -302,12 +302,12 @@ void add_thread_map(process *p, uint64_t from, uint64_t to, uint64_t length)
 process_message *send_message(uint64_t data_addr, uint64_t data_length, const char *to_process)
 {
 
-    log("process", LOG_INFO) << "sending message to " << to_process << "addr : " << data_addr << "length " << data_length;
+    //log("process", LOG_INFO) << "sending message to " << to_process << "addr : " << data_addr << "length " << data_length;
     for (int i = 0; i < MAX_PROCESS; i++)
     {
         if (process_array[i].current_process_state == PROCESS_WAITING || process_array[i].current_process_state == PROCESS_RUNNING)
         {
-            log("process", LOG_INFO) << "checking with " << process_array[i].process_name;
+            //    log("process", LOG_INFO) << "checking with " << process_array[i].process_name;
 
             if (strcmp(to_process, process_array[i].process_name) == 0)
             {
@@ -397,7 +397,7 @@ uint64_t message_response(process_message *message_id)
     process_message *msg = &process_array[message_id->to_pid].msg_list[message_id->message_id];
     if (msg->response == -1)
     {
-   //     log("process", LOG_ERROR) << "message has not been readed";
+        //     log("process", LOG_ERROR) << "message has not been readed";
         return -2; // return -2 = wait again
     }
     else if (msg->entry_free_to_use == true)

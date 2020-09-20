@@ -10,6 +10,7 @@ enum COM_PORT
 };
 
 void com_write_str(const char *buffer);
+bool com_write_strn(const char *buffer, uint64_t lenght);
 void com_write_reg(const char *buffer, uint64_t value);
 
 void com_initialize(COM_PORT port);

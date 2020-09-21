@@ -1,5 +1,6 @@
 #include <arch/process.h>
 #include <kernel_service/kernel_service.h>
+#include <kernel_service/memory_service.h>
 #include <kernel_service/print_service.h>
 #include <loggging.h>
 
@@ -17,4 +18,5 @@ void load_kernel_service()
 {
     log("kernel service", LOG_DEBUG) << "loading kernel service";
     add_kernel_service(print_service, "console_out");
+    add_kernel_service(memory_service, "memory_service");
 }

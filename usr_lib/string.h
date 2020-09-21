@@ -3,4 +3,4 @@
 
 uint64_t strlen(const char* s);
 
-void* memcpy(void* dest, const void* src, size_t)
+void* memcpy(void* dest, const void* src, uint64_t length);

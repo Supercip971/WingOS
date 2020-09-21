@@ -9,7 +9,7 @@ namespace sys {
         if(raw_data == nullptr){
             return -1;
         }
-        sys::process_message("console_out", (uint64_t)raw_data, length);
+        sys::process_message("console_out", (uint64_t)raw_data, length).read();
         return 1;
     }
 }

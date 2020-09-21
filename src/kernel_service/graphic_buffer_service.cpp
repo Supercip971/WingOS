@@ -8,7 +8,7 @@ void graphic_buffer_service()
     stivale_struct *hdr = (stivale_struct *)bootdat;
     log("graphic_buffer", LOG_INFO) << "graphic buffer addr : " << hdr->framebuffer_addr;
     log("graphic_buffer", LOG_INFO) << "loaded graphic buffer service";
-//    set_on_request_service(true);
+    set_on_request_service(true);
     while (true)
     {
         process_message *msg = read_message();
@@ -23,7 +23,7 @@ void graphic_buffer_service()
                 msg->response = hdr->framebuffer_addr;
             }
             msg->has_been_readed = true;
-//            on_request_service_update();
+            on_request_service_update();
         }
     }
 }

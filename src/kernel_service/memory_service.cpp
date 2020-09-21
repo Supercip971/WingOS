@@ -5,7 +5,7 @@
 void memory_service()
 {
     log("memory_service", LOG_INFO) << "loaded memory service";
-
+    set_on_request_service(true);
     while (true)
     {
         process_message *msg = read_message();
@@ -39,6 +39,7 @@ void memory_service()
                 msg->response = 0;
                 log("memory_service", LOG_ERROR) << "not valid request memory" << prot->request_type;
             }
+            on_request_service_update();
         }
     }
 }

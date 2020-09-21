@@ -127,6 +127,7 @@ process *init_process(func entry_point, bool start_direct, const char *name)
             *rsp-- = 0;
             *rsp = 0;
             process_array[i].rsp = (uint64_t)rsp;
+            process_array[i].is_ORS = false;
             if (current_process == 0x0)
             {
                 current_process = &process_array[i];
@@ -182,6 +183,11 @@ extern "C" process *get_next_process(uint64_t current_id)
                      process_state::PROCESS_WAITING &&
                  i != 0)
         {
+
+            if (process_array[i].is_ORS == true && process_array[i].should_be_active == false)
+            {
+                continue;
+            }
             return &process_array[i];
         }
     }
@@ -191,6 +197,10 @@ extern "C" process *get_next_process(uint64_t current_id)
                 process_state::PROCESS_WAITING &&
             i != 0)
         {
+            if (process_array[i].is_ORS == true && process_array[i].should_be_active == false)
+            {
+                continue;
+            }
             return &process_array[i];
         }
     }
@@ -330,6 +340,7 @@ process_message *send_message(uint64_t data_addr, uint64_t data_length, const ch
                         process_message *copy = (process_message *)malloc(sizeof(process_message));
                         *copy = *todo;
                         copy->content_address = -1;
+                        process_array[i].should_be_active = true;
                         return copy;
                     }
                 } // every left message has been checked
@@ -351,6 +362,7 @@ process_message *send_message(uint64_t data_addr, uint64_t data_length, const ch
                         process_message *copy = (process_message *)malloc(sizeof(process_message));
                         *copy = *todo;
                         copy->content_address = -1;
+                        process_array[i].should_be_active = true;
                         return copy;
                     }
                 }
@@ -414,4 +426,17 @@ uint64_t message_response(process_message *message_id)
         return msg->response;
     }
     return -1;
+}
+void set_on_request_service(bool is_ORS)
+{
+    if (is_ORS == true)
+    {
+        log("process", LOG_INFO) << "setting process : " << current_process->process_name << "on request service mode ";
+    }
+    current_process->is_ORS = is_ORS;
+    current_process->should_be_active = false;
+}
+void on_request_service_update()
+{
+    current_process->should_be_active = false;
 }

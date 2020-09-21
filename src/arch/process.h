@@ -44,6 +44,8 @@ struct process
     char process_name[128];
     process_message msg_list[MAX_PROCESS_MESSAGE_QUEUE];
     uint64_t last_message_used;
+    bool is_ORS = false;
+    bool should_be_active = false; // used with ORS
 } __attribute__((packed));
 
 struct message_identifier
@@ -68,3 +70,7 @@ extern "C" void irq_0_process_handler(InterruptStackFrame *isf);
 process_message *send_message(uint64_t data_addr, uint64_t data_length, const char *to_process);
 process_message *read_message();
 uint64_t message_response(process_message *indentifier);
+
+// todo : add ORS to user service, for the moment it is only for kernel
+void set_on_request_service(bool is_ORS);
+void on_request_service_update();

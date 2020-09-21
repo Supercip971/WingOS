@@ -7,6 +7,8 @@
 #ifdef X64
 #define STACK_SIZE 8192
 static char stack[STACK_SIZE] = {0};
+static uint64_t bootdat;
+
 inline void outb(uint16_t port, uint8_t value)
 {
     asm volatile("out  dx, al" ::"a"(value), "d"(port));

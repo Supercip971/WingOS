@@ -25,8 +25,6 @@
 #include <loggging.h>
 #include <stivale_struct.h>
 
-static uint64_t bootdat;
-
 __attribute__((section(".stivalehdr"), used))
 stivale_header header = {.stack = (uintptr_t)stack + (sizeof(char) * STACK_SIZE),
                          .flags = 1,

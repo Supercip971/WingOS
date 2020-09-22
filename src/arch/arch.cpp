@@ -17,6 +17,7 @@
 #include <device/local_data.h>
 #include <device/madt.h>
 #include <device/mboot_module.h>
+#include <device/pci.h>
 #include <device/pit.h>
 #include <filesystem/echfs.h>
 #include <filesystem/partition/base_partition.h>
@@ -117,6 +118,7 @@ void start_process()
     mbr_part.init();
     main_start_fs = echfs();
     main_start_fs.init(mbr_part.get_partition_start(0), mbr_part.get_partition_length(0));
+    pci_system::the()->init();
     launch_programm("init_fs/test2.exe", &main_start_fs);
     launch_programm("init_fs/test.exe", &main_start_fs);
     _start((stivale_struct *)bootdat);

@@ -37,6 +37,14 @@ inline uint16_t inw(uint16_t port)
                  : "d"(port));
     return ret;
 }
+inline uint32_t inl(uint16_t port)
+{
+    uint32_t ret;
+    asm volatile("in eax, dx"
+                 : "=a"(ret)
+                 : "d"(port));
+    return ret;
+}
 inline void wait()
 {
     for (int i = 0; i < 40; i++)

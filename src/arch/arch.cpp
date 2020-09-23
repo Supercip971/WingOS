@@ -95,7 +95,7 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
 
     //    bootloader_data = (stivale_struct *)get_mem_addr((uint64_t)bootloader_data);
 
-    init_msr_syscall();
+    // init_msr_syscall(); ooooops
     mboot_module::the()->init(bootloader_data);
     bootdat = ((uint64_t)&boot_loader_data_copy);
     lock_process();

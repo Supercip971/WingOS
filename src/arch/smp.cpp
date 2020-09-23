@@ -21,11 +21,17 @@ extern "C" uint64_t start_cpu_entry;
 extern "C" uint64_t end_cpu_entry;
 extern "C" uint32_t trampoline_start, trampoline_end, nstack;
 bool SMPloaded = false;
-
 smp::smp()
 {
 }
+extern "C" void irq0_first_jump();
 
+void smp_function_tool()
+{
+    while (true)
+    {
+    }
+}
 extern "C" void cpuupstart(void)
 {
     log("smp", LOG_INFO) << "after loading cpu :" << apic::the()->get_current_processor_id();
@@ -34,8 +40,18 @@ extern "C" void cpuupstart(void)
     apic::the()->enable();
 
     gdt_ap_init();
-    asm("sti");
+    asm("cli");
     SMPloaded = true;
+    uint64_t vo = 0;
+
+    /* init_process(smp_function_tool, true, "smp");
+    while (true)
+    {
+
+        log("smp", LOG_INFO) << "first jumping cpu :" << apic::the()->get_current_processor_id();
+
+        irq0_first_jump();
+    }*/
     while (true)
     {
     }
@@ -112,6 +128,7 @@ void smp::init_cpu(int apic, int id)
         get_rmem_addr((uint64_t)main_pml4);
     POKE(get_mem_addr(0x570)) =
         (uint64_t)get_current_data(id)->stack_data + 8192;
+    memzero(get_current_data(id)->stack_data, 8192);
 
     /*  POKE(get_mem_addr(end_addr)) = ((uint64_t)&pl4_table);
     POKE((end_addr)) = ((uint64_t)&pl4_table);

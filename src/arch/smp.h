@@ -1,5 +1,6 @@
 #pragma once
 #include <arch/gdt.h>
+#include <arch/lock.h>
 #include <device/madt.h>
 class smp
 {

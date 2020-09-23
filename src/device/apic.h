@@ -40,6 +40,7 @@ public:
     void set_apic_addr(uint32_t new_address);
     void init();
     void enable();
+    void send_int(uint8_t cpu, uint32_t interrupt_num);
     bool isloaded();
     void EOI(); // signal end of interrupt
     void load_interrupt_system();

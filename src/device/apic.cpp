@@ -148,7 +148,7 @@ apic *apic::the()
 }
 uint32_t apic::get_current_processor_id()
 {
-    return (read(lapic_id) >> 24);
+    return (read(lapic_id) >> 24) & 0xff;
 }
 void apic::preinit_processor(uint32_t processorid)
 {
@@ -206,6 +206,12 @@ void apic::set_raw_redirect(uint8_t vector, uint32_t target_gsi, uint16_t flags,
     io_write(table[io_apic_target]->ioapic_addr, io_reg + 1, (uint32_t)(end >> 32));
 }
 
+void apic::send_int(uint8_t cpu, uint32_t interrupt_num)
+{
+    interrupt_num = (1 << 14) | interrupt_num;
+    write(0x310, (cpu << 24));
+    write(0x300, interrupt_num);
+}
 void apic::set_redirect_irq(int cpu, uint8_t irq, int status)
 {
     log("io apic", LOG_INFO) << "setting redirect irq for cpu : " << cpu << " irq : " << irq << " status : " << status;

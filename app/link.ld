@@ -3,7 +3,8 @@ ENTRY(main)
 OUTPUT_FORMAT(elf64-x86-64)
 SECTIONS
 {
-	. = 1M;
+
+	. = 4M;
 	__start = .;
 
 

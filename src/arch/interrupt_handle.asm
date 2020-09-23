@@ -127,6 +127,8 @@ extern get_current_esp
 extern get_next_esp
 extern task_update_switch
 extern pit_callback
+extern start_task
+extern end_task
 global irq0_first_jump
 global lapic_eoi_ptr
 lapic_eoi_ptr:
@@ -149,7 +151,7 @@ __interrupt32:
     push r13
     push r14
     push r15
-
+    call start_task
     mov rax, qword [lapic_eoi_ptr]
     mov dword [rax], 0
     call pit_callback
@@ -169,6 +171,7 @@ __interrupt32:
     call task_update_switch
 
 
+    call end_task
     pop r15
     pop r14
     pop r13
@@ -235,10 +238,69 @@ INTERRUPT_NOERR 47
 
 INTERRUPT_NOERR 50
 INTERRUPT_NOERR 127
-INTERRUPT_NOERR 100
+; INTERRUPT_NOERR 100
 
-section .data
-global __interrupt_vector
+__interrupt100:
+    cld
+    cli
+    push rax
+    push rbx
+    push rcx
+    push rdx
+    push rsi
+    push rdi
+    push rbp
+    push r8
+    push r9
+    push r10
+    push r11
+    push r12
+    push r13
+    push r14
+    push r15
+    call start_task
+
+    mov rax, qword [lapic_eoi_ptr]
+    mov dword [rax], 0
+
+    call get_current_esp
+
+
+
+    mov [rax], rsp
+    call get_next_esp
+
+
+    mov rsp, [rax]
+
+    mov rdi, rax
+
+    call task_update_switch
+
+
+    call end_task
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop r11
+    pop r10
+    pop r9
+    pop r8
+    pop rbp
+    pop rdi
+    pop rsi
+    pop rdx
+    pop rcx
+    pop rbx
+    pop rax
+
+;add rsp, 16 ; pop errcode and int number
+
+    sti
+    iretq
+    section .data
+    global __interrupt_vector
 
 __interrupt_vector:
     INTERRUPT_NAME 0

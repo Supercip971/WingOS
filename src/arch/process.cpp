@@ -1,8 +1,12 @@
 #include <arch/64bit.h>
 #include <arch/gdt.h>
+#include <arch/lock.h>
 #include <arch/mem/liballoc.h>
 #include <arch/process.h>
+#include <arch/smp.h>
 #include <com.h>
+#include <device/apic.h>
+#include <device/local_data.h>
 #include <kernel.h>
 #include <loggging.h>
 #include <utility.h>
@@ -16,6 +20,15 @@ bool process_locked = true;
 bool process_loaded = false;
 void lock_process() { process_locked = true; }
 void unlock_process() { process_locked = false; }
+lock_type task_lock = {0};
+extern "C" void start_task()
+{
+    lock((&task_lock));
+}
+extern "C" void end_task()
+{
+    unlock((&task_lock));
+}
 void main_process_1()
 {
     printf("process 1 \n");
@@ -42,7 +55,7 @@ void init_multi_process(func start)
     log("proc", LOG_DEBUG) << "loading multi processing";
     printf("loading process \n");
     process_array = (process *)malloc(sizeof(process) * MAX_PROCESS);
-
+    get_current_data()->current_process = nullptr;
     printf("loading process 0 \n");
     for (int i = 0; i < MAX_PROCESS; i++)
     {
@@ -128,9 +141,9 @@ process *init_process(func entry_point, bool start_direct, const char *name)
             *rsp = 0;
             process_array[i].rsp = (uint64_t)rsp;
             process_array[i].is_ORS = false;
-            if (current_process == 0x0)
+            if (get_current_data()->current_process == 0x0)
             {
-                current_process = &process_array[i];
+                get_current_data()->current_process = &process_array[i];
             }
             for (int j = 0; j < MAX_PROCESS_MEMORY_DATA_MAP; j++)
             {
@@ -149,20 +162,20 @@ extern "C" void switch_context(InterruptStackFrame *current_Isf, process *next)
     {
         return; // early return
     }
-    if (current_process == NULL)
+    if (get_current_data()->current_process == NULL)
     {
         current_Isf = (InterruptStackFrame *)next->rsp;
         next->current_process_state = process_state::PROCESS_RUNNING;
-        current_process = next;
+        get_current_data()->current_process = next;
     }
     else
     {
-        current_process->current_process_state = PROCESS_WAITING;
-        current_process->rsp = current_Isf->rsp;
+        get_current_data()->current_process->current_process_state = PROCESS_WAITING;
+        get_current_data()->current_process->rsp = current_Isf->rsp;
 
         current_Isf = (InterruptStackFrame *)next->rsp;
         next->current_process_state = process_state::PROCESS_RUNNING;
-        current_process = next;
+        get_current_data()->current_process = next;
     }
 }
 
@@ -170,7 +183,7 @@ extern "C" process *get_next_process(uint64_t current_id)
 {
     if (process_locked)
     {
-        return current_process;
+        return get_current_data()->current_process;
     }
     for (uint64_t i = current_id; i < MAX_PROCESS; i++)
     {
@@ -214,7 +227,7 @@ extern "C" void irq_0_process_handler(InterruptStackFrame *isf)
     {
         return;
     }
-    if (current_process == NULL)
+    if (get_current_data()->current_process == NULL)
     {
         process *i = get_next_process(0);
         if (i == 0)
@@ -225,7 +238,7 @@ extern "C" void irq_0_process_handler(InterruptStackFrame *isf)
     }
     else
     {
-        process *i = get_next_process(current_process->pid);
+        process *i = get_next_process(get_current_data()->current_process->pid);
         if (i == nullptr)
         {
             return;
@@ -236,7 +249,7 @@ extern "C" void irq_0_process_handler(InterruptStackFrame *isf)
 
 extern "C" uint64_t get_current_esp()
 {
-    if (current_process == nullptr)
+    if (get_current_data()->current_process == nullptr)
     {
 
         log("proc", LOG_ERROR) << "i can't describe this error file : " << __FILE__;
@@ -245,32 +258,34 @@ extern "C" uint64_t get_current_esp()
     }
     else
     {
-        return (uint64_t)current_process;
+        return (uint64_t)get_current_data()->current_process;
     }
 }
 
 extern "C" uint64_t get_next_esp()
 {
-    if (current_process == 0)
+    if (get_current_data()->current_process == 0)
     {
         nxt = get_next_process(0);
         return (uint64_t)nxt;
     }
     else
     {
-        nxt = get_next_process(current_process->pid);
+        nxt = get_next_process(get_current_data()->current_process->pid);
         return (uint64_t)nxt;
     }
 }
 
+
 extern "C" void task_update_switch(process *next)
 {
     //
-
+    //move_to_next_cpu();
     // log("process", LOG_INFO) << "next : " << next->process_name;
+
     tss_set_rsp0((uint64_t)nxt->stack + PROCESS_STACK_SIZE - 8);
-    current_process->current_process_state = process_state::PROCESS_WAITING;
-    current_process = nxt;
+    get_current_data()->current_process->current_process_state = process_state::PROCESS_WAITING;
+    get_current_data()->current_process = nxt;
     next->current_process_state = process_state::PROCESS_RUNNING;
     //   log("process", LOG_INFO) << "process entry : " << nxt->pid;
 
@@ -334,7 +349,7 @@ process_message *send_message(uint64_t data_addr, uint64_t data_length, const ch
                         uint64_t memory_kernel_copy = (uint64_t)malloc(data_length);
                         memcpy((void *)memory_kernel_copy, (void *)data_addr, data_length);
                         todo->content_address = memory_kernel_copy;
-                        todo->from_pid = current_process->pid;
+                        todo->from_pid = get_current_data()->current_process->pid;
                         todo->to_pid = process_array[i].pid;
                         todo->response = -1;
                         process_message *copy = (process_message *)malloc(sizeof(process_message));
@@ -356,7 +371,7 @@ process_message *send_message(uint64_t data_addr, uint64_t data_length, const ch
                         uint64_t memory_kernel_copy = (uint64_t)malloc(data_length);
                         memcpy((void *)memory_kernel_copy, (void *)data_addr, data_length);
                         todo->content_address = memory_kernel_copy;
-                        todo->from_pid = current_process->pid;
+                        todo->from_pid = get_current_data()->current_process->pid;
                         todo->to_pid = process_array[i].pid;
                         todo->response = -1;
                         process_message *copy = (process_message *)malloc(sizeof(process_message));
@@ -378,11 +393,11 @@ process_message *read_message()
 {
     for (uint64_t i = 0; i < MAX_PROCESS_MESSAGE_QUEUE; i++)
     {
-        if (current_process->msg_list[i].entry_free_to_use == false)
+        if (get_current_data()->current_process->msg_list[i].entry_free_to_use == false)
         {
-            if (current_process->msg_list[i].has_been_readed == false)
+            if (get_current_data()->current_process->msg_list[i].has_been_readed == false)
             {
-                return &current_process->msg_list[i];
+                return &get_current_data()->current_process->msg_list[i];
             }
         }
     }
@@ -396,7 +411,7 @@ uint64_t message_response(process_message *message_id)
         //      log("process", LOG_ERROR) << "not valid pid in message response" << message_id->to_pid;
         return -1;
     }
-    if (message_id->from_pid != current_process->pid)
+    if (message_id->from_pid != get_current_data()->current_process->pid)
     {
         log("process", LOG_ERROR) << "not valid process from";
         return -1;
@@ -431,12 +446,12 @@ void set_on_request_service(bool is_ORS)
 {
     if (is_ORS == true)
     {
-        log("process", LOG_INFO) << "setting process : " << current_process->process_name << "on request service mode ";
+        log("process", LOG_INFO) << "setting process : " << get_current_data()->current_process->process_name << "on request service mode ";
     }
-    current_process->is_ORS = is_ORS;
-    current_process->should_be_active = false;
+    get_current_data()->current_process->is_ORS = is_ORS;
+    get_current_data()->current_process->should_be_active = false;
 }
 void on_request_service_update()
 {
-    current_process->should_be_active = false;
+    get_current_data()->current_process->should_be_active = false;
 }

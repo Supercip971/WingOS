@@ -34,6 +34,7 @@ struct process_message
 #define MAX_PROCESS_MESSAGE_QUEUE 32
 struct process
 {
+
     uint64_t rsp = 0;
     process_state current_process_state;
     uint64_t pid = 0;
@@ -46,6 +47,7 @@ struct process
     uint64_t last_message_used;
     bool is_ORS = false;
     bool should_be_active = false; // used with ORS
+    uint8_t processor_target;
 } __attribute__((packed));
 
 struct message_identifier
@@ -55,7 +57,6 @@ struct message_identifier
 } __attribute__((packed));
 
 static process *process_array = nullptr;
-static process *current_process = 0;
 // TODO: make a get_current_process() function
 typedef void (*func)();
 void add_thread_map(process *p, uint64_t from, uint64_t to, uint64_t length);

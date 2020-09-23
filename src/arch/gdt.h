@@ -1,5 +1,4 @@
 #pragma once
-#include <int_value.h>
 #include <stdint.h>
 #include <stivale_struct.h>
 #define GDT_DESCRIPTORS 7
@@ -79,3 +78,4 @@ typedef struct
 tss_t *get_tss();
 void tss_init(uint64_t i);
 void tss_set_rsp0(uint64_t rsp0);
+void gdt_ap_init();

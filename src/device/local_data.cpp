@@ -2,12 +2,14 @@
 #include <arch/smp.h>
 #include <device/apic.h>
 #include <device/local_data.h>
+#include <loggging.h>
 local_data procData[smp::max_cpu];
 
 local_data *get_current_data()
 {
     if (apic::the()->isloaded() == false)
     {
+        log("local data", LOG_ERROR) << ("getting current data of cpu 0");
         return &procData[0];
     }
     else

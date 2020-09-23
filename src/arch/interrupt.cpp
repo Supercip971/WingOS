@@ -1,8 +1,10 @@
 #include <arch/64bit.h>
 #include <arch/arch.h>
 #include <arch/interrupt.h>
+#include <arch/lock.h>
 #include <arch/pic.h>
 #include <arch/process.h>
+#include <arch/smp.h>
 #include <com.h>
 #include <device/apic.h>
 #include <device/ata_driver.h>
@@ -12,7 +14,9 @@
 #include <loggging.h>
 #include <syscall.h>
 #include <utility.h>
+uint8_t current = 0;
 
+lock_type lock = {0};
 const char *exception_messages[] = {"Division By Zero",
                                     "Debug",
                                     "Non Maskable Interrupt",
@@ -119,7 +123,8 @@ void init_idt()
         idt[i] = register_interrupt_handler((void *)too_much_handler, 0, 0x8e);
     }
     idt[127] = register_interrupt_handler((void *)__interrupt_vector[48], 0, 0x8e);
-    ;
+    idt[100] = register_interrupt_handler((void *)__interrupt_vector[49], 0, 0x8e);
+
     idt[0xf0] = register_interrupt_handler((void *)nmi_handler, 0, 0x8e);
     idt[0xff] = register_interrupt_handler((void *)spurious_handler, 0, 0x8e);
     log("idt", LOG_DEBUG) << "flushing idt";
@@ -180,6 +185,7 @@ bool is_error(int intno)
 
 extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
 {
+    //lock((&lock));
     if (rip_backtrace[32] != stackframe->rip)
     {
         for (int i = 0; i <= 31; i++)
@@ -188,13 +194,15 @@ extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
         }
         rip_backtrace[32] = stackframe->rip;
     }
-    if (stackframe->int_no != 0x24 && stackframe->int_no != 0x22 && stackframe->int_no != 32)
+    if (stackframe->int_no != 0x24 && stackframe->int_no != 0x22 && stackframe->int_no != 32 && stackframe->int_no != 0x2e)
     {
         if (stackframe->int_no == 0x7f)
         {
             stackframe->rax = syscall(stackframe->rax, stackframe->rbx, stackframe->rcx, stackframe->rdx, stackframe->rsi, stackframe->rdi); // don't use r11 for future use with x64 syscalls
-
-            //     printf("interrupt %x", stackframe->int_no);
+        }
+        else
+        {
+            //    printf("\n interrupt %x in processor %x \n", stackframe->int_no, apic::the()->get_current_processor_id());
         }
     }
     if (is_error(stackframe->int_no))
@@ -232,6 +240,7 @@ extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
     }
     else if (stackframe->int_no == 32)
     {
+        log("pit", LOG_ERROR) << "you shouldn't be here";
         PIT::the()->update();
         irq_0_process_handler(stackframe);
     }
@@ -250,5 +259,7 @@ extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
     else if (stackframe->int_no == 0xff)
     {
     }
+
     apic::the()->EOI();
+    // unlock((&lock));
 }

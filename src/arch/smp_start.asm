@@ -139,7 +139,7 @@ out dx, al
 lgdt [0x580]
 lidt [0x590]
 
-mov rsp, 0x8FF0
+mov rsp, [0x570]
     mov al, '6'
     mov dx, 0x3F8
     out dx, al

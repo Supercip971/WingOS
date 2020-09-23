@@ -1,4 +1,5 @@
 #include <arch/arch.h>
+#include <arch/gdt.h>
 #include <arch/mem/liballoc.h>
 #include <arch/mem/physical.h>
 #include <arch/mem/virtual.h>
@@ -27,6 +28,13 @@ smp::smp()
 
 extern "C" void cpuupstart(void)
 {
+    log("smp", LOG_INFO) << "after loading cpu :" << apic::the()->get_current_processor_id();
+
+    x86_wrmsr(0x1B, (x86_rdmsr(0x1B) | 0x800) & ~(LAPIC_ENABLE));
+    apic::the()->enable();
+
+    gdt_ap_init();
+    asm("sti");
     SMPloaded = true;
     while (true)
     {
@@ -40,7 +48,7 @@ void smp::init()
     memzero(cpu_tss, sizeof(tss_t) * max_cpu);
     for (int i = 0; i < max_cpu; i++)
     {
-        mt_lapic[i] = nullptr;
+        mt_lapic[i] = 0x0;
     }
     MADT_record_table_entry *mrte = madt::the()->get_madt_table_record();
     processor_count = 0;
@@ -100,8 +108,10 @@ void smp::init_cpu(int apic, int id)
     end_addr /= 4096;
     end_addr *= 4096;
 
-    POKE((0x500)) =
+    POKE(get_mem_addr(0x500)) =
         get_rmem_addr((uint64_t)main_pml4);
+    POKE(get_mem_addr(0x570)) =
+        (uint64_t)get_current_data(id)->stack_data + 8192;
 
     /*  POKE(get_mem_addr(end_addr)) = ((uint64_t)&pl4_table);
     POKE((end_addr)) = ((uint64_t)&pl4_table);
@@ -115,9 +125,9 @@ void smp::init_cpu(int apic, int id)
 
     POKE((0x520)) = (uint64_t)&cpuupstart;
 
-    virt_map(0x8000, 0x8000, 0x1 | 0x2 | 0x4);
+    //    virt_map(0x8000, 0x8000, 0x1 | 0x2 | 0x4);
     set_paging_dir(get_rmem_addr((uint64_t)main_pml4));
-    uint64_t saddress = 0x8000;
+    /*    uint64_t saddress = 0x8000;
 
     saddress += 4096;
 
@@ -125,7 +135,7 @@ void smp::init_cpu(int apic, int id)
 
     log("smp cpu", LOG_INFO) << "stack real address" << saddress;
     //   log("smp cpu", LOG_INFO) << "paging real address" << get_rmem_addr((uint64_t)&pl4_table);
-
+*/
     memcpy((void *)0x1000, &trampoline_start, trampoline_len);
     log("smp cpu", LOG_INFO) << "pre loading cpu : " << id;
 
@@ -162,6 +172,7 @@ void smp::init_cpu(int apic, int id)
     }
 
     log("smp cpu", LOG_DEBUG) << " loaded cpu : " << id;
+
     SMPloaded = false;
 }
 smp *smp::the()

@@ -79,7 +79,10 @@ void init_multi_process(func start)
 
     asm volatile("sti");
     unlock_process();
-    irq0_first_jump();
+    //    irq0_first_jump();
+    while (true)
+    {
+    }
     //asm volatile("jmp irq0_first_jump");
 }
 
@@ -108,6 +111,10 @@ process *init_process(func entry_point, bool start_direct, const char *name)
             process_array[i].last_message_used = 0;
             process_array[i].process_name[iname] = 0;
             process_array[i].entry_point = (uint64_t)entry_point;
+            for (int j = 0; j < PROCESS_STACK_SIZE; j++)
+            {
+                process_array[i].stack[j] = 0;
+            }
             process_array[i].rsp =
                 ((uint64_t)process_array[i].stack) + PROCESS_STACK_SIZE;
             for (uint64_t j = 0; j < MAX_PROCESS_MESSAGE_QUEUE; j++)
@@ -116,30 +123,15 @@ process *init_process(func entry_point, bool start_direct, const char *name)
                 process_array[i].msg_list[j].message_id = j;
             }
             uint64_t *rsp = (uint64_t *)process_array[i].rsp;
+            InterruptStackFrame *ISF = (InterruptStackFrame *)(rsp - (sizeof(InterruptStackFrame)));
+            memset(ISF, 0, sizeof(InterruptStackFrame));
+            ISF->rip = (uint64_t)entry_point;
+            ISF->ss = SLTR_KERNEL_DATA;
+            ISF->cs = SLTR_KERNEL_CODE;
+            ISF->rflags = 0x286;
+            ISF->rsp = (uint64_t)ISF;
 
-            *rsp-- = 0;
-            uint64_t crsp = (uint64_t)rsp;
-            *rsp-- = SLTR_KERNEL_DATA;      // SS
-            *rsp-- = crsp;                  // RSP
-            *rsp-- = 0x286;                 // RFLAGS
-            *rsp-- = SLTR_KERNEL_CODE;      // CS
-            *rsp-- = (uint64_t)entry_point; // RIP
-            *rsp-- = 0;
-            *rsp-- = 0;
-            *rsp-- = 0;
-            *rsp-- = 0;
-            *rsp-- = 0;
-            *rsp-- = 0;
-            *rsp-- = 0;
-            *rsp-- = 0;
-            *rsp-- = 0;
-            *rsp-- = 0;
-            *rsp-- = 0;
-            *rsp-- = 0;
-            *rsp-- = 0;
-            *rsp-- = 0;
-            *rsp = 0;
-            process_array[i].rsp = (uint64_t)rsp;
+            process_array[i].rsp = (uint64_t)ISF;
             process_array[i].is_ORS = false;
             if (get_current_data()->current_process == 0x0)
             {
@@ -156,26 +148,32 @@ process *init_process(func entry_point, bool start_direct, const char *name)
     return nullptr;
 }
 
-extern "C" void switch_context(InterruptStackFrame *current_Isf, process *next)
+extern "C" uint64_t switch_context(InterruptStackFrame *current_Isf, process *next)
 {
     if (next == NULL)
     {
-        return; // early return
+        return (uint64_t)current_Isf; // early return
     }
     if (get_current_data()->current_process == NULL)
     {
-        current_Isf = (InterruptStackFrame *)next->rsp;
+        // current_Isf = (InterruptStackFrame *)next->rsp;
+        // memcpy(current_Isf, (void *)next->rsp, sizeof(InterruptStackFrame));
         next->current_process_state = process_state::PROCESS_RUNNING;
         get_current_data()->current_process = next;
+        task_update_switch(next);
+        return next->rsp;
     }
     else
     {
         get_current_data()->current_process->current_process_state = PROCESS_WAITING;
-        get_current_data()->current_process->rsp = current_Isf->rsp;
-
-        current_Isf = (InterruptStackFrame *)next->rsp;
+        get_current_data()->current_process->rsp = (uint64_t)current_Isf;
+        //memcpy(current_Isf, (void *)next->rsp, sizeof(InterruptStackFrame));
+        //  current_Isf->rsp = next->rsp;
+        // current_Isf = (InterruptStackFrame *)next->rsp;
         next->current_process_state = process_state::PROCESS_RUNNING;
         get_current_data()->current_process = next;
+        task_update_switch(next);
+        return next->rsp;
     }
 }
 
@@ -221,29 +219,32 @@ extern "C" process *get_next_process(uint64_t current_id)
     return nullptr;
 }
 
-extern "C" void irq_0_process_handler(InterruptStackFrame *isf)
+extern "C" uint64_t irq_0_process_handler(InterruptStackFrame *isf)
 {
     if (process_locked)
     {
-        return;
+        //log("proc", LOG_INFO) << "process locked";
+        return (uint64_t)isf;
     }
     if (get_current_data()->current_process == NULL)
     {
         process *i = get_next_process(0);
         if (i == 0)
         {
-            return;
+            log("proc", LOG_INFO) << "get next process returned 0";
+            return (uint64_t)isf;
         }
-        switch_context(isf, i);
+        return switch_context(isf, i);
     }
     else
     {
         process *i = get_next_process(get_current_data()->current_process->pid);
         if (i == nullptr)
         {
-            return;
+            log("proc", LOG_INFO) << "get next process returned nullptr";
+            return (uint64_t)isf;
         }
-        switch_context(isf, i);
+        return switch_context(isf, i);
     }
 }
 
@@ -276,30 +277,29 @@ extern "C" uint64_t get_next_esp()
     }
 }
 
-
 extern "C" void task_update_switch(process *next)
 {
     //
     //move_to_next_cpu();
     // log("process", LOG_INFO) << "next : " << next->process_name;
 
-    tss_set_rsp0((uint64_t)nxt->stack + PROCESS_STACK_SIZE - 8);
-    get_current_data()->current_process->current_process_state = process_state::PROCESS_WAITING;
-    get_current_data()->current_process = nxt;
-    next->current_process_state = process_state::PROCESS_RUNNING;
+    tss_set_rsp0((uint64_t)next->stack + PROCESS_STACK_SIZE);
+    //  get_current_data()->current_process->current_process_state = process_state::PROCESS_WAITING;
+    //  get_current_data()->current_process = nxt;
+    //  next->current_process_state = process_state::PROCESS_RUNNING;
     //   log("process", LOG_INFO) << "process entry : " << nxt->pid;
 
     for (int j = 0; j < MAX_PROCESS_MEMORY_DATA_MAP; j++)
     {
-        if (nxt->mmap[j].used == true)
+        if (next->mmap[j].used == true)
         {
-            uint64_t mem_length = nxt->mmap[j].length;
+            uint64_t mem_length = next->mmap[j].length;
             //      log("process", LOG_INFO) << " for next : " << next->process_name;
 
             for (uint64_t i = 0; i < mem_length; i++)
             {
                 //        log("process", LOG_INFO) << "mmap : " << nxt->mmap[j].from + i * PAGE_SIZE << " to : " << nxt->mmap[j].to + i * PAGE_SIZE << "for proc " << nxt->process_name;
-                map_page(nxt->mmap[j].from + i * PAGE_SIZE, nxt->mmap[j].to + i * PAGE_SIZE, 0x1 | 0x2 | 0x4);
+                map_page(next->mmap[j].from + i * PAGE_SIZE, next->mmap[j].to + i * PAGE_SIZE, 0x1 | 0x2 | 0x4);
             }
             update_paging();
         }

@@ -116,8 +116,9 @@ void apic::init()
             log("iso", LOG_INFO) << "iso is level triggered";
         }
     }
-    lapic_eoi_ptr = (uint32_t *)((uint64_t)apic_addr + 0xb0);
+    //    lapic_eoi_ptr = (uint32_t *)((uint64_t)apic_addr + 0xb0);
     loaded = true;
+    log("apic", LOG_INFO) << "current processor id: " << get_current_processor_id();
 }
 
 uint32_t apic::read(uint32_t regs)

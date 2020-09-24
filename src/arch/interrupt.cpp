@@ -183,7 +183,7 @@ bool is_error(int intno)
 }
 // backtrace
 
-extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
+extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
 {
     //lock((&lock));
     if (rip_backtrace[32] != stackframe->rip)
@@ -199,6 +199,9 @@ extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
         if (stackframe->int_no == 0x7f)
         {
             stackframe->rax = syscall(stackframe->rax, stackframe->rbx, stackframe->rcx, stackframe->rdx, stackframe->rsi, stackframe->rdi); // don't use r11 for future use with x64 syscalls
+
+            apic::the()->EOI();
+            return (uint64_t)stackframe;
         }
         else
         {
@@ -211,7 +214,6 @@ extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
         log("pic", LOG_FATAL) << "!!! fatal interrupt error !!!";
         log("pic", LOG_ERROR) << "ID   : " << stackframe->int_no;
         log("pic", LOG_ERROR) << "type : " << exception_messages[stackframe->int_no];
-
         if (process_array != nullptr)
         {
             log("pic", LOG_INFO) << "running process : ";
@@ -233,6 +235,10 @@ extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
             }
         }
 
+        if (get_current_data()->current_process != nullptr)
+        {
+            log("pic", LOG_INFO) << "in process: " << get_current_data()->current_process->process_name;
+        }
         while (true)
         {
             asm volatile("hlt");
@@ -240,9 +246,11 @@ extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
     }
     else if (stackframe->int_no == 32)
     {
-        log("pit", LOG_ERROR) << "you shouldn't be here";
         PIT::the()->update();
-        irq_0_process_handler(stackframe);
+        uint64_t result = irq_0_process_handler(stackframe);
+        apic::the()->EOI();
+        //log("interrupt", LOG_INFO) << "next process rsp : " << result;
+        return result;
     }
     else if (stackframe->int_no == 33)
     {
@@ -261,5 +269,6 @@ extern "C" void interrupts_handler(InterruptStackFrame *stackframe)
     }
 
     apic::the()->EOI();
+    return (uint64_t)stackframe;
     // unlock((&lock));
 }

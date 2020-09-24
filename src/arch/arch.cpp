@@ -121,5 +121,6 @@ void start_process()
     pci_system::the()->init();
     launch_programm("init_fs/test2.exe", &main_start_fs);
     launch_programm("init_fs/test.exe", &main_start_fs);
+    //  unlock((&main_smp_lock));
     _start((stivale_struct *)bootdat);
 }

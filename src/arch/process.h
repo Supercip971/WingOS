@@ -2,7 +2,7 @@
 #include <arch/64bit.h>
 #include <int_value.h>
 #define MAX_PROCESS 128
-#define PROCESS_STACK_SIZE 8196
+#define PROCESS_STACK_SIZE 8192
 enum process_state
 {
     PROCESS_AVAILABLE = 0,
@@ -66,7 +66,8 @@ void init_multi_process(func start);
 void unlock_process();
 void lock_process();
 
-extern "C" void irq_0_process_handler(InterruptStackFrame *isf);
+extern "C" void task_update_switch(process *next);
+extern "C" uint64_t irq_0_process_handler(InterruptStackFrame *isf);
 
 process_message *send_message(uint64_t data_addr, uint64_t data_length, const char *to_process);
 process_message *read_message();

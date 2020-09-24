@@ -248,34 +248,7 @@ extern "C" uint64_t irq_0_process_handler(InterruptStackFrame *isf)
     }
 }
 
-extern "C" uint64_t get_current_esp()
-{
-    if (get_current_data()->current_process == nullptr)
-    {
 
-        log("proc", LOG_ERROR) << "i can't describe this error file : " << __FILE__;
-        //  printf("oh ow do you want some cookie ? \n");
-        return (uint64_t)temp_esp + PROCESS_STACK_SIZE;
-    }
-    else
-    {
-        return (uint64_t)get_current_data()->current_process;
-    }
-}
-
-extern "C" uint64_t get_next_esp()
-{
-    if (get_current_data()->current_process == 0)
-    {
-        nxt = get_next_process(0);
-        return (uint64_t)nxt;
-    }
-    else
-    {
-        nxt = get_next_process(get_current_data()->current_process->pid);
-        return (uint64_t)nxt;
-    }
-}
 
 extern "C" void task_update_switch(process *next)
 {

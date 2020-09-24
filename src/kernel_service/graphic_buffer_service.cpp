@@ -5,8 +5,8 @@
 #include <stivale_struct.h>
 void graphic_buffer_service()
 {
-    stivale_struct *hdr = (stivale_struct *)bootdat;
-    log("graphic_buffer", LOG_INFO) << "graphic buffer addr : " << hdr->framebuffer_addr;
+    stivale_struct *hdr = reinterpret_cast<stivale_struct *>(bootdat);
+    //   log("graphic_buffer", LOG_INFO) << "graphic buffer addr : " << hdr->framebuffer_addr;
     log("graphic_buffer", LOG_INFO) << "loaded graphic buffer service";
     set_on_request_service(true);
     while (true)

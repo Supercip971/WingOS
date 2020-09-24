@@ -1,5 +1,6 @@
 #include <arch/arch.h>
 #include <arch/lock.h>
+#include <arch/process.h>
 #include <com.h>
 #include <kernel.h>
 #include <stdarg.h>
@@ -18,10 +19,8 @@ inline void com_wait_write(COM_PORT port)
 lock_type lck = {0};
 void com_putc(COM_PORT port, char c)
 {
-    lock((&lck));
     com_wait_write(port);
     outb(port, c);
-    unlock((&lck));
 }
 
 int com_write(COM_PORT port, const void *buffer, int size)
@@ -93,7 +92,6 @@ lock_type print_locker = {0};
 char temp_buf[64];
 void printf(const char *format, ...)
 {
-    lock((&print_locker));
     va_list parameters;
     va_start(parameters, format);
 
@@ -194,7 +192,6 @@ void printf(const char *format, ...)
         }
     }
 
-    unlock((&print_locker));
     va_end(parameters);
     return;
 }

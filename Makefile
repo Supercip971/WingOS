@@ -22,7 +22,7 @@ CHARDFLAGS := $(CFLAGS)               \
         -no-pie \
         -mno-sse                       \
         -m64 \
-        -O0 \
+        -O2 \
         -mno-sse2                      \
         -mno-mmx                       \
         -mcmodel=kernel \

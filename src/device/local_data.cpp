@@ -5,23 +5,6 @@
 #include <loggging.h>
 local_data procData[smp::max_cpu];
 
-local_data *get_current_data()
-{
-    if (apic::the()->isloaded() == false)
-    {
-        log("local data", LOG_ERROR) << ("getting current data of cpu 0");
-        return &procData[0];
-    }
-    else
-    {
-        return &procData[apic::the()->get_current_processor_id()];
-    }
-}
-local_data *get_current_data(int id)
-{
-
-    return &procData[id];
-}
 void set_current_data(local_data *dat)
 {
 

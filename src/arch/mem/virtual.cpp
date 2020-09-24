@@ -4,6 +4,7 @@
 #include <arch/mem/virtual.h>
 #include <com.h>
 #include <device/acpi.h>
+#include <device/local_data.h>
 #include <kernel.h>
 #include <stivale_struct.h>
 
@@ -71,14 +72,14 @@ int map_page(uint64_t phys_addr, uint64_t virt_addr, uint64_t flags)
 
     main_page_table *pdpt, *pd, *pt;
 
-    if (main_pml4[pml4_entry] & BIT_PRESENT)
+    if (get_current_data()->page_table[pml4_entry] & BIT_PRESENT)
     {
-        pdpt = (uint64_t *)(get_mem_addr(main_pml4[pml4_entry] & FRAME_ADDR));
+        pdpt = (uint64_t *)(get_mem_addr(get_current_data()->page_table[pml4_entry] & FRAME_ADDR));
     }
     else
     {
         pdpt = (uint64_t *)get_mem_addr((uint64_t)pmm_alloc_zero(1));
-        main_pml4[pml4_entry] = (uint64_t)(get_rmem_addr((uint64_t)pdpt)) | PAGE_TABLE_FLAGS;
+        get_current_data()->page_table[pml4_entry] = (uint64_t)(get_rmem_addr((uint64_t)pdpt)) | PAGE_TABLE_FLAGS;
     }
 
     if (pdpt[pdpt_entry] & BIT_PRESENT)
@@ -115,9 +116,9 @@ main_page_table *fork_vmm_page_dir()
     uint64_t *pt;
     for (int i = 0; i < 512; i++)
     { // pml4
-        if (main_pml4[i] & 1)
+        if (get_current_data()->page_table[i] & 1)
         {
-            pdpt = (uint64_t *)(get_mem_addr(main_pml4[i] & FRAME_ADDR));
+            pdpt = (uint64_t *)(get_mem_addr(get_current_data()->page_table[i] & FRAME_ADDR));
             for (int j = 0; j < 512; j++)
             { // pdpt
                 if (pdpt[j] & 1)
@@ -150,37 +151,37 @@ main_page_table *fork_vmm_page_dir()
 }
 void set_vmm_page_dir(main_page_table *table)
 {
-    main_pml4 = table;
+    get_current_data()->page_table = table;
     update_paging();
 }
 void set_vmm_kernel_page_dir()
 {
-    main_pml4 = kernel_super_dir;
+    get_current_data()->page_table = kernel_super_dir;
     update_paging();
 }
 void init_vmm(stivale_struct *bootdata)
 {
     log("vmm", LOG_DEBUG) << "loading vmm";
-    main_pml4 = (uint64_t *)get_mem_addr((uint64_t)pmm_alloc_zero(1));
-
+    get_current_data()->page_table = (uint64_t *)get_mem_addr((uint64_t)pmm_alloc_zero(1));
+    main_page_table *table = get_current_data()->page_table;
     e820_entry_t *mementry = (e820_entry_t *)bootdata->memory_map_addr;
 
     log("vmm", LOG_INFO) << "loading vmm 2M initial data";
     for (uint64_t i = 0; i < (TWO_MEGS / PAGE_SIZE); i++)
     {
         uint64_t addr = i * PAGE_SIZE;
-        map_page(addr, addr, BASIC_PAGE_FLAGS);
-        map_page(addr, get_mem_addr(addr), BASIC_PAGE_FLAGS);
-        map_page(addr, get_kern_addr(addr), BASIC_PAGE_FLAGS | (1 << 8));
+        map_page(table, addr, addr, BASIC_PAGE_FLAGS);
+        map_page(table, addr, get_mem_addr(addr), BASIC_PAGE_FLAGS);
+        map_page(table, addr, get_kern_addr(addr), BASIC_PAGE_FLAGS | (1 << 8));
     }
 
-    set_paging_dir(get_rmem_addr((uint64_t)main_pml4));
+    set_paging_dir(get_rmem_addr((uint64_t)get_current_data()->page_table));
     log("vmm", LOG_INFO) << "loading vmm 4G initial data";
     for (uint64_t i = 0; i < (FOUR_GIGS / PAGE_SIZE); i++)
     {
         uint64_t addr = i * PAGE_SIZE;
 
-        map_page(addr, get_mem_addr(addr), BASIC_PAGE_FLAGS);
+        map_page(table, addr, get_mem_addr(addr), BASIC_PAGE_FLAGS);
     }
 
     log("vmm", LOG_INFO) << "loading vmm with memory entries";
@@ -196,13 +197,17 @@ void init_vmm(stivale_struct *bootdata)
             if (addr < FOUR_GIGS)
                 continue;
 
-            map_page(addr, get_mem_addr(addr), BASIC_PAGE_FLAGS);
+            map_page(table, addr, get_mem_addr(addr), BASIC_PAGE_FLAGS);
         }
     }
 
-    set_paging_dir(get_rmem_addr((uint64_t)main_pml4));
-   // main_pml4 = fork_vmm_page_dir(); for testing
-   // set_paging_dir(get_rmem_addr((uint64_t)main_pml4));
+    set_paging_dir(get_rmem_addr((uint64_t)get_current_data()->page_table));
+    // main_pml4 = fork_vmm_page_dir(); for testing
+    // set_paging_dir(get_rmem_addr((uint64_t)main_pml4));
 
     log("vmm", LOG_INFO) << "loading vmm done";
+}
+void update_paging()
+{
+    set_paging_dir((uint64_t)get_current_data()->page_table - 0xffff800000000000);
 }

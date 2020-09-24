@@ -3,7 +3,10 @@
 #include <arch/arch.h>
 #include <arch/gdt.h>
 #include <arch/interrupt.h>
+#include <arch/mem/virtual.h>
 #include <arch/process.h>
+#include <arch/smp.h>
+#include <device/apic.h>
 #include <int_value.h>
 #define LOCAL_DATA_DMSR 0xC0000100
 struct local_data
@@ -22,7 +25,26 @@ struct local_data
     uint8_t stack_data_interrupt[8192] __attribute__((aligned(4096)));
     process *current_process;
     uint64_t lapic_id;
+    main_page_table *page_table;
 } __attribute__((packed));
 void set_current_data(local_data *dat);
-local_data *get_current_data();
-local_data *get_current_data(int id);
+//local_data *get_current_data();
+//local_data *get_current_data(int id);
+extern local_data procData[smp::max_cpu];
+
+inline local_data *get_current_data()
+{
+    if (apic::the()->isloaded() == false)
+    {
+        return &procData[0];
+    }
+    else
+    {
+        return &procData[apic::the()->get_current_processor_id()];
+    }
+}
+inline local_data *get_current_data(int id)
+{
+
+    return &procData[id];
+}

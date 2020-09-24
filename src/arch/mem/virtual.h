@@ -28,10 +28,7 @@ inline void set_paging_dir(uint64_t pd)
     asm volatile("mov cr3, %0" ::"r"(pd));
     //  log("paging", LOG_INFO) << "new paging dir loaded ! ";
 }
-inline void update_paging()
-{
-    set_paging_dir((uint64_t)main_pml4 - 0xffff800000000000);
-}
+void update_paging();
 int map_page(uint64_t phys_addr, uint64_t virt_addr, uint64_t flags);
 
 inline void virt_map(uint64_t from, uint64_t to, uint64_t flags)
@@ -40,3 +37,5 @@ inline void virt_map(uint64_t from, uint64_t to, uint64_t flags)
     map_page(from, to, flags);
 }
 void init_vmm(stivale_struct *bootdata);
+
+main_page_table *fork_vmm_page_dir();

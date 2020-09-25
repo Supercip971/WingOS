@@ -1,3 +1,4 @@
-[submodules "limine"]
+
+[submodule "limine"]
 	path = limine
-	url = https://github.com/limine-bootloader/limine
+	url = https://github.com/limine-bootloader/limine.git

@@ -254,10 +254,7 @@ bool pci_device::is_bridge(uint8_t function)
     {
         if (get_class(function) == 0x6)
         {
-            if (get_subclass(function) == 0x4)
-            {
-                return true;
-            }
+            return true;
         }
     }
     return false;
@@ -329,6 +326,8 @@ void pci_system::scan_dev(uint8_t dev_id, uint8_t bus_id)
                     {
                         if (device.is_bridge(i))
                         {
+                            log("pci", LOG_INFO) << "device : " << dev_id << "bus : " << bus_id << "is a bridge";
+
                             scan_bus(device.get_sub_buss(i));
                         }
                         else

@@ -1,7 +1,6 @@
 #pragma once
 #include <stdint.h>
 
-
 struct pci_device_raw
 {
     uint8_t bus;

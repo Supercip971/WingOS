@@ -93,8 +93,8 @@ $(KERNEL_HDD): $(KERNEL_ELF)
 	@echfs-utils -m -p0 $(KERNEL_HDD) format 32768
 	@echfs-utils -m -p0 $(KERNEL_HDD) import $(KERNEL_ELF) $(KERNEL_ELF)
 	@make -C . foreachramfs	
-	@echfs-utils -m -p0 $(KERNEL_HDD) import qloader2.cfg qloader2.cfg
-	qloader2/qloader2-install qloader2/qloader2.bin $(KERNEL_HDD)
+	@echfs-utils -m -p0 $(KERNEL_HDD) import limine.cfg limine.cfg
+	limine/limine-install limine/limine.bin $(KERNEL_HDD)
 
 clean:
 	-rm -f $(KERNEL_HDD) $(KERNEL_ELF) $(OBJ)

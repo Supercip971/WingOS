@@ -31,6 +31,25 @@ int strncmp(const char *s1, const char *s2, uint64_t n)
         return (*(unsigned char *)s1 - *(unsigned char *)s2);
     }
 }
+
+char* strcpy(char* dest, const char* src){
+    uint64_t i = 0;
+    while(src[i] != '\0'){
+        dest[i] = src[i];
+        i++;
+    }
+    return dest;
+}
+char* strncpy(char* dest, const char* src, uint64_t n)  {
+    uint64_t i;
+    for (i = 0; i < n && src[i] != '\0'; i++)
+        dest[i] = src[i];
+    for ( ; i < n; i++)
+        dest[i] = '\0';
+
+    return dest;
+}
+
 #ifndef WOS_OPTIMIZATION
 void* memcpy(void* dest, const void* src, uint64_t length){
     char* cdest = (char*) dest;

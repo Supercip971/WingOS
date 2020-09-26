@@ -24,6 +24,7 @@ spin: ; never gonna lock you up never gonna lock you doooown
 
 
 something_is_bad_i_want_to_die:
+
     call something_is_bad_i_want_to_die_higher_level
     ret
 asm_spinlock_unlock:

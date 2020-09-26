@@ -299,11 +299,7 @@ extern "C" uint64_t irq_0_process_handler(InterruptStackFrame *isf)
         {
             if (i != apic::the()->get_current_processor_id())
             {
-                cpu_wait = true;
                 apic::the()->send_int(i, 100);
-                while (cpu_wait)
-                {
-                }
             }
         }
     }

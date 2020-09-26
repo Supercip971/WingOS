@@ -92,7 +92,6 @@ lock_type print_locker = {0};
 char temp_buf[64];
 void printf(const char *format, ...)
 {
-    lock((&print_locker));
     va_list parameters;
     va_start(parameters, format);
 
@@ -217,7 +216,6 @@ void printf(const char *format, ...)
         }
     }
 
-    unlock((&print_locker));
     va_end(parameters);
     return;
 }

@@ -75,62 +75,12 @@ void echfs::init(uint64_t start_sector, uint64_t sector_count)
 
     uint64_t int64_per_sector = 512 / sizeof(uint64_t);
     uint64_t echfs_alloc_table = 16;
-    /* while (true)
-    {
-        read_block(echfs_alloc_table, (uint8_t *)another_buffer);
-        for (int i = 0; i < int64_per_sector; i++)
-        {
-            if (another_buffer[i] == 0xFFFFFFFFFFFFFFFF)
-            {
-                log("echfs", LOG_INFO) << "end of echfs alloc table at block: " << echfs_alloc_table;
-                goto endtable;
-                break;
-            }
-            else if (another_buffer[i] == 0)
-            {
-                //    log("echfs", LOG_INFO) << "free alloc table at block: " << echfs_alloc_table;
-            }
-        }
-        echfs_alloc_table++;
-    }
-endtable:;*/
+
     main_dir_start = ((header.block_count * sizeof(uint64_t) + header.block_length - 1) / header.block_length) + 16;
     uint64_t start_main_dir = ((header.block_count * sizeof(uint64_t) + header.block_length - 1) / header.block_length) + 16;
     log("echfs", LOG_INFO) << "end of allocation bloc : " << start_main_dir;
-    //uint64_t dir_block_length = (header.main_directory_length * header.block_length) ;
-    uint64_t entry = 0;
-    /*for (uint64_t i = 0; i < header.main_directory_length; i++)
-    {
-        memzero(another_buffer, 512);
-        read_block(start_main_dir + i, (uint8_t *)another_buffer);
+        uint64_t entry = 0;
 
-
-
-        for (uint64_t j = 0; j < header.block_length / sizeof(echfs_file_header); j++)
-        {
-            entry++;
-            echfs_file_header *cur_header = reinterpret_cast<echfs_file_header *>((uint64_t)another_buffer + (j * sizeof(echfs_file_header)));
-            if (cur_header->parent_id == 0 || cur_header->parent_id == 0xFFFFFFFFFFFFFFFE)
-            {
-                goto end; // yeah i should use something else
-            }
-            else
-            {
-                if (
-                    cur_header->starting_block == 0)
-                {
-                    continue;
-                }
-                log("echfs", LOG_DEBUG) << "entry : " << entry;
-                log("echfs", LOG_INFO) << cur_header->file_name;
-                log("echfs", LOG_INFO) << "parent id" << cur_header->parent_id;
-                log("echfs", LOG_INFO) << "size" << cur_header->size;
-                log("echfs", LOG_INFO) << "type" << cur_header->file_type;
-                log("echfs", LOG_INFO) << "starting block :" << cur_header->starting_block;
-            }
-        }
-    }
-end:;*/
     uint64_t entry_t = 0;
     while (true)
     {

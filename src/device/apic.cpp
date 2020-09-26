@@ -83,7 +83,6 @@ void apic::init()
         uint32_t raw_table = (io_read(addr, version_reg));
         io_apic_version_table *tables = (io_apic_version_table *)&raw_table;
         io_version_data = *tables;
-        //    printf("configuring io apic %x | version %x | max entry count %x \n", i, tables->version, tables->maximum_redirection);
 
         log("io apic", LOG_INFO) << "version         : " << tables->version;
         log("io apic", LOG_INFO) << "max redirection : " << tables->maximum_redirection;
@@ -116,7 +115,6 @@ void apic::init()
             log("iso", LOG_INFO) << "iso is level triggered";
         }
     }
-    //    lapic_eoi_ptr = (uint32_t *)((uint64_t)apic_addr + 0xb0);
     loaded = true;
     log("apic", LOG_INFO) << "current processor id: " << get_current_processor_id();
 }
@@ -216,14 +214,11 @@ void apic::send_int(uint8_t cpu, uint32_t interrupt_num)
 void apic::set_redirect_irq(int cpu, uint8_t irq, int status)
 {
     log("io apic", LOG_INFO) << "setting redirect irq for cpu : " << cpu << " irq : " << irq << " status : " << status;
-    // printf("setting redirect irq cpu %x irq %x status %x \n", cpu, irq, status);
     for (uint64_t i = 0; iso_table[i] != 0; i++)
     {
         if (iso_table[i]->irq == irq)
         {
             log("io apic", LOG_INFO) << "iso matching : " << i << " mapping to source" << iso_table[i]->irq + 0x20 << " gsi : " << iso_table[i]->interrupt;
-
-            //printf("found iso matching %x, mapping to source : %x, gsi %x \n", i, iso_table[i]->irq + 0x20, iso_table[i]->interrupt);
 
             set_raw_redirect(iso_table[i]->irq + 0x20, iso_table[i]->interrupt, iso_table[i]->misc_flags, cpu, status);
             return;

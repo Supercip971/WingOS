@@ -6,6 +6,19 @@ pci_system main_system;
 // the function device_code_to_string is taken from DripOS thank you <3
 // there is not license so i don't know if i should put some legal thing but yeah
 // check drip os it is a very good os ! :3 https://github.com/Menotdan/DripOS/
+
+// update :
+// now it has an license so i put it here : (from commit https://github.com/Menotdan/DripOS/commit/9e2ebd201ec5ef49e39220c91e41eef6a68ad4d8#diff-9879d6db96fd29134fc802214163b95a)
+/*
+you can steal my code because its bad lol
+also im not responsible for bad stuff you do with my code etc etc
+
+
+
+this is a very real license that should totally exist
+*/
+// i think this function is not that bad so i take it (maybe i should write my own device code to string ?)
+
 const char *device_code_to_string(uint8_t class_code, uint8_t subclass, uint8_t prog_if)
 {
     switch (class_code)

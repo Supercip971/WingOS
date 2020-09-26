@@ -14,7 +14,6 @@ void mboot_module::init(stivale_struct *main_struct)
     stistruct = main_struct;
     log("mboot", LOG_DEBUG) << "loading mboot mudules";
     log("mboot", LOG_INFO) << "mboot module count" << main_struct->module_count;
-    // modules = (stivale_module **)malloc(main_struct->module_count + 2); // 2 modules 1 for security and 1 for 0
     for (int i = 0; i < main_struct->module_count + 2; i++)
     {
         modules[i] = 0;

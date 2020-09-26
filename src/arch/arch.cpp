@@ -43,32 +43,19 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
     asm volatile("and rsp, -16");
     asm volatile("cli");
     com_initialize(COM_PORT::COM1);
-    // log("kernel", LOG_INFO) << ""
-    // printf("bootloader addr %x \n", (uint64_t)bootloader_data);
     memcpy(&boot_loader_data_copy, bootloader_data, sizeof(stivale_struct));
 
-    //   printf("init gdt \n");
     setup_gdt((uint64_t)stack + (sizeof(char) * STACK_SIZE));
-    //   printf("init gdt : ✅ \n");
 
-    //printf("init idt \n");
     init_idt();
-    //printf("init idt : ✅ \n");
 
-    // printf("init tss \n");
     tss_init((uintptr_t)stack + sizeof(char) * STACK_SIZE);
-    // printf("init tss : OK");
-    // before paging
 
-    //  printf("init paging \n");
     init_physical_memory(bootloader_data);
-    //  printf("init vmm\n");
     init_vmm(bootloader_data);
-    //  printf("init paging : OK \n");
 
-    // printf("loading pic \n");
     pic_init();
-    //  printf("loading pic : OK \n");
+
     acpi::the()->init((reinterpret_cast<stivale_struct *>(bootdat))->rsdp);
 
     acpi::the()->getFACP();
@@ -79,7 +66,6 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
 
     smp::the()->init();
 
-    // PIT::the()->init_PIT();
     apic_timer::the()->init();
     for (int i = 0; i < 16; i++)
     {
@@ -87,15 +73,8 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
         apic::the()->set_redirect_irq(0, i, 1);
     }
 
-    //hpet::the()->init_hpet();
-    // printf("set global data \n");
     set_current_data(get_current_data());
-    // printf("set global data : OK \n");
-    //virt_map((uint64_t)bootloader_data, (uint64_t)bootloader_data, 0x3);
 
-    //    bootloader_data = (stivale_struct *)get_mem_addr((uint64_t)bootloader_data);
-
-    // init_msr_syscall(); ooooops
     mboot_module::the()->init(bootloader_data);
     bootdat = ((uint64_t)&boot_loader_data_copy);
     lock_process();
@@ -121,6 +100,5 @@ void start_process()
     pci_system::the()->init();
     launch_programm("init_fs/test2.exe", &main_start_fs);
     launch_programm("init_fs/test.exe", &main_start_fs);
-    //  unlock((&main_smp_lock));
     _start((stivale_struct *)bootdat);
 }

@@ -30,6 +30,5 @@ char *strtok(char *s, const char *delm)
 It:
     W[i] = 0;
     currIndex = i + 1;
-    //Iterator = ++ptr;
     return W;
 }

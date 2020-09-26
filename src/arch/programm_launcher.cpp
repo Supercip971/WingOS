@@ -57,24 +57,15 @@ void launch_programm(const char *path, echfs *file_sys)
             if (p_entry->p_type == PT_LOAD)
             {
                 asm volatile("cli");
-                //   new_region_v = (void *) ((uint64_t) region_virt + ((phdrs[i].p_vaddr + base) & 0xfff));
                 char *temp_copy = (char *)malloc(p_entry->p_filesz);
                 memcpy(temp_copy, (char *)((uint64_t)programm_code + p_entry->p_offset), p_entry->p_filesz);
                 load_segment(to_launch, (uint64_t)programm_code + p_entry->p_offset, p_entry->p_filesz, p_entry->p_vaddr, p_entry->p_memsz);
                 char *p_entry_data = (char *)p_entry->p_vaddr;
                 for (int i = 0; i < p_entry->p_filesz; i++)
                 {
-                    //      printf("loading : %x \n", i);
                     p_entry_data[i] = temp_copy[i];
                 }
                 asm volatile("sti");
-                //memcpy((char *)p_entry->p_vaddr, temp_copy, p_entry->p_filesz);
-
-                //       printf("loading valid elf entry \n");
-
-                //     load_segment(p_entry->p_offset, p_entry->p_filesz, p_entry->p_vaddr, p_entry->p_memsz);
-
-                //   printf("loading valid elf entry OK \n");
             }
             else
             {

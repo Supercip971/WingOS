@@ -20,7 +20,6 @@ void memory_service()
                 free((void *)prot->address);
                 msg->response = 1;
                 msg->has_been_readed = true;
-                //    msg->entry_free_to_use = true;
             }
             else if (prot->request_type == REQUEST_MALLOC)
             {

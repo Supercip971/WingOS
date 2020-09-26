@@ -22,8 +22,7 @@ void tar_fs::init(uint64_t module_start, uint64_t module_end)
     fs_module_end = module_end;
     printf("loading tarfs, start %x, end %x, virtual disk lenght %x \n", module_start, module_end, module_end - module_start);
     printf("loading tarfs file count = %x \n", get_file_count());
-    //  file_header_list = reinterpret_cast<tar_file_header **>(malloc(file_count + 2));
-    for (uint64_t i = 0; i < file_count + 2; i++)
+      for (uint64_t i = 0; i < file_count + 2; i++)
     {
         file_header_list[i] = 0;
     }

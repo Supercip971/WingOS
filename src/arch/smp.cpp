@@ -130,11 +130,6 @@ void smp::init_cpu(int apic, int id)
         (uint64_t)get_current_data(id)->stack_data + 8192;
     memzero(get_current_data(id)->stack_data, 8192);
 
-    /*  POKE(get_mem_addr(end_addr)) = ((uint64_t)&pl4_table);
-    POKE((end_addr)) = ((uint64_t)&pl4_table);
-    POKE((0x500)) =
-        get_rmem_addr((uint64_t)&pl4_table);
-    POKE((0x540)) = get_rmem_addr((uint64_t)&pl4_table);*/
 
     asm volatile(" \n"
                  "sgdt [0x580]\n"
@@ -142,17 +137,8 @@ void smp::init_cpu(int apic, int id)
 
     POKE((0x520)) = (uint64_t)&cpuupstart;
 
-    //    virt_map(0x8000, 0x8000, 0x1 | 0x2 | 0x4);
     update_paging();
-    /*    uint64_t saddress = 0x8000;
 
-    saddress += 4096;
-
-    memset((void *)(saddress - 4096), 0, 4096);
-
-    log("smp cpu", LOG_INFO) << "stack real address" << saddress;
-    //   log("smp cpu", LOG_INFO) << "paging real address" << get_rmem_addr((uint64_t)&pl4_table);
-*/
     memcpy((void *)0x1000, &trampoline_start, trampoline_len);
     log("smp cpu", LOG_INFO) << "pre loading cpu : " << id;
 

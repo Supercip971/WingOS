@@ -211,6 +211,7 @@ extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
         }
         else
         {
+            // i don't remove this one
             //    printf("\n interrupt %x in processor %x \n", stackframe->int_no, apic::the()->get_current_processor_id());
         }
     }

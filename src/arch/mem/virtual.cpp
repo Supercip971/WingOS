@@ -189,10 +189,6 @@ void init_vmm(stivale_struct *bootdata)
     }
 
     set_paging_dir(get_rmem_addr((uint64_t)get_current_data()->page_table));
-    // get_current_data()->page_table = fork_vmm_page_dir();
-    // set_paging_dir(get_rmem_addr((uint64_t)get_current_data()->page_table));
-    // main_pml4 = fork_vmm_page_dir(); for testing
-    // set_paging_dir(get_rmem_addr((uint64_t)main_pml4));
 
     log("vmm", LOG_INFO) << "loading vmm done";
 }

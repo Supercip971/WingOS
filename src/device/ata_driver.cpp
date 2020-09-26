@@ -73,10 +73,6 @@ void ata_driver::init()
         printf(" %c", temp_buffer[i]);
     }
     printf("\n");
-    // init_drive(ATA_PRIMARY_MASTER);
-    //  init_drive(ATA_PRIMARY_SLAVE);
-    //  init_drive(ATA_SECONDARY_MASTER);
-    //  init_drive(ATA_SECONDARY_SLAVE);
 }
 
 ata_driver *ata_driver::the()
@@ -85,23 +81,17 @@ ata_driver *ata_driver::the()
 }
 void ata_driver::irq_handle(uint64_t irq_handle_num)
 {
-    //log("ata", LOG_INFO) << "receive an ata interrupt";
-    // printf("[ATA] ata driver receive an irq \n");
     if (waiting_for_irq == 1)
     {
-        //     log("ata", LOG_INFO) << "receive an ata interrupt when waiting for it";
-        //    printf("it was waiting for the interrupt \n");
         waiting_for_irq = 0;
     }
     if (irq_handle_num == 14)
     {
-        //    printf("[ATA] it was the main slave \n");
         inb(0x1F7);
         return;
     }
     else if (irq_handle_num == 15)
     {
-        //    printf("[ATA] it was the secondary slave \n");
         inb(0x177);
         return;
     }
@@ -112,8 +102,6 @@ void ata_driver::irq_handle(uint64_t irq_handle_num)
 }
 void ata_driver::read(uint32_t where, uint8_t count, uint8_t *buffer)
 {
-    // printf("trying to read ata 0, in %x count %x to %x", where, count, (uint64_t)buffer);
-    //log("ata", LOG_INFO) << "reading ata where : " << where << "count : " << count;
     waiting_for_irq = 1;
     ata_write(true, ATA_reg_error_feature, 0);
     ata_write(true, ATA_reg_selector, 0xE0 | 0x40 | ((where >> 24) & 0x0F));
@@ -130,7 +118,6 @@ void ata_driver::read(uint32_t where, uint8_t count, uint8_t *buffer)
     uint64_t wait_time = 0;
     while (new_count-- > 0)
     {
-        //  log("ata", LOG_INFO) << "ata waiting";
         uint8_t status = ata_read(true, ATA_reg_command_status);
         while (((status & 0x80) == 0x80) && ((status & 0x01) != 0x01))
         {

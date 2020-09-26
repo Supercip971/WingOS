@@ -79,11 +79,9 @@ void init_multi_process(func start)
 
     asm volatile("sti");
     unlock_process();
-    //    irq0_first_jump();
     while (true)
     {
     }
-    //asm volatile("jmp irq0_first_jump");
 }
 
 process *init_process(func entry_point, bool start_direct, const char *name, bool user)
@@ -259,20 +257,12 @@ extern "C" uint64_t irq_0_process_handler(InterruptStackFrame *isf)
 
 extern "C" void task_update_switch(process *next)
 {
-    //
-    //move_to_next_cpu();
-    // log("process", LOG_INFO) << "next : " << next->process_name;
-    // log("process", LOG_INFO) << "next cr3 : " << (uint64_t)next->page_directory << "target :" << get_rmem_addr(next->page_directory);
 
     tss_set_rsp0((uint64_t)next->stack + PROCESS_STACK_SIZE);
-    //  get_current_data()->current_process->current_process_state = process_state::PROCESS_WAITING;
-    //  get_current_data()->current_process = nxt;
-    //  next->current_process_state = process_state::PROCESS_RUNNING;
-    //   log("process", LOG_INFO) << "process entry : " << nxt->pid;
 
     get_current_data()->page_table = (uint64_t *)next->page_directory;
     update_paging();
-    //  set_paging_dir(kernel_pagemap->pml4);
+
 }
 
 void add_thread_map(process *p, uint64_t from, uint64_t to, uint64_t length)
@@ -288,12 +278,10 @@ void add_thread_map(process *p, uint64_t from, uint64_t to, uint64_t length)
 process_message *send_message(uint64_t data_addr, uint64_t data_length, const char *to_process)
 {
 
-    //log("process", LOG_INFO) << "sending message to " << to_process << "addr : " << data_addr << "length " << data_length;
     for (int i = 0; i < MAX_PROCESS; i++)
     {
         if (process_array[i].current_process_state == PROCESS_WAITING || process_array[i].current_process_state == PROCESS_RUNNING)
         {
-            //    log("process", LOG_INFO) << "checking with " << process_array[i].process_name;
 
             if (strcmp(to_process, process_array[i].process_name) == 0)
             {
@@ -368,7 +356,7 @@ uint64_t message_response(process_message *message_id)
 
     if (message_id->to_pid > MAX_PROCESS)
     {
-        //      log("process", LOG_ERROR) << "not valid pid in message response" << message_id->to_pid;
+        log("process", LOG_ERROR) << "not valid pid in message response" << message_id->to_pid;
         return -1;
     }
     if (message_id->from_pid != get_current_data()->current_process->pid)

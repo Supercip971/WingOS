@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <string.h>
 #include <klib/kernel_util.h>
+#include <klib/string_util.h>
+char temp_buf[64];
 int printf(const char* format, ...){
     va_list parameters;
     va_start(parameters, format);
@@ -61,13 +63,13 @@ int printf(const char* format, ...){
                 return -1;
             written += len;
         }
-        /*else if (*format == 'x')
+        else if (*format == 'x')
         {
             format++;
             uint64_t d = va_arg(parameters, uint64_t);
             if (d == 0)
             {
-                com_write_strn("0", 1);
+                sys::write_console("0", 1);
                 written += 1;
             }
             else
@@ -76,18 +78,18 @@ int printf(const char* format, ...){
                 {
                     temp_buf[i] = 0;
                 }
-                kitoaT<uint64_t>(temp_buf, 'x', d);
+                sys::int_to_string<uint64_t>(temp_buf, 'x', d);
                 uint64_t len = strlen(temp_buf);
                 if (maxrem < len)
                 {
                     // TODO: Set errno to EOVERFLOW.
-                    return;
+                    return -1;
                 }
-                if (!com_write_strn(temp_buf, len))
-                    return;
+                if (!sys::write_console(temp_buf, len))
+                    return -1;
                 written += len;
             }
-        }*/
+        }
         else
         {
             format = format_begun_at;

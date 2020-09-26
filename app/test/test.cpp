@@ -1,6 +1,7 @@
 #include <klib/syscall.h>
 #include <klib/process_message.h>
 #include <klib/mem_util.h>
+#include <klib/raw_graphic.h>
 #include <stdio.h>
 int main(){
     sys::syscall(sys::NULL_SYSCALL, 12,2,3,4,5);
@@ -10,7 +11,9 @@ int main(){
     const char* h = "hello world";
     sys::process_message helloworld = sys::process_message("console_out", (uint64_t)h, 13);
     printf("hello world, here we go again %s", "another string OWOWU ?");
+
     char* data= (char*)sys::service_malloc(1000);
+    printf("g buffer addr : %x \n", sys::get_graphic_buffer_addr());
     for(int i= 0; i < 100; i++){
         data[i] = 0;
     }

@@ -1,4 +1,5 @@
 #include <arch/arch.h>
+#include <arch/mem/virtual.h>
 #include <arch/process.h>
 #include <kernel_service/graphic_buffer_service.h>
 #include <loggging.h>
@@ -19,7 +20,7 @@ void graphic_buffer_service()
             graphic_buffer_protocol *data = (graphic_buffer_protocol *)msg->content_address;
             if (data->request == GET_CURRENT_BUFFER_ADDR)
             {
-                msg->response = hdr->framebuffer_addr;
+                msg->response = get_mem_addr(hdr->framebuffer_addr);
             }
             msg->has_been_readed = true;
             on_request_service_update();

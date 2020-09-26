@@ -40,7 +40,7 @@ struct process
     uint64_t pid = 0;
     uint8_t stack[PROCESS_STACK_SIZE];
     uint64_t entry_point = 0x0;
-
+    uint64_t page_directory = 0;
     process_memory_data_map mmap[MAX_PROCESS_MEMORY_DATA_MAP];
     char process_name[128];
     process_message msg_list[MAX_PROCESS_MESSAGE_QUEUE];
@@ -60,7 +60,7 @@ static process *process_array = nullptr;
 // TODO: make a get_current_process() function
 typedef void (*func)();
 void add_thread_map(process *p, uint64_t from, uint64_t to, uint64_t length);
-process *init_process(func entry_point, bool start_direct, const char *name);
+process *init_process(func entry_point, bool start_direct, const char *name, bool user);
 void init_multi_process(func start);
 
 void unlock_process();

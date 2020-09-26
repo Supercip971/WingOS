@@ -68,13 +68,13 @@ void init_multi_process(func start)
     }
 
     log("proc", LOG_INFO) << "loading process 0";
-    init_process(main_process_1, true, "testing1");
+    init_process(main_process_1, true, "testing1", false);
 
     log("proc", LOG_INFO) << "loading process 1";
-    init_process(main_process_2, true, "testing2");
+    init_process(main_process_2, true, "testing2", false);
 
     log("proc", LOG_INFO) << "loading process 2";
-    init_process(start, true, "kernel process");
+    init_process(start, true, "kernel process", false);
     process_loaded = true;
 
     asm volatile("sti");
@@ -86,7 +86,7 @@ void init_multi_process(func start)
     //asm volatile("jmp irq0_first_jump");
 }
 
-process *init_process(func entry_point, bool start_direct, const char *name)
+process *init_process(func entry_point, bool start_direct, const char *name, bool user)
 {
 
     for (int i = 0; i < MAX_PROCESS; i++)
@@ -130,7 +130,16 @@ process *init_process(func entry_point, bool start_direct, const char *name)
             ISF->cs = SLTR_KERNEL_CODE;
             ISF->rflags = 0x286;
             ISF->rsp = (uint64_t)ISF;
+            if (user)
+            {
 
+                process_array[i].page_directory = (uint64_t)new_vmm_page_dir();
+                map_page((uint64_t *)process_array[i].page_directory, get_rmem_addr(process_array[i].page_directory), process_array[i].page_directory, 0x03);
+            }
+            else
+            {
+                process_array[i].page_directory = (uint64_t)get_current_data()->page_table;
+            }
             process_array[i].rsp = (uint64_t)ISF;
             process_array[i].is_ORS = false;
             if (get_current_data()->current_process == 0x0)
@@ -248,13 +257,12 @@ extern "C" uint64_t irq_0_process_handler(InterruptStackFrame *isf)
     }
 }
 
-
-
 extern "C" void task_update_switch(process *next)
 {
     //
     //move_to_next_cpu();
     // log("process", LOG_INFO) << "next : " << next->process_name;
+    // log("process", LOG_INFO) << "next cr3 : " << (uint64_t)next->page_directory << "target :" << get_rmem_addr(next->page_directory);
 
     tss_set_rsp0((uint64_t)next->stack + PROCESS_STACK_SIZE);
     //  get_current_data()->current_process->current_process_state = process_state::PROCESS_WAITING;
@@ -262,40 +270,19 @@ extern "C" void task_update_switch(process *next)
     //  next->current_process_state = process_state::PROCESS_RUNNING;
     //   log("process", LOG_INFO) << "process entry : " << nxt->pid;
 
-    for (int j = 0; j < MAX_PROCESS_MEMORY_DATA_MAP; j++)
-    {
-        if (next->mmap[j].used == true)
-        {
-            uint64_t mem_length = next->mmap[j].length;
-            //      log("process", LOG_INFO) << " for next : " << next->process_name;
-
-            for (uint64_t i = 0; i < mem_length; i++)
-            {
-                //        log("process", LOG_INFO) << "mmap : " << nxt->mmap[j].from + i * PAGE_SIZE << " to : " << nxt->mmap[j].to + i * PAGE_SIZE << "for proc " << nxt->process_name;
-                map_page(next->mmap[j].from + i * PAGE_SIZE, next->mmap[j].to + i * PAGE_SIZE, 0x1 | 0x2 | 0x4);
-            }
-            update_paging();
-        }
-    }
+    get_current_data()->page_table = (uint64_t *)next->page_directory;
+    update_paging();
     //  set_paging_dir(kernel_pagemap->pml4);
 }
 
 void add_thread_map(process *p, uint64_t from, uint64_t to, uint64_t length)
 {
 
-    for (int j = 0; j < MAX_PROCESS_MEMORY_DATA_MAP; j++)
+    for (uint64_t i = 0; i < length; i++)
     {
-        if (p->mmap[j].used == false)
-        {
-            p->mmap[j].used = true;
 
-            p->mmap[j].from = from;
-            p->mmap[j].to = to;
-            p->mmap[j].length = length;
-            return;
-        }
+        map_page((main_page_table *)p->page_directory, from + i * PAGE_SIZE, to + i * PAGE_SIZE, PAGE_TABLE_FLAGS);
     }
-    log("process", LOG_ERROR) << "cant find a free map for thread";
 }
 
 process_message *send_message(uint64_t data_addr, uint64_t data_length, const char *to_process)

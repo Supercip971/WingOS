@@ -13,7 +13,6 @@ void load_segment(process *pro, uint64_t source, uint64_t size, uint64_t dest, u
     count++;
     source /= 4096;
     source *= 4096;
-
     for (uint64_t i = 0; i < count; i++)
     {
         uint64_t target_virtual = ndest + i * PAGE_SIZE;
@@ -46,10 +45,10 @@ void launch_programm(const char *path, echfs *file_sys)
         }
         log("prog launcher", LOG_INFO) << "elf programm entry count" << programm_header->e_phnum;
 
-        process *to_launch = init_process((func)programm_header->e_entry, false, path);
+        process *to_launch = init_process((func)programm_header->e_entry, false, path, true);
         while (to_launch->pid == 0)
         {
-            to_launch = init_process((func)programm_header->e_entry, false, path);
+            to_launch = init_process((func)programm_header->e_entry, false, path, true);
         }
         Elf64_Phdr *p_entry = reinterpret_cast<Elf64_Phdr *>((uint64_t)programm_code + programm_header->e_phoff);
         for (int table_entry = 0; table_entry < programm_header->e_phnum; table_entry++, p_entry += programm_header->e_phentsize)

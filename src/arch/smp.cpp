@@ -123,9 +123,9 @@ void smp::init_cpu(int apic, int id)
     uint64_t end_addr = 0x4000;
     end_addr /= 4096;
     end_addr *= 4096;
-
+    get_current_data(id)->page_table = get_current_data()->page_table;
     POKE(get_mem_addr(0x500)) =
-        get_rmem_addr((uint64_t)get_current_data()->page_table);
+        get_rmem_addr((uint64_t)get_current_data(id)->page_table);
     POKE(get_mem_addr(0x570)) =
         (uint64_t)get_current_data(id)->stack_data + 8192;
     memzero(get_current_data(id)->stack_data, 8192);

@@ -63,6 +63,7 @@ int map_page(main_page_table *table, uint64_t phys_addr, uint64_t virt_addr, uin
 
     return 0;
 }
+
 int map_page(uint64_t phys_addr, uint64_t virt_addr, uint64_t flags)
 {
     uint64_t pml4_entry = PML4_GET_INDEX(virt_addr);
@@ -106,49 +107,35 @@ int map_page(uint64_t phys_addr, uint64_t virt_addr, uint64_t flags)
 
     return 0;
 }
-main_page_table *fork_vmm_page_dir()
+
+main_page_table *new_vmm_page_dir()
 {
-
     main_page_table *ret_pml4 = (uint64_t *)get_mem_addr((uint64_t)pmm_alloc_zero(1));
-
-    uint64_t *pdpt;
-    uint64_t *pd;
-    uint64_t *pt;
     for (int i = 0; i < 512; i++)
-    { // pml4
-        if (get_current_data()->page_table[i] & 1)
-        {
-            pdpt = (uint64_t *)(get_mem_addr(get_current_data()->page_table[i] & FRAME_ADDR));
-            for (int j = 0; j < 512; j++)
-            { // pdpt
-                if (pdpt[j] & 1)
-                {
-                    pd = (uint64_t *)(get_mem_addr(pdpt[j] & FRAME_ADDR));
-                    for (int k = 0; k < 512; k++)
-                    { // pd
-                        if (pd[k] & 1)
-                        {
-                            pt = (uint64_t *)(get_mem_addr(pd[k] & FRAME_ADDR));
-                            for (int l = 0; l < 512; l++)
-                            { // pt
-                                /* see that mountain */
-                                if (pt[l] & 1)
-                                {
-                                    /* oh there is a cave ! */ //  map_page(ret_pml4, , entry_to_address(i,j,k,l), 0x03, pt[l] & 0xfff);
-                                    uint64_t end_virtual_addres = entry_to_address(i, j, k, l);
-                                    uint64_t end_physical_addres = pt[l] & ~(0xfff);
-                                    //         void* new_physical = pmm_alloc(1);
-                                    map_page(ret_pml4, end_physical_addres, end_virtual_addres, pt[l] & (0xfff));
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+    {
+        ret_pml4[i] = 0x0;
     }
+    for (int i = 255; i < 512; i++)
+    {
+        ret_pml4[i] = get_current_data()->page_table[i];
+    }
+    for (uint64_t i = 0; i < (TWO_MEGS / PAGE_SIZE); i++)
+    {
+        uint64_t addr = i * PAGE_SIZE;
+        map_page(ret_pml4, addr, addr, BASIC_PAGE_FLAGS);
+        map_page(ret_pml4, addr, get_mem_addr(addr), BASIC_PAGE_FLAGS);
+        map_page(ret_pml4, addr, get_kern_addr(addr), BASIC_PAGE_FLAGS);
+    }
+    for (uint64_t i = TWO_MEGS / PAGE_SIZE; i < (FOUR_GIGS / PAGE_SIZE); i++)
+    {
+        uint64_t addr = i * PAGE_SIZE;
+
+        map_page(ret_pml4, addr, get_mem_addr(addr), BASIC_PAGE_FLAGS);
+    }
+
     return ret_pml4;
 }
+
 void set_vmm_page_dir(main_page_table *table)
 {
     get_current_data()->page_table = table;
@@ -172,7 +159,7 @@ void init_vmm(stivale_struct *bootdata)
         uint64_t addr = i * PAGE_SIZE;
         map_page(table, addr, addr, BASIC_PAGE_FLAGS);
         map_page(table, addr, get_mem_addr(addr), BASIC_PAGE_FLAGS);
-        map_page(table, addr, get_kern_addr(addr), BASIC_PAGE_FLAGS | (1 << 8));
+        map_page(table, addr, get_kern_addr(addr), BASIC_PAGE_FLAGS);
     }
 
     set_paging_dir(get_rmem_addr((uint64_t)get_current_data()->page_table));
@@ -202,6 +189,8 @@ void init_vmm(stivale_struct *bootdata)
     }
 
     set_paging_dir(get_rmem_addr((uint64_t)get_current_data()->page_table));
+    // get_current_data()->page_table = fork_vmm_page_dir();
+    // set_paging_dir(get_rmem_addr((uint64_t)get_current_data()->page_table));
     // main_pml4 = fork_vmm_page_dir(); for testing
     // set_paging_dir(get_rmem_addr((uint64_t)main_pml4));
 

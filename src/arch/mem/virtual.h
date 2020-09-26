@@ -30,12 +30,12 @@ inline void set_paging_dir(uint64_t pd)
 }
 void update_paging();
 int map_page(uint64_t phys_addr, uint64_t virt_addr, uint64_t flags);
+int map_page(main_page_table *table, uint64_t phys_addr, uint64_t virt_addr, uint64_t flags);
 
+main_page_table *new_vmm_page_dir();
 inline void virt_map(uint64_t from, uint64_t to, uint64_t flags)
 {
     log("paging", LOG_ERROR) << "HEY BUDDY ! REPLACE VIRT MAP WITH MAP PAGE !!!!!";
     map_page(from, to, flags);
 }
 void init_vmm(stivale_struct *bootdata);
-
-main_page_table *fork_vmm_page_dir();

@@ -126,7 +126,7 @@ void *pmm_alloc_fast(uint64_t lenght)
 void *pmm_alloc_zero(uint64_t lenght)
 {
     void *d = pmm_alloc_fast(lenght);
-    uint64_t *pages = ((uint64_t *)(((uint64_t)d)));
+    uint64_t *pages = ((uint64_t *)(get_mem_addr((uint64_t)d)));
     for (uint64_t i = 0; i < (lenght * PAGE_SIZE) / sizeof(uint64_t); i++)
     {
         pages[i] = 0;

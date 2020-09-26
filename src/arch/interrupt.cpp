@@ -152,9 +152,15 @@ void dumpregister(InterruptStackFrame *stck)
     printf("flags = %x \n", stck->rflags);
 
     uint64_t CRX;
-    asm volatile("mov %%cr2, %0"
+    asm volatile("mov %0, cr2"
                  : "=r"(CRX));
     printf("CR2 = %x \n", CRX);
+    asm volatile("mov %0, cr3"
+                 : "=r"(CRX));
+    printf("CR3 = %x \n", CRX);
+    asm volatile("mov %0, cr4"
+                 : "=r"(CRX));
+    printf("CR4 = %x \n", CRX);
 }
 
 void pic_ack(int intno)

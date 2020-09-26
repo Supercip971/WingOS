@@ -58,7 +58,6 @@ void PIT::update()
     current_count++;
     if (current_count > PIT_TARGET_FREQUECY)
     {
-        printf("sec \n");
         current_count = 0;
         passed_sec += 1;
     }

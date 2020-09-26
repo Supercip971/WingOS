@@ -92,6 +92,7 @@ lock_type print_locker = {0};
 char temp_buf[64];
 void printf(const char *format, ...)
 {
+    lock((&print_locker));
     va_list parameters;
     va_start(parameters, format);
 
@@ -110,11 +111,15 @@ void printf(const char *format, ...)
                 amount++;
             if (maxrem < amount)
             {
-                // TODO: Set errno to EOVERFLOW.
+                unlock((&print_locker));
                 return;
             }
             if (!com_write_strn(format, amount))
+            {
+
+                unlock((&print_locker));
                 return;
+            }
             format += amount;
             written += amount;
             continue;
@@ -128,11 +133,15 @@ void printf(const char *format, ...)
             char c = (char)va_arg(parameters, int /* char promotes to int */);
             if (!maxrem)
             {
-                // TODO: Set errno to EOVERFLOW.
+                unlock((&print_locker));
                 return;
             }
             if (!com_write_strn(&c, sizeof(c)))
+            {
+
+                unlock((&print_locker));
                 return;
+            }
             written++;
         }
         else if (*format == 's')
@@ -142,11 +151,16 @@ void printf(const char *format, ...)
             uint64_t len = strlen(str);
             if (maxrem < len)
             {
-                // TODO: Set errno to EOVERFLOW.
+
+                unlock((&print_locker));
                 return;
             }
             if (!com_write_strn(str, len))
+            {
+
+                unlock((&print_locker));
                 return;
+            }
             written += len;
         }
         else if (*format == 'x')
@@ -168,11 +182,16 @@ void printf(const char *format, ...)
                 uint64_t len = strlen(temp_buf);
                 if (maxrem < len)
                 {
+                    unlock((&print_locker));
                     // TODO: Set errno to EOVERFLOW.
                     return;
                 }
                 if (!com_write_strn(temp_buf, len))
+                {
+
+                    unlock((&print_locker));
                     return;
+                }
                 written += len;
             }
         }
@@ -183,15 +202,22 @@ void printf(const char *format, ...)
             if (maxrem < len)
             {
                 // TODO: Set errno to EOVERFLOW.
+
+                unlock((&print_locker));
                 return;
             }
             if (!com_write_strn(format, len))
+            {
+
+                unlock((&print_locker));
                 return;
+            }
             written += len;
             format += len;
         }
     }
 
+    unlock((&print_locker));
     va_end(parameters);
     return;
 }

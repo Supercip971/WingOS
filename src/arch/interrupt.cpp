@@ -256,7 +256,6 @@ extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
         PIT::the()->update();
         uint64_t result = irq_0_process_handler(stackframe);
         apic::the()->EOI();
-        //log("interrupt", LOG_INFO) << "next process rsp : " << result;
         return result;
     }
     else if (stackframe->int_no == 33)
@@ -266,6 +265,14 @@ extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
     else if (stackframe->int_no == 32 + 14 || stackframe->int_no == 32 + 15)
     {
         ata_driver::the()->irq_handle(stackframe->int_no - 32);
+    }
+
+    else if (stackframe->int_no == 100)
+    {
+
+        uint64_t result = irq_0_process_handler(stackframe);
+        apic::the()->EOI();
+        return result;
     }
     else if (stackframe->int_no == 0xf0)
     {

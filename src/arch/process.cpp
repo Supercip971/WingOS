@@ -14,6 +14,7 @@
 extern "C" void irq0_first_jump();
 extern "C" void reload_cr3();
 process kernel_process;
+bool cpu_wait = false;
 char temp_esp[8192];
 process *nxt;
 bool process_locked = true;
@@ -49,6 +50,30 @@ void main_process_2()
         asm("int 32");
     }
 }
+
+void process_smp_basic()
+{
+    asm("sti");
+
+    while (true)
+    {
+        //   log("smp", LOG_INFO) << "hello [1] from cpu : " << apic::the()->get_current_processor_id();
+        //   unlock_process();
+        asm("int 32");
+    }
+}
+void process_smp_basic_2()
+{
+    asm("sti");
+
+    while (true)
+    {
+        //  lock_process();
+        //  log("smp", LOG_INFO) << "hello [2] from cpu : " << apic::the()->get_current_processor_id();
+        //  unlock_process();
+        asm("int 32");
+    }
+}
 extern "C" void irq0_first_jump(void);
 void init_multi_process(func start)
 {
@@ -75,6 +100,17 @@ void init_multi_process(func start)
 
     log("proc", LOG_INFO) << "loading process 2";
     init_process(start, true, "kernel process", false);
+    log("proc", LOG_INFO) << "loading smp process for cpus :" << smp::the()->processor_count;
+    for (int i = 0; i <= smp::the()->processor_count; i++)
+    {
+        if (i != (uint32_t)apic::the()->get_current_processor_id())
+        {
+            log("proc", LOG_INFO) << "loading process for cpu : " << i;
+            init_process(process_smp_basic, true, "smp1", false, i);
+            init_process(process_smp_basic_2, true, "smp2", false, i);
+        }
+    }
+
     process_loaded = true;
 
     asm volatile("sti");
@@ -84,7 +120,7 @@ void init_multi_process(func start)
     }
 }
 
-process *init_process(func entry_point, bool start_direct, const char *name, bool user)
+process *init_process(func entry_point, bool start_direct, const char *name, bool user, int cpu_target)
 {
 
     for (int i = 0; i < MAX_PROCESS; i++)
@@ -119,6 +155,16 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
             {
                 process_array[i].msg_list[j].entry_free_to_use = true;
                 process_array[i].msg_list[j].message_id = j;
+            }
+            if (cpu_target == -1)
+            {
+
+                process_array[i].processor_target = apic::the()->get_current_processor_id();
+            }
+            else
+            {
+
+                process_array[i].processor_target = cpu_target;
             }
             uint64_t *rsp = (uint64_t *)process_array[i].rsp;
             InterruptStackFrame *ISF = (InterruptStackFrame *)(rsp - (sizeof(InterruptStackFrame)));
@@ -159,6 +205,10 @@ extern "C" uint64_t switch_context(InterruptStackFrame *current_Isf, process *ne
 {
     if (next == NULL)
     {
+        if (cpu_wait)
+        {
+            cpu_wait = false;
+        }
         return (uint64_t)current_Isf; // early return
     }
     if (get_current_data()->current_process == NULL)
@@ -168,6 +218,10 @@ extern "C" uint64_t switch_context(InterruptStackFrame *current_Isf, process *ne
         next->current_process_state = process_state::PROCESS_RUNNING;
         get_current_data()->current_process = next;
         task_update_switch(next);
+        if (cpu_wait)
+        {
+            cpu_wait = false;
+        }
         return next->rsp;
     }
     else
@@ -180,6 +234,10 @@ extern "C" uint64_t switch_context(InterruptStackFrame *current_Isf, process *ne
         next->current_process_state = process_state::PROCESS_RUNNING;
         get_current_data()->current_process = next;
         task_update_switch(next);
+        if (cpu_wait)
+        {
+            cpu_wait = false;
+        }
         return next->rsp;
     }
 }
@@ -190,6 +248,8 @@ extern "C" process *get_next_process(uint64_t current_id)
     {
         return get_current_data()->current_process;
     }
+
+    uint32_t dad = apic::the()->get_current_processor_id();
     for (uint64_t i = current_id; i < MAX_PROCESS; i++)
     {
         if (process_array[i].current_process_state ==
@@ -199,7 +259,7 @@ extern "C" process *get_next_process(uint64_t current_id)
         }
         else if (process_array[i].current_process_state ==
                      process_state::PROCESS_WAITING &&
-                 i != 0)
+                 i != 0 && process_array[i].processor_target == dad)
         {
 
             if (process_array[i].is_ORS == true && process_array[i].should_be_active == false)
@@ -213,7 +273,7 @@ extern "C" process *get_next_process(uint64_t current_id)
     { // we do a loop
         if (process_array[i].current_process_state ==
                 process_state::PROCESS_WAITING &&
-            i != 0)
+            i != 0 && process_array[i].processor_target == dad)
         {
             if (process_array[i].is_ORS == true && process_array[i].should_be_active == false)
             {
@@ -225,13 +285,27 @@ extern "C" process *get_next_process(uint64_t current_id)
     log("proc", LOG_ERROR) << "no free process found";
     return nullptr;
 }
-
 extern "C" uint64_t irq_0_process_handler(InterruptStackFrame *isf)
 {
+
     if (process_locked)
     {
         //log("proc", LOG_INFO) << "process locked";
         return (uint64_t)isf;
+    }
+    if (apic::the()->get_current_processor_id() == 0)
+    {
+        for (int i = 0; i <= smp::the()->processor_count; i++)
+        {
+            if (i != apic::the()->get_current_processor_id())
+            {
+                cpu_wait = true;
+                apic::the()->send_int(i, 100);
+                while (cpu_wait)
+                {
+                }
+            }
+        }
     }
     if (get_current_data()->current_process == NULL)
     {
@@ -262,7 +336,6 @@ extern "C" void task_update_switch(process *next)
 
     get_current_data()->page_table = (uint64_t *)next->page_directory;
     update_paging();
-
 }
 
 void add_thread_map(process *p, uint64_t from, uint64_t to, uint64_t length)

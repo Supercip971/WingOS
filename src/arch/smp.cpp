@@ -41,8 +41,10 @@ extern "C" void cpuupstart(void)
 
     gdt_ap_init();
     asm("cli");
+
     SMPloaded = true;
     uint64_t vo = 0;
+    asm("sti");
 
     /* init_process(smp_function_tool, true, "smp");
     while (true)
@@ -129,7 +131,6 @@ void smp::init_cpu(int apic, int id)
     POKE(get_mem_addr(0x570)) =
         (uint64_t)get_current_data(id)->stack_data + 8192;
     memzero(get_current_data(id)->stack_data, 8192);
-
 
     asm volatile(" \n"
                  "sgdt [0x580]\n"

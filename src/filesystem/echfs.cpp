@@ -79,7 +79,7 @@ void echfs::init(uint64_t start_sector, uint64_t sector_count)
     main_dir_start = ((header.block_count * sizeof(uint64_t) + header.block_length - 1) / header.block_length) + 16;
     uint64_t start_main_dir = ((header.block_count * sizeof(uint64_t) + header.block_length - 1) / header.block_length) + 16;
     log("echfs", LOG_INFO) << "end of allocation bloc : " << start_main_dir;
-        uint64_t entry = 0;
+    uint64_t entry = 0;
 
     uint64_t entry_t = 0;
     while (true)

@@ -60,7 +60,7 @@ static process *process_array = nullptr;
 // TODO: make a get_current_process() function
 typedef void (*func)();
 void add_thread_map(process *p, uint64_t from, uint64_t to, uint64_t length);
-process *init_process(func entry_point, bool start_direct, const char *name, bool user);
+process *init_process(func entry_point, bool start_direct, const char *name, bool user, int cpu_target = -1);
 void init_multi_process(func start);
 
 void unlock_process();

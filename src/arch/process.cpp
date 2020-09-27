@@ -79,7 +79,7 @@ void init_multi_process(func start)
 {
     log("proc", LOG_DEBUG) << "loading multi processing";
     printf("loading process \n");
-    process_array = (process *)malloc(sizeof(process) * MAX_PROCESS);
+    process_array = (process *)((uint64_t)malloc(sizeof(process) * MAX_PROCESS + 4096 /* for security */));
     get_current_data()->current_process = nullptr;
     printf("loading process 0 \n");
     for (int i = 0; i < MAX_PROCESS; i++)
@@ -103,12 +103,10 @@ void init_multi_process(func start)
     log("proc", LOG_INFO) << "loading smp process for cpus :" << smp::the()->processor_count;
     for (int i = 0; i <= smp::the()->processor_count; i++)
     {
-        if (i != (uint32_t)apic::the()->get_current_processor_id())
-        {
-            log("proc", LOG_INFO) << "loading process for cpu : " << i;
-            init_process(process_smp_basic, true, "smp1", false, i);
-            init_process(process_smp_basic_2, true, "smp2", false, i);
-        }
+
+        log("proc", LOG_INFO) << "loading process for cpu : " << i;
+        init_process(process_smp_basic, true, "smp1", false, i);
+        init_process(process_smp_basic_2, true, "smp2", false, i);
     }
 
     process_loaded = true;
@@ -184,6 +182,7 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
 
                 process_array[i].page_directory = (uint64_t)new_vmm_page_dir();
                 map_page((uint64_t *)process_array[i].page_directory, get_rmem_addr(process_array[i].page_directory), process_array[i].page_directory, 0x03);
+                map_page((uint64_t *)process_array[i].page_directory, (uint64_t)(process_array), (uint64_t)(process_array), 0x03);
             }
             else
             {
@@ -195,6 +194,7 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
             {
                 get_current_data()->current_process = &process_array[i];
             }
+
             unlock((&process_creator_lock));
             last_process = i + 1;
             return &process_array[i];
@@ -215,6 +215,7 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
 
 extern "C" uint64_t switch_context(InterruptStackFrame *current_Isf, process *next)
 {
+
     if (process_locked)
     {
         return (uint64_t)current_Isf; // early return
@@ -265,17 +266,14 @@ extern "C" process *get_next_process(uint64_t current_id)
         return get_current_data()->current_process;
     }
 
-    uint32_t dad = apic::the()->get_current_processor_id();
-    for (uint64_t i = current_id; i < MAX_PROCESS; i++)
+    uint64_t dad = apic::the()->get_current_processor_id();
+    for (uint64_t i = current_id + 1; i < MAX_PROCESS; i++)
     {
-        if (process_array[i].current_process_state ==
-            process_state::PROCESS_AVAILABLE)
-        {
-            break;
-        }
-        else if (process_array[i].current_process_state ==
-                     process_state::PROCESS_WAITING &&
-                 i != 0 && process_array[i].processor_target == dad)
+
+        if ((process_array[i].current_process_state ==
+                 process_state::PROCESS_WAITING ||
+             process_array[i].current_process_state == PROCESS_RUNNING) &&
+            i != 0 && process_array[i].processor_target == dad)
         {
 
             if (process_array[i].is_ORS == true && process_array[i].should_be_active == false)
@@ -285,10 +283,11 @@ extern "C" process *get_next_process(uint64_t current_id)
             return &process_array[i];
         }
     }
-    for (uint64_t i = 0; i < current_id; i++)
+    for (uint64_t i = 0; i < MAX_PROCESS; i++)
     { // we do a loop
-        if (process_array[i].current_process_state ==
-                process_state::PROCESS_WAITING &&
+        if ((process_array[i].current_process_state ==
+                 process_state::PROCESS_WAITING ||
+             process_array[i].current_process_state == PROCESS_RUNNING) &&
             i != 0 && process_array[i].processor_target == dad)
         {
             if (process_array[i].is_ORS == true && process_array[i].should_be_active == false)
@@ -298,8 +297,11 @@ extern "C" process *get_next_process(uint64_t current_id)
             return &process_array[i];
         }
     }
-    log("proc", LOG_ERROR) << "no free process found";
-    return nullptr;
+    log("proc", LOG_ERROR) << "no process found";
+    log("proc", LOG_ERROR) << "from cpu : " << apic::the()->get_current_processor_id();
+    log("proc", LOG_ERROR) << "maybe from : " << get_current_data()->current_process->process_name;
+    dump_process();
+    return get_current_data()->current_process;
 }
 extern "C" uint64_t irq_0_process_handler(InterruptStackFrame *isf)
 {
@@ -335,6 +337,7 @@ extern "C" uint64_t irq_0_process_handler(InterruptStackFrame *isf)
         if (i == nullptr)
         {
             log("proc", LOG_INFO) << "get next process returned nullptr";
+            log("proc", LOG_INFO) << "in cpu" << apic::the()->get_current_processor_id();
             return (uint64_t)isf;
         }
         return switch_context(isf, i);

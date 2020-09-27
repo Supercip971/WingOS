@@ -1,5 +1,6 @@
 
 #pragma once
+#include <arch/lock.h>
 #include <arch/mem/physical.h>
 #include <arch/mem/virtual.h>
 #include <arch/process.h>
@@ -13,7 +14,7 @@
 
 /** @{ */
 #define NULL 0
-typedef long size_t;
+typedef unsigned long size_t;
 
 // If we are told to not define our own size_t, then we skip the define.
 //#define _HAVE_UINTPTR_T
@@ -34,8 +35,10 @@ extern "C"
  * \return 0 if the lock was acquired successfully. Anything else is
  * failure.
  */
+    static struct lock_type mem_lock = {0};
     inline int liballoc_lock()
     {
+        lock((&mem_lock));
         lock_process();
         return 0;
     };
@@ -48,6 +51,7 @@ extern "C"
  */
     inline int liballoc_unlock()
     {
+        unlock((&mem_lock));
         unlock_process();
         return 0;
     }

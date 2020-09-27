@@ -8,7 +8,7 @@ extern "C" uint64_t addr_kernel_start;
 uint64_t bitmap_base = 0;
 uint8_t *bitmap;
 uint64_t available_memory;
-
+uint64_t pmm_length = 0;
 uint64_t pmm_page_entry_count = 0;
 
 static void pmm_set_bit(uint64_t page)
@@ -37,10 +37,10 @@ static uint8_t pmm_get_bit(uint64_t page)
 
 uint64_t pmm_find_free(uint64_t lenght)
 {
-    int lenght_found = 0;
+    uint64_t lenght_found = 0;
     uint64_t result = 0;
     // find bitmap base
-    for (uint64_t i = 0; i < pmm_page_entry_count; i++)
+    for (uint64_t i = 0; i < pmm_length; i++)
     {
         if (!pmm_get_bit(i))
         {
@@ -74,7 +74,7 @@ uint64_t pmm_find_free_fast(uint64_t lenght)
     int lenght_found = 0;
     uint64_t result = 0;
     // find bitmap base
-    for (uint64_t i = last_free_byte; i < pmm_page_entry_count; i++)
+    for (uint64_t i = last_free_byte; i < pmm_length; i++)
     {
         if (!pmm_get_bit(i))
         {
@@ -177,6 +177,7 @@ void init_physical_memory(stivale_struct *bootdata)
 
                 bitmap_base = mementry[i].base + PAGE_SIZE;
                 log("pmm", LOG_INFO) << "bitmap addr" << bitmap_base;
+                pmm_length = ((total_memory_lenght / PAGE_SIZE) / 8);
                 mementry[i].base += ((total_memory_lenght / PAGE_SIZE) / 8) + PAGE_SIZE + PAGE_SIZE;
                 break;
             }

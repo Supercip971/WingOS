@@ -221,15 +221,7 @@ extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
         log("pic", LOG_FATAL) << "!!! fatal interrupt error !!!";
         log("pic", LOG_ERROR) << "ID   : " << stackframe->int_no;
         log("pic", LOG_ERROR) << "type : " << exception_messages[stackframe->int_no];
-        if (process_array != nullptr)
-        {
-            log("pic", LOG_INFO) << "running process : ";
-            for (int i = 0; i < MAX_PROCESS; i++)
-            {
-                log("pic", LOG_INFO) << "process name : " << process_array->process_name;
-                log("pic", LOG_INFO) << "state : " << process_array->current_process_state;
-            }
-        }
+
         printf("\n");
         dumpregister(stackframe);
         printf("\n");
@@ -245,6 +237,9 @@ extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
         if (get_current_data()->current_process != nullptr)
         {
             log("pic", LOG_INFO) << "in process: " << get_current_data()->current_process->process_name;
+
+            log("pic", LOG_INFO) << "in processor : " << get_current_data()->current_process->processor_target;
+            dump_process();
         }
         while (true)
         {

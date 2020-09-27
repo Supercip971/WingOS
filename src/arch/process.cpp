@@ -405,7 +405,22 @@ process_message *send_message(uint64_t data_addr, uint64_t data_length, const ch
 
     return nullptr;
 }
+void dump_process()
+{
+    lock_process();
+    for (int i = 0; i < MAX_PROCESS; i++)
+    {
+        if (process_array[i].current_process_state != PROCESS_AVAILABLE)
+        {
 
+            log("proc", LOG_DEBUG) << "info for process : " << i;
+            log("proc", LOG_INFO) << "process name     : " << process_array[i].process_name;
+            log("proc", LOG_INFO) << "process state    : " << process_array[i].current_process_state;
+            log("proc", LOG_INFO) << "process cpu      : " << process_array[i].processor_target;
+        }
+    }
+    unlock_process();
+}
 process_message *read_message()
 {
     for (uint64_t i = 0; i < MAX_PROCESS_MESSAGE_QUEUE; i++)

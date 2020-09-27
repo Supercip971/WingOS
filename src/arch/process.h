@@ -1,7 +1,7 @@
 #pragma once
 #include <arch/64bit.h>
 #include <int_value.h>
-#define MAX_PROCESS 128
+#define MAX_PROCESS 64
 #define PROCESS_STACK_SIZE 8192
 enum process_state
 {
@@ -62,7 +62,7 @@ typedef void (*func)();
 void add_thread_map(process *p, uint64_t from, uint64_t to, uint64_t length);
 process *init_process(func entry_point, bool start_direct, const char *name, bool user, int cpu_target = -1);
 void init_multi_process(func start);
-
+void dump_process();
 void unlock_process();
 void lock_process();
 

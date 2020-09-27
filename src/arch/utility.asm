@@ -14,7 +14,7 @@ asm_spinlock_lock:
 
 spin: ; never gonna lock you up never gonna lock you doooown
     inc rax
-    cmp rax, 0xffff
+    cmp rax, 0x1ffff
     je something_is_bad_i_want_to_die
     pause
     test dword [rdi], 1 ; finnaly the lock is not here

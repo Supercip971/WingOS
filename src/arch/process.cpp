@@ -203,6 +203,10 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
 
 extern "C" uint64_t switch_context(InterruptStackFrame *current_Isf, process *next)
 {
+    if (process_locked)
+    {
+        return (uint64_t)current_Isf; // early return
+    }
     if (next == NULL)
     {
         if (cpu_wait)

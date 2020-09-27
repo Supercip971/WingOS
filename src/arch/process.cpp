@@ -119,12 +119,17 @@ void init_multi_process(func start)
     {
     }
 }
-
+lock_type process_creator_lock = {0};
+uint64_t last_process = 0;
 process *init_process(func entry_point, bool start_direct, const char *name, bool user, int cpu_target)
 {
-
-    for (int i = 0; i < MAX_PROCESS; i++)
+    lock((&process_creator_lock));
+    for (uint64_t i = last_process; i < MAX_PROCESS; i++)
     {
+        if (process_loaded == true && i == 0)
+        {
+            continue;
+        }
         if (process_array[i].current_process_state ==
             process_state::PROCESS_AVAILABLE)
         {
@@ -190,15 +195,22 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
             {
                 get_current_data()->current_process = &process_array[i];
             }
-            for (int j = 0; j < MAX_PROCESS_MEMORY_DATA_MAP; j++)
-            {
-                process_array[i].mmap[j].used = false;
-            }
+            unlock((&process_creator_lock));
+            last_process = i + 1;
             return &process_array[i];
         }
     }
-    log("proc", LOG_ERROR) << "no free process found";
-    return nullptr;
+    if (last_process == 0)
+    {
+        log("proc", LOG_ERROR) << "init_process : no free process found";
+        unlock((&process_creator_lock));
+        return nullptr;
+    }
+    else
+    {
+        last_process = 0;
+        return init_process(entry_point, start_direct, name, user, cpu_target);
+    }
 }
 
 extern "C" uint64_t switch_context(InterruptStackFrame *current_Isf, process *next)

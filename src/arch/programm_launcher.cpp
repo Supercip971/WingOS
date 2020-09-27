@@ -51,11 +51,10 @@ void launch_programm(const char *path, echfs *file_sys)
         {
             last_selected_cpu = 0;
         }
+
+        log("prog launcher", LOG_INFO) << "elf programm cpu : " << last_selected_cpu;
         process *to_launch = init_process((func)programm_header->e_entry, false, path, true, last_selected_cpu);
-        while (to_launch->pid == 0)
-        {
-            to_launch = init_process((func)programm_header->e_entry, false, path, true, last_selected_cpu);
-        }
+
         Elf64_Phdr *p_entry = reinterpret_cast<Elf64_Phdr *>((uint64_t)programm_code + programm_header->e_phoff);
         for (int table_entry = 0; table_entry < programm_header->e_phnum; table_entry++, p_entry += programm_header->e_phentsize)
         {
@@ -63,8 +62,7 @@ void launch_programm(const char *path, echfs *file_sys)
             if (p_entry->p_type == PT_LOAD)
             {
 
-                asm volatile("cli");
-                char *temp_copy = (char *)malloc(p_entry->p_filesz);
+                char *temp_copy = (char *)malloc(p_entry->p_filesz + 4096);
                 memcpy(temp_copy, (char *)((uint64_t)programm_code + p_entry->p_offset), p_entry->p_filesz);
                 load_segment(to_launch, (uint64_t)programm_code + p_entry->p_offset, p_entry->p_filesz, p_entry->p_vaddr, p_entry->p_memsz);
                 char *p_entry_data = (char *)p_entry->p_vaddr;
@@ -72,7 +70,6 @@ void launch_programm(const char *path, echfs *file_sys)
                 {
                     p_entry_data[i] = temp_copy[i];
                 }
-                asm volatile("sti");
             }
             else
             {

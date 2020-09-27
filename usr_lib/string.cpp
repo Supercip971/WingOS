@@ -1,4 +1,6 @@
 #include <stdint.h>
+#include <klib/kernel_util.h>
+#include <string.h>
 uint64_t strlen(const char* s){
     uint64_t string_length = 0;
     while(s[string_length] != 0){
@@ -60,6 +62,17 @@ void* memcpy(void* dest, const void* src, uint64_t length){
         cdest[i] = csrc[i];
     }
     return cdest;
+}
+
+int memcmp(const void* s1, const void* s2, size_t n){
+    const char* ss1 = (const char*) s1;
+    const char* ss2 = (const char*) s2;
+    for(size_t i = 0; i < n; i++){
+        if(ss1[i] != ss2[i]){
+            return false;
+        }
+    }
+    return true;
 }
 // for later optimization
 #else

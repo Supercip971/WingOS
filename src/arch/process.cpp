@@ -220,6 +220,7 @@ extern "C" uint64_t switch_context(InterruptStackFrame *current_Isf, process *ne
     {
         return (uint64_t)current_Isf; // early return
     }
+    // log("proc", LOG_INFO) << "next process : " << next->process_name << "cpu : " << next->processor_target;
     if (next == NULL)
     {
         if (cpu_wait)
@@ -271,8 +272,7 @@ extern "C" process *get_next_process(uint64_t current_id)
     {
 
         if ((process_array[i].current_process_state ==
-                 process_state::PROCESS_WAITING ||
-             process_array[i].current_process_state == PROCESS_RUNNING) &&
+             process_state::PROCESS_WAITING) &&
             i != 0 && process_array[i].processor_target == dad)
         {
 
@@ -286,8 +286,7 @@ extern "C" process *get_next_process(uint64_t current_id)
     for (uint64_t i = 0; i < MAX_PROCESS; i++)
     { // we do a loop
         if ((process_array[i].current_process_state ==
-                 process_state::PROCESS_WAITING ||
-             process_array[i].current_process_state == PROCESS_RUNNING) &&
+             process_state::PROCESS_WAITING) &&
             i != 0 && process_array[i].processor_target == dad)
         {
             if (process_array[i].is_ORS == true && process_array[i].should_be_active == false)
@@ -297,6 +296,7 @@ extern "C" process *get_next_process(uint64_t current_id)
             return &process_array[i];
         }
     }
+
     log("proc", LOG_ERROR) << "no process found";
     log("proc", LOG_ERROR) << "from cpu : " << apic::the()->get_current_processor_id();
     log("proc", LOG_ERROR) << "maybe from : " << get_current_data()->current_process->process_name;
@@ -474,9 +474,9 @@ uint64_t message_response(process_message *message_id)
     }
 
     process_message *msg = &process_array[message_id->to_pid].msg_list[message_id->message_id];
-    if (msg->response == -1)
+    if (msg->has_been_readed == false)
     {
-        //     log("process", LOG_ERROR) << "message has not been readed";
+        //log("process", LOG_ERROR) << "message has not been readed" << process_array[message_id->to_pid].process_name;
         return -2; // return -2 = wait again
     }
     else if (msg->entry_free_to_use == true)
@@ -497,7 +497,7 @@ void set_on_request_service(bool is_ORS)
 {
     if (is_ORS == true)
     {
-        log("process", LOG_INFO) << "setting process : " << get_current_data()->current_process->process_name << "on request service mode ";
+        log("process", LOG_INFO) << "setting process : " << get_current_data()->current_process->process_name << " (on request service mode)";
     }
     get_current_data()->current_process->is_ORS = is_ORS;
     get_current_data()->current_process->should_be_active = false;

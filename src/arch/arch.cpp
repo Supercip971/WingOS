@@ -24,7 +24,6 @@
 #include <kernel.h>
 #include <kernel_service/kernel_service.h>
 #include <loggging.h>
-#include <stivale_struct.h>
 
 __attribute__((section(".stivalehdr"), used))
 stivale_header header = {.stack = (uintptr_t)stack + (sizeof(char) * STACK_SIZE),

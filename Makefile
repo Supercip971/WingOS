@@ -33,7 +33,9 @@ CHARDFLAGS := $(CFLAGS)               \
 		-ffreestanding                 \
         -fno-stack-protector           \
         -fno-omit-frame-pointer        \
-        -Isrc/                         \
+		-fno-isolate-erroneous-paths-attribute \
+		-fno-delete-null-pointer-checks \
+		-Isrc/                         \
 
 LDHARDFLAGS := $(LDFLAGS)        \
         -nostdlib                 \
@@ -64,6 +66,7 @@ foreachramfs:
 app: $(APP_FILE_CHANGE)
 	@make -C ./app/test all	
 	@make -C ./app/test2 all
+	@make -C ./app/graphic_service all
 super:
 	make clean
 	make app

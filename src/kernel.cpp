@@ -22,19 +22,7 @@ void _start(stivale_struct *bootloader_data)
     log("graphics ", LOG_INFO) << " frame buffer address " << bootloader_data->framebuffer_addr;
     uint64_t update_tick = 0;
     uint64_t started_sec = 0;
-
-    unlock_process();
     while (true)
     {
-        for (uint64_t i = 1; i < bootloader_data->framebuffer_width *
-                                     bootloader_data->framebuffer_height;
-             i++)
-        {
-            dd[i] = ((uint32_t *)get_mem_addr(imjusttired))[i];
-        }
-        imjusttired += sizeof(uint32_t);
-        update_tick++;
-
-        d++;
     }
 }

@@ -4,6 +4,7 @@
 enum graphic_buffert_service_request
 {
     GET_CURRENT_BUFFER_ADDR = 1,
+    GET_SCREEN_SIZE = 2,
 };
 struct graphic_buffer_protocol
 {

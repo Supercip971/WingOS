@@ -4,6 +4,7 @@ namespace sys {
     enum graphic_buffert_service_request
     {
         GET_CURRENT_BUFFER_ADDR = 1,
+        GET_SCREEN_SIZE = 2, // data1 = bool(is_height)
     };
     struct graphic_buffer_protocol
     {
@@ -13,4 +14,6 @@ namespace sys {
         uint64_t data3;
     } __attribute__((packed));
     uint64_t get_graphic_buffer_addr();
+    uint64_t get_screen_width();
+    uint64_t get_screen_height();
 }

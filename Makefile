@@ -20,11 +20,8 @@ CHARDFLAGS := $(CFLAGS)               \
         -masm=intel                    \
         -fno-pic                       \
         -no-pie \
-        -mno-sse                       \
         -m64 \
-        -O2 \
-        -mno-sse2                      \
-        -mno-mmx                       \
+        -O3 \
         -mcmodel=kernel \
         -mno-80387                     \
         -mno-red-zone                  \

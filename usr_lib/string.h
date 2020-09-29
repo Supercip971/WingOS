@@ -11,4 +11,4 @@ char* strncpy(char* dest, const char* src, uint64_t n);
 
 int memcmp(const void* s1, const void* s2, size_t n);
 void* memcpy(void* dest, const void* src, uint64_t length);
-
+void* memmove(void* dest, const void* src, size_t n);

@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <klib/kernel_util.h>
 #include <string.h>
+#include <klib/mem_util.h>
 uint64_t strlen(const char* s){
     uint64_t string_length = 0;
     while(s[string_length] != 0){
@@ -73,6 +74,26 @@ int memcmp(const void* s1, const void* s2, size_t n){
         }
     }
     return true;
+}
+
+void* memmove(void* dest, const void* src, size_t n){
+    char* new_dst = (char*)dest;
+    const char* new_src = (const char*)src;
+
+    char* temporary_data = (char*)sys::service_malloc(n);
+
+
+    for(size_t i = 0; i < n; i++){
+        temporary_data[i] = new_src[i];
+    }
+    for(size_t i = 0; i < n; i++){
+        new_dst[i] = temporary_data[i];
+    }
+
+
+
+    sys::service_free(temporary_data);
+    return dest;
 }
 // for later optimization
 #else

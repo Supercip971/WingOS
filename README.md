@@ -8,6 +8,7 @@
  - memory (thank lib alloc)
  - smp
  - multiprocessing
+ - smp multiprocessing
  - ioapic timer
  - madt 
  - apic 
@@ -15,6 +16,8 @@
  - basic ATA driver
  - echfs support
  - programm launcher (only elf64 programm for the moment)
- - \[insert something here]
+ - really basic pci table parser
+ - process message
+- \[insert something here]
  
 

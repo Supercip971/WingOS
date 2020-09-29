@@ -4,13 +4,14 @@
 #include <arch/mem/liballoc.h>
 #include <arch/process.h>
 #include <arch/smp.h>
+#include <arch/sse.h>
 #include <com.h>
 #include <device/apic.h>
 #include <device/local_data.h>
 #include <kernel.h>
 #include <loggging.h>
 #include <utility.h>
-#pragma GCC optimize("-O0")
+#pragma GCC optimize("O0")
 extern "C" void irq0_first_jump();
 extern "C" void reload_cr3();
 process kernel_process;
@@ -234,7 +235,9 @@ extern "C" uint64_t switch_context(InterruptStackFrame *current_Isf, process *ne
         // current_Isf = (InterruptStackFrame *)next->rsp;
         // memcpy(current_Isf, (void *)next->rsp, sizeof(InterruptStackFrame));
         next->current_process_state = process_state::PROCESS_RUNNING;
+
         get_current_data()->current_process = next;
+        load_sse_context(get_current_data()->current_process->sse_context);
         task_update_switch(next);
         if (cpu_wait)
         {
@@ -246,11 +249,13 @@ extern "C" uint64_t switch_context(InterruptStackFrame *current_Isf, process *ne
     {
         get_current_data()->current_process->current_process_state = PROCESS_WAITING;
         get_current_data()->current_process->rsp = (uint64_t)current_Isf;
+        save_sse_context(get_current_data()->current_process->sse_context);
         //memcpy(current_Isf, (void *)next->rsp, sizeof(InterruptStackFrame));
         //  current_Isf->rsp = next->rsp;
         // current_Isf = (InterruptStackFrame *)next->rsp;
         next->current_process_state = process_state::PROCESS_RUNNING;
         get_current_data()->current_process = next;
+        load_sse_context(get_current_data()->current_process->sse_context);
         task_update_switch(next);
         if (cpu_wait)
         {
@@ -303,6 +308,7 @@ extern "C" process *get_next_process(uint64_t current_id)
     dump_process();
     return get_current_data()->current_process;
 }
+uint16_t counter = 0;
 extern "C" uint64_t irq_0_process_handler(InterruptStackFrame *isf)
 {
 
@@ -311,8 +317,16 @@ extern "C" uint64_t irq_0_process_handler(InterruptStackFrame *isf)
         //log("proc", LOG_INFO) << "process locked";
         return (uint64_t)isf;
     }
+
     if (apic::the()->get_current_processor_id() == 0)
     {
+        /*    counter++;
+        if (counter > 500)
+        {
+            counter = 0;
+
+            dump_process();
+        }*/
         for (int i = 0; i <= smp::the()->processor_count; i++)
         {
             if (i != apic::the()->get_current_processor_id())

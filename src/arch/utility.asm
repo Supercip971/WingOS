@@ -14,7 +14,7 @@ asm_spinlock_lock:
 
 spin: ; never gonna lock you up never gonna lock you doooown
     inc rax
-    cmp rax, 0x1ffff
+    cmp rax, 0xffff
     je something_is_bad_i_want_to_die
     pause
     test dword [rdi], 1 ; finnaly the lock is not here
@@ -30,3 +30,30 @@ something_is_bad_i_want_to_die:
 asm_spinlock_unlock:
     lock btr dword [rdi], 0 ; Set the bit to 0
     ret  ; unlocking :D
+
+
+
+global sse_init
+; sse 1 and 2 should be supported on any 64bit processor
+sse_init:
+    mov rax, cr0
+    and ax, 0xfffb
+    or ax, 0x2
+    mov cr0, rax
+    mov rax, cr4
+    or ax, 3 << 9
+    mov cr4, rax
+    ret
+
+
+global asm_sse_save
+asm_sse_save:
+    mov rax, rdi
+    fxsave [eax]
+    ret
+global asm_sse_load
+asm_sse_load:
+
+    mov rax, rdi
+    fxrstor [eax]
+    ret

@@ -40,6 +40,7 @@ struct process
     uint64_t pid = 0;
     uint8_t stack[PROCESS_STACK_SIZE];
     uint64_t entry_point = 0x0;
+    uint64_t sse_context[128];
     uint64_t page_directory = 0;
     process_memory_data_map mmap[MAX_PROCESS_MEMORY_DATA_MAP];
     char process_name[128];

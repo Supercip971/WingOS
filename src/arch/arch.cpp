@@ -8,6 +8,7 @@
 #include <arch/process.h>
 #include <arch/programm_launcher.h>
 #include <arch/smp.h>
+#include <arch/sse.h>
 #include <com.h>
 #include <device/acpi.h>
 #include <device/apic.h>
@@ -41,6 +42,8 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
 {
     asm volatile("and rsp, -16");
     asm volatile("cli");
+    init_sse();
+
     com_initialize(COM_PORT::COM1);
     memcpy(&boot_loader_data_copy, bootloader_data, sizeof(stivale_struct));
 

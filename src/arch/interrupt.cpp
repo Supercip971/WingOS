@@ -14,6 +14,7 @@
 #include <loggging.h>
 #include <syscall.h>
 #include <utility.h>
+#pragma GCC optimize("-O0")
 uint8_t current = 0;
 
 lock_type lock = {0};
@@ -82,27 +83,7 @@ static idt_entry_t register_interrupt_handler(void *handler, uint8_t ist, uint8_
 
     return idt;
 }
-__attribute__((interrupt)) static void nmi_handler(void *p)
-{
-    log("apic", LOG_ERROR) << "nmi interrupt";
-    apic::the()->EOI();
-}
-__attribute__((interrupt)) static void spurious_handler(void *p)
-{
 
-    log("apic", LOG_ERROR) << "spurrious interrupt";
-    apic::the()->EOI();
-}
-__attribute__((interrupt)) static void too_much_handler(InterruptStackFrame *p)
-{
-    log("apic", LOG_ERROR) << "not handled interrupt";
-
-    // printf("## [ apic ] : not handled interrupt \n");
-
-    // printf("un-interrupt %x", p->int_no);
-
-    apic::the()->EOI();
-}
 void init_idt()
 {
     log("idt", LOG_DEBUG) << "loading idt";
@@ -118,15 +99,15 @@ void init_idt()
     }
     for (int i = 32 + 48; i < 0xff; i++)
     {
-        //   idt[i] = register_interrupt_handler((void *)__interrupt_vector[i], 0, 0x8e);
+        //  idt[i] = register_interrupt_handler((void *)__interrupt_vector[i], 0, 0x8e);
 
-        idt[i] = register_interrupt_handler((void *)too_much_handler, 0, 0x8e);
+        //  idt[i] = register_interrupt_handler((void *)too_much_handler, 0, 0x8e);
     }
     idt[127] = register_interrupt_handler((void *)__interrupt_vector[48], 0, 0x8e);
     idt[100] = register_interrupt_handler((void *)__interrupt_vector[49], 0, 0x8e);
 
-    idt[0xf0] = register_interrupt_handler((void *)nmi_handler, 0, 0x8e);
-    idt[0xff] = register_interrupt_handler((void *)spurious_handler, 0, 0x8e);
+    ///  idt[0xf0] = register_interrupt_handler((void *)nmi_handler, 0, 0x8e);
+    // idt[0xff] = register_interrupt_handler((void *)spurious_handler, 0, 0x8e);
     log("idt", LOG_DEBUG) << "flushing idt";
 
     asm volatile("lidt [%0]"

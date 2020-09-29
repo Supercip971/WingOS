@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <klib/mem_util.h>
 #include <ctype.h>
 int abs(int j){
     if(j < 0){
@@ -32,3 +33,28 @@ double atof(const char* s){
     return result;
 }
 
+double strtod(const char* nptr, char** endptr){
+    double current_num;
+    const char* s = nptr;
+    const char* end;
+    char* end_buffer;
+    int current_error;
+    while(*s == ' '){
+        s++;
+    }
+    bool is_neg = false;
+    if(*s == '-'){
+        is_neg = true;
+        s++;
+    }
+
+    const char* d2 = s + 1;
+    double res = atof(d2);
+    if(is_neg == true){
+        res *= -1;
+    }
+    if(endptr != 0){
+        *endptr = (char*)d2;
+    }
+    return res;
+}

@@ -1,0 +1,1 @@
+#define ERANGE -32

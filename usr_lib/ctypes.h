@@ -18,6 +18,12 @@ inline int isalnum(int c){
     }
     return 0;
 }
+inline int isdigit(int c){
+    if(c <= '9' && c >= '0'){
+            return 1;
+        }
+        return 0;
+}
 inline int isalpha(int c){
     if(c <= 'z' && c >= 'a'){
         return 1;

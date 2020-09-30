@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdarg.h>
 #include <stdint.h>
 #include <string.h>
 #include <klib/kernel_util.h>
@@ -18,6 +17,8 @@ int vsn_printf_out(bool just_print, char* buffer, uint64_t count, const char* da
     }
     return 0;
 }
+
+
 int vsn_printf(bool just_print, char* buffer /* nullptr say no buffer just print it*/, uint64_t count, const char* format, va_list argument){
 
 
@@ -135,5 +136,10 @@ int printf(const char* format, ...){
     va_start(va, format);
     uint64_t return_value = vsn_printf(true, nullptr, 0, format, va);
     va_end((va));
+    return return_value;
+}
+int vsprintf(char* buffer, const char* format, va_list vlist){
+
+    uint64_t return_value = vsn_printf(false, buffer, 0, format, vlist);
     return return_value;
 }

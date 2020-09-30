@@ -75,6 +75,15 @@ int memcmp(const void* s1, const void* s2, size_t n){
     }
     return true;
 }
+void *memset(void *data, uint8_t value, uint64_t lenght)
+{
+    uint8_t *d = (uint8_t *)data;
+    for (uint64_t i = 0; i < lenght; i++)
+    {
+        d[i] = value;
+    }
+    return data;
+}
 
 void* memmove(void* dest, const void* src, size_t n){
     char* new_dst = (char*)dest;

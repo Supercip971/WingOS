@@ -1,11 +1,11 @@
 #include <stdint.h>
 namespace sys {
-
+    // FOR GRAPHIC MESSAGE :
     struct graphic_raw_request{
         uint8_t request_raw_data[256]; // 256 o = 32 uint64_t i think we have a lot
     };
     struct create_graphic_window{
-        const char* name;
+        char* name;
         uint64_t width;
         uint64_t height;
         bool resizable = false; // will not be used
@@ -33,10 +33,31 @@ namespace sys {
     struct graphic_system_service_protocol{
         uint16_t request_type;
 
-        union request_info{
+        union{
             graphic_raw_request raw_information; // used for later, size : 256o (2048 byte)
             create_graphic_window create_window_info;
-            individual_request request;
+            individual_request get_request;
         };
+    }__attribute__((packed));
+    // FOR OTHER THING
+    struct pixel{
+        union{
+            struct {
+                uint8_t r;
+                uint8_t g;
+                uint8_t b;
+                uint8_t a;
+            };
+            uint32_t pix;
+        };
+        pixel(uint32_t p){
+            pix = p;
+        };
+        pixel(uint8_t vr, uint8_t vg, uint8_t vb, uint8_t va =  255){
+            r = vr;
+            g = vg;
+            b = vb;
+            a = va;
+        }
     };
 }

@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <klib/mem_util.h>
-#include <ctype.h>
+#include <ctypes.h>
 int abs(int j){
     if(j < 0){
         return -j;

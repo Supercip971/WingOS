@@ -1,6 +1,7 @@
 #include <klib/syscall.h>
 #include <klib/process_message.h>
 #include <klib/mem_util.h>
+#include <klib/graphic_system.h>
 #include <klib/raw_graphic.h>
 #include <stdio.h>
 int main(){
@@ -11,12 +12,17 @@ int main(){
     const char* h = "hello world";
     sys::process_message helloworld = sys::process_message("console_out", (uint64_t)h, 13);
     printf("hello world, here we go again %s", "another string OWOWU ?");
-
+    sys::graphic_system_service_protocol tolaunch = {0};
+    tolaunch.request_type = sys::GRAPHIC_SYSTEM_REQUEST::CREATE_WINDOW;
+    tolaunch.create_window_info.height = 100;
+    tolaunch.create_window_info.width = 200;
+    sys::process_message("init_fs/graphic_service.exe", (uint64_t)&tolaunch, sizeof (sys::graphic_system_service_protocol)).read();
     char* data= (char*)sys::service_malloc(1000);
     printf("g buffer addr : %x \n", sys::get_graphic_buffer_addr());
     for(int i= 0; i < 100; i++){
         data[i] = 0;
     }
+
     while (true) {
         result = msg_to_send.read();
         if(result != -2){

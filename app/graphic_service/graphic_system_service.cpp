@@ -88,12 +88,45 @@ uint64_t create_window(sys::graphic_system_service_protocol*request, uint64_t pi
 
     return -1;
 }
+
+
+uint64_t can_use_window(uint64_t target_wid, uint64_t pid){
+    if(target_wid> MAX_WINDOW) {
+        printf("graphic : trying to get a window that doesn't exist (wid > MAX_WINDOW)");
+        return -2;
+    }else if( window_list[target_wid].used == false){
+        return -1;
+        printf("not valid window id, the window is doesn't exist ");
+    }else if(window_list[target_wid].pid != pid ){
+        printf("the current window isn't from the current process");
+        return 0;
+    }
+    return 1;
+}
+uint64_t get_window_back_buffer(sys::graphic_system_service_protocol* request, uint64_t pid){
+    if(!can_use_window(request->get_request.window_handler_code, pid)){
+        return -2;
+    }
+    return (uint64_t)window_list[request->get_request.window_handler_code].window_back_buffer;
+
+}
+uint64_t window_swap_buffer(sys::graphic_system_service_protocol* request, uint64_t pid){
+    if(!can_use_window(request->get_request.window_handler_code, pid)){
+        return -2;
+    }
+    raw_window_data& target = window_list[request->get_request.window_handler_code];
+    swap_buffer(target.window_front_buffer, target.window_back_buffer, target.width * target.height);
+}
 uint64_t interpret(sys::graphic_system_service_protocol* request, uint64_t pid){
     if(request->request_type == 0){
         printf("graphic error : request null type");
         return -2;
     }else if(request->request_type == sys::GRAPHIC_SYSTEM_REQUEST::CREATE_WINDOW){
         return create_window(request, pid);
+    }else if(request->request_type == sys::GRAPHIC_SYSTEM_REQUEST::GET_WINDOW_BACK_BUFFER){
+        return get_window_back_buffer(request, pid);
+    }else if(request->request_type == sys::GRAPHIC_SYSTEM_REQUEST::SWAP_WINDOW_BUFFER){
+        return window_swap_buffer(request, pid);
     }
     printf("graphic error : request non implemented type");
     return -2;

@@ -58,3 +58,33 @@ int isnan(double x){
     uint64_t nbres = (uint64_t)x;
     return ((unsigned)(nbres >> 32) & 0x7fffffff) + ((unsigned) nbres != 0) > 0x7ff00000;
 }
+
+
+double trunc(double x){
+    if(x > 0){
+        return floor(x);
+    }
+    return ceil(x);
+}
+double floor(double x){
+    if(isnan(x) || isinf(x)){
+        return x;
+    }
+    long long ret = (long long)x;
+    double ddret = (double)ret;
+    if(ddret == x || x >= 0){
+        return ddret;
+    }
+    return ddret - 1;
+}
+double ceil(double x){
+    if(isnan(x) || isinf(x)){
+        return x;
+    }
+    long long ret = (long long)x;
+    double ddret = (double)ret;
+    if(ddret == x || x >= 0){
+        return ddret;
+    }
+    return ddret + 1;
+}

@@ -6,3 +6,7 @@ long double powl( long double x, long double y);
 
 int isinf(double x);
 int isnan(double x);
+
+double trunc(double x);
+double floor(double x);
+double ceil(double x);

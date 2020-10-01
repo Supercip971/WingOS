@@ -1,6 +1,7 @@
 #include <arch/process.h>
 #include <kernel_service/graphic_buffer_service.h>
 #include <kernel_service/kernel_service.h>
+#include <kernel_service/time_service.h>
 #include <kernel_service/memory_service.h>
 #include <kernel_service/print_service.h>
 #include <loggging.h>
@@ -21,4 +22,5 @@ void load_kernel_service()
     add_kernel_service(print_service, "console_out");
     add_kernel_service(memory_service, "memory_service");
     add_kernel_service(graphic_buffer_service, "graphic_buffer_service");
+    add_kernel_service(time_service, "time_service");
 }

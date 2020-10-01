@@ -20,6 +20,7 @@
 #include <device/mboot_module.h>
 #include <device/pci.h>
 #include <device/pit.h>
+#include <device/rtc.h>
 #include <filesystem/echfs.h>
 #include <filesystem/partition/base_partition.h>
 #include <kernel.h>
@@ -57,7 +58,7 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
     init_vmm(bootloader_data);
 
     pic_init();
-
+    RTC::the()->init();
     acpi::the()->init((reinterpret_cast<stivale_struct *>(bootdat))->rsdp);
 
     acpi::the()->getFACP();

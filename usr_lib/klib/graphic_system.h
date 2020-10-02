@@ -3,16 +3,16 @@ namespace sys {
     // FOR GRAPHIC MESSAGE :
     struct graphic_raw_request{
         uint8_t request_raw_data[256]; // 256 o = 32 uint64_t i think we have a lot
-    };
+    }__attribute__((packed));
     struct create_graphic_window{
         char* name;
         uint64_t width;
         uint64_t height;
         bool resizable = false; // will not be used
-    };
+    }__attribute__((packed));
     struct individual_request{
         uint64_t window_handler_code;
-    };
+    }__attribute__((packed));
 
     enum GRAPHIC_SYSTEM_REQUEST{
         NULL = 0,
@@ -59,5 +59,21 @@ namespace sys {
             b = vb;
             a = va;
         }
+    };
+
+
+
+    class graphic_context{
+        uint64_t context_width;
+        uint64_t context_height;
+        uint64_t wid = 0;
+        pixel* back_buffer;
+        char* context_name;
+    public:
+        graphic_context(uint64_t width, uint64_t height, const char* name);
+
+        void clear_buffer(pixel color);
+        void swap_buffer();
+
     };
 }

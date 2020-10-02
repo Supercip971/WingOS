@@ -38,7 +38,7 @@ void draw_window(raw_window_data window, sys::pixel* buffer){
     for(uint64_t x = 0; x < win_width; x++){
         for(uint64_t y = 0; y < win_height; y++){
             const uint64_t pos_f = (x+window.px) + (y+window.py) *scr_width;
-            const uint64_t pos_t = (x) + (y) * scr_width;
+            const uint64_t pos_t = (x) + (y) * win_width;
             if(pos_f > scr_width * scr_height){
                 return;
             }
@@ -76,8 +76,8 @@ uint64_t create_window(sys::graphic_system_service_protocol*request, uint64_t pi
             window_list[i].pid = pid;
             window_list[i].width = request->create_window_info.width;
             window_list[i].height = request->create_window_info.height;
-            window_list[i].px = 0;
-            window_list[i].py = 0;
+            window_list[i].px = 10;
+            window_list[i].py = 10;
             window_list[i].window_name = request->create_window_info.name;
             window_list[i].wid = i;
             window_list[i].window_front_buffer = (sys::pixel*)sys::service_malloc(request->create_window_info.width * request->create_window_info.height* sizeof (sys::pixel));
@@ -115,7 +115,8 @@ uint64_t window_swap_buffer(sys::graphic_system_service_protocol* request, uint6
         return -2;
     }
     raw_window_data& target = window_list[request->get_request.window_handler_code];
-    swap_buffer(target.window_front_buffer, target.window_back_buffer, target.width * target.height);
+    swap_buffer(target.window_front_buffer, target.window_back_buffer, target.width * target.height*sizeof (uint32_t));
+    return 1;
 }
 uint64_t interpret(sys::graphic_system_service_protocol* request, uint64_t pid){
     if(request->request_type == 0){
@@ -139,12 +140,12 @@ int main(){
     front_buffer = (sys::pixel*)real_gbuffer_addr;
     scr_width = sys::get_screen_width();
     scr_height = sys::get_screen_height();
-    back_buffer = (sys::pixel*)sys::service_malloc(scr_width*scr_height*sizeof (sys::pixel));
+    back_buffer = (sys::pixel*)sys::service_malloc(scr_width*scr_height*sizeof (uint32_t));
     window_list = (raw_window_data*)sys::service_malloc(MAX_WINDOW * sizeof (raw_window_data));
     for(int i = 0; i < MAX_WINDOW; i++){
         window_list[i].used = false;
     }
-    printf("g buffer addr   : %x \n", real_gbuffer_addr);
+    printf("g buffer addr   : %x \n",real_gbuffer_addr);
     printf("g buffer width  : %x \n",scr_width);
     printf("g buffer height : %x \n",scr_height);
     uint32_t soff = 0;
@@ -167,7 +168,7 @@ int main(){
         if(window_count != 0){
             for(int i = 0; i < window_count; i++){
                 if(window_list[i].used == true){
-                    swap_buffer(window_list[i].window_front_buffer, window_list[i].window_back_buffer, window_list[i].width*window_list[i].height);
+        //            swap_buffer(window_list[i].window_front_buffer, window_list[i].window_back_buffer, window_list[i].width*window_list[i].height*sizeof (uint32_t));
                     draw_window(window_list[i],back_buffer);
                 }
             }

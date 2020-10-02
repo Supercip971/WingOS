@@ -12,11 +12,7 @@ int main(){
     const char* h = "hello world";
     sys::process_message helloworld = sys::process_message("console_out", (uint64_t)h, 13);
     printf("hello world, here we go again %s", "another string OWOWU ?");
-    sys::graphic_system_service_protocol tolaunch = {0};
-    tolaunch.request_type = sys::GRAPHIC_SYSTEM_REQUEST::CREATE_WINDOW;
-    tolaunch.create_window_info.height = 100;
-    tolaunch.create_window_info.width = 200;
-    sys::process_message("init_fs/graphic_service.exe", (uint64_t)&tolaunch, sizeof (sys::graphic_system_service_protocol)).read();
+    sys::graphic_context context(300,200, "my context");
     char* data= (char*)sys::service_malloc(1000);
     printf("g buffer addr : %x \n", sys::get_graphic_buffer_addr());
     for(int i= 0; i < 100; i++){

@@ -115,6 +115,41 @@ uint64_t interpret(sys::graphic_system_service_protocol* request, uint64_t pid){
     return -2;
 }
 
+
+uint64_t m_width = 7;
+uint64_t m_height = 8;
+char main_cursor_mouse_buffer[] = {
+    1,0,0,0,0,0,0,
+    1,1,0,0,0,0,0,
+    1,2,1,0,0,0,0,
+    1,2,2,1,0,0,0,
+    1,2,2,2,1,0,0,
+    1,2,2,2,2,1,0,
+    1,2,2,2,2,2,1,
+    1,1,1,1,1,1,1
+};
+
+
+
+void draw_mouse(uint64_t x,uint64_t y){
+    for(uint64_t ix = 0; ix < m_width; ix++){
+        for(uint64_t iy = 0; iy < m_height; iy++){
+            const uint64_t m_index = ix + iy * m_width;
+            const uint64_t m_col = main_cursor_mouse_buffer[m_index];
+              if(m_col == 0){
+                continue;
+            }
+              const uint64_t m_toscreen_idx = (ix + x) + (iy + y) * scr_width;
+
+            if(m_col == 1){
+                back_buffer[m_toscreen_idx] = sys::pixel(255,255,255);
+            }else{
+                back_buffer[m_toscreen_idx] = sys::pixel(0,0,0);
+
+            }
+        }
+    }
+}
 int main(){
     window_count = 0;
     printf("main graphic system service loading... \n");
@@ -155,6 +190,8 @@ int main(){
                 }
             }
         }
+        draw_mouse(64,74);
+
         swap_buffer(front_buffer, back_buffer, scr_width*scr_height);
     }
     return 1;

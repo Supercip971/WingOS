@@ -42,6 +42,10 @@ LDHARDFLAGS := $(LDFLAGS)        \
 
 .PHONY: clean
 .DEFAULT_GOAL = $(KERNEL_HDD)
+setup_echfs_utils:
+	@git clone --recursive https://github.com/qword-os/echfs.git
+	@make -C echfs/
+	@echo "now you have to run the command 'sudo make install' in the echfs direcory to install echfs-utils"
 boch:
 	-rm disk.img
 	@bximage -q -mode=convert -imgmode=flat build/disk.hdd disk.img
@@ -64,6 +68,10 @@ app: $(APP_FILE_CHANGE)
 	@make -C ./app/test all	
 	@make -C ./app/test2 all
 	@make -C ./app/graphic_service all
+travis_test: 
+	@make clean 
+	@make -C . $(KERNEL_HDD)
+
 super:
 	make clean
 	make app

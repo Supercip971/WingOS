@@ -9,6 +9,10 @@ cache:
         - ".cross_compiler/"
 before_install:
     - sudo apt-get update
+    - make setup_echfs_utils
+    - cd echfs/
+    - sudo make install
+    - cd ..
     - sudo apt-get install -y parted
     - sudo apt-get install -y nasm grub-pc-bin binutils mtools build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo
 script:

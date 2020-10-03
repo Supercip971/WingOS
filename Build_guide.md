@@ -12,7 +12,14 @@ you have to install these packages :
 
 before making the toolchain
 
+## making echfs-utils
+run 
+``` make setup_echfs_utils ```
+then run in the echfs folder
+``` sudo make install ```
+now you have echfs-utils ! 
 ## making the toolchain
+
 then run the file make\_cross\_compiler.sh
 
 ## making wingOS

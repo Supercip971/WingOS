@@ -49,24 +49,6 @@ void draw_window(raw_window_data window, sys::pixel* buffer){
 raw_window_data* window_list;
 
 
-void clear_buffer(sys::pixel* buffer, uint64_t size, sys::pixel value = {0,0,0,255}){
-    const uint64_t msize = size / 2; // copy uint64_t
-    const uint64_t rsize = size % 2;
-    uint64_t* conv_buffer = (uint64_t*)buffer;
-    const uint64_t v = (uint64_t)value.pix | ((uint64_t)value.pix << 32);
-    for(uint64_t i = 0;i < msize; i++){
-        conv_buffer[i] = v;
-    }for(uint64_t i = msize*2; i < msize*2 + rsize; i++){
-        buffer[i].pix = value.pix;
-    }
-}void swap_buffer(sys::pixel* buffer1, const sys::pixel* buffer2, uint64_t buffer_length){
-    uint64_t buffer_length_r64 = buffer_length / 2;
-    uint64_t* to = (uint64_t*)buffer1;
-    const uint64_t* from = (const uint64_t*)buffer2;
-    for(uint64_t i = 0; i < buffer_length_r64; i++){
-        to[i] = from[i];
-    }
-}
 uint64_t create_window(sys::graphic_system_service_protocol*request, uint64_t pid){
     printf("creating window for process %x", pid);
     for(int i = 0; i < MAX_WINDOW; i++){
@@ -164,7 +146,7 @@ int main(){
 
         soff++;
         sys::pixel r = sys::pixel(soff);
-        clear_buffer(back_buffer, scr_width * scr_height, soff);
+        raw_clear_buffer(back_buffer, scr_width * scr_height, soff);
         if(window_count != 0){
             for(int i = 0; i < window_count; i++){
                 if(window_list[i].used == true){

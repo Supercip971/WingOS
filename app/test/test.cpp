@@ -18,7 +18,8 @@ int main(){
     for(int i= 0; i < 100; i++){
         data[i] = 0;
     }
-
+    context.clear_buffer({255,0,0,255});
+    context.swap_buffer();
     while (true) {
         result = msg_to_send.read();
         if(result != -2){

@@ -29,12 +29,8 @@ namespace sys {
     }
 
     void graphic_context::clear_buffer(const pixel color){
-        const uint64_t context_length = (context_width * context_height) / 2;
-        uint64_t* bbuf = (uint64_t*)back_buffer;
-        uint64_t buf_d = ((uint64_t)color.pix << 32) | (uint64_t)color.pix;
-        for(uint64_t i = 0; i < context_length; i ++){
-            bbuf[i] = buf_d;
-        }
+        const uint64_t context_length = (context_width * context_height);
+        raw_clear_buffer(back_buffer, context_length, color);
     }
     void graphic_context::swap_buffer(){
         sys::graphic_system_service_protocol swap_request = {0};
@@ -42,5 +38,25 @@ namespace sys {
         swap_request.get_request.window_handler_code = wid;
         uint64_t result = sys::process_message("init_fs/graphic_service.exe", (uint64_t)&swap_request , sizeof (sys::graphic_system_service_protocol)).read();
 
+    }
+    void swap_buffer(sys::pixel* buffer1, const sys::pixel* buffer2, uint64_t buffer_length){
+        uint64_t buffer_length_r64 = buffer_length / 2;
+        uint64_t* to = (uint64_t*)buffer1;
+        const uint64_t* from = (const uint64_t*)buffer2;
+        for(uint64_t i = 0; i < buffer_length_r64; i++){
+            to[i] = from[i];
+        }
+    }
+
+    void raw_clear_buffer(sys::pixel* buffer, uint64_t size, sys::pixel value){
+        const uint64_t msize = size / 2; // copy uint64_t
+        const uint64_t rsize = size % 2;
+        uint64_t* conv_buffer = (uint64_t*)buffer;
+        const uint64_t v = (uint64_t)value.pix | ((uint64_t)value.pix << 32);
+        for(uint64_t i = 0;i < msize; i++){
+            conv_buffer[i] = v;
+        }for(uint64_t i = msize*2; i < msize*2 + rsize; i++){
+            buffer[i].pix = value.pix;
+        }
     }
 }

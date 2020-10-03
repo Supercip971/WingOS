@@ -120,6 +120,7 @@ void init_multi_process(func start)
 }
 lock_type process_creator_lock = {0};
 uint64_t last_process = 0;
+uint8_t proc_last_selected_cpu = 0;
 process *init_process(func entry_point, bool start_direct, const char *name, bool user, int cpu_target)
 {
     lock((&process_creator_lock));
@@ -167,7 +168,15 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
             }
             else
             {
-
+                if (cpu_target == -2)
+                {
+                    proc_last_selected_cpu++;
+                    if (proc_last_selected_cpu > smp::the()->processor_count)
+                    {
+                        proc_last_selected_cpu = 0;
+                    }
+                    cpu_target = proc_last_selected_cpu;
+                }
                 process_array[i].processor_target = cpu_target;
             }
             uint64_t *rsp = (uint64_t *)process_array[i].rsp;
@@ -478,7 +487,7 @@ uint64_t message_response(process_message *message_id)
     }
     if (message_id->from_pid != get_current_data()->current_process->pid)
     {
-        log("process", LOG_ERROR) << "not valid process from";
+        log("process", LOG_ERROR) << "not valid process from" << message_id->from_pid;
         return -1;
     }
     if (process_array[message_id->to_pid].current_process_state != PROCESS_WAITING && process_array[message_id->to_pid].current_process_state != PROCESS_RUNNING)

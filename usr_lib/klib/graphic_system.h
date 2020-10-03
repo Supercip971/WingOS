@@ -72,7 +72,7 @@ namespace sys {
     public:
         graphic_context(uint64_t width, uint64_t height, const char* name);
 
-        void clear_buffer(pixel color);
+        void clear_buffer(const pixel color);
         void swap_buffer();
 
     };

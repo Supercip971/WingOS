@@ -28,8 +28,13 @@ namespace sys {
 
     }
 
-    void graphic_context::clear_buffer(pixel color){
-
+    void graphic_context::clear_buffer(const pixel color){
+        const uint64_t context_length = (context_width * context_height) / 2;
+        uint64_t* bbuf = (uint64_t*)back_buffer;
+        uint64_t buf_d = ((uint64_t)color.pix << 32) | (uint64_t)color.pix;
+        for(uint64_t i = 0; i < context_length; i ++){
+            bbuf[i] = buf_d;
+        }
     }
     void graphic_context::swap_buffer(){
         sys::graphic_system_service_protocol swap_request = {0};

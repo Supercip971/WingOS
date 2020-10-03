@@ -3,7 +3,7 @@
 #include <arch/interrupt.h>
 #include <arch/mem/liballoc.h>
 #include <arch/mem/virtual.h>
-#include <arch/msr_syscall.h>
+//#include <arch/msr_syscall.h> sorry this file will exist one day
 #include <arch/pic.h>
 #include <arch/process.h>
 #include <arch/programm_launcher.h>
@@ -30,8 +30,8 @@
 __attribute__((section(".stivalehdr"), used))
 stivale_header header = {.stack = (uintptr_t)stack + (sizeof(char) * STACK_SIZE),
                          .flags = 1,
-                         .framebuffer_width = 1600,
-                         .framebuffer_height = 1200,
+                         .framebuffer_width = 1440,
+                         .framebuffer_height = 900,
                          .framebuffer_bpp = 32,
                          .entry_point = 0};
 

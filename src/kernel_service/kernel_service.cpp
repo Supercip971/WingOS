@@ -1,9 +1,9 @@
 #include <arch/process.h>
 #include <kernel_service/graphic_buffer_service.h>
 #include <kernel_service/kernel_service.h>
-#include <kernel_service/time_service.h>
 #include <kernel_service/memory_service.h>
 #include <kernel_service/print_service.h>
+#include <kernel_service/time_service.h>
 #include <loggging.h>
 
 void add_kernel_service(func entry, const char *service_name)

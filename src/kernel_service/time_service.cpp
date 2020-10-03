@@ -3,7 +3,8 @@
 #include <kernel_service/time_service.h>
 #include <loggging.h>
 
-enum TIME_SERVICE_REQUEST_CODE{
+enum TIME_SERVICE_REQUEST_CODE
+{
     get_sec = 0,
     get_min = 1,
     get_hour = 2,
@@ -14,11 +15,12 @@ enum TIME_SERVICE_REQUEST_CODE{
 
 };
 
-struct time_service_request{
+struct time_service_request
+{
     bool get; // for later we will add set()
     uint8_t index;
     uint32_t value;
-}__attribute__((packed));
+} __attribute__((packed));
 
 void time_service()
 {
@@ -28,10 +30,12 @@ void time_service()
     while (true)
     {
         process_message *msg = read_message();
-        if(!msg){
-            time_service_request* tsr = (time_service_request*)msg->content_address;
+        if (!msg)
+        {
+            time_service_request *tsr = (time_service_request *)msg->content_address;
             uint64_t result = 0;
-            switch (tsr->index) {
+            switch (tsr->index)
+            {
             case get_sec:
                 result = RTC::the()->get_sec();
                 break;
@@ -59,8 +63,9 @@ void time_service()
                 result = -3;
             }
             on_request_service_update();
-        }else{
-
+        }
+        else
+        {
         }
     }
 }

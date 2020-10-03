@@ -4,6 +4,8 @@
 #include <klib/raw_graphic.h>
 #include <stdio.h>
 #include <klib/graphic_system.h>
+
+#include <klib/mouse.h>
 #include <klib/process_message.h>
 #include <klib/mem_util.h>
 #define MAX_WINDOW 1024
@@ -132,6 +134,14 @@ char main_cursor_mouse_buffer[] = {
 
 
 void draw_mouse(uint64_t x,uint64_t y){
+    x++;
+    y++;
+    if(x >= (scr_width - m_width)){
+        x = scr_width- m_width;
+    }
+    if(y >= scr_height- m_height){
+        y = scr_height- m_height;
+    }
     for(uint64_t ix = 0; ix < m_width; ix++){
         for(uint64_t iy = 0; iy < m_height; iy++){
             const uint64_t m_index = ix + iy * m_width;
@@ -150,9 +160,24 @@ void draw_mouse(uint64_t x,uint64_t y){
         }
     }
 }
+int32_t m_x = 0;
+int32_t m_y = 0;
+sys::process_message mouse_msg_x;
+sys::process_message mouse_msg_y;
+
+sys::ps2_device_request mouse_requestx = {0};
+sys::ps2_device_request mouse_requesty = {0};
+void update_mouse(){
+
+    m_x = sys::get_mouse_x();
+    m_y = sys::get_mouse_y();
+
+
+}
 int main(){
     window_count = 0;
     printf("main graphic system service loading... \n");
+
     real_gbuffer_addr = sys::get_graphic_buffer_addr();
     front_buffer = (sys::pixel*)real_gbuffer_addr;
     scr_width = sys::get_screen_width();
@@ -168,6 +193,7 @@ int main(){
     uint32_t soff = 0;
     while (true) {
         // read all message
+        update_mouse();
         while(true){
             sys::raw_process_message* msg = sys::service_read_current_queue();
             if(msg != 0x0){
@@ -190,7 +216,7 @@ int main(){
                 }
             }
         }
-        draw_mouse(64,74);
+        draw_mouse(m_x,m_y);
 
         swap_buffer(front_buffer, back_buffer, scr_width*scr_height);
     }

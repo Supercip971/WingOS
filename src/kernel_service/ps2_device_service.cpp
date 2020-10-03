@@ -5,7 +5,7 @@
 struct raw_request_data
 {
 
-    uint8_t raw_data[256];
+    uint8_t raw_data[32];
 };
 struct mouse_get_position
 {
@@ -76,6 +76,10 @@ void ps2_device_service()
             else if (request->device_target == 2)
             {
                 result = keyboard_handle(request);
+            }
+            if (result == 0)
+            {
+                result = 1;
             }
             msg->has_been_readed = true;
             msg->response = result;

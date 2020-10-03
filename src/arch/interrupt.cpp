@@ -10,6 +10,7 @@
 #include <device/ata_driver.h>
 #include <device/local_data.h>
 #include <device/pit.h>
+#include <device/ps_mouse.h>
 #include <kernel.h>
 #include <loggging.h>
 #include <syscall.h>
@@ -237,6 +238,10 @@ extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
     else if (stackframe->int_no == 33)
     {
         unsigned char scan_code = inb(0x60);
+    }
+    else if (stackframe->int_no == 32 + 12)
+    {
+        ps_mouse::the()->interrupt_handler();
     }
     else if (stackframe->int_no == 32 + 14 || stackframe->int_no == 32 + 15)
     {

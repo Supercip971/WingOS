@@ -20,6 +20,7 @@
 #include <device/mboot_module.h>
 #include <device/pci.h>
 #include <device/pit.h>
+#include <device/ps_mouse.h>
 #include <device/rtc.h>
 #include <filesystem/echfs.h>
 #include <filesystem/partition/base_partition.h>
@@ -57,6 +58,7 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
     init_physical_memory(bootloader_data);
     init_vmm(bootloader_data);
 
+    ps_mouse::the()->init();
     pic_init();
     RTC::the()->init();
     acpi::the()->init((reinterpret_cast<stivale_struct *>(bootdat))->rsdp);
@@ -80,6 +82,7 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
 
     mboot_module::the()->init(bootloader_data);
     bootdat = ((uint64_t)&boot_loader_data_copy);
+
     lock_process();
     init_multi_process(start_process);
     asm volatile("sti");

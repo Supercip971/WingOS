@@ -4,7 +4,7 @@
 namespace gui {
     class window{
         const char* window_name;
-        sys::graphic_context* graphic_context;
+        sys::graphic_context graphic_context;
         uint64_t width;
         uint64_t height;
         uint64_t current_tick;

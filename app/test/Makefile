@@ -15,8 +15,10 @@ CHARDFLAGS := $(CFLAGS)               \
         -fno-pic                       \
         -no-pie \
         -m64 \
-        -O3 \
-        -mno-mmx                       \
+        -O2 \
+		-mno-avx \
+		-mno-avx2 \
+		-mno-avx512f \
         -mno-80387                     \
         -mno-red-zone                  \
         -fno-rtti \
@@ -34,5 +36,3 @@ all: ${OBJ}
 %.o : %.cpp ${CFILES} ${HFILES}
 	@echo "[C++] [BUILDING $(PROJECT_NAME)] $<"
 	@$(CC) $(CHARDFLAGS) -c $< -o $@
-
-

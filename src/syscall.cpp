@@ -31,14 +31,11 @@ void init_syscall()
 {
     log("syscall", LOG_DEBUG) << "loading syscall";
 }
-lock_type syslocker = {0};
 uint64_t syscall(uint64_t syscall_id, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5)
 {
-    lock((&syslocker));
     if (syscall_id > syscalls_length)
     {
         log("syscall", LOG_ERROR) << "called invalid syscall" << syscall_id;
-        unlock((&syslocker));
         return 0;
     }
     else
@@ -47,8 +44,6 @@ uint64_t syscall(uint64_t syscall_id, uint64_t arg1, uint64_t arg2, uint64_t arg
         uint64_t (*func)(uint64_t, ...) = reinterpret_cast<uint64_t (*)(uint64_t, ...)>(syscalls[syscall_id]);
 
         uint64_t res = func(arg1, arg2, arg3, arg4, arg5);
-        unlock((&syslocker));
-
         return res;
     }
 }

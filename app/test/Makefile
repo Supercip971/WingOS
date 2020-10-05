@@ -16,6 +16,7 @@ CHARDFLAGS := $(CFLAGS)               \
         -no-pie \
         -m64 \
         -O2 \
+		-msse \
 		-mno-avx \
 		-mno-avx2 \
 		-mno-avx512f \

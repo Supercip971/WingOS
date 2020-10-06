@@ -14,7 +14,8 @@ namespace gui {
     uint64_t window::start(){
         while(true){
             graphic_context.clear_buffer({100,100,100,255});
-            graphic_context.draw_rectangle(10,10,40,20, sys::pixel(30,255,255));
+            graphic_context.draw_rectangle(0,0,width,20, sys::pixel(80,80,80));
+            graphic_context.draw_basic_string(1,1,"hello world", sys::pixel(255,255,255));
             graphic_context.swap_buffer();
         }
     }

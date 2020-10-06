@@ -2,6 +2,7 @@
 #include <klib/process_message.h>
 #include <klib/mem_util.h>
 #include <klib/graphic_system.h>
+#include <kgui/window.h>
 #include <klib/raw_graphic.h>
 #include <stdio.h>
 int main(){
@@ -12,14 +13,15 @@ int main(){
     const char* h = "hello world";
     sys::process_message helloworld = sys::process_message("console_out", (uint64_t)h, 13);
     printf("hello world, here we go again %s", "another string OWOWU ?");
-    sys::graphic_context context(300,200, "my context");
     char* data= (char*)sys::service_malloc(1000);
     printf("g buffer addr : %x \n", sys::get_graphic_buffer_addr());
     for(int i= 0; i < 100; i++){
         data[i] = 0;
     }
-    context.clear_buffer({255,0,0,255});
-    context.swap_buffer();
+    gui::window test_window("my window", 300,200);
+
+
+    test_window.start();
     while (true) {
         result = msg_to_send.read();
         if(result != -2){

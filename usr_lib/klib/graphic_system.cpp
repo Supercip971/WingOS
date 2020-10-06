@@ -1,5 +1,6 @@
 #include <klib/graphic_system.h>
 #include <klib/process_message.h>
+#include <kgui/font/basic_8x8_font.h>
 #include <klib/kernel_util.h>
 #include <klib/mem_util.h>
 #include <string.h>
@@ -74,4 +75,24 @@ namespace sys {
             }
         }
     }
+    void graphic_context::draw_basic_char( const uint64_t x, const uint64_t y, const char chr, const pixel color){
+
+        for(uint64_t cx = 0; cx < 8; cx++){
+            for(uint64_t cy = 0; cy < 8; cy++){
+                if(((font8x8_basic[chr][cy] >> cx) & 1) == true){
+                    back_buffer[(cx+x) + (cy+y) * context_width].pix = color.pix;
+                }
+            }
+        }
+
+    }
+    void graphic_context::draw_basic_string(const uint64_t x, const uint64_t y, const char* str, const pixel color){
+        const uint64_t str_length = strlen(str);
+        uint64_t cur_x = x;
+        for(uint64_t i = 0; i < str_length; i++){
+            draw_basic_char(  cur_x, y, str[i] & 0x7F, color);
+            cur_x += 8;
+        }
+    }
+
 }

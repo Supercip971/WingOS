@@ -1,4 +1,8 @@
 # WingOS (64 bit)
+
+a little sample picture with a graphic app ! (with smp :^) )
+
+![sample](screen_shot/sample1_6_10_2020png.png)
 ## Implemented things :
  - com
  - gdt

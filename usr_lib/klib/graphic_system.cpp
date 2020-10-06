@@ -47,7 +47,6 @@ namespace sys {
             to[i] = from[i];
         }
     }
-
     void raw_clear_buffer(sys::pixel* buffer, uint64_t size, sys::pixel value){
         const uint64_t msize = size / 2; // copy uint64_t
         const uint64_t rsize = size % 2;
@@ -57,6 +56,22 @@ namespace sys {
             conv_buffer[i] = v;
         }for(uint64_t i = msize*2; i < msize*2 + rsize; i++){
             buffer[i].pix = value.pix;
+        }
+    }
+
+
+
+    void graphic_context::draw_rectangle(const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const pixel color){
+        const uint64_t this_width = this->context_width;
+        const uint64_t limit =  context_height* context_width;
+        for(uint64_t rx = 0; rx < width; rx++){
+            for(uint64_t ry = 0; ry < height; ry++){
+                const uint64_t pos_f = (x+rx) + (y+ry) *this_width;
+                if(pos_f > limit){
+                    return;
+                }
+                back_buffer[pos_f].pix = color.pix;
+            }
         }
     }
 }

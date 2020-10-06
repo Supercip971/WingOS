@@ -6,8 +6,6 @@ namespace gui {
         width = window_width;
         height = window_height;
         window_name = name;
-//        *graphic_context = sys::graphic_context(width, height, window_name); // <=== c'est ici
-
 
         graphic_context.clear_buffer(sys::pixel(100,100,100,0));
         graphic_context.swap_buffer();
@@ -15,9 +13,8 @@ namespace gui {
 
     uint64_t window::start(){
         while(true){
-
-
             graphic_context.clear_buffer({100,100,100,255});
+            graphic_context.draw_rectangle(10,10,40,20, sys::pixel(30,255,255));
             graphic_context.swap_buffer();
         }
     }

@@ -72,7 +72,7 @@ namespace sys {
         char* context_name;
     public:
         graphic_context(uint64_t width, uint64_t height, const char* name);
-
+        void draw_rectangle(const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const pixel color);
         void clear_buffer(const pixel color);
         void swap_buffer();
 

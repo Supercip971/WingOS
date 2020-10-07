@@ -79,7 +79,9 @@ namespace sys {
         void swap_buffer();
 
     };
-    void swap_buffer(sys::pixel* buffer1, const sys::pixel* buffer2, uint64_t buffer_length);
+    uint64_t get_basic_font_width_text(const char* text);
 
+    void swap_buffer(sys::pixel* buffer1, const sys::pixel* buffer2, uint64_t buffer_length);
+    
     void raw_clear_buffer(sys::pixel* buffer, uint64_t size, sys::pixel value = {0,0,0,255});
 }

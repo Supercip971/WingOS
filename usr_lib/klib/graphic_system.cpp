@@ -95,4 +95,11 @@ namespace sys {
         }
     }
 
+
+
+
+    uint64_t get_basic_font_width_text(const char* text){
+        uint64_t clen = strlen(text);
+        return clen * 8;
+    }
 }

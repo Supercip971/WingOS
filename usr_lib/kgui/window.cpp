@@ -15,7 +15,7 @@ namespace gui {
         while(true){
             graphic_context.clear_buffer({100,100,100,255});
             graphic_context.draw_rectangle(0,0,width,20, sys::pixel(80,80,80));
-            graphic_context.draw_basic_string(1,1,"hello world", sys::pixel(255,255,255));
+            graphic_context.draw_basic_string((width / 2) - (sys::get_basic_font_width_text(window_name) / 2),20 / 2 - (8 / 2),window_name, sys::pixel(255,255,255));
             graphic_context.swap_buffer();
         }
     }

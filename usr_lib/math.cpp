@@ -33,6 +33,7 @@ float powf(float x, float y){
     }
     return res;
 }
+#ifdef X87
 long double powl( long double x, long double y){
     if(y == 0){
         return 1;
@@ -49,7 +50,7 @@ long double powl( long double x, long double y){
     }
     return res;
 }
-
+#endif
 int isinf(double x){
     uint64_t nbres = (uint64_t)x;
     return ((unsigned)(nbres >> 32) & 0x7fffffff) == 0x7ff00000 && ((unsigned) nbres == 0);

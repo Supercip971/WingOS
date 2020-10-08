@@ -1,4 +1,4 @@
-#pragma once
+
 #include <klib/raw_graphic.h>
 #include <klib/process_message.h>
 

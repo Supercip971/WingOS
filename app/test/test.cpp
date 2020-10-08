@@ -4,6 +4,7 @@
 #include <klib/graphic_system.h>
 #include <kgui/window.h>
 #include <klib/raw_graphic.h>
+#include <kgui/widget/button_widget.h>
 #include <kgui/widget/rectangle_widget.h>
 #include <stdio.h>
 int main(){
@@ -13,7 +14,7 @@ int main(){
         data[i] = 0;
     }
     gui::window test_window("my window", 300,200);
-    gui::rectangle_widget rec_widget(10,10,40,50, sys::pixel(64,0,0));
-    test_window.add_widget((gui::widget*)&rec_widget);
+    gui::button_widget button(10,30,70,20, "a button");
+    test_window.add_widget((gui::widget*)&button);
     return test_window.start();
 }

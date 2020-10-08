@@ -55,8 +55,8 @@ namespace sys {
         const uint64_t v = (uint64_t)value.pix | ((uint64_t)value.pix << 32);
         for(uint64_t i = 0;i < msize; i++){
             conv_buffer[i] = v;
-        }for(uint64_t i = msize*2; i < msize*2 + rsize; i++){
-            buffer[i].pix = value.pix;
+        }for(uint64_t i = 0; i < rsize; i++){
+            buffer[i + (msize*2)].pix = value.pix;
         }
     }
 

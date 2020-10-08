@@ -3,9 +3,10 @@
 namespace gui {
 
 
-
+    widget::widget(){
+    }
     void widget_list::init(uint64_t length){
-        list = (gui::widget**)sys::service_malloc(length * sizeof (gui::widget*));
+        list = (gui::widget**)sys::service_malloc(length * sizeof (uint64_t));
         for(uint64_t i = 0; i < length; i++){
             list[i] = nullptr;
         }

@@ -32,3 +32,47 @@ It:
     currIndex = i + 1;
     return W;
 }
+
+int isdigit(int c)
+{
+    if (c <= '9' && c >= '0')
+    {
+        return 1;
+    }
+    return 0;
+}
+
+int64_t strtoint(const char *nptr)
+{
+
+    const char *s = nptr;
+    const char *end;
+    long long ret_value = 0;
+    char *end_buffer;
+    int current_error;
+    uint8_t base = 10;
+    bool is_neg = false;
+    while (*s == ' ')
+    {
+        s++;
+    }
+    if (*s == '-')
+    {
+        is_neg = true;
+        s++;
+    }
+    // if base == 0 and detect 0x at the start of string put it at 16
+
+    char *start = (char *)s;
+    while (isdigit(*s))
+    {
+        ret_value = (*s - '0') + ret_value * base;
+
+        s++;
+    }
+    if (is_neg)
+    {
+        ret_value *= -1;
+    }
+    return ret_value;
+}

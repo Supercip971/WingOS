@@ -155,4 +155,7 @@ inline uint64_t strlen(const char *s)
     return i;
 }
 
+int isdigit(int c);
 char *strtok(char *s, const char *delm);
+
+int64_t strtoint(const char *nptr);

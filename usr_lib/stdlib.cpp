@@ -1,7 +1,9 @@
 #include <stdlib.h>
 #include <klib/mem_util.h>
 #include <klib/string_util.h>
+#include <stddef.h>
 #include <ctypes.h>
+#include <stdio.h>
 int abs(int j){
     if(j < 0){
         return -j;
@@ -110,4 +112,8 @@ long long strtoll(const char* nptr, char** endptr, int base){
         *endptr = start;
     }
     return ret_value;
+}
+extern "C" void __cxa_pure_virtual()
+{
+    printf("error __cxa_pure_virtual() called");
 }

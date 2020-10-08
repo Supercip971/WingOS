@@ -36,16 +36,14 @@ inline int to_lower(int c){
     if(c >= 'A' && c <= 'Z'){
         c -= 'A';
         c += 'a';
-    }else{
-        return c;
     }
+    return c;
 }
 
 inline int to_upper(int c){
     if(c >= 'a' && c <= 'z'){
         c -= 'a';
         c += 'A';
-    }else{
-        return c;
     }
+    return c;
 }

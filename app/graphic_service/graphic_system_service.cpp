@@ -99,7 +99,7 @@ uint64_t window_swap_buffer(sys::graphic_system_service_protocol* request, uint6
         return -2;
     }
     raw_window_data& target = window_list[request->get_request.window_handler_code];
-    swap_buffer(target.window_front_buffer, target.window_back_buffer, target.width * target.height*sizeof (uint32_t));
+    swap_buffer(target.window_front_buffer, target.window_back_buffer, target.width * target.height);
     return 1;
 }
 uint64_t interpret(sys::graphic_system_service_protocol* request, uint64_t pid){

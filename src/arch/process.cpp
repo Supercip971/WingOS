@@ -191,8 +191,6 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
             {
 
                 process_array[i].page_directory = (uint64_t)new_vmm_page_dir();
-                map_page((uint64_t *)process_array[i].page_directory, get_rmem_addr(process_array[i].page_directory), process_array[i].page_directory, 0x03);
-                map_page((uint64_t *)process_array[i].page_directory, (uint64_t)(process_array), (uint64_t)(process_array), 0x03);
             }
             else
             {

@@ -28,6 +28,7 @@ namespace sys {
         prot_data.length = length;
         prot_data.address = (uint64_t) addr;
         sys::process_message msg = sys::process_message("memory_service", (uint64_t)&prot_data, sizeof (prot_data));
-        msg.read();
+        return (void*)msg.read();
+
     }
 }

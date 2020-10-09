@@ -62,6 +62,9 @@ void time_service()
             default:
                 result = -3;
             }
+
+            msg->response = result;
+            msg->has_been_readed = true;
             on_request_service_update();
         }
         else

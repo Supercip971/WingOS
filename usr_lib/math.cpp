@@ -89,3 +89,28 @@ double ceil(double x){
     }
     return ddret + 1;
 }
+
+double fabs(double x){
+    if(x < 0){
+        return -x;
+    }
+    return x;
+}
+double sin(double x){
+    int ix = 1;
+    double current = x;
+    double accurency = 1;
+    double factor = 1;
+    double power = x;
+    while(fabs(accurency) > 0.00001 && ix < 100){
+        factor *= ((2*ix)*(2*ix + 1));
+        power *= -1 * ix * ix;
+        accurency = power / factor;
+        current += accurency;
+        ix ++;
+    }
+    return current;
+}
+double cos(double x){
+    return sin(x + PI / 2);
+}

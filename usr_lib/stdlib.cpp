@@ -117,3 +117,13 @@ extern "C" void __cxa_pure_virtual()
 {
     printf("error __cxa_pure_virtual() called");
 }
+
+unsigned long int cseed = 1;
+
+int rand(){
+    cseed = cseed * 1103515245 + 12345;
+    return (unsigned int)(cseed/65536) % 32768;
+}
+void srand(uint32_t seed){
+    cseed = seed;
+}

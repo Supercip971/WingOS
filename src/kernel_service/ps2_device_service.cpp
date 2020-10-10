@@ -11,7 +11,10 @@ struct mouse_get_position
 {
     bool get_x_value;
 };
-
+struct mouse_get_button
+{
+    int mouse_button_type;
+};
 struct ps2_device_request
 {
     uint8_t device_target; // for the moment 1 = mouse 2 = keyboard
@@ -21,6 +24,7 @@ struct ps2_device_request
     {
         raw_request_data data;
         mouse_get_position mouse_request_pos;
+        mouse_get_button mouse_button_request;
     };
 } __attribute__((packed));
 enum mouse_request_type
@@ -29,6 +33,12 @@ enum mouse_request_type
     GET_MOUSE_BUTTON = 1
 };
 
+enum mouse_button_type
+{
+    GET_MOUSE_LEFT_CLICK = 0,
+    GET_MOUSE_RIGHT_CLICK = 1,
+    GET_MOUSE_MIDDLE_CLICK = 2
+};
 uint64_t mouse_handle(ps2_device_request *request)
 {
 
@@ -39,6 +49,10 @@ uint64_t mouse_handle(ps2_device_request *request)
             return ps_mouse::the()->get_mouse_x();
         }
         return ps_mouse::the()->get_mouse_y();
+    }
+    else if (request->request_type == GET_MOUSE_BUTTON)
+    {
+        return ps_mouse::the()->get_mouse_button(request->mouse_button_request.mouse_button_type);
     }
 
     log("ps2 service", LOG_ERROR) << "error request not handled : " << request->request_type;
@@ -76,10 +90,6 @@ void ps2_device_service()
             else if (request->device_target == 2)
             {
                 result = keyboard_handle(request);
-            }
-            if (result == 0)
-            {
-                result = 1;
             }
             msg->has_been_readed = true;
             msg->response = result;

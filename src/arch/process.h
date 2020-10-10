@@ -88,6 +88,6 @@ void set_on_request_service(bool is_ORS);
 void on_request_service_update();
 uint64_t get_pid_from_process_name(const char *name);
 
-void* get_current_process_global_data(uint64_t offset, uint64_t length);
+void *get_current_process_global_data(uint64_t offset, uint64_t length);
 
-uint64_t get_process_global_data_copy(uint64_t offset, const char* process_name);
+uint64_t get_process_global_data_copy(uint64_t offset, const char *process_name);

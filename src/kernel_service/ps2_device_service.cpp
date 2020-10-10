@@ -68,15 +68,29 @@ uint64_t keyboard_handle(ps2_device_request *request)
 }
 void ps2_device_service()
 {
-    set_on_request_service(true);
 
     log("ps2 service", LOG_INFO) << "loaded ps2 device service";
 
+    uint64_t *mx = (uint64_t *)get_current_process_global_data(0x0, sizeof(uint64_t));
+    uint64_t *my = (uint64_t *)get_current_process_global_data(0x0 + sizeof(uint64_t) * 1, sizeof(uint64_t));
+    uint64_t *mclickl = (uint64_t *)get_current_process_global_data(0x0 + sizeof(uint64_t) * 2, sizeof(uint64_t));
+    uint64_t *mclickr = (uint64_t *)get_current_process_global_data(0x0 + sizeof(uint64_t) * 3, sizeof(uint64_t));
+    uint64_t *mclickm = (uint64_t *)get_current_process_global_data(0x0 + sizeof(uint64_t) * 4, sizeof(uint64_t));
+    *mclickl = 0;
+    *mclickr = 0;
+    *mclickm = 0;
+    *my = 0;
+    *mx = 0;
     while (true)
     {
         process_message *msg = read_message();
         if (msg == 0x0)
         {
+            *mx = (uint64_t)ps_mouse::the()->get_mouse_x();
+            *my = (uint64_t)ps_mouse::the()->get_mouse_y();
+            *mclickl = (uint64_t)ps_mouse::the()->get_mouse_button(GET_MOUSE_LEFT_CLICK);
+            *mclickm = (uint64_t)ps_mouse::the()->get_mouse_button(GET_MOUSE_MIDDLE_CLICK);
+            *mclickr = (uint64_t)ps_mouse::the()->get_mouse_button(GET_MOUSE_RIGHT_CLICK);
         }
         else
         {
@@ -93,8 +107,6 @@ void ps2_device_service()
             }
             msg->has_been_readed = true;
             msg->response = result;
-
-            on_request_service_update();
         }
     }
 }

@@ -544,30 +544,35 @@ void on_request_service_update()
 {
     get_current_data()->current_process->should_be_active = false;
 }
-uint64_t get_process_global_data_copy(uint64_t offset, const char* process_name)
+uint64_t get_process_global_data_copy(uint64_t offset, const char *process_name)
 {
     uint64_t pid = get_pid_from_process_name(process_name);
-    if(pid == -1){
+    if (pid == -1)
+    {
         log("process", LOG_ERROR) << "get global data copy, trying to get a non existant process : " << process_name;
         return -1;
     }
-    if(process_array[pid].global_process_memory_length > offset+sizeof (uint64_t)){
+    if (process_array[pid].global_process_memory_length < offset + sizeof(uint64_t))
+    {
         log("process", LOG_ERROR) << "getting out of range process data";
         return -1;
-    }else{
-        uint8_t* data_from = process_array[pid].global_process_memory;
-
-        return *((uint64_t*)(data_from + offset));
     }
+    else
+    {
+        uint8_t *data_from = process_array[pid].global_process_memory;
 
+        return *((uint64_t *)(data_from + offset));
+    }
 }
-void* get_current_process_global_data(uint64_t offset, uint64_t length)
+void *get_current_process_global_data(uint64_t offset, uint64_t length)
 {
-    if(get_current_data()->current_process->global_process_memory_length > offset+length){
+    if (get_current_data()->current_process->global_process_memory_length < offset + length)
+    {
         log("process", LOG_ERROR) << "getting out of range process data";
         return nullptr;
-    }else{
+    }
+    else
+    {
         return get_current_data()->current_process->global_process_memory + offset;
     }
-
 }

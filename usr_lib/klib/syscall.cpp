@@ -13,4 +13,11 @@ namespace sys {
     uint64_t sys$message_response(raw_process_message* identifier){
         return syscall(GET_RESPONSE_SERVICE_SYSCALL, (uint64_t)identifier, 0, 0, 0,0);
     }
+    uint64_t sys$get_process_global_data(uint64_t offset, const char* target){
+        return syscall(GET_PROCESS_GLOBAL_DATA, (uint64_t)target, offset, 0, 0, 0);
+    }
+    void* sys$get_current_process_global_data(uint64_t offset, uint64_t length){
+        return (void*)syscall(GET_PROCESS_GLOBAL_DATA, 0, offset, length, 0, 0);
+
+    }
 }

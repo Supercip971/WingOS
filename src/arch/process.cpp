@@ -147,6 +147,9 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
             {
                 process_array[i].process_name[iname] = name[iname];
             }
+            process_array[i].global_process_memory = (uint8_t *)get_mem_addr((uint64_t)pmm_alloc(1));
+            process_array[i].global_process_memory_length = 4096;
+            memzero(process_array[i].global_process_memory, process_array[i].global_process_memory_length);
             process_array[i].last_message_used = 0;
             process_array[i].process_name[iname] = 0;
             process_array[i].entry_point = (uint64_t)entry_point;
@@ -383,7 +386,21 @@ void add_thread_map(process *p, uint64_t from, uint64_t to, uint64_t length)
         map_page((main_page_table *)p->page_directory, from + i * PAGE_SIZE, to + i * PAGE_SIZE, PAGE_TABLE_FLAGS);
     }
 }
+uint64_t get_pid_from_process_name(const char *name)
+{
+    for (int i = 0; i < MAX_PROCESS; i++)
+    {
+        if (process_array[i].current_process_state == PROCESS_WAITING || process_array[i].current_process_state == PROCESS_RUNNING)
+        {
 
+            if (strcmp(name, process_array[i].process_name) == 0)
+            {
+                return process_array[i].pid;
+            }
+        }
+    }
+    return -1;
+}
 process_message *send_message(uint64_t data_addr, uint64_t data_length, const char *to_process)
 {
 
@@ -526,4 +543,31 @@ void set_on_request_service(bool is_ORS)
 void on_request_service_update()
 {
     get_current_data()->current_process->should_be_active = false;
+}
+uint64_t get_process_global_data_copy(uint64_t offset, const char* process_name)
+{
+    uint64_t pid = get_pid_from_process_name(process_name);
+    if(pid == -1){
+        log("process", LOG_ERROR) << "get global data copy, trying to get a non existant process : " << process_name;
+        return -1;
+    }
+    if(process_array[pid].global_process_memory_length > offset+sizeof (uint64_t)){
+        log("process", LOG_ERROR) << "getting out of range process data";
+        return -1;
+    }else{
+        uint8_t* data_from = process_array[pid].global_process_memory;
+
+        return *((uint64_t*)(data_from + offset));
+    }
+
+}
+void* get_current_process_global_data(uint64_t offset, uint64_t length)
+{
+    if(get_current_data()->current_process->global_process_memory_length > offset+length){
+        log("process", LOG_ERROR) << "getting out of range process data";
+        return nullptr;
+    }else{
+        return get_current_data()->current_process->global_process_memory + offset;
+    }
+
 }

@@ -49,6 +49,8 @@ struct process
     bool is_ORS = false;
     bool should_be_active = false; // used with ORS
     uint8_t processor_target;
+    uint8_t *global_process_memory;
+    uint64_t global_process_memory_length;
 } __attribute__((packed));
 
 struct message_identifier
@@ -84,3 +86,8 @@ uint64_t message_response(process_message *indentifier);
 // todo : add ORS to user service, for the moment it is only for kernel
 void set_on_request_service(bool is_ORS);
 void on_request_service_update();
+uint64_t get_pid_from_process_name(const char *name);
+
+void* get_current_process_global_data(uint64_t offset, uint64_t length);
+
+uint64_t get_process_global_data_copy(uint64_t offset, const char* process_name);

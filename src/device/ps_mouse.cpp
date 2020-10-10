@@ -125,7 +125,6 @@ void ps_mouse::interrupt_handler()
     else
     {
 
-        mouse_cycle = 0;
         mouse_data[2] = inb(0x60);
 
         mouse_x_offset = mouse_data[1];
@@ -140,6 +139,11 @@ void ps_mouse::interrupt_handler()
         {
             mouse_y = 0;
         }
+
+        mouse_middle = (bool)((mouse_data[0] >> 2) & 1);
+        mouse_right = (bool)((mouse_data[0] >> 1) & 1);
+        mouse_left = (bool)((mouse_data[0]) & 1);
+        mouse_cycle = 0;
     }
 }
 
@@ -150,4 +154,16 @@ int32_t ps_mouse::get_mouse_x()
 int32_t ps_mouse::get_mouse_y()
 {
     return mouse_y;
+}
+uint64_t ps_mouse::get_mouse_button(int code)
+{
+    if (code == 0)
+    {
+        return mouse_left;
+    }
+    else if (code == 1)
+    {
+        return mouse_right;
+    }
+    return mouse_middle;
 }

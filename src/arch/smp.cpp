@@ -157,16 +157,9 @@ void smp::init_cpu(int apic, int id)
 
     log("smp cpu", LOG_INFO) << " loading cpu : " << id;
     apic::the()->init_processor(apic, 0x1000);
-    for (uint64_t i = 0; i < 300; i++)
-    {
-        for (uint64_t b = 0; b < i * 2; b++)
-        {
-            inb(0);
-        }
-    }
     while (SMPloaded != true)
     {
-        for (uint64_t i = 0; i < 300; i++)
+        for (uint64_t i = 0; i < 30; i++)
         {
             for (uint64_t b = 0; b < i * 2; b++)
             {

@@ -1,9 +1,9 @@
 #include <arch/mem/liballoc.h>
+#include <arch/mem/physical.h>
 #include <device/ata_driver.h>
 #include <filesystem/echfs.h>
 #include <kernel.h>
 #include <loggging.h>
-
 #include <utility.h>
 echfs::echfs()
 {
@@ -13,16 +13,20 @@ void echfs::read_block(uint64_t block_id, uint8_t *buffer)
 
     ata_driver::the()->read((start_sec + (block_id * header.block_length)) / 512, header.block_length / 512, buffer);
 }
+uint64_t *another_buffer = nullptr;
 echfs_file_header echfs::read_directory_entry(uint64_t entry)
 {
-
-    uint64_t *another_buffer = (uint64_t *)malloc(512);
+    if (another_buffer == nullptr)
+    {
+        another_buffer = (uint64_t *)pmm_alloc_fast(header.block_length / 4096 + 1);
+    }
     uint64_t current_entry = 0;
+    uint64_t second_check_length = header.block_length / sizeof(echfs_file_header);
     for (uint64_t i = 0; i < header.main_directory_length; i++)
     {
 
         read_block(main_dir_start + i, (uint8_t *)another_buffer);
-        for (uint64_t j = 0; j < header.block_length / sizeof(echfs_file_header); j++)
+        for (uint64_t j = 0; j < second_check_length; j++)
         {
             echfs_file_header *cur_header = reinterpret_cast<echfs_file_header *>((uint64_t)another_buffer + (j * sizeof(echfs_file_header)));
             if (current_entry == entry)
@@ -47,7 +51,6 @@ echfs_file_header echfs::read_directory_entry(uint64_t entry)
         }
     }
 end:
-    free(another_buffer);
     return {0};
 }
 void echfs::init(uint64_t start_sector, uint64_t sector_count)
@@ -146,35 +149,44 @@ uint64_t echfs::get_folder(uint64_t folder_id)
 uint64_t echfs::get_simple_file(const char *name, uint64_t forced_parent)
 {
     uint64_t entry_t = 0;
-    while (true)
+    uint64_t name_length = strlen(name);
+
+    uint64_t *temporary_buf = (uint64_t *)pmm_alloc_fast(header.block_length / 4096 + 1);
+
+    uint64_t current_entry = 0;
+    uint64_t second_check_length = header.block_length / sizeof(echfs_file_header);
+    for (uint64_t i = 0; i < header.main_directory_length; i++)
     {
 
-        echfs_file_header head = read_directory_entry(entry_t);
-
-        if (strncmp(head.file_name, name, strlen(name)) == 0)
+        read_block(main_dir_start + i, (uint8_t *)temporary_buf);
+        for (uint64_t j = 0; j < second_check_length; j++)
         {
-            if (forced_parent != -1)
+            echfs_file_header *cur_header = reinterpret_cast<echfs_file_header *>((uint64_t)another_buffer + (j * sizeof(echfs_file_header)));
+            if (strncmp(cur_header->file_name, name, name_length) == 0)
             {
-                if (head.parent_id == forced_parent)
+                if (forced_parent != -1)
                 {
+                    if (cur_header->parent_id == forced_parent)
+                    {
+                        return entry_t;
+                    }
+                }
+                else
+                {
+
                     return entry_t;
                 }
             }
-            else
+            if (cur_header->parent_id == 0 /* reach the end */)
             {
-
-                return entry_t;
+                return -1;
             }
-        }
 
-        if (head.parent_id == 0 /* reach the end */)
-        {
-            return -1;
+            entry_t++;
         }
-
-        entry_t++;
     }
 }
+
 uint64_t echfs::find_file(const char *path)
 {
     if (strlen(path) > 200)
@@ -185,10 +197,8 @@ uint64_t echfs::find_file(const char *path)
     char *buffer_temp = (char *)malloc(255);
     char *path_copy = (char *)malloc(255);
     memzero(path_copy, 255);
-    for (int i = 0; i < strlen(path); i++)
-    {
-        path_copy[i] = path[i];
-    }
+
+    memcpy(path_copy, path, strlen(path));
     log("echfs", LOG_INFO) << "searching for " << path_copy;
 
     memzero(buffer_temp, 255);
@@ -196,11 +206,11 @@ uint64_t echfs::find_file(const char *path)
     echfs_file_header current_header;
 
     uint64_t current_parent = 0xffffffffffffffff;
-
+    uint64_t last_buffer_temp_used_length = 255;
 redo: // yes goto are bad but if someone has a solution i take it ;)
 
-    memzero(buffer_temp, 255);
-
+    memzero(buffer_temp, last_buffer_temp_used_length);
+    last_buffer_temp_used_length = 0;
     for (uint64_t i = 0; *path_copy != '/'; path_copy++)
     {
         if (*path_copy == 0)
@@ -209,11 +219,11 @@ redo: // yes goto are bad but if someone has a solution i take it ;)
             is_end = true;
             break;
         }
-
+        last_buffer_temp_used_length++;
         buffer_temp[i++] = *path_copy;
         buffer_temp[i] = 0;
     }
-
+    last_buffer_temp_used_length++;
     path_copy++;
 
     log("echfs", LOG_INFO) << "checking for " << buffer_temp;

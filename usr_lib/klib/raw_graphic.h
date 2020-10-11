@@ -16,4 +16,17 @@ namespace sys {
     uint64_t get_graphic_buffer_addr();
     uint64_t get_screen_width();
     uint64_t get_screen_height();
+    // raw pos is used for 'uint64_t' pos to raw pos
+
+    struct real_pos{
+        uint32_t x;
+        uint32_t y;
+    }__attribute__((packed));
+
+    struct raw_pos{
+        union{
+            real_pos rpos;
+            uint64_t pos;
+        };
+    }__attribute__((packed));
 }

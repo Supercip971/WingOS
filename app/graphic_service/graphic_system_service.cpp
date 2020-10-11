@@ -102,6 +102,18 @@ uint64_t window_swap_buffer(sys::graphic_system_service_protocol* request, uint6
     swap_buffer(target.window_front_buffer, target.window_back_buffer, target.width * target.height);
     return 1;
 }
+uint64_t get_window_position(sys::graphic_system_service_protocol* request, uint64_t pid){
+    if(!can_use_window(request->get_request.window_handler_code, pid)){
+        return -2;
+    }
+    raw_window_data& target = window_list[request->get_request.window_handler_code];
+    sys::raw_pos pos = {0};
+    pos.rpos.x = target.px;
+    pos.rpos.y = target.py;
+
+    return (uint64_t)pos.pos;
+}
+
 uint64_t interpret(sys::graphic_system_service_protocol* request, uint64_t pid){
     if(request->request_type == 0){
         printf("graphic error : request null type");
@@ -112,6 +124,8 @@ uint64_t interpret(sys::graphic_system_service_protocol* request, uint64_t pid){
         return get_window_back_buffer(request, pid);
     }else if(request->request_type == sys::GRAPHIC_SYSTEM_REQUEST::SWAP_WINDOW_BUFFER){
         return window_swap_buffer(request, pid);
+    }else if(request->request_type == sys::GRAPHIC_SYSTEM_REQUEST::GET_WINDOW_POSITION){
+        return get_window_position(request, pid);
     }
     printf("graphic error : request non implemented type");
     return -2;
@@ -217,6 +231,7 @@ int main(){
             }
         }
         draw_mouse(m_x,m_y);
+
 
         swap_buffer(front_buffer, back_buffer, scr_width*scr_height);
     }

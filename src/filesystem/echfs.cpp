@@ -28,7 +28,6 @@ echfs_file_header echfs::read_directory_entry(uint64_t entry)
             if (current_entry == entry)
             {
                 echfs_file_header ret = *cur_header;
-                free(another_buffer);
                 return ret;
             }
             if (cur_header->parent_id == 0)
@@ -48,6 +47,7 @@ echfs_file_header echfs::read_directory_entry(uint64_t entry)
         }
     }
 end:
+    free(another_buffer);
     return {0};
 }
 void echfs::init(uint64_t start_sector, uint64_t sector_count)
@@ -182,16 +182,16 @@ uint64_t echfs::find_file(const char *path)
         log("echfs", LOG_ERROR) << "with echfs file path can't get larger than 200";
         return -1;
     }
-    char *buffer_temp = (char *)malloc(201);
-    char *path_copy = (char *)malloc(201);
-    memzero(path_copy, 201);
+    char *buffer_temp = (char *)malloc(255);
+    char *path_copy = (char *)malloc(255);
+    memzero(path_copy, 255);
     for (int i = 0; i < strlen(path); i++)
     {
         path_copy[i] = path[i];
     }
     log("echfs", LOG_INFO) << "searching for " << path_copy;
 
-    memzero(buffer_temp, 201);
+    memzero(buffer_temp, 255);
     bool is_end = false;
     echfs_file_header current_header;
 
@@ -199,7 +199,7 @@ uint64_t echfs::find_file(const char *path)
 
 redo: // yes goto are bad but if someone has a solution i take it ;)
 
-    memzero(buffer_temp, 201);
+    memzero(buffer_temp, 255);
 
     for (uint64_t i = 0; *path_copy != '/'; path_copy++)
     {

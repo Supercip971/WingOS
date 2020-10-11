@@ -116,9 +116,9 @@ void smp::init_cpu(int apic, int id)
 
     for (int i = 0; i < (trampoline_len / 4096) + 12; i++)
     {
-        virt_map(0x1000 + (i * 4096), 0x1000 + (i * 4096), 0x1 | 0x2 | 0x4);
+        map_page(0x1000 + (i * 4096), 0x1000 + (i * 4096), 0x1 | 0x2 | 0x4);
     }
-    virt_map(0, 0, 0x1 | 0x2 | 0x4);
+    map_page(0, 0, 0x1 | 0x2 | 0x4);
     update_paging();
     log("smp cpu", LOG_INFO) << "trampoline length " << trampoline_len;
 

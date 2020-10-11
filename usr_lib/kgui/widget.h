@@ -1,6 +1,5 @@
 #pragma once
 #include <klib/graphic_system.h>
-
 namespace gui {
     class widget
     {
@@ -9,13 +8,14 @@ namespace gui {
         uint64_t widget_height;
         uint64_t widget_x;
         uint64_t widget_y;
+
         bool widget_should_draw = false;
     public:
         widget();
-
         virtual void update_widget() = 0;
         virtual void draw_widget(sys::graphic_context& context) = 0;
-        virtual void init_widget() = 0;
+        // note: i do void* as c++ doesn't like recursive include
+        virtual void init_widget(void* new_parent)= 0;
     };
 
 

@@ -20,7 +20,6 @@ namespace gui {
         context.draw_rectangle(widget_x, widget_y, widget_width, widget_height, {80,80,80,255});
         context.draw_basic_string(widget_x + (widget_width / 2) - text_length / 2, widget_y + (widget_height/2) - 4, button_title, sys::pixel(255,255,255));
     };
-    void button_widget::init_widget(){
-
+    void button_widget::init_widget(void* new_parent){
     };
 }

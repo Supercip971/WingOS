@@ -13,6 +13,6 @@ namespace gui {
 
         virtual void update_widget() override;
         virtual void draw_widget(sys::graphic_context& context) override;
-        virtual void init_widget() override;
+        virtual void init_widget(void* new_parent) override;
     };
 }

@@ -15,7 +15,7 @@ namespace gui {
     void rectangle_widget::draw_widget(sys::graphic_context& context) {
         context.draw_rectangle(widget_x, widget_y, widget_width, widget_height, col);
     };
-    void rectangle_widget::init_widget(){
+    void rectangle_widget::init_widget(void* new_parent){
 
     };
 }

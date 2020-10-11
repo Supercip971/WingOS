@@ -25,6 +25,7 @@ namespace gui {
     }
     void window::add_widget(widget* wdget){
        lst.add_widget(wdget);
-       wdget->init_widget();
+       wdget->init_widget(this);
+    }
     }
 }

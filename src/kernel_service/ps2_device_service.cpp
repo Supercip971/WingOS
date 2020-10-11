@@ -83,14 +83,14 @@ void ps2_device_service()
     *mx = 0;
     while (true)
     {
+        *mx = (uint64_t)ps_mouse::the()->get_mouse_x();
+        *my = (uint64_t)ps_mouse::the()->get_mouse_y();
+        *mclickl = (uint64_t)ps_mouse::the()->get_mouse_button(GET_MOUSE_LEFT_CLICK);
+        *mclickm = (uint64_t)ps_mouse::the()->get_mouse_button(GET_MOUSE_MIDDLE_CLICK);
+        *mclickr = (uint64_t)ps_mouse::the()->get_mouse_button(GET_MOUSE_RIGHT_CLICK);
         process_message *msg = read_message();
         if (msg == 0x0)
         {
-            *mx = (uint64_t)ps_mouse::the()->get_mouse_x();
-            *my = (uint64_t)ps_mouse::the()->get_mouse_y();
-            *mclickl = (uint64_t)ps_mouse::the()->get_mouse_button(GET_MOUSE_LEFT_CLICK);
-            *mclickm = (uint64_t)ps_mouse::the()->get_mouse_button(GET_MOUSE_MIDDLE_CLICK);
-            *mclickr = (uint64_t)ps_mouse::the()->get_mouse_button(GET_MOUSE_RIGHT_CLICK);
         }
         else
         {

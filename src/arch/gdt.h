@@ -25,13 +25,13 @@
 /* granularity */
 #define GDT_LM 0x2
 
-typedef struct
+struct gdtr_t
 {
     uint16_t len;
     uint64_t addr;
-} __attribute__((__packed__)) gdtr_t;
+} __attribute__((packed));
 
-typedef struct
+struct gdt_descriptor_t
 {
     uint16_t limit_low;
     uint16_t base_low;
@@ -39,9 +39,9 @@ typedef struct
     uint8_t flags;
     uint8_t granularity; /* and high limit */
     uint8_t base_high;
-} __attribute__((__packed__)) gdt_descriptor_t;
+} __attribute__((packed));
 
-typedef struct
+struct gdt_xdescriptor_t
 {
     gdt_descriptor_t low;
     struct
@@ -49,7 +49,7 @@ typedef struct
         uint32_t base_xhigh;
         uint32_t reserved;
     } high;
-} __attribute__((__packed__)) gdt_xdescriptor_t;
+} __attribute__((packed));
 
 static gdtr_t gdtr;
 
@@ -57,7 +57,7 @@ void gdt_init(void);
 
 void setup_gdt(unsigned long i);
 
-typedef struct
+struct tss_t
 {
     uint32_t reserved0 __attribute__((aligned(16)));
     uint64_t rsp0;
@@ -74,7 +74,7 @@ typedef struct
     uint64_t reserved2;
     uint16_t reserved3;
     uint16_t iomap_base;
-} __attribute__((__packed__)) tss_t;
+} __attribute__((packed));
 tss_t *get_tss();
 void tss_init(uint64_t i);
 void tss_set_rsp0(uint64_t rsp0);

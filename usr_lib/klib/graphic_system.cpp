@@ -97,6 +97,15 @@ namespace sys {
 
 
 
+    sys::raw_pos graphic_context::get_graphic_context_position(){
+        sys::graphic_system_service_protocol request = {0};
+        request.request_type = sys::GRAPHIC_SYSTEM_REQUEST::GET_WINDOW_POSITION;
+        request.get_request.window_handler_code = wid;
+        uint64_t result = sys::process_message("init_fs/graphic_service.exe", (uint64_t)&request , sizeof (sys::graphic_system_service_protocol)).read();
+        sys::raw_pos p;
+        p.pos = result;
+        return p;
+    }
 
     uint64_t get_basic_font_width_text(const char* text){
         uint64_t clen = strlen(text);

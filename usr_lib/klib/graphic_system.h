@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include <klib/raw_graphic.h>
 namespace sys {
     // FOR GRAPHIC MESSAGE :
     struct graphic_raw_request{
@@ -21,8 +22,7 @@ namespace sys {
         GET_WINDOW_BACK_BUFFER = 2,
         SWAP_WINDOW_BUFFER = 3,
         GET_WINDOW_POSITION = 4,
-        GET_WINDOW_RESIZE = 5,
-        GET_WINDOW_EVENT = 6
+        SET_WINDOW_POSITION = 5
     };
 
     // window event are not used for the moment
@@ -77,6 +77,8 @@ namespace sys {
         void draw_basic_string(const uint64_t x, const uint64_t y, const char* str, const pixel color);
         void clear_buffer(const pixel color);
         void swap_buffer();
+
+        sys::raw_pos get_graphic_context_position();
 
     };
     uint64_t get_basic_font_width_text(const char* text);

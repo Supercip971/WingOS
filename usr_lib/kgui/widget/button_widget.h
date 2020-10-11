@@ -1,14 +1,14 @@
 #pragma once
-#include <kgui/widget.h>
 
-
+#include <kgui/window.h>
 namespace gui {
 
     class button_widget : public widget
     {
         const char* button_title;
-
+        bool is_hovered;
         uint64_t text_length = 0;
+        gui::window* parent;
     public:
         button_widget();
         button_widget(uint64_t x, uint64_t y, uint64_t width, uint64_t heigth, const char* title);

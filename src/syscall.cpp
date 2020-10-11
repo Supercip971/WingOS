@@ -21,10 +21,14 @@ uint64_t sys$message_response(process_message *identifier)
 {
     return message_response(identifier);
 }
-uint64_t sys$get_process_global_data(const char* target, uint64_t offset, uint64_t length){
-    if(target == nullptr){
+uint64_t sys$get_process_global_data(const char *target, uint64_t offset, uint64_t length)
+{
+    if (target == nullptr)
+    {
         return (uint64_t)get_current_process_global_data(offset, length);
-    }else{
+    }
+    else
+    {
         return (uint64_t)get_process_global_data_copy(offset, target);
     }
 }
@@ -33,8 +37,7 @@ static void *syscalls[] = {
     [SEND_SERVICE_SYSCALL] = (void *)sys$send_message,
     [READ_SERVICE_SYSCALL] = (void *)sys$read_message,
     [GET_RESPONSE_SERVICE_SYSCALL] = (void *)sys$message_response,
-    [GET_PROCESS_GLOBAL_DATA] = (void*)sys$get_process_global_data
-};
+    [GET_PROCESS_GLOBAL_DATA] = (void *)sys$get_process_global_data};
 uint64_t syscalls_length = 5;
 void init_syscall()
 {

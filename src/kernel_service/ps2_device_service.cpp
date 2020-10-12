@@ -81,10 +81,11 @@ void ps2_device_service()
     *mclickm = 0;
     *my = 0;
     *mx = 0;
+    ps_mouse::the()->set_ptr_to_update((uint32_t *)(mx), (uint32_t *)(my));
     while (true)
     {
-        *mx = (uint64_t)ps_mouse::the()->get_mouse_x();
-        *my = (uint64_t)ps_mouse::the()->get_mouse_y();
+        //  *mx = (uint64_t)ps_mouse::the()->get_mouse_x();
+        //  *my = (uint64_t)ps_mouse::the()->get_mouse_y();
         *mclickl = (uint64_t)ps_mouse::the()->get_mouse_button(GET_MOUSE_LEFT_CLICK);
         *mclickm = (uint64_t)ps_mouse::the()->get_mouse_button(GET_MOUSE_MIDDLE_CLICK);
         *mclickr = (uint64_t)ps_mouse::the()->get_mouse_button(GET_MOUSE_RIGHT_CLICK);

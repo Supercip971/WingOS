@@ -144,9 +144,22 @@ void ps_mouse::interrupt_handler()
         mouse_right = (bool)((mouse_data[0] >> 1) & 1);
         mouse_left = (bool)((mouse_data[0]) & 1);
         mouse_cycle = 0;
+        if (ptr_to_update_x != nullptr)
+        {
+            *ptr_to_update_x = mouse_x;
+        }
+        if (ptr_to_update_y != nullptr)
+        {
+            *ptr_to_update_y = mouse_y;
+        }
     }
 }
 
+void ps_mouse::set_ptr_to_update(uint32_t *x, uint32_t *y)
+{
+    ptr_to_update_x = x;
+    ptr_to_update_y = y;
+}
 int32_t ps_mouse::get_mouse_x()
 {
     return mouse_x;

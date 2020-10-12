@@ -9,6 +9,8 @@ class ps_mouse
     int32_t mouse_y_offset = 0;
     int32_t mouse_x = 0;
     int32_t mouse_y = 0;
+    uint32_t *ptr_to_update_x = nullptr;
+    uint32_t *ptr_to_update_y = nullptr;
     uint8_t mouse_cycle = 0;
     char mouse_data[3];
     bool mouse_middle = false;
@@ -24,7 +26,7 @@ public:
     void interrupt_handler();
     void set_sample_rate(uint32_t rate);
     void set_resolution(uint16_t resolution);
-
+    void set_ptr_to_update(uint32_t *x, uint32_t *y);
     uint64_t get_mouse_button(int code); // mouse left = 0, right = 1, middle = 2
     int32_t get_mouse_y();
     int32_t get_mouse_x();

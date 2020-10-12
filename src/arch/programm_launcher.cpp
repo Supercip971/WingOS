@@ -162,7 +162,7 @@ void launch_programm(const char *path, echfs *file_sys)
         }
 
         log("prog launcher", LOG_INFO) << "elf programm cpu : " << last_selected_cpu;
-        read_elf_section_header(programm_code);
+        //read_elf_section_header(programm_code);
         process *to_launch = init_process((func)programm_header->e_entry, false, path, true, last_selected_cpu);
 
         Elf64_Phdr *p_entry = reinterpret_cast<Elf64_Phdr *>((uint64_t)programm_code + programm_header->e_phoff);

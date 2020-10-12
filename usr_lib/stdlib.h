@@ -10,3 +10,7 @@ double atof(const char* s);
 #define RAND_MAX 32767
 int rand(void);
 void srand(uint32_t seed);
+
+void* malloc(size_t size);
+void free(void* ptr);
+void* realloc(void* ptr, size_t size);

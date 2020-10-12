@@ -147,7 +147,7 @@ apic *apic::the()
 }
 uint32_t apic::get_current_processor_id()
 {
-    return (read(lapic_id) >> 24) & 0xff;
+    return (read(lapic_id) >> 24);
 }
 void apic::preinit_processor(uint32_t processorid)
 {

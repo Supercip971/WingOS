@@ -127,3 +127,15 @@ int rand(){
 void srand(uint32_t seed){
     cseed = seed;
 }
+
+
+void* malloc(size_t size){
+    return sys::service_malloc(size);
+}
+void free(void* ptr){
+    sys::service_free(ptr);
+}
+void* realloc(void* ptr, size_t size){
+
+    return sys::service_realloc(ptr, size);
+}

@@ -114,7 +114,7 @@ void smp::init_cpu(int apic, int id)
 
     uint64_t trampoline_len = (uint64_t)&trampoline_end - (uint64_t)&trampoline_start;
 
-    for (int i = 0; i < (trampoline_len / 4096) + 12; i++)
+    for (int i = 0; i < (trampoline_len / 4096) + 2; i++)
     {
         map_page(0x1000 + (i * 4096), 0x1000 + (i * 4096), 0x1 | 0x2 | 0x4);
     }

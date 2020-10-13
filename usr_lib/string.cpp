@@ -104,6 +104,16 @@ void* memmove(void* dest, const void* src, size_t n){
     sys::service_free(temporary_data);
     return dest;
 }
+void* memchr(const void* s, int c, size_t n){
+    const unsigned char* copy = (const unsigned char*) c;
+
+    for(size_t i = 0; i < n;i++){
+        if(*(copy+i)==c){
+            return (void*)(copy + i);
+        }
+    }
+    return nullptr;
+}
 // for later optimization
 #else
 

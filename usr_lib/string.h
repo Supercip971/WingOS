@@ -13,3 +13,4 @@ int memcmp(const void* s1, const void* s2, size_t n);
 void* memcpy(void* dest, const void* src, uint64_t length);
 void* memmove(void* dest, const void* src, size_t n);
 void *memset(void *data, uint8_t value,uint64_t lenght);
+void* memchr(const void* s, int c, size_t n);

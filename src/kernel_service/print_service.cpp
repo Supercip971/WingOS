@@ -11,11 +11,8 @@ void print_service()
     while (true)
     {
         process_message *msg = read_message();
-        if (msg == 0x0)
-        {
-        }
-        else
-        {
+
+        if(!msg){
             lock((&locker));
             log("console_out", LOG_INFO); // this is very insecure :(
             com_write_strn((char *)msg->content_address, msg->content_length);

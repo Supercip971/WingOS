@@ -13,11 +13,8 @@ void graphic_buffer_service()
     while (true)
     {
         process_message *msg = read_message();
-        if (msg == 0x0)
-        {
-        }
-        else
-        {
+
+        if(!msg){
             graphic_buffer_protocol *data = reinterpret_cast<graphic_buffer_protocol *>(msg->content_address);
             if (data->request == GET_CURRENT_BUFFER_ADDR)
             {

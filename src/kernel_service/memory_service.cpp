@@ -9,11 +9,8 @@ void memory_service()
     while (true)
     {
         process_message *msg = read_message();
-        if (msg == 0x0)
-        {
-        }
-        else
-        {
+
+        if(!msg){
             memory_service_protocol *prot = (memory_service_protocol *)msg->content_address;
             if (prot->request_type == REQUEST_FREE)
             {

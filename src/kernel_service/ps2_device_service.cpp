@@ -90,13 +90,8 @@ void ps2_device_service()
         *mclickm = (uint64_t)ps_mouse::the()->get_mouse_button(GET_MOUSE_MIDDLE_CLICK);
         *mclickr = (uint64_t)ps_mouse::the()->get_mouse_button(GET_MOUSE_RIGHT_CLICK);
         process_message *msg = read_message();
-        if (msg == 0x0)
-        {
-        }
-        else
-        {
 
-            ps2_device_request *request = (ps2_device_request *)msg->content_address;
+        if(!msg){            ps2_device_request *request = (ps2_device_request *)msg->content_address;
             uint64_t result = -2;
             if (request->device_target == 1)
             {

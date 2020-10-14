@@ -14,7 +14,8 @@ void graphic_buffer_service()
     {
         process_message *msg = read_message();
 
-        if(!msg){
+        if (msg != 0)
+        {
             graphic_buffer_protocol *data = reinterpret_cast<graphic_buffer_protocol *>(msg->content_address);
             if (data->request == GET_CURRENT_BUFFER_ADDR)
             {

@@ -30,7 +30,7 @@ void time_service()
     while (true)
     {
         process_message *msg = read_message();
-        if (!msg)
+        if (msg != 0)
         {
             time_service_request *tsr = (time_service_request *)msg->content_address;
             uint64_t result = 0;

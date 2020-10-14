@@ -13,7 +13,8 @@ void kernel_process_service()
     {
         process_message *msg = read_message();
 
-        if(!msg){
+        if (msg != 0)
+        {
             kernel_process_service_request *prot = (kernel_process_service_request *)msg->content_address;
             if (msg->content_length < 4096)
             {

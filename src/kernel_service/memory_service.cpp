@@ -10,7 +10,8 @@ void memory_service()
     {
         process_message *msg = read_message();
 
-        if(!msg){
+        if (msg != 0)
+        {
             memory_service_protocol *prot = (memory_service_protocol *)msg->content_address;
             if (prot->request_type == REQUEST_FREE)
             {

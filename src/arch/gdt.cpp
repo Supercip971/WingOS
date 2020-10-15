@@ -57,8 +57,8 @@ void __attribute__((optimize("O0"))) rgdt_init(void)
 {
     log("gdt", LOG_DEBUG) << "loading gdt";
 
-    uint64_t tss_base = (uint64_t)&get_current_data()->tss;
-    uint64_t tss_limit = tss_base + sizeof(get_current_data()->tss) - 1;
+    uint64_t tss_base = (uint64_t)&get_current_cpu()->tss;
+    uint64_t tss_limit = tss_base + sizeof(get_current_cpu()->tss) - 1;
 
     log("gdt", LOG_INFO) << "resetting gdt";
 
@@ -76,20 +76,20 @@ void __attribute__((optimize("O0"))) rgdt_init(void)
     gdt_set_xdescriptor(gdt_descriptors, SLTR_TSS, GDT_PRESENT | GDT_TSS, 0,
                         tss_base, tss_limit);
 
-    get_current_data()->gdt.addr = (uint64_t)&gdt_descriptors;
-    get_current_data()->gdt.len = sizeof(gdt_descriptors) * GDT_DESCRIPTORS - 1;
+    get_current_cpu()->gdt.addr = (uint64_t)&gdt_descriptors;
+    get_current_cpu()->gdt.len = sizeof(gdt_descriptors) * GDT_DESCRIPTORS - 1;
 
-    gdtr_install(&get_current_data()->gdt, SLTR_KERNEL_CODE, SLTR_KERNEL_DATA);
+    gdtr_install(&get_current_cpu()->gdt, SLTR_KERNEL_CODE, SLTR_KERNEL_DATA);
 }
 
 void tss_init(uint64_t i)
 {
-    memzero(&get_current_data()->tss, sizeof(tss));
-    get_current_data()->tss.iomap_base = sizeof(tss);
-    get_current_data()->tss.rsp0 = (uint64_t)i;
-    get_current_data()->tss.ist1 = (uint64_t)tss_ist1 + 8192;
-    get_current_data()->tss.ist2 = (uint64_t)tss_ist2 + 8192;
-    get_current_data()->tss.ist3 = (uint64_t)tss_ist3 + 8192;
+    memzero(&get_current_cpu()->tss, sizeof(tss));
+    get_current_cpu()->tss.iomap_base = sizeof(tss);
+    get_current_cpu()->tss.rsp0 = (uint64_t)i;
+    get_current_cpu()->tss.ist1 = (uint64_t)tss_ist1 + 8192;
+    get_current_cpu()->tss.ist2 = (uint64_t)tss_ist2 + 8192;
+    get_current_cpu()->tss.ist3 = (uint64_t)tss_ist3 + 8192;
 
     asm volatile("mov ax, %0 \n ltr ax"
                  :
@@ -102,16 +102,16 @@ void gdt_ap_init()
 
     log("gdt ap", LOG_DEBUG) << "loading gdt for ap";
 
-    uint64_t tss_base = (uint64_t)&get_current_data()->tss;
-    uint64_t tss_limit = tss_base + sizeof(get_current_data()->tss);
+    uint64_t tss_base = (uint64_t)&get_current_cpu()->tss;
+    uint64_t tss_limit = tss_base + sizeof(get_current_cpu()->tss);
 
     log("gdt ap", LOG_INFO) << "resetting gdt";
 
-    gdt_descriptor_t *new_gdt_descriptors = get_current_data()->gdt_descriptors;
+    gdt_descriptor_t *new_gdt_descriptors = get_current_cpu()->gdt_descriptors;
 
     log("gdt ap", LOG_INFO) << "resetting gdt 2";
     memzero(new_gdt_descriptors, sizeof(gdt_descriptor_t) * 32);
-    gdtr_t *d = &get_current_data()->gdt;
+    gdtr_t *d = &get_current_cpu()->gdt;
     memzero(d, sizeof(gdtr_t));
 
     log("gdt ap", LOG_INFO) << "setting gdt entry";
@@ -126,14 +126,14 @@ void gdt_ap_init()
     gdt_set_xdescriptor(new_gdt_descriptors, SLTR_TSS, GDT_PRESENT | GDT_TSS, 0,
                         tss_base, tss_limit);
 
-    get_current_data()->gdt.addr = (uint64_t)new_gdt_descriptors;
-    get_current_data()->gdt.len = sizeof(gdt_descriptor_t) * GDT_DESCRIPTORS - 1;
+    get_current_cpu()->gdt.addr = (uint64_t)new_gdt_descriptors;
+    get_current_cpu()->gdt.len = sizeof(gdt_descriptor_t) * GDT_DESCRIPTORS - 1;
 
-    gdtr_install(&get_current_data()->gdt, SLTR_KERNEL_CODE, SLTR_KERNEL_DATA);
-    memzero(&get_current_data()->tss, sizeof(tss));
-    get_current_data()->tss.iomap_base = sizeof(tss);
-    get_current_data()->tss.rsp0 = (uint64_t)POKE(0x570);
-    get_current_data()->tss.ist1 = (uint64_t)get_current_data()->stack_data_interrupt + 8192;
+    gdtr_install(&get_current_cpu()->gdt, SLTR_KERNEL_CODE, SLTR_KERNEL_DATA);
+    memzero(&get_current_cpu()->tss, sizeof(tss));
+    get_current_cpu()->tss.iomap_base = sizeof(tss);
+    get_current_cpu()->tss.rsp0 = (uint64_t)POKE(0x570);
+    get_current_cpu()->tss.ist1 = (uint64_t)get_current_cpu()->stack_data_interrupt + 8192;
 
     asm volatile("mov ax, %0 \n ltr ax"
                  :

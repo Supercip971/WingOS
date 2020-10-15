@@ -216,11 +216,11 @@ extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
             }
         }
 
-        if (get_current_data()->current_process != nullptr)
+        if (get_current_cpu()->current_process != nullptr)
         {
-            log("pic", LOG_INFO) << "in process: " << get_current_data()->current_process->process_name;
+            log("pic", LOG_INFO) << "in process: " << get_current_cpu()->current_process->process_name;
 
-            log("pic", LOG_INFO) << "in processor : " << get_current_data()->current_process->processor_target;
+            log("pic", LOG_INFO) << "in processor : " << get_current_cpu()->current_process->processor_target;
             dump_process();
         }
         while (true)

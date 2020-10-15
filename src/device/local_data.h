@@ -32,7 +32,7 @@ void set_current_data(local_data *dat);
 //local_data *get_current_data(int id);
 extern local_data procData[smp::max_cpu];
 
-inline local_data *get_current_data()
+inline local_data *get_current_cpu()
 {
     if (apic::the()->isloaded() == false)
     {
@@ -43,7 +43,7 @@ inline local_data *get_current_data()
         return &procData[apic::the()->get_current_processor_id()];
     }
 }
-inline local_data *get_current_data(int id)
+inline local_data *get_current_cpu(int id)
 {
 
     return &procData[id];

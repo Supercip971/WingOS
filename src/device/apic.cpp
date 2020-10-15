@@ -199,7 +199,7 @@ void apic::set_raw_redirect(uint8_t vector, uint32_t target_gsi, uint16_t flags,
     {
         end |= (1 << 16);
     }
-    end |= (((uint64_t)get_current_data(cpu)->lapic_id) << 56);
+    end |= (((uint64_t)get_current_cpu(cpu)->lapic_id) << 56);
     uint32_t io_reg = (target_gsi - table[io_apic_target]->gsib) * 2 + 16;
     io_write(table[io_apic_target]->ioapic_addr, io_reg, (uint32_t)end);
     io_write(table[io_apic_target]->ioapic_addr, io_reg + 1, (uint32_t)(end >> 32));

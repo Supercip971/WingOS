@@ -73,14 +73,14 @@ int map_page(uint64_t phys_addr, uint64_t virt_addr, uint64_t flags)
 
     main_page_table *pdpt, *pd, *pt;
 
-    if (get_current_data()->page_table[pml4_entry] & BIT_PRESENT)
+    if (get_current_cpu()->page_table[pml4_entry] & BIT_PRESENT)
     {
-        pdpt = (uint64_t *)(get_mem_addr(get_current_data()->page_table[pml4_entry] & FRAME_ADDR));
+        pdpt = (uint64_t *)(get_mem_addr(get_current_cpu()->page_table[pml4_entry] & FRAME_ADDR));
     }
     else
     {
         pdpt = (uint64_t *)get_mem_addr((uint64_t)pmm_alloc_zero(1));
-        get_current_data()->page_table[pml4_entry] = (uint64_t)(get_rmem_addr((uint64_t)pdpt)) | PAGE_TABLE_FLAGS;
+        get_current_cpu()->page_table[pml4_entry] = (uint64_t)(get_rmem_addr((uint64_t)pdpt)) | PAGE_TABLE_FLAGS;
     }
 
     if (pdpt[pdpt_entry] & BIT_PRESENT)
@@ -117,7 +117,7 @@ main_page_table *new_vmm_page_dir()
     }
     for (int i = 255; i < 512; i++)
     {
-        ret_pml4[i] = get_current_data()->page_table[i];
+        ret_pml4[i] = get_current_cpu()->page_table[i];
     }
     for (uint64_t i = 0; i < (TWO_MEGS / PAGE_SIZE); i++)
     {
@@ -138,19 +138,19 @@ main_page_table *new_vmm_page_dir()
 
 void set_vmm_page_dir(main_page_table *table)
 {
-    get_current_data()->page_table = table;
+    get_current_cpu()->page_table = table;
     update_paging();
 }
 void set_vmm_kernel_page_dir()
 {
-    get_current_data()->page_table = kernel_super_dir;
+    get_current_cpu()->page_table = kernel_super_dir;
     update_paging();
 }
 void init_vmm(stivale_struct *bootdata)
 {
     log("vmm", LOG_DEBUG) << "loading vmm";
-    get_current_data()->page_table = (uint64_t *)get_mem_addr((uint64_t)pmm_alloc_zero(1));
-    main_page_table *table = get_current_data()->page_table;
+    get_current_cpu()->page_table = (uint64_t *)get_mem_addr((uint64_t)pmm_alloc_zero(1));
+    main_page_table *table = get_current_cpu()->page_table;
     e820_entry_t *mementry = (e820_entry_t *)bootdata->memory_map_addr;
 
     log("vmm", LOG_INFO) << "loading vmm 2M initial data";
@@ -162,7 +162,7 @@ void init_vmm(stivale_struct *bootdata)
         map_page(table, addr, get_kern_addr(addr), BASIC_PAGE_FLAGS);
     }
 
-    set_paging_dir(get_rmem_addr((uint64_t)get_current_data()->page_table));
+    set_paging_dir(get_rmem_addr((uint64_t)get_current_cpu()->page_table));
     log("vmm", LOG_INFO) << "loading vmm 4G initial data";
     for (uint64_t i = 0; i < (FOUR_GIGS / PAGE_SIZE); i++)
     {
@@ -188,11 +188,11 @@ void init_vmm(stivale_struct *bootdata)
         }
     }
 
-    set_paging_dir(get_rmem_addr((uint64_t)get_current_data()->page_table));
+    set_paging_dir(get_rmem_addr((uint64_t)get_current_cpu()->page_table));
 
     log("vmm", LOG_INFO) << "loading vmm done";
 }
 void update_paging()
 {
-    set_paging_dir((uint64_t)get_current_data()->page_table - 0xffff800000000000);
+    set_paging_dir((uint64_t)get_current_cpu()->page_table - 0xffff800000000000);
 }

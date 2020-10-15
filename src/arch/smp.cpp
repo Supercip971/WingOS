@@ -80,7 +80,7 @@ void smp::init()
             auto local_apic = reinterpret_cast<MADT_table_LAPIC *>(mrte);
 
             mt_lapic[processor_count] = local_apic;
-            get_current_data(processor_count)->lapic_id = mt_lapic[processor_count]->apic_id;
+            get_current_cpu(processor_count)->lapic_id = mt_lapic[processor_count]->apic_id;
 
             processor_count++;
         }
@@ -110,7 +110,7 @@ void smp::init()
 void smp::init_cpu(int apic, int id)
 {
     log("smp cpu", LOG_DEBUG) << "loading smp cpu : " << id << "/ apic id :" << apic;
-    get_current_data(id)->lapic_id = apic;
+    get_current_cpu(id)->lapic_id = apic;
 
     uint64_t trampoline_len = (uint64_t)&trampoline_end - (uint64_t)&trampoline_start;
 
@@ -125,12 +125,12 @@ void smp::init_cpu(int apic, int id)
     uint64_t end_addr = 0x4000;
     end_addr /= 4096;
     end_addr *= 4096;
-    get_current_data(id)->page_table = get_current_data()->page_table;
+    get_current_cpu(id)->page_table = get_current_cpu()->page_table;
     POKE(get_mem_addr(0x500)) =
-        get_rmem_addr((uint64_t)get_current_data(id)->page_table);
+        get_rmem_addr((uint64_t)get_current_cpu(id)->page_table);
     POKE(get_mem_addr(0x570)) =
-        (uint64_t)get_current_data(id)->stack_data + 8192;
-    memzero(get_current_data(id)->stack_data, 8192);
+        (uint64_t)get_current_cpu(id)->stack_data + 8192;
+    memzero(get_current_cpu(id)->stack_data, 8192);
 
     asm volatile(" \n"
                  "sgdt [0x580]\n"

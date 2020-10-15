@@ -1,5 +1,4 @@
 #pragma once
-#include <interface.h>
 #include <stdint.h>
 #define to_fs(a) (virt_fs *)(&a)
 

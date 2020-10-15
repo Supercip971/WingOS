@@ -11,18 +11,23 @@
 #include <kernel.h>
 #include <logging.h>
 #include <utility.h>
-#pragma GCC optimize("O0")
-extern "C" void irq0_first_jump();
-extern "C" void reload_cr3();
+
 process kernel_process;
 bool cpu_wait = false;
 char temp_esp[8192];
 process *nxt;
+
 bool process_locked = true;
 bool process_loaded = false;
+
+lock_type task_lock = {0};
+
 void lock_process() { process_locked = true; }
 void unlock_process() { process_locked = false; }
-lock_type task_lock = {0};
+
+extern "C" void irq0_first_jump();
+extern "C" void reload_cr3();
+
 extern "C" void start_task()
 {
     lock((&task_lock));
@@ -81,7 +86,7 @@ void init_multi_process(func start)
     log("proc", LOG_DEBUG) << "loading multi processing";
     printf("loading process \n");
     process_array = (process *)((uint64_t)malloc(sizeof(process) * MAX_PROCESS + 4096 /* for security */));
-    get_current_data()->current_process = nullptr;
+    get_current_cpu()->current_process = nullptr;
     printf("loading process 0 \n");
     for (int i = 0; i < MAX_PROCESS; i++)
     {
@@ -147,6 +152,11 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
             {
                 process_array[i].process_name[iname] = name[iname];
             }
+            process_array[i].is_on_interrupt_process = false;
+            for (int j = 0; j < 8; j++)
+            {
+                process_array[i].interrupt_handle_list[j] = 0;
+            }
             process_array[i].global_process_memory = (uint8_t *)get_mem_addr((uint64_t)pmm_alloc(1));
             process_array[i].global_process_memory_length = 4096;
             memzero(process_array[i].global_process_memory, process_array[i].global_process_memory_length);
@@ -197,13 +207,13 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
             }
             else
             {
-                process_array[i].page_directory = (uint64_t)get_current_data()->page_table;
+                process_array[i].page_directory = (uint64_t)get_current_cpu()->page_table;
             }
             process_array[i].rsp = (uint64_t)ISF;
             process_array[i].is_ORS = false;
-            if (get_current_data()->current_process == 0x0)
+            if (get_current_cpu()->current_process == 0x0)
             {
-                get_current_data()->current_process = &process_array[i];
+                get_current_cpu()->current_process = &process_array[i];
             }
 
             unlock((&process_creator_lock));
@@ -219,6 +229,7 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
     }
     else
     {
+        unlock((&process_creator_lock));
         last_process = 0;
         return init_process(entry_point, start_direct, name, user, cpu_target);
     }
@@ -240,14 +251,14 @@ extern "C" uint64_t switch_context(InterruptStackFrame *current_Isf, process *ne
         }
         return (uint64_t)current_Isf; // early return
     }
-    if (get_current_data()->current_process == NULL)
+    if (get_current_cpu()->current_process == NULL)
     {
         // current_Isf = (InterruptStackFrame *)next->rsp;
         // memcpy(current_Isf, (void *)next->rsp, sizeof(InterruptStackFrame));
         next->current_process_state = process_state::PROCESS_RUNNING;
 
-        get_current_data()->current_process = next;
-        load_sse_context(get_current_data()->current_process->sse_context);
+        get_current_cpu()->current_process = next;
+        load_sse_context(get_current_cpu()->current_process->sse_context);
         task_update_switch(next);
         if (cpu_wait)
         {
@@ -257,15 +268,15 @@ extern "C" uint64_t switch_context(InterruptStackFrame *current_Isf, process *ne
     }
     else
     {
-        get_current_data()->current_process->current_process_state = PROCESS_WAITING;
-        get_current_data()->current_process->rsp = (uint64_t)current_Isf;
-        save_sse_context(get_current_data()->current_process->sse_context);
+        get_current_cpu()->current_process->current_process_state = PROCESS_WAITING;
+        get_current_cpu()->current_process->rsp = (uint64_t)current_Isf;
+        save_sse_context(get_current_cpu()->current_process->sse_context);
         //memcpy(current_Isf, (void *)next->rsp, sizeof(InterruptStackFrame));
         //  current_Isf->rsp = next->rsp;
         // current_Isf = (InterruptStackFrame *)next->rsp;
         next->current_process_state = process_state::PROCESS_RUNNING;
-        get_current_data()->current_process = next;
-        load_sse_context(get_current_data()->current_process->sse_context);
+        get_current_cpu()->current_process = next;
+        load_sse_context(get_current_cpu()->current_process->sse_context);
         task_update_switch(next);
         if (cpu_wait)
         {
@@ -279,7 +290,7 @@ extern "C" process *get_next_process(uint64_t current_id)
 {
     if (process_locked)
     {
-        return get_current_data()->current_process;
+        return get_current_cpu()->current_process;
     }
 
     uint64_t dad = apic::the()->get_current_processor_id();
@@ -314,9 +325,9 @@ extern "C" process *get_next_process(uint64_t current_id)
 
     log("proc", LOG_ERROR) << "no process found";
     log("proc", LOG_ERROR) << "from cpu : " << apic::the()->get_current_processor_id();
-    log("proc", LOG_ERROR) << "maybe from : " << get_current_data()->current_process->process_name;
+    log("proc", LOG_ERROR) << "maybe from : " << get_current_cpu()->current_process->process_name;
     dump_process();
-    return get_current_data()->current_process;
+    return get_current_cpu()->current_process;
 }
 uint16_t counter = 0;
 extern "C" uint64_t irq_0_process_handler(InterruptStackFrame *isf)
@@ -345,7 +356,7 @@ extern "C" uint64_t irq_0_process_handler(InterruptStackFrame *isf)
             }
         }
     }
-    if (get_current_data()->current_process == NULL)
+    if (get_current_cpu()->current_process == NULL)
     {
         process *i = get_next_process(0);
         if (i == 0)
@@ -357,7 +368,7 @@ extern "C" uint64_t irq_0_process_handler(InterruptStackFrame *isf)
     }
     else
     {
-        process *i = get_next_process(get_current_data()->current_process->pid);
+        process *i = get_next_process(get_current_cpu()->current_process->pid);
         if (i == nullptr)
         {
             log("proc", LOG_INFO) << "get next process returned nullptr";
@@ -373,7 +384,7 @@ extern "C" void task_update_switch(process *next)
 
     tss_set_rsp0((uint64_t)next->stack + PROCESS_STACK_SIZE);
 
-    get_current_data()->page_table = (uint64_t *)next->page_directory;
+    get_current_cpu()->page_table = (uint64_t *)next->page_directory;
     update_paging();
 }
 
@@ -423,7 +434,7 @@ process_message *send_message(uint64_t data_addr, uint64_t data_length, const ch
                         uint64_t memory_kernel_copy = (uint64_t)malloc(data_length);
                         memcpy((void *)memory_kernel_copy, (void *)data_addr, data_length);
                         todo->content_address = memory_kernel_copy;
-                        todo->from_pid = get_current_data()->current_process->pid;
+                        todo->from_pid = get_current_cpu()->current_process->pid;
                         todo->to_pid = process_array[i].pid;
                         todo->response = -1;
                         process_message *copy = (process_message *)malloc(sizeof(process_message));
@@ -445,7 +456,7 @@ process_message *send_message(uint64_t data_addr, uint64_t data_length, const ch
                         uint64_t memory_kernel_copy = (uint64_t)malloc(data_length);
                         memcpy((void *)memory_kernel_copy, (void *)data_addr, data_length);
                         todo->content_address = memory_kernel_copy;
-                        todo->from_pid = get_current_data()->current_process->pid;
+                        todo->from_pid = get_current_cpu()->current_process->pid;
                         todo->to_pid = process_array[i].pid;
                         todo->response = -1;
                         process_message *copy = (process_message *)malloc(sizeof(process_message));
@@ -482,11 +493,11 @@ process_message *read_message()
 {
     for (uint64_t i = 0; i < MAX_PROCESS_MESSAGE_QUEUE; i++)
     {
-        if (get_current_data()->current_process->msg_list[i].entry_free_to_use == false)
+        if (get_current_cpu()->current_process->msg_list[i].entry_free_to_use == false)
         {
-            if (get_current_data()->current_process->msg_list[i].has_been_readed == false)
+            if (get_current_cpu()->current_process->msg_list[i].has_been_readed == false)
             {
-                return &get_current_data()->current_process->msg_list[i];
+                return &get_current_cpu()->current_process->msg_list[i];
             }
         }
     }
@@ -500,7 +511,7 @@ uint64_t message_response(process_message *message_id)
         log("process", LOG_ERROR) << "not valid pid in message response" << message_id->to_pid;
         return -1;
     }
-    if (message_id->from_pid != get_current_data()->current_process->pid)
+    if (message_id->from_pid != get_current_cpu()->current_process->pid)
     {
         log("process", LOG_ERROR) << "not valid process from" << message_id->from_pid;
         return -1;
@@ -535,14 +546,14 @@ void set_on_request_service(bool is_ORS)
 {
     if (is_ORS == true)
     {
-        log("process", LOG_INFO) << "setting process : " << get_current_data()->current_process->process_name << " (on request service mode)";
+        log("process", LOG_INFO) << "setting process : " << get_current_cpu()->current_process->process_name << " (on request service mode)";
     }
-    get_current_data()->current_process->is_ORS = is_ORS;
-    get_current_data()->current_process->should_be_active = false;
+    get_current_cpu()->current_process->is_ORS = is_ORS;
+    get_current_cpu()->current_process->should_be_active = false;
 }
 void on_request_service_update()
 {
-    get_current_data()->current_process->should_be_active = false;
+    get_current_cpu()->current_process->should_be_active = false;
 }
 uint64_t get_process_global_data_copy(uint64_t offset, const char *process_name)
 {
@@ -566,13 +577,26 @@ uint64_t get_process_global_data_copy(uint64_t offset, const char *process_name)
 }
 void *get_current_process_global_data(uint64_t offset, uint64_t length)
 {
-    if (get_current_data()->current_process->global_process_memory_length < offset + length)
+    if (get_current_cpu()->current_process->global_process_memory_length < offset + length)
     {
         log("process", LOG_ERROR) << "getting out of range process data";
         return nullptr;
     }
     else
     {
-        return get_current_data()->current_process->global_process_memory + offset;
+        return get_current_cpu()->current_process->global_process_memory + offset;
     }
+}
+void set_on_interrupt_process(uint8_t added_int)
+{
+    get_current_cpu()->current_process->is_on_interrupt_process = true;
+    for (int i = 0; i < 8; i++)
+    {
+        if (get_current_cpu()->current_process->interrupt_handle_list[i] == 0)
+        {
+            get_current_cpu()->current_process->interrupt_handle_list[i] = added_int;
+            return;
+        }
+    }
+    log("process", LOG_ERROR) << "no free interrupt entry for process", get_current_cpu()->current_process->process_name;
 }

@@ -31,17 +31,17 @@ struct raw_window_data{
 sys::pixel* front_buffer;
 sys::pixel* back_buffer;
 uint64_t real_gbuffer_addr = 0x0;
-uint64_t scr_width = 0;
-uint64_t scr_height = 0;
+uint64_t screen_width = 0;
+uint64_t screen_height = 0;
 uint64_t window_count = 0;
 void draw_window(raw_window_data window, sys::pixel* buffer){
     const uint64_t win_width = window.width;
     const uint64_t win_height = window.height;
     for(uint64_t x = 0; x < win_width; x++){
         for(uint64_t y = 0; y < win_height; y++){
-            const uint64_t pos_f = (x+window.px) + (y+window.py) *scr_width;
+            const uint64_t pos_f = (x+window.px) + (y+window.py) *screen_width;
             const uint64_t pos_t = (x) + (y) * win_width;
-            if(pos_f > scr_width * scr_height){
+            if(pos_f > screen_width * screen_height){
                 return;
             }
             buffer[pos_f].pix = window.window_front_buffer[pos_t].pix;
@@ -150,11 +150,11 @@ char main_cursor_mouse_buffer[] = {
 void draw_mouse(uint64_t x,uint64_t y){
     x++;
     y++;
-    if(x >= (scr_width - m_width)){
-        x = scr_width- m_width;
+    if(x >= (screen_width - m_width)){
+        x = screen_width- m_width;
     }
-    if(y >= scr_height- m_height){
-        y = scr_height- m_height;
+    if(y >= screen_height- m_height){
+        y = screen_height- m_height;
     }
     for(uint64_t ix = 0; ix < m_width; ix++){
         for(uint64_t iy = 0; iy < m_height; iy++){
@@ -163,7 +163,7 @@ void draw_mouse(uint64_t x,uint64_t y){
               if(m_col == 0){
                 continue;
             }
-              const uint64_t m_toscreen_idx = (ix + x) + (iy + y) * scr_width;
+              const uint64_t m_toscreen_idx = (ix + x) + (iy + y) * screen_width;
 
             if(m_col == 1){
                 back_buffer[m_toscreen_idx] = sys::pixel(255,255,255);
@@ -194,16 +194,16 @@ int main(){
 
     real_gbuffer_addr = sys::get_graphic_buffer_addr();
     front_buffer = (sys::pixel*)real_gbuffer_addr;
-    scr_width = sys::get_screen_width();
-    scr_height = sys::get_screen_height();
-    back_buffer = (sys::pixel*)sys::service_malloc(scr_width*scr_height*sizeof (uint32_t));
+    screen_width = sys::get_screen_width();
+    screen_height = sys::get_screen_height();
+    back_buffer = (sys::pixel*)sys::service_malloc(screen_width*screen_height*sizeof (uint32_t));
     window_list = (raw_window_data*)sys::service_malloc(MAX_WINDOW * sizeof (raw_window_data));
     for(int i = 0; i < MAX_WINDOW; i++){
         window_list[i].used = false;
     }
     printf("g buffer addr   : %x \n",real_gbuffer_addr);
-    printf("g buffer width  : %x \n",scr_width);
-    printf("g buffer height : %x \n",scr_height);
+    printf("g buffer width  : %x \n",screen_width);
+    printf("g buffer height : %x \n",screen_height);
     uint32_t soff = 0;
     while (true) {
         // read all message
@@ -221,7 +221,7 @@ int main(){
 
         soff++;
         sys::pixel r = sys::pixel(soff);
-        raw_clear_buffer(back_buffer, scr_width * scr_height, soff);
+        raw_clear_buffer(back_buffer, screen_width * screen_height, soff);
         if(window_count != 0){
             for(int i = 0; i < window_count; i++){
                 if(window_list[i].used == true){
@@ -233,7 +233,7 @@ int main(){
         draw_mouse(m_x,m_y);
 
 
-        swap_buffer(front_buffer, back_buffer, scr_width*scr_height);
+        swap_buffer(front_buffer, back_buffer, screen_width*screen_height);
     }
     return 1;
 }

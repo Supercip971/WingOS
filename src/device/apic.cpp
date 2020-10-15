@@ -205,7 +205,7 @@ void apic::set_raw_redirect(uint8_t vector, uint32_t target_gsi, uint16_t flags,
     io_write(table[io_apic_target]->ioapic_addr, io_reg + 1, (uint32_t)(end >> 32));
 }
 
-void apic::send_int(uint8_t cpu, uint32_t interrupt_num)
+void apic::send_ipi(uint8_t cpu, uint32_t interrupt_num)
 {
     interrupt_num = (1 << 14) | interrupt_num;
     write(0x310, (cpu << 24));

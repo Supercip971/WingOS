@@ -2,7 +2,7 @@
 #include <device/acpi.h>
 #include <device/apic.h>
 #include <device/hpet.h>
-#include <loggging.h>
+#include <logging.h>
 hpet main_hpet;
 hpet::hpet()
 {

@@ -1,6 +1,6 @@
 #include <arch/arch.h>
 #include <device/ps_mouse.h>
-#include <loggging.h>
+#include <logging.h>
 ps_mouse main_ps_mouse;
 ps_mouse::ps_mouse()
 {

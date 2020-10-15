@@ -9,7 +9,7 @@
 #include <device/apic.h>
 #include <device/local_data.h>
 #include <kernel.h>
-#include <loggging.h>
+#include <logging.h>
 #include <utility.h>
 #pragma GCC optimize("O0")
 extern "C" void irq0_first_jump();

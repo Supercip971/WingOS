@@ -1,7 +1,7 @@
 #include <arch/arch.h>
 #include <arch/mem/liballoc.h>
 #include <device/pci.h>
-#include <loggging.h>
+#include <logging.h>
 pci_system main_system;
 // the function device_code_to_string is taken from DripOS thank you <3
 // there is not license so i don't know if i should put some legal thing but yeah

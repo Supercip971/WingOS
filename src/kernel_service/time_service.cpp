@@ -1,7 +1,7 @@
 #include <arch/process.h>
 #include <device/rtc.h>
 #include <kernel_service/time_service.h>
-#include <loggging.h>
+#include <logging.h>
 
 enum TIME_SERVICE_REQUEST_CODE
 {

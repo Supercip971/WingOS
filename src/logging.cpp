@@ -1,9 +1,9 @@
 #include <com.h>
-#include <loggging.h>
-loggging::loggging()
+#include <logging.h>
+logging::logging()
 {
 }
-void loggging::set_log_type(const char *data, log_state log_state)
+void logging ::set_log_type(const char *data, log_state log_state)
 {
     if (log_state == 0)
     {
@@ -27,18 +27,18 @@ void loggging::set_log_type(const char *data, log_state log_state)
         printf("\n\033[4m\033[1m\033[31m [ FATAL ] [ %s ] : \033[0m", data);
     }
 }
-loggging loggging::operator<<(const char *string)
+logging logging ::operator<<(const char *string)
 {
     printf(string);
     return *this;
 }
-loggging loggging::operator<<(uint64_t address)
+logging logging ::operator<<(uint64_t address)
 {
     printf(" %x ", address);
     return *this;
 }
-loggging main_logging_system;
-loggging log(const char *data, log_state color_mode)
+logging main_logging_system;
+logging log(const char *data, log_state color_mode)
 {
 
     main_logging_system.set_log_type(data, color_mode);

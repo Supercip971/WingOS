@@ -1,7 +1,7 @@
 #include <arch/process.h>
 #include <device/ps_mouse.h>
 #include <kernel_service/ps2_device_service.h>
-#include <loggging.h>
+#include <logging.h>
 struct raw_request_data
 {
 

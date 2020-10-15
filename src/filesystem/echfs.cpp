@@ -3,7 +3,7 @@
 #include <device/ata_driver.h>
 #include <filesystem/echfs.h>
 #include <kernel.h>
-#include <loggging.h>
+#include <logging.h>
 #include <utility.h>
 echfs::echfs()
 {

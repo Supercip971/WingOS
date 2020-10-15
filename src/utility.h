@@ -1,6 +1,6 @@
 #include <arch/mem/liballoc.h>
 #include <int_value.h>
-#include <loggging.h>
+#include <logging.h>
 inline void kitoa(char *buf, int base, int d)
 {
     char *p = buf;

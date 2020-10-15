@@ -9,13 +9,13 @@ enum log_state
     LOG_WARNING = 4
 };
 
-class loggging
+class logging
 {
 public:
-    loggging();
+    logging();
     void set_log_type(const char *data, log_state log_state);
-    loggging operator<<(const char *string);
-    loggging operator<<(uint64_t address);
+    logging operator<<(const char *string);
+    logging operator<<(uint64_t address);
 };
 
-loggging log(const char *data, log_state color_mode);
+logging log(const char *data, log_state color_mode);

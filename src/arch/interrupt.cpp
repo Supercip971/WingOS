@@ -12,7 +12,7 @@
 #include <device/pit.h>
 #include <device/ps_mouse.h>
 #include <kernel.h>
-#include <loggging.h>
+#include <logging.h>
 #include <syscall.h>
 #include <utility.h>
 #pragma GCC optimize("-O0")

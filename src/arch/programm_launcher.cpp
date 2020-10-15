@@ -4,7 +4,7 @@
 #include <arch/programm_launcher.h>
 #include <arch/smp.h>
 #include <kernel.h>
-#include <loggging.h>
+#include <logging.h>
 #include <utility.h>
 void load_segment(process *pro, uint64_t source, uint64_t size, uint64_t dest, uint64_t destsize)
 {

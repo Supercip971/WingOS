@@ -2,7 +2,7 @@
 #include <arch/mem/liballoc.h>
 #include <arch/sse.h>
 #include <device/local_data.h>
-#include <loggging.h>
+#include <logging.h>
 #pragma optimize("-O0")
 extern "C" void sse_init(void);
 extern "C" void avx_init(void);

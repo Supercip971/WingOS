@@ -1,7 +1,7 @@
 #pragma once
 #include <arch/arch.h>
 #include <arch/mem/physical.h>
-#include <loggging.h>
+#include <logging.h>
 #include <stivale_struct.h>
 #define KERNEL_PHYS_OFFSET ((uint64_t)0xffffffff80000000)
 #define MEM_PHYS_OFFSET ((uint64_t)0xffff800000000000)
@@ -21,6 +21,7 @@
 extern "C" void set_paging();
 typedef uint64_t main_page_table;
 
+extern main_page_table *kernel_super_dir;
 extern main_page_table *main_pml4;
 inline void set_paging_dir(uint64_t pd)
 {

@@ -2,7 +2,7 @@
 #include <arch/mem/liballoc.h>
 #include <com.h>
 #include <device/ata_driver.h>
-#include <loggging.h>
+#include <logging.h>
 ata_driver main_driver;
 int waiting_for_irq = 0;
 ata_driver::ata_driver()

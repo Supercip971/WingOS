@@ -1,6 +1,6 @@
 #include <arch/lock.h>
 #include <arch/process.h>
-#include <loggging.h>
+#include <logging.h>
 #include <syscall.h>
 typedef uint64_t (*syscall_functions)(uint64_t syscall_id, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5);
 

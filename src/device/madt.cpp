@@ -2,7 +2,7 @@
 #include <com.h>
 #include <device/acpi.h>
 #include <device/madt.h>
-#include <loggging.h>
+#include <logging.h>
 madt main_madt;
 madt::madt()
 {

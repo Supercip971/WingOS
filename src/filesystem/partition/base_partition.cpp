@@ -2,7 +2,7 @@
 #include <com.h>
 #include <device/ata_driver.h>
 #include <filesystem/partition/base_partition.h>
-#include <loggging.h>
+#include <logging.h>
 base_partition::base_partition()
 {
 }

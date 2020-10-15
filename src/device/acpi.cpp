@@ -2,7 +2,7 @@
 #include <com.h>
 #include <device/acpi.h>
 #include <device/apic.h>
-#include <loggging.h>
+#include <logging.h>
 #include <utility.h>
 acpi main_acpi;
 

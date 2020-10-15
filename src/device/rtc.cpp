@@ -1,7 +1,7 @@
 #include <arch/arch.h>
 #include <device/rtc.h>
 #include <kernel.h>
-#include <loggging.h>
+#include <logging.h>
 RTC main_rtc;
 RTC::RTC()
 {

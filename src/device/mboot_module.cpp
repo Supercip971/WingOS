@@ -2,7 +2,7 @@
 #include <com.h>
 #include <device/mboot_module.h>
 #include <kernel.h>
-#include <loggging.h>
+#include <logging.h>
 #include <utility.h>
 mboot_module main_boot_module_list;
 mboot_module::mboot_module()

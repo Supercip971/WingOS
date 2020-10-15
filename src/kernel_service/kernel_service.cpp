@@ -6,7 +6,7 @@
 #include <kernel_service/print_service.h>
 #include <kernel_service/ps2_device_service.h>
 #include <kernel_service/time_service.h>
-#include <loggging.h>
+#include <logging.h>
 
 void add_kernel_service(func entry, const char *service_name)
 {

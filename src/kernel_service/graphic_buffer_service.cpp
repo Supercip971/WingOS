@@ -2,7 +2,7 @@
 #include <arch/mem/virtual.h>
 #include <arch/process.h>
 #include <kernel_service/graphic_buffer_service.h>
-#include <loggging.h>
+#include <logging.h>
 #include <stivale_struct.h>
 
 void graphic_buffer_service()

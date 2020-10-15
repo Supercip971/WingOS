@@ -1,7 +1,7 @@
 #include <arch/mem/liballoc.h>
 #include <arch/process.h>
 #include <kernel_service/memory_service.h>
-#include <loggging.h>
+#include <logging.h>
 void memory_service()
 {
     log("memory_service", LOG_INFO) << "loaded memory service";

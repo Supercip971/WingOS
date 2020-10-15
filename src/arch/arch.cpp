@@ -26,7 +26,7 @@
 #include <filesystem/partition/base_partition.h>
 #include <kernel.h>
 #include <kernel_service/kernel_service.h>
-#include <loggging.h>
+#include <logging.h>
 
 __attribute__((section(".stivalehdr"), used))
 stivale_header header = {.stack = (uintptr_t)stack + (sizeof(char) * STACK_SIZE),

@@ -1,6 +1,6 @@
 #include <arch/mem/liballoc.h>
 #include <com.h>
-#include <loggging.h>
+#include <logging.h>
 /**  Durand's Amazing Super Duper Memory functions.  */
 
 #pragma GCC optimize("-O0")

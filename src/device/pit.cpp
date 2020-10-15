@@ -3,7 +3,7 @@
 #include <device/apic.h>
 #include <device/pit.h>
 #include <kernel.h>
-#include <loggging.h>
+#include <logging.h>
 #pragma GCC optimize("-O0")
 PIT global_PIT;
 

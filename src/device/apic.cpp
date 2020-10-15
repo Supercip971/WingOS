@@ -5,7 +5,7 @@
 #include <device/acpi.h>
 #include <device/apic.h>
 #include <device/local_data.h>
-#include <loggging.h>
+#include <logging.h>
 apic main_apic = apic();
 
 enum ioapic_register

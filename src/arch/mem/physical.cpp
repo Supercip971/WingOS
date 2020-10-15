@@ -1,7 +1,7 @@
 #include <arch/mem/physical.h>
 #include <com.h>
 #include <kernel.h>
-#include <loggging.h>
+#include <logging.h>
 extern "C" uint64_t kernel_end;
 extern "C" uint64_t addr_kernel_start;
 

@@ -10,7 +10,7 @@
 #include <device/local_data.h>
 #include <device/pit.h>
 #include <kernel.h>
-#include <loggging.h>
+#include <logging.h>
 #define TRAMPOLINE_START 0x1000
 #define TRAMPOLINE_PAGING_ADDR 0x4000
 

@@ -2,7 +2,7 @@
 #include <arch/smp.h>
 #include <device/apic.h>
 #include <device/local_data.h>
-#include <loggging.h>
+#include <logging.h>
 local_data procData[smp::max_cpu];
 
 void set_current_data(local_data *dat)

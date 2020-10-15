@@ -3,7 +3,7 @@
 #include <com.h>
 #include <device/local_data.h>
 #include <kernel.h>
-#include <loggging.h>
+#include <logging.h>
 #pragma GCC optimize("-O0")
 /* flags */
 tss_t tss;

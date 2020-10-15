@@ -1,6 +1,6 @@
 #pragma once
 #include <int_value.h>
-#include <loggging.h>
+#include <logging.h>
 #include <stdint.h>
 #include <stivale_struct.h>
 #define X64

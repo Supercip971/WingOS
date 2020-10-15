@@ -62,6 +62,10 @@ namespace sys
             };
             uint32_t pix;
         };
+        pixel()
+        {
+            pix = 0;
+        };
         pixel(uint32_t p)
         {
             pix = p;

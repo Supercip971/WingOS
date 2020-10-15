@@ -18,7 +18,7 @@ namespace gui
         // if you don't want a update_function give just a nullptr,
         // it will just skip the update
         // todo: add a after_draw_update() and a before_draw_update()
-        window(const char *name, uint64_t window_width, uint64_t window_height);
+        window(const char *name, uint64_t window_width, uint64_t window_height) __attribute__((__target__("no-sse")));
         void add_widget(widget *wdget);
 
         // get mouse position inside the window

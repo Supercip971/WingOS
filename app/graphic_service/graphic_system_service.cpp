@@ -4,7 +4,7 @@
 #include <klib/raw_graphic.h>
 #include <stdio.h>
 #include <klib/graphic_system.h>
-
+#include <stddef.h>
 #include <klib/mouse.h>
 #include <klib/process_message.h>
 #include <klib/mem_util.h>
@@ -196,8 +196,9 @@ int main(){
     front_buffer = (sys::pixel*)real_gbuffer_addr;
     screen_width = sys::get_screen_width();
     screen_height = sys::get_screen_height();
-    back_buffer = (sys::pixel*)sys::service_malloc(screen_width*screen_height*sizeof (uint32_t));
-    window_list = (raw_window_data*)sys::service_malloc(MAX_WINDOW * sizeof (raw_window_data));
+    back_buffer = new sys::pixel[screen_width*screen_height] ;
+    window_list = new raw_window_data[MAX_WINDOW];
+
     for(int i = 0; i < MAX_WINDOW; i++){
         window_list[i].used = false;
     }

@@ -173,7 +173,7 @@ bool is_error(int intno)
 
 extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
 {
-    //lock((&lock));
+    uint64_t nresult = reinterpret_cast<uint64_t>(stackframe);
     if (rip_backtrace[32] != stackframe->rip)
     {
         for (int i = 0; i <= 31; i++)
@@ -231,13 +231,7 @@ extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
     else if (stackframe->int_no == 32)
     {
         PIT::the()->update();
-        uint64_t result = irq_0_process_handler(stackframe);
-        apic::the()->EOI();
-        return result;
-    }
-    else if (stackframe->int_no == 33)
-    {
-        unsigned char scan_code = inb(0x60);
+        nresult = irq_0_process_handler(stackframe);
     }
     else if (stackframe->int_no == 32 + 12)
     {
@@ -247,23 +241,17 @@ extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
     {
         ata_driver::the()->irq_handle(stackframe->int_no - 32);
     }
-
     else if (stackframe->int_no == 100)
     {
 
-        uint64_t result = irq_0_process_handler(stackframe);
-        apic::the()->EOI();
-        return result;
+        nresult = irq_0_process_handler(stackframe);
     }
     else if (stackframe->int_no == 0xf0)
     {
         printf("apic : Nmi : possible hardware error :( \n");
     }
-    else if (stackframe->int_no == 0xff)
-    {
-    }
 
     apic::the()->EOI();
-    return (uint64_t)stackframe;
+    return nresult;
     // unlock((&lock));
 }

@@ -161,13 +161,13 @@ void kitoa64(char *buf, int base, int64_t d)
     }
 }
 
-template <class T>
-void kitoaT(char *buf, int base, T d)
+template <>
+void kitoaT(char *buf, int base, unsigned long d)
 {
     char *p = buf;
     char *p1, *p2;
-    T ud = d;
-    T divisor = 10;
+    unsigned long ud = d;
+    unsigned long divisor = 10;
 
     if (base == 'd' && d < 0)
     {
@@ -183,7 +183,7 @@ void kitoaT(char *buf, int base, T d)
 
     do
     {
-        T remainder = ud % divisor;
+        unsigned long remainder = ud % divisor;
 
         *p++ = (remainder < 10) ? remainder + '0' : remainder + 'a' - 10;
     } while (ud /= divisor);
@@ -233,4 +233,9 @@ size_t strlen(const char *s)
         i++;
     }
     return i;
+}
+
+extern "C" void __cxa_pure_virtual()
+{
+    log("virtual", LOG_ERROR) << "error while trying to call a virtual function D:";
 }

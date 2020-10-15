@@ -12,7 +12,9 @@ int strncmp(const char *s1, const char *s2, size_t n);
 int strcmp(const char *s1, const char *s2);
 size_t strlen(const char *s);
 
-template <class T>
+template <typename T>
 void kitoaT(char *buf, int base, T d);
+template <unsigned long>
+void kitoaT(char *buf, int base, unsigned long d);
 void kitoa(char *buf, int base, int d);
 void kitoa64(char *buf, int base, int64_t d);

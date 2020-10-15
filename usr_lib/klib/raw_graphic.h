@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
-namespace sys {
+namespace sys
+{
     enum graphic_buffert_service_request
     {
         GET_CURRENT_BUFFER_ADDR = 1,
@@ -18,15 +19,18 @@ namespace sys {
     uint64_t get_screen_height();
     // raw pos is used for 'uint64_t' pos to raw pos
 
-    struct real_pos{
+    struct real_pos
+    {
         uint32_t x;
         uint32_t y;
-    }__attribute__((packed));
+    } __attribute__((packed));
 
-    struct raw_pos{
-        union{
+    struct raw_pos
+    {
+        union
+        {
             real_pos rpos;
             uint64_t pos;
         };
-    }__attribute__((packed));
-}
+    } __attribute__((packed));
+} // namespace sys

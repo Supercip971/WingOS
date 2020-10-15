@@ -1,7 +1,8 @@
 #pragma once
 #include <stdint.h>
 
-namespace sys {
+namespace sys
+{
     int32_t get_mouse_x();
     int32_t get_mouse_y();
     bool get_mouse_button(int button_id);
@@ -43,4 +44,4 @@ namespace sys {
         GET_MOUSE_RIGHT_CLICK = 1,
         GET_MOUSE_MIDDLE_CLICK = 2
     };
-}
+} // namespace sys

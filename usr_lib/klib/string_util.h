@@ -1,6 +1,7 @@
 #pragma once
 
-namespace sys {
+namespace sys
+{
 
     template <class T>
     inline void int_to_string(char *buf, int base, T d)
@@ -39,4 +40,4 @@ namespace sys {
             p2--;
         }
     }
-}
+} // namespace sys

@@ -1,15 +1,19 @@
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
 #include <klib/kernel_util.h>
 #include <klib/string_util.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 char temp_buf[64];
 
-int vsn_printf_out(bool just_print, char* buffer, uint64_t count, const char* data ){
-    if(just_print == true){
+int vsn_printf_out(bool just_print, char *buffer, uint64_t count, const char *data)
+{
+    if (just_print == true)
+    {
         sys::write_console(data, count);
         return 1;
-    }else if(buffer != nullptr){
+    }
+    else if (buffer != nullptr)
+    {
         strncpy(buffer, data, count);
         buffer = buffer + count;
         return 1;
@@ -17,7 +21,8 @@ int vsn_printf_out(bool just_print, char* buffer, uint64_t count, const char* da
     return 0;
 }
 
-int vsn_printf(bool just_print, char* buffer /* nullptr say no buffer just print it*/, uint64_t count, const char* format, va_list argument){
+int vsn_printf(bool just_print, char *buffer /* nullptr say no buffer just print it*/, uint64_t count, const char *format, va_list argument)
+{
     size_t written = 0;
     while (*format != '\0')
     {
@@ -35,7 +40,7 @@ int vsn_printf(bool just_print, char* buffer /* nullptr say no buffer just print
                 // TODO: Set errno to EOVERFLOW.
                 return -1;
             }
-            if (!vsn_printf_out(just_print,buffer, amount, format))
+            if (!vsn_printf_out(just_print, buffer, amount, format))
                 return written;
             format += amount;
             written += amount;
@@ -53,7 +58,7 @@ int vsn_printf(bool just_print, char* buffer /* nullptr say no buffer just print
                 // TODO: Set errno to EOVERFLOW.
                 return -1;
             }
-            if (!vsn_printf_out(just_print,buffer, sizeof (c), &c))
+            if (!vsn_printf_out(just_print, buffer, sizeof(c), &c))
                 return 0;
             written++;
         }
@@ -67,7 +72,7 @@ int vsn_printf(bool just_print, char* buffer /* nullptr say no buffer just print
                 // TODO: Set errno to EOVERFLOW.
                 return -1;
             }
-            if (!vsn_printf_out(just_print,buffer, len, str))
+            if (!vsn_printf_out(just_print, buffer, len, str))
                 return -1;
             written += len;
         }
@@ -75,10 +80,10 @@ int vsn_printf(bool just_print, char* buffer /* nullptr say no buffer just print
         {
             format++;
             uint64_t d = va_arg(argument, uint64_t);
-                if (d == 0)
+            if (d == 0)
             {
                 char c = '0';
-                vsn_printf_out(just_print,buffer, sizeof (c), &c);
+                vsn_printf_out(just_print, buffer, sizeof(c), &c);
                 written += 1;
             }
             else
@@ -94,11 +99,10 @@ int vsn_printf(bool just_print, char* buffer /* nullptr say no buffer just print
                     // TODO: Set errno to EOVERFLOW.
                     return -1;
                 }
-                if (!vsn_printf_out(just_print,buffer, len, temp_buf))
+                if (!vsn_printf_out(just_print, buffer, len, temp_buf))
                     return -1;
-              written += len;
+                written += len;
             }
-
         }
         else
         {
@@ -109,7 +113,7 @@ int vsn_printf(bool just_print, char* buffer /* nullptr say no buffer just print
                 // TODO: Set errno to EOVERFLOW.
                 return -1;
             }
-            if (!vsn_printf_out(just_print,buffer, len, format))
+            if (!vsn_printf_out(just_print, buffer, len, format))
                 return -1;
             written += len;
             format += len;
@@ -118,7 +122,8 @@ int vsn_printf(bool just_print, char* buffer /* nullptr say no buffer just print
     return written;
 }
 
-int sprintf(char* buffer, const char* format, ...){
+int sprintf(char *buffer, const char *format, ...)
+{
     va_list va;
     va_start(va, format);
     int return_value = vsn_printf(false, buffer, 0, format, va);
@@ -126,7 +131,8 @@ int sprintf(char* buffer, const char* format, ...){
     return return_value;
 }
 
-int printf(const char* format, ...){
+int printf(const char *format, ...)
+{
     va_list va;
     va_start(va, format);
     int return_value = vsn_printf(true, nullptr, 0, format, va);
@@ -134,7 +140,8 @@ int printf(const char* format, ...){
     return return_value;
 }
 
-int vsprintf(char* buffer, const char* format, va_list vlist){
+int vsprintf(char *buffer, const char *format, va_list vlist)
+{
     int return_value = vsn_printf(false, buffer, 0, format, vlist);
     return return_value;
 }

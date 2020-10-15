@@ -1,10 +1,9 @@
 #pragma once
 #include <stdint.h>
 
-
-
 typedef long int time_t;
-namespace sys {
+namespace sys
+{
 
     enum TIME_SERVICE_REQUEST_CODE
     {
@@ -27,4 +26,4 @@ namespace sys {
 
     time_t get_time_total_sec();
 
-}
+} // namespace sys

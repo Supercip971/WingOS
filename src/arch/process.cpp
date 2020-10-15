@@ -20,6 +20,10 @@ process *nxt;
 bool process_locked = true;
 bool process_loaded = false;
 
+lock_type process_creator_lock = {0};
+uint64_t last_process = 0;
+uint8_t proc_last_selected_cpu = 0;
+
 lock_type task_lock = {0};
 
 void lock_process() { process_locked = true; }
@@ -30,11 +34,11 @@ extern "C" void reload_cr3();
 
 extern "C" void start_task()
 {
-    lock((&task_lock));
+    lock(&task_lock);
 }
 extern "C" void end_task()
 {
-    unlock((&task_lock));
+    unlock(&task_lock);
 }
 void main_process_1()
 {
@@ -52,7 +56,6 @@ void main_process_2()
     asm("sti");
     while (true)
     {
-
         asm("int 32");
     }
 }
@@ -88,29 +91,19 @@ void init_multi_process(func start)
     process_array = (process *)((uint64_t)malloc(sizeof(process) * MAX_PROCESS + 4096 /* for security */));
     get_current_cpu()->current_process = nullptr;
     printf("loading process 0 \n");
-    for (int i = 0; i < MAX_PROCESS; i++)
+    for (size_t i = 0; i < MAX_PROCESS; i++)
     {
         process_array[i].pid = i;
         process_array[i].current_process_state = process_state::PROCESS_AVAILABLE;
-        for (int j = 0; j < PROCESS_STACK_SIZE; j++)
-        {
-            process_array[i].stack[j] = 0;
-        }
+        memzero(process_array[i].stack, PROCESS_STACK_SIZE);
     }
 
-    log("proc", LOG_INFO) << "loading process 0";
     init_process(main_process_1, true, "testing1", false);
-
-    log("proc", LOG_INFO) << "loading process 1";
     init_process(main_process_2, true, "testing2", false);
-
-    log("proc", LOG_INFO) << "loading process 2";
     init_process(start, true, "kernel process", false);
     log("proc", LOG_INFO) << "loading smp process for cpus :" << smp::the()->processor_count;
-    for (int i = 0; i <= smp::the()->processor_count; i++)
+    for (size_t i = 0; i <= smp::the()->processor_count; i++)
     {
-
-        log("proc", LOG_INFO) << "loading process for cpu : " << i;
         init_process(process_smp_basic, true, "smp1", false, i);
         init_process(process_smp_basic_2, true, "smp2", false, i);
     }
@@ -121,11 +114,27 @@ void init_multi_process(func start)
     unlock_process();
     while (true)
     {
+        asm volatile("hlt");
     }
 }
-lock_type process_creator_lock = {0};
-uint64_t last_process = 0;
-uint8_t proc_last_selected_cpu = 0;
+
+uint64_t interpret_cpu_request(uint64_t cpu)
+{
+    if (cpu == -1)
+    {
+        return apic::the()->get_current_processor_id();
+    }
+    else if (cpu == -2)
+    {
+        proc_last_selected_cpu++;
+        if (proc_last_selected_cpu > smp::the()->processor_count)
+        {
+            proc_last_selected_cpu = 0;
+        }
+        cpu = proc_last_selected_cpu;
+    }
+    return cpu;
+}
 process *init_process(func entry_point, bool start_direct, const char *name, bool user, int cpu_target)
 {
     lock((&process_creator_lock));
@@ -139,78 +148,55 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
             process_state::PROCESS_AVAILABLE)
         {
             log("proc", LOG_INFO) << "adding process" << i << "entry : " << (uint64_t)entry_point << "name : " << name;
+            process_array[i].current_process_state = process_state::PROCESS_NOT_STARTED;
+
             if (start_direct == true)
             {
                 process_array[i].current_process_state = process_state::PROCESS_WAITING;
             }
-            else
-            {
-                process_array[i].current_process_state = process_state::PROCESS_NOT_STARTED;
-            }
-            int iname = 0;
-            for (iname = 0; iname < 128 && name[iname] != 0; iname++)
-            {
-                process_array[i].process_name[iname] = name[iname];
-            }
-            process_array[i].is_on_interrupt_process = false;
-            for (int j = 0; j < 8; j++)
-            {
-                process_array[i].interrupt_handle_list[j] = 0;
-            }
+
+            memcpy(process_array[i].process_name, name, strlen(name) + 1);
+
             process_array[i].global_process_memory = (uint8_t *)get_mem_addr((uint64_t)pmm_alloc(1));
             process_array[i].global_process_memory_length = 4096;
             memzero(process_array[i].global_process_memory, process_array[i].global_process_memory_length);
+
             process_array[i].last_message_used = 0;
-            process_array[i].process_name[iname] = 0;
             process_array[i].entry_point = (uint64_t)entry_point;
-            for (int j = 0; j < PROCESS_STACK_SIZE; j++)
-            {
-                process_array[i].stack[j] = 0;
-            }
+
+            memzero(process_array[i].stack, PROCESS_STACK_SIZE);
+
             process_array[i].rsp =
                 ((uint64_t)process_array[i].stack) + PROCESS_STACK_SIZE;
+
+            process_array[i].processor_target = interpret_cpu_request(cpu_target);
+
             for (uint64_t j = 0; j < MAX_PROCESS_MESSAGE_QUEUE; j++)
             {
                 process_array[i].msg_list[j].entry_free_to_use = true;
                 process_array[i].msg_list[j].message_id = j;
             }
-            if (cpu_target == -1)
-            {
 
-                process_array[i].processor_target = apic::the()->get_current_processor_id();
-            }
-            else
-            {
-                if (cpu_target == -2)
-                {
-                    proc_last_selected_cpu++;
-                    if (proc_last_selected_cpu > smp::the()->processor_count)
-                    {
-                        proc_last_selected_cpu = 0;
-                    }
-                    cpu_target = proc_last_selected_cpu;
-                }
-                process_array[i].processor_target = cpu_target;
-            }
             uint64_t *rsp = (uint64_t *)process_array[i].rsp;
             InterruptStackFrame *ISF = (InterruptStackFrame *)(rsp - (sizeof(InterruptStackFrame)));
-            memset(ISF, 0, sizeof(InterruptStackFrame));
+            memzero(ISF, sizeof(InterruptStackFrame));
             ISF->rip = (uint64_t)entry_point;
             ISF->ss = SLTR_KERNEL_DATA;
             ISF->cs = SLTR_KERNEL_CODE;
             ISF->rflags = 0x286;
             ISF->rsp = (uint64_t)ISF;
+            process_array[i].rsp = (uint64_t)ISF;
+            process_array[i].is_ORS = false;
+
             if (user)
             {
-
                 process_array[i].page_directory = (uint64_t)new_vmm_page_dir();
             }
             else
             {
                 process_array[i].page_directory = (uint64_t)get_current_cpu()->page_table;
             }
-            process_array[i].rsp = (uint64_t)ISF;
-            process_array[i].is_ORS = false;
+
             if (get_current_cpu()->current_process == 0x0)
             {
                 get_current_cpu()->current_process = &process_array[i];
@@ -242,7 +228,7 @@ extern "C" uint64_t switch_context(InterruptStackFrame *current_Isf, process *ne
     {
         return (uint64_t)current_Isf; // early return
     }
-    // log("proc", LOG_INFO) << "next process : " << next->process_name << "cpu : " << next->processor_target;
+
     if (next == NULL)
     {
         if (cpu_wait)
@@ -251,39 +237,23 @@ extern "C" uint64_t switch_context(InterruptStackFrame *current_Isf, process *ne
         }
         return (uint64_t)current_Isf; // early return
     }
-    if (get_current_cpu()->current_process == NULL)
-    {
-        // current_Isf = (InterruptStackFrame *)next->rsp;
-        // memcpy(current_Isf, (void *)next->rsp, sizeof(InterruptStackFrame));
-        next->current_process_state = process_state::PROCESS_RUNNING;
 
-        get_current_cpu()->current_process = next;
-        load_sse_context(get_current_cpu()->current_process->sse_context);
-        task_update_switch(next);
-        if (cpu_wait)
-        {
-            cpu_wait = false;
-        }
-        return next->rsp;
-    }
-    else
+    if (get_current_cpu()->current_process != NULL)
     {
         get_current_cpu()->current_process->current_process_state = PROCESS_WAITING;
         get_current_cpu()->current_process->rsp = (uint64_t)current_Isf;
         save_sse_context(get_current_cpu()->current_process->sse_context);
-        //memcpy(current_Isf, (void *)next->rsp, sizeof(InterruptStackFrame));
-        //  current_Isf->rsp = next->rsp;
-        // current_Isf = (InterruptStackFrame *)next->rsp;
-        next->current_process_state = process_state::PROCESS_RUNNING;
-        get_current_cpu()->current_process = next;
-        load_sse_context(get_current_cpu()->current_process->sse_context);
-        task_update_switch(next);
-        if (cpu_wait)
-        {
-            cpu_wait = false;
-        }
-        return next->rsp;
     }
+    next->current_process_state = process_state::PROCESS_RUNNING;
+    get_current_cpu()->current_process = next;
+    load_sse_context(get_current_cpu()->current_process->sse_context);
+    task_update_switch(next);
+
+    if (cpu_wait)
+    {
+        cpu_wait = false;
+    }
+    return next->rsp;
 }
 
 extern "C" process *get_next_process(uint64_t current_id)
@@ -309,45 +279,20 @@ extern "C" process *get_next_process(uint64_t current_id)
             return &process_array[i];
         }
     }
-    for (uint64_t i = 0; i < MAX_PROCESS; i++)
-    { // we do a loop
-        if ((process_array[i].current_process_state ==
-             process_state::PROCESS_WAITING) &&
-            i != 0 && process_array[i].processor_target == dad)
-        {
-            if (process_array[i].is_ORS == true && process_array[i].should_be_active == false)
-            {
-                continue;
-            }
-            return &process_array[i];
-        }
+    if (current_id != 0)
+    {
+        return get_next_process(0);
     }
-
     log("proc", LOG_ERROR) << "no process found";
     log("proc", LOG_ERROR) << "from cpu : " << apic::the()->get_current_processor_id();
     log("proc", LOG_ERROR) << "maybe from : " << get_current_cpu()->current_process->process_name;
     dump_process();
     return get_current_cpu()->current_process;
 }
-uint16_t counter = 0;
-extern "C" uint64_t irq_0_process_handler(InterruptStackFrame *isf)
+void send_switch_process_to_all_cpu()
 {
-
-    if (process_locked)
-    {
-        //log("proc", LOG_INFO) << "process locked";
-        return (uint64_t)isf;
-    }
-
     if (apic::the()->get_current_processor_id() == 0)
     {
-        /*    counter++;
-        if (counter > 500)
-        {
-            counter = 0;
-
-            dump_process();
-        }*/
         for (int i = 0; i <= smp::the()->processor_count; i++)
         {
             if (i != apic::the()->get_current_processor_id())
@@ -357,52 +302,51 @@ extern "C" uint64_t irq_0_process_handler(InterruptStackFrame *isf)
         }
     }
 }
-        process *i = get_next_process(0);
-        if (i == 0)
-        {
-            log("proc", LOG_INFO) << "get next process returned 0";
-            return (uint64_t)isf;
-        }
-        return switch_context(isf, i);
+extern "C" uint64_t irq_0_process_handler(InterruptStackFrame *isf)
+{
+    if (process_locked)
+    {
+        return (uint64_t)isf;
+    }
+    send_switch_process_to_all_cpu();
+
+    process *i = nullptr;
+    if (get_current_cpu()->current_process == NULL)
+    {
+        i = get_next_process(0);
     }
     else
     {
-        process *i = get_next_process(get_current_cpu()->current_process->pid);
-        if (i == nullptr)
-        {
-            log("proc", LOG_INFO) << "get next process returned nullptr";
-            log("proc", LOG_INFO) << "in cpu" << apic::the()->get_current_processor_id();
-            return (uint64_t)isf;
-        }
-        return switch_context(isf, i);
+        i = get_next_process(get_current_cpu()->current_process->pid);
     }
+    if (i == 0)
+    {
+        return (uint64_t)isf;
+    }
+    return switch_context(isf, i);
 }
 
 extern "C" void task_update_switch(process *next)
 {
-
     tss_set_rsp0((uint64_t)next->stack + PROCESS_STACK_SIZE);
-
     get_current_cpu()->page_table = (uint64_t *)next->page_directory;
     update_paging();
 }
 
 void add_thread_map(process *p, uint64_t from, uint64_t to, uint64_t length)
 {
-
     for (uint64_t i = 0; i < length; i++)
     {
-
         map_page((main_page_table *)p->page_directory, from + i * PAGE_SIZE, to + i * PAGE_SIZE, PAGE_TABLE_FLAGS);
     }
 }
+
 uint64_t get_pid_from_process_name(const char *name)
 {
-    for (int i = 0; i < MAX_PROCESS; i++)
+    for (size_t i = 0; i < MAX_PROCESS; i++)
     {
         if (process_array[i].current_process_state == PROCESS_WAITING || process_array[i].current_process_state == PROCESS_RUNNING)
         {
-
             if (strcmp(name, process_array[i].process_name) == 0)
             {
                 return process_array[i].pid;
@@ -411,9 +355,39 @@ uint64_t get_pid_from_process_name(const char *name)
     }
     return -1;
 }
+process_message *create_process_message(size_t tpid, uint64_t data_addr, uint64_t data_length)
+{
+    for (int j = process_array[tpid].last_message_used; j < MAX_PROCESS_MESSAGE_QUEUE; j++)
+    {
+        if (process_array[tpid].msg_list[j].entry_free_to_use == true)
+        {
+            process_array[tpid].last_message_used = j;
+            process_message *todo = &process_array[tpid].msg_list[j];
+            todo->entry_free_to_use = false;
+            todo->has_been_readed = false;
+            todo->content_length = data_length;
+            uint64_t memory_kernel_copy = (uint64_t)malloc(data_length);
+            memcpy((void *)memory_kernel_copy, (void *)data_addr, data_length);
+            todo->content_address = memory_kernel_copy;
+            todo->from_pid = get_current_cpu()->current_process->pid;
+            todo->to_pid = process_array[tpid].pid;
+            todo->response = -1;
+            process_message *copy = (process_message *)malloc(sizeof(process_message));
+            *copy = *todo;
+            copy->content_address = -1;
+            return copy;
+        }
+    }
+    if (process_array[tpid].last_message_used != 0)
+    {
+        process_array[tpid].last_message_used = 0;
+        return create_process_message(tpid, data_addr, data_length);
+    }
+    return nullptr;
+}
+
 process_message *send_message(uint64_t data_addr, uint64_t data_length, const char *to_process)
 {
-
     for (int i = 0; i < MAX_PROCESS; i++)
     {
         if (process_array[i].current_process_state == PROCESS_WAITING || process_array[i].current_process_state == PROCESS_RUNNING)
@@ -421,55 +395,12 @@ process_message *send_message(uint64_t data_addr, uint64_t data_length, const ch
 
             if (strcmp(to_process, process_array[i].process_name) == 0)
             {
-                for (int j = process_array[i].last_message_used; j < MAX_PROCESS_MESSAGE_QUEUE; j++)
-                {
-                    if (process_array[i].msg_list[j].entry_free_to_use == true)
-                    {
-                        process_array[i].last_message_used = j;
-                        process_message *todo = &process_array[i].msg_list[j];
-                        todo->entry_free_to_use = false;
-                        todo->has_been_readed = false;
-                        todo->content_length = data_length;
-                        uint64_t memory_kernel_copy = (uint64_t)malloc(data_length);
-                        memcpy((void *)memory_kernel_copy, (void *)data_addr, data_length);
-                        todo->content_address = memory_kernel_copy;
-                        todo->from_pid = get_current_cpu()->current_process->pid;
-                        todo->to_pid = process_array[i].pid;
-                        todo->response = -1;
-                        process_message *copy = (process_message *)malloc(sizeof(process_message));
-                        *copy = *todo;
-                        copy->content_address = -1;
-                        process_array[i].should_be_active = true;
-                        return copy;
-                    }
-                } // every left message has been checked
-                for (int j = 0; j < MAX_PROCESS_MESSAGE_QUEUE; j++)
-                {
-                    if (process_array[i].msg_list[j].entry_free_to_use == true)
-                    {
-                        process_array[i].last_message_used = 0;
-                        process_message *todo = &process_array[i].msg_list[j];
-                        todo->entry_free_to_use = false;
-                        todo->has_been_readed = false;
-                        todo->content_length = data_length;
-                        uint64_t memory_kernel_copy = (uint64_t)malloc(data_length);
-                        memcpy((void *)memory_kernel_copy, (void *)data_addr, data_length);
-                        todo->content_address = memory_kernel_copy;
-                        todo->from_pid = get_current_cpu()->current_process->pid;
-                        todo->to_pid = process_array[i].pid;
-                        todo->response = -1;
-                        process_message *copy = (process_message *)malloc(sizeof(process_message));
-                        *copy = *todo;
-                        copy->content_address = -1;
-                        process_array[i].should_be_active = true;
-                        return copy;
-                    }
-                }
+                process_array[i].should_be_active = true;
+                return create_process_message(i, data_addr, data_length);
             }
         }
     }
     log("process", LOG_ERROR) << "trying to send a message to : " << to_process << "and not founded it :(";
-
     return nullptr;
 }
 void dump_process()

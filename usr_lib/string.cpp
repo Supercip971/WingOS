@@ -108,7 +108,7 @@ void* memchr(const void* s, int c, size_t n){
     const unsigned char* copy = (const unsigned char*) s;
 
     for(size_t i = 0; i < n;i++){
-        if(*(copy+i)==c){
+        if(copy[i]==c){
             return (void*)(copy + i);
         }
     }

@@ -179,7 +179,7 @@ void printf(const char *format, ...)
                 {
                     temp_buf[i] = 0;
                 }
-                kitoaT<uint64_t>(temp_buf, 'x', d);
+                kitoaT(temp_buf, 'x', d);
                 uint64_t len = strlen(temp_buf);
                 if (maxrem < len)
                 {

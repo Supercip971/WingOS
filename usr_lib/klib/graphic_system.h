@@ -17,7 +17,7 @@ namespace sys {
     }__attribute__((packed));
 
     enum GRAPHIC_SYSTEM_REQUEST{
-        NULL = 0,
+        NULL_REQUEST = 0,
         CREATE_WINDOW = 1,
         GET_WINDOW_BACK_BUFFER = 2,
         SWAP_WINDOW_BUFFER = 3,

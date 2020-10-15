@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include <stddef.h>
 namespace sys {
     enum memory_service_protocol_request
     {
@@ -15,7 +16,7 @@ namespace sys {
         uint64_t length;
     } __attribute__((packed));
 
-    void* service_malloc(uint64_t length);
+    void* service_malloc(size_t length);
     void service_free(void* addr);
-    void* service_realloc(void* addr, uint64_t length);
+    void* service_realloc(void* addr, size_t length);
 }

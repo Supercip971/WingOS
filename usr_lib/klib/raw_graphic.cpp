@@ -14,6 +14,7 @@ namespace sys{
         uint64_t result = sys::process_message("graphic_buffer_service", (uint64_t)&gbp_message, sizeof (graphic_buffer_protocol)).read();
         return result;
     }
+
     uint64_t get_screen_width(){
         graphic_buffer_protocol gbp_message = {0};
         gbp_message.data1 = 0; // screen width
@@ -23,7 +24,9 @@ namespace sys{
 
         uint64_t result = sys::process_message("graphic_buffer_service", (uint64_t)&gbp_message, sizeof (graphic_buffer_protocol)).read();
         return result;
-    }uint64_t get_screen_height(){
+    }
+
+    uint64_t get_screen_height(){
         graphic_buffer_protocol gbp_message = {0};
         gbp_message.data1 = 1; // screen height
         gbp_message.data2 = 0;

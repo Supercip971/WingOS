@@ -9,10 +9,10 @@ namespace sys {
 
     process_message::process_message(const char* to, uint64_t address_to_send, uint64_t data_length){
        for(int i = 0; i < 1000; i++){
-        source = sys$send_message(address_to_send, data_length, to);
-        if(source  != nullptr){
-            return;
-        }
+            source = sys$send_message(address_to_send, data_length, to);
+            if(source  != nullptr){
+                return;
+            }
        }
     }
 

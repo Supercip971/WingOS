@@ -5,7 +5,6 @@
 #include <klib/string_util.h>
 char temp_buf[64];
 
-
 int vsn_printf_out(bool just_print, char* buffer, uint64_t count, const char* data ){
     if(just_print == true){
         sys::write_console(data, count);
@@ -18,21 +17,17 @@ int vsn_printf_out(bool just_print, char* buffer, uint64_t count, const char* da
     return 0;
 }
 
-
 int vsn_printf(bool just_print, char* buffer /* nullptr say no buffer just print it*/, uint64_t count, const char* format, va_list argument){
-
-
     size_t written = 0;
-
     while (*format != '\0')
     {
-        uint64_t maxrem = 0xffffffffff - written;
+        size_t maxrem = 0xffffffffff - written;
 
         if (format[0] != '%' || format[1] == '%')
         {
             if (format[0] == '%')
                 format++;
-            uint64_t amount = 1;
+            size_t amount = 1;
             while (format[amount] && format[amount] != '%')
                 amount++;
             if (maxrem < amount)
@@ -66,7 +61,7 @@ int vsn_printf(bool just_print, char* buffer /* nullptr say no buffer just print
         {
             format++;
             const char *str = va_arg(argument, const char *);
-            uint64_t len = strlen(str);
+            size_t len = strlen(str);
             if (maxrem < len)
             {
                 // TODO: Set errno to EOVERFLOW.
@@ -93,7 +88,7 @@ int vsn_printf(bool just_print, char* buffer /* nullptr say no buffer just print
                     temp_buf[i] = 0;
                 }
                 sys::int_to_string<uint64_t>(temp_buf, 'x', d);
-                uint64_t len = strlen(temp_buf);
+                size_t len = strlen(temp_buf);
                 if (maxrem < len)
                 {
                     // TODO: Set errno to EOVERFLOW.
@@ -108,7 +103,7 @@ int vsn_printf(bool just_print, char* buffer /* nullptr say no buffer just print
         else
         {
             format = format_begun_at;
-            uint64_t len = strlen(format);
+            size_t len = strlen(format);
             if (maxrem < len)
             {
                 // TODO: Set errno to EOVERFLOW.
@@ -122,24 +117,24 @@ int vsn_printf(bool just_print, char* buffer /* nullptr say no buffer just print
     }
     return written;
 }
-int sprintf(char* buffer, const char* format, ...){
 
+int sprintf(char* buffer, const char* format, ...){
     va_list va;
     va_start(va, format);
-    uint64_t return_value = vsn_printf(false, buffer, 0, format, va);
+    int return_value = vsn_printf(false, buffer, 0, format, va);
     va_end((va));
     return return_value;
-
 }
+
 int printf(const char* format, ...){
     va_list va;
     va_start(va, format);
-    uint64_t return_value = vsn_printf(true, nullptr, 0, format, va);
+    int return_value = vsn_printf(true, nullptr, 0, format, va);
     va_end((va));
     return return_value;
 }
-int vsprintf(char* buffer, const char* format, va_list vlist){
 
-    uint64_t return_value = vsn_printf(false, buffer, 0, format, vlist);
+int vsprintf(char* buffer, const char* format, va_list vlist){
+    int return_value = vsn_printf(false, buffer, 0, format, vlist);
     return return_value;
 }

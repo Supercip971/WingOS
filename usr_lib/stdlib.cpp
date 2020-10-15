@@ -70,6 +70,7 @@ long long strtoll(const char* nptr, char** endptr, int base){
     char* end_buffer;
     int current_error;
     bool is_neg = false;
+
     while(*s == ' '){
         s++;
     }
@@ -113,8 +114,8 @@ long long strtoll(const char* nptr, char** endptr, int base){
     }
     return ret_value;
 }
-extern "C" void __cxa_pure_virtual()
-{
+
+extern "C" void __cxa_pure_virtual(){
     printf("error __cxa_pure_virtual() called");
 }
 
@@ -124,18 +125,19 @@ int rand(){
     cseed = cseed * 1103515245 + 12345;
     return (unsigned int)(cseed/65536) % 32768;
 }
+
 void srand(uint32_t seed){
     cseed = seed;
 }
 
-
 void* malloc(size_t size){
     return sys::service_malloc(size);
 }
+
 void free(void* ptr){
     sys::service_free(ptr);
 }
-void* realloc(void* ptr, size_t size){
 
+void* realloc(void* ptr, size_t size){
     return sys::service_realloc(ptr, size);
 }

@@ -1,6 +1,9 @@
 #include <math.h>
 #include <stdint.h>
+#include <stddef.h>
+
 double pow(double x, double y){
+    // can't do switch on a double
     if(y == 0){
         return 1;
     }
@@ -11,12 +14,12 @@ double pow(double x, double y){
         return x;
     }
     double res = 1;
-    for(unsigned int count = 0; count < y; count++){
+    for(size_t count = 0; count < y; count++){
         res*= x;
     }
     return res;
-
 }
+
 float powf(float x, float y){
     if(y == 0){
         return 1;
@@ -28,11 +31,12 @@ float powf(float x, float y){
         return x;
     }
     float res = 1;
-    for(unsigned int count = 0; count < y; count++){
+    for(size_t count = 0; count < y; count++){
         res*= x;
     }
     return res;
 }
+
 #ifdef X87
 long double powl( long double x, long double y){
     if(y == 0){
@@ -51,15 +55,16 @@ long double powl( long double x, long double y){
     return res;
 }
 #endif
+
 int isinf(double x){
     uint64_t nbres = (uint64_t)x;
     return ((unsigned)(nbres >> 32) & 0x7fffffff) == 0x7ff00000 && ((unsigned) nbres == 0);
 }
+
 int isnan(double x){
     uint64_t nbres = (uint64_t)x;
     return ((unsigned)(nbres >> 32) & 0x7fffffff) + ((unsigned) nbres != 0) > 0x7ff00000;
 }
-
 
 double trunc(double x){
     if(x > 0){
@@ -67,6 +72,7 @@ double trunc(double x){
     }
     return ceil(x);
 }
+
 double floor(double x){
     if(isnan(x) || isinf(x)){
         return x;
@@ -78,6 +84,7 @@ double floor(double x){
     }
     return ddret - 1;
 }
+
 double ceil(double x){
     if(isnan(x) || isinf(x)){
         return x;
@@ -96,6 +103,7 @@ double fabs(double x){
     }
     return x;
 }
+
 double sin(double x){
     int ix = 1;
     double current = x;
@@ -111,6 +119,7 @@ double sin(double x){
     }
     return current;
 }
+
 double cos(double x){
     return sin(x + PI / 2);
 }

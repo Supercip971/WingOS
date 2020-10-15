@@ -1,5 +1,7 @@
 #pragma once
 #include <klib/graphic_system.h>
+#include <stddef.h>
+
 namespace gui {
     class widget
     {
@@ -27,7 +29,7 @@ namespace gui {
 
     public:
 
-        void init(uint64_t length);
+        void init(size_t length);
 
         void add_widget(widget* widget);
 

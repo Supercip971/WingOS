@@ -98,17 +98,9 @@ void init_idt()
     {
         idt[i] = register_interrupt_handler((void *)__interrupt_vector[i], 0, 0x8e);
     }
-    for (int i = 32 + 48; i < 0xff; i++)
-    {
-        //  idt[i] = register_interrupt_handler((void *)__interrupt_vector[i], 0, 0x8e);
-
-        //  idt[i] = register_interrupt_handler((void *)too_much_handler, 0, 0x8e);
-    }
     idt[127] = register_interrupt_handler((void *)__interrupt_vector[48], 0, 0x8e);
     idt[100] = register_interrupt_handler((void *)__interrupt_vector[49], 0, 0x8e);
 
-    ///  idt[0xf0] = register_interrupt_handler((void *)nmi_handler, 0, 0x8e);
-    // idt[0xff] = register_interrupt_handler((void *)spurious_handler, 0, 0x8e);
     log("idt", LOG_DEBUG) << "flushing idt";
 
     asm volatile("lidt [%0]"
@@ -170,33 +162,22 @@ bool is_error(int intno)
     return true;
 }
 // backtrace
-
-extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
+void update_backtrace(InterruptStackFrame *stackframe)
 {
-    uint64_t nresult = reinterpret_cast<uint64_t>(stackframe);
-    if (rip_backtrace[32] != stackframe->rip)
+    uint64_t *target = get_current_cpu()->rip_backtrace;
+    if (target[32] != stackframe->rip)
     {
         for (int i = 0; i <= 31; i++)
         {
-            rip_backtrace[i] = rip_backtrace[i + 1];
+            target[i] = target[i + 1];
         }
-        rip_backtrace[32] = stackframe->rip;
+        target[32] = stackframe->rip;
     }
-    if (stackframe->int_no != 0x24 && stackframe->int_no != 0x22 && stackframe->int_no != 32 && stackframe->int_no != 0x2e)
-    {
-        if (stackframe->int_no == 0x7f)
-        {
-            stackframe->rax = syscall(stackframe->rax, stackframe->rbx, stackframe->rcx, stackframe->rdx, stackframe->rsi, stackframe->rdi); // don't use r11 for future use with x64 syscalls
-
-            apic::the()->EOI();
-            return (uint64_t)stackframe;
-        }
-        else
-        {
-            // i don't remove this one
-            //    printf("\n interrupt %x in processor %x \n", stackframe->int_no, apic::the()->get_current_processor_id());
-        }
-    }
+}
+extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
+{
+    uint64_t nresult = reinterpret_cast<uint64_t>(stackframe);
+    update_backtrace(stackframe);
     if (is_error(stackframe->int_no))
     {
 
@@ -208,7 +189,7 @@ extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
         dumpregister(stackframe);
         printf("\n");
         log("pic", LOG_ERROR) << "backtrace : ";
-        for (int i = 0; i <= 32; i++)
+        for (size_t i = 0; i <= 32; i++)
         {
             if (rip_backtrace[i] != -32)
             {
@@ -228,6 +209,11 @@ extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
             asm volatile("hlt");
         }
     }
+    if (stackframe->int_no == 0x7f)
+    {
+        stackframe->rax = syscall(stackframe->rax, stackframe->rbx, stackframe->rcx, stackframe->rdx, stackframe->rsi, stackframe->rdi); // don't use r11 for future use with x64 syscalls
+        apic::the()->EOI();
+    }
     else if (stackframe->int_no == 32)
     {
         PIT::the()->update();
@@ -243,7 +229,6 @@ extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
     }
     else if (stackframe->int_no == 100)
     {
-
         nresult = irq_0_process_handler(stackframe);
     }
     else if (stackframe->int_no == 0xf0)

@@ -26,6 +26,7 @@ struct local_data
     process *current_process;
     uint64_t lapic_id;
     main_page_table *page_table;
+    uint64_t rip_backtrace[32];
 } __attribute__((packed));
 void set_current_data(local_data *dat);
 //local_data *get_current_data();

@@ -289,6 +289,7 @@ extern "C" process *get_next_process(uint64_t current_id)
     dump_process();
     return get_current_cpu()->current_process;
 }
+
 void send_switch_process_to_all_cpu()
 {
     if (apic::the()->get_current_processor_id() == 0)
@@ -302,6 +303,7 @@ void send_switch_process_to_all_cpu()
         }
     }
 }
+
 extern "C" uint64_t irq_0_process_handler(InterruptStackFrame *isf)
 {
     if (process_locked)
@@ -419,6 +421,7 @@ void dump_process()
     }
     unlock_process();
 }
+
 process_message *read_message()
 {
     for (uint64_t i = 0; i < MAX_PROCESS_MESSAGE_QUEUE; i++)
@@ -433,6 +436,7 @@ process_message *read_message()
     }
     return 0x0;
 }
+
 uint64_t message_response(process_message *message_id)
 {
 

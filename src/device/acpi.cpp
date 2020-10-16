@@ -32,7 +32,7 @@ acpi::acpi()
 void *acpi::find_entry(const char *entry_name)
 {
 
-    RSDT *rsdt = (RSDT *)get_mem_addr(descriptor->firstPart.RSDT_address);
+    RSDT *rsdt = reinterpret_cast<RSDT *>(get_mem_addr((descriptor->firstPart.RSDT_address)));
     int entries = (rsdt->h.Length - sizeof(rsdt->h)) / 4;
 
     for (int i = 0; i < entries; i++)
@@ -43,7 +43,7 @@ void *acpi::find_entry(const char *entry_name)
             continue;
         }
 
-        RSDTHeader *h = (RSDTHeader *)get_mem_addr((rsdt->PointerToOtherSDT[i]));
+        RSDTHeader *h = reinterpret_cast<RSDTHeader *>(get_mem_addr((rsdt->PointerToOtherSDT[i])));
 
         if (!strncmp(h->Signature, entry_name, 4))
             return (void *)h;
@@ -54,7 +54,7 @@ void *acpi::find_entry(const char *entry_name)
 }
 void *findFACP(void *RootSDT)
 {
-    RSDT *rsdt = (RSDT *)RootSDT;
+    RSDT *rsdt = reinterpret_cast<RSDT *>(RootSDT);
     int entries = (rsdt->h.Length - sizeof(rsdt->h)) / 4;
 
     for (int i = 0; i < entries; i++)
@@ -63,7 +63,7 @@ void *findFACP(void *RootSDT)
         {
             continue;
         }
-        RSDTHeader *h = (RSDTHeader *)(rsdt->PointerToOtherSDT[i]);
+        RSDTHeader *h = reinterpret_cast<RSDTHeader *>(rsdt->PointerToOtherSDT[i]);
 
         if (!strncmp(h->Signature, "FACP", 4))
             return (void *)h;

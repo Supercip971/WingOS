@@ -16,7 +16,7 @@ void madt::init()
     log("madt", LOG_DEBUG) << "loading madt";
     madt_address = acpi::the()->find_entry("APIC");
 
-    madt_header = (MADT_head *)madt_address;
+    madt_header = reinterpret_cast<MADT_head *>(madt_address);
 
     MADT_record_table_entry *table = madt_header->MADT_table;
     lapic_base = madt_header->lapic;
@@ -113,18 +113,18 @@ MADT_table_IOAPIC **madt::get_madt_ioAPIC()
 MADT_table_ISO **madt::get_madt_ISO()
 {
     MADT_record_table_entry *table = madt_header->MADT_table;
-    MADT_table_ISO **MTIO = (MADT_table_ISO **)malloc(255);
+    MADT_table_ISO **MTIO = reinterpret_cast<MADT_table_ISO **>(malloc(255));
     uint64_t count = 0;
     bool has_one = false;
     while (uint64_t(table) < get_madt_table_lenght())
     {
-        table = (MADT_record_table_entry *)(((uint64_t)table) + table->tlenght);
+        table = reinterpret_cast<MADT_record_table_entry *>(((uint64_t)table) + table->tlenght);
 
         if (table->ttype == MADT_type::MADT_ISO)
         {
             has_one = true;
             auto local_apic = reinterpret_cast<MADT_table_ISO *>(table);
-            MTIO[count] = (MADT_table_ISO *)((uint64_t)local_apic);
+            MTIO[count] = reinterpret_cast<MADT_table_ISO *>((uint64_t)local_apic);
             count++;
         }
     }

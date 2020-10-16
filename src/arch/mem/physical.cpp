@@ -126,7 +126,7 @@ void *pmm_alloc_fast(uint64_t lenght)
 void *pmm_alloc_zero(uint64_t lenght)
 {
     void *d = pmm_alloc_fast(lenght);
-    uint64_t *pages = ((uint64_t *)(get_mem_addr((uint64_t)d)));
+    uint64_t *pages = reinterpret_cast<uint64_t *>(get_mem_addr((uint64_t)d));
     for (uint64_t i = 0; i < (lenght * PAGE_SIZE) / sizeof(uint64_t); i++)
     {
         pages[i] = 0;
@@ -146,7 +146,7 @@ void pmm_free(void *where, uint64_t lenght)
 void init_physical_memory(stivale_struct *bootdata)
 {
     log("pmm", LOG_DEBUG) << "loading pmm";
-    e820_entry_t *mementry = (e820_entry_t *)bootdata->memory_map_addr;
+    e820_entry_t *mementry = reinterpret_cast<e820_entry_t *>(bootdata->memory_map_addr);
     uint64_t total_memory_lenght = 0;
 
     available_memory = 0;
@@ -156,9 +156,9 @@ void init_physical_memory(stivale_struct *bootdata)
     bitmap_base *= PAGE_SIZE;
 
     // align everything
-    if (((uint64_t)bootdata) > bitmap_base)
+    if (reinterpret_cast<uint64_t>(bootdata) > bitmap_base)
     {
-        bitmap_base = (uint64_t)bootdata + sizeof(stivale_struct);
+        bitmap_base = reinterpret_cast<uint64_t>(bootdata) + sizeof(stivale_struct);
     }
 
     total_memory_lenght = mementry[bootdata->memory_map_entries - 1].length + mementry[bootdata->memory_map_entries - 1].base;
@@ -186,11 +186,8 @@ void init_physical_memory(stivale_struct *bootdata)
     log("pmm", LOG_DEBUG) << "loading pmm memory map";
     bitmap_base /= PAGE_SIZE;
     bitmap_base *= PAGE_SIZE;
-    bitmap = (uint8_t *)(bitmap_base);
-    for (uint64_t i = 0; i < (total_memory_lenght / PAGE_SIZE) / 8; i++)
-    {
-        bitmap[i] = 0xFF;
-    }
+    bitmap = reinterpret_cast<uint8_t *>(bitmap_base);
+    memset(bitmap, 0xff, (total_memory_lenght / PAGE_SIZE) / 8);
     for (uint64_t i = 0; i < bootdata->memory_map_entries; i++)
     {
 
@@ -208,7 +205,6 @@ void init_physical_memory(stivale_struct *bootdata)
         }
         pmm_page_entry_count += mementry[i].length / PAGE_SIZE;
     }
-    uint64_t totallen = (total_memory_lenght / PAGE_SIZE) / 8;
 
     log("pmm", LOG_INFO) << "free memory " << available_memory;
 }

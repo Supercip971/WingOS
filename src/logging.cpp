@@ -14,28 +14,12 @@ void logging ::set_log_type(const char *data, log_state log_state)
         pid = get_current_cpu()->current_process->pid;
         current_cpu = apic::the()->get_current_processor_id();
     }
-
-    if (log_state == LOG_INFO)
-    {
-        printf(log_type_table[log_state], current_cpu, pid, data);
-    }
-    else if (log_state == LOG_DEBUG)
-    {
-
-        printf(log_type_table[log_state], current_cpu, pid, data);
-    }
-    else if (log_state == LOG_ERROR)
-    {
-        printf(log_type_table[log_state], current_cpu, pid, data);
-    }
-    else if (log_state == LOG_WARNING)
-    {
-        printf(log_type_table[log_state], current_cpu, pid, data);
-    }
-    else
+    if (log_state > 4 || log_state == 3)
     {
         printf(log_type_table[LOG_FATAL], current_cpu, pid, data);
+        return;
     }
+    printf(log_type_table[log_state], current_cpu, pid, data);
 }
 logging logging ::operator<<(const char *string)
 {

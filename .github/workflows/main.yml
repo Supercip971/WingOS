@@ -26,7 +26,10 @@ jobs:
       - name: setup
         run: |
           sudo apt update
-          
+          git submodule init    
+          make -C limine all -j99
+          make -C limine limine-install -j99
+
           sudo apt install -y make build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo nasm
           sudo apt install -y mtools wget unzip fuse libfuse-dev
           git clone --recursive https://github.com/qword-os/echfs.git

@@ -37,7 +37,7 @@ echfs_file_header echfs::read_directory_entry(uint64_t entry)
             if (cur_header->parent_id == 0)
             {
                 log("echfs", LOG_INFO) << "reached the end of me :(";
-                goto end;
+                return {0};
             }
             else
             {
@@ -50,7 +50,6 @@ echfs_file_header echfs::read_directory_entry(uint64_t entry)
             current_entry++;
         }
     }
-end:
     return {0};
 }
 void echfs::init(uint64_t start_sector, uint64_t sector_count)
@@ -114,7 +113,7 @@ void echfs::init(uint64_t start_sector, uint64_t sector_count)
         entry_t++;
     }
 
-    log("echfs", LOG_INFO) << "found file : init_fs/test_directory/test_another.txt" << find_file("init_fs/test_directory/test_another.txt");
+    log("echfs", LOG_INFO) << "found file : init_fs/test_directory/test_another.txt" << find_file("init_fs/test_directory/test_another.txt").parent_id;
 
     log("echfs", LOG_INFO) << "reading file "
                            << "init_fs/test_directory/test_another.txt";
@@ -145,6 +144,46 @@ uint64_t echfs::get_folder(uint64_t folder_id)
         entry_t++;
     }
     return -1;
+}
+echfs_file_header echfs::get_directory_entry(const char *name, uint64_t forced_parent)
+{
+    uint64_t entry_t = 0;
+    uint64_t name_length = strlen(name);
+
+    uint64_t *temporary_buf = (uint64_t *)pmm_alloc_fast(header.block_length / 4096 + 1);
+
+    uint64_t current_entry = 0;
+    uint64_t second_check_length = header.block_length / sizeof(echfs_file_header);
+    for (uint64_t i = 0; i < header.main_directory_length; i++)
+    {
+
+        read_block(main_dir_start + i, (uint8_t *)temporary_buf);
+        for (uint64_t j = 0; j < second_check_length; j++)
+        {
+            echfs_file_header *cur_header = reinterpret_cast<echfs_file_header *>((uint64_t)another_buffer + (j * sizeof(echfs_file_header)));
+            if (strncmp(cur_header->file_name, name, name_length) == 0)
+            {
+                if (forced_parent != -1)
+                {
+                    if (cur_header->parent_id == forced_parent)
+                    {
+                        return *cur_header;
+                    }
+                }
+                else
+                {
+
+                    return *cur_header;
+                }
+            }
+            if (cur_header->parent_id == 0 /* reach the end */)
+            {
+                return {0};
+            }
+
+            entry_t++;
+        }
+    }
 }
 uint64_t echfs::get_simple_file(const char *name, uint64_t forced_parent)
 {
@@ -186,13 +225,12 @@ uint64_t echfs::get_simple_file(const char *name, uint64_t forced_parent)
         }
     }
 }
-
-uint64_t echfs::find_file(const char *path)
+echfs_file_header echfs::find_file(const char *path)
 {
     if (strlen(path) > 200)
     {
         log("echfs", LOG_ERROR) << "with echfs file path can't get larger than 200";
-        return -1;
+        return {0};
     }
     char *buffer_temp = (char *)malloc(255);
     char *path_copy = (char *)malloc(255);
@@ -230,16 +268,15 @@ redo: // yes goto are bad but if someone has a solution i take it ;)
 
     if (!is_end)
     {
-        uint64_t next_idx = get_simple_file(buffer_temp, current_parent);
-        if (next_idx != -1)
+        echfs_file_header current_header = get_directory_entry(buffer_temp, current_parent);
+        if (current_header.parent_id != 0)
         {
-            current_header = read_directory_entry(next_idx);
             if (current_header.file_type == 0)
             {
 
                 log("echfs", LOG_ERROR) << "entry use a file as a directory " << buffer_temp;
                 free(buffer_temp);
-                return -1;
+                return {0};
             }
             current_parent = current_header.starting_block;
             goto redo;
@@ -249,29 +286,28 @@ redo: // yes goto are bad but if someone has a solution i take it ;)
 
             log("echfs", LOG_ERROR) << "entry not found" << buffer_temp;
             free(buffer_temp);
-            return -1;
+            return {0};
         }
     }
     else
     {
 
-        uint64_t next_idx = get_simple_file(buffer_temp, current_parent);
-        if (next_idx != -1)
+        echfs_file_header current_header = get_directory_entry(buffer_temp, current_parent);
+        if (current_header.parent_id != 0)
         {
-            current_header = read_directory_entry(next_idx);
             log("echfs", LOG_INFO) << "file found ! ";
             free(buffer_temp);
-            return next_idx;
+            return current_header;
         }
         else
         {
 
             log("echfs", LOG_ERROR) << "entry not found" << buffer_temp;
             free(buffer_temp);
-            return -1;
+            return {0};
         }
     }
-    return -1;
+    return {0};
 }
 // read a file and redirect it to an address
 // return 0 when not found
@@ -282,7 +318,7 @@ uint8_t *echfs::read_file(const char *path)
 uint8_t *echfs::ech_read_file(const char *path)
 {
     log("echfs", LOG_INFO) << "reading file " << path;
-    echfs_file_header file_to_read_header = read_directory_entry(find_file(path));
+    echfs_file_header file_to_read_header = (find_file(path));
     if (file_to_read_header.file_type == 1)
     {
         log("echfs", LOG_ERROR) << "trying to read a folder";

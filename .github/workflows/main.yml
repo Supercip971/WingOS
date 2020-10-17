@@ -27,8 +27,6 @@ jobs:
         run: |
           sudo apt update
           git submodule init    
-          make -C limine all -j99
-          make -C limine limine-install -j99
 
           sudo apt install -y make build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo nasm
           sudo apt install -y mtools wget unzip fuse libfuse-dev
@@ -37,6 +35,11 @@ jobs:
           cd echfs/
           sudo make install
           cd ..
+
+          sudo bash ./limine/toolchain/make_toolchain.sh
+          cd limine/
+          make all -j99
+          make limine-install -j99
           sudo bash ./make_cross_compiler.sh
           make all -j99
 

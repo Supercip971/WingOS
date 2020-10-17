@@ -25,7 +25,7 @@ jobs:
       # Runs a single command using the runners shell
       - name: setup
         run: |
-          sudo apt updata
+          sudo apt update
           
           sudo apt install -y make build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo nasm
           

@@ -113,7 +113,16 @@ uint64_t get_window_position(sys::graphic_system_service_protocol* request, uint
 
     return (uint64_t)pos.pos;
 }
+uint64_t set_window_position(sys::graphic_system_service_protocol* request, uint64_t pid){
+    if(!can_use_window(request->set_pos.window_handler_code, pid)){
+        return -2;
+    }
+    raw_window_data& target = window_list[request->get_request.window_handler_code];
 
+    target.px = request->set_pos.position.rpos.x;
+    target.py = request->set_pos.position.rpos.y;
+    return 1;
+}
 uint64_t interpret(sys::graphic_system_service_protocol* request, uint64_t pid){
     if(request->request_type == 0){
         printf("graphic error : request null type");
@@ -126,6 +135,8 @@ uint64_t interpret(sys::graphic_system_service_protocol* request, uint64_t pid){
         return window_swap_buffer(request, pid);
     }else if(request->request_type == sys::GRAPHIC_SYSTEM_REQUEST::GET_WINDOW_POSITION){
         return get_window_position(request, pid);
+    }else if(request->request_type == sys::GRAPHIC_SYSTEM_REQUEST::SET_WINDOW_POSITION){
+        return set_window_position(request, pid);
     }
     printf("graphic error : request non implemented type");
     return -2;

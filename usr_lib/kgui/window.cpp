@@ -14,10 +14,11 @@ namespace gui
         graphic_context.swap_buffer();
         lst = widget_list();
         lst.init(128); // wax 128 widget may be increase later, but you will be able to put widget list as a widget so meh
-    }
+    };
 
     uint64_t window::start()
     {
+        graphic_context.set_graphic_context_position({10, 200});
         while (true)
         {
             lst.update_all();

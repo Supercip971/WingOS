@@ -125,6 +125,14 @@ namespace sys
         return p;
     }
 
+    void graphic_context::set_graphic_context_position(const sys::raw_pos position)
+    {
+        sys::graphic_system_service_protocol request = {0};
+        request.request_type = sys::GRAPHIC_SYSTEM_REQUEST::SET_WINDOW_POSITION;
+        request.set_pos.window_handler_code = wid;
+        request.set_pos.position = position;
+        sys::process_message("init_fs/graphic_service.exe", (uint64_t)&request, sizeof(sys::graphic_system_service_protocol));
+    }
     uint64_t get_basic_font_width_text(const char *text)
     {
         uint64_t clen = strlen(text);

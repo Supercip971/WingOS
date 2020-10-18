@@ -19,6 +19,11 @@ namespace sys
     {
         uint64_t window_handler_code;
     } __attribute__((packed));
+    struct set_window_pos_request
+    {
+        uint64_t window_handler_code;
+        sys::raw_pos position;
+    };
 
     enum GRAPHIC_SYSTEM_REQUEST
     {
@@ -46,6 +51,7 @@ namespace sys
             graphic_raw_request raw_information; // used for later, size : 256o (2048 byte)
             create_graphic_window create_window_info;
             individual_request get_request;
+            set_window_pos_request set_pos;
         };
     } __attribute__((packed));
     // FOR OTHER THING
@@ -78,6 +84,21 @@ namespace sys
             a = va;
         }
     };
+    struct pos
+    {
+        int32_t x;
+        int32_t y;
+        pos()
+        {
+            x = 0;
+            y = 0;
+        }
+        pos(int32_t vx, int32_t vy)
+        {
+            x = vx;
+            y = vy;
+        }
+    };
 
     class graphic_context
     {
@@ -96,6 +117,7 @@ namespace sys
         void swap_buffer();
 
         sys::raw_pos get_graphic_context_position();
+        void set_graphic_context_position(const sys::raw_pos position);
     };
     uint64_t get_basic_font_width_text(const char *text);
 

@@ -27,7 +27,7 @@ namespace sys
 
     bool get_mouse_button(int button_id)
     {
-        uint64_t result = sys$get_process_global_data(sizeof(uint64_t) * (button_id + 1), "ps2_device_service");
+        uint64_t result = sys$get_process_global_data(sizeof(uint64_t) * (button_id + 2), "ps2_device_service");
         return (bool)result;
     }
 } // namespace sys

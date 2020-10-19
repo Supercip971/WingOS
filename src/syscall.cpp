@@ -1,5 +1,6 @@
-#include <arch/lock.h>
+
 #include <arch/process.h>
+#include <device/local_data.h>
 #include <logging.h>
 #include <syscall.h>
 typedef uint64_t (*syscall_functions)(uint64_t syscall_id, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5);
@@ -52,10 +53,12 @@ uint64_t syscall(uint64_t syscall_id, uint64_t arg1, uint64_t arg2, uint64_t arg
     }
     else
     {
-
+        lock(&lck_syscall);
+        //  log("syscall", LOG_INFO) << "syscall " << syscall_id << "from : " << get_current_cpu()->current_process->process_name;
         uint64_t (*func)(uint64_t, ...) = reinterpret_cast<uint64_t (*)(uint64_t, ...)>(syscalls[syscall_id]);
 
         uint64_t res = func(arg1, arg2, arg3, arg4, arg5);
+        unlock(&lck_syscall);
         return res;
     }
 }

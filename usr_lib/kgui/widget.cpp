@@ -6,6 +6,24 @@ namespace gui
     widget::widget()
     {
     }
+
+    bool widget::is_position_inside_widget(const sys::pos pos)
+    {
+        if (pos.x >= widget_x)
+        {
+            if (pos.y >= widget_y)
+            {
+                if (pos.y <= widget_height + widget_y)
+                {
+                    if (pos.x <= widget_width + widget_x)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
     void widget_list::init(size_t length)
     {
         list = (gui::widget **)sys::service_malloc(length * sizeof(uint64_t));

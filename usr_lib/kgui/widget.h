@@ -13,6 +13,7 @@ namespace gui
         uint64_t widget_y;
 
         bool widget_should_draw = false;
+        bool is_position_inside_widget(const sys::pos pos);
 
     public:
         widget();

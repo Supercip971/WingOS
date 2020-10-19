@@ -39,7 +39,13 @@ stivale_header header = {.stack = (uintptr_t)stack + (sizeof(char) * STACK_SIZE)
 stivale_struct boot_loader_data_copy;
 
 void start_process();
-
+//  ____    __    ____  __  .__   __.   _______      ______        _______.
+//  \   \  /  \  /   / |  | |  \ |  |  /  _____|    /  __  \      /       |
+//   \   \/    \/   /  |  | |   \|  | |  |  __     |  |  |  |    |   (----`
+//    \            /   |  | |  . `  | |  | |_ |    |  |  |  |     \   \
+//     \    /\    /    |  | |  |\   | |  |__| |    |  `--'  | .----)   |
+//      \__/  \__/     |__| |__| \__|  \______|     \______/  |_______/
+//
 extern "C" void kernel_start(stivale_struct *bootloader_data)
 {
     asm volatile("and rsp, -16");
@@ -84,6 +90,16 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
     bootdat = ((uint64_t)&boot_loader_data_copy);
 
     lock_process();
+    printf("\n\n");
+    printf(":::       ::: ::::::::::: ::::    :::  ::::::::         ::::::::   ::::::::\n");
+    printf(":+:       :+:     :+:     :+:+:   :+: :+:    :+:       :+:    :+: :+:    :+:\n");
+    printf("+:+       +:+     +:+     :+:+:+  +:+ +:+              +:+    +:+ +:+        \n");
+    printf("+#+  +:+  +#+     +#+     +#+ +:+ +#+ :#:              +#+    +:+ +#++:++#++ \n");
+    printf("+#+ +#+#+ +#+     +#+     +#+  +#+#+# +#+   +#+#       +#+    +#+        +#+ \n");
+    printf(" #+#+# #+#+#      #+#     #+#   #+#+# #+#    #+#       #+#    #+# #+#    #+# \n");
+    printf("  ###   ###   ########### ###    ####  ########         ########   ########  \n");
+
+    printf("\n");
     init_multi_process(start_process);
     asm volatile("sti");
 }
@@ -107,5 +123,7 @@ void start_process()
     launch_programm("init_fs/graphic_service.exe", &main_start_fs);
     launch_programm("init_fs/test2.exe", &main_start_fs);
     launch_programm("init_fs/test.exe", &main_start_fs);
+    launch_programm("init_fs/test.exe", &main_start_fs);
+
     _start((stivale_struct *)bootdat);
 }

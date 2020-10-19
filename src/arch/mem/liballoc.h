@@ -39,6 +39,7 @@ extern "C"
     inline int liballoc_lock()
     {
         lock((&mem_lock));
+        lock_process();
         return 0;
     };
 
@@ -50,6 +51,7 @@ extern "C"
  */
     inline int liballoc_unlock()
     {
+        unlock_process();
         unlock((&mem_lock));
         return 0;
     }

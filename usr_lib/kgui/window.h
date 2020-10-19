@@ -12,6 +12,7 @@ namespace gui
         uint64_t height;
         widget_list lst;
         uint64_t current_tick;
+        widget *header_widget_movable;
         // widget* widget_list; for later ;)
     public:
         // create a simple window

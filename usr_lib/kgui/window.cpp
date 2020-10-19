@@ -1,7 +1,9 @@
+#include <kgui/widget/movable_context_widget.h>
 #include <kgui/window.h>
 #include <klib/graphic_system.h>
 #include <klib/mem_util.h>
 #include <klib/mouse.h>
+#include <stdio.h>
 namespace gui
 {
     window::window(const char *name, uint64_t window_width, uint64_t window_height) : graphic_context(window_width, window_height, name)
@@ -14,13 +16,14 @@ namespace gui
         graphic_context.swap_buffer();
         lst = widget_list();
         lst.init(128); // wax 128 widget may be increase later, but you will be able to put widget list as a widget so meh
+        header_widget_movable = new gui::movable_context_widget(0, 0, width, height, this);
+        add_widget(header_widget_movable);
     };
-
     uint64_t window::start()
     {
-        graphic_context.set_graphic_context_position({10, 200});
         while (true)
         {
+
             lst.update_all();
             graphic_context.clear_buffer({100, 100, 100, 255});
             graphic_context.draw_rectangle(0, 0, width, 20, sys::pixel(75, 75, 75));

@@ -155,6 +155,12 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
         if (process_array[i].current_process_state ==
             process_state::PROCESS_AVAILABLE)
         {
+            bool added_pid = false;
+            if (get_pid_from_process_name(name) != -1)
+            {
+                log("proc", LOG_INFO) << "process with name already exist so add pid at the end";
+                added_pid = true;
+            }
             log("proc", LOG_INFO) << "adding process" << i << "entry : " << (uint64_t)entry_point << "name : " << name;
             process_array[i].current_process_state = process_state::PROCESS_NOT_STARTED;
 
@@ -163,8 +169,8 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
                 process_array[i].current_process_state = process_state::PROCESS_WAITING;
             }
 
-            memcpy(process_array[i].process_name, name, strlen(name) + 1);
-
+            memcpy(process_array[i].process_name, name, strlen(name) + 2);
+            process_array[i].process_name[strlen(name) + 1] = i;
             process_array[i].global_process_memory = (uint8_t *)get_mem_addr((uint64_t)pmm_alloc(1));
             process_array[i].global_process_memory_length = 4096;
             memzero(process_array[i].global_process_memory, process_array[i].global_process_memory_length);

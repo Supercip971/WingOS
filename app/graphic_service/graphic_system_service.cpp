@@ -50,7 +50,8 @@ void draw_window(raw_window_data window, sys::pixel* buffer){
 }
 raw_window_data* window_list;
 
-
+uint64_t last_window_x = 10;
+uint64_t last_window_y = 10;
 uint64_t create_window(sys::graphic_system_service_protocol*request, uint64_t pid){
     printf("creating window for process %x", pid);
     for(int i = 0; i < MAX_WINDOW; i++){
@@ -60,8 +61,13 @@ uint64_t create_window(sys::graphic_system_service_protocol*request, uint64_t pi
             window_list[i].pid = pid;
             window_list[i].width = request->create_window_info.width;
             window_list[i].height = request->create_window_info.height;
-            window_list[i].px = 10;
-            window_list[i].py = 10;
+            window_list[i].px = last_window_x;
+            last_window_x += 10;
+            if(last_window_x > 100){
+                last_window_y += 10;
+                last_window_x = 10;
+            }
+            window_list[i].py = last_window_y;
             window_list[i].window_name = request->create_window_info.name;
             window_list[i].wid = i;
             window_list[i].window_front_buffer = (sys::pixel*)sys::service_malloc(request->create_window_info.width * request->create_window_info.height* sizeof (sys::pixel));

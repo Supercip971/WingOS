@@ -1,5 +1,4 @@
 #include <math.h>
-#include <stddef.h>
 #include <stdint.h>
 
 double pow(double x, double y)

@@ -228,6 +228,7 @@ int main(){
     printf("g buffer addr   : %x \n",real_gbuffer_addr);
     printf("g buffer width  : %x \n",screen_width);
     printf("g buffer height : %x \n",screen_height);
+
     uint32_t soff = 0;
     while (true) {
         // read all message
@@ -239,8 +240,10 @@ int main(){
 
                 msg->response = interpret(pr,  msg->from_pid);
                 msg->has_been_readed = true;
+            }else{
+
+                break;
             }
-            break;
         }
 
         soff++;

@@ -13,7 +13,7 @@ namespace gui
 
     public:
         button_widget();
-        button_widget(uint64_t x, uint64_t y, uint64_t width, uint64_t heigth, const char *title);
+        button_widget(uint64_t x, uint64_t y, uint64_t width, uint64_t heigth, const char *title) __attribute__((__target__("no-sse")));
 
         virtual void update_widget() override;
         virtual void draw_widget(sys::graphic_context &context) override;

@@ -1,3 +1,6 @@
+
+![Banner](screen_shot/wingOS.png)
+
 # WingOS (64 bit)
 WingOS is a 64 bit os/kernel. 
 

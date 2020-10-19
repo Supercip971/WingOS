@@ -36,6 +36,10 @@ void memory_service()
                 msg->response = 0;
                 log("memory_service", LOG_ERROR) << "not valid request memory" << prot->request_type;
             }
+        }
+        else if (msg == 0)
+        {
+
             on_request_service_update();
         }
     }

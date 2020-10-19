@@ -21,6 +21,10 @@ void kernel_process_service()
                 msg->response = get_pid_from_process_name((char *)msg->content_address);
             }
             msg->has_been_readed = true;
+        }
+        else if (msg == 0)
+        {
+
             on_request_service_update();
         }
     }

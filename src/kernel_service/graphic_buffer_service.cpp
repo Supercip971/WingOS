@@ -42,6 +42,10 @@ void graphic_buffer_service()
             {
                 log("graphic_buffer", LOG_ERROR) << "not supported request id: " << data->request;
             }
+        }
+        else if (msg == 0)
+        {
+
             on_request_service_update();
         }
     }

@@ -10,6 +10,7 @@
 #include <device/local_data.h>
 #include <kernel.h>
 #include <logging.h>
+#include <syscall.h>
 #include <utility.h>
 
 process kernel_process;
@@ -143,6 +144,7 @@ uint64_t interpret_cpu_request(uint64_t cpu)
     }
     return cpu;
 }
+
 process *init_process(func entry_point, bool start_direct, const char *name, bool user, int cpu_target)
 {
     lock((&process_creator_lock));
@@ -400,6 +402,8 @@ process_message *create_process_message(size_t tpid, uint64_t data_addr, uint64_
         process_array[tpid].last_message_used = 0;
         return create_process_message(tpid, data_addr, data_length);
     }
+    log("proc", LOG_ERROR) << "can't create a process message for process: " << process_array[tpid].process_name;
+
     return nullptr;
 }
 
@@ -407,17 +411,14 @@ process_message *send_message(uint64_t data_addr, uint64_t data_length, const ch
 {
     for (int i = 0; i < MAX_PROCESS; i++)
     {
-        lock_process();
         if (process_array[i].current_process_state == PROCESS_WAITING || process_array[i].current_process_state == PROCESS_RUNNING)
         {
             if (strcmp(to_process, process_array[i].process_name) == 0)
             {
                 process_array[i].should_be_active = true;
-                unlock_process();
                 return create_process_message(i, data_addr, data_length);
             }
         }
-        unlock_process();
     }
     log("process", LOG_ERROR) << "trying to send a message to : " << to_process << "and not founded it :(";
     return nullptr;

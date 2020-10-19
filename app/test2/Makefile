@@ -14,11 +14,13 @@ CHARDFLAGS := $(CFLAGS)               \
         -masm=intel                    \
         -fno-pic                       \
         -no-pie \
-        -mno-sse                       \
         -m64 \
-        -O3 \
-        -mno-sse2                      \
-        -mno-mmx                       \
+        -O1 \
+        -Werror \
+        -msse \
+        -mno-avx \
+        -mno-avx2 \
+        -mno-avx512f \
         -mno-80387                     \
         -mno-red-zone                  \
         -fno-rtti \

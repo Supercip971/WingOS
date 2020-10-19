@@ -131,7 +131,7 @@ namespace sys
         request.request_type = sys::GRAPHIC_SYSTEM_REQUEST::SET_WINDOW_POSITION;
         request.set_pos.window_handler_code = wid;
         request.set_pos.position = position;
-        sys::process_message("init_fs/graphic_service.exe", (uint64_t)&request, sizeof(sys::graphic_system_service_protocol));
+        sys::process_message("init_fs/graphic_service.exe", (uint64_t)&request, sizeof(sys::graphic_system_service_protocol)).read();
     }
     uint64_t get_basic_font_width_text(const char *text)
     {

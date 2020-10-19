@@ -17,7 +17,7 @@ bool cpu_wait = false;
 char temp_esp[8192];
 process *nxt;
 
-bool process_locked = true;
+int process_locked = 1;
 bool process_loaded = false;
 
 lock_type process_creator_lock = {0};
@@ -25,9 +25,16 @@ uint64_t last_process = 0;
 uint8_t proc_last_selected_cpu = 0;
 
 lock_type task_lock = {0};
+lock_type lck_lck = {0};
+void lock_process()
+{
 
-void lock_process() { process_locked = true; }
-void unlock_process() { process_locked = false; }
+    process_locked++;
+}
+void unlock_process()
+{
+    process_locked--;
+}
 
 extern "C" void irq0_first_jump();
 extern "C" void reload_cr3();
@@ -112,6 +119,7 @@ void init_multi_process(func start)
 
     asm volatile("sti");
     unlock_process();
+    process_locked = 0;
     while (true)
     {
         asm volatile("hlt");
@@ -224,7 +232,7 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
 extern "C" uint64_t switch_context(InterruptStackFrame *current_Isf, process *next)
 {
 
-    if (process_locked)
+    if (process_locked != 0)
     {
         return (uint64_t)current_Isf; // early return
     }
@@ -258,7 +266,7 @@ extern "C" uint64_t switch_context(InterruptStackFrame *current_Isf, process *ne
 
 extern "C" process *get_next_process(uint64_t current_id)
 {
-    if (process_locked)
+    if (process_locked != 0)
     {
         return get_current_cpu()->current_process;
     }
@@ -306,7 +314,8 @@ void send_switch_process_to_all_cpu()
 
 extern "C" uint64_t irq_0_process_handler(InterruptStackFrame *isf)
 {
-    if (process_locked)
+
+    if (process_locked != 0)
     {
         return (uint64_t)isf;
     }

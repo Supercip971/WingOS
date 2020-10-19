@@ -2,8 +2,10 @@ build/
 cross_compiler/
 vscode/
 .vscode/
-
+app/wingos-wren/
 kernel.elf
+disk.img
+*.exe
 
 *.o
 *.map

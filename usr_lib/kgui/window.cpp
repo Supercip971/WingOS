@@ -47,4 +47,20 @@ namespace gui
 
         return sys::get_mouse_y() - wy;
     }
+
+    sys::pos window::get_window_position()
+    {
+        sys::raw_pos p = graphic_context.get_graphic_context_position();
+        return sys::pos(p.rpos.x, p.rpos.y);
+    }
+    void window::set_window_position(uint32_t x, uint32_t y)
+    {
+        graphic_context.set_graphic_context_position({x, y});
+    }
+    void window::set_window_position(sys::pos position)
+    {
+        uint32_t x = position.x;
+        uint32_t y = position.y;
+        set_window_position(x, y);
+    }
 } // namespace gui

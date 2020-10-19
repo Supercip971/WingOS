@@ -127,6 +127,12 @@ uint64_t set_window_position(sys::graphic_system_service_protocol* request, uint
 
     target.px = request->set_pos.position.rpos.x;
     target.py = request->set_pos.position.rpos.y;
+    if((target.px + target.width) > screen_width){
+        target.px = screen_width - target.width;
+    }
+    if((target.py + target.height) > screen_height){
+        target.py = screen_height- target.height;
+    }
     return 1;
 }
 uint64_t interpret(sys::graphic_system_service_protocol* request, uint64_t pid){

@@ -8,7 +8,7 @@ void kernel_process_service()
 {
 
     log("kernel_process_service", LOG_INFO) << "loaded kernel_process_service service";
-
+    set_on_request_service(true);
     while (true)
     {
         process_message *msg = read_message();
@@ -36,6 +36,8 @@ void kernel_process_service()
         }
         else if (msg == 0)
         {
+
+            on_request_service_update();
         }
     }
 }

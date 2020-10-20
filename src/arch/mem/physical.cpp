@@ -1,10 +1,11 @@
+#include <arch/lock.h>
 #include <arch/mem/physical.h>
 #include <com.h>
 #include <kernel.h>
 #include <logging.h>
 extern "C" uint64_t kernel_end;
 extern "C" uint64_t addr_kernel_start;
-
+lock_type pmm_lock = {0};
 uint64_t bitmap_base = 0;
 uint8_t *bitmap;
 uint64_t available_memory;
@@ -61,7 +62,7 @@ uint64_t pmm_find_free(uint64_t lenght)
             return result;
         }
     }
-    log("pmm", LOG_FATAL) << " no free protected memory found";
+    log("pmm", LOG_FATAL) << " no free protected memory found memory length " << pmm_length;
     while (true)
     {
         // do nothing
@@ -101,8 +102,10 @@ uint64_t pmm_find_free_fast(uint64_t lenght)
     return pmm_find_free(lenght);
     return 0x0;
 }
+uint64_t used = 0;
 void *pmm_alloc(uint64_t lenght)
 {
+    used += lenght;
     uint64_t res = pmm_find_free(lenght);
 
     for (uint64_t i = 0; i < lenght; i++)
@@ -114,6 +117,7 @@ void *pmm_alloc(uint64_t lenght)
 }
 void *pmm_alloc_fast(uint64_t lenght)
 {
+    used += lenght;
     uint64_t res = pmm_find_free_fast(lenght);
 
     for (uint64_t i = 0; i < lenght; i++)
@@ -136,6 +140,7 @@ void *pmm_alloc_zero(uint64_t lenght)
 
 void pmm_free(void *where, uint64_t lenght)
 {
+    used -= lenght;
     uint64_t where_aligned = (uint64_t)where;
     where_aligned /= PAGE_SIZE;
     for (uint64_t i = 0; i < lenght; i++)

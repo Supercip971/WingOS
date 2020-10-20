@@ -1,5 +1,6 @@
 #include <arch/arch.h>
-#include <arch/mem/liballoc.h>
+
+#include <arch/mem/memory_manager.h>
 #include <arch/mem/physical.h>
 #include <arch/mem/virtual.h>
 #include <com.h>

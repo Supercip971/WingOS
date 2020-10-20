@@ -1,6 +1,7 @@
 #include <arch/process.h>
 #include <com.h>
 #include <device/pit.h>
+#include <device/rtc.h>
 #include <int_value.h>
 #include <kernel.h>
 #include <logging.h>

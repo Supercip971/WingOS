@@ -132,6 +132,7 @@ void start_process()
     main_start_fs = echfs();
     main_start_fs.init(mbr_part.get_partition_start(0), mbr_part.get_partition_length(0));
     pci_system::the()->init();
+    launch_programm("init_fs/memory_service.exe", &main_start_fs);
     launch_programm("init_fs/graphic_service.exe", &main_start_fs);
     launch_programm("init_fs/test2.exe", &main_start_fs);
     launch_programm("init_fs/test.exe", &main_start_fs);

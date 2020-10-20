@@ -7,7 +7,9 @@ namespace sys
     {
         REQUEST_MALLOC = 0,
         REQUEST_FREE = 1,
-        REQUEST_REALLOC = 2
+        REQUEST_REALLOC = 2,
+        REQUEST_PMM_MALLOC = 3,
+        REQUEST_PMM_FREE = 4
     };
 
     struct memory_service_protocol
@@ -20,4 +22,6 @@ namespace sys
     void *service_malloc(size_t length);
     void service_free(void *addr);
     void *service_realloc(void *addr, size_t length);
+    void *service_pmm_malloc(size_t length);
+    void service_pmm_free(void *addr, size_t length);
 } // namespace sys

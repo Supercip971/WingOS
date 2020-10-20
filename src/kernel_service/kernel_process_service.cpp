@@ -8,24 +8,34 @@ void kernel_process_service()
 {
 
     log("kernel_process_service", LOG_INFO) << "loaded kernel_process_service service";
-    set_on_request_service(true);
+
     while (true)
     {
         process_message *msg = read_message();
 
         if (msg != 0)
         {
-            kernel_process_service_request *prot = (kernel_process_service_request *)msg->content_address;
-            if (msg->content_length < 4096)
+            process_request *prot = (process_request *)msg->content_address;
+            switch (prot->type)
             {
-                msg->response = get_pid_from_process_name((char *)msg->content_address);
+            case GET_PROCESS_PID:
+                msg->response = get_pid_from_process_name(prot->gpp.process_name);
+                break;
+            case SET_CURRENT_PROCESS_AS_SERVICE:
+                log("kernel_process_service", LOG_INFO) << "SET_CURRENT_PROCESS_AS_SERVICE";
+                rename_process(prot->scpas.service_name, msg->from_pid);
+                set_on_request_service(prot->scpas.is_ors, msg->to_pid);
+                msg->response = 1;
+                break;
+            default:
+                log("kernel_process_service", LOG_ERROR) << "invalid request id : " << prot->type;
+                msg->response = -2;
+                break;
             }
             msg->has_been_readed = true;
         }
         else if (msg == 0)
         {
-
-            on_request_service_update();
         }
     }
 }

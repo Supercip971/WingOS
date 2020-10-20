@@ -75,7 +75,7 @@ void dump_memory()
 void check_for_fusion(uint64_t length)
 {
     memory_map_children *current = heap;
-    const uint64_t targeted_length = length + sizeof(memory_map_children);
+    const uint64_t targeted_length = length - sizeof(memory_map_children);
     for (uint64_t i = 0; current != nullptr; current = current->next)
     {
         if (current->is_free != true || current->next == nullptr)
@@ -181,4 +181,45 @@ void free(void *addr)
     last_free = current;
     current->is_free = true;
     unlock(&memory_lock);
+}
+
+void *realloc(void *target, uint64_t length)
+{
+    memory_map_children *current = reinterpret_cast<memory_map_children *>(reinterpret_cast<uint64_t>(target) - sizeof(memory_map_children));
+    if (current->length >= length)
+    {
+        return target;
+    }
+
+    lock(&memory_lock);
+    uint64_t target_length = length - sizeof(memory_map_children);
+    if (current->next->is_free == true)
+    {
+        if (current->next->length + current->length > target_length)
+        {
+            current->next->is_free = false;
+            current->length += current->next->length + sizeof(memory_map_children);
+            current->next = current->next->next;
+            unlock(&memory_lock);
+            return addr_from_header(current);
+        }
+    }
+    uint8_t *new_targ = (uint8_t *)malloc(length);
+    uint8_t *from = (uint8_t *)target;
+    for (uint64_t i = 0; i < current->length; i++)
+    {
+        new_targ[i] = from[i];
+    }
+    free(from);
+    return new_targ;
+}
+void *calloc(uint64_t nmemb, uint64_t size)
+{
+    const uint64_t clength = nmemb * size;
+    uint8_t *result = (uint8_t *)malloc(nmemb * size);
+    for (uint64_t i = 0; i < clength; i++)
+    {
+        result[i] = 0;
+    }
+    return result;
 }

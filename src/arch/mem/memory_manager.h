@@ -15,17 +15,6 @@ void *malloc(uint64_t length);
 void free(void *addr);
 
 void dump_memory();
-inline void *realloc(void *, uint64_t)
-{
-    while (true)
-    {
-    }
-};
-inline void *calloc(uint64_t, uint64_t)
-{
-
-    while (true)
-    {
-    }
-}
+void *realloc(void *target, uint64_t length);
+void *calloc(uint64_t nmemb, uint64_t size);
 #endif // MEMORY_MANAGER_H

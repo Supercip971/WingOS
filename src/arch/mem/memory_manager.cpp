@@ -39,6 +39,7 @@ void increase_mmap()
         }
     }
 }
+memory_map_children *last_free = nullptr;
 void insert_new_mmap_child(memory_map_children *target, uint64_t length)
 {
     uint64_t t = (uint64_t)addr_from_header(target);
@@ -51,10 +52,15 @@ void insert_new_mmap_child(memory_map_children *target, uint64_t length)
     target->length = length;
     target->next->code = 0xf2ee;
     target->next->is_free = true;
+    if (last_free == nullptr)
+    {
+        last_free = target->next;
+    }
 }
 
 void dump_memory()
 {
+    lock(&memory_lock);
     memory_map_children *current = heap;
     for (uint64_t i = 0; current != nullptr; i++)
     {
@@ -63,6 +69,35 @@ void dump_memory()
         log("mem manager", LOG_INFO) << "addr : " << (uint64_t)addr_from_header(current);
         log("mem manager", LOG_INFO) << "is_free : " << current->is_free;
         log("mem manager", LOG_INFO) << "code : " << current->code;
+        current = current->next;
+    }
+    unlock(&memory_lock);
+}
+void check_for_fusion(uint64_t length)
+{
+    memory_map_children *current = heap;
+    for (uint64_t i = 0; current != nullptr; i++)
+    {
+        if (current->is_free == true)
+        {
+            if (current->length < length + sizeof(memory_map_children))
+            {
+                if (current->next != nullptr)
+                {
+                    if (current->next->is_free == true)
+                    {
+                        if (current->next->length + current->length > length + sizeof(memory_map_children))
+                        {
+                            current->length += current->next->length;
+                            current->length += sizeof(memory_map_children);
+                            current->next = current->next->next;
+                            last_free = current;
+                            return;
+                        }
+                    }
+                }
+            }
+        }
         current = current->next;
     }
 }
@@ -78,7 +113,12 @@ void *malloc(uint64_t length)
     {
         init_mm();
     }
+    check_for_fusion(length);
     memory_map_children *current = heap;
+    if (last_free != nullptr)
+    {
+        current = last_free;
+    }
     for (uint64_t i = 0; current != nullptr; i++)
     {
         if (current->is_free == true)
@@ -116,9 +156,16 @@ void *malloc(uint64_t length)
         }
         current = current->next;
     }
-    increase_mmap();
-    unlock(&memory_lock);
+    if (last_free != nullptr)
+    {
+        last_free = nullptr;
+    }
+    else
+    {
 
+        increase_mmap();
+    }
+    unlock(&memory_lock);
     return malloc(length);
 }
 void free(void *addr)
@@ -135,7 +182,7 @@ void free(void *addr)
         log("memory manager", LOG_ERROR) << "address is already free";
         return;
     }
-
+    last_free = current;
     current->is_free = true;
     unlock(&memory_lock);
 }

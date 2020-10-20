@@ -204,6 +204,7 @@ extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
             log("pic", LOG_INFO) << "in processor : " << get_current_cpu()->current_process->processor_target;
             dump_process();
         }
+        dump_memory();
         while (true)
         {
             asm volatile("hlt");

@@ -2,6 +2,7 @@
 #include <arch/mem/virtual.h>
 #include <stivale_struct.h>
 
+extern uint64_t available_memory;
 void init_physical_memory(stivale_struct *bootdata);
 
 uint64_t find_free_page();

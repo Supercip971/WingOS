@@ -1,5 +1,6 @@
 #pragma once
-#include <arch/mem/liballoc.h>
+
+#include <arch/mem/memory_manager.h>
 #include <int_value.h>
 #include <logging.h>
 #include <stddef.h>

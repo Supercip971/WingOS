@@ -1,5 +1,6 @@
 #include <arch/arch.h>
-#include <arch/mem/liballoc.h>
+
+#include <arch/mem/memory_manager.h>
 #include <com.h>
 #include <device/ata_driver.h>
 #include <logging.h>

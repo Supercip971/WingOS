@@ -219,8 +219,8 @@ int main(){
     front_buffer = (sys::pixel*)real_gbuffer_addr;
     screen_width = sys::get_screen_width();
     screen_height = sys::get_screen_height();
-    back_buffer = new sys::pixel[screen_width*screen_height] ;
-    window_list = new raw_window_data[MAX_WINDOW];
+    back_buffer = new sys::pixel[screen_width*screen_height+32] ;
+    window_list = new raw_window_data[MAX_WINDOW+32];
 
     for(int i = 0; i < MAX_WINDOW; i++){
         window_list[i].used = false;

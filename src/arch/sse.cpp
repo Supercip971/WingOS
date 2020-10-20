@@ -1,5 +1,6 @@
 #include <arch/lock.h>
-#include <arch/mem/liballoc.h>
+
+#include <arch/mem/memory_manager.h>
 #include <arch/sse.h>
 #include <device/local_data.h>
 #include <logging.h>

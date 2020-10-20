@@ -1,4 +1,5 @@
-#include <arch/mem/liballoc.h>
+
+#include <arch/mem/memory_manager.h>
 #include <arch/mem/physical.h>
 #include <device/ata_driver.h>
 #include <filesystem/echfs.h>
@@ -18,7 +19,7 @@ echfs_file_header echfs::read_directory_entry(uint64_t entry)
 {
     if (another_buffer == nullptr)
     {
-        another_buffer = (uint64_t *)pmm_alloc_fast(header.block_length / 4096 + 1);
+        another_buffer = (uint64_t *)malloc(header.block_length);
     }
     uint64_t current_entry = 0;
     uint64_t second_check_length = header.block_length / sizeof(echfs_file_header);
@@ -72,8 +73,6 @@ void echfs::init(uint64_t start_sector, uint64_t sector_count)
     log("echfs", LOG_INFO) << "echfs main dir length : " << header.main_directory_length;
     log("echfs", LOG_INFO) << "dir size              : " << sizeof(echfs_file_header);
     log("echfs", LOG_INFO) << "total dir count       : " << (header.main_directory_length * header.block_length) / sizeof(echfs_file_header);
-
-    uint64_t *another_buffer = (uint64_t *)malloc(512);
 
     uint64_t int64_per_sector = 512 / sizeof(uint64_t);
     uint64_t echfs_alloc_table = 16;
@@ -150,7 +149,7 @@ echfs_file_header echfs::get_directory_entry(const char *name, uint64_t forced_p
     uint64_t entry_t = 0;
     uint64_t name_length = strlen(name);
 
-    uint64_t *temporary_buf = (uint64_t *)pmm_alloc_fast(header.block_length / 4096 + 1);
+    uint64_t *temporary_buf = (uint64_t *)malloc(header.block_length);
 
     uint64_t current_entry = 0;
     uint64_t second_check_length = header.block_length / sizeof(echfs_file_header);
@@ -160,7 +159,7 @@ echfs_file_header echfs::get_directory_entry(const char *name, uint64_t forced_p
         read_block(main_dir_start + i, (uint8_t *)temporary_buf);
         for (uint64_t j = 0; j < second_check_length; j++)
         {
-            echfs_file_header *cur_header = reinterpret_cast<echfs_file_header *>((uint64_t)another_buffer + (j * sizeof(echfs_file_header)));
+            echfs_file_header *cur_header = reinterpret_cast<echfs_file_header *>((uint64_t)temporary_buf + (j * sizeof(echfs_file_header)));
             if (strncmp(cur_header->file_name, name, name_length) == 0)
             {
                 if (forced_parent != -1)
@@ -190,7 +189,7 @@ uint64_t echfs::get_simple_file(const char *name, uint64_t forced_parent)
     uint64_t entry_t = 0;
     uint64_t name_length = strlen(name);
 
-    uint64_t *temporary_buf = (uint64_t *)pmm_alloc_fast(header.block_length / 4096 + 1);
+    uint64_t *temporary_buf = (uint64_t *)malloc(header.block_length);
 
     uint64_t current_entry = 0;
     uint64_t second_check_length = header.block_length / sizeof(echfs_file_header);
@@ -232,8 +231,8 @@ echfs_file_header echfs::find_file(const char *path)
         log("echfs", LOG_ERROR) << "with echfs file path can't get larger than 200";
         return {0};
     }
-    char *buffer_temp = (char *)malloc(255);
-    char *path_copy = (char *)malloc(255);
+    char *buffer_temp = (char *)malloc(256);
+    char *path_copy = (char *)malloc(256);
     memzero(path_copy, 255);
 
     memcpy(path_copy, path, strlen(path));

@@ -58,16 +58,11 @@ namespace sys
     void raw_clear_buffer(sys::pixel *buffer, uint64_t size, sys::pixel value)
     {
         const uint64_t msize = size / 2; // copy uint64_t
-        const uint64_t rsize = size % 2;
         uint64_t *conv_buffer = (uint64_t *)buffer;
         const uint64_t v = (uint64_t)value.pix | ((uint64_t)value.pix << 32);
         for (size_t i = 0; i < msize; i++)
         {
             conv_buffer[i] = v;
-        }
-        for (size_t i = 0; i < rsize; i++)
-        {
-            buffer[i + (msize * 2)].pix = value.pix;
         }
     }
 

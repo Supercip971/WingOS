@@ -1,4 +1,5 @@
-#include <arch/mem/liballoc.h>
+
+#include <arch/mem/memory_manager.h>
 #include <arch/process.h>
 #include <kernel_service/memory_service.h>
 #include <logging.h>

@@ -1,5 +1,6 @@
 #include <arch/arch.h>
-#include <arch/mem/liballoc.h>
+
+#include <arch/mem/memory_manager.h>
 #include <device/pci.h>
 #include <logging.h>
 pci_system main_system;

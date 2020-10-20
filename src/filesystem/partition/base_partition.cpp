@@ -1,4 +1,5 @@
-#include <arch/mem/liballoc.h>
+
+#include <arch/mem/memory_manager.h>
 #include <com.h>
 #include <device/ata_driver.h>
 #include <filesystem/partition/base_partition.h>
@@ -15,7 +16,7 @@ void MBR_partition::init()
 {
     log("mbr", LOG_DEBUG) << "loading mbr partition ....";
     uint8_t *temp_buffer = (uint8_t *)malloc(512);
-    ata_driver::the()->read(0, 2, temp_buffer);
+    ata_driver::the()->read(0, 1, temp_buffer);
 
     entry = (mbr_entry *)(temp_buffer + 0x1BE);
 

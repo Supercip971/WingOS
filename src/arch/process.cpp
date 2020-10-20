@@ -1,7 +1,9 @@
 #include <arch/64bit.h>
 #include <arch/gdt.h>
 #include <arch/lock.h>
-#include <arch/mem/liballoc.h>
+#include <arch/mem/memory_manager.h>
+
+#include <arch/mem/memory_manager.h>
 #include <arch/process.h>
 #include <arch/smp.h>
 #include <arch/sse.h>
@@ -173,7 +175,7 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
 
             memcpy(process_array[i].process_name, name, strlen(name) + 2);
             process_array[i].process_name[strlen(name) + 1] = i;
-            process_array[i].global_process_memory = (uint8_t *)get_mem_addr((uint64_t)pmm_alloc(1));
+            process_array[i].global_process_memory = (uint8_t *)get_mem_addr((uint64_t)malloc(4096));
             process_array[i].global_process_memory_length = 4096;
             memzero(process_array[i].global_process_memory, process_array[i].global_process_memory_length);
 

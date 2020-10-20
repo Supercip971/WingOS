@@ -4,6 +4,7 @@
 #include <arch/mem/liballoc.h>
 #include <arch/mem/virtual.h>
 //#include <arch/msr_syscall.h> sorry this file will exist one day
+#include <arch/mem/memory_manager.h>
 #include <arch/pic.h>
 #include <arch/process.h>
 #include <arch/programm_launcher.h>
@@ -66,6 +67,17 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
 
     ps_mouse::the()->init();
     pic_init();
+    log("memory manager", LOG_INFO) << "start test";
+    void *last = nullptr;
+    for (int i = 64; i < 100; i++)
+    {
+        log("memory manager", LOG_INFO) << "for" << i << "id : " << (uint64_t)last;
+        if (i % 3 == 0)
+        {
+            free(last);
+        }
+        last = malloc(i);
+    }
     RTC::the()->init();
     acpi::the()->init((reinterpret_cast<stivale_struct *>(bootdat))->rsdp);
 

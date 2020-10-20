@@ -1,5 +1,6 @@
 #include <arch/gdt.h>
-#include <arch/mem/liballoc.h>
+
+#include <arch/mem/memory_manager.h>
 #include <com.h>
 #include <device/local_data.h>
 #include <kernel.h>

@@ -1,6 +1,7 @@
-#include <arch/mem/liballoc.h>
+#include <arch/mem/memory_manager.h>
 #include <arch/mem/physical.h>
 #include <arch/mem/virtual.h>
+#include <arch/process.h>
 #include <arch/programm_launcher.h>
 #include <arch/smp.h>
 #include <kernel.h>

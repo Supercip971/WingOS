@@ -454,6 +454,11 @@ process_message *read_message()
             }
         }
     }
+    if (get_current_cpu()->current_process->is_ORS == true)
+    {
+
+        get_current_cpu()->current_process->should_be_active = false;
+    }
     return 0x0;
 }
 
@@ -505,6 +510,15 @@ void set_on_request_service(bool is_ORS)
     get_current_cpu()->current_process->is_ORS = is_ORS;
     get_current_cpu()->current_process->should_be_active = false;
 }
+void set_on_request_service(bool is_ORS, uint64_t pid)
+{
+    if (is_ORS == true)
+    {
+        log("process", LOG_INFO) << "setting process : " << process_array[pid].process_name << " (on request service mode)";
+    }
+    process_array[pid].is_ORS = is_ORS;
+    process_array[pid].should_be_active = false;
+}
 void on_request_service_update()
 {
     get_current_cpu()->current_process->should_be_active = false;
@@ -553,4 +567,18 @@ void set_on_interrupt_process(uint8_t added_int)
         }
     }
     log("process", LOG_ERROR) << "no free interrupt entry for process", get_current_cpu()->current_process->process_name;
+}
+
+void rename_process(const char *name, uint64_t pid)
+{
+    log("process", LOG_INFO) << "renamming process: " << process_array[pid].process_name << " to : " << name;
+
+    lock(&lck_syscall); // turn off syscall
+    lock_process();
+    memcpy(process_array[pid].backed_name, process_array[pid].process_name, 128);
+    memzero(process_array[pid].process_name, 128);
+    memcpy(process_array[pid].process_name, name, strlen(name) + 1);
+
+    unlock(&lck_syscall);
+    unlock_process();
 }

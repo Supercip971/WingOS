@@ -43,6 +43,7 @@ struct process
     uint64_t sse_context[128];
     uint64_t page_directory = 0;
     process_memory_data_map mmap[MAX_PROCESS_MEMORY_DATA_MAP];
+    char backed_name[128];
     char process_name[128];
     process_message msg_list[MAX_PROCESS_MESSAGE_QUEUE];
     uint64_t last_message_used;
@@ -87,9 +88,11 @@ uint64_t message_response(process_message *indentifier);
 
 // todo : add ORS to user service, for the moment it is only for kernel
 void set_on_request_service(bool is_ORS);
+void set_on_request_service(bool is_ORS, uint64_t pid);
 void on_request_service_update();
 uint64_t get_pid_from_process_name(const char *name);
 
 void *get_current_process_global_data(uint64_t offset, uint64_t length);
 
 uint64_t get_process_global_data_copy(uint64_t offset, const char *process_name);
+void rename_process(const char *name, uint64_t pid);

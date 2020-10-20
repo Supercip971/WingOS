@@ -75,29 +75,26 @@ void dump_memory()
 void check_for_fusion(uint64_t length)
 {
     memory_map_children *current = heap;
-    for (uint64_t i = 0; current != nullptr; i++)
+    const uint64_t targeted_length = length + sizeof(memory_map_children);
+    for (uint64_t i = 0; current != nullptr; current = current->next)
     {
-        if (current->is_free == true)
+        if (current->is_free != true || current->next == nullptr)
         {
-            if (current->length < length + sizeof(memory_map_children))
-            {
-                if (current->next != nullptr)
-                {
-                    if (current->next->is_free == true)
-                    {
-                        if (current->next->length + current->length > length + sizeof(memory_map_children))
-                        {
-                            current->length += current->next->length;
-                            current->length += sizeof(memory_map_children);
-                            current->next = current->next->next;
-                            last_free = current;
-                            return;
-                        }
-                    }
-                }
-            }
+            continue;
         }
-        current = current->next;
+        if ((current->next->is_free != true))
+        {
+            continue;
+        }
+        const uint64_t two_block_length = current->next->length + current->length;
+        if ((two_block_length > targeted_length) && (current->length < targeted_length))
+        {
+            current->length += current->next->length;
+            current->length += sizeof(memory_map_children);
+            current->next = current->next->next;
+            last_free = current;
+            return;
+        }
     }
 }
 void *malloc(uint64_t length)

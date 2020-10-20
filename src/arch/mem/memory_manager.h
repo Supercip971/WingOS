@@ -2,7 +2,7 @@
 #define MEMORY_MANAGER_H
 #include <arch/mem/physical.h>
 #define MM_BLOCK_SIZE 4096
-#define MM_BIG_BLOCK_SIZE 536870912
+#define MM_BIG_BLOCK_SIZE 16777216
 struct memory_map_children
 {
     uint64_t length;

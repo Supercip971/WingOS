@@ -10,7 +10,7 @@ lock_type memory_lock = {0};
 void init_mm()
 {
     log("memory manager", LOG_DEBUG) << "loading mm";
-    heap = (memory_map_children *)pmm_alloc_zero(MM_BIG_BLOCK_SIZE / 4096);
+    heap = reinterpret_cast<memory_map_children *>(pmm_alloc_zero(MM_BIG_BLOCK_SIZE / 4096));
     heap->code = 0xf2ee;
     heap->length = MM_BIG_BLOCK_SIZE - sizeof(memory_map_children);
     heap->is_free = true;
@@ -18,7 +18,7 @@ void init_mm()
 }
 void *addr_from_header(memory_map_children *target)
 {
-    return (void *)((uint64_t)target + sizeof(memory_map_children));
+    return reinterpret_cast<void *>(reinterpret_cast<uint64_t>(target) + sizeof(memory_map_children));
 }
 void increase_mmap()
 {
@@ -30,7 +30,7 @@ void increase_mmap()
         if (current->next == nullptr)
         {
 
-            current->next = (memory_map_children *)pmm_alloc_zero(MM_BIG_BLOCK_SIZE / 4096);
+            current->next = reinterpret_cast<memory_map_children *>(pmm_alloc_zero(MM_BIG_BLOCK_SIZE / 4096));
             current->next->code = 0xf2ee;
             current->next->length = MM_BIG_BLOCK_SIZE - sizeof(memory_map_children);
             current->next->is_free = true;
@@ -42,12 +42,11 @@ void increase_mmap()
 memory_map_children *last_free = nullptr;
 void insert_new_mmap_child(memory_map_children *target, uint64_t length)
 {
-    uint64_t t = (uint64_t)addr_from_header(target);
+    uint64_t t = reinterpret_cast<uint64_t>(addr_from_header(target));
     t += length;
-    uint64_t previous_next = (uint64_t)target->next;
-    uint64_t previous_length = target->length;
-    target->next = (memory_map_children *)t;
-    target->next->next = (memory_map_children *)previous_next;
+    uint64_t previous_next = reinterpret_cast<uint64_t>(target->next);
+    target->next = reinterpret_cast<memory_map_children *>(t);
+    target->next->next = reinterpret_cast<memory_map_children *>(previous_next);
     target->next->length = target->length - (length + sizeof(memory_map_children));
     target->length = length;
     target->next->code = 0xf2ee;
@@ -66,7 +65,7 @@ void dump_memory()
     {
         log("mem manager", LOG_DEBUG) << "entry : " << i;
         log("mem manager", LOG_INFO) << "size : " << current->length;
-        log("mem manager", LOG_INFO) << "addr : " << (uint64_t)addr_from_header(current);
+        log("mem manager", LOG_INFO) << "addr : " << reinterpret_cast<uint64_t>(addr_from_header(current));
         log("mem manager", LOG_INFO) << "is_free : " << current->is_free;
         log("mem manager", LOG_INFO) << "code : " << current->code;
         current = current->next;
@@ -171,7 +170,7 @@ void *malloc(uint64_t length)
 void free(void *addr)
 {
     lock(&memory_lock);
-    memory_map_children *current = (memory_map_children *)((uint64_t)addr - sizeof(memory_map_children));
+    memory_map_children *current = reinterpret_cast<memory_map_children *>(reinterpret_cast<uint64_t>(addr) - sizeof(memory_map_children));
     if (current->code != 0xf2ee)
     {
         log("memory manager", LOG_ERROR) << "trying to free an invalid address" << current->code;

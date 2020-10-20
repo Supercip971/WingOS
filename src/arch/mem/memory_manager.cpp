@@ -1,6 +1,7 @@
 #include "memory_manager.h"
 #include <arch/lock.h>
 #include <arch/process.h>
+#include <device/local_data.h>
 #include <stddef.h>
 memory_map_children *heap = nullptr;
 uint64_t heap_length;
@@ -9,7 +10,7 @@ lock_type memory_lock = {0};
 void init_mm()
 {
     log("memory manager", LOG_DEBUG) << "loading mm";
-    heap = (memory_map_children *)pmm_alloc(MM_BIG_BLOCK_SIZE / 4096);
+    heap = (memory_map_children *)pmm_alloc_zero(MM_BIG_BLOCK_SIZE / 4096);
     heap->code = 0xf2ee;
     heap->length = MM_BIG_BLOCK_SIZE - sizeof(memory_map_children);
     heap->is_free = true;
@@ -29,7 +30,7 @@ void increase_mmap()
         if (current->next == nullptr)
         {
 
-            current->next = (memory_map_children *)pmm_alloc(MM_BIG_BLOCK_SIZE / 4096);
+            current->next = (memory_map_children *)pmm_alloc_zero(MM_BIG_BLOCK_SIZE / 4096);
             current->next->code = 0xf2ee;
             current->next->length = MM_BIG_BLOCK_SIZE - sizeof(memory_map_children);
             current->next->is_free = true;
@@ -51,10 +52,24 @@ void insert_new_mmap_child(memory_map_children *target, uint64_t length)
     target->next->code = 0xf2ee;
     target->next->is_free = true;
 }
+
+void dump_memory()
+{
+    memory_map_children *current = heap;
+    for (uint64_t i = 0; current != nullptr; i++)
+    {
+        log("mem manager", LOG_DEBUG) << "entry : " << i;
+        log("mem manager", LOG_INFO) << "size : " << current->length;
+        log("mem manager", LOG_INFO) << "addr : " << (uint64_t)addr_from_header(current);
+        log("mem manager", LOG_INFO) << "is_free : " << current->is_free;
+        log("mem manager", LOG_INFO) << "code : " << current->code;
+        current = current->next;
+    }
+}
 void *malloc(uint64_t length)
 {
     lock(&memory_lock);
-    lock_process();
+
     if (length < 16)
     {
         length = 16;
@@ -68,14 +83,14 @@ void *malloc(uint64_t length)
     {
         if (current->is_free == true)
         {
-            if (current->length > length)
+            if (current->length > length + sizeof(memory_map_children))
             {
 
                 current->is_free = false;
                 insert_new_mmap_child(current, length);
                 current->length = length;
                 current->code = 0xf2ee;
-                unlock_process();
+
                 unlock(&memory_lock);
 
                 return addr_from_header(current);
@@ -85,15 +100,23 @@ void *malloc(uint64_t length)
 
                 current->is_free = false;
                 current->code = 0xf2ee;
-                unlock_process();
                 unlock(&memory_lock);
+
+                return addr_from_header(current);
+            }
+            else if (current->length > length && length + sizeof(memory_map_children) > current->length)
+            {
+
+                current->is_free = false;
+                current->code = 0xf2ee;
+                unlock(&memory_lock);
+
                 return addr_from_header(current);
             }
         }
         current = current->next;
     }
     increase_mmap();
-    unlock_process();
     unlock(&memory_lock);
 
     return malloc(length);
@@ -101,7 +124,6 @@ void *malloc(uint64_t length)
 void free(void *addr)
 {
     lock(&memory_lock);
-    lock_process();
     memory_map_children *current = (memory_map_children *)((uint64_t)addr - sizeof(memory_map_children));
     if (current->code != 0xf2ee)
     {
@@ -115,6 +137,5 @@ void free(void *addr)
     }
 
     current->is_free = true;
-    unlock_process();
     unlock(&memory_lock);
 }

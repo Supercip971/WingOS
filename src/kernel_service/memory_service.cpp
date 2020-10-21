@@ -49,7 +49,7 @@ void memory_service()
             {
                 msg->has_been_readed = true;
                 msg->response = 0;
-                log("memory_service", LOG_ERROR) << "not valid request memory" << prot->request_type;
+                log("memory_service", LOG_ERROR) << "not valid request memory" << (uint64_t)prot->request_type;
             }
         }
         else if (msg == 0)

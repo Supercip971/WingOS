@@ -9,12 +9,14 @@ void kernel_process_service()
 
     log("kernel_process_service", LOG_INFO) << "loaded kernel_process_service service";
     set_on_request_service(true);
+    
     while (true)
     {
         process_message *msg = read_message();
 
         if (msg != 0)
         {
+
             process_request *prot = (process_request *)msg->content_address;
             switch (prot->type)
             {
@@ -28,15 +30,15 @@ void kernel_process_service()
                 msg->response = 1;
                 break;
             default:
-                log("kernel_process_service", LOG_ERROR) << "invalid request id : " << prot->type;
+                log("kernel_process_service", LOG_ERROR) << "invalid request id : " << (uint64_t)prot->type;
                 msg->response = -2;
                 break;
             }
+
             msg->has_been_readed = true;
         }
         else if (msg == 0)
         {
-
             on_request_service_update();
         }
     }

@@ -10,6 +10,7 @@ void graphic_buffer_service()
     stivale_struct *hdr = &boot_loader_data_copy;
     log("graphic_buffer", LOG_INFO) << "loaded graphic buffer service";
     set_on_request_service(true);
+    
     while (true)
     {
         process_message *msg = read_message();
@@ -27,25 +28,24 @@ void graphic_buffer_service()
             {
                 if (data->data1 == 0)
                 {
-                    log("graphic_buffer", LOG_INFO) << "get current screen width" << hdr->framebuffer_width;
+                    log("graphic_buffer", LOG_INFO) << "get current screen width" << (uint64_t)hdr->framebuffer_width;
                     msg->response = hdr->framebuffer_width;
                     msg->has_been_readed = true;
                 }
                 else
                 {
-                    log("graphic_buffer", LOG_INFO) << "get current screen height" << hdr->framebuffer_height;
+                    log("graphic_buffer", LOG_INFO) << "get current screen height" << (uint64_t)hdr->framebuffer_height;
                     msg->response = hdr->framebuffer_height;
                     msg->has_been_readed = true;
                 }
             }
             else
             {
-                log("graphic_buffer", LOG_ERROR) << "not supported request id: " << data->request;
+                log("graphic_buffer", LOG_ERROR) << "not supported request id: " << (uint64_t)data->request;
             }
         }
         else if (msg == 0)
         {
-
             on_request_service_update();
         }
     }

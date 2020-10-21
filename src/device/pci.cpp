@@ -284,14 +284,17 @@ uint8_t pci_device::get_sub_buss(uint8_t function)
 
     return ((uint8_t)(read_dword(function, 0x18) >> 8));
 }
+
 uint8_t pci_device::get_class(uint8_t function)
 {
     return ((uint8_t)(read_dword(function, 0x8) >> 24));
 }
+
 uint8_t pci_device::get_progif(uint8_t function)
 {
     return ((uint8_t)(read_dword(function, 0x8) >> 8));
 }
+
 uint8_t pci_device::get_subclass(uint8_t function)
 {
     return ((uint8_t)(read_dword(function, 0x8) >> 16));
@@ -301,6 +304,7 @@ bool pci_device::has_multiple_function()
 {
     return ((uint8_t)(read_dword(0, 0xC) >> 16)) & (1 << 7);
 }
+
 pci_device_raw pci_device::to_raw(uint8_t function)
 {
     pci_device_raw r;
@@ -309,6 +313,7 @@ pci_device_raw pci_device::to_raw(uint8_t function)
     r.device = ddev;
     return r;
 }
+
 pci_system::pci_system()
 {
 }
@@ -317,6 +322,7 @@ pci_system *pci_system::the()
 {
     return &main_system;
 }
+
 void pci_system::scan_dev(uint8_t dev_id, uint8_t bus_id)
 {
     pci_device device(bus_id, dev_id);
@@ -329,7 +335,6 @@ void pci_system::scan_dev(uint8_t dev_id, uint8_t bus_id)
         }
         else
         {
-
             pci_devices[pci_devices_count] = device.to_raw(0);
             pci_devices_count++;
             if (device.has_multiple_function())
@@ -356,6 +361,7 @@ void pci_system::scan_dev(uint8_t dev_id, uint8_t bus_id)
         }
     }
 }
+
 void pci_system::scan_bus(uint8_t bus_id)
 {
     log("pci", LOG_INFO) << "scanning bus : " << bus_id;
@@ -364,11 +370,13 @@ void pci_system::scan_bus(uint8_t bus_id)
         scan_dev(i, bus_id);
     }
 }
+
 void pci_system::init_top_bus()
 {
     log("pci", LOG_INFO) << "loading top bus";
     scan_bus(0);
 }
+
 void pci_system::init()
 {
     log("pci", LOG_DEBUG) << "loading pci";

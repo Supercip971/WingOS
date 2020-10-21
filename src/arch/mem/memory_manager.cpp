@@ -97,7 +97,7 @@ void check_for_fusion(uint64_t length)
             continue;
         }
 
-        memory_map_children* after = current->next;
+        memory_map_children *after = current->next;
         const uint64_t two_block_length = after->length + current->length;
 
         if ((two_block_length > targeted_length) && (current->length < targeted_length))
@@ -216,7 +216,7 @@ void *realloc(void *target, uint64_t length)
 
     lock(&memory_lock);
     uint64_t target_length = length - sizeof(memory_map_children);
-    memory_map_children* after = current->next;
+    memory_map_children *after = current->next;
 
     if (after->is_free && after != nullptr)
     {

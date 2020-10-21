@@ -2,9 +2,11 @@
 #include <device/ps_mouse.h>
 #include <logging.h>
 ps_mouse main_ps_mouse;
+
 ps_mouse::ps_mouse()
 {
 }
+
 void ps_mouse::write(uint8_t data)
 {
     wait(true);
@@ -12,6 +14,7 @@ void ps_mouse::write(uint8_t data)
     wait(true);
     outb(0x60, data);
 }
+
 void ps_mouse::wait(bool is_signal)
 {
     uint64_t time_out = 0xffffff;
@@ -54,6 +57,7 @@ void ps_mouse::set_resolution(uint16_t resolution)
     write(resolution);
     read();
 }
+
 ps_mouse *ps_mouse::the()
 {
     return &main_ps_mouse;
@@ -64,6 +68,7 @@ uint8_t ps_mouse::read()
     wait(false);
     return inb(0x60);
 }
+
 void ps_mouse::init()
 {
     mouse_x = 0;
@@ -80,10 +85,13 @@ void ps_mouse::init()
 
     wait(true);
     outb(0x64, 0x20);
+
     wait(false);
     uint8_t current_setting = inb(0x60) | 2;
+
     wait(true);
     outb(0x64, 0x60);
+
     wait(true);
     outb(0x60, current_setting);
 
@@ -130,10 +138,12 @@ void ps_mouse::interrupt_handler()
         mouse_x_offset = mouse_data[1];
         mouse_y_offset = mouse_data[2];
         mouse_x += mouse_x_offset;
+
         if (mouse_x < 0)
         {
             mouse_x = 0;
         }
+
         mouse_y -= mouse_y_offset;
         if (mouse_y < 0)
         {
@@ -144,10 +154,12 @@ void ps_mouse::interrupt_handler()
         mouse_right = (bool)((mouse_data[0] >> 1) & 1);
         mouse_left = (bool)((mouse_data[0]) & 1);
         mouse_cycle = 0;
+
         if (ptr_to_update_x != nullptr)
         {
             *ptr_to_update_x = mouse_x;
         }
+
         if (ptr_to_update_y != nullptr)
         {
             *ptr_to_update_y = mouse_y;
@@ -160,14 +172,17 @@ void ps_mouse::set_ptr_to_update(uint32_t *x, uint32_t *y)
     ptr_to_update_x = x;
     ptr_to_update_y = y;
 }
+
 int32_t ps_mouse::get_mouse_x()
 {
     return mouse_x;
 }
+
 int32_t ps_mouse::get_mouse_y()
 {
     return mouse_y;
 }
+
 uint64_t ps_mouse::get_mouse_button(int code)
 {
     if (code == 0)
@@ -178,5 +193,6 @@ uint64_t ps_mouse::get_mouse_button(int code)
     {
         return mouse_right;
     }
+
     return mouse_middle;
 }

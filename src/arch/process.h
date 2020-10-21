@@ -52,6 +52,7 @@ struct process
     uint8_t processor_target;
     uint8_t *global_process_memory;
     uint64_t global_process_memory_length;
+    uint64_t stopped_length = 0;
     bool is_on_interrupt_process = false;
     uint8_t interrupt_handle_list[8]; // max 8 interrupt per process
 } __attribute__((packed));

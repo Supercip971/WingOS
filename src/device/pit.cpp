@@ -29,6 +29,7 @@ void PIT::init_PIT()
     outb(0x40, h);
     log("pit", LOG_DEBUG) << "loaded pit";
 }
+
 void PIT::Pwait(uint16_t ms)
 {
     outb(0x43, 0x30);
@@ -52,6 +53,7 @@ void PIT::Pwait(uint16_t ms)
         }
     }
 }
+
 void PIT::update()
 {
     total_count++;
@@ -62,6 +64,7 @@ void PIT::update()
         passed_sec += 1;
     }
 }
+
 bool loaded = false;
 
 PIT *PIT::the() { return &global_PIT; }

@@ -6,40 +6,49 @@ RTC main_rtc;
 RTC::RTC()
 {
 }
+
 int rtc_is_updating()
 {
     outb(0x70, 0x0A);
     return inb(0x71) & 0x80;
 }
+
 uint8_t RTC::get_sec()
 {
     return read(0);
 }
+
 uint8_t RTC::get_min()
 {
     return read(0x2);
 }
+
 uint8_t RTC::get_hour()
 {
     return read(0x4);
 }
+
 uint8_t RTC::get_day()
 {
     return read(0x7);
 }
+
 uint8_t RTC::get_month()
 {
     return read(0x8);
 }
+
 uint8_t RTC::get_year()
 {
     return read(0x9);
 }
+
 uint8_t RTC::read(int reg)
 {
     while (rtc_is_updating())
         ;
     outb(0x70, reg);
+
     return inb(0x71);
 }
 
@@ -54,6 +63,7 @@ uint64_t RTC::get_total_sec()
     result += (get_sec());
     return result;
 }
+
 void RTC::init()
 {
     log("rtc", LOG_DEBUG) << "loading rtc...";
@@ -66,6 +76,7 @@ void RTC::init()
     log("rtc", LOG_INFO) << "min   :" << get_min();
     log("rtc", LOG_INFO) << "sec   :" << get_sec();
 }
+
 RTC *RTC::the()
 {
     return &main_rtc;

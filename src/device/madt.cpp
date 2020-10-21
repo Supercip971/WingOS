@@ -85,6 +85,7 @@ void madt::init()
     uint64_t lbase_addr = lapic_base;
     lbase_addr /= 4096;
     lbase_addr *= 4096;
+
     virt_map(lbase_addr, get_mem_addr(lbase_addr), 0x03);
     virt_map(lbase_addr + 4096, get_mem_addr(lbase_addr) + 4096, 0x03);
 
@@ -96,6 +97,7 @@ MADT_table_IOAPIC **madt::get_madt_ioAPIC()
     MADT_record_table_entry *table = madt_header->MADT_table;
     MADT_table_IOAPIC **MTIO = (MADT_table_IOAPIC **)malloc(255);
     uint64_t count = 0;
+
     while (uint64_t(table) < get_madt_table_lenght())
     {
         table = (MADT_record_table_entry *)(((uint64_t)table) + table->tlenght);
@@ -108,6 +110,7 @@ MADT_table_IOAPIC **madt::get_madt_ioAPIC()
             count++;
         }
     }
+
     MTIO[count] = 0;
     return MTIO;
 }
@@ -117,6 +120,7 @@ MADT_table_ISO **madt::get_madt_ISO()
     MADT_table_ISO **MTIO = reinterpret_cast<MADT_table_ISO **>(malloc(255));
     uint64_t count = 0;
     bool has_one = false;
+
     while (uint64_t(table) < get_madt_table_lenght())
     {
         table = reinterpret_cast<MADT_record_table_entry *>(((uint64_t)table) + table->tlenght);
@@ -129,11 +133,13 @@ MADT_table_ISO **madt::get_madt_ISO()
             count++;
         }
     }
+
     if (has_one == false)
     {
         free(MTIO);
         return nullptr;
     }
+
     MTIO[count] = 0;
     return MTIO;
 }

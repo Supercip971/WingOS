@@ -14,20 +14,17 @@ extern "C" void asm_sse_save(uint64_t addr);
 extern "C" void asm_sse_load(uint64_t addr);
 void init_sse()
 {
-    // uint64_t fpu_data = (uint64_t)malloc(128 * sizeof(uint64_t));
 
     fpu_reg = (uint64_t *)fpu_data;
     sse_init();
     asm volatile("fninit");
 
-    //  asm volatile("fxsave (%0)" ::"r"((uint64_t)fpu_reg));
     asm_sse_save((uint64_t)fpu_reg);
 }
 
 __attribute__((optimize("O0"))) void save_sse_context(uint64_t *context)
 {
     lock((&sse_lock));
-    //asm volatile("fxsave (%0)" ::"r"((uint64_t)fpu_reg));
     asm_sse_save((uint64_t)fpu_reg);
     for (int i = 0; i < 128; i++)
     {
@@ -35,6 +32,7 @@ __attribute__((optimize("O0"))) void save_sse_context(uint64_t *context)
     }
     unlock((&sse_lock));
 }
+
 __attribute__((optimize("O0"))) void load_sse_context(uint64_t *context)
 {
 
@@ -46,5 +44,4 @@ __attribute__((optimize("O0"))) void load_sse_context(uint64_t *context)
     asm_sse_load((uint64_t)fpu_reg);
 
     unlock((&sse_lock));
-    //asm volatile("fxrstor (%0)" ::"r"((uint64_t)fpu_reg));
 }

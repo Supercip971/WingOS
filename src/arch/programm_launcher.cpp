@@ -138,10 +138,12 @@ void launch_programm(const char *path, echfs *file_sys)
 
     log("prog launcher", LOG_DEBUG) << "launching programm : " << path;
     uint8_t *programm_code = file_sys->ech_read_file(path);
+
     if (programm_code == nullptr)
     {
         return;
     }
+
     Elf64_Ehdr *programm_header = reinterpret_cast<Elf64_Ehdr *>(programm_code);
     if (programm_header->e_ident[0] == 0x7f &&
         programm_header->e_ident[1] == 'E' &&
@@ -150,29 +152,30 @@ void launch_programm(const char *path, echfs *file_sys)
     {
 
         log("prog launcher", LOG_INFO) << "valid elf programm ";
+
         if (programm_header->e_ident[4] != ELFCLASS64)
         {
-
             log("prog launcher", LOG_ERROR) << "is not 64bit programm ";
         }
+
         log("prog launcher", LOG_INFO) << "elf programm entry count" << programm_header->e_phnum;
+
         last_selected_cpu++;
         if (last_selected_cpu > smp::the()->processor_count)
         {
             last_selected_cpu = 0;
         }
-
         log("prog launcher", LOG_INFO) << "elf programm cpu : " << last_selected_cpu;
-        //read_elf_section_header(programm_code);
+
         process *to_launch = init_process((func)programm_header->e_entry, false, path, true, last_selected_cpu);
 
         Elf64_Phdr *p_entry = reinterpret_cast<Elf64_Phdr *>((uint64_t)programm_code + programm_header->e_phoff);
+
         for (int table_entry = 0; table_entry < programm_header->e_phnum; table_entry++, p_entry += programm_header->e_phentsize)
         {
 
             if (p_entry->p_type == PT_LOAD)
             {
-
                 char *temp_copy = (char *)malloc(p_entry->p_filesz + 4096);
                 memcpy(temp_copy, (char *)((uint64_t)programm_code + p_entry->p_offset), p_entry->p_filesz);
                 load_segment(to_launch, (uint64_t)programm_code + p_entry->p_offset, p_entry->p_filesz, p_entry->p_vaddr, p_entry->p_memsz);
@@ -192,7 +195,6 @@ void launch_programm(const char *path, echfs *file_sys)
     }
     else
     {
-
         log("prog launcher", LOG_ERROR) << "not valid elf programm ";
         return;
     }

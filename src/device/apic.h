@@ -18,7 +18,20 @@ enum apic_register
     timer_init_counter = 0x380,
     timer_current = 0x390
 };
+
+enum ioapic_register
+{
+    version_reg = 0x1
+};
+
+enum ioapic_flags
+{
+    active_high_low = 2,
+    edge_level = 8
+};
+
 extern "C" uint32_t *lapic_eoi_ptr;
+
 struct io_apic_version_table
 {
     uint8_t version;
@@ -26,6 +39,7 @@ struct io_apic_version_table
     uint8_t maximum_redirection;
     uint8_t reserved2;
 };
+
 class apic
 {
     void *apic_addr;

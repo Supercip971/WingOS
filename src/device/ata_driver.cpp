@@ -9,6 +9,7 @@ int waiting_for_irq = 0;
 ata_driver::ata_driver()
 {
 }
+
 void ata_driver::ata_write(bool primary, uint16_t ata_register, uint16_t whattowrite)
 {
     if (primary)
@@ -20,6 +21,7 @@ void ata_driver::ata_write(bool primary, uint16_t ata_register, uint16_t whattow
         outb(ATA_SECONDARY + ata_register, whattowrite);
     }
 }
+
 uint8_t ata_driver::ata_read(bool primary, uint16_t ata_register)
 {
     if (primary)
@@ -31,6 +33,7 @@ uint8_t ata_driver::ata_read(bool primary, uint16_t ata_register)
         return inb(ATA_SECONDARY + ata_register);
     }
 }
+
 bool ata_driver::get_ata_status()
 {
     uint8_t cur_status;
@@ -47,6 +50,7 @@ bool ata_driver::get_ata_status()
             return true;
     }
 }
+
 void ata_driver::init()
 {
     waiting_for_irq = 0;
@@ -55,24 +59,30 @@ void ata_driver::init()
 
     outb(ATA_PRIMARY_DCR, 0x04);
     outb(ATA_PRIMARY_DCR, 0x00);
+
     uint8_t status = ata_read(true, ATA_reg_command_status);
     while (((status & 0x80) == 0x80) && ((status & 0x01) != 0x01))
     {
         status = ata_read(true, ATA_reg_command_status);
     }
+
     // reset
     uint8_t *temp_buffer = (uint8_t *)malloc(2048);
+
     for (int i = 0; i < 2048; i++)
     {
         temp_buffer[i] = 0;
     }
 
     read(0, 3, temp_buffer);
+
     log("ata", LOG_INFO) << "first bytes data : \n";
+
     for (int i = 0; i < 256 * 3; i++)
     {
         printf(" %c", temp_buffer[i]);
     }
+
     printf("\n");
 }
 
@@ -80,12 +90,14 @@ ata_driver *ata_driver::the()
 {
     return &main_driver;
 }
+
 void ata_driver::irq_handle(uint64_t irq_handle_num)
 {
     if (waiting_for_irq == 1)
     {
         waiting_for_irq = 0;
     }
+
     if (irq_handle_num == 14)
     {
         inb(0x1F7);
@@ -101,6 +113,7 @@ void ata_driver::irq_handle(uint64_t irq_handle_num)
         //    printf("[ERROR] ata driver receive not supported irq");
     }
 }
+
 void ata_driver::read(uint32_t where, uint8_t count, uint8_t *buffer)
 {
     waiting_for_irq = 1;
@@ -120,10 +133,12 @@ void ata_driver::read(uint32_t where, uint8_t count, uint8_t *buffer)
     while (new_count-- > 0)
     {
         uint8_t status = ata_read(true, ATA_reg_command_status);
+
         while (((status & 0x80) == 0x80) && ((status & 0x01) != 0x01))
         {
             status = ata_read(true, ATA_reg_command_status);
         }
+
         for (uint16_t i = 0; i < 256; i++)
         {
 

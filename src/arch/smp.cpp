@@ -46,15 +46,6 @@ extern "C" void cpuupstart(void)
     SMPloaded = true;
     uint64_t vo = 0;
     asm("sti");
-
-    /* init_process(smp_function_tool, true, "smp");
-    while (true)
-    {
-
-        log("smp", LOG_INFO) << "first jumping cpu :" << apic::the()->get_current_processor_id();
-
-        irq0_first_jump();
-    }*/
     while (true)
     {
     }
@@ -65,11 +56,14 @@ void smp::init()
     SMPloaded = false;
     log("smp", LOG_DEBUG) << "loading smp";
     memzero(cpu_tss, sizeof(tss_t) * max_cpu);
+
     for (int i = 0; i < max_cpu; i++)
     {
         mt_lapic[i] = 0x0;
     }
+
     MADT_record_table_entry *mrte = madt::the()->get_madt_table_record();
+
     processor_count = 0;
     while (uint64_t(mrte) < madt::the()->get_madt_table_lenght())
     {
@@ -77,7 +71,6 @@ void smp::init()
 
         if (mrte->ttype == MADT_type::MADT_LAPIC)
         {
-
             auto local_apic = reinterpret_cast<MADT_table_LAPIC *>(mrte);
 
             mt_lapic[processor_count] = local_apic;
@@ -97,14 +90,10 @@ void smp::init()
 
     for (int i = 0; i < processor_count; i++)
     {
-
         log("smp", LOG_INFO) << "set up processor " << mt_lapic[i]->processor_id;
         if (apic::the()->get_current_processor_id() != mt_lapic[i]->processor_id)
         {
             init_cpu(mt_lapic[i]->apic_id, mt_lapic[i]->processor_id);
-        }
-        else
-        {
         }
     }
 }
@@ -119,18 +108,24 @@ void smp::init_cpu(int apic, int id)
     {
         map_page(0x1000 + (i * 4096), 0x1000 + (i * 4096), 0x1 | 0x2 | 0x4);
     }
+
     map_page(0, 0, 0x1 | 0x2 | 0x4);
     update_paging();
+
     log("smp cpu", LOG_INFO) << "trampoline length " << trampoline_len;
 
     uint64_t end_addr = 0x4000;
     end_addr /= 4096;
     end_addr *= 4096;
+
     get_current_cpu(id)->page_table = get_current_cpu()->page_table;
+
     POKE(get_mem_addr(0x500)) =
         get_rmem_addr((uint64_t)get_current_cpu(id)->page_table);
+
     POKE(get_mem_addr(0x570)) =
         (uint64_t)get_current_cpu(id)->stack_data + 8192;
+
     memzero(get_current_cpu(id)->stack_data, 8192);
 
     asm volatile(" \n"
@@ -142,6 +137,7 @@ void smp::init_cpu(int apic, int id)
     update_paging();
 
     memcpy((void *)0x1000, &trampoline_start, trampoline_len);
+
     log("smp cpu", LOG_INFO) << "pre loading cpu : " << id;
 
     apic::the()->preinit_processor(apic);
@@ -157,7 +153,9 @@ void smp::init_cpu(int apic, int id)
     }
 
     log("smp cpu", LOG_INFO) << " loading cpu : " << id;
+
     apic::the()->init_processor(apic, 0x1000);
+
     while (SMPloaded != true)
     {
         for (uint64_t i = 0; i < 30; i++)

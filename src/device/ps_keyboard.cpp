@@ -124,23 +124,28 @@ const char asciiShift[] =
         0,
         32, // SPACE
 };
+
 ps_keyboard main_ps_key;
 
 ps_keyboard::ps_keyboard()
 {
 }
+
 void ps_keyboard::set_key(bool state, uint8_t keycode)
 {
     key_pressed[keycode] = state;
+
     if (ptr_to_update != nullptr)
     {
         ptr_to_update[keycode] = state;
     }
 }
+
 bool ps_keyboard::get_key(uint8_t keycode)
 {
     return key_pressed[keycode];
 }
+
 void ps_keyboard::init()
 {
     for (int i = 0; i < KEY_COUNT; i++)
@@ -148,6 +153,7 @@ void ps_keyboard::init()
         key_pressed[i] = false;
     }
 }
+
 void ps_keyboard::interrupt_handler()
 {
     uint8_t state = inb(0x64);
@@ -163,6 +169,7 @@ void ps_keyboard::interrupt_handler()
         }
     }
 }
+
 void ps_keyboard::set_ptr_to_update(uint32_t *d)
 {
     ptr_to_update = (uint8_t *)d;
@@ -171,6 +178,7 @@ void ps_keyboard::set_ptr_to_update(uint32_t *d)
         ptr_to_update[i] = 0;
     }
 }
+
 ps_keyboard *ps_keyboard::the()
 {
     return &main_ps_key;

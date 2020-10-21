@@ -11,6 +11,8 @@ uint8_t *bitmap;
 uint64_t available_memory;
 uint64_t pmm_length = 0;
 uint64_t pmm_page_entry_count = 0;
+uint64_t last_free_byte = 0;
+uint64_t used = 0;
 
 static void pmm_set_bit(uint64_t page)
 {
@@ -69,7 +71,7 @@ uint64_t pmm_find_free(uint64_t lenght)
     }
     return 0x0;
 }
-uint64_t last_free_byte = 0;
+
 uint64_t pmm_find_free_fast(uint64_t lenght)
 {
     int lenght_found = 0;
@@ -102,7 +104,7 @@ uint64_t pmm_find_free_fast(uint64_t lenght)
     return pmm_find_free(lenght);
     return 0x0;
 }
-uint64_t used = 0;
+
 void *pmm_alloc(uint64_t lenght)
 {
     used += lenght;
@@ -115,6 +117,7 @@ void *pmm_alloc(uint64_t lenght)
 
     return (void *)(res * PAGE_SIZE);
 }
+
 void *pmm_alloc_fast(uint64_t lenght)
 {
     used += lenght;
@@ -127,14 +130,17 @@ void *pmm_alloc_fast(uint64_t lenght)
 
     return (void *)(res * PAGE_SIZE);
 }
+
 void *pmm_alloc_zero(uint64_t lenght)
 {
     void *d = pmm_alloc_fast(lenght);
     uint64_t *pages = reinterpret_cast<uint64_t *>(get_mem_addr((uint64_t)d));
+
     for (uint64_t i = 0; i < (lenght * PAGE_SIZE) / sizeof(uint64_t); i++)
     {
         pages[i] = 0;
     }
+
     return d;
 }
 
@@ -143,11 +149,13 @@ void pmm_free(void *where, uint64_t lenght)
     used -= lenght;
     uint64_t where_aligned = (uint64_t)where;
     where_aligned /= PAGE_SIZE;
+
     for (uint64_t i = 0; i < lenght; i++)
     {
         pmm_clear_bit(where_aligned + i);
     }
 }
+
 void init_physical_memory(stivale_struct *bootdata)
 {
     log("pmm", LOG_DEBUG) << "loading pmm";
@@ -188,11 +196,15 @@ void init_physical_memory(stivale_struct *bootdata)
             }
         }
     }
+
     log("pmm", LOG_DEBUG) << "loading pmm memory map";
+
     bitmap_base /= PAGE_SIZE;
     bitmap_base *= PAGE_SIZE;
     bitmap = reinterpret_cast<uint8_t *>(bitmap_base);
+
     memset(bitmap, 0xff, (total_memory_lenght / PAGE_SIZE) / 8);
+
     for (uint64_t i = 0; i < bootdata->memory_map_entries; i++)
     {
 

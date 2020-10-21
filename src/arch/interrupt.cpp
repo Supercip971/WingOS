@@ -171,6 +171,7 @@ void update_backtrace(InterruptStackFrame *stackframe)
         {
             get_current_cpu()->rip_backtrace[i] = get_current_cpu()->rip_backtrace[i + 1];
         }
+
         get_current_cpu()->rip_backtrace[32] = stackframe->rip;
     }
 }
@@ -187,9 +188,13 @@ extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
         log("pic", LOG_ERROR) << "type : " << exception_messages[stackframe->int_no];
 
         printf("\n");
+
         dumpregister(stackframe);
+
         printf("\n");
+
         log("pic", LOG_ERROR) << "backtrace : ";
+
         for (size_t i = 0; i <= 32; i++)
         {
             if (get_current_cpu()->rip_backtrace[i] != -32)
@@ -205,12 +210,14 @@ extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
             log("pic", LOG_INFO) << "in processor : " << get_current_cpu()->current_process->processor_target;
             dump_process();
         }
+
         dump_memory();
         while (true)
         {
             asm volatile("hlt");
         }
     }
+
     if (stackframe->int_no == 0x7f)
     {
         stackframe->rax = syscall(stackframe->rax, stackframe->rbx, stackframe->rcx, stackframe->rdx, stackframe->rsi, stackframe->rdi); // don't use r11 for future use with x64 syscalls

@@ -15,10 +15,12 @@ main_page_table *main_pml4 = kernel_super_dir;
 uint64_t entry_to_address(uint64_t pml4, uint64_t pdpt, uint64_t pd, uint64_t pt)
 {
     uint64_t result = 0;
+
     result |= pml4 << 39;
     result |= pdpt << 30;
     result |= pd << 21;
     result |= pt << 12;
+
     return result;
 }
 int map_page(main_page_table *table, uint64_t phys_addr, uint64_t virt_addr, uint64_t flags)
@@ -116,21 +118,24 @@ main_page_table *new_vmm_page_dir()
     {
         ret_pml4[i] = 0x0;
     }
+
     for (int i = 255; i < 512; i++)
     {
         ret_pml4[i] = get_current_cpu()->page_table[i];
     }
+
     for (uint64_t i = 0; i < (TWO_MEGS / PAGE_SIZE); i++)
     {
         uint64_t addr = i * PAGE_SIZE;
+
         map_page(ret_pml4, addr, addr, BASIC_PAGE_FLAGS);
         map_page(ret_pml4, addr, get_mem_addr(addr), BASIC_PAGE_FLAGS);
         map_page(ret_pml4, addr, get_kern_addr(addr), BASIC_PAGE_FLAGS);
     }
+
     for (uint64_t i = TWO_MEGS / PAGE_SIZE; i < (FOUR_GIGS / PAGE_SIZE); i++)
     {
         uint64_t addr = i * PAGE_SIZE;
-
         map_page(ret_pml4, addr, get_mem_addr(addr), BASIC_PAGE_FLAGS);
     }
 
@@ -155,6 +160,7 @@ void init_vmm(stivale_struct *bootdata)
     e820_entry_t *mementry = (e820_entry_t *)bootdata->memory_map_addr;
 
     log("vmm", LOG_INFO) << "loading vmm 2M initial data";
+
     for (uint64_t i = 0; i < (TWO_MEGS / PAGE_SIZE); i++)
     {
         uint64_t addr = i * PAGE_SIZE;
@@ -164,15 +170,17 @@ void init_vmm(stivale_struct *bootdata)
     }
 
     set_paging_dir(get_rmem_addr((uint64_t)get_current_cpu()->page_table));
+
     log("vmm", LOG_INFO) << "loading vmm 4G initial data";
+
     for (uint64_t i = 0; i < (FOUR_GIGS / PAGE_SIZE); i++)
     {
         uint64_t addr = i * PAGE_SIZE;
-
         map_page(table, addr, get_mem_addr(addr), BASIC_PAGE_FLAGS);
     }
 
     log("vmm", LOG_INFO) << "loading vmm with memory entries";
+
     for (uint64_t i = 0; i < bootdata->memory_map_entries; i++)
     {
 
@@ -182,8 +190,11 @@ void init_vmm(stivale_struct *bootdata)
         for (uint64_t j = 0; j * PAGE_SIZE < aligned_length; j++)
         {
             uint64_t addr = aligned_base + j * PAGE_SIZE;
+
             if (addr < FOUR_GIGS)
+            {
                 continue;
+            }
 
             map_page(table, addr, get_mem_addr(addr), BASIC_PAGE_FLAGS);
         }

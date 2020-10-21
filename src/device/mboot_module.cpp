@@ -15,11 +15,14 @@ void mboot_module::init(stivale_struct *main_struct)
     stistruct = main_struct;
     log("mboot", LOG_DEBUG) << "loading mboot mudules";
     log("mboot", LOG_INFO) << "mboot module count" << main_struct->module_count;
+
     for (int i = 0; i < main_struct->module_count + 2; i++)
     {
         modules[i] = 0;
     }
+
     uint64_t at = main_struct->modules;
+
     for (int i = 0; i < main_struct->module_count; i++)
     {
         modules[i] = reinterpret_cast<stivale_module *>(at);
@@ -43,6 +46,7 @@ stivale_module *mboot_module::get_fs_module()
     log("mboot", LOG_ERROR) << "no detected ram disk module";
     return nullptr;
 }
+
 mboot_module *mboot_module::the()
 {
     return &main_boot_module_list;

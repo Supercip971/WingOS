@@ -20,6 +20,7 @@ void hpet::init_hpet()
     uint64_t freq = 1000000000000000 / clock_period;
 
     log("hpet", LOG_INFO) << "hpet frequency", freq;
+
     printf("HPET frequency = %x \n", freq);
 
     printf("HPET checking for validity ..\n");
@@ -29,7 +30,9 @@ void hpet::init_hpet()
         printf("ERROR :HPET is not legacy replacement capable");
         return;
     }
+
     hpet_individual_timer *first_timer = &hpet_main_structure->timers[0];
+
     if (!(first_timer->cfg_what_can_i_do & H_PERIODIC_MODE_SUPPORT))
     {
         printf("ERROR : HPER the first timer doesn't support periodic mode :(");

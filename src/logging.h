@@ -25,6 +25,11 @@ public:
     void set_log_type(const char *data, log_state log_state);
     logging operator<<(const char *string);
     logging operator<<(uint64_t address);
+    logging operator<<(int64_t address);
+    logging operator<<(uint32_t number);
+    logging operator<<(int number);
+    logging operator<<(uint16_t number);
+    logging operator<<(char chr);
 };
 
 logging log(const char *data, log_state color_mode);

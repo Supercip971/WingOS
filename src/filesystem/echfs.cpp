@@ -183,6 +183,7 @@ echfs_file_header echfs::get_directory_entry(const char *name, uint64_t forced_p
             entry_t++;
         }
     }
+    return {0};
 }
 uint64_t echfs::get_simple_file(const char *name, uint64_t forced_parent)
 {
@@ -223,6 +224,7 @@ uint64_t echfs::get_simple_file(const char *name, uint64_t forced_parent)
             entry_t++;
         }
     }
+    return -1;
 }
 echfs_file_header echfs::find_file(const char *path)
 {

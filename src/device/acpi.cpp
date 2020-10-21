@@ -9,7 +9,7 @@ acpi main_acpi;
 void *get_rsdp(void)
 {
 
-    for (int i = get_mem_addr(0x80000); i < get_mem_addr(0x100000); i += 16)
+    for (uint64_t i = get_mem_addr(0x80000); i < get_mem_addr(0x100000); i += 16)
     {
         if (i == get_mem_addr(0xa0000))
         {
@@ -112,7 +112,6 @@ void acpi::getFACP()
         {
             continue;
         }
-        RSDTHeader *h = (RSDTHeader *)(rsdt->PointerToOtherSDT[i]);
     }
 }
 acpi *acpi::the()

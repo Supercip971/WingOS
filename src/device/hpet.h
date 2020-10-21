@@ -28,24 +28,24 @@ struct address_structure
 
 struct hpet_individual_timer
 {
-    volatile uint64_t cfg_what_can_i_do;
-    volatile uint64_t comp_value;
-    volatile uint64_t int_route;
-    volatile uint64_t i_dont_exist;
-};
+    uint64_t cfg_what_can_i_do;
+    uint64_t comp_value;
+    uint64_t int_route;
+    uint64_t i_dont_exist;
+} __attribute__((packed));
 
 struct main_hpet_struct
 {
-    volatile uint64_t general_capabilities;
-    volatile uint64_t i_dont_exist;
-    volatile uint64_t general_configuration;
-    volatile uint64_t i_dont_exist1;
-    volatile uint64_t general_int_status;
-    volatile uint64_t i_dont_exist2;
-    volatile uint64_t i_dont_exist3[2][12];
-    volatile uint64_t main_counter_value;
-    volatile uint64_t i_dont_exist4;
-    struct hpet_individual_timer timers[];
+    uint64_t general_capabilities;
+    uint64_t i_dont_exist;
+    uint64_t general_configuration;
+    uint64_t i_dont_exist1;
+    uint64_t general_int_status;
+    uint64_t i_dont_exist2;
+    uint64_t i_dont_exist3[2][12];
+    uint64_t main_counter_value;
+    uint64_t i_dont_exist4;
+    hpet_individual_timer timers[];
 } __attribute__((packed));
 struct entry_hpet
 {

@@ -55,7 +55,7 @@ boch:
 	@bochs
 
 disk:
-	rm -rf $(KERNEL_HDD)
+	@rm -rf $(KERNEL_HDD)
 	@make -C . $(KERNEL_HDD)
 run: $(KERNEL_HDD)
 	qemu-system-x86_64 -m 4G -s -device pvpanic -smp 6 -serial stdio -enable-kvm --no-shutdown --no-reboot -d int -d guest_errors -hda $(KERNEL_HDD)
@@ -63,8 +63,8 @@ runvbox: $(KERNEL_HDD)
 	@VBoxManage -q startvm --putenv VBOX_GUI_DBG_ENABLED=true wingOS64
 	@nc localhost 1234
 format:
-	@clang-format -i --verbose --style=file $(CFILES) $(HFILES)
-	@clang-format -i --verbose --style=file $(USRCFILES) $(USRHFILES)
+	@clang-format -i --style=file $(CFILES) $(HFILES)
+	@clang-format -i --style=file $(USRCFILES) $(USRHFILES)
 foreachramfs: 
 	@for f in $(shell find init_fs/ -maxdepth 64 -type f); do echfs-utils -m -p0 $(KERNEL_HDD) import $${f} $${f}; done
 
@@ -72,29 +72,29 @@ app: $(APP_FILE_CHANGE)
 	@make -C ./app/test all	
 	@make -C ./app/test2 all
 	@make -C ./app/graphic_service all
+	@make -C ./app/memory_service all
 travis_test: 
 	@make clean 
 	@make -C . $(KERNEL_HDD)
 
 super:
-	make clean
-	make app
+	@make app
 	-killall -9 VirtualBoxVM
 	-killall -9 qemu-system-x86_64
-	make format
-	make
+	@make format
+	@make
 
 	@objdump kernel.elf -f -s -d --source > kernel.map
-	make run
+	@make run
 %.o: %.cpp %.h
 	@echo "cpp [BUILD] $<"
-	$(CC) $(CHARDFLAGS) -c $< -o $@
+	@$(CC) $(CHARDFLAGS) -c $< -o $@
 
 %.o: %.asm
 	@echo "nasm [BUILD] $<"
 	@nasm $< -o $@ -felf64 -F dwarf -g -w+all -Werror
 $(KERNEL_ELF): $(OBJFILES) $(ASMOBJFILES)
-	ld $(LDHARDFLAGS) $(OBJFILES) $(ASMOBJFILES) -o $@
+	@ld $(LDHARDFLAGS) $(OBJFILES) $(ASMOBJFILES) -o $@
 
 $(KERNEL_HDD): $(KERNEL_ELF)
 	-rm -rf $(KERNEL_HDD)
@@ -111,4 +111,4 @@ $(KERNEL_HDD): $(KERNEL_ELF)
 clean:
 	-rm -f $(KERNEL_HDD) $(KERNEL_ELF) $(OBJ)
 all:
-	make -C . super
+	@make -C . super

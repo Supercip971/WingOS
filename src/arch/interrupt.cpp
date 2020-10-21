@@ -10,6 +10,7 @@
 #include <device/ata_driver.h>
 #include <device/local_data.h>
 #include <device/pit.h>
+#include <device/ps_keyboard.h>
 #include <device/ps_mouse.h>
 #include <kernel.h>
 #include <logging.h>
@@ -219,6 +220,10 @@ extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
     {
         PIT::the()->update();
         nresult = irq_0_process_handler(stackframe);
+    }
+    else if (stackframe->int_no == 32 + 1)
+    {
+        ps_keyboard::the()->interrupt_handler();
     }
     else if (stackframe->int_no == 32 + 12)
     {

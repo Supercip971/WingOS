@@ -54,6 +54,8 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
     init_sse();
 
     com_initialize(COM_PORT::COM1);
+    log("COM1", LOG_INFO) << "com port 1 loaded";
+
     memcpy(&boot_loader_data_copy, bootloader_data, sizeof(stivale_struct));
 
     setup_gdt((uint64_t)stack + (sizeof(char) * STACK_SIZE));
@@ -133,6 +135,11 @@ void start_process()
     main_start_fs.init(mbr_part.get_partition_start(0), mbr_part.get_partition_length(0));
     pci_system::the()->init();
     launch_programm("init_fs/memory_service.exe", &main_start_fs);
+
+    while (get_pid_from_process_name("usr_mem_service") == -1)
+    {
+        // just wait
+    }
     launch_programm("init_fs/graphic_service.exe", &main_start_fs);
     launch_programm("init_fs/test2.exe", &main_start_fs);
     launch_programm("init_fs/test.exe", &main_start_fs);

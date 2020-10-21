@@ -1,9 +1,6 @@
 
 ![Banner](screen_shot/wingOS.png)
 
-# WingOS (64 bit)
-WingOS is a 64 bit os/kernel. 
-
 ![sample](screen_shot/sample2_19_10_2020png.png)
 
 It work with the concept of 'service' 

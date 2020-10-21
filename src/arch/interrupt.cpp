@@ -164,18 +164,18 @@ bool is_error(int intno)
 // backtrace
 void update_backtrace(InterruptStackFrame *stackframe)
 {
-    uint64_t *target = get_current_cpu()->rip_backtrace;
-    if (target[32] != stackframe->rip)
+    if (get_current_cpu()->rip_backtrace[32] != stackframe->rip)
     {
         for (int i = 0; i <= 31; i++)
         {
-            target[i] = target[i + 1];
+            get_current_cpu()->rip_backtrace[i] = get_current_cpu()->rip_backtrace[i + 1];
         }
-        target[32] = stackframe->rip;
+        get_current_cpu()->rip_backtrace[32] = stackframe->rip;
     }
 }
 extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
 {
+
     uint64_t nresult = reinterpret_cast<uint64_t>(stackframe);
     update_backtrace(stackframe);
     if (is_error(stackframe->int_no))
@@ -191,9 +191,9 @@ extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
         log("pic", LOG_ERROR) << "backtrace : ";
         for (size_t i = 0; i <= 32; i++)
         {
-            if (rip_backtrace[i] != -32)
+            if (get_current_cpu()->rip_backtrace[i] != -32)
             {
-                log("pic", LOG_ERROR) << "id " << i << " = " << rip_backtrace[i];
+                log("pic", LOG_ERROR) << "id " << i << " = " << get_current_cpu()->rip_backtrace[i];
             }
         }
 

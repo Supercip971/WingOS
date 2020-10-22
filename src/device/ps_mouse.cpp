@@ -103,7 +103,7 @@ void ps_mouse::init()
 
     log("ps2 mouse", LOG_INFO) << "set mouse sample rate";
     // set sample rate
-    set_sample_rate(200);
+    set_sample_rate(60);
 
     log("ps2 mouse", LOG_INFO) << "set mouse resolution";
     // set resolution

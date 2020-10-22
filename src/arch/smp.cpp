@@ -14,7 +14,7 @@
 #include <logging.h>
 #define TRAMPOLINE_START 0x1000
 #define TRAMPOLINE_PAGING_ADDR 0x4000
-
+#define SMP_MAP_PAGE_FLAGS 0x7
 #pragma GCC optimize("-O0")
 smp main_smp;
 int cpu_counter = 0;
@@ -27,12 +27,6 @@ smp::smp()
 }
 extern "C" void irq0_first_jump();
 
-void smp_function_tool()
-{
-    while (true)
-    {
-    }
-}
 extern "C" void cpuupstart(void)
 {
     log("smp", LOG_INFO) << "after loading cpu :" << apic::the()->get_current_processor_id();
@@ -97,53 +91,9 @@ void smp::init()
         }
     }
 }
-void smp::init_cpu(int apic, int id)
+// to do : use the pit or anything else instead of this
+void smp::wait()
 {
-    log("smp cpu", LOG_DEBUG) << "loading smp cpu : " << id << "/ apic id :" << apic;
-    get_current_cpu(id)->lapic_id = apic;
-
-    uint64_t trampoline_len = (uint64_t)&trampoline_end - (uint64_t)&trampoline_start;
-
-    for (int i = 0; i < (trampoline_len / 4096) + 2; i++)
-    {
-        map_page(0x1000 + (i * 4096), 0x1000 + (i * 4096), 0x1 | 0x2 | 0x4);
-    }
-
-    map_page(0, 0, 0x1 | 0x2 | 0x4);
-    update_paging();
-
-    log("smp cpu", LOG_INFO) << "trampoline length " << trampoline_len;
-
-    uint64_t end_addr = 0x4000;
-    end_addr /= 4096;
-    end_addr *= 4096;
-
-    get_current_cpu(id)->page_table = get_current_cpu()->page_table;
-
-    POKE(get_mem_addr(0x500)) =
-        get_rmem_addr((uint64_t)get_current_cpu(id)->page_table);
-
-    POKE(get_mem_addr(0x570)) =
-        (uint64_t)get_current_cpu(id)->stack_data + 8192;
-
-    memzero(get_current_cpu(id)->stack_data, 8192);
-
-    asm volatile(" \n"
-                 "sgdt [0x580]\n"
-                 "sidt [0x590]\n");
-
-    POKE((0x520)) = (uint64_t)&cpuupstart;
-
-    update_paging();
-
-    memcpy((void *)0x1000, &trampoline_start, trampoline_len);
-
-    log("smp cpu", LOG_INFO) << "pre loading cpu : " << id;
-
-    apic::the()->preinit_processor(apic);
-
-    // waiting a little bit
-
     for (uint64_t i = 0; i < 300; i++)
     {
         for (uint64_t b = 0; b < i * 2; b++)
@@ -151,20 +101,60 @@ void smp::init_cpu(int apic, int id)
             inb(0);
         }
     }
+}
+void smp::init_cpu(int apic, int id)
+{
+    log("smp cpu", LOG_DEBUG) << "loading smp cpu : " << id << "/ apic id :" << apic;
+    get_current_cpu(id)->lapic_id = apic;
+
+    uint64_t trampoline_len = (uint64_t)&trampoline_end - (uint64_t)&trampoline_start;
+
+    map_page(0, 0, SMP_MAP_PAGE_FLAGS);
+    for (int i = 0; i < (trampoline_len / 4096) + 2; i++)
+    {
+        map_page(TRAMPOLINE_START + (i * 4096), TRAMPOLINE_START + (i * 4096), SMP_MAP_PAGE_FLAGS);
+    }
+
+    update_paging();
+
+    log("smp cpu", LOG_INFO) << "trampoline length " << trampoline_len;
+
+    get_current_cpu(id)->page_table = get_current_cpu()->page_table; // give the same
+    // page table at 0x500
+    POKE((0x500)) =
+        get_rmem_addr((uint64_t)get_current_cpu(id)->page_table);
+    // stack at 570
+    POKE((0x570)) =
+        (uint64_t)get_current_cpu(id)->stack_data + 8192;
+
+    memzero(get_current_cpu(id)->stack_data, 8192);
+    // gdt at 0x580
+    // idt at 0x590
+    asm volatile(" \n"
+                 "sgdt [0x580]\n"
+                 "sidt [0x590]\n");
+    // start address at 0x520
+    POKE((0x520)) = (uint64_t)&cpuupstart;
+
+    update_paging();
+
+    memcpy((void *)TRAMPOLINE_START, &trampoline_start, trampoline_len);
+
+    log("smp cpu", LOG_INFO) << "pre loading cpu : " << id;
+
+    apic::the()->preinit_processor(apic);
+
+    // waiting a little bit
+
+    wait();
 
     log("smp cpu", LOG_INFO) << " loading cpu : " << id;
 
-    apic::the()->init_processor(apic, 0x1000);
+    apic::the()->init_processor(apic, TRAMPOLINE_START);
 
     while (SMPloaded != true)
     {
-        for (uint64_t i = 0; i < 30; i++)
-        {
-            for (uint64_t b = 0; b < i * 2; b++)
-            {
-                inb(0);
-            }
-        }
+        wait();
     }
 
     log("smp cpu", LOG_DEBUG) << " loaded cpu : " << id;

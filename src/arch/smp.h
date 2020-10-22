@@ -4,10 +4,11 @@
 #include <device/madt.h>
 class smp
 {
-
 public:
     static const int max_cpu = 64;
+    tss_t cpu_tss[max_cpu];
     smp();
+    void wait();
     void init();
     void init_cpu(int apic, int id);
 
@@ -16,7 +17,4 @@ public:
     static smp *the();
 
     MADT_table_LAPIC *mt_lapic[max_cpu];
-
-private:
-    tss_t cpu_tss[max_cpu];
 };

@@ -4,16 +4,9 @@
 
 TRAMPOLINE_BASE equ 0x1000
 
-MSR_EFER equ 0xC0000080
 
-EFER_LM equ 0x100
-EFER_NX equ 0x800
 
-CR0_PE equ 0x1
-CR0_PAGING equ 0x80000000
 
-CR4_PAE equ 0x20
-CR4_PSE equ 0x10
 ; --- 16 BIT ---
 global nstack
 extern cpuupstart
@@ -29,7 +22,7 @@ trampoline_start:
     mov ss, ax
 
 mov al, 'a'
-mov dx, 0x3F8
+mov dx, 0x3F8   ; these are used for debugging
 out dx, al
 
     o32 lidt [pm_idtr - trampoline_start + TRAMPOLINE_BASE]
@@ -40,7 +33,7 @@ mov al, 'a'
 mov dx, 0x3F8
 out dx, al
     mov eax, cr0
-    or al, CR0_PE
+    or al, 0x1
     mov cr0, eax
 
 
@@ -64,7 +57,6 @@ trampoline32:
 
 
     mov eax, dword [0x500]
-    ; FRICKIN BUG FIXED GUY !
 
     mov cr3, eax
 
@@ -74,9 +66,8 @@ out dx, al
 
     mov eax, cr4
     or eax, 1 << 5               ; Set the PAE-bit, which is the 6th bit (bit 5).
-
-or eax, 1 << 7
-mov cr4, eax
+    or eax, 1 << 7
+    mov cr4, eax
 
 
 
@@ -86,7 +77,6 @@ mov cr4, eax
     or eax,1 << 8  ; LME
     wrmsr
 
-    ; why not ?
 
 
 
@@ -119,9 +109,6 @@ trampoline64:
 mov al, '5'
 mov dx, 0x3F8
 out dx, al
-mov al, 'd'
-mov dx, 0x3F8
-out dx, al
     mov ax, 0x10
     mov ds, ax
     mov es, ax
@@ -136,23 +123,23 @@ mov dx, 0x3F8
 out dx, al
 
 
-lgdt [0x580]
-lidt [0x590]
+    lgdt [0x580]
+    lidt [0x590]
 
-mov rsp, [0x570]
-    mov al, '6'
-    mov dx, 0x3F8
-    out dx, al
+    mov rsp, [0x570]
+mov al, '6'
+mov dx, 0x3F8
+out dx, al
 
-mov rbp, 0x0 ; terminate stack traces here
-; reset RFLAGS
-push 0x0
-popf
+    mov rbp, 0x0 ; terminate stack traces here
+    ; reset RFLAGS
+    push 0x0
+    popf
 
 mov al, '7'
 mov dx, 0x3F8
 out dx, al
-mov rax, qword vcode64
+    mov rax, qword vcode64
     jmp vcode64
 
 vcode64:
@@ -172,8 +159,8 @@ out dx, al
     bts eax, 9
     bts eax, 10
     mov cr4, rax
-mov rax, qword trampoline_ext
-call rax
+    mov rax, qword trampoline_ext
+    call rax
 
 ; ---- LONG MODE ----
 align 16

@@ -281,12 +281,12 @@ extern "C" uint64_t switch_context(InterruptStackFrame *current_Isf, process *ne
         get_current_cpu()->current_process->current_process_state = PROCESS_WAITING;
         get_current_cpu()->current_process->rsp = (uint64_t)current_Isf;
 
-        save_sse_context(get_current_cpu()->current_process->sse_context);
+        get_current_cpu()->save_sse(get_current_cpu()->current_process->sse_context);
     }
     next->current_process_state = process_state::PROCESS_RUNNING;
     get_current_cpu()->current_process = next;
-
-    load_sse_context(get_current_cpu()->current_process->sse_context);
+    get_current_cpu()->load_sse(get_current_cpu()->current_process->sse_context);
+    //load_sse_context(get_current_cpu()->current_process->sse_context);
     task_update_switch(next);
 
     if (cpu_wait)

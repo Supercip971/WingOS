@@ -68,6 +68,7 @@ uint64_t rip_count[16];
 uint32_t rip_counter = 0;
 
 uint64_t rip_backtrace[32];
+
 extern "C" void idt_flush(uint64_t);
 extern "C" void syscall_asm_entry();
 
@@ -75,6 +76,7 @@ static idt_entry_t register_interrupt_handler(void *handler, uint8_t ist, uint8_
 {
     uint64_t p = (uint64_t)handler;
     idt_entry_t idt;
+
     idt.offset_low16 = (uint16_t)p;
     idt.cs = SLTR_KERNEL_CODE;
     idt.ist = ist;
@@ -162,6 +164,7 @@ bool is_error(int intno)
     }
     return true;
 }
+
 // backtrace
 void update_backtrace(InterruptStackFrame *stackframe)
 {
@@ -171,51 +174,58 @@ void update_backtrace(InterruptStackFrame *stackframe)
         {
             get_current_cpu()->rip_backtrace[i] = get_current_cpu()->rip_backtrace[i + 1];
         }
-
         get_current_cpu()->rip_backtrace[32] = stackframe->rip;
     }
 }
+
+lock_type ps_lock = {0};
+
+void interrupt_error_handle(InterruptStackFrame *stackframe)
+{
+    log("pic", LOG_FATAL) << "!!! fatal interrupt error !!!" << stackframe->rip;
+    log("pic", LOG_ERROR) << "ID   : " << stackframe->int_no;
+    log("pic", LOG_ERROR) << "type : " << exception_messages[stackframe->int_no];
+
+    printf("\n");
+
+    dumpregister(stackframe);
+
+    printf("\n");
+
+    log("pic", LOG_ERROR) << "backtrace : ";
+
+    for (size_t i = 0; i <= 32; i++)
+    {
+        if (get_current_cpu()->rip_backtrace[i] != -32)
+        {
+            log("pic", LOG_ERROR) << "id " << i << " = " << get_current_cpu()->rip_backtrace[i];
+        }
+    }
+
+    if (get_current_cpu()->current_process != nullptr)
+    {
+        log("pic", LOG_INFO) << "in process: " << get_current_cpu()->current_process->process_name;
+
+        log("pic", LOG_INFO) << "in processor : " << get_current_cpu()->current_process->processor_target;
+        dump_process();
+    }
+
+    dump_memory();
+    while (true)
+    {
+        asm volatile("hlt");
+    }
+}
+
 extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
 {
 
     uint64_t nresult = reinterpret_cast<uint64_t>(stackframe);
     update_backtrace(stackframe);
+
     if (is_error(stackframe->int_no))
     {
-
-        log("pic", LOG_FATAL) << "!!! fatal interrupt error !!!";
-        log("pic", LOG_ERROR) << "ID   : " << stackframe->int_no;
-        log("pic", LOG_ERROR) << "type : " << exception_messages[stackframe->int_no];
-
-        printf("\n");
-
-        dumpregister(stackframe);
-
-        printf("\n");
-
-        log("pic", LOG_ERROR) << "backtrace : ";
-
-        for (size_t i = 0; i <= 32; i++)
-        {
-            if (get_current_cpu()->rip_backtrace[i] != -32)
-            {
-                log("pic", LOG_ERROR) << "id " << i << " = " << get_current_cpu()->rip_backtrace[i];
-            }
-        }
-
-        if (get_current_cpu()->current_process != nullptr)
-        {
-            log("pic", LOG_INFO) << "in process: " << get_current_cpu()->current_process->process_name;
-
-            log("pic", LOG_INFO) << "in processor : " << get_current_cpu()->current_process->processor_target;
-            dump_process();
-        }
-
-        dump_memory();
-        while (true)
-        {
-            asm volatile("hlt");
-        }
+        interrupt_error_handle(stackframe);
     }
 
     if (stackframe->int_no == 0x7f)
@@ -230,11 +240,15 @@ extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
     }
     else if (stackframe->int_no == 32 + 1)
     {
+        lock(&ps_lock);
         ps_keyboard::the()->interrupt_handler();
+        unlock(&ps_lock);
     }
     else if (stackframe->int_no == 32 + 12)
     {
+        lock(&ps_lock);
         ps_mouse::the()->interrupt_handler();
+        unlock(&ps_lock);
     }
     else if (stackframe->int_no == 32 + 14 || stackframe->int_no == 32 + 15)
     {
@@ -250,6 +264,7 @@ extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
     }
 
     apic::the()->EOI();
+
     return nresult;
     // unlock((&lock));
 }

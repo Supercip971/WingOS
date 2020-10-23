@@ -36,31 +36,31 @@ logging logging::operator<<(int64_t address)
     return *this;
 }
 
-logging logging ::operator<<(uint64_t address)
+logging logging::operator<<(uint64_t address)
 {
     printf(" %x ", address);
     return *this;
 }
 
-logging logging ::operator<<(uint32_t number)
+logging logging::operator<<(uint32_t number)
 {
     printf(" %x ", number);
     return *this;
 }
 
-logging logging ::operator<<(int number)
+logging logging::operator<<(int number)
 {
     printf(" %x ", number);
     return *this;
 }
 
-logging logging ::operator<<(uint16_t number)
+logging logging::operator<<(uint16_t number)
 {
     printf(" %x ", number);
     return *this;
 }
 
-logging logging ::operator<<(char chr)
+logging logging::operator<<(char chr)
 {
     printf(" %c ", chr);
     return *this;

@@ -50,7 +50,7 @@ void smp::init()
     SMPloaded = false;
     log("smp", LOG_DEBUG) << "loading smp";
     memzero(cpu_tss, sizeof(tss_t) * max_cpu);
-
+    memzero(get_current_cpu(processor_count)->fpu_data, sizeof(get_current_cpu(processor_count)->fpu_data));
     for (int i = 0; i < max_cpu; i++)
     {
         mt_lapic[i] = 0x0;
@@ -102,23 +102,24 @@ void smp::wait()
         }
     }
 }
-void smp::init_cpu(int apic, int id)
+
+void smp::init_cpu_trampoline()
 {
-    log("smp cpu", LOG_DEBUG) << "loading smp cpu : " << id << "/ apic id :" << apic;
-    get_current_cpu(id)->lapic_id = apic;
-
     uint64_t trampoline_len = (uint64_t)&trampoline_end - (uint64_t)&trampoline_start;
-
     map_page(0, 0, SMP_MAP_PAGE_FLAGS);
+
     for (int i = 0; i < (trampoline_len / 4096) + 2; i++)
     {
         map_page(TRAMPOLINE_START + (i * 4096), TRAMPOLINE_START + (i * 4096), SMP_MAP_PAGE_FLAGS);
     }
 
     update_paging();
-
     log("smp cpu", LOG_INFO) << "trampoline length " << trampoline_len;
+    memcpy((void *)TRAMPOLINE_START, &trampoline_start, trampoline_len);
+}
 
+void smp::init_cpu_future_value(uint64_t id)
+{
     get_current_cpu(id)->page_table = get_current_cpu()->page_table; // give the same
     // page table at 0x500
     POKE((0x500)) =
@@ -128,17 +129,25 @@ void smp::init_cpu(int apic, int id)
         (uint64_t)get_current_cpu(id)->stack_data + 8192;
 
     memzero(get_current_cpu(id)->stack_data, 8192);
+
     // gdt at 0x580
     // idt at 0x590
     asm volatile(" \n"
                  "sgdt [0x580]\n"
                  "sidt [0x590]\n");
+
     // start address at 0x520
     POKE((0x520)) = (uint64_t)&cpuupstart;
+}
 
-    update_paging();
+void smp::init_cpu(int apic, int id)
+{
+    log("smp cpu", LOG_DEBUG) << "loading smp cpu : " << id << "/ apic id :" << apic;
+    get_current_cpu(id)->lapic_id = apic;
 
-    memcpy((void *)TRAMPOLINE_START, &trampoline_start, trampoline_len);
+    init_cpu_trampoline();
+
+    init_cpu_future_value(id);
 
     log("smp cpu", LOG_INFO) << "pre loading cpu : " << id;
 
@@ -161,6 +170,7 @@ void smp::init_cpu(int apic, int id)
 
     SMPloaded = false;
 }
+
 smp *smp::the()
 {
     return &main_smp;

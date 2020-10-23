@@ -4,6 +4,11 @@
 #include <device/madt.h>
 class smp
 {
+
+    void init_cpu_trampoline();
+
+    void init_cpu_future_value(uint64_t id);
+
 public:
     static const int max_cpu = 64;
     tss_t cpu_tss[max_cpu];

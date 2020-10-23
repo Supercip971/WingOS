@@ -1,5 +1,6 @@
 #include <kgui/widget.h>
 #include <kgui/widget/button_widget.h>
+#include <klib/mouse.h>
 #include <stdlib.h>
 #include <string.h>
 namespace gui
@@ -17,6 +18,7 @@ namespace gui
         button_title = title;
         text_length = strlen(title) * 8;
         is_hovered = false;
+        click = nullptr;
     }
     void button_widget::update_widget()
     {
@@ -40,13 +42,29 @@ namespace gui
                 }
             }
         }
+        if (click != nullptr)
+        {
+
+            if (is_hovered && sys::get_mouse_button(sys::GET_MOUSE_LEFT_CLICK))
+            {
+                if (start_click == false)
+                {
+                    start_click = true;
+                    click(clicked++);
+                }
+            }
+            else
+            {
+                start_click = false;
+            }
+        }
     };
     void button_widget::draw_widget(sys::graphic_context &context)
     {
 
         if (is_hovered)
         {
-            context.draw_rectangle(widget_x, widget_y, widget_width, widget_height, {10, 10, 100, 255});
+            context.draw_rectangle(widget_x, widget_y, widget_width, widget_height, {100, 70, 70, 255});
         }
         else
         {

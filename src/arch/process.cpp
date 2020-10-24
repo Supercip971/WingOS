@@ -29,11 +29,12 @@ uint8_t proc_last_selected_cpu = 0;
 
 lock_type task_lock = {0};
 lock_type lck_lck = {0};
+
 void lock_process()
 {
-
     process_locked++;
 }
+
 void unlock_process()
 {
     process_locked--;
@@ -46,10 +47,12 @@ extern "C" void start_task()
 {
     lock(&task_lock);
 }
+
 extern "C" void end_task()
 {
     unlock(&task_lock);
 }
+
 void main_process_1()
 {
     printf("process 1 \n");
@@ -76,23 +79,20 @@ void process_smp_basic()
 
     while (true)
     {
-        //   log("smp", LOG_INFO) << "hello [1] from cpu : " << apic::the()->get_current_processor_id();
-        //   unlock_process();
         asm("int 32");
     }
 }
+
 void process_smp_basic_2()
 {
     asm("sti");
 
     while (true)
     {
-        //  lock_process();
-        //  log("smp", LOG_INFO) << "hello [2] from cpu : " << apic::the()->get_current_processor_id();
-        //  unlock_process();
         asm("int 32");
     }
 }
+
 extern "C" void irq0_first_jump(void);
 void init_multi_process(func start)
 {
@@ -156,6 +156,7 @@ uint64_t interpret_cpu_request(uint64_t cpu)
     }
     return cpu;
 }
+
 void init_process_stackframe(process *pro, func entry_point)
 {
     memzero(pro->stack, PROCESS_STACK_SIZE);
@@ -202,12 +203,14 @@ process *find_usable_process()
         return find_usable_process();
     }
 }
+
 void init_process_global_memory(process *to_init)
 {
     to_init->global_process_memory = (uint8_t *)get_mem_addr((uint64_t)malloc(4096));
     to_init->global_process_memory_length = 4096;
     memzero(to_init->global_process_memory, to_init->global_process_memory_length);
 }
+
 void init_process_message(process *to_init)
 {
     to_init->last_message_used = 0;
@@ -218,6 +221,7 @@ void init_process_message(process *to_init)
         to_init->msg_list[j].message_id = j;
     }
 }
+
 process *init_process(func entry_point, bool start_direct, const char *name, bool user, int cpu_target)
 {
     lock((&process_creator_lock));
@@ -425,43 +429,53 @@ uint64_t get_pid_from_process_name(const char *name)
     }
     return -1;
 }
-process_message *create_process_message(size_t tpid, uint64_t data_addr, uint64_t data_length)
+
+process_message *get_new_process_message(process *target)
 {
-    for (int j = process_array[tpid].last_message_used; j < MAX_PROCESS_MESSAGE_QUEUE; j++)
+    for (int j = target->last_message_used; j < MAX_PROCESS_MESSAGE_QUEUE; j++)
     {
-        if (process_array[tpid].msg_list[j].entry_free_to_use == true)
+        if (target->msg_list[j].entry_free_to_use == true)
         {
-            process_array[tpid].last_message_used = j;
-            process_message *todo = &process_array[tpid].msg_list[j];
-
-            todo->entry_free_to_use = false;
-            todo->has_been_readed = false;
-
-            todo->content_length = data_length;
-
-            uint64_t memory_kernel_copy = (uint64_t)malloc(data_length);
-            memcpy((void *)memory_kernel_copy, (void *)data_addr, data_length);
-            todo->content_address = memory_kernel_copy;
-
-            todo->from_pid = get_current_cpu()->current_process->pid;
-            todo->to_pid = process_array[tpid].pid;
-
-            todo->response = -1;
-
-            process_message *copy = (process_message *)malloc(sizeof(process_message));
-            *copy = *todo;
-            copy->content_address = -1;
-            return copy;
+            process_message *msg = &target->msg_list[j];
+            msg->entry_free_to_use = false;
+            msg->has_been_readed = false;
+            msg->response = -1;
+            target->last_message_used = j;
+            return msg;
         }
     }
-    if (process_array[tpid].last_message_used != 0)
-    {
-        process_array[tpid].last_message_used = 0;
-        return create_process_message(tpid, data_addr, data_length);
-    }
-    log("proc", LOG_ERROR) << "can't create a process message for process: " << process_array[tpid].process_name;
 
+    // if no free entry founded reloop
+    if (target->last_message_used != 0)
+    {
+        target->last_message_used = 0;
+        return get_new_process_message(target);
+    }
     return nullptr;
+}
+
+process_message *create_process_message(size_t tpid, uint64_t data_addr, uint64_t data_length)
+{
+
+    process_message *todo = get_new_process_message(&process_array[tpid]);
+    if (todo == nullptr)
+    {
+        log("proc", LOG_ERROR) << "can't create a process message";
+        return nullptr;
+    }
+    todo->content_length = data_length;
+
+    uint64_t memory_kernel_copy = (uint64_t)malloc(data_length);
+    memcpy((void *)memory_kernel_copy, (void *)data_addr, data_length);
+    todo->content_address = memory_kernel_copy;
+
+    todo->from_pid = get_current_cpu()->current_process->pid;
+    todo->to_pid = process_array[tpid].pid;
+
+    process_message *copy = (process_message *)malloc(sizeof(process_message));
+    *copy = *todo;
+    copy->content_address = -1;
+    return copy;
 }
 
 process_message *send_message(uint64_t data_addr, uint64_t data_length, const char *to_process)
@@ -490,7 +504,6 @@ void dump_process()
     {
         if (process_array[i].current_process_state != PROCESS_AVAILABLE)
         {
-
             log("proc", LOG_DEBUG) << "info for process : " << i;
             log("proc", LOG_INFO) << "process name     : " << process_array[i].process_name;
             log("proc", LOG_INFO) << "process state    : " << process_array[i].current_process_state;

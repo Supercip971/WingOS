@@ -156,106 +156,127 @@ uint64_t interpret_cpu_request(uint64_t cpu)
     }
     return cpu;
 }
-
-process *init_process(func entry_point, bool start_direct, const char *name, bool user, int cpu_target)
+void init_process_stackframe(process *pro, func entry_point)
 {
-    lock((&process_creator_lock));
+    memzero(pro->stack, PROCESS_STACK_SIZE);
+    pro->rsp =
+        ((uint64_t)pro->stack) + PROCESS_STACK_SIZE;
+
+    uint64_t *rsp = (uint64_t *)pro->rsp;
+
+    InterruptStackFrame *ISF = (InterruptStackFrame *)(rsp - (sizeof(InterruptStackFrame)));
+
+    memzero(ISF, sizeof(InterruptStackFrame));
+
+    ISF->rip = (uint64_t)entry_point;
+    ISF->ss = SLTR_KERNEL_DATA;
+    ISF->cs = SLTR_KERNEL_CODE;
+    ISF->rflags = 0x286;
+    ISF->rsp = (uint64_t)ISF;
+    pro->rsp = (uint64_t)ISF;
+}
+
+process *find_usable_process()
+{
     for (uint64_t i = last_process; i < MAX_PROCESS; i++)
     {
-        if (process_loaded == true && i == 0)
+        if (process_loaded == true && i == 0) // process 0 is null only after the kernel start
         {
             continue;
         }
-
         if (process_array[i].current_process_state ==
             process_state::PROCESS_AVAILABLE)
         {
-            bool added_pid = false;
-
-            if (get_pid_from_process_name(name) != -1)
-            {
-                log("proc", LOG_INFO) << "process with name already exist so add pid at the end";
-                added_pid = true;
-            }
-
-            log("proc", LOG_INFO) << "adding process" << i << "entry : " << (uint64_t)entry_point << "name : " << name;
-
-            process_array[i].current_process_state = process_state::PROCESS_NOT_STARTED;
-
-            if (start_direct == true)
-            {
-                process_array[i].current_process_state = process_state::PROCESS_WAITING;
-            }
-
-            memcpy(process_array[i].process_name, name, strlen(name) + 2);
-            process_array[i].process_name[strlen(name) + 1] = i;
-
-            process_array[i].global_process_memory = (uint8_t *)get_mem_addr((uint64_t)malloc(4096));
-            process_array[i].global_process_memory_length = 4096;
-            memzero(process_array[i].global_process_memory, process_array[i].global_process_memory_length);
-
-            process_array[i].last_message_used = 0;
-            process_array[i].entry_point = (uint64_t)entry_point;
-
-            memzero(process_array[i].stack, PROCESS_STACK_SIZE);
-            process_array[i].rsp =
-                ((uint64_t)process_array[i].stack) + PROCESS_STACK_SIZE;
-
-            process_array[i].processor_target = interpret_cpu_request(cpu_target);
-
-            for (uint64_t j = 0; j < MAX_PROCESS_MESSAGE_QUEUE; j++)
-            {
-                process_array[i].msg_list[j].entry_free_to_use = true;
-                process_array[i].msg_list[j].message_id = j;
-            }
-
-            uint64_t *rsp = (uint64_t *)process_array[i].rsp;
-
-            InterruptStackFrame *ISF = (InterruptStackFrame *)(rsp - (sizeof(InterruptStackFrame)));
-            memzero(ISF, sizeof(InterruptStackFrame));
-            ISF->rip = (uint64_t)entry_point;
-            ISF->ss = SLTR_KERNEL_DATA;
-            ISF->cs = SLTR_KERNEL_CODE;
-            ISF->rflags = 0x286;
-            ISF->rsp = (uint64_t)ISF;
-            process_array[i].rsp = (uint64_t)ISF;
-            process_array[i].is_ORS = false;
-
-            if (user)
-            {
-                process_array[i].page_directory = (uint64_t)new_vmm_page_dir();
-            }
-            else
-            {
-                process_array[i].page_directory = (uint64_t)get_current_cpu()->page_table;
-            }
-
-            if (get_current_cpu()->current_process == 0x0)
-            {
-                get_current_cpu()->current_process = &process_array[i];
-            }
-
-            unlock((&process_creator_lock));
-
             last_process = i + 1;
-
+            process_array[i].current_process_state = process_state::PROCESS_NOT_STARTED;
             return &process_array[i];
         }
     }
     if (last_process == 0)
     {
-        log("proc", LOG_ERROR) << "init_process : no free process found";
-
-        unlock((&process_creator_lock));
         return nullptr;
     }
     else
     {
-        unlock((&process_creator_lock));
-
         last_process = 0;
-        return init_process(entry_point, start_direct, name, user, cpu_target);
+        return find_usable_process();
     }
+}
+void init_process_global_memory(process *to_init)
+{
+    to_init->global_process_memory = (uint8_t *)get_mem_addr((uint64_t)malloc(4096));
+    to_init->global_process_memory_length = 4096;
+    memzero(to_init->global_process_memory, to_init->global_process_memory_length);
+}
+void init_process_message(process *to_init)
+{
+    to_init->last_message_used = 0;
+
+    for (uint64_t j = 0; j < MAX_PROCESS_MESSAGE_QUEUE; j++)
+    {
+        to_init->msg_list[j].entry_free_to_use = true;
+        to_init->msg_list[j].message_id = j;
+    }
+}
+process *init_process(func entry_point, bool start_direct, const char *name, bool user, int cpu_target)
+{
+    lock((&process_creator_lock));
+    process *process_to_add = find_usable_process();
+    if (process_to_add == nullptr)
+    {
+        log("proc", LOG_ERROR) << "init_process : no free process found";
+    }
+
+    bool added_pid = false;
+
+    if (get_pid_from_process_name(name) != -1)
+    {
+        log("proc", LOG_INFO) << "process with name already exist so add pid at the end";
+        added_pid = true;
+    }
+
+    log("proc", LOG_INFO) << "adding process" << process_to_add->pid << "entry : " << (uint64_t)entry_point << "name : " << name;
+
+    if (start_direct == true)
+    {
+        process_to_add->current_process_state = process_state::PROCESS_WAITING;
+    }
+
+    memcpy(process_to_add->process_name, name, strlen(name) + 2);
+    if (added_pid)
+    {
+        process_to_add->process_name[strlen(name) + 1] = process_to_add->pid;
+    }
+
+    init_process_global_memory(process_to_add);
+
+    init_process_message(process_to_add);
+
+    process_to_add->entry_point = (uint64_t)entry_point;
+
+    process_to_add->processor_target = interpret_cpu_request(cpu_target);
+
+    init_process_stackframe(process_to_add, entry_point);
+
+    process_to_add->is_ORS = false;
+
+    if (user)
+    {
+        process_to_add->page_directory = (uint64_t)new_vmm_page_dir();
+    }
+    else
+    {
+        process_to_add->page_directory = (uint64_t)get_current_cpu()->page_table;
+    }
+
+    if (get_current_cpu()->current_process == 0x0)
+    {
+        get_current_cpu()->current_process = process_to_add;
+    }
+
+    unlock((&process_creator_lock));
+
+    return process_to_add;
 }
 
 extern "C" uint64_t switch_context(InterruptStackFrame *current_Isf, process *next)

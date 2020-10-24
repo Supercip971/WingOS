@@ -7,6 +7,9 @@
 #include <kernel.h>
 #include <logging.h>
 #include <utility.h>
+
+uint8_t last_selected_cpu = 0;
+
 void load_segment(process *pro, uint64_t source, uint64_t size, uint64_t dest, uint64_t destsize)
 {
     uint64_t count = destsize / PAGE_SIZE;
@@ -23,17 +26,17 @@ void load_segment(process *pro, uint64_t source, uint64_t size, uint64_t dest, u
     add_thread_map(pro, (uint64_t)source, ndest, count + 1);
     update_paging();
 }
-uint8_t last_selected_cpu = 0;
+
 uint64_t get_elf_section_header(uint8_t *data, uint64_t code)
 {
     Elf64_Ehdr *programm_header = reinterpret_cast<Elf64_Ehdr *>(data);
 
     Elf64_Shdr *p_entry = reinterpret_cast<Elf64_Shdr *>((uint64_t)data + programm_header->e_shoff);
+
     for (int table_entry = 0; table_entry < programm_header->e_shnum; table_entry++)
     {
         if (p_entry[table_entry].sh_type == code)
         {
-
             return table_entry;
         }
     }
@@ -43,7 +46,6 @@ uint64_t get_elf_section_header(uint8_t *data, uint64_t code)
 char *read_elf_string_entry(uint8_t *data, uint64_t idx)
 {
     Elf64_Ehdr *programm_header = reinterpret_cast<Elf64_Ehdr *>(data);
-
     Elf64_Shdr *p_entry = reinterpret_cast<Elf64_Shdr *>((uint64_t)data + programm_header->e_shoff);
 
     uint64_t result_offset = get_elf_section_header(data, SHT_STRTAB);
@@ -105,6 +107,7 @@ char *elf_to_readable_string(const char *string)
         return temp;
     }
 }
+
 void read_elf_section_header(uint8_t *data)
 {
 
@@ -133,6 +136,59 @@ void read_elf_section_header(uint8_t *data)
         }
     }
 }
+
+bool valid_elf_entry(Elf64_Ehdr *entry)
+{
+    if (entry->e_ident[0] != 0x7f ||
+        entry->e_ident[1] != 'E' ||
+        entry->e_ident[2] != 'L' ||
+        entry->e_ident[3] != 'F')
+    {
+        return false;
+    }
+
+    if (entry->e_ident[4] != ELFCLASS64)
+    {
+        return false;
+    }
+    return true;
+}
+
+uint64_t get_programm_cpu()
+{
+    last_selected_cpu++;
+    if (last_selected_cpu > smp::the()->processor_count)
+    {
+        last_selected_cpu = 0;
+    }
+    return last_selected_cpu;
+}
+
+void elf64_load_programm_segment(Elf64_Phdr *entry, uint8_t *programm_code, process *target)
+{
+    char *temp_copy = (char *)malloc(entry->p_filesz + 4096);
+    memcpy(temp_copy, (char *)((uint64_t)programm_code + entry->p_offset), entry->p_filesz);
+    load_segment(target, (uint64_t)programm_code + entry->p_offset, entry->p_filesz, entry->p_vaddr, entry->p_memsz);
+    char *p_entry_data = (char *)entry->p_vaddr;
+    for (int i = 0; i < entry->p_filesz; i++)
+    {
+        p_entry_data[i] = temp_copy[i];
+    }
+}
+
+void elf64_load_entry(Elf64_Phdr *entry, uint8_t *programm_code, process *target)
+{
+    if (entry->p_type == PT_LOAD)
+    {
+        elf64_load_programm_segment(entry, programm_code, target);
+    }
+    else
+    {
+
+        log("prog launcher", LOG_ERROR) << "not supported entry type : " << entry->p_type;
+    }
+}
+
 void launch_programm(const char *path, echfs *file_sys)
 {
 
@@ -145,57 +201,24 @@ void launch_programm(const char *path, echfs *file_sys)
     }
 
     Elf64_Ehdr *programm_header = reinterpret_cast<Elf64_Ehdr *>(programm_code);
-    if (programm_header->e_ident[0] == 0x7f &&
-        programm_header->e_ident[1] == 'E' &&
-        programm_header->e_ident[2] == 'L' &&
-        programm_header->e_ident[3] == 'F')
+    if (!valid_elf_entry(programm_header))
     {
-
-        log("prog launcher", LOG_INFO) << "valid elf programm ";
-
-        if (programm_header->e_ident[4] != ELFCLASS64)
-        {
-            log("prog launcher", LOG_ERROR) << "is not 64bit programm ";
-        }
-
-        log("prog launcher", LOG_INFO) << "elf programm entry count" << programm_header->e_phnum;
-
-        last_selected_cpu++;
-        if (last_selected_cpu > smp::the()->processor_count)
-        {
-            last_selected_cpu = 0;
-        }
-        log("prog launcher", LOG_INFO) << "elf programm cpu : " << last_selected_cpu;
-
-        process *to_launch = init_process((func)programm_header->e_entry, false, path, true, last_selected_cpu);
-
-        Elf64_Phdr *p_entry = reinterpret_cast<Elf64_Phdr *>((uint64_t)programm_code + programm_header->e_phoff);
-
-        for (int table_entry = 0; table_entry < programm_header->e_phnum; table_entry++, p_entry += programm_header->e_phentsize)
-        {
-
-            if (p_entry->p_type == PT_LOAD)
-            {
-                char *temp_copy = (char *)malloc(p_entry->p_filesz + 4096);
-                memcpy(temp_copy, (char *)((uint64_t)programm_code + p_entry->p_offset), p_entry->p_filesz);
-                load_segment(to_launch, (uint64_t)programm_code + p_entry->p_offset, p_entry->p_filesz, p_entry->p_vaddr, p_entry->p_memsz);
-                char *p_entry_data = (char *)p_entry->p_vaddr;
-                for (int i = 0; i < p_entry->p_filesz; i++)
-                {
-                    p_entry_data[i] = temp_copy[i];
-                }
-            }
-            else
-            {
-                log("prog launcher", LOG_ERROR) << "not supported entry type : " << p_entry->p_type;
-            }
-        }
-
-        to_launch->current_process_state = process_state::PROCESS_WAITING;
-    }
-    else
-    {
-        log("prog launcher", LOG_ERROR) << "not valid elf programm ";
+        log("prog launcher", LOG_ERROR) << "not valid elf64 entry";
         return;
     }
+
+    uint64_t cpu_programm = get_programm_cpu();
+
+    log("prog launcher", LOG_INFO) << "elf programm cpu : " << cpu_programm;
+
+    process *to_launch = init_process((func)programm_header->e_entry, false, path, true, cpu_programm);
+
+    Elf64_Phdr *p_entry = reinterpret_cast<Elf64_Phdr *>((uint64_t)programm_code + programm_header->e_phoff);
+
+    for (int table_entry = 0; table_entry < programm_header->e_phnum; table_entry++, p_entry += programm_header->e_phentsize)
+    {
+        elf64_load_entry(p_entry, programm_code, to_launch);
+    }
+
+    to_launch->current_process_state = process_state::PROCESS_WAITING;
 }

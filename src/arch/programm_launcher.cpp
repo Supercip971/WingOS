@@ -189,11 +189,11 @@ void elf64_load_entry(Elf64_Phdr *entry, uint8_t *programm_code, process *target
     }
 }
 
-void launch_programm(const char *path, echfs *file_sys)
+void launch_programm(const char *path, file_system *file_sys)
 {
 
     log("prog launcher", LOG_DEBUG) << "launching programm : " << path;
-    uint8_t *programm_code = file_sys->ech_read_file(path);
+    uint8_t *programm_code = file_sys->read_file(path);
 
     if (programm_code == nullptr)
     {

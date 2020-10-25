@@ -1,5 +1,52 @@
 #include "file_system.h"
-
+#include "filesystem/echfs.h"
+#include <arch/mem/memory_manager.h>
+#include <logging.h>
 file_system::file_system()
 {
+}
+
+main_fs_system sys;
+
+main_fs_system *main_fs_system::the()
+{
+    return &sys;
+}
+file_system *main_fs_system::from_partition(uint64_t partition_id)
+{
+    return file_systems[partition_id];
+}
+file_system *main_fs_system::main_fs()
+{
+    file_system *fs = from_partition(0);
+    if (fs == nullptr)
+    {
+        log("main fs", LOG_INFO) << "ow ow";
+    }
+    return from_partition(0);
+}
+void main_fs_system::init_file_system()
+{
+    for (int i = 0; i < 4; i++)
+    {
+        file_systems[i] = nullptr;
+    }
+    log("main fs", LOG_DEBUG) << "loading main fs";
+    MBR_partition *mbr = new MBR_partition();
+    log("main fs", LOG_INFO) << "checking partition entry" << 0;
+    mbr->init();
+    log("main fs", LOG_INFO) << "checking partition entry" << 1;
+    partition_system = (base_partition *)mbr;
+    log("main fs", LOG_INFO) << "checking partition entry" << 3;
+    for (int i = 0; i <= mbr->get_parition_count(); i++)
+    {
+        log("main fs", LOG_INFO) << "checking partition entry" << i;
+        if (echfs::is_valid_echfs_entry(mbr->get_partition_start(i)))
+        {
+            log("main fs", LOG_INFO) << "entry " << i << "is an echfs entry";
+            echfs *ech_file_sys = new echfs();
+            file_systems[i] = dynamic_cast<file_system *>(ech_file_sys);
+            file_systems[i]->init(mbr->get_partition_start(i), mbr->get_partition_length(i));
+        }
+    }
 }

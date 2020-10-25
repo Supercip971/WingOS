@@ -24,6 +24,7 @@
 #include <device/ps_mouse.h>
 #include <device/rtc.h>
 #include <filesystem/echfs.h>
+#include <filesystem/file_system.h>
 #include <filesystem/partition/base_partition.h>
 #include <kernel.h>
 #include <kernel_service/kernel_service.h>
@@ -131,22 +132,20 @@ void start_process()
         m[i] = i;
     }
     ata_driver::the()->init();
-    mbr_part = MBR_partition();
 
-    mbr_part.init();
-    main_start_fs = echfs();
-    main_start_fs.init(mbr_part.get_partition_start(0), mbr_part.get_partition_length(0));
+    main_fs_system::the()->init_file_system();
+
     pci_system::the()->init();
-    launch_programm("init_fs/memory_service.exe", &main_start_fs);
+    launch_programm("init_fs/memory_service.exe", main_fs_system::the()->main_fs());
 
     while (get_pid_from_process_name("usr_mem_service") == -1)
     {
         // just wait
     }
-    launch_programm("init_fs/graphic_service.exe", &main_start_fs);
-    launch_programm("init_fs/test2.exe", &main_start_fs);
-    launch_programm("init_fs/test.exe", &main_start_fs);
-    launch_programm("init_fs/test.exe", &main_start_fs);
+    launch_programm("init_fs/graphic_service.exe", main_fs_system::the()->main_fs());
+    launch_programm("init_fs/test2.exe", main_fs_system::the()->main_fs());
+    launch_programm("init_fs/test.exe", main_fs_system::the()->main_fs());
+    launch_programm("init_fs/test.exe", main_fs_system::the()->main_fs());
 
     _start((stivale_struct *)bootdat);
 }

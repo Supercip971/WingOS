@@ -6,7 +6,7 @@
 #include <kernel.h>
 #include <logging.h>
 #include <utility.h>
-echfs::echfs()
+echfs::echfs() : file_system()
 {
 }
 void echfs::read_block(uint64_t block_id, uint8_t *buffer)
@@ -52,6 +52,21 @@ echfs_file_header echfs::read_directory_entry(uint64_t entry)
         }
     }
     return {0};
+}
+
+bool echfs::is_valid_echfs_entry(uint64_t start_sector)
+{
+
+    uint8_t *temp_buffer = (uint8_t *)malloc(512);
+    ata_driver::the()->read(start_sector / 512, 1, temp_buffer);
+    block0_header hdr = *reinterpret_cast<block0_header *>(temp_buffer);
+    if (strncmp(hdr.echfs_signature, "_ECH_FS_", 8) != 0)
+    {
+        free(temp_buffer);
+        return false;
+    }
+    free(temp_buffer);
+    return true;
 }
 void echfs::init(uint64_t start_sector, uint64_t sector_count)
 {
@@ -312,10 +327,7 @@ redo: // yes goto are bad but if someone has a solution i take it ;)
 }
 // read a file and redirect it to an address
 // return 0 when not found
-uint8_t *echfs::read_file(const char *path)
-{
-    return ech_read_file(path);
-}
+
 uint8_t *echfs::ech_read_file(const char *path)
 {
     log("echfs", LOG_INFO) << "reading file " << path;

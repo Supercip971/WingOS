@@ -49,7 +49,10 @@ public:
     // read a file and redirect it to an address
     // return 0 when not found
     uint8_t *ech_read_file(const char *path);
-    virtual uint8_t *read_file(const char *path) override;
+    virtual uint8_t *read_file(const char *path) override
+    {
+        return ech_read_file(path);
+    }
 
     // mainly not implemented
     //    virtual fs_file *get_file(const char *path) override;
@@ -60,6 +63,7 @@ public:
     {
         return "echfs";
     }
+    static bool is_valid_echfs_entry(uint64_t start_sector);
 };
 
 #endif // ECHFS_H

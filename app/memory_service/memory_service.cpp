@@ -81,15 +81,16 @@ void check_for_fusion(uint64_t length)
              current = current->next;
             continue;
         }
+        if(current->length >= length){
+            last_free = current;
+            return;
+        }
         if ((current->next->is_free != true))
         {
              current = current->next;
             continue;
         }
-        if(current->length > length){
-            last_free = current;
-            return;
-        }
+
         const uint64_t two_block_length = current->next->length + current->length;
         if ((two_block_length > targeted_length) && (current->length < targeted_length))
         {

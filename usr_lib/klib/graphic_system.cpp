@@ -134,19 +134,79 @@ namespace sys
         return clen * 8;
     }
 
+    void graphic_context::draw_filled_circle_part(const pos origin, const int radius, const pixel color, const filled_circle_part part)
+    {
+        const int radius_to_ckeck = radius * radius;
+        int y_start = 0;
+
+        if (part == filled_circle_part::BOTTOM_LEFT || part == filled_circle_part::BOTTOM_RIGHT)
+        {
+            y_start = 0;
+        }
+        else
+        {
+            y_start = -radius;
+        }
+
+        int y_max = 0;
+
+        if (part == filled_circle_part::BOTTOM_LEFT || part == filled_circle_part::BOTTOM_RIGHT)
+        {
+            y_max = radius;
+        }
+        else
+        {
+            y_max = 0;
+        }
+
+        int x_start = 0;
+        if (part == filled_circle_part::BOTTOM_LEFT || part == filled_circle_part::TOP_LEFT)
+        {
+            x_start = -radius;
+        }
+        else
+        {
+            x_start = 0;
+        }
+
+        int x_max = 0;
+        if (part == filled_circle_part::BOTTOM_LEFT || part == filled_circle_part::TOP_LEFT)
+        {
+            x_max = 0;
+        }
+        else
+        {
+            x_max = radius;
+        }
+        for (int y = y_start; y <= y_max; y++)
+        {
+
+            const int y_to_check = y * y;
+            const int y_end_pos = (origin.y + y) * context_width;
+            for (int x = x_start; x <= x_max; x++)
+            {
+
+                const int x_to_check = x * x;
+                if (y_to_check + x_to_check < radius_to_ckeck)
+                {
+                    back_buffer[origin.x + x + y_end_pos] = color;
+                }
+            }
+        }
+    }
     void graphic_context::draw_filled_circle(const pos origin, const int radius, const pixel color)
     {
         const int radius_to_ckeck = radius * radius;
         for (int y = -radius; y <= radius; y++)
         {
-            //
+
             const int y_to_check = y * y;
             const int y_end_pos = (origin.y + y) * context_width;
             for (int x = -radius; x <= radius; x++)
             {
 
                 const int x_to_check = x * x;
-                if (y_to_check + x_to_check <= radius_to_ckeck)
+                if (y_to_check + x_to_check < radius_to_ckeck)
                 {
                     back_buffer[origin.x + x + y_end_pos] = color;
                 }

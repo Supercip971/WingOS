@@ -59,7 +59,7 @@ void setup_gdt(unsigned long i);
 
 struct tss_t
 {
-    uint32_t reserved0 __attribute__((aligned(16)));
+    uint32_t reserved0;
     uint64_t rsp0;
     uint64_t rsp1;
     uint64_t rsp2;

@@ -1,5 +1,6 @@
 #include <arch/arch.h>
 
+#include <arch/lock.h>
 #include <arch/mem/memory_manager.h>
 #include <com.h>
 #include <device/ata_driver.h>
@@ -113,9 +114,10 @@ void ata_driver::irq_handle(uint64_t irq_handle_num)
         //    printf("[ERROR] ata driver receive not supported irq");
     }
 }
-
+lock_type ata_lock = {0};
 void ata_driver::read(uint32_t where, uint8_t count, uint8_t *buffer)
 {
+    lock(&ata_lock);
     waiting_for_irq = 1;
     ata_write(true, ATA_reg_error_feature, 0);
     ata_write(true, ATA_reg_selector, 0xE0 | 0x40 | ((where >> 24) & 0x0F));
@@ -146,5 +148,6 @@ void ata_driver::read(uint32_t where, uint8_t count, uint8_t *buffer)
         }
         off += 256;
     }
+    unlock(&ata_lock);
     return;
 }

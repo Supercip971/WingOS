@@ -133,4 +133,24 @@ namespace sys
         uint64_t clen = strlen(text);
         return clen * 8;
     }
+
+    void graphic_context::draw_filled_circle(const pos origin, const int radius, const pixel color)
+    {
+        const int radius_to_ckeck = radius * radius;
+        for (int y = -radius; y <= radius; y++)
+        {
+            //
+            const int y_to_check = y * y;
+            const int y_end_pos = (origin.y + y) * context_width;
+            for (int x = -radius; x <= radius; x++)
+            {
+
+                const int x_to_check = x * x;
+                if (y_to_check + x_to_check <= radius_to_ckeck)
+                {
+                    back_buffer[origin.x + x + y_end_pos] = color;
+                }
+            }
+        }
+    }
 } // namespace sys

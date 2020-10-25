@@ -110,6 +110,7 @@ namespace sys
 
     public:
         graphic_context(uint64_t width, uint64_t height, const char *name);
+        void draw_filled_circle(const pos origin, const int radius, const pixel color);
         void draw_rectangle(const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const pixel color);
         void draw_basic_char(const uint64_t x, const uint64_t y, const char chr, const pixel color);
         void draw_basic_string(const uint64_t x, const uint64_t y, const char *str, const pixel color);

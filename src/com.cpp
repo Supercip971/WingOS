@@ -23,13 +23,16 @@ void com_putc(COM_PORT port, char c)
     outb(port, c);
 }
 
+lock_type locker_print = {0};
 int com_write(COM_PORT port, const void *buffer, int size)
 {
+    lock(&locker_print);
     const char *bufaddr = (const char *)buffer;
     for (int i = 0; i < size; i++)
     {
         com_putc(port, (bufaddr)[i]);
     }
+    unlock(&locker_print);
 
     return size;
 }
@@ -55,13 +58,14 @@ void com_write_strl(const char *buffer)
         i++;
     }
 }
-
 bool com_write_strn(const char *buffer, uint64_t lenght)
 {
+    lock(&locker_print);
     for (uint64_t i = 0; i < lenght; i++)
     {
         com_putc(COM_PORT::COM1, buffer[i]);
     }
+    unlock(&locker_print);
 
     return true; // maybe
 }

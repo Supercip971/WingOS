@@ -213,4 +213,27 @@ namespace sys
             }
         }
     }
+
+    void graphic_context::draw_rounded_rectangle(int radius, const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const pixel color)
+    {
+        if (radius > height / 2)
+        {
+            radius = height / 2;
+        }
+        if (radius > width / 2)
+        {
+            radius = width;
+        }
+
+        draw_rectangle(x + radius, y, width - (radius * 2), height, color);
+        draw_rectangle(x, y + radius, width, height - (radius * 2), color);
+        const int left_x = x + radius;
+        const int top_y = y + radius;
+        const int right_x = x + width - radius - 1;
+        const int bottom_y = y + height - radius - 1;
+        draw_filled_circle_part(pos(left_x, top_y), radius, color, TOP_LEFT);         // top left
+        draw_filled_circle_part(pos(right_x, top_y), radius, color, TOP_RIGHT);       // top right
+        draw_filled_circle_part(pos(left_x, bottom_y), radius, color, BOTTOM_LEFT);   // bottom left
+        draw_filled_circle_part(pos(right_x, bottom_y), radius, color, BOTTOM_RIGHT); // bottom right
+    }
 } // namespace sys

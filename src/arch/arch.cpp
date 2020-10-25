@@ -40,6 +40,7 @@ stivale_header header = {.stack = (uintptr_t)stack + (sizeof(char) * STACK_SIZE)
 stivale_struct boot_loader_data_copy;
 
 void start_process();
+
 //  ____    __    ____  __  .__   __.   _______      ______        _______.
 //  \   \  /  \  /   / |  | |  \ |  |  /  _____|    /  __  \      /       |
 //   \   \/    \/   /  |  | |   \|  | |  |  __     |  |  |  |    |   (----`
@@ -47,6 +48,7 @@ void start_process();
 //     \    /\    /    |  | |  |\   | |  |__| |    |  `--'  | .----)   |
 //      \__/  \__/     |__| |__| \__|  \______|     \______/  |_______/
 //
+
 extern "C" void kernel_start(stivale_struct *bootloader_data)
 {
     asm volatile("and rsp, -16");
@@ -116,6 +118,7 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
     printf("\n");
     init_multi_process(start_process);
     asm volatile("sti");
+    asm("hlt");
 }
 MBR_partition mbr_part; // TODO : add [new] and [delete]
 echfs main_start_fs;

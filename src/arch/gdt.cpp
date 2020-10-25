@@ -132,6 +132,7 @@ void gdt_ap_init()
 
     gdtr_install(&get_current_cpu()->gdt, SLTR_KERNEL_CODE, SLTR_KERNEL_DATA);
     memzero(&get_current_cpu()->tss, sizeof(tss));
+
     get_current_cpu()->tss.iomap_base = sizeof(tss);
     get_current_cpu()->tss.rsp0 = (uint64_t)POKE(0x570);
     get_current_cpu()->tss.ist1 = (uint64_t)get_current_cpu()->stack_data_interrupt + 8192;

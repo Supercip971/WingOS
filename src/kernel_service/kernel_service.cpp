@@ -1,4 +1,5 @@
 #include <arch/process.h>
+#include <kernel_service/filesystem_service.h>
 #include <kernel_service/graphic_buffer_service.h>
 #include <kernel_service/kernel_process_service.h>
 #include <kernel_service/kernel_service.h>
@@ -27,4 +28,5 @@ void load_kernel_service()
     add_kernel_service(graphic_buffer_service, "graphic_buffer_service");
     add_kernel_service(time_service, "time_service");
     add_kernel_service(ps2_device_service, "ps2_device_service");
+    add_kernel_service(file_system_service, "file_system_service");
 }

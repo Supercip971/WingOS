@@ -44,6 +44,9 @@ void draw_window(raw_window_data window, sys::pixel* buffer){
             if(pos_f > screen_width * screen_height){
                 return;
             }
+            if(window.window_front_buffer[pos_t].a == 0){
+                continue;
+            }
             buffer[pos_f].pix = window.window_front_buffer[pos_t].pix;
         }
     }

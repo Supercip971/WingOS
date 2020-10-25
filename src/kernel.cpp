@@ -17,5 +17,6 @@ void _start(stivale_struct *bootloader_data)
 
     while (true)
     {
+        asm("int 100");
     }
 }

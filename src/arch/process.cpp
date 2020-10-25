@@ -59,7 +59,7 @@ void main_process_1()
     asm("sti");
     while (true)
     {
-        asm("int 32");
+        asm("int 100");
     }
 }
 
@@ -69,7 +69,7 @@ void main_process_2()
     asm("sti");
     while (true)
     {
-        asm("int 32");
+        asm("int 100");
     }
 }
 
@@ -79,7 +79,7 @@ void process_smp_basic()
 
     while (true)
     {
-        asm("int 32");
+        asm("int 100");
     }
 }
 
@@ -89,7 +89,7 @@ void process_smp_basic_2()
 
     while (true)
     {
-        asm("int 32");
+        asm("int 100");
     }
 }
 
@@ -256,11 +256,11 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
 
     init_process_message(process_to_add);
 
+    init_process_stackframe(process_to_add, entry_point);
+
     process_to_add->entry_point = (uint64_t)entry_point;
 
     process_to_add->processor_target = interpret_cpu_request(cpu_target);
-
-    init_process_stackframe(process_to_add, entry_point);
 
     process_to_add->is_ORS = false;
 
@@ -377,9 +377,10 @@ extern "C" uint64_t irq_0_process_handler(InterruptStackFrame *isf)
     {
         return (uint64_t)isf;
     }
-
-    send_switch_process_to_all_cpu();
-
+    if (isf->int_no != 100)
+    {
+        send_switch_process_to_all_cpu();
+    }
     process *i = nullptr;
 
     if (get_current_cpu()->current_process == NULL)

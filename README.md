@@ -1,7 +1,7 @@
 
 ![Banner](screen_shot/wingOS.png)
 
-![sample](screen_shot/sample2_19_10_2020png.png)
+![sample](screen_shot/sample3_25_10_2020png.png)
 
 It work with the concept of 'service' 
 every thing is a service and may be later, replacable with user app, 

@@ -258,3 +258,22 @@ void *calloc(uint64_t nmemb, uint64_t size)
 
     return result;
 }
+void *operator new(uint64_t size)
+{
+    return malloc(size);
+}
+
+void *operator new[](uint64_t size)
+{
+    return malloc(size);
+}
+
+void operator delete(void *p)
+{
+    free(p);
+}
+
+void operator delete[](void *p)
+{
+    free(p);
+}

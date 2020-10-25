@@ -17,4 +17,9 @@ void free(void *addr);
 void dump_memory();
 void *realloc(void *target, uint64_t length);
 void *calloc(uint64_t nmemb, uint64_t size);
+void *operator new(uint64_t size);
+void *operator new[](uint64_t size);
+void operator delete(void *p);
+void operator delete[](void *p);
+
 #endif // MEMORY_MANAGER_H

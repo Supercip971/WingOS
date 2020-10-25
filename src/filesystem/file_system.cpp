@@ -23,7 +23,7 @@ file_system *main_fs_system::main_fs()
     {
         log("main fs", LOG_INFO) << "ow ow";
     }
-    return from_partition(0);
+    return fs;
 }
 void main_fs_system::init_file_system()
 {
@@ -33,11 +33,8 @@ void main_fs_system::init_file_system()
     }
     log("main fs", LOG_DEBUG) << "loading main fs";
     MBR_partition *mbr = new MBR_partition();
-    log("main fs", LOG_INFO) << "checking partition entry" << 0;
     mbr->init();
-    log("main fs", LOG_INFO) << "checking partition entry" << 1;
     partition_system = (base_partition *)mbr;
-    log("main fs", LOG_INFO) << "checking partition entry" << 3;
     for (int i = 0; i <= mbr->get_parition_count(); i++)
     {
         log("main fs", LOG_INFO) << "checking partition entry" << i;

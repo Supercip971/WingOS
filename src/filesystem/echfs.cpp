@@ -1,4 +1,5 @@
 
+#include <arch/lock.h>
 #include <arch/mem/memory_manager.h>
 #include <arch/mem/physical.h>
 #include <device/ata_driver.h>
@@ -6,12 +7,12 @@
 #include <kernel.h>
 #include <logging.h>
 #include <utility.h>
+lock_type main_echfs_lock = {0};
 echfs::echfs() : file_system()
 {
 }
 void echfs::read_block(uint64_t block_id, uint8_t *buffer)
 {
-
     ata_driver::the()->read((start_sec + (block_id * header.block_length)) / 512, header.block_length / 512, buffer);
 }
 uint64_t *another_buffer = nullptr;
@@ -181,13 +182,14 @@ echfs_file_header echfs::get_directory_entry(const char *name, uint64_t forced_p
                 {
                     if (cur_header->parent_id == forced_parent)
                     {
-                        return *cur_header;
+                        echfs_file_header r = *cur_header;
+                        return r;
                     }
                 }
                 else
                 {
-
-                    return *cur_header;
+                    echfs_file_header r = *cur_header;
+                    return r;
                 }
             }
             if (cur_header->parent_id == 0 /* reach the end */)
@@ -243,6 +245,7 @@ uint64_t echfs::get_simple_file(const char *name, uint64_t forced_parent)
 }
 echfs_file_header echfs::find_file(const char *path)
 {
+
     if (strlen(path) > 200)
     {
         log("echfs", LOG_ERROR) << "with echfs file path can't get larger than 200";
@@ -328,13 +331,22 @@ redo: // yes goto are bad but if someone has a solution i take it ;)
 // read a file and redirect it to an address
 // return 0 when not found
 
+uint64_t echfs::get_file_length(const char *path)
+{
+    echfs_file_header file_to_read_header = (find_file(path));
+
+    uint64_t size_to_read = file_to_read_header.size;
+    return file_to_read_header.size;
+}
 uint8_t *echfs::ech_read_file(const char *path)
 {
+    lock(&main_echfs_lock);
     log("echfs", LOG_INFO) << "reading file " << path;
     echfs_file_header file_to_read_header = (find_file(path));
     if (file_to_read_header.file_type == 1)
     {
         log("echfs", LOG_ERROR) << "trying to read a folder";
+        unlock(&main_echfs_lock);
         return nullptr;
     }
     log("echfs", LOG_INFO) << "reading file 1 " << path;
@@ -351,5 +363,6 @@ uint8_t *echfs::ech_read_file(const char *path)
         read_block(block_to_read + i, data + (i * header.block_length));
     }
 
+    unlock(&main_echfs_lock);
     return data;
 }

@@ -41,6 +41,7 @@ class echfs : public file_system
     echfs_file_header find_file(const char *path) __attribute__((__target__("no-sse")));
     uint64_t get_folder(uint64_t folder_id);
     uint64_t get_simple_file(const char *name, uint64_t forced_parent = -1);
+    uint8_t *ech_read_file(const char *path);
 
 public:
     echfs();
@@ -48,7 +49,7 @@ public:
 
     // read a file and redirect it to an address
     // return 0 when not found
-    uint8_t *ech_read_file(const char *path);
+    virtual uint64_t get_file_length(const char *path) override;
     virtual uint8_t *read_file(const char *path) override
     {
         return ech_read_file(path);

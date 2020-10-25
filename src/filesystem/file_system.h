@@ -19,6 +19,7 @@ public:
     file_system();
     virtual void init(uint64_t start_sector, uint64_t sector_count) = 0;
 
+    virtual uint64_t get_file_length(const char *path) = 0;
     // read a file and redirect it to an address
     // return 0 when not found
     virtual uint8_t *read_file(const char *path)

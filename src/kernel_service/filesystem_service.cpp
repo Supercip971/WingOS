@@ -138,17 +138,20 @@ void file_system_service()
             file_system_service_protocol *prot = reinterpret_cast<file_system_service_protocol *>(msg->content_address);
             if (prot->request_type == file_system_service_request::FILE_OPEN)
             {
+                set_on_request_service(false);
                 msg->response = file_open(msg);
                 msg->has_been_readed = true;
+                set_on_request_service(true);
             }
             else if (prot->request_type == file_system_service_request::FILE_CLOSE)
             {
+                set_on_request_service(false);
                 msg->response = file_close(msg);
                 msg->has_been_readed = true;
+                set_on_request_service(true);
             }
             else if (prot->request_type == file_system_service_request::FILE_READ)
             {
-
                 set_on_request_service(false);
                 msg->response = file_read(msg); // temp fix
                 msg->has_been_readed = true;
@@ -156,8 +159,10 @@ void file_system_service()
             }
             else if (prot->request_type == file_system_service_request::GET_FILE_INFO)
             {
+                set_on_request_service(false);
                 msg->response = file_get_information(msg);
                 msg->has_been_readed = true;
+                set_on_request_service(true);
             }
             else
             {

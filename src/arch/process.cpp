@@ -581,24 +581,17 @@ uint64_t message_response(process_message *message_id)
 
 void set_on_request_service(bool is_ORS)
 {
-    if (is_ORS == true)
-    {
-        log("process", LOG_INFO) << "setting process : " << get_current_cpu()->current_process->process_name << " (on request service mode)";
-    }
 
     get_current_cpu()->current_process->is_ORS = is_ORS;
-    get_current_cpu()->current_process->should_be_active = false;
+
+    get_current_cpu()->current_process->should_be_active = true;
 }
 
 void set_on_request_service(bool is_ORS, uint64_t pid)
 {
-    if (is_ORS == true)
-    {
-        log("process", LOG_INFO) << "setting process : " << process_array[pid].process_name << " (on request service mode)";
-    }
 
     process_array[pid].is_ORS = is_ORS;
-    process_array[pid].should_be_active = false;
+    process_array[pid].should_be_active = true;
 }
 
 void on_request_service_update()

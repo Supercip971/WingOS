@@ -37,7 +37,8 @@ struct process
 
     uint64_t rsp = 0;
     process_state current_process_state;
-    uint64_t pid = 0;
+    uint64_t upid = 0;
+    uint64_t kpid = 0;
     uint8_t stack[PROCESS_STACK_SIZE];
     uint64_t entry_point = 0x0;
     uint64_t sse_context[128] __attribute__((aligned(16)));
@@ -97,3 +98,5 @@ void *get_current_process_global_data(uint64_t offset, uint64_t length);
 
 uint64_t get_process_global_data_copy(uint64_t offset, const char *process_name);
 void rename_process(const char *name, uint64_t pid);
+
+uint64_t upid_to_kpid(uint64_t upid);

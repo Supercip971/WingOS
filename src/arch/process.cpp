@@ -106,7 +106,8 @@ void init_multi_process(func start)
 
     for (size_t i = 0; i < MAX_PROCESS; i++)
     {
-        process_array[i].pid = i;
+        process_array[i].kpid = i;
+        process_array[i].upid = -1;
         process_array[i].current_process_state = process_state::PROCESS_AVAILABLE;
         memzero(process_array[i].stack, PROCESS_STACK_SIZE);
     }
@@ -221,7 +222,7 @@ void init_process_message(process *to_init)
         to_init->msg_list[j].message_id = j;
     }
 }
-
+uint64_t next_upid = 1;
 process *init_process(func entry_point, bool start_direct, const char *name, bool user, int cpu_target)
 {
     lock((&process_creator_lock));
@@ -238,9 +239,9 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
         log("proc", LOG_INFO) << "process with name already exist so add pid at the end";
         added_pid = true;
     }
-
-    log("proc", LOG_INFO) << "adding process" << process_to_add->pid << "entry : " << (uint64_t)entry_point << "name : " << name;
-
+    process_to_add->upid = next_upid;
+    log("proc", LOG_INFO) << "adding process" << process_to_add->upid << "entry : " << (uint64_t)entry_point << "name : " << name;
+    next_upid++;
     if (start_direct == true)
     {
         process_to_add->current_process_state = process_state::PROCESS_WAITING;
@@ -249,7 +250,7 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
     memcpy(process_to_add->process_name, name, strlen(name) + 2);
     if (added_pid)
     {
-        process_to_add->process_name[strlen(name) + 1] = process_to_add->pid;
+        process_to_add->process_name[strlen(name) + 1] = process_to_add->upid;
     }
 
     init_process_global_memory(process_to_add);
@@ -389,7 +390,7 @@ extern "C" uint64_t irq_0_process_handler(InterruptStackFrame *isf)
     }
     else
     {
-        i = get_next_process(get_current_cpu()->current_process->pid);
+        i = get_next_process(get_current_cpu()->current_process->kpid);
     }
 
     if (i == 0)
@@ -424,7 +425,7 @@ uint64_t get_pid_from_process_name(const char *name)
         {
             if (strcmp(name, process_array[i].process_name) == 0)
             {
-                return process_array[i].pid;
+                return process_array[i].upid;
             }
         }
     }
@@ -458,7 +459,8 @@ process_message *get_new_process_message(process *target)
 process_message *create_process_message(size_t tpid, uint64_t data_addr, uint64_t data_length)
 {
 
-    process_message *todo = get_new_process_message(&process_array[tpid]);
+    uint64_t target_kpid = upid_to_kpid(tpid);
+    process_message *todo = get_new_process_message(&process_array[target_kpid]);
     if (todo == nullptr)
     {
         log("proc", LOG_ERROR) << "can't create a process message";
@@ -470,8 +472,8 @@ process_message *create_process_message(size_t tpid, uint64_t data_addr, uint64_
     memcpy((void *)memory_kernel_copy, (void *)data_addr, data_length);
     todo->content_address = memory_kernel_copy;
 
-    todo->from_pid = get_current_cpu()->current_process->pid;
-    todo->to_pid = process_array[tpid].pid;
+    todo->from_pid = get_current_cpu()->current_process->upid;
+    todo->to_pid = tpid;
 
     process_message *copy = (process_message *)malloc(sizeof(process_message));
     *copy = *todo;
@@ -488,7 +490,7 @@ process_message *send_message(uint64_t data_addr, uint64_t data_length, const ch
             if (strcmp(to_process, process_array[i].process_name) == 0)
             {
                 process_array[i].should_be_active = true;
-                return create_process_message(i, data_addr, data_length);
+                return create_process_message(process_array[i].upid, data_addr, data_length);
             }
         }
     }
@@ -509,6 +511,7 @@ void dump_process()
             log("proc", LOG_INFO) << "process name     : " << process_array[i].process_name;
             log("proc", LOG_INFO) << "process state    : " << process_array[i].current_process_state;
             log("proc", LOG_INFO) << "process cpu      : " << process_array[i].processor_target;
+            log("proc", LOG_INFO) << "process upid     : " << process_array[i].upid;
         }
     }
 
@@ -539,25 +542,20 @@ process_message *read_message()
 uint64_t message_response(process_message *message_id)
 {
 
-    if (message_id->to_pid > MAX_PROCESS)
-    {
-        log("process", LOG_ERROR) << "not valid pid in message response" << message_id->to_pid;
-        return -1;
-    }
-
-    if (message_id->from_pid != get_current_cpu()->current_process->pid)
+    if (message_id->from_pid != get_current_cpu()->current_process->upid)
     {
         log("process", LOG_ERROR) << "not valid process from" << message_id->from_pid;
         return -1;
     }
 
-    if (process_array[message_id->to_pid].current_process_state != PROCESS_WAITING && process_array[message_id->to_pid].current_process_state != PROCESS_RUNNING)
+    uint64_t target_kpid = upid_to_kpid(message_id->to_pid);
+    if (process_array[target_kpid].current_process_state != PROCESS_WAITING && process_array[target_kpid].current_process_state != PROCESS_RUNNING)
     {
         log("process", LOG_ERROR) << "trying to send a message to a not started pid" << message_id->to_pid;
         return -1;
     }
 
-    process_message *msg = &process_array[message_id->to_pid].msg_list[message_id->message_id];
+    process_message *msg = &process_array[target_kpid].msg_list[message_id->message_id];
 
     if (msg->has_been_readed == false)
     {
@@ -590,8 +588,9 @@ void set_on_request_service(bool is_ORS)
 void set_on_request_service(bool is_ORS, uint64_t pid)
 {
 
-    process_array[pid].is_ORS = is_ORS;
-    process_array[pid].should_be_active = true;
+    uint64_t kpid = upid_to_kpid(pid);
+    process_array[kpid].is_ORS = is_ORS;
+    process_array[kpid].should_be_active = true;
 }
 
 void on_request_service_update()
@@ -603,20 +602,20 @@ uint64_t get_process_global_data_copy(uint64_t offset, const char *process_name)
 {
     uint64_t pid = get_pid_from_process_name(process_name);
 
-    if (pid == -1)
+    uint64_t kpid = upid_to_kpid(pid);
+    if (kpid == -1)
     {
         log("process", LOG_ERROR) << "get global data copy, trying to get a non existant process : " << process_name;
         return -1;
     }
-
-    if (process_array[pid].global_process_memory_length < offset + sizeof(uint64_t))
+    if (process_array[kpid].global_process_memory_length < offset + sizeof(uint64_t))
     {
         log("process", LOG_ERROR) << "getting out of range process data";
         return -1;
     }
     else
     {
-        uint8_t *data_from = process_array[pid].global_process_memory;
+        uint8_t *data_from = process_array[kpid].global_process_memory;
 
         return *((uint64_t *)(data_from + offset));
     }
@@ -650,17 +649,30 @@ void set_on_interrupt_process(uint8_t added_int)
 
     log("process", LOG_ERROR) << "no free interrupt entry for process", get_current_cpu()->current_process->process_name;
 }
+uint64_t upid_to_kpid(uint64_t upid)
+{
+    for (int i = 0; i < MAX_PROCESS; i++)
+    {
 
+        if (process_array[i].upid == upid)
+        {
+            return process_array[i].kpid;
+        }
+    }
+    log("process", LOG_ERROR) << "not founded process with upid : " << upid;
+    return -1;
+}
 void rename_process(const char *name, uint64_t pid)
 {
-    log("process", LOG_INFO) << "renamming process: " << process_array[pid].process_name << " to : " << name;
+
+    uint64_t kpid = upid_to_kpid(pid);
+    log("process", LOG_INFO) << "renamming process: " << process_array[kpid].process_name << " to : " << name;
 
     lock(&lck_syscall); // turn off syscall
     lock_process();
-
-    memcpy(process_array[pid].backed_name, process_array[pid].process_name, 128);
-    memzero(process_array[pid].process_name, 128);
-    memcpy(process_array[pid].process_name, name, strlen(name) + 1);
+    memcpy(process_array[kpid].backed_name, process_array[kpid].process_name, 128);
+    memzero(process_array[kpid].process_name, 128);
+    memcpy(process_array[kpid].process_name, name, strlen(name) + 1);
 
     unlock(&lck_syscall);
     unlock_process();

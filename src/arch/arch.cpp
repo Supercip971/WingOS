@@ -137,10 +137,13 @@ void start_process()
 
     pci_system::the()->init();
     launch_programm("init_fs/memory_service.exe", main_fs_system::the()->main_fs());
-
+    uint64_t time_out = 0xffffff;
     while (get_pid_from_process_name("usr_mem_service") == -1)
     {
-        // just wait
+        if (time_out-- == 0)
+        {
+            dump_process();
+        }
     }
     launch_programm("init_fs/graphic_service.exe", main_fs_system::the()->main_fs());
     launch_programm("init_fs/test2.exe", main_fs_system::the()->main_fs());

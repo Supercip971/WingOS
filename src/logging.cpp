@@ -12,7 +12,7 @@ void logging ::set_log_type(const char *data, log_state log_state)
     uint64_t current_cpu = 0;
     if (get_current_cpu()->current_process != nullptr)
     {
-        pid = get_current_cpu()->current_process->pid;
+        pid = get_current_cpu()->current_process->upid;
         current_cpu = apic::the()->get_current_processor_id();
     }
     if (log_state > 4 || log_state == 3)

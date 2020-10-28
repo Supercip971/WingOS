@@ -5,7 +5,6 @@
 #include <klib/mem_util.h>
 #include <klib/process_message.h>
 #include <string.h>
-
 namespace sys
 {
     graphic_context::graphic_context(uint64_t width, uint64_t height, const char *name)
@@ -37,14 +36,6 @@ namespace sys
         raw_clear_buffer(back_buffer, context_length, color);
     }
 
-    void graphic_context::swap_buffer()
-    {
-        sys::graphic_system_service_protocol swap_request = {0};
-        swap_request.request_type = sys::GRAPHIC_SYSTEM_REQUEST::SWAP_WINDOW_BUFFER;
-        swap_request.get_request.window_handler_code = wid;
-        uint64_t result = sys::process_message("init_fs/graphic_service.exe", (uint64_t)&swap_request, sizeof(sys::graphic_system_service_protocol)).read();
-    }
-
     void swap_buffer(sys::pixel *buffer1, const sys::pixel *buffer2, uint64_t buffer_length)
     {
         uint64_t buffer_length_r64 = buffer_length / 2;
@@ -54,6 +45,14 @@ namespace sys
         {
             to[i] = from[i];
         }
+    }
+    void graphic_context::swap_buffer()
+    {
+
+        sys::graphic_system_service_protocol swap_request = {0};
+        swap_request.request_type = sys::GRAPHIC_SYSTEM_REQUEST::SWAP_WINDOW_BUFFER;
+        swap_request.get_request.window_handler_code = wid;
+        uint64_t result = sys::process_message("init_fs/graphic_service.exe", (uint64_t)&swap_request, sizeof(sys::graphic_system_service_protocol)).read();
     }
 
     void raw_clear_buffer(sys::pixel *buffer, uint64_t size, sys::pixel value)
@@ -80,7 +79,16 @@ namespace sys
                 {
                     return;
                 }
-                back_buffer[pos_f].pix = color.pix;
+                if (color.a != 255)
+                {
+
+                    back_buffer[pos_f].blend_alpha(color.pix, color.a);
+                }
+                else
+                {
+
+                    back_buffer[pos_f] = color;
+                }
             }
         }
     }
@@ -193,7 +201,16 @@ namespace sys
                 const int x_to_check = x * x;
                 if (y_to_check + x_to_check < radius_to_ckeck)
                 {
-                    back_buffer[origin.x + x + y_end_pos] = color;
+                    if (color.a != 255)
+                    {
+
+                        back_buffer[origin.x + x + y_end_pos].blend_alpha(color.pix, color.a);
+                    }
+                    else
+                    {
+
+                        back_buffer[origin.x + x + y_end_pos] = color;
+                    }
                 }
             }
         }
@@ -212,7 +229,16 @@ namespace sys
                 const int x_to_check = x * x;
                 if (y_to_check + x_to_check < radius_to_ckeck)
                 {
-                    back_buffer[origin.x + x + y_end_pos] = color;
+                    if (color.a != 255)
+                    {
+
+                        back_buffer[origin.x + x + y_end_pos].blend_alpha(color.pix, color.a);
+                    }
+                    else
+                    {
+
+                        back_buffer[origin.x + x + y_end_pos] = color;
+                    }
                 }
             }
         }

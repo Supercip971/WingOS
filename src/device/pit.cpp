@@ -6,7 +6,7 @@
 #include <logging.h>
 #pragma GCC optimize("-O0")
 PIT global_PIT;
-
+extern "C" uint32_t read_pit_counter();
 extern "C" void pit_callback()
 {
     PIT::the()->update();
@@ -32,22 +32,17 @@ void PIT::init_PIT()
 
 void PIT::Pwait(uint16_t ms)
 {
+    uint16_t start_counter = read_pit_counter();
     outb(0x43, 0x30);
-    uint16_t wait_val = PIT_START_FREQUENCY / 1000;
-    wait_val *= ms;
-
+    uint16_t wait_val = PIT_START_FREQUENCY / (ms * 1000);
     uint8_t l = (uint8_t)(wait_val & 0xFF);
-    wait();
-    outb(0x40, l);
-    wait();
     uint8_t h = (uint8_t)((wait_val >> 8) & 0xFF);
-    outb(0x40, h);
 
+    outb(0x40, l);
+    outb(0x40, h);
     while (true)
     {
-        outb(0x43, 0xe2);
-        uint8_t status = inb(0x40);
-        if ((status & (1 << 7)) != 0)
+        if ((int64_t)read_pit_counter() == 0)
         {
             break;
         }

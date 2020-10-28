@@ -5,6 +5,7 @@ reload_cr3:
     ret
 global asm_spinlock_lock
 global asm_spinlock_unlock
+global read_pit_counter
 extern something_is_bad_i_want_to_die_higher_level ;
 asm_spinlock_lock:
     mov rax, 0
@@ -56,4 +57,15 @@ asm_sse_load:
 
     mov rax, rdi
     fxrstor [eax]
+    ret
+
+
+read_pit_counter:
+    mov al, 0x0
+    out 0x43, al
+
+    in al, 0x40
+    mov ah, al
+    in al, 0x40
+    rol ax, 8
     ret

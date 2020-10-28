@@ -1,7 +1,7 @@
 #pragma once
 #include <int_value.h>
 
-#define PIT_START_FREQUENCY 1193182
+#define PIT_START_FREQUENCY 1193180
 #define PIT_TARGET_FREQUECY 1000
 
 class PIT

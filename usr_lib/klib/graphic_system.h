@@ -83,6 +83,16 @@ namespace sys
             b = vb;
             a = va;
         }
+        void blend_alpha(unsigned int colora, unsigned int alpha)
+        {
+            unsigned int rb1 = ((0x100 - alpha) * (colora & 0xFF00FF)) >> 8;
+            unsigned int rb2 = (alpha * (pix & 0xFF00FF)) >> 8;
+            unsigned int g1 = ((0x100 - alpha) * (colora & 0x00FF00)) >> 8;
+            unsigned int g2 = (alpha * (pix & 0x00FF00)) >> 8;
+
+            this->pix = ((rb1 | rb2) & 0xFF00FF) + ((g1 | g2) & 0x00FF00);
+            a = 255;
+        }
     };
     struct pos
     {

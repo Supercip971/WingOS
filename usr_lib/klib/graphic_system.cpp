@@ -1,3 +1,4 @@
+#include <kgui/blur.h>
 #include <kgui/font/basic_8x8_font.h>
 #include <klib/graphic_system.h>
 #include <klib/kernel_util.h>
@@ -133,7 +134,10 @@ namespace sys
         uint64_t clen = strlen(text);
         return clen * 8;
     }
-
+    void graphic_context::apply_blur(uint64_t fromx, uint64_t fromy, uint64_t width, uint64_t height)
+    {
+        stackblur((uint8_t *)back_buffer, context_width, context_height, 10, fromx, fromx + width, fromy, fromy + height);
+    }
     void graphic_context::draw_filled_circle_part(const pos origin, const int radius, const pixel color, const filled_circle_part part)
     {
         const int radius_to_ckeck = radius * radius;

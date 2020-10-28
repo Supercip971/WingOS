@@ -117,6 +117,13 @@ namespace sys
         uint64_t wid = 0;
         pixel *back_buffer;
         char *context_name;
+        static constexpr int filter_width = 3;
+        static constexpr int filter_height = 3;
+        static constexpr int divisor = 16;
+        int filter[9] = {
+            1, 2, 1,
+            2, 4, 2,
+            1, 2, 1};
 
     public:
         graphic_context(uint64_t width, uint64_t height, const char *name);
@@ -129,7 +136,7 @@ namespace sys
             BOTTOM_LEFT,
             TOP_LEFT
         };
-
+        void apply_blur(uint64_t fromx, uint64_t fromy, uint64_t width, uint64_t height);
         void draw_filled_circle_part(const pos origin, const int radius, const pixel color, const filled_circle_part part);
         void draw_rounded_rectangle(int radius, const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const pixel color);
         void draw_rectangle(const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const pixel color);

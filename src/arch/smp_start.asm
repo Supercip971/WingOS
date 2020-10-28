@@ -25,13 +25,12 @@ mov al, 'a'
 mov dx, 0x3F8   ; these are used for debugging
 out dx, al
 
-    o32 lidt [pm_idtr - trampoline_start + TRAMPOLINE_BASE]
     o32 lgdt [pm_gdtr - trampoline_start + TRAMPOLINE_BASE]
-
 
 mov al, 'a'
 mov dx, 0x3F8
 out dx, al
+
     mov eax, cr0
     or al, 0x1
     mov cr0, eax
@@ -201,9 +200,6 @@ align 16
     dd 0
     dd 0
     align 16
-
-nstack: ; variable for storing the virtual address of the AP's bootstrap stack
-    dq 0
 
 global trampoline_end
 trampoline_end:

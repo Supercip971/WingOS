@@ -13,7 +13,6 @@
 #include <kernel.h>
 #include <logging.h>
 #define TRAMPOLINE_START 0x1000
-#define TRAMPOLINE_PAGING_ADDR 0x4000
 #define SMP_MAP_PAGE_FLAGS 0x7
 #pragma GCC optimize("-O0")
 smp main_smp;
@@ -94,13 +93,6 @@ void smp::init()
 // to do : use the pit or anything else instead of this
 void smp::wait()
 {
-    for (uint64_t i = 0; i < 300; i++)
-    {
-        for (uint64_t b = 0; b < i * 2; b++)
-        {
-            inb(0);
-        }
-    }
 }
 
 void smp::init_cpu_trampoline()
@@ -142,7 +134,12 @@ void smp::init_cpu_future_value(uint64_t id)
 
 void smp::init_cpu(int apic, int id)
 {
+
     log("smp cpu", LOG_DEBUG) << "loading smp cpu : " << id << "/ apic id :" << apic;
+
+    apic::the()->preinit_processor(apic);
+
+    //
     get_current_cpu(id)->lapic_id = apic;
 
     init_cpu_trampoline();
@@ -151,11 +148,7 @@ void smp::init_cpu(int apic, int id)
 
     log("smp cpu", LOG_INFO) << "pre loading cpu : " << id;
 
-    apic::the()->preinit_processor(apic);
-
     // waiting a little bit
-
-    wait();
 
     log("smp cpu", LOG_INFO) << " loading cpu : " << id;
 

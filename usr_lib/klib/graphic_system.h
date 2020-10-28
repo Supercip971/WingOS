@@ -83,6 +83,7 @@ namespace sys
             b = vb;
             a = va;
         }
+
         void blend_alpha(unsigned int colora, unsigned int alpha)
         {
             unsigned int rb1 = ((0x100 - alpha) * (colora & 0xFF00FF)) >> 8;
@@ -139,6 +140,7 @@ namespace sys
         void apply_blur(uint64_t fromx, uint64_t fromy, uint64_t width, uint64_t height);
         void draw_filled_circle_part(const pos origin, const int radius, const pixel color, const filled_circle_part part);
         void draw_rounded_rectangle(int radius, const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const pixel color);
+        void draw_rounded_rectangle_b(int radius, const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const pixel color);
         void draw_rectangle(const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const pixel color);
         void draw_basic_char(const uint64_t x, const uint64_t y, const char chr, const pixel color);
         void draw_basic_string(const uint64_t x, const uint64_t y, const char *str, const pixel color);

@@ -240,4 +240,14 @@ namespace sys
         draw_filled_circle_part(pos(left_x, bottom_y), radius, color, BOTTOM_LEFT);   // bottom left
         draw_filled_circle_part(pos(right_x, bottom_y), radius, color, BOTTOM_RIGHT); // bottom right
     }
+    void graphic_context::draw_rounded_rectangle_b(int radius, const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const pixel color)
+    {
+        uint64_t wd2 = width / 2;
+        uint64_t hd2 = height / 2;
+
+        draw_rectangle(x, y, width, height, sys::pixel(0, 0, 0, 100));
+        apply_blur(x - 10, y - 10, width + 20, height + 20);
+        draw_rounded_rectangle(radius, x, y, width, height, color);
+    }
+
 } // namespace sys

@@ -13,6 +13,7 @@ struct memory_map_children
     bool is_free;
     uint16_t code = 0xf2ee;
     memory_map_children *next;
+    bool is_next_contignous;
 } __attribute__((packed));
 
 #define MM_BLOCK_SIZE 4096
@@ -26,26 +27,31 @@ void init_mm()
     heap->is_free = true;
     heap->next = nullptr;
 }
+
 void *addr_from_header(memory_map_children *target)
 {
     return reinterpret_cast<void *>(reinterpret_cast<uint64_t>(target) + sizeof(memory_map_children));
+}bool is_next_entry_contignous(memory_map_children * child){
+    return ((uint64_t)child->length + (uint64_t)addr_from_header(child)) == (uint64_t)child->next;
 }
 void increase_mmap()
 {
     memory_map_children *current = heap;
     for (uint64_t i = 0; current != nullptr; i++)
     {
-        current = current->next;
         if (current->next == nullptr)
         {
 
             current->next = reinterpret_cast<memory_map_children *>(sys::service_pmm_malloc(MM_BIG_BLOCK_SIZE / 4096));
+
             current->next->code = 0xf2ee;
             current->next->length = MM_BIG_BLOCK_SIZE - sizeof(memory_map_children);
             current->next->is_free = true;
             current->next->next = nullptr;
+
             return;
         }
+        current = current->next;
     }
 }
 memory_map_children *last_free = nullptr;
@@ -60,6 +66,9 @@ void insert_new_mmap_child(memory_map_children *target, uint64_t length)
     target->length = length;
     target->next->code = 0xf2ee;
     target->next->is_free = true;
+    target->next->is_next_contignous = target->is_next_contignous;
+
+    target->is_next_contignous= true;
     if (last_free == nullptr)
     {
         last_free = target->next;
@@ -84,6 +93,9 @@ void check_for_fusion(uint64_t length)
         if(current->length >= length){
             last_free = current;
             return;
+        }
+        if(!is_next_entry_contignous(current)){
+            continue;
         }
         if ((current->next->is_free != true))
         {
@@ -218,10 +230,11 @@ void *scalloc(uint64_t nmemb, uint64_t size)
 }
 
 int main(){
+    init_mm();
+    increase_mmap();
     sys::set_current_process_as_a_service("usr_mem_service", true);
     last_free = nullptr;
     heap = nullptr;
-    init_mm();
     while(true){
         sys::raw_process_message* msg = sys::service_read_current_queue();
         if(msg != 0x0){

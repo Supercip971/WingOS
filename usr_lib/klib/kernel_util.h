@@ -4,6 +4,7 @@ namespace sys
 {
     int write_console(const char *raw_data, int length);
 
+    int write_kconsole(const char *raw_data, int length);
     struct raw_process_request
     {
         uint64_t m[512];

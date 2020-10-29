@@ -1,5 +1,7 @@
+#include <klib/console.h>
 #include <klib/kernel_util.h>
 #include <klib/process_message.h>
+#include <stdlib.h>
 #include <string.h>
 namespace sys
 {
@@ -14,10 +16,30 @@ namespace sys
         {
             return -1;
         }
+
         sys::process_message("console_out", (uint64_t)raw_data, length).read();
         return 1;
     }
-
+    int write_kconsole(const char *raw_data, int length)
+    {
+        if (length < 0)
+        {
+            return -2;
+        }
+        if (raw_data == nullptr)
+        {
+            return -1;
+        }
+        write_console(raw_data, length);
+        console_service_request req;
+        req.request_type = CONSOLE_WRITE;
+        memcpy(req.write.raw_data, raw_data, length);
+        req.write.raw_data[length] = 0;
+        req.write.raw_data[length + 1] = 0;
+        sys::process_message("console_service", (uint64_t)&req, sizeof(console_request_type)).read();
+        free(req.write.raw_data);
+        return 1;
+    }
     uint64_t get_process_pid(const char *process_name)
     {
         process_request pr = {0};

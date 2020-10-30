@@ -1,29 +1,29 @@
-## before
+## Before :
 you can't build wingOS on windows or in WSL 
 
 
-# build guide 
+# Build guide :
 how to build this os ?
 
-## set up
+## Set up :
 you have to install these packages : 
 
 ```build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo gparted lib-fuse fuse```
 
 before making the toolchain
 
-## making the toolchain
+## Making the toolchain :
 
 then run the file make\_cross\_compiler.sh
 
-## making echfs-utils
+## Making echfs-utils :
 run 
 ``` make setup_echfs_utils ```
 then run in the echfs folder
 ``` sudo make install ```
 now you have echfs-utils ! 
 
-## making wingOS
+## Making wingOS :
 
 you have to run make to build wingOS
 there are some option : 

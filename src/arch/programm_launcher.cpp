@@ -166,14 +166,12 @@ uint64_t get_programm_cpu()
 
 void elf64_load_programm_segment(Elf64_Phdr *entry, uint8_t *programm_code, process *target)
 {
-    char *temp_copy = (char *)malloc(entry->p_filesz + 4096);
+    char *temp_copy = (char *)malloc(entry->p_memsz + 4096);
+    memzero(temp_copy, entry->p_memsz + 4096);
     memcpy(temp_copy, (char *)((uint64_t)programm_code + entry->p_offset), entry->p_filesz);
     load_segment(target, (uint64_t)programm_code + entry->p_offset, entry->p_filesz, entry->p_vaddr, entry->p_memsz);
     char *p_entry_data = (char *)entry->p_vaddr;
-    for (int i = 0; i < entry->p_filesz; i++)
-    {
-        p_entry_data[i] = temp_copy[i];
-    }
+    memcpy(p_entry_data, temp_copy, entry->p_memsz);
 }
 
 void elf64_load_entry(Elf64_Phdr *entry, uint8_t *programm_code, process *target)

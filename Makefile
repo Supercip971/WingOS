@@ -70,23 +70,25 @@ foreachramfs:
 	@for f in $(shell find init_fs/ -maxdepth 64 -type f); do echfs-utils -m -p0 $(KERNEL_HDD) import $${f} $${f}; done
 
 app: $(APP_FILE_CHANGE)
-	@make -C ./app/test all	
-	@make -C ./app/test2 all
-	@make -C ./app/graphic_service all
-	@make -C ./app/memory_service all
+	@make -C ./app/test all -j12	
+	@make -C ./app/test2 all -j12
+	@make -C ./app/graphic_service all -j12
+	@make -C ./app/memory_service all -j12
+	@make -C ./app/console_service all -j12
 travis_test: 
 	@make clean 
 	@make -C . $(KERNEL_HDD)
 
 super:
-	@make app
+	@make clean 
+	@make app -j12
 	-killall -9 VirtualBoxVM
 	-killall -9 qemu-system-x86_64
 	@make format
-	@make
+	@make -j12
 
 	@objdump kernel.elf -f -s -d --source > kernel.map
-	@make run
+	@make run -j12
 %.o: %.cpp %.h
 	@echo "cpp [BUILD] $<"
 	@$(CC) $(CHARDFLAGS) -c $< -o $@

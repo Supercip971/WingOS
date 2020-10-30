@@ -16,6 +16,7 @@ CHARDFLAGS := $(CFLAGS)               \
         -no-pie \
 		-m64 \
         -O3 \
+				-msse \
         -mno-80387                     \
         -mno-red-zone                  \
         -fno-rtti \

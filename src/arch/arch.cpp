@@ -64,7 +64,7 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
     setup_gdt((uint64_t)stack + (sizeof(char) * STACK_SIZE));
 
     init_idt();
-
+    PIT::the()->init_PIT();
     tss_init((uintptr_t)stack + sizeof(char) * STACK_SIZE);
 
     init_physical_memory(bootloader_data);
@@ -136,15 +136,9 @@ void start_process()
     main_fs_system::the()->init_file_system();
 
     pci_system::the()->init();
-    launch_programm("init_fs/memory_service.exe", main_fs_system::the()->main_fs());
-    uint64_t time_out = 0xffffff;
-    while (get_pid_from_process_name("usr_mem_service") == -1)
-    {
-        if (time_out-- == 0)
-        {
-            dump_process();
-        }
-    }
+    //   launch_programm("init_fs/memory_service.exe", main_fs_system::the()->main_fs());
+    launch_programm("init_fs/console_service.exe", main_fs_system::the()->main_fs());
+
     launch_programm("init_fs/graphic_service.exe", main_fs_system::the()->main_fs());
     launch_programm("init_fs/test2.exe", main_fs_system::the()->main_fs());
     launch_programm("init_fs/test.exe", main_fs_system::the()->main_fs());

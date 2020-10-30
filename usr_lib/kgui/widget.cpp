@@ -47,16 +47,22 @@ namespace gui
         }
     }
 
-    void widget_list::update_all()
+    bool widget_list::update_all()
     {
-
+        bool should_redraw = false;
         for (size_t i = 0; i < list_length; i++)
         {
             if (list[i] != nullptr)
             {
+
                 list[i]->update_widget();
+                if (should_redraw == false && list[i]->should_redraw())
+                {
+                    should_redraw = true;
+                }
             }
         }
+        return should_redraw;
     }
     void widget_list::draw_all(sys::graphic_context &context)
     {
@@ -65,7 +71,12 @@ namespace gui
         {
             if (list[i] != nullptr)
             {
-                list[i]->draw_widget(context);
+                if (list[i]->should_redraw())
+                {
+                    list[i]->should_redraw() = false;
+
+                    list[i]->draw_widget(context);
+                }
             }
         }
     }

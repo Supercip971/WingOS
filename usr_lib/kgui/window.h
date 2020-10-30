@@ -11,6 +11,7 @@ namespace gui
         uint64_t width;
         uint64_t height;
         widget_list lst;
+        bool has_at_least_one_redraw = true;
         uint64_t current_tick;
         widget *header_widget_movable;
         // widget* widget_list; for later ;)

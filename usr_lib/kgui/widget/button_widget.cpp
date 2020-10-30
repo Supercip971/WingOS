@@ -22,7 +22,7 @@ namespace gui
     }
     void button_widget::update_widget()
     {
-        is_hovered = false;
+        bool has_been_hovered = false;
         if (parent != nullptr)
         {
             uint32_t x = parent->get_mouse_pos_relative_x();
@@ -36,12 +36,23 @@ namespace gui
                     {
                         if (y <= widget_y + widget_height)
                         {
-                            is_hovered = true;
+                            has_been_hovered = true;
                         }
                     }
                 }
             }
         }
+        if (!is_hovered && has_been_hovered)
+        {
+
+            widget_should_draw = true;
+        }
+        if (is_hovered && !has_been_hovered)
+        {
+
+            widget_should_draw = true;
+        }
+        is_hovered = has_been_hovered;
         if (click != nullptr)
         {
 
@@ -49,6 +60,7 @@ namespace gui
             {
                 if (start_click == false)
                 {
+                    widget_should_draw = true;
                     start_click = true;
                     click(clicked++);
                 }

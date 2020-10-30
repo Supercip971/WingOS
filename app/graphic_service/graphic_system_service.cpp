@@ -2,6 +2,7 @@
 #include <klib/process_message.h>
 #include <klib/mem_util.h>
 #include <klib/raw_graphic.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <klib/graphic_system.h>
 #include <stddef.h>
@@ -34,6 +35,7 @@ uint64_t real_gbuffer_addr = 0x0;
 uint64_t screen_width = 0;
 uint64_t screen_height = 0;
 uint64_t window_count = 0;
+
 void draw_window(raw_window_data window, sys::pixel* buffer){
     const uint64_t win_width = window.width;
     const uint64_t win_height = window.height;
@@ -73,8 +75,8 @@ uint64_t create_window(sys::graphic_system_service_protocol*request, uint64_t pi
             window_list[i].py = last_window_y;
             window_list[i].window_name = request->create_window_info.name;
             window_list[i].wid = i;
-            window_list[i].window_front_buffer = (sys::pixel*)sys::service_malloc(request->create_window_info.width * request->create_window_info.height* sizeof (sys::pixel));
-            window_list[i].window_back_buffer  = (sys::pixel*)sys::service_malloc(request->create_window_info.width * request->create_window_info.height* sizeof (sys::pixel));
+            window_list[i].window_front_buffer = (sys::pixel*)malloc(request->create_window_info.width * request->create_window_info.height* sizeof (sys::pixel));
+            window_list[i].window_back_buffer  = (sys::pixel*)malloc(request->create_window_info.width * request->create_window_info.height* sizeof (sys::pixel));
             return i;
         }
     }

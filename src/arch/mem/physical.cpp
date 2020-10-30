@@ -107,6 +107,7 @@ uint64_t pmm_find_free_fast(uint64_t lenght)
 
 void *pmm_alloc(uint64_t lenght)
 {
+    lock(&pmm_lock);
     used += lenght;
     uint64_t res = pmm_find_free(lenght);
 
@@ -114,12 +115,14 @@ void *pmm_alloc(uint64_t lenght)
     {
         pmm_set_bit(res + i);
     }
+    unlock(&pmm_lock);
 
     return (void *)(res * PAGE_SIZE);
 }
 
 void *pmm_alloc_fast(uint64_t lenght)
 {
+    lock(&pmm_lock);
     used += lenght;
     uint64_t res = pmm_find_free_fast(lenght);
 
@@ -127,25 +130,28 @@ void *pmm_alloc_fast(uint64_t lenght)
     {
         pmm_set_bit(res + i);
     }
-
+    unlock(&pmm_lock);
     return (void *)(res * PAGE_SIZE);
 }
 
 void *pmm_alloc_zero(uint64_t lenght)
 {
     void *d = pmm_alloc_fast(lenght);
+    lock(&pmm_lock);
     uint64_t *pages = reinterpret_cast<uint64_t *>(get_mem_addr((uint64_t)d));
 
     for (uint64_t i = 0; i < (lenght * PAGE_SIZE) / sizeof(uint64_t); i++)
     {
         pages[i] = 0;
     }
+    unlock(&pmm_lock);
 
     return d;
 }
 
 void pmm_free(void *where, uint64_t lenght)
 {
+    lock(&pmm_lock);
     used -= lenght;
     uint64_t where_aligned = (uint64_t)where;
     where_aligned /= PAGE_SIZE;
@@ -154,6 +160,7 @@ void pmm_free(void *where, uint64_t lenght)
     {
         pmm_clear_bit(where_aligned + i);
     }
+    unlock(&pmm_lock);
 }
 
 void init_physical_memory(stivale_struct *bootdata)

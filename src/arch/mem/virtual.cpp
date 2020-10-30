@@ -136,6 +136,7 @@ main_page_table *new_vmm_page_dir()
     for (uint64_t i = TWO_MEGS / PAGE_SIZE; i < (FOUR_GIGS / PAGE_SIZE); i++)
     {
         uint64_t addr = i * PAGE_SIZE;
+        map_page(ret_pml4, addr, (addr), BASIC_PAGE_FLAGS);
         map_page(ret_pml4, addr, get_mem_addr(addr), BASIC_PAGE_FLAGS);
     }
 
@@ -177,6 +178,7 @@ void init_vmm(stivale_struct *bootdata)
     {
         uint64_t addr = i * PAGE_SIZE;
         map_page(table, addr, get_mem_addr(addr), BASIC_PAGE_FLAGS);
+        map_page(table, addr, (addr), BASIC_PAGE_FLAGS);
     }
 
     log("vmm", LOG_INFO) << "loading vmm with memory entries";

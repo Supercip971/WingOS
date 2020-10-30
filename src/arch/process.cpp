@@ -207,7 +207,7 @@ process *find_usable_process()
 
 void init_process_global_memory(process *to_init)
 {
-    to_init->global_process_memory = (uint8_t *)get_mem_addr((uint64_t)malloc(4096));
+    to_init->global_process_memory = (uint8_t *)((uint64_t)malloc(4096));
     to_init->global_process_memory_length = 4096;
     memzero(to_init->global_process_memory, to_init->global_process_memory_length);
 }

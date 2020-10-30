@@ -104,7 +104,7 @@ uint64_t file_read(process_message *msg)
     {
         readed_length = prot->read.length;
     }
-    memcpy(prot->read.target, target->data + prot->read.at, prot->read.length);
+    memcpy((void *)((uint64_t)prot->read.target), target->data + prot->read.at, prot->read.length);
 
     log("file system service", LOG_INFO) << "readed " << path;
     return readed_length;
@@ -136,40 +136,31 @@ void file_system_service()
         if (msg != 0)
         {
             file_system_service_protocol *prot = reinterpret_cast<file_system_service_protocol *>(msg->content_address);
+
+            set_on_request_service(false);
             if (prot->request_type == file_system_service_request::FILE_OPEN)
             {
-                set_on_request_service(false);
                 msg->response = file_open(msg);
-                msg->has_been_readed = true;
-                set_on_request_service(true);
             }
             else if (prot->request_type == file_system_service_request::FILE_CLOSE)
             {
-                set_on_request_service(false);
                 msg->response = file_close(msg);
-                msg->has_been_readed = true;
-                set_on_request_service(true);
             }
             else if (prot->request_type == file_system_service_request::FILE_READ)
             {
-                set_on_request_service(false);
                 msg->response = file_read(msg); // temp fix
-                msg->has_been_readed = true;
-                set_on_request_service(true);
             }
             else if (prot->request_type == file_system_service_request::GET_FILE_INFO)
             {
-                set_on_request_service(false);
                 msg->response = file_get_information(msg);
-                msg->has_been_readed = true;
-                set_on_request_service(true);
             }
             else
             {
                 log("file system service", LOG_ERROR) << "not handled request id" << prot->request_type;
                 msg->response = -1;
-                msg->has_been_readed = true;
             }
+            msg->has_been_readed = true;
+            set_on_request_service(true);
         }
         else if (msg == 0)
         {

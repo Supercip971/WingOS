@@ -14,35 +14,24 @@ void memory_service()
         if (msg != 0)
         {
             memory_service_protocol *prot = (memory_service_protocol *)msg->content_address;
-            if (prot->request_type == REQUEST_FREE)
-            {
-                free((void *)prot->address);
-                msg->response = 1;
-                msg->has_been_readed = true;
-            }
-            else if (prot->request_type == REQUEST_MALLOC)
-            {
-                msg->response = 1;
-                msg->response = (uint64_t)malloc(prot->length);
-                msg->has_been_readed = true;
-            }
-            else if (prot->request_type == REQUEST_REALLOC)
-            {
-                msg->response = (uint64_t)realloc((void *)prot->address, prot->length);
-                msg->has_been_readed = true;
-            }
-            else if (prot->request_type == REQUEST_PMM_MALLOC)
+
+            set_on_request_service(false);
+
+            if (prot->request_type == REQUEST_PMM_MALLOC)
             {
                 log("memory_service", LOG_INFO) << "pmm alloc" << prot->length;
 
-                msg->response = get_mem_addr((uint64_t)pmm_alloc_fast(prot->length));
+                msg->response = ((uint64_t)pmm_alloc_fast(prot->length));
+
+                //  add_thread_map(&process_array[upid_to_kpid(msg->from_pid)], msg->response, get_umem_addr(msg->response), prot->length);
+
                 msg->has_been_readed = true;
             }
             else if (prot->request_type == REQUEST_PMM_FREE)
             {
                 log("memory_service", LOG_INFO) << "pmm free" << prot->length;
                 msg->response = (uint64_t)1;
-                pmm_free((void *)prot->address, prot->length);
+                pmm_free((void *)(prot->address), prot->length);
                 msg->has_been_readed = true;
             }
             else
@@ -51,11 +40,11 @@ void memory_service()
                 msg->response = 0;
                 log("memory_service", LOG_ERROR) << "not valid request memory" << (uint64_t)prot->request_type;
             }
+
+            set_on_request_service(false);
         }
         else if (msg == 0)
         {
-
-            on_request_service_update();
         }
     }
 }

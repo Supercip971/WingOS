@@ -3,6 +3,7 @@
 #include <arch/process.h>
 #include <device/local_data.h>
 #include <stddef.h>
+/*
 memory_map_children *heap = nullptr;
 uint64_t heap_length;
 // so this work with MM_BIG_BLOCK_SIZE of data each time
@@ -22,6 +23,10 @@ void init_mm()
 void *addr_from_header(memory_map_children *target)
 {
     return reinterpret_cast<void *>(reinterpret_cast<uint64_t>(target) + sizeof(memory_map_children));
+}
+bool is_next_entry_contignous(memory_map_children *child)
+{
+    return ((uint64_t)child->length + (uint64_t)addr_from_header(child)) == (uint64_t)child->next;
 }
 
 void increase_mmap()
@@ -95,6 +100,10 @@ void check_for_fusion(uint64_t length)
         {
             last_free = current;
             return;
+        }
+        if (!is_next_entry_contignous(current))
+        {
+            continue;
         }
         if ((current->next->is_free != true))
         {
@@ -258,6 +267,7 @@ void *calloc(uint64_t nmemb, uint64_t size)
 
     return result;
 }
+*/
 void *operator new(uint64_t size)
 {
     return malloc(size);

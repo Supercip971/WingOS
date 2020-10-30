@@ -1,4 +1,5 @@
 #include <ctypes.h>
+#include <klib/liballoc.h>
 #include <klib/mem_util.h>
 #include <klib/string_util.h>
 #include <stddef.h>
@@ -163,15 +164,15 @@ void srand(uint32_t seed)
 
 void *malloc(size_t size)
 {
-    return sys::service_malloc(size);
+    return sys::wmalloc(size);
 }
 
 void free(void *ptr)
 {
-    sys::service_free(ptr);
+    sys::wfree(ptr);
 }
 
 void *realloc(void *ptr, size_t size)
 {
-    return sys::service_realloc(ptr, size);
+    return sys::wrealloc(ptr, size);
 }

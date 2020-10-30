@@ -1,5 +1,6 @@
 #include <kgui/widget.h>
 #include <klib/mem_util.h>
+#include <stdlib.h>
 namespace gui
 {
 
@@ -26,7 +27,7 @@ namespace gui
     }
     void widget_list::init(size_t length)
     {
-        list = (gui::widget **)sys::service_malloc(length * sizeof(uint64_t));
+        list = (gui::widget **)malloc(length * sizeof(uint64_t));
         for (size_t i = 0; i < length; i++)
         {
             list[i] = nullptr;

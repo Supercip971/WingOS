@@ -4,6 +4,7 @@
 #include <klib/kernel_util.h>
 #include <klib/mem_util.h>
 #include <klib/process_message.h>
+#include <stdlib.h>
 #include <string.h>
 namespace sys
 {
@@ -12,7 +13,7 @@ namespace sys
         context_height = height;
         context_width = width;
         size_t name_length = strlen(name) + 1;
-        context_name = (char *)sys::service_malloc(name_length);
+        context_name = (char *)malloc(name_length);
         for (size_t i = 0; i <= name_length; i++)
         {
             context_name[i] = name[i];

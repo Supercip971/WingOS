@@ -21,7 +21,7 @@ void memory_service()
             {
                 log("memory_service", LOG_INFO) << "pmm alloc" << prot->length;
 
-                msg->response = ((uint64_t)pmm_alloc_fast(prot->length));
+                msg->response = get_mem_addr((uint64_t)pmm_alloc_fast(prot->length));
 
                 //  add_thread_map(&process_array[upid_to_kpid(msg->from_pid)], msg->response, get_umem_addr(msg->response), prot->length);
 
@@ -31,7 +31,7 @@ void memory_service()
             {
                 log("memory_service", LOG_INFO) << "pmm free" << prot->length;
                 msg->response = (uint64_t)1;
-                pmm_free((void *)(prot->address), prot->length);
+                pmm_free((void *)get_rmem_addr(prot->address), prot->length);
                 msg->has_been_readed = true;
             }
             else
@@ -41,7 +41,7 @@ void memory_service()
                 log("memory_service", LOG_ERROR) << "not valid request memory" << (uint64_t)prot->request_type;
             }
 
-            set_on_request_service(false);
+            set_on_request_service(true);
         }
         else if (msg == 0)
         {

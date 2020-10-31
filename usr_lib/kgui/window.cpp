@@ -17,6 +17,7 @@ namespace gui
         lst = widget_list();
         lst.init(128); // wax 128 widget may be increase later, but you will be able to put widget list as a widget so meh
         header_widget_movable = new gui::movable_context_widget(0, 0, width, 20, this);
+        has_at_least_one_redraw = true;
         add_widget(header_widget_movable);
     };
     uint64_t window::start()

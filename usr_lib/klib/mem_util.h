@@ -19,9 +19,6 @@ namespace sys
         uint64_t length;
     } __attribute__((packed));
 
-    void *service_malloc(size_t length);
-    void service_free(void *addr);
-    void *service_realloc(void *addr, size_t length);
     void *service_pmm_malloc(size_t length);
     void service_pmm_free(void *addr, size_t length);
 } // namespace sys

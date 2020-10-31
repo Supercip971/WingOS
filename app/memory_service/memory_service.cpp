@@ -4,7 +4,7 @@
 #include <klib/graphic_system.h>
 #include <kgui/window.h>
 #include <klib/kernel_util.h>
-#include <feather_language_lib/feather.h>
+//#include <feather_language_lib/feather.h>
 #include <klib/raw_graphic.h>
 #include <stdio.h>
 struct memory_map_children

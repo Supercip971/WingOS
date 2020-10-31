@@ -1,6 +1,7 @@
 #include <klib/kernel_util.h>
 #include <klib/mem_util.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 size_t strlen(const char *s)
 {
@@ -105,7 +106,7 @@ void *memmove(void *dest, const void *src, size_t n)
 {
     char *new_dst = (char *)dest;
     const char *new_src = (const char *)src;
-    char *temporary_data = (char *)sys::service_malloc(n);
+    char *temporary_data = (char *)malloc(n);
 
     for (size_t i = 0; i < n; i++)
     {
@@ -116,7 +117,7 @@ void *memmove(void *dest, const void *src, size_t n)
         new_dst[i] = temporary_data[i];
     }
 
-    sys::service_free(temporary_data);
+    free(temporary_data);
     return dest;
 }
 

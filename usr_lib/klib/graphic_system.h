@@ -132,6 +132,7 @@ namespace sys
         uint64_t wid = 0;
         pixel *back_buffer;
         char *context_name;
+        int graphic_pid = 0;
         static constexpr int filter_width = 3;
         static constexpr int filter_height = 3;
         static constexpr int divisor = 16;
@@ -141,7 +142,7 @@ namespace sys
             1, 2, 1};
 
     public:
-        graphic_context(uint64_t width, uint64_t height, const char *name);
+        graphic_context(uint64_t width, uint64_t height, const char *name) __attribute__((__target__("no-sse")));
         void draw_filled_circle(const pos origin, const int radius, const pixel color);
 
         enum filled_circle_part
@@ -160,7 +161,11 @@ namespace sys
         void draw_basic_string(const uint64_t x, const uint64_t y, const char *str, const pixel color);
         void clear_buffer(const pixel color);
         void swap_buffer();
-
+        void set_on_top();
+        void set_as_background();
+        void set_on_top_of_background();
+        bool is_on_top();
+        bool is_mouse_inside();
         sys::raw_pos get_graphic_context_position();
         void set_graphic_context_position(const sys::raw_pos position);
     };

@@ -4,6 +4,7 @@
 #include <klib/kernel_util.h>
 #include <klib/mem_util.h>
 #include <klib/process_message.h>
+#include <klib/syscall.h>
 #include <stdlib.h>
 #include <string.h>
 namespace sys
@@ -275,6 +276,53 @@ namespace sys
         draw_rectangle(x, y, width, height, sys::pixel(0, 0, 0, 100));
         apply_blur(x - 10, y - 10, width + 20, height + 20);
         draw_rounded_rectangle(radius, x, y, width, height, color);
+    }
+
+    void graphic_context::set_on_top()
+    {
+        sys::graphic_system_service_protocol request = {0};
+        request.request_type = sys::GRAPHIC_SYSTEM_REQUEST::WINDOW_DEPTH_ACTION;
+        request.depth_request.window_handler_code = wid;
+        request.depth_request.set = true;
+        request.depth_request.type = sys::ON_TOP;
+        uint64_t result = sys::process_message("init_fs/graphic_service.exe", (uint64_t)&request, sizeof(sys::graphic_system_service_protocol)).read();
+    }
+    void graphic_context::set_as_background()
+    {
+        sys::graphic_system_service_protocol request = {0};
+        request.request_type = sys::GRAPHIC_SYSTEM_REQUEST::WINDOW_DEPTH_ACTION;
+        request.depth_request.window_handler_code = wid;
+        request.depth_request.set = true;
+        request.depth_request.type = sys::ON_TOP;
+        uint64_t result = sys::process_message("init_fs/graphic_service.exe", (uint64_t)&request, sizeof(sys::graphic_system_service_protocol)).read();
+    }
+    void graphic_context::set_on_top_of_background()
+    {
+        sys::graphic_system_service_protocol request = {0};
+        request.request_type = sys::GRAPHIC_SYSTEM_REQUEST::WINDOW_DEPTH_ACTION;
+        request.depth_request.window_handler_code = wid;
+        request.depth_request.set = true;
+        request.depth_request.type = sys::ON_TOP;
+        uint64_t result = sys::process_message("init_fs/graphic_service.exe", (uint64_t)&request, sizeof(sys::graphic_system_service_protocol)).read();
+    }
+    bool graphic_context::is_on_top()
+    {
+        sys::graphic_system_service_protocol request = {0};
+        request.request_type = sys::GRAPHIC_SYSTEM_REQUEST::WINDOW_DEPTH_ACTION;
+        request.depth_request.window_handler_code = wid;
+        request.depth_request.set = false;
+        uint64_t result = sys::process_message("init_fs/graphic_service.exe", (uint64_t)&request, sizeof(sys::graphic_system_service_protocol)).read();
+        return result == 0;
+    }
+    bool graphic_context::is_mouse_inside()
+    {
+
+        uint64_t result = sys$get_process_global_data(0, "init_fs/graphic_service.exe");
+        if (result == wid)
+        {
+            return true;
+        }
+        return false;
     }
 
 } // namespace sys

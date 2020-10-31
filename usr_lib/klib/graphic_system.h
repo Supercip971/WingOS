@@ -24,7 +24,19 @@ namespace sys
         uint64_t window_handler_code;
         sys::raw_pos position;
     };
+    enum WINDOW_DEPTH_TYPE
+    {
+        BACKGROUND = 1,     // back
+        TOP_BACKGROUND = 2, // like the menu bar
+        ON_TOP = 3          // in front
+    };
 
+    struct window_depth_request
+    {
+        uint64_t window_handler_code;
+        bool set;
+        uint8_t type; // 0 on top
+    };
     enum GRAPHIC_SYSTEM_REQUEST
     {
         NULL_REQUEST = 0,
@@ -32,7 +44,8 @@ namespace sys
         GET_WINDOW_BACK_BUFFER = 2,
         SWAP_WINDOW_BUFFER = 3,
         GET_WINDOW_POSITION = 4,
-        SET_WINDOW_POSITION = 5
+        SET_WINDOW_POSITION = 5,
+        WINDOW_DEPTH_ACTION = 6,
     };
 
     // window event are not used for the moment
@@ -52,6 +65,7 @@ namespace sys
             create_graphic_window create_window_info;
             individual_request get_request;
             set_window_pos_request set_pos;
+            window_depth_request depth_request;
         };
     } __attribute__((packed));
     // FOR OTHER THING

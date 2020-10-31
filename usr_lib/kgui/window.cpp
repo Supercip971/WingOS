@@ -25,7 +25,13 @@ namespace gui
 
         while (true)
         {
-
+            if (graphic_context.is_mouse_inside())
+            {
+                if (sys::get_mouse_button(sys::GET_MOUSE_LEFT_CLICK))
+                {
+                    graphic_context.set_on_top();
+                }
+            }
             has_at_least_one_redraw = lst.update_all();
 
             if (has_at_least_one_redraw)

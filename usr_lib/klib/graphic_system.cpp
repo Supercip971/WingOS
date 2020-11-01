@@ -293,7 +293,7 @@ namespace sys
         request.request_type = sys::GRAPHIC_SYSTEM_REQUEST::WINDOW_DEPTH_ACTION;
         request.depth_request.window_handler_code = wid;
         request.depth_request.set = true;
-        request.depth_request.type = sys::ON_TOP;
+        request.depth_request.type = sys::BACKGROUND;
         uint64_t result = sys::process_message("init_fs/graphic_service.exe", (uint64_t)&request, sizeof(sys::graphic_system_service_protocol)).read();
     }
     void graphic_context::set_on_top_of_background()
@@ -302,7 +302,7 @@ namespace sys
         request.request_type = sys::GRAPHIC_SYSTEM_REQUEST::WINDOW_DEPTH_ACTION;
         request.depth_request.window_handler_code = wid;
         request.depth_request.set = true;
-        request.depth_request.type = sys::ON_TOP;
+        request.depth_request.type = sys::TOP_BACKGROUND;
         uint64_t result = sys::process_message("init_fs/graphic_service.exe", (uint64_t)&request, sizeof(sys::graphic_system_service_protocol)).read();
     }
     bool graphic_context::is_on_top()

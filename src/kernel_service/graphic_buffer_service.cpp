@@ -17,6 +17,7 @@ void graphic_buffer_service()
 
         if (msg != 0)
         {
+            set_on_request_service(false);
             graphic_buffer_protocol *data = reinterpret_cast<graphic_buffer_protocol *>(msg->content_address);
             if (data->request == GET_CURRENT_BUFFER_ADDR)
             {
@@ -43,6 +44,7 @@ void graphic_buffer_service()
             {
                 log("graphic_buffer", LOG_ERROR) << "not supported request id: " << (uint64_t)data->request;
             }
+            set_on_request_service(true);
         }
         else if (msg == 0)
         {

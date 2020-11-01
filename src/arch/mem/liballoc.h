@@ -36,7 +36,6 @@ extern "C"
     static inline int liballoc_lock()
     {
         lock(&liballoc_locker);
-        lock_process();
         return 0;
     }
 
@@ -49,7 +48,6 @@ extern "C"
     static inline int liballoc_unlock()
     {
         unlock(&liballoc_locker);
-        unlock_process();
         return 0;
     }
 

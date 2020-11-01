@@ -16,7 +16,7 @@ void kernel_process_service()
 
         if (msg != 0)
         {
-
+            set_on_request_service(false);
             process_request *prot = (process_request *)msg->content_address;
             switch (prot->type)
             {
@@ -35,6 +35,7 @@ void kernel_process_service()
                 break;
             }
 
+            set_on_request_service(true);
             msg->has_been_readed = true;
         }
         else if (msg == 0)

@@ -135,6 +135,7 @@ void file_system_service()
 
         if (msg != 0)
         {
+            set_on_request_service(false);
             file_system_service_protocol *prot = reinterpret_cast<file_system_service_protocol *>(msg->content_address);
 
             set_on_request_service(false);

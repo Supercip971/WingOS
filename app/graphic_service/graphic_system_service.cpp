@@ -26,6 +26,8 @@ struct raw_window_data
     sys::pixel *window_back_buffer;
     bool used;
     bool background;
+
+    bool should_redraw;
     uint64_t depth;
 };
 uint64_t *mouse_on_window;
@@ -84,8 +86,20 @@ void set_window_background(uint64_t wid)
             }
         }
     }
-    window_list[widt].depth = max_depth + 1;
+
     window_list[widt].background = true;
+    for (int i = 0; i < window_count; i++)
+    {
+        if (window_list[i].used == false)
+        {
+            continue;
+        }
+        if (window_list[widt].depth < window_list[i].depth)
+        {
+            window_list[i].depth--;
+        }
+    }
+    window_list[widt].depth = max_depth;
 }
 void set_window_top_background(uint64_t wid)
 {
@@ -141,8 +155,8 @@ uint64_t create_window(sys::graphic_system_service_protocol *request, uint64_t p
     {
         if (window_list[i].used == false)
         {
-            window_count++;
             window_list[i].used = true;
+            window_count++;
             window_list[i].pid = pid;
             window_list[i].width = request->create_window_info.width;
             window_list[i].height = request->create_window_info.height;
@@ -153,12 +167,16 @@ uint64_t create_window(sys::graphic_system_service_protocol *request, uint64_t p
                 last_window_y += 10;
                 last_window_x = 10;
             }
+            last_window_y += 10;
+            window_list[i].should_redraw = true;
             window_list[i].py = last_window_y;
             window_list[i].window_name = request->create_window_info.name;
             window_list[i].wid = i;
             window_list[i].window_front_buffer = (sys::pixel *)malloc(request->create_window_info.width * request->create_window_info.height * sizeof(sys::pixel));
             window_list[i].window_back_buffer = (sys::pixel *)malloc(request->create_window_info.width * request->create_window_info.height * sizeof(sys::pixel));
+            window_list[i].depth = 100;
             set_window_on_top(window_list[i].wid);
+
             return i;
         }
     }
@@ -385,12 +403,12 @@ void draw_all_window()
 
         return;
     }
-    bool check_for_mouse = true;
-    int current_window = window_count;
+    int current_window = window_count + 2;
     while (current_window >= 0)
     {
         for (int i = 0; i < window_count; i++)
         {
+
             if (window_list[i].used == true && window_list[i].depth == current_window)
             {
 
@@ -399,11 +417,6 @@ void draw_all_window()
             }
         }
         current_window--;
-    }
-
-    if (check_for_mouse)
-    {
-        *mouse_on_window = -1;
     }
 }
 int32_t last_mx = 0;
@@ -444,6 +457,7 @@ int main()
     *mouse_on_window = 0;
     for (int i = 0; i < MAX_WINDOW; i++)
     {
+
         window_list[i].used = false;
     }
     printf("g buffer addr   : %x \n", real_gbuffer_addr);
@@ -454,7 +468,6 @@ int main()
     while (true)
     {
         // read all message
-        update_mouse();
         while (true)
         {
             sys::raw_process_message *msg = sys::service_read_current_queue();
@@ -473,10 +486,8 @@ int main()
         }
         update_mouse_in_window();
 
-        soff++;
-        sys::pixel r = sys::pixel(soff);
-        raw_clear_buffer(back_buffer, screen_width * screen_height, soff);
         draw_all_window();
+        update_mouse();
         draw_mouse(m_x, m_y);
 
         swap_buffer(front_buffer, back_buffer, screen_width * screen_height);

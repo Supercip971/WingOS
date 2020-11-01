@@ -2,7 +2,8 @@ CFILES    := $(shell find src/ -type f -name '*.cpp')
 HFILES    := $(shell find src/ -type f -name '*.h')
 USRCFILES    := $(shell find usr_lib/ -type f -name '*.cpp')
 USRHFILES    := $(shell find usr_lib/ -type f -name '*.h')
-
+USRAPPCFILES := $(shell find app/ -type f -name '*.cpp')
+USRAPPHFILES := $(shell find app/ -type f -name '*.h')
 CC         = ./cross_compiler/bin/x86_64-pc-elf-g++
 LD         = ./cross_compiler/bin/x86_64-pc-elf-ld
 OBJ := $(shell find src/ -type f -name '*.o')
@@ -66,6 +67,7 @@ runvbox: $(KERNEL_HDD)
 format:
 	@clang-format -i --style=file $(CFILES) $(HFILES)
 	@clang-format -i --style=file $(USRCFILES) $(USRHFILES)
+	@clang-format -i --style=file $(USRAPPCFILES) $(USRAPPHFILES)
 foreachramfs: 
 	@for f in $(shell find init_fs/ -maxdepth 64 -type f); do echfs-utils -m -p0 $(KERNEL_HDD) import $${f} $${f}; done
 

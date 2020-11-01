@@ -1,9 +1,9 @@
-#include <klib/syscall.h>
-#include <klib/process_message.h>
-#include <klib/mem_util.h>
-#include <klib/graphic_system.h>
 #include <kgui/window.h>
+#include <klib/graphic_system.h>
 #include <klib/kernel_util.h>
+#include <klib/mem_util.h>
+#include <klib/process_message.h>
+#include <klib/syscall.h>
 //#include <feather_language_lib/feather.h>
 #include <klib/raw_graphic.h>
 #include <stdio.h>
@@ -31,7 +31,9 @@ void init_mm()
 void *addr_from_header(memory_map_children *target)
 {
     return reinterpret_cast<void *>(reinterpret_cast<uint64_t>(target) + sizeof(memory_map_children));
-}bool is_next_entry_contignous(memory_map_children * child){
+}
+bool is_next_entry_contignous(memory_map_children *child)
+{
     return ((uint64_t)child->length + (uint64_t)addr_from_header(child)) == (uint64_t)child->next;
 }
 void increase_mmap()
@@ -68,7 +70,7 @@ void insert_new_mmap_child(memory_map_children *target, uint64_t length)
     target->next->is_free = true;
     target->next->is_next_contignous = target->is_next_contignous;
 
-    target->is_next_contignous= true;
+    target->is_next_contignous = true;
     if (last_free == nullptr)
     {
         last_free = target->next;
@@ -77,7 +79,6 @@ void insert_new_mmap_child(memory_map_children *target, uint64_t length)
 
 void dump_memory()
 {
-
 }
 void check_for_fusion(uint64_t length)
 {
@@ -87,19 +88,21 @@ void check_for_fusion(uint64_t length)
     {
         if (current->is_free != true || current->next == nullptr)
         {
-             current = current->next;
+            current = current->next;
             continue;
         }
-        if(current->length >= length){
+        if (current->length >= length)
+        {
             last_free = current;
             return;
         }
-        if(!is_next_entry_contignous(current)){
+        if (!is_next_entry_contignous(current))
+        {
             continue;
         }
         if ((current->next->is_free != true))
         {
-             current = current->next;
+            current = current->next;
             continue;
         }
 
@@ -111,7 +114,8 @@ void check_for_fusion(uint64_t length)
             current->next = current->next->next;
             last_free = current;
             return;
-        } current = current->next;
+        }
+        current = current->next;
     }
 }
 void *smalloc(uint64_t length)
@@ -142,7 +146,6 @@ void *smalloc(uint64_t length)
                 insert_new_mmap_child(current, length);
                 current->length = length;
                 current->code = 0xf2ee;
-
 
                 return addr_from_header(current);
             }
@@ -229,27 +232,36 @@ void *scalloc(uint64_t nmemb, uint64_t size)
     return result;
 }
 
-int main(){
+int main()
+{
     init_mm();
     increase_mmap();
     sys::set_current_process_as_a_service("usr_mem_service", true);
     last_free = nullptr;
     heap = nullptr;
-    while(true){
-        sys::raw_process_message* msg = sys::service_read_current_queue();
-        if(msg != 0x0){
-            sys::memory_service_protocol* pr = (sys::memory_service_protocol*)msg->content_address;
-            if(pr->request_type == sys::REQUEST_MALLOC) {
+    while (true)
+    {
+        sys::raw_process_message *msg = sys::service_read_current_queue();
+        if (msg != 0x0)
+        {
+            sys::memory_service_protocol *pr = (sys::memory_service_protocol *)msg->content_address;
+            if (pr->request_type == sys::REQUEST_MALLOC)
+            {
                 msg->response = (uint64_t)smalloc(pr->length);
-            }if(pr->request_type == sys::REQUEST_FREE) {
+            }
+            if (pr->request_type == sys::REQUEST_FREE)
+            {
                 msg->response = 1;
-                sfree((void*)pr->address);
-            }if(pr->request_type == sys::REQUEST_REALLOC) {
-                msg->response = (uint64_t)srealloc((void*)pr->address, pr->length);
+                sfree((void *)pr->address);
+            }
+            if (pr->request_type == sys::REQUEST_REALLOC)
+            {
+                msg->response = (uint64_t)srealloc((void *)pr->address, pr->length);
             }
             msg->has_been_readed = true;
-        }else{
-
+        }
+        else
+        {
         }
     }
     return 0;

@@ -77,6 +77,7 @@ app: $(APP_FILE_CHANGE)
 	@make -C ./app/graphic_service all -j12
 	@make -C ./app/memory_service all -j12
 	@make -C ./app/console_service all -j12
+	@make -C ./app/background all -j12
 travis_test: 
 	@make clean 
 	@make -C . $(KERNEL_HDD)

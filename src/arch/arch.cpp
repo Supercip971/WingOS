@@ -140,7 +140,9 @@ void start_process()
     launch_programm("init_fs/console_service.exe", main_fs_system::the()->main_fs());
 
     launch_programm("init_fs/graphic_service.exe", main_fs_system::the()->main_fs());
+    launch_programm("init_fs/background.exe", main_fs_system::the()->main_fs());
     launch_programm("init_fs/test2.exe", main_fs_system::the()->main_fs());
+    launch_programm("init_fs/test.exe", main_fs_system::the()->main_fs());
     launch_programm("init_fs/test.exe", main_fs_system::the()->main_fs());
     launch_programm("init_fs/test.exe", main_fs_system::the()->main_fs());
 

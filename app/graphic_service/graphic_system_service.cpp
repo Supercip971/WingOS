@@ -1,4 +1,5 @@
 #include <klib/graphic_system.h>
+#include <klib/kernel_util.h>
 #include <klib/mem_util.h>
 #include <klib/mouse.h>
 #include <klib/process_message.h>
@@ -491,6 +492,8 @@ int main()
         draw_mouse(m_x, m_y);
 
         swap_buffer(front_buffer, back_buffer, screen_width * screen_height);
+
+        sys::switch_process();
     }
     return 1;
 }

@@ -674,6 +674,6 @@ void rename_process(const char *name, uint64_t pid)
     memzero(process_array[kpid].process_name, 128);
     memcpy(process_array[kpid].process_name, name, strlen(name) + 1);
 
-    unlock(&lck_syscall);
     unlock_process();
+    unlock(&lck_syscall);
 }

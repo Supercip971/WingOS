@@ -2,6 +2,7 @@
 #define _LIBALLOC_H
 #include <arch/lock.h>
 #include <arch/mem/physical.h>
+#include <arch/process.h>
 #include <stddef.h>
 static lock_type liballoc_locker = {0};
 /** \defgroup ALLOCHOOKS liballoc hooks
@@ -35,6 +36,7 @@ extern "C"
     static inline int liballoc_lock()
     {
         lock(&liballoc_locker);
+        lock_process();
         return 0;
     }
 
@@ -47,6 +49,7 @@ extern "C"
     static inline int liballoc_unlock()
     {
         unlock(&liballoc_locker);
+        unlock_process();
         return 0;
     }
 

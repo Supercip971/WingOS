@@ -50,8 +50,8 @@ cd binutils
         --disable-nls 		\
         --disable-werror
 
-make -j11
-make install -j11
+make -j$(nproc)
+make install -j$(nproc)
 cd ..
 
 echo "building gcc"
@@ -62,9 +62,9 @@ cd gcc
         --enable-languages=c,c++	\
         --with-newlib
 
-make all-gcc -j11
-make all-target-libgcc -j11
-make install-gcc -j11
-make install-target-libgcc -j11
+make all-gcc -j$(nproc)
+make all-target-libgcc -j$(nproc)
+make install-gcc -j$(nproc)
+make install-target-libgcc -j$(nproc)
 
 cd ..

@@ -1,6 +1,7 @@
 #include <arch/arch.h>
 
 #include <arch/mem/memory_manager.h>
+#include <device/network/e1000.h>
 #include <device/pci.h>
 #include <logging.h>
 pci_system main_system;
@@ -417,6 +418,10 @@ void pci_system::scan_dev(uint8_t dev_id, uint8_t bus_id)
             }
         }
     }
+    else
+    {
+        log("pci", LOG_INFO) << "device : " << dev_id << "bus : " << bus_id << "doesn't have a function";
+    }
 }
 
 void pci_system::scan_bus(uint8_t bus_id)
@@ -445,7 +450,18 @@ void pci_system::init()
     {
         pci_device dev = pci_device(pci_devices[i].bus, pci_devices[i].device);
         uint8_t dev_func = pci_devices[i].function;
+
         log("pci", LOG_INFO) << "=========";
+        if (dev.get_vendor(dev_func) == 0x8086)
+        {
+            log("pci", LOG_INFO) << "=intel=";
+            uint16_t id = dev.get_dev_id(dev_func);
+            if (id == 0x100E || id == 0x153A || id == 0x10EA)
+            {
+                log("pci", LOG_INFO) << "==E1000==";
+                e1000::the()->init(&dev);
+            }
+        }
         log("pci", LOG_INFO) << "pci device = " << i;
         log("pci", LOG_INFO) << "bus        = " << pci_devices[i].bus;
         log("pci", LOG_INFO) << "device     = " << pci_devices[i].device;

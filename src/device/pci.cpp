@@ -262,6 +262,19 @@ uint32_t pci_device::read_dword(uint8_t func, uint8_t reg)
 
     return inl(0xCFC);
 }
+
+void pci_device::write_dword(uint8_t func, uint8_t reg, uint32_t value)
+{
+    // cast everything in int32
+    uint32_t bus32 = (uint32_t)dbus;
+    uint32_t device32 = (uint32_t)ddev;
+    uint32_t function32 = (uint32_t)func;
+
+    uint32_t target = (1 << 31) | (bus32 << 16) | ((device32 & 0b11111) << 11) | ((function32 & 0b111) << 8) | (reg & ~(0b11));
+    outl(0xcf8, target);
+
+    outl(0xCFC, value);
+}
 bool pci_device::is_bridge(uint8_t function)
 {
     if (get_header(function) == 0x1)
@@ -295,6 +308,14 @@ uint8_t pci_device::get_progif(uint8_t function)
     return ((uint8_t)(read_dword(function, 0x8) >> 8));
 }
 
+uint16_t pci_device::get_vendor(uint8_t function)
+{
+    return ((uint16_t)(read_dword(function, 0)));
+}
+uint16_t pci_device::get_dev_id(uint8_t function)
+{
+    return ((uint16_t)(read_dword(function, 0)) >> 16);
+}
 uint8_t pci_device::get_subclass(uint8_t function)
 {
     return ((uint8_t)(read_dword(function, 0x8) >> 16));
@@ -313,7 +334,43 @@ pci_device_raw pci_device::to_raw(uint8_t function)
     r.device = ddev;
     return r;
 }
+pci_bar_data pci_device::get_bar(int id)
+{
+    uint64_t target = id * 4 + 0x10;
+    pci_bar_data ret;
+    uint32_t value = read_dword(target, id + 4);
+    uint32_t base = 0;
+    uint32_t type = value & 0b111;
+    if (type == 0b1)
+    {
+        base = value & 0xFFFFFFFC;
+    }
+    else
+    {
+        base = value & 0xFFFFFFF0;
+    }
 
+    if (type == 0)
+    {
+        ret.type = pci_bar_type::MM_IO_32;
+    }
+    if (type == 0b111)
+    {
+        ret.type = pci_bar_type::MM_IO_64;
+    }
+    if (type == 1)
+    {
+        ret.type = pci_bar_type::P_IO;
+    }
+    write_dword(target, id + 4, 0xFFFFFFFF);
+    value = read_dword(target, id + 4);
+    write_dword(target, id + 4, value);
+
+    ret.base = base;
+    ret.size = ~(value & 0xFFFFFFF0) + 1;
+
+    return ret;
+}
 pci_system::pci_system()
 {
 }
@@ -384,7 +441,7 @@ void pci_system::init()
     pci_devices_count = 0;
     init_top_bus();
     log("pci", LOG_INFO) << "pci devices count : " << pci_devices_count;
-    for (int i = 0; i < pci_devices_count - 1; i++)
+    for (int i = 0; i < pci_devices_count; i++)
     {
         pci_device dev = pci_device(pci_devices[i].bus, pci_devices[i].device);
         uint8_t dev_func = pci_devices[i].function;

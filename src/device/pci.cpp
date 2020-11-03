@@ -289,23 +289,23 @@ bool pci_device::is_bridge(uint8_t function)
 
 uint8_t pci_device::get_header(uint8_t function)
 {
-    return ((uint8_t)(read_dword(function, 0xc) >> 16) & ~(1 << 7));
+    return (uint8_t)(((uint32_t)read_dword(function, 0xc) >> 16) & ~(1 << 7));
 }
 
 uint8_t pci_device::get_sub_buss(uint8_t function)
 {
 
-    return ((uint8_t)(read_dword(function, 0x18) >> 8));
+    return (uint8_t)(((uint32_t)read_dword(function, 0x18) >> 8));
 }
 
 uint8_t pci_device::get_class(uint8_t function)
 {
-    return ((uint8_t)(read_dword(function, 0x8) >> 24));
+    return (uint8_t)(((uint32_t)read_dword(function, 0x8) >> 24));
 }
 
 uint8_t pci_device::get_progif(uint8_t function)
 {
-    return ((uint8_t)(read_dword(function, 0x8) >> 8));
+    return (uint8_t)(((uint32_t)read_dword(function, 0x8) >> 8));
 }
 
 uint16_t pci_device::get_vendor(uint8_t function)
@@ -314,16 +314,16 @@ uint16_t pci_device::get_vendor(uint8_t function)
 }
 uint16_t pci_device::get_dev_id(uint8_t function)
 {
-    return ((uint16_t)(read_dword(function, 0)) >> 16);
+    return (uint16_t)(((uint32_t)read_dword(function, 0)) >> 16);
 }
 uint8_t pci_device::get_subclass(uint8_t function)
 {
-    return ((uint8_t)(read_dword(function, 0x8) >> 16));
+    return (uint8_t)(((uint32_t)read_dword(function, 0x8) >> 16));
 }
 
 bool pci_device::has_multiple_function()
 {
-    return ((uint8_t)(read_dword(0, 0xC) >> 16)) & (1 << 7);
+    return ((uint8_t)((uint32_t)read_dword(0, 0xC) >> 16)) & (1 << 7);
 }
 
 pci_device_raw pci_device::to_raw(uint8_t function)
@@ -450,6 +450,11 @@ void pci_system::init()
         log("pci", LOG_INFO) << "bus        = " << pci_devices[i].bus;
         log("pci", LOG_INFO) << "device     = " << pci_devices[i].device;
         log("pci", LOG_INFO) << "function   = " << pci_devices[i].function;
+        log("pci", LOG_INFO) << "vendor     = " << dev.get_vendor(dev_func);
+        log("pci", LOG_INFO) << "dev id     = " << dev.get_dev_id(dev_func);
+        log("pci", LOG_INFO) << "class      = " << dev.get_class(dev_func);
+        log("pci", LOG_INFO) << "sub clas   = " << dev.get_subclass(dev_func);
+        log("pci", LOG_INFO) << "progif     = " << dev.get_progif(dev_func);
         log("pci", LOG_INFO) << "device name= " << device_code_to_string(dev.get_class(dev_func), dev.get_subclass(dev_func), dev.get_progif(dev_func));
     }
 }

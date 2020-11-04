@@ -303,6 +303,10 @@ uint8_t pci_device::get_class(uint8_t function)
 {
     return (uint8_t)(((uint32_t)read_dword(function, 0x8) >> 24));
 }
+uint8_t pci_device::get_irq(uint8_t function)
+{
+    return (uint8_t)(((uint32_t)read_dword(function, 0x3C)));
+}
 
 uint8_t pci_device::get_progif(uint8_t function)
 {
@@ -469,6 +473,7 @@ void pci_system::init()
         log("pci", LOG_INFO) << "vendor     = " << dev.get_vendor(dev_func);
         log("pci", LOG_INFO) << "dev id     = " << dev.get_dev_id(dev_func);
         log("pci", LOG_INFO) << "class      = " << dev.get_class(dev_func);
+        log("pci", LOG_INFO) << "irq        = " << dev.get_irq(dev_func);
         log("pci", LOG_INFO) << "sub clas   = " << dev.get_subclass(dev_func);
         log("pci", LOG_INFO) << "progif     = " << dev.get_progif(dev_func);
         log("pci", LOG_INFO) << "device name= " << device_code_to_string(dev.get_class(dev_func), dev.get_subclass(dev_func), dev.get_progif(dev_func));

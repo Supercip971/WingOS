@@ -39,6 +39,7 @@ public:
     uint8_t get_sub_buss(uint8_t function);
     uint8_t get_subclass(uint8_t function);
     uint8_t get_progif(uint8_t function);
+    uint8_t get_irq(uint8_t function);
     pci_device_raw to_raw(uint8_t function);
     bool has_multiple_function();
     pci_bar_data get_bar(int id);

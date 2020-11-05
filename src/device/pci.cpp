@@ -341,35 +341,37 @@ pci_device_raw pci_device::to_raw(uint8_t function)
 }
 pci_bar_data pci_device::get_bar(int id)
 {
+pci_bar_data pci_device::get_bar(int id, uint8_t function)
+{
     uint64_t target = id * 4 + 0x10;
     pci_bar_data ret;
-    uint32_t value = read_dword(target, id + 4);
+    uint32_t value = read_dword(function, target);
     uint32_t base = 0;
     uint32_t type = value & 0b111;
-    if (type == 0b1)
-    {
-        base = value & 0xFFFFFFFC;
-    }
-    else
-    {
-        base = value & 0xFFFFFFF0;
-    }
 
     if (type == 0)
     {
         ret.type = pci_bar_type::MM_IO_32;
+        base = value & 0xFFFFFFF0;
     }
-    if (type == 0b111)
+    else if (type == 0b110)
     {
         ret.type = pci_bar_type::MM_IO_64;
+        base = value & 0xFFFFFFF0;
     }
-    if (type == 1)
+    else if (type == 0b1)
     {
         ret.type = pci_bar_type::P_IO;
+        base = value & 0xFFFFFFFC;
     }
-    write_dword(target, id + 4, 0xFFFFFFFF);
-    value = read_dword(target, id + 4);
-    write_dword(target, id + 4, value);
+    else
+    {
+        log("pci", LOG_ERROR) << "invalid pci bar";
+    }
+
+    write_dword(function, target, 0xFFFFFFFF);
+    value = read_dword(function, target);
+    write_dword(function, target, value);
 
     ret.base = base;
     ret.size = ~(value & 0xFFFFFFF0) + 1;

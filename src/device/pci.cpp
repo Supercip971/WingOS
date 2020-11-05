@@ -339,8 +339,10 @@ pci_device_raw pci_device::to_raw(uint8_t function)
     r.device = ddev;
     return r;
 }
-pci_bar_data pci_device::get_bar(int id)
+void pci_device::enable_mastering(uint8_t func)
 {
+    write_dword(func, 0x4, read_dword(func, 0x4) | 0x00000004);
+}
 pci_bar_data pci_device::get_bar(int id, uint8_t function)
 {
     uint64_t target = id * 4 + 0x10;

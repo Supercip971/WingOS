@@ -35,6 +35,7 @@ public:
     uint8_t get_header(uint8_t function);
     uint8_t get_class(uint8_t function);
     uint16_t get_vendor(uint8_t function);
+    void enable_mastering(uint8_t func);
     uint16_t get_dev_id(uint8_t function);
     uint8_t get_sub_buss(uint8_t function);
     uint8_t get_subclass(uint8_t function);

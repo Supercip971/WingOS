@@ -44,7 +44,7 @@ public:
     uint8_t get_irq(uint8_t function);
     pci_device_raw to_raw(uint8_t function);
     bool has_multiple_function();
-    pci_bar_data get_bar(int id, uint8_t function);
+    pci_bar_data get_bar(uint64_t id, uint8_t function);
     bool is_bridge(uint8_t function);
 };
 

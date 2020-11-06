@@ -9,6 +9,7 @@
 #include <device/apic.h>
 #include <device/ata_driver.h>
 #include <device/local_data.h>
+#include <device/network/e1000.h>
 #include <device/pit.h>
 #include <device/ps_keyboard.h>
 #include <device/ps_mouse.h>
@@ -241,6 +242,10 @@ extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
         lock(&ps_lock);
         ps_keyboard::the()->interrupt_handler();
         unlock(&ps_lock);
+    }
+    else if (stackframe->int_no == 32 + 11)
+    {
+        e1000::the()->irq_handle(stackframe);
     }
     else if (stackframe->int_no == 32 + 12)
     {

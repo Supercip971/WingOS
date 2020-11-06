@@ -258,7 +258,7 @@ uint32_t pci_device::read_dword(uint8_t func, uint8_t reg)
     uint32_t device32 = (uint32_t)ddev;
     uint32_t function32 = (uint32_t)func;
 
-    uint32_t target = (1 << 31) | (bus32 << 16) | ((device32 & 0b11111) << 11) | ((function32 & 0b111) << 8) | (reg & ~(0b11));
+    uint32_t target = 0x80000000 | (bus32 << 16) | ((device32) << 11) | ((function32) << 8) | (reg & 0xFC);
     outl(0xcf8, target);
 
     return inl(0xCFC);
@@ -343,41 +343,43 @@ void pci_device::enable_mastering(uint8_t func)
 {
     write_dword(func, 0x4, read_dword(func, 0x4) | 0x00000004);
 }
-pci_bar_data pci_device::get_bar(int id, uint8_t function)
+pci_bar_data pci_device::get_bar(uint64_t id, uint8_t function)
 {
-    uint64_t target = id * 4 + 0x10;
+    if (get_header(function) == 2)
+    {
+        log("pci", LOG_INFO) << "snif";
+    }
+    uint64_t target = ((uint64_t)id * 4) + 0x10;
     pci_bar_data ret;
     uint32_t value = read_dword(function, target);
     uint32_t base = 0;
     uint32_t type = value & 0b111;
 
-    if (type == 0)
-    {
-        ret.type = pci_bar_type::MM_IO_32;
-        base = value & 0xFFFFFFF0;
-    }
-    else if (type == 0b110)
+    if ((value & 0b0111) == 0b0110)
     {
         ret.type = pci_bar_type::MM_IO_64;
         base = value & 0xFFFFFFF0;
     }
-    else if (type == 0b1)
+    else if ((value & 0b0111) == 0b0000)
+    {
+        ret.type = pci_bar_type::MM_IO_32;
+        base = value & 0xFFFFFFF0;
+    }
+    else if ((value & 0b0111) == 0b0001)
     {
         ret.type = pci_bar_type::P_IO;
         base = value & 0xFFFFFFFC;
     }
-    else
-    {
-        log("pci", LOG_ERROR) << "invalid pci bar";
-    }
 
     write_dword(function, target, 0xFFFFFFFF);
-    value = read_dword(function, target);
+    uint64_t nvalue = read_dword(function, target);
     write_dword(function, target, value);
 
     ret.base = base;
-    ret.size = ~(value & 0xFFFFFFF0) + 1;
+    ret.size = ~(nvalue & 0xFFFFFFF0) + 1;
 
+    log("pci", LOG_INFO) << "pci bar " << id << "func " << function;
+    log("pci", LOG_INFO) << "start" << ret.base;
     return ret;
 }
 pci_system::pci_system()

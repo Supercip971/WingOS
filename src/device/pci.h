@@ -3,13 +3,14 @@
 enum pci_bar_type
 {
     MM_IO_32 = 0,
-    MM_IO_64,
-    P_IO,
+    MM_IO_64 = 1,
+    P_IO = 2,
 };
 
 struct pci_bar_data
 {
-    uint32_t base;
+    uint64_t base;
+    uint64_t io_base;
     uint32_t size;
     uint32_t type;
 };

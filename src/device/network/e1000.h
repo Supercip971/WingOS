@@ -40,24 +40,23 @@ enum e1000_registers
 
 enum e1000_RCONTROL
 {
-    ENABLE = 1,
-    STORE_BAD_PACKET,
-    UNICAST_ENABLE,
-    MULTICAST_ENABLE,
-    LONG_PACKET_ENABLE,
-    NO_LOOPBACK = 6,
-    PHY_LOOPBACK = 6,
-    THRESHOLD = 8,
-    MULTICAST_OFFSET = 12,
-    BROADCAST_ACCEPT = 15,
-    VLAN_FILTER = 18,
-    CANONICAL_ENABLE,
-    CANONICAL_VALUE,
-    DISCARD_PAUSE_FRAME,
-    MAC_CONTROL_FRAME,
-    STRIP_ETHERNET = 26
+    ENABLE = (1 << 1),
+    STORE_BAD_PACKET = (1 << 2),
+    UNICAST_ENABLE = (1 << 3),
+    MULTICAST_ENABLE = (1 << 4),
+    LONG_PACKET_ENABLE = (1 << 5),
+    NO_LOOPBACK = (0 << 6),
+    PHY_LOOPBACK = (3 << 6),
+    THRESHOLD = (0 << 8),
+    MULTICAST_OFFSET = (0 << 12),
+    BROADCAST_ACCEPT = (1 << 15),
+    VLAN_FILTER = ((1 << 18)),
+    CANONICAL_ENABLE = ((1 << 19)),
+    CANONICAL_VALUE = ((1 << 20)),
+    DISCARD_PAUSE_FRAME = (1 << 22),
+    MAC_CONTROL_FRAME = (1 << 23),
+    STRIP_ETHERNET = (1 << 26)
 };
-#define FOFF(a) (1 << a)
 #define RCONTROL_SIZE_256 (3 << 16)
 #define RCONTROL_SIZE_512 (2 << 16)
 #define RCONTROL_SIZE_1024 (1 << 16)
@@ -68,13 +67,13 @@ enum e1000_RCONTROL
 
 enum e1000_TRANSMIT_COMMAND
 {
-    END_OF_PACKET = 0,
-    INSERT_FCS,
-    INSERT_CHECK_SUM,
-    REPORT_STATUS,
-    REPORT_PACKET_SEND,
-    VLAN_ENABLE,
-    INTERRUPT_DELAY_ENABLE
+    END_OF_PACKET = (1 << 0),
+    INSERT_FCS = (1 << 1),
+    INSERT_CHECK_SUM = (1 << 2),
+    REPORT_STATUS = (1 << 3),
+    REPORT_PACKET_SEND = (1 << 4),
+    VLAN_ENABLE = (1 << 6),
+    INTERRUPT_DELAY_ENABLE = (1 << 7)
 };
 
 enum e1000_TCTL_REGISTERS
@@ -106,28 +105,28 @@ class e1000
     mac_address maddr;
     struct rx_desc
     {
-        uint64_t address;
-        uint16_t length;
-        uint16_t checksum;
-        uint8_t status;
-        uint8_t errors;
-        uint16_t special;
+        volatile uint64_t address;
+        volatile uint16_t length;
+        volatile uint16_t checksum;
+        volatile uint8_t status;
+        volatile uint8_t errors;
+        volatile uint16_t special;
     } __attribute__((packed));
     rx_desc *rx_descriptor[RX_DESCRIPTOR_COUNT];
-    uint16_t rx_current_buf;
+    uint16_t rx_current_buf = 0;
     struct tx_desc
     {
-        uint64_t address;
-        uint16_t length;
-        uint8_t cso;
-        uint8_t command;
-        uint8_t status;
-        uint8_t css;
-        uint16_t special;
+        volatile uint64_t address;
+        volatile uint16_t length;
+        volatile uint8_t cso;
+        volatile uint8_t command;
+        volatile uint8_t status;
+        volatile uint8_t css;
+        volatile uint16_t special;
     } __attribute__((packed));
 
     tx_desc *tx_descriptor[TX_DESCRIPTOR_COUNT];
-    uint16_t tx_current_buf;
+    uint16_t tx_current_buf = 0;
 
     void write(uint16_t addr, uint32_t val);
     uint32_t read(uint16_t addr);
@@ -143,10 +142,10 @@ class e1000
 
 public:
     e1000();
-    void init(pci_device *dev);
+    void init(pci_device *dev, uint8_t func);
     static e1000 *the();
     void irq_handle(InterruptStackFrame *frame);
-    constexpr mac_address get_mac_addr()
+    constexpr mac_address &get_mac_addr()
     {
         return maddr;
     }

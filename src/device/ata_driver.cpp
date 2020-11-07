@@ -85,6 +85,8 @@ void ata_driver::init()
     }
 
     printf("\n");
+
+    free(temp_buffer);
 }
 
 ata_driver *ata_driver::the()

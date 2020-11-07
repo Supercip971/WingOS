@@ -134,6 +134,8 @@ void echfs::init(uint64_t start_sector, uint64_t sector_count)
                            << "init_fs/test_directory/test_another.txt";
     uint8_t *f = this->ech_read_file("init_fs/test_directory/test_another.txt");
     log("echfs", LOG_INFO) << (char *)f;
+
+    free(temp_buffer);
 }
 char path_delimitor[] = "/";
 uint64_t echfs::get_folder(uint64_t folder_id)
@@ -183,23 +185,27 @@ echfs_file_header echfs::get_directory_entry(const char *name, uint64_t forced_p
                     if (cur_header->parent_id == forced_parent)
                     {
                         echfs_file_header r = *cur_header;
+                        free(temporary_buf);
                         return r;
                     }
                 }
                 else
                 {
                     echfs_file_header r = *cur_header;
+                    free(temporary_buf);
                     return r;
                 }
             }
             if (cur_header->parent_id == 0 /* reach the end */)
             {
+                free(temporary_buf);
                 return {0};
             }
 
             entry_t++;
         }
     }
+    free(temporary_buf);
     return {0};
 }
 uint64_t echfs::get_simple_file(const char *name, uint64_t forced_parent)
@@ -224,23 +230,27 @@ uint64_t echfs::get_simple_file(const char *name, uint64_t forced_parent)
                 {
                     if (cur_header->parent_id == forced_parent)
                     {
+                        free(temporary_buf);
                         return entry_t;
                     }
                 }
                 else
                 {
 
+                    free(temporary_buf);
                     return entry_t;
                 }
             }
             if (cur_header->parent_id == 0 /* reach the end */)
             {
+                free(temporary_buf);
                 return -1;
             }
 
             entry_t++;
         }
     }
+    free(temporary_buf);
     return -1;
 }
 echfs_file_header echfs::find_file(const char *path)
@@ -253,6 +263,7 @@ echfs_file_header echfs::find_file(const char *path)
     }
     char *buffer_temp = (char *)malloc(256);
     char *path_copy = (char *)malloc(256);
+    char *base_path_copy_addr = path_copy;
     memzero(path_copy, 255);
 
     memcpy(path_copy, path, strlen(path));
@@ -295,6 +306,7 @@ redo: // yes goto are bad but if someone has a solution i take it ;)
 
                 log("echfs", LOG_ERROR) << "entry use a file as a directory " << buffer_temp;
                 free(buffer_temp);
+                free(base_path_copy_addr);
                 return {0};
             }
             current_parent = current_header.starting_block;
@@ -305,6 +317,7 @@ redo: // yes goto are bad but if someone has a solution i take it ;)
 
             log("echfs", LOG_ERROR) << "entry not found" << buffer_temp;
             free(buffer_temp);
+            free(base_path_copy_addr);
             return {0};
         }
     }
@@ -316,6 +329,7 @@ redo: // yes goto are bad but if someone has a solution i take it ;)
         {
             log("echfs", LOG_INFO) << "file found ! ";
             free(buffer_temp);
+            free(base_path_copy_addr);
             return current_header;
         }
         else
@@ -323,9 +337,12 @@ redo: // yes goto are bad but if someone has a solution i take it ;)
 
             log("echfs", LOG_ERROR) << "entry not found" << buffer_temp;
             free(buffer_temp);
+            free(base_path_copy_addr);
             return {0};
         }
     }
+    free(buffer_temp);
+    free(base_path_copy_addr);
     return {0};
 }
 // read a file and redirect it to an address

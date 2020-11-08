@@ -14,6 +14,9 @@ void print_service()
 
         if (msg != 0)
         {
+            while (locker_print.data != 0)
+            {
+            }
             com_write_strn((char *)msg->content_address, msg->content_length);
             msg->has_been_readed = true;
             msg->response = 10; // 10 for yes

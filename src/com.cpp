@@ -5,8 +5,7 @@
 #include <kernel.h>
 #include <stdarg.h>
 #include <utility.h>
-#pragma GCC optimize("-O0")
-
+lock_type locker_print = {0};
 char temp_buffer[17];
 uint64_t last_count = 17;
 
@@ -23,7 +22,6 @@ void com_putc(COM_PORT port, char c)
     outb(port, c);
 }
 
-lock_type locker_print = {0};
 int com_write(COM_PORT port, const void *buffer, int size)
 {
     lock(&locker_print);

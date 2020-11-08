@@ -1,6 +1,6 @@
 #pragma once
+#include <arch/lock.h>
 #include <int_value.h>
-
 enum COM_PORT
 {
     COM1 = 0x3F8,
@@ -9,6 +9,7 @@ enum COM_PORT
     COM4 = 0x2E8,
 };
 
+extern lock_type locker_print;
 void com_write_str(const char *buffer);
 bool com_write_strn(const char *buffer, uint64_t lenght);
 void com_write_reg(const char *buffer, uint64_t value);

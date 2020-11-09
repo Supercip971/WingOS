@@ -67,6 +67,44 @@ int map_page(main_page_table *table, uint64_t phys_addr, uint64_t virt_addr, uin
     return 0;
 }
 
+uint64_t page_addr(uint64_t virt_addr)
+{
+    uint64_t pml4_entry = PML4_GET_INDEX(virt_addr);
+    uint64_t pdpt_entry = PDPT_GET_INDEX(virt_addr);
+    uint64_t pd_entry = PAGE_DIR_GET_INDEX(virt_addr);
+    uint64_t pt_entry = PAGE_TABLE_GET_INDEX(virt_addr);
+
+    main_page_table *pdpt, *pd, *pt;
+
+    if (get_current_cpu()->page_table[pml4_entry] & BIT_PRESENT)
+    {
+        pdpt = (uint64_t *)(get_mem_addr(get_current_cpu()->page_table[pml4_entry] & FRAME_ADDR));
+    }
+    else
+    {
+        return 0;
+    }
+
+    if (pdpt[pdpt_entry] & BIT_PRESENT)
+    {
+        pd = (uint64_t *)(get_mem_addr(pdpt[pdpt_entry] & FRAME_ADDR));
+    }
+    else
+    {
+        return 0;
+    }
+
+    if (pd[pd_entry] & BIT_PRESENT)
+    {
+        pt = (uint64_t *)(get_mem_addr(pd[pd_entry] & FRAME_ADDR));
+    }
+    else
+    {
+        return 0;
+    }
+    return pt[pt_entry] & ~(0x1000);
+}
+
 int map_page(uint64_t phys_addr, uint64_t virt_addr, uint64_t flags)
 {
     uint64_t pml4_entry = PML4_GET_INDEX(virt_addr);
@@ -208,5 +246,5 @@ void init_vmm(stivale_struct *bootdata)
 }
 void update_paging()
 {
-    set_paging_dir((uint64_t)get_current_cpu()->page_table - 0xffff800000000000);
+    set_paging_dir(get_rmem_addr((uint64_t)get_current_cpu()->page_table));
 }

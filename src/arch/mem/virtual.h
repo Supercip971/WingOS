@@ -31,6 +31,7 @@ void update_paging();
 int map_page(uint64_t phys_addr, uint64_t virt_addr, uint64_t flags);
 int map_page(main_page_table *table, uint64_t phys_addr, uint64_t virt_addr, uint64_t flags);
 
+uint64_t page_addr(uint64_t virt_addr);
 main_page_table *new_vmm_page_dir();
 inline void virt_map(uint64_t from, uint64_t to, uint64_t flags)
 {

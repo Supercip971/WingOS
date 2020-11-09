@@ -13,7 +13,14 @@ uint64_t pmm_length = 0;
 uint64_t pmm_page_entry_count = 0;
 uint64_t last_free_byte = 0;
 uint64_t used = 0;
-
+uint64_t get_used_memory()
+{
+    return used;
+}
+uint64_t get_total_memory()
+{
+    return available_memory;
+}
 static void pmm_set_bit(uint64_t page)
 {
     uint8_t bit = page % 8;

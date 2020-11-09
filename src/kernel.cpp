@@ -1,3 +1,4 @@
+#include <arch/mem/physical.h>
 #include <arch/process.h>
 #include <com.h>
 #include <device/pit.h>
@@ -14,9 +15,10 @@
 */
 void _start(stivale_struct *bootloader_data)
 {
-
+    log("kernel", LOG_INFO) << "kernel started with " << get_total_memory() << "memory available";
+    log("kernel", LOG_INFO) << "memory used : " << get_used_memory();
     while (true)
     {
-        asm("int 100");
+        asm("int 100"); // we should kill current process instead of t h i s
     }
 }

@@ -141,6 +141,7 @@ void ata_driver::read(uint32_t where, uint8_t count, uint8_t *buffer)
         while (((status & 0x80) == 0x80) && ((status & 0x01) != 0x01))
         {
             status = ata_read(true, ATA_reg_command_status);
+            asm volatile("pause");
         }
 
         for (uint16_t i = 0; i < 256; i++)

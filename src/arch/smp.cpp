@@ -14,7 +14,6 @@
 #include <logging.h>
 #define TRAMPOLINE_START 0x1000
 #define SMP_MAP_PAGE_FLAGS 0x7
-#pragma GCC optimize("-O0")
 smp main_smp;
 int cpu_counter = 0;
 extern "C" uint64_t start_cpu_entry;

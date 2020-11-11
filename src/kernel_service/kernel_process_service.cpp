@@ -1,9 +1,53 @@
-#include <kernel_service/kernel_process_service.h>
-#include <kernel_service/kernel_service.h>
-
 #include <arch/mem/memory_manager.h>
 #include <arch/process.h>
+#include <kernel.h>
+#include <kernel_service/kernel_process_service.h>
+#include <kernel_service/kernel_service.h>
+#include <utility.h>
+uint64_t process_buffer_read(process_request *request)
+{
+    if (request->gpb.get_buffer_length)
+    {
 
+        uint64_t target = upid_to_kpid(request->gpb.pid_target);
+        if (target != -1 && request->gpb.buffer_type <= 3)
+        {
+
+            process_buffer *buf = &process_array[target].pr_buff[request->gpb.buffer_type];
+            return buf->length;
+        }
+        else
+        {
+            return -1;
+        }
+    }
+    else
+    {
+
+        uint64_t target = upid_to_kpid(request->gpb.pid_target);
+
+        if (target != -1 && request->gpb.buffer_type <= 3)
+        {
+            process_buffer *buf = &(process_array[target].pr_buff[request->gpb.buffer_type]);
+            if (request->gpb.where > buf->length)
+            {
+                return -1;
+            }
+
+            uint64_t min = request->gpb.length_to_read;
+            if (min + request->gpb.where > buf->length)
+            {
+                min = buf->length - request->gpb.where;
+            }
+            memcpy(request->gpb.target_buffer, buf->data + request->gpb.where, min);
+            return min;
+        }
+        else
+        {
+            return -1;
+        }
+    }
+}
 void kernel_process_service()
 {
 
@@ -28,6 +72,10 @@ void kernel_process_service()
                 rename_process(prot->scpas.service_name, msg->from_pid);
                 set_on_request_service(prot->scpas.is_ors, msg->to_pid);
                 msg->response = 1;
+                break;
+            case GET_PROCESS_BUFFER:
+
+                msg->response = process_buffer_read(prot);
                 break;
             default:
                 log("kernel_process_service", LOG_ERROR) << "invalid request id : " << (uint64_t)prot->type;

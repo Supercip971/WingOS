@@ -20,6 +20,22 @@ struct process_memory_data_map
     uint64_t length;
     bool used = false;
 };
+
+enum process_buffer_type
+{
+    STDOUT = 0,
+    STDIN = 1, // not supported
+    STDERR = 2
+};
+
+struct process_buffer
+{
+    uint8_t *data;
+    uint64_t length;
+    uint64_t allocated_length;
+    int type;
+} __attribute__((packed));
+bool add_process_buffer(process_buffer *buf, uint64_t data_length, uint8_t *raw);
 struct process_message
 {
     uint8_t message_id;
@@ -56,6 +72,8 @@ struct process
     uint64_t stopped_length = 0;
     bool is_on_interrupt_process = false;
     uint8_t interrupt_handle_list[8]; // max 8 interrupt per process
+
+    process_buffer pr_buff[3];
 } __attribute__((packed));
 
 struct message_identifier

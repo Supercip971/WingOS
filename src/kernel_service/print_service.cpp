@@ -14,6 +14,12 @@ void print_service()
 
         if (msg != 0)
         {
+
+            uint64_t target = upid_to_kpid(msg->from_pid);
+
+            process_buffer *buf = &process_array[target].pr_buff[STDOUT];
+            add_process_buffer(buf, msg->content_length, (uint8_t *)msg->content_address);
+
             while (locker_print.data != 0)
             {
             }

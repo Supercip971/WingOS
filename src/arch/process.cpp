@@ -106,6 +106,10 @@ void init_multi_process(func start)
 
     for (size_t i = 0; i < MAX_PROCESS; i++)
     {
+        for (int j = 0; j < 3; j++)
+        {
+            process_array[i].pr_buff[j].data = nullptr;
+        }
         process_array[i].kpid = i;
         process_array[i].upid = -1;
         process_array[i].current_process_state = process_state::PROCESS_AVAILABLE;
@@ -222,6 +226,24 @@ void init_process_message(process *to_init)
         to_init->msg_list[j].message_id = j;
     }
 }
+
+void init_process_buffers(process *to_init)
+{
+
+    to_init->pr_buff[0].type = STDOUT;
+    to_init->pr_buff[1].type = STDIN;
+    to_init->pr_buff[2].type = STDERR;
+    for (int i = 0; i < 3; i++)
+    {
+        to_init->pr_buff[i].allocated_length = 128;
+        if (to_init->pr_buff[i].data != nullptr)
+        {
+            free((void *)get_rmem_addr((uint64_t)to_init->pr_buff[i].data));
+        }
+        to_init->pr_buff[i].length = 0;
+        to_init->pr_buff[i].data = (uint8_t *)get_mem_addr((uint64_t)malloc(128));
+    }
+}
 uint64_t next_upid = 1;
 process *init_process(func entry_point, bool start_direct, const char *name, bool user, int cpu_target)
 {
@@ -258,6 +280,8 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
     init_process_message(process_to_add);
 
     init_process_stackframe(process_to_add, entry_point);
+
+    init_process_buffers(process_to_add);
 
     process_to_add->entry_point = (uint64_t)entry_point;
 
@@ -676,4 +700,20 @@ void rename_process(const char *name, uint64_t pid)
 
     unlock_process();
     unlock(&lck_syscall);
+}
+
+bool add_process_buffer(process_buffer *buf, uint64_t data_length, uint8_t *raw)
+{
+    if ((buf->length + data_length) > buf->allocated_length)
+    {
+        // never gonna cast you up
+        // never gonna cast you doooooown
+        buf->allocated_length += 512;
+        uint8_t *new_buffer = (uint8_t *)realloc((void *)((uint64_t)buf->data), buf->allocated_length);
+        buf->data = (uint8_t *)((uint64_t)new_buffer);
+    }
+
+    memcpy(buf->data + buf->length, raw, data_length);
+    buf->length += data_length;
+    return true;
 }

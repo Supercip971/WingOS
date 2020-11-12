@@ -3,7 +3,7 @@
 #include <int_value.h>
 #include <stivale_struct.h>
 void _start(struct stivale_struct *bootloader_data);
-inline void memzero(void *s, uint64_t n)
+inline void memzero(void const *s, const uint64_t n)
 {
     for (uint64_t i = 0; i < n; i++)
     {
@@ -11,8 +11,8 @@ inline void memzero(void *s, uint64_t n)
     }
 }
 
-inline void *memset(void *data, uint8_t value,
-                    uint64_t lenght)
+inline void *memset(void *data, const uint8_t value,
+                    const uint64_t lenght)
 {
     uint8_t *d = reinterpret_cast<uint8_t *>(data);
     for (uint64_t i = 0; i < lenght; i++)
@@ -26,9 +26,9 @@ inline void *memcpy(void *dst, const void *src, int64_t len)
 {
     char *dst8 = reinterpret_cast<char *>(dst);
     const char *src8 = reinterpret_cast<const char *>(src);
-
-    while (len--)
-        *dst8++ = *src8++;
-
+    for (uint64_t i = 0; i < len; i++)
+    {
+        dst8[i] = src8[i];
+    }
     return dst;
 }

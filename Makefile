@@ -109,7 +109,7 @@ $(KERNEL_HDD): $(KERNEL_ELF)
 	@dd if=/dev/zero bs=8M count=0 seek=64 of=$(KERNEL_HDD)
 	@parted -s $(KERNEL_HDD) mklabel msdos
 	@parted -s $(KERNEL_HDD) mkpart primary 1 100%
-	@echfs-utils -m -p0 $(KERNEL_HDD) format 32768
+	@echfs-utils -m -p0 $(KERNEL_HDD) format 4096
 	@echfs-utils -m -p0 $(KERNEL_HDD) import $(KERNEL_ELF) $(KERNEL_ELF)
 	@make -C . foreachramfs	
 	@echfs-utils -m -p0 $(KERNEL_HDD) import limine.cfg limine.cfg

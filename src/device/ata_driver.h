@@ -66,7 +66,7 @@ public:
         }
     }
 
-    void read(uint32_t where, uint8_t count, uint8_t *buffer);
+    void read(uint32_t where, uint32_t count, uint8_t *buffer);
     bool get_ata_status();
     void irq_handle(uint64_t irq_handle_num);
     void init();

@@ -15,6 +15,10 @@ void echfs::read_block(uint64_t block_id, uint8_t *buffer)
 {
     ata_driver::the()->read((start_sec + (block_id * header.block_length)) / 512, header.block_length / 512, buffer);
 }
+void echfs::read_blocks(uint64_t block_id, uint64_t length, uint8_t *buffer)
+{
+    ata_driver::the()->read((start_sec + (block_id * header.block_length)) / 512, ((header.block_length) / 512) * length, buffer);
+}
 uint64_t *another_buffer = nullptr;
 echfs_file_header echfs::read_directory_entry(uint64_t entry)
 {
@@ -372,14 +376,13 @@ uint8_t *echfs::ech_read_file(const char *path)
     size_to_read++;
     size_to_read *= header.block_length;
     uint64_t block_count_to_read = size_to_read / header.block_length;
-    log("echfs", LOG_INFO) << "reading file size  " << size_to_read;
     uint8_t *data = (uint8_t *)malloc(size_to_read);
-    uint64_t block_to_read = file_to_read_header.starting_block;
-    for (uint64_t i = 0; i < block_count_to_read; i++)
-    {
-        read_block(block_to_read + i, data + (i * header.block_length));
-    }
+    log("echfs", LOG_INFO) << "reading file size  " << size_to_read;
+    const uint64_t block_to_read = file_to_read_header.starting_block;
 
+    read_blocks(block_to_read, block_count_to_read, data);
+
+    log("echfs", LOG_INFO) << "readed file size  " << size_to_read;
     unlock(&main_echfs_lock);
     return data;
 }

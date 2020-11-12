@@ -35,6 +35,7 @@ class echfs : public file_system
     uint64_t start_sec;
     block0_header header;
     void read_block(uint64_t block_id, uint8_t *buffer);
+    void read_blocks(uint64_t block_id, uint64_t length, uint8_t *buffer);
     uint64_t main_dir_start;
     echfs_file_header read_directory_entry(uint64_t entry);
     echfs_file_header get_directory_entry(const char *name, uint64_t forced_parent = -1) __attribute__((__target__("no-sse")));

@@ -5,9 +5,6 @@
 #include <device/local_data.h>
 #include <kernel.h>
 #include <logging.h>
-/* flags */
-tss tssv;
-
 gdt_descriptor gdt_descriptors[64];
 
 char tss_ist1[8192] __attribute__((aligned(16)));
@@ -18,7 +15,7 @@ extern "C" void gdtr_install(gdtr *, unsigned short, unsigned short);
 
 void tss_set_rsp0(uint64_t rsp0)
 {
-    tssv.rsp0 = rsp0;
+    get_current_cpu()->ctss.rsp0 = rsp0;
 };
 
 static void gdt_set_descriptor(gdt_descriptor *gdt_descriptors, uint16_t sel,

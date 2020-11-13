@@ -22,7 +22,7 @@ void init_sse()
     asm_sse_save((uint64_t)fpu_reg);
 }
 
-__attribute__((optimize("O0"))) void save_sse_context(uint64_t *context)
+__attribute__((optimize("O2"))) void save_sse_context(uint64_t *context)
 {
     lock(&sse_lock);
     asm_sse_save((uint64_t)fpu_reg);
@@ -33,7 +33,7 @@ __attribute__((optimize("O0"))) void save_sse_context(uint64_t *context)
     unlock(&sse_lock);
 }
 
-__attribute__((optimize("O0"))) void load_sse_context(uint64_t *context)
+__attribute__((optimize("O2"))) void load_sse_context(uint64_t *context)
 {
 
     lock((&sse_lock));

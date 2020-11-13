@@ -19,7 +19,7 @@ int cpu_counter = 0;
 extern "C" uint64_t start_cpu_entry;
 extern "C" uint64_t end_cpu_entry;
 extern "C" uint32_t trampoline_start, trampoline_end, nstack;
-bool SMPloaded = false;
+volatile bool SMPloaded = false;
 smp::smp()
 {
 }

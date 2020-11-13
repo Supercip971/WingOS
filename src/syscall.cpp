@@ -34,11 +34,11 @@ uint64_t sys$get_process_global_data(const char *target, uint64_t offset, uint64
     }
 }
 static void *syscalls[] = {
-    [0] = (void *)sys$null,
-    [SEND_SERVICE_SYSCALL] = (void *)sys$send_message,
-    [READ_SERVICE_SYSCALL] = (void *)sys$read_message,
-    [GET_RESPONSE_SERVICE_SYSCALL] = (void *)sys$message_response,
-    [GET_PROCESS_GLOBAL_DATA] = (void *)sys$get_process_global_data};
+    (void *)sys$null,
+    (void *)sys$send_message,
+    (void *)sys$read_message,
+    (void *)sys$message_response,
+    (void *)sys$get_process_global_data};
 uint64_t syscalls_length = 5;
 void init_syscall()
 {

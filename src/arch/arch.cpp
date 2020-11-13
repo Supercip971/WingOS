@@ -121,8 +121,6 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
     asm volatile("sti");
     asm("hlt");
 }
-MBR_partition mbr_part; // TODO : add [new] and [delete]
-echfs main_start_fs;
 void start_process()
 {
     load_kernel_service();

@@ -61,7 +61,7 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
 
     memcpy(&boot_loader_data_copy, bootloader_data, sizeof(stivale_struct));
 
-    setup_gdt((uint64_t)stack + (sizeof(char) * STACK_SIZE));
+    setup_gdt();
 
     init_idt();
     PIT::the()->init_PIT();

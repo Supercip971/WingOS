@@ -5,7 +5,6 @@
 #include <device/local_data.h>
 #include <kernel.h>
 #include <logging.h>
-#pragma GCC optimize("-O0")
 /* flags */
 tss tssv;
 

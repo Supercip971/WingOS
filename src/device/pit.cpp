@@ -4,7 +4,6 @@
 #include <device/pit.h>
 #include <kernel.h>
 #include <logging.h>
-#pragma GCC optimize("-O0")
 PIT global_PIT;
 extern "C" uint32_t read_pit_counter();
 extern "C" void pit_callback()

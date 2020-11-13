@@ -17,7 +17,6 @@
 #include <logging.h>
 #include <syscall.h>
 #include <utility.h>
-#pragma GCC optimize("-O0")
 uint8_t current = 0;
 
 lock_type lock = {0};

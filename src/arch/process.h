@@ -118,3 +118,8 @@ uint64_t get_process_global_data_copy(uint64_t offset, const char *process_name)
 void rename_process(const char *name, uint64_t pid);
 
 uint64_t upid_to_kpid(uint64_t upid);
+
+inline void yield()
+{
+    asm volatile("int 100"); // we should kill current process instead of t h i s
+}

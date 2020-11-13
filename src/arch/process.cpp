@@ -59,7 +59,7 @@ void main_process_1()
     asm("sti");
     while (true)
     {
-        asm("int 100");
+        yield();
     }
 }
 
@@ -69,7 +69,7 @@ void main_process_2()
     asm("sti");
     while (true)
     {
-        asm("int 100");
+        yield();
     }
 }
 
@@ -79,7 +79,7 @@ void process_smp_basic()
 
     while (true)
     {
-        asm("int 100");
+        yield();
     }
 }
 
@@ -89,7 +89,7 @@ void process_smp_basic_2()
 
     while (true)
     {
-        asm("int 100");
+        yield();
     }
 }
 

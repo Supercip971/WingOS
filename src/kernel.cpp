@@ -23,6 +23,6 @@ void _start(stivale_struct *bootloader_data)
     log("kernel", LOG_INFO) << "memory used : " << get_used_memory();
     while (true)
     {
-        asm("int 100"); // we should kill current process instead of t h i s
+        yield();
     }
 }

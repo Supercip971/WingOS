@@ -38,8 +38,7 @@ namespace sys
     uint64_t get_process_pid(const char *process_name);
     inline void switch_process()
     {
-
-        asm("int 100");
+        asm volatile("int 100");
     }
     void set_current_process_as_a_service(const char *service_name, bool is_request_only);
 } // namespace sys

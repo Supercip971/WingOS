@@ -170,7 +170,7 @@ void update_backtrace(InterruptStackFrame *stackframe)
 {
     if (get_current_cpu()->rip_backtrace[32] != stackframe->rip)
     {
-        for (int i = 0; i <= 31; i++)
+        for (int i = 0; i < 31; i++)
         {
             get_current_cpu()->rip_backtrace[i] = get_current_cpu()->rip_backtrace[i + 1];
         }
@@ -194,7 +194,7 @@ void interrupt_error_handle(InterruptStackFrame *stackframe)
 
     log("pic", LOG_ERROR) << "backtrace : ";
 
-    for (size_t i = 0; i <= 32; i++)
+    for (size_t i = 0; i < 32; i++)
     {
         if (get_current_cpu()->rip_backtrace[i] != -32)
         {

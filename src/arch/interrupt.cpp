@@ -58,10 +58,10 @@ const char *exception_messages[] = {"Division By Zero",
                                     "Reserved"};
 
 extern uintptr_t __interrupt_vector[128];
-static idt_entry_t idt[IDT_ENTRY_COUNT];
+static idt_entry idt[IDT_ENTRY_COUNT];
 
-static idtr_t idt_descriptor = {
-    .size = sizeof(idt_entry_t) * IDT_ENTRY_COUNT,
+static idtr idt_descriptor = {
+    .size = sizeof(idt_entry) * IDT_ENTRY_COUNT,
     .offset = (uint64_t)&idt[0],
 };
 
@@ -73,10 +73,10 @@ uint64_t rip_backtrace[32];
 extern "C" void idt_flush(uint64_t);
 extern "C" void syscall_asm_entry();
 
-static idt_entry_t register_interrupt_handler(void *handler, uint8_t ist, uint8_t type)
+static idt_entry register_interrupt_handler(void *handler, uint8_t ist, uint8_t type)
 {
     uint64_t p = (uint64_t)handler;
-    idt_entry_t idt;
+    idt_entry idt;
 
     idt.offset_low16 = (uint16_t)p;
     idt.cs = SLTR_KERNEL_CODE;

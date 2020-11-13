@@ -47,7 +47,7 @@ void smp::init()
 {
     SMPloaded = false;
     log("smp", LOG_DEBUG) << "loading smp";
-    memzero(cpu_tss, sizeof(tss_t) * max_cpu);
+    memzero(cpu_tss, sizeof(tss) * max_cpu);
     memzero(get_current_cpu(processor_count)->fpu_data, sizeof(get_current_cpu(processor_count)->fpu_data));
     for (int i = 0; i < max_cpu; i++)
     {

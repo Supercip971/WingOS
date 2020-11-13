@@ -25,13 +25,13 @@
 /* granularity */
 #define GDT_LM 0x2
 
-struct gdtr_t
+struct gdtr
 {
     uint16_t len;
     uint64_t addr;
 } __attribute__((packed));
 
-struct gdt_descriptor_t
+struct gdt_descriptor
 {
     uint16_t limit_low;
     uint16_t base_low;
@@ -41,9 +41,9 @@ struct gdt_descriptor_t
     uint8_t base_high;
 } __attribute__((packed));
 
-struct gdt_xdescriptor_t
+struct gdt_xdescriptor
 {
-    gdt_descriptor_t low;
+    gdt_descriptor low;
     struct
     {
         uint32_t base_xhigh;
@@ -51,13 +51,7 @@ struct gdt_xdescriptor_t
     } high;
 } __attribute__((packed));
 
-static gdtr_t gdtr;
-
-void gdt_init(void);
-
-void setup_gdt(unsigned long i);
-
-struct tss_t
+struct tss
 {
     uint32_t reserved0;
     uint64_t rsp0;
@@ -75,7 +69,9 @@ struct tss_t
     uint16_t reserved3;
     uint16_t iomap_base;
 } __attribute__((packed));
-tss_t *get_tss();
 void tss_init(uint64_t i);
 void tss_set_rsp0(uint64_t rsp0);
+
+void gdt_init();
+void setup_gdt();
 void gdt_ap_init();

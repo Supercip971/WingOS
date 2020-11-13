@@ -11,7 +11,7 @@ class smp
 
 public:
     static const int max_cpu = 64;
-    tss_t cpu_tss[max_cpu];
+    tss cpu_tss[max_cpu];
     smp();
     void wait();
     void init();

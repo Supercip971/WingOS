@@ -1,4 +1,6 @@
 #include <arch/arch.h>
+#include <arch/interrupt.h>
+#include <device/ps_device.h>
 #include <device/ps_mouse.h>
 #include <logging.h>
 ps_mouse main_ps_mouse;
@@ -72,12 +74,20 @@ uint8_t ps_mouse::read()
     return inb(0x60);
 }
 
+void irq_handle_mouse(unsigned int handler)
+{
+    lock(&ps_lock);
+    ps_mouse::the()->interrupt_handler(handler);
+    unlock(&ps_lock);
+}
+
 void ps_mouse::init()
 {
     mouse_x = 0;
     mouse_x_offset = 0;
     mouse_y = 0;
     mouse_y_offset = 0;
+    add_irq_handler(irq_handle_mouse, 12);
     log("ps2 mouse", LOG_DEBUG) << "loading ps2 mouse";
 
     log("ps2 mouse", LOG_INFO) << "turning on mouse";
@@ -118,7 +128,7 @@ void ps_mouse::init()
     read();
 }
 
-void ps_mouse::interrupt_handler()
+void ps_mouse::interrupt_handler(unsigned int irq)
 {
 
     if (mouse_cycle == 0)

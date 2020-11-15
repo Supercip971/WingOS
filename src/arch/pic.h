@@ -22,3 +22,5 @@
 
 void pic_init();
 void pic_disable();
+
+void pic_ack(int intno);

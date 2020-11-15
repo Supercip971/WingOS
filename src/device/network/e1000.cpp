@@ -1,4 +1,5 @@
 #include <arch/arch.h>
+#include <arch/interrupt.h>
 #include <arch/mem/liballoc.h>
 #include <arch/mem/virtual.h>
 #include <com.h>
@@ -212,7 +213,7 @@ int e1000::send_packet(uint8_t *data, uint16_t length)
         ;
     return 0;
 }
-void e1000::irq_handle(InterruptStackFrame *frame)
+void e1000::irq_handle()
 {
     com_write_str("\n\nirq\n\n");
     write(E_IMASK, 0x1);
@@ -237,13 +238,16 @@ void e1000::turn_on_int()
     write(E_IMASK, 0xff & ~4);
     read(0xc0);
 }
-
+void e1000_int_handler(unsigned int v)
+{
+    e1000::the()->irq_handle();
+}
 void e1000::init(pci_device *dev, uint8_t func)
 {
 
     log("e1000", LOG_DEBUG) << "loading e1000";
     pci_bar_data d = dev->get_bar(0, func);
-
+    add_irq_handler(e1000_int_handler, 11);
     if (d.type == pci_bar_type::MM_IO_32)
     {
         bar_t = 0;

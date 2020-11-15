@@ -23,7 +23,7 @@ public:
     void write(uint8_t data);
     uint8_t read();
     void init();
-    void interrupt_handler();
+    void interrupt_handler(unsigned int irq);
     void set_sample_rate(uint32_t rate);
     void set_resolution(uint16_t resolution);
     void set_ptr_to_update(uint32_t *x, uint32_t *y);

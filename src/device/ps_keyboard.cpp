@@ -1,4 +1,6 @@
 #include <arch/arch.h>
+#include <arch/interrupt.h>
+#include <device/ps_device.h>
 #include <device/ps_keyboard.h>
 #include <logging.h>
 
@@ -130,7 +132,12 @@ ps_keyboard main_ps_key;
 ps_keyboard::ps_keyboard()
 {
 }
-
+void ps_keyboard_interrupt_handler(unsigned int irq)
+{
+    lock(&ps_lock);
+    ps_keyboard::the()->interrupt_handler();
+    unlock(&ps_lock);
+}
 void ps_keyboard::set_key(bool state, uint8_t keycode)
 {
     key_pressed[keycode] = state;
@@ -152,6 +159,7 @@ void ps_keyboard::init()
     {
         key_pressed[i] = false;
     }
+    add_irq_handler(ps_keyboard_interrupt_handler, 1);
 }
 
 void ps_keyboard::interrupt_handler()

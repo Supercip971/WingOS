@@ -144,7 +144,7 @@ public:
     e1000();
     void init(pci_device *dev, uint8_t func);
     static e1000 *the();
-    void irq_handle(InterruptStackFrame *frame);
+    void irq_handle();
     constexpr mac_address &get_mac_addr()
     {
         return maddr;

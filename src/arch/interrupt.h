@@ -1,11 +1,13 @@
 #pragma once
+#include <arch/64bit.h>
 #include <arch/arch.h>
-#include <int_value.h>
+#include <stdint.h>
 
 #define IDT_ENTRY_COUNT 256
 #define INTGATE 0x8e
 #define TRAPGATE 0xeF
 
+typedef void (*irq_handler_func)(unsigned int irq);
 struct idt_entry
 {
     uint16_t offset_low16;
@@ -22,5 +24,6 @@ struct idtr
     uint64_t offset; // address of the IDT
 } __attribute__((packed));
 
-void pic_ack(int intno);
 void init_idt(void);
+
+void add_irq_handler(irq_handler_func func, unsigned int irq_target);

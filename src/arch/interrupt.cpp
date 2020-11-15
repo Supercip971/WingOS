@@ -19,6 +19,14 @@
 #include <utility.h>
 uint8_t current = 0;
 
+struct interrupt_handler_specific_array
+{
+    irq_handler_func function_list[8]; // max 8 handler for an irq;
+    int current_array_length = 0;
+};
+
+interrupt_handler_specific_array irq_hdlr_array[32];
+
 lock_type lock = {0};
 const char *exception_messages[] = {"Division By Zero",
                                     "Debug",
@@ -88,6 +96,43 @@ static idt_entry register_interrupt_handler(void *handler, uint8_t ist, uint8_t 
     return idt;
 }
 
+lock_type int_lock = {0};
+void add_irq_handler(irq_handler_func func, unsigned int irq_target)
+{
+    if (irq_target <= 32)
+    {
+        interrupt_handler_specific_array *target = &irq_hdlr_array[irq_target];
+        if (target->current_array_length < 7)
+        {
+            target->function_list[target->current_array_length] = func;
+            target->current_array_length++;
+            return;
+        }
+    }
+    log("int", LOG_ERROR) << "can't add irq id " << irq_target;
+}
+
+void call_irq_handlers(unsigned int irq, InterruptStackFrame *isf)
+{
+    interrupt_handler_specific_array &target = irq_hdlr_array[irq];
+    if (target.current_array_length == 0)
+    {
+        return;
+    }
+    for (int i = 0; i < target.current_array_length; i++)
+    {
+        target.function_list[i](irq);
+    }
+}
+
+void init_irq_handlers()
+{
+    for (int i = 0; i < 32; i++)
+    {
+        irq_hdlr_array[i].current_array_length = 0;
+    }
+}
+
 void init_idt()
 {
     log("idt", LOG_DEBUG) << "loading idt";
@@ -105,7 +150,7 @@ void init_idt()
     idt[100] = register_interrupt_handler((void *)__interrupt_vector[49], 0, 0x8e);
 
     log("idt", LOG_DEBUG) << "flushing idt";
-
+    init_irq_handlers();
     asm volatile("lidt [%0]"
                  :
                  : "m"(idt_descriptor));
@@ -140,16 +185,6 @@ void dumpregister(InterruptStackFrame *stck)
     printf("CR4 = %x \n", CRX);
 }
 
-void pic_ack(int intno)
-{
-    if (intno >= 40)
-    {
-        outb(PIC2_OFFSET, 0x20);
-    }
-
-    outb(PIC1_OFFSET, 0x20);
-}
-
 bool is_error(int intno)
 {
     if (intno > 31)
@@ -177,8 +212,6 @@ void update_backtrace(InterruptStackFrame *stackframe)
         get_current_cpu()->rip_backtrace[32] = stackframe->rip;
     }
 }
-
-lock_type ps_lock = {0};
 
 void interrupt_error_handle(InterruptStackFrame *stackframe)
 {
@@ -236,7 +269,11 @@ extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
         PIT::the()->update();
         nresult = irq_0_process_handler(stackframe);
     }
-    else if (stackframe->int_no == 32 + 1)
+    else if (stackframe->int_no > 32 && stackframe->int_no < 64)
+    {
+        call_irq_handlers(stackframe->int_no - 32, stackframe);
+    }
+    /*else if (stackframe->int_no == 32 + 1)
     {
         lock(&ps_lock);
         ps_keyboard::the()->interrupt_handler();
@@ -246,7 +283,7 @@ extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
     {
         e1000::the()->irq_handle(stackframe);
     }
-    else if (stackframe->int_no == 32 + 12)
+    else if (stackframe->int_no == 32 + 12) // DONE
     {
         lock(&ps_lock);
         ps_mouse::the()->interrupt_handler();
@@ -255,7 +292,7 @@ extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
     else if (stackframe->int_no == 32 + 14 || stackframe->int_no == 32 + 15)
     {
         ata_driver::the()->irq_handle(stackframe->int_no - 32);
-    }
+    }*/
     else if (stackframe->int_no == 100)
     {
         nresult = irq_0_process_handler(stackframe);

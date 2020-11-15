@@ -32,3 +32,13 @@ void pic_init()
     pic_wait();
     outb(PIC2_DATA, 0xff);
 }
+
+void pic_ack(int intno)
+{
+    if (intno >= 40)
+    {
+        outb(PIC2_OFFSET, 0x20);
+    }
+
+    outb(PIC1_OFFSET, 0x20);
+}

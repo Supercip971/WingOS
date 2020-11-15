@@ -54,6 +54,8 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
 {
     asm volatile("and rsp, -16");
     asm volatile("cli");
+    asm volatile("mov ax, 0");
+    asm volatile("mov fs, ax");
     init_sse();
 
     com_initialize(COM_PORT::COM1);

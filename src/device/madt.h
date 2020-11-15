@@ -84,6 +84,7 @@ public:
     uint64_t lapic_base = 0x0;
     madt();
     MADT_head *madt_header = 0x0;
+    void log_all();
     void init();
     uint64_t get_madt_table_lenght();
     MADT_record_table_entry *get_madt_table_record();

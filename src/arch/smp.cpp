@@ -27,11 +27,13 @@ extern "C" void irq0_first_jump();
 
 extern "C" void cpuupstart(void)
 {
-    log("smp", LOG_INFO) << "after loading cpu :" << apic::the()->get_current_processor_id();
 
     x86_wrmsr(0x1B, (x86_rdmsr(0x1B) | 0x800) & ~(LAPIC_ENABLE));
     apic::the()->enable();
 
+    asm volatile(
+        "mov fs, %0" ::"r"(apic::the()->get_current_processor_id()));
+    log("smp", LOG_INFO) << "after loading cpu :" << apic::the()->get_current_processor_id();
     gdt_ap_init();
     asm("cli");
 

@@ -38,14 +38,11 @@ extern cpu procData[smp::max_cpu];
 
 inline cpu *get_current_cpu()
 {
-    if (apic::the()->isloaded() == false)
-    {
-        return &procData[0];
-    }
-    else
-    {
-        return &procData[apic::the()->get_current_processor_id()];
-    }
+    uint64_t cc = 0;
+    asm volatile("mov %0, fs \n"
+                 : "=r"(cc));
+
+    return &procData[cc];
 }
 inline cpu *get_current_cpu(int id)
 {

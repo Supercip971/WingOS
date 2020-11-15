@@ -12,15 +12,9 @@ uint64_t madt::get_madt_table_lenght()
 {
     return ((uint64_t)&madt_header->RShead) + madt_header->RShead.Length;
 }
-void madt::init()
+void madt::log_all()
 {
-    log("madt", LOG_DEBUG) << "loading madt";
-    madt_address = acpi::the()->find_entry("APIC");
-
-    madt_header = reinterpret_cast<MADT_head *>(madt_address);
-
     MADT_record_table_entry *table = madt_header->MADT_table;
-    lapic_base = madt_header->lapic;
     while (uint64_t(table) < get_madt_table_lenght())
     {
         printf("\n ===================");
@@ -81,6 +75,16 @@ void madt::init()
             log("madt", LOG_INFO) << "lenght : " << table->tlenght;
         }
     }
+}
+void madt::init()
+{
+    log("madt", LOG_DEBUG) << "loading madt";
+    madt_address = acpi::the()->find_entry("APIC");
+
+    madt_header = reinterpret_cast<MADT_head *>(madt_address);
+
+    MADT_record_table_entry *table = madt_header->MADT_table;
+    lapic_base = madt_header->lapic;
 
     uint64_t lbase_addr = lapic_base;
     lbase_addr /= 4096;
@@ -90,6 +94,7 @@ void madt::init()
     virt_map(lbase_addr + 4096, get_mem_addr(lbase_addr) + 4096, 0x03);
 
     lapic_base = get_mem_addr(lapic_base);
+    log_all();
 }
 
 MADT_table_IOAPIC **madt::get_madt_ioAPIC()

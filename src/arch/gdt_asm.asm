@@ -9,8 +9,6 @@ gdtr_install:
   mov ss, ax
   mov ds, ax
   mov es, ax
-  mov fs, ax
-  mov gs, ax
   mov rax, qword .trampoline
   push rsi
   push rax

@@ -42,35 +42,10 @@ bool apic::isloaded()
 {
     return loaded;
 }
-
-void apic::init()
+void apic::log_all()
 {
-    log("apic", LOG_DEBUG) << "loading apic";
-
-    apic_addr = (void *)((uint64_t)madt::the()->lapic_base);
-
     log("apic", LOG_INFO) << "apic address" << (uint64_t)apic_addr;
-
-    if (apic_addr == nullptr)
-    {
-        log("apic", LOG_FATAL) << "can't find apic";
-        while (true)
-        {
-            asm("hlt");
-        }
-        return;
-    }
-
-    x86_wrmsr(0x1B, (x86_rdmsr(0x1B) | 0x800) & ~(LAPIC_ENABLE));
-    enable();
-
-    outb(PIC1_DATA, 0xff); // turn off the pic
-    pic_wait();
-    outb(PIC2_DATA, 0xff);
-
     log("apic", LOG_INFO) << "current processor id " << get_current_processor_id();
-    log("io apic", LOG_DEBUG) << "loading io apic";
-
     table = madt::the()->get_madt_ioAPIC();
 
     for (int i = 0; table[i] != 0; i++)
@@ -90,10 +65,6 @@ void apic::init()
         log("io apic", LOG_INFO) << "gsi start       : " << table[i]->gsib;
         log("io apic", LOG_INFO) << "gsi end         : " << table[i]->gsib + tables->maximum_redirection;
     }
-
-    log("iso", LOG_DEBUG) << "loading iso";
-
-    iso_table = madt::the()->get_madt_ISO();
     for (int i = 0; iso_table[i] != 0; i++)
     {
 
@@ -119,9 +90,41 @@ void apic::init()
             log("iso", LOG_INFO) << "iso is level triggered";
         }
     }
+}
+void apic::init()
+{
+    log("apic", LOG_DEBUG) << "loading apic";
+
+    apic_addr = (void *)((uint64_t)madt::the()->lapic_base);
+
+    if (apic_addr == nullptr)
+    {
+        log("apic", LOG_FATAL) << "can't find apic";
+        while (true)
+        {
+            asm("hlt");
+        }
+        return;
+    }
+
+    x86_wrmsr(0x1B, (x86_rdmsr(0x1B) | 0x800) & ~(LAPIC_ENABLE));
+    enable();
+
+    outb(PIC1_DATA, 0xff); // turn off the pic
+    pic_wait();
+    outb(PIC2_DATA, 0xff);
+
+    log("io apic", LOG_DEBUG) << "loading io apic";
+
+    table = madt::the()->get_madt_ioAPIC();
+
+    log("iso", LOG_DEBUG) << "loading iso";
+
+    iso_table = madt::the()->get_madt_ISO();
 
     loaded = true;
-    log("apic", LOG_INFO) << "current processor id: " << get_current_processor_id();
+
+    log_all();
 }
 
 uint32_t apic::read(uint32_t regs)

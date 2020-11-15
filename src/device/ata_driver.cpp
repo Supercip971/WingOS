@@ -66,27 +66,6 @@ void ata_driver::init()
     {
         status = ata_read(true, ATA_reg_command_status);
     }
-
-    // reset
-    uint8_t *temp_buffer = (uint8_t *)malloc(2048);
-
-    for (int i = 0; i < 2048; i++)
-    {
-        temp_buffer[i] = 0;
-    }
-
-    read(0, 3, temp_buffer);
-
-    log("ata", LOG_INFO) << "first bytes data : \n";
-
-    for (int i = 0; i < 256 * 3; i++)
-    {
-        printf(" %c", temp_buffer[i]);
-    }
-
-    printf("\n");
-
-    free(temp_buffer);
 }
 
 ata_driver *ata_driver::the()

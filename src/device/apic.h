@@ -51,6 +51,7 @@ class apic
 
 public:
     apic();
+    void log_all();
     void set_apic_addr(uint32_t new_address);
     void init();
     void enable();

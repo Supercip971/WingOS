@@ -15,7 +15,7 @@ inline void com_wait_write(COM_PORT port)
     {
     }
 }
-lock_type lck = {0};
+
 void com_putc(COM_PORT port, char c)
 {
     com_wait_write(port);
@@ -90,6 +90,7 @@ void com_write_reg(const char *buffer, uint64_t value)
     com_write_strl(buffer);
     com_write_str(temp_buffer);
 }
+
 lock_type print_locker = {0};
 char temp_buf[64];
 void printf(const char *format, ...)

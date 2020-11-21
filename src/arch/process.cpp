@@ -243,11 +243,8 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
     }
 
     init_process_global_memory(process_to_add);
-
     init_process_message(process_to_add);
-
     init_process_stackframe(process_to_add, entry_point);
-
     init_process_buffers(process_to_add);
 
     process_to_add->entry_point = (uint64_t)entry_point;
@@ -256,6 +253,7 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
 
     process_to_add->is_ORS = false;
 
+    process_to_add->sleeping = 0;
     if (user)
     {
         process_to_add->page_directory = (uint64_t)new_vmm_page_dir();
@@ -335,6 +333,10 @@ extern "C" process *get_next_process(uint64_t current_id)
             {
                 continue;
             }
+            if (process_array[i].sleeping != 0)
+            {
+                continue;
+            }
             return &process_array[i];
         }
     }
@@ -365,7 +367,6 @@ void send_switch_process_to_all_cpu()
         }
     }
 }
-
 extern "C" uint64_t irq_0_process_handler(InterruptStackFrame *isf)
 {
 
@@ -375,6 +376,17 @@ extern "C" uint64_t irq_0_process_handler(InterruptStackFrame *isf)
     }
     if (isf->int_no != 100)
     {
+        for (uint64_t i = 0; i < MAX_PROCESS; i++)
+        {
+
+            if ((process_array[i].current_process_state ==
+                 process_state::PROCESS_WAITING) &&
+                process_array[i].kpid != 0 && process_array[i].sleeping != 0)
+            {
+
+                process_array[i].sleeping--;
+            }
+        }
         send_switch_process_to_all_cpu();
     }
     process *i = nullptr;
@@ -687,4 +699,10 @@ bool add_process_buffer(process_buffer *buf, uint64_t data_length, uint8_t *raw)
     memcpy(buf->data + buf->length, raw, data_length);
     buf->length += data_length;
     return true;
+}
+
+void sleep(uint64_t count)
+{
+    get_current_cpu()->current_process->sleeping += count;
+    yield();
 }

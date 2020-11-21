@@ -23,6 +23,7 @@ void _start(stivale_struct *bootloader_data)
     log("kernel", LOG_INFO) << "memory used : " << get_used_memory();
     while (true)
     {
-        yield();
+        sleep(1000);
+        log("kernel", LOG_INFO) << "==== KERNEL STARTED ====";
     }
 }

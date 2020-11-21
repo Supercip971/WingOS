@@ -77,6 +77,11 @@ void kernel_process_service()
                 msg->response = process_buffer_read(prot);
                 break;
 
+            case PROCESS_SLEEP:
+                sleep(prot->sleep_counter, msg->from_pid);
+                msg->response = 1;
+                break;
+
             default:
                 log("kernel_process_service", LOG_ERROR) << "invalid request id : " << (uint64_t)prot->type;
                 msg->response = -2;
@@ -88,7 +93,6 @@ void kernel_process_service()
         }
         else if (msg == 0)
         {
-            on_request_service_update();
         }
     }
 }

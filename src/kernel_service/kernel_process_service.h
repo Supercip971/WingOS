@@ -26,12 +26,12 @@ struct get_process_buffer
     uint64_t length_to_read;
     uint64_t where;
 };
-
 enum process_request_id
 {
     GET_PROCESS_PID = 0,
     SET_CURRENT_PROCESS_AS_SERVICE = 1,
-    GET_PROCESS_BUFFER = 2
+    GET_PROCESS_BUFFER = 2,
+    PROCESS_SLEEP = 3
 };
 
 struct process_request
@@ -43,6 +43,7 @@ struct process_request
         get_process_pid gpp;
         set_current_process_as_service scpas;
         get_process_buffer gpb;
+        uint64_t sleep_counter; // use like that instead of another struct
     };
 } __attribute__((packed));
 

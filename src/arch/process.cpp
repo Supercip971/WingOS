@@ -383,7 +383,6 @@ extern "C" uint64_t irq_0_process_handler(InterruptStackFrame *isf)
                  process_state::PROCESS_WAITING) &&
                 process_array[i].kpid != 0 && process_array[i].sleeping != 0)
             {
-
                 process_array[i].sleeping--;
             }
         }
@@ -519,6 +518,7 @@ void dump_process()
             log("proc", LOG_INFO) << "process state    : " << process_array[i].current_process_state;
             log("proc", LOG_INFO) << "process cpu      : " << process_array[i].processor_target;
             log("proc", LOG_INFO) << "process upid     : " << process_array[i].upid;
+            log("proc", LOG_INFO) << "process sleep    : " << process_array[i].sleeping;
         }
     }
 
@@ -703,6 +703,16 @@ bool add_process_buffer(process_buffer *buf, uint64_t data_length, uint8_t *raw)
 
 void sleep(uint64_t count)
 {
+    lock_process();
     get_current_cpu()->current_process->sleeping += count;
+    unlock_process();
     yield();
+}
+
+void sleep(uint64_t count, uint64_t pid)
+{
+    uint64_t kpid = upid_to_kpid(pid);
+    lock_process();
+    process_array[kpid].sleeping = count;
+    unlock_process();
 }

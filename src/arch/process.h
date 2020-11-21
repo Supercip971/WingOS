@@ -2,6 +2,7 @@
 #include <arch/64bit.h>
 #include <int_value.h>
 #define MAX_PROCESS 64
+#define SLEEP_ALWAYS -1
 #define PROCESS_STACK_SIZE 8192
 enum process_state
 {
@@ -69,7 +70,7 @@ struct process
     uint8_t processor_target;
     uint8_t *global_process_memory;
     uint64_t global_process_memory_length;
-    uint64_t sleeping = 0; // 0 = running | 1[..]infinity = sleeping | -1 = always sleep
+    uint64_t sleeping = 0; // 0 = running | 1[..]infinity = sleeping | SLEEP_ALWAYS = always sleep
     bool is_on_interrupt_process = false;
     uint8_t interrupt_handle_list[8]; // max 8 interrupt per process
 
@@ -124,3 +125,5 @@ inline void yield()
     asm volatile("int 100"); // we should kill current process instead of t h i s
 }
 void sleep(uint64_t count);
+
+void sleep(uint64_t count, uint64_t pid);

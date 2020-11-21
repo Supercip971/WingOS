@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+/*
 struct console_per_process
 {
     char *data; // null terminated
@@ -84,29 +85,11 @@ void write(sys::raw_process_message *msg)
     memcpy((char *)((uint64_t)target->data + last_length), pr->write.raw_data, strlen(pr->write.raw_data) + 1);
     printf(target->data);
 }
+*/
 int main()
 {
-    init_console();
-    sys::set_current_process_as_a_service("console_service", true);
     while (true)
     {
-        sys::raw_process_message *msg = sys::service_read_current_queue();
-        if (msg != 0x0)
-        {
-            sys::console_service_request *pr = (sys::console_service_request *)msg->content_address;
-            if (pr->request_type == sys::CONSOLE_READ)
-            {
-            }
-            else if (pr->request_type == sys::CONSOLE_WRITE)
-            {
-                write(msg);
-                msg->response = 1;
-            }
-            msg->has_been_readed = true;
-        }
-        else
-        {
-        }
     }
 
     return 0;

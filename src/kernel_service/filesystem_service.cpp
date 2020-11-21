@@ -13,6 +13,7 @@ struct fss_file_handle
     uint64_t opened_by_process;
     uint8_t *data;
 };
+
 uint64_t next_fss_uid = 1;       // 0 = null
 fss_file_handle handle_list[64]; // max 64 file handle at the same time :o
 
@@ -31,6 +32,7 @@ fss_file_handle *get_file(uint64_t id, uint64_t pid)
     }
     return nullptr;
 }
+
 uint64_t file_open(process_message *msg)
 {
     file_system_service_protocol *prot = reinterpret_cast<file_system_service_protocol *>(msg->content_address);
@@ -51,6 +53,7 @@ uint64_t file_open(process_message *msg)
     }
     return 0;
 }
+
 uint64_t file_close(process_message *msg)
 {
     file_system_service_protocol *prot = reinterpret_cast<file_system_service_protocol *>(msg->content_address);
@@ -66,6 +69,7 @@ uint64_t file_close(process_message *msg)
     target->free_to_use = true;
     return 0;
 }
+
 uint64_t file_read(process_message *msg)
 {
 
@@ -138,28 +142,26 @@ void file_system_service()
             set_on_request_service(false);
             file_system_service_protocol *prot = reinterpret_cast<file_system_service_protocol *>(msg->content_address);
 
-            set_on_request_service(false);
-            if (prot->request_type == file_system_service_request::FILE_OPEN)
+            switch (prot->request_type)
             {
+            case FILE_OPEN:
                 msg->response = file_open(msg);
-            }
-            else if (prot->request_type == file_system_service_request::FILE_CLOSE)
-            {
+                break;
+            case FILE_CLOSE:
                 msg->response = file_close(msg);
-            }
-            else if (prot->request_type == file_system_service_request::FILE_READ)
-            {
-                msg->response = file_read(msg); // temp fix
-            }
-            else if (prot->request_type == file_system_service_request::GET_FILE_INFO)
-            {
+                break;
+            case FILE_READ:
+                msg->response = file_read(msg);
+                break;
+            case GET_FILE_INFO:
                 msg->response = file_get_information(msg);
-            }
-            else
-            {
+                break;
+            default:
                 log("file system service", LOG_ERROR) << "not handled request id" << prot->request_type;
                 msg->response = -1;
+                break;
             }
+
             msg->has_been_readed = true;
             set_on_request_service(true);
         }

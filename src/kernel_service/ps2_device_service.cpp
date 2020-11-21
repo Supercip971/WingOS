@@ -7,14 +7,17 @@ struct raw_request_data
 
     uint8_t raw_data[32];
 };
+
 struct mouse_get_position
 {
     bool get_x_value;
 };
+
 struct mouse_get_button
 {
     int mouse_button_type;
 };
+
 struct ps2_device_request
 {
     uint8_t device_target; // for the moment 1 = mouse 2 = keyboard
@@ -27,6 +30,7 @@ struct ps2_device_request
         mouse_get_button mouse_button_request;
     };
 } __attribute__((packed));
+
 enum mouse_request_type
 {
     GET_MOUSE_POSITION = 0,
@@ -39,6 +43,7 @@ enum mouse_button_type
     GET_MOUSE_RIGHT_CLICK = 1,
     GET_MOUSE_MIDDLE_CLICK = 2
 };
+
 uint64_t mouse_handle(ps2_device_request *request)
 {
 
@@ -66,6 +71,7 @@ uint64_t keyboard_handle(ps2_device_request *request)
 
     return -2;
 }
+
 void ps2_device_service()
 {
 

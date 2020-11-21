@@ -21,7 +21,6 @@ void graphic_buffer_service()
             graphic_buffer_protocol *data = reinterpret_cast<graphic_buffer_protocol *>(msg->content_address);
             if (data->request == GET_CURRENT_BUFFER_ADDR)
             {
-                log("graphic_buffer", LOG_INFO) << "get current buffer address" << hdr->framebuffer_addr;
                 msg->response = get_mem_addr(hdr->framebuffer_addr);
                 msg->has_been_readed = true;
             }
@@ -29,16 +28,13 @@ void graphic_buffer_service()
             {
                 if (data->data1 == 0)
                 {
-                    log("graphic_buffer", LOG_INFO) << "get current screen width" << (uint64_t)hdr->framebuffer_width;
                     msg->response = hdr->framebuffer_width;
-                    msg->has_been_readed = true;
                 }
                 else
                 {
-                    log("graphic_buffer", LOG_INFO) << "get current screen height" << (uint64_t)hdr->framebuffer_height;
                     msg->response = hdr->framebuffer_height;
-                    msg->has_been_readed = true;
                 }
+                msg->has_been_readed = true;
             }
             else
             {

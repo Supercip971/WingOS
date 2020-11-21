@@ -20,10 +20,12 @@ extern "C" uint64_t start_cpu_entry;
 extern "C" uint64_t end_cpu_entry;
 extern "C" uint32_t trampoline_start, trampoline_end, nstack;
 volatile bool SMPloaded = false;
+
+extern "C" void irq0_first_jump();
+
 smp::smp()
 {
 }
-extern "C" void irq0_first_jump();
 
 extern "C" void cpuupstart(void)
 {
@@ -140,16 +142,9 @@ void smp::init_cpu(int apic, int id)
 
     apic::the()->preinit_processor(apic);
 
-    //
     get_current_cpu(id)->lapic_id = apic;
-
     init_cpu_trampoline();
-
     init_cpu_future_value(id);
-
-    log("smp cpu", LOG_INFO) << "pre loading cpu : " << id;
-
-    // waiting a little bit
 
     log("smp cpu", LOG_INFO) << " loading cpu : " << id;
 

@@ -3,13 +3,14 @@
 #include <com.h>
 #include <kernel_service/print_service.h>
 
-lock_type locker = {0};
 void print_service()
 {
     log("console_out", LOG_INFO) << "loaded print service";
     set_on_request_service(true);
     while (true)
     {
+
+        set_on_request_service(true);
         process_message *msg = read_message();
 
         if (msg != 0)

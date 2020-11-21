@@ -8,11 +8,9 @@ uint64_t process_buffer_read(process_request *request)
 {
     if (request->gpb.get_buffer_length)
     {
-
         uint64_t target = upid_to_kpid(request->gpb.pid_target);
         if (target != -1 && request->gpb.buffer_type <= 3)
         {
-
             process_buffer *buf = &process_array[target].pr_buff[request->gpb.buffer_type];
             return buf->length;
         }
@@ -23,7 +21,6 @@ uint64_t process_buffer_read(process_request *request)
     }
     else
     {
-
         uint64_t target = upid_to_kpid(request->gpb.pid_target);
 
         if (target != -1 && request->gpb.buffer_type <= 3)
@@ -64,27 +61,30 @@ void kernel_process_service()
             process_request *prot = (process_request *)msg->content_address;
             switch (prot->type)
             {
+
             case GET_PROCESS_PID:
                 msg->response = get_pid_from_process_name(prot->gpp.process_name);
                 break;
+
             case SET_CURRENT_PROCESS_AS_SERVICE:
                 log("kernel_process_service", LOG_INFO) << "SET_CURRENT_PROCESS_AS_SERVICE";
                 rename_process(prot->scpas.service_name, msg->from_pid);
                 set_on_request_service(prot->scpas.is_ors, msg->to_pid);
                 msg->response = 1;
                 break;
-            case GET_PROCESS_BUFFER:
 
+            case GET_PROCESS_BUFFER:
                 msg->response = process_buffer_read(prot);
                 break;
+
             default:
                 log("kernel_process_service", LOG_ERROR) << "invalid request id : " << (uint64_t)prot->type;
                 msg->response = -2;
                 break;
             }
+            msg->has_been_readed = true;
 
             set_on_request_service(true);
-            msg->has_been_readed = true;
         }
         else if (msg == 0)
         {

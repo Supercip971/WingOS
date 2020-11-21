@@ -3,10 +3,12 @@
 #include <arch/process.h>
 #include <kernel_service/memory_service.h>
 #include <logging.h>
+
 void memory_service()
 {
     log("memory_service", LOG_INFO) << "loaded memory service";
     set_on_request_service(true);
+
     while (true)
     {
         process_message *msg = read_message();
@@ -19,11 +21,7 @@ void memory_service()
 
             if (prot->request_type == REQUEST_PMM_MALLOC)
             {
-
                 msg->response = get_mem_addr((uint64_t)pmm_alloc_fast(prot->length));
-
-                //  add_thread_map(&process_array[upid_to_kpid(msg->from_pid)], msg->response, get_umem_addr(msg->response), prot->length);
-
                 msg->has_been_readed = true;
             }
             else if (prot->request_type == REQUEST_PMM_FREE)

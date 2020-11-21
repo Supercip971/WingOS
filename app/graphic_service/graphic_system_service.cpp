@@ -339,15 +339,13 @@ char main_cursor_mouse_buffer[] = {
 
 void draw_mouse(uint64_t x, uint64_t y)
 {
-    x++;
-    y++;
-    if (x >= (screen_width - m_width))
+    if (x >= (screen_width - (m_width + 1)))
     {
-        x = screen_width - m_width;
+        x = screen_width - (m_width + 1);
     }
-    if (y >= screen_height - m_height)
+    if (y >= screen_height - (m_height + 1))
     {
-        y = screen_height - m_height;
+        y = screen_height - (m_height + 1);
     }
     for (uint64_t ix = 0; ix < m_width; ix++)
     {

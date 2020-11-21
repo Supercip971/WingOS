@@ -32,7 +32,8 @@ namespace sys
     {
         GET_PROCESS_PID = 0,
         SET_CURRENT_PROCESS_AS_SERVICE = 1,
-        GET_PROCESS_BUFFER = 2
+        GET_PROCESS_BUFFER = 2,
+        PROCESS_SLEEP = 3
     };
 
     struct process_request
@@ -44,6 +45,7 @@ namespace sys
             get_process_pid gpp;
             set_current_process_as_service scpas;
             get_process_buffer gpb;
+            uint64_t sleep_counter; // use like that instead of another struct
         };
     } __attribute__((packed));
 
@@ -53,5 +55,5 @@ namespace sys
         asm volatile("int 100");
     }
     void set_current_process_as_a_service(const char *service_name, bool is_request_only);
-
+    void ksleep(uint64_t time); // in ms
 } // namespace sys

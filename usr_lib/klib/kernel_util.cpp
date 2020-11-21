@@ -12,6 +12,7 @@ namespace sys
         {
             return -2;
         }
+
         if (raw_data == nullptr)
         {
             return -1;
@@ -36,6 +37,14 @@ namespace sys
         pr.type = SET_CURRENT_PROCESS_AS_SERVICE;
         pr.scpas.is_ors = is_request_only;
         memcpy(pr.scpas.service_name, service_name, strlen(service_name) + 1);
+        uint64_t result = sys::process_message("kernel_process_service", (uint64_t)&pr, sizeof(pr)).read();
+    }
+
+    void ksleep(uint64_t time)
+    {
+        process_request pr = {0};
+        pr.type = PROCESS_SLEEP;
+        pr.sleep_counter = time;
         uint64_t result = sys::process_message("kernel_process_service", (uint64_t)&pr, sizeof(pr)).read();
     }
 } // namespace sys

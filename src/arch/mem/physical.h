@@ -14,11 +14,11 @@ void *pmm_alloc_zero(uint64_t lenght);
 void pmm_free(void *where, uint64_t lenght);
 // higher half memory offset
 
-template <class T = uint64_t, class F>
-inline constexpr T get_mem_addr(F addr) { return reinterpret_cast<T>((uint64_t)(addr) + 0xffff800000000000); }
-template <class T = uint64_t, class F>
-inline constexpr T get_rmem_addr(F addr) { return reinterpret_cast<T>((uint64_t)(addr)-0xffff800000000000); }
-template <class T = uint64_t, class F>
-inline constexpr T get_kern_addr(F addr) { return reinterpret_cast<T>((uint64_t)(addr) + 0xffffffff80000000); }
-template <class T = uint64_t, class F>
-inline constexpr T get_rkern_addr(F addr) { return reinterpret_cast<T>((uint64_t)(addr)-0xffffffff80000000); }
+template <class T = uintptr_t, class F>
+inline constexpr T get_mem_addr(F addr) { return reinterpret_cast<T>((uintptr_t)(addr) + 0xffff800000000000); }
+template <class T = uintptr_t, class F>
+inline constexpr T get_rmem_addr(F addr) { return reinterpret_cast<T>((uintptr_t)(addr)-0xffff800000000000); }
+template <class T = uintptr_t, class F>
+inline constexpr T get_kern_addr(F addr) { return reinterpret_cast<T>((uintptr_t)(addr) + 0xffffffff80000000); }
+template <class T = uintptr_t, class F>
+inline constexpr T get_rkern_addr(F addr) { return reinterpret_cast<T>((uintptr_t)(addr)-0xffffffff80000000); }

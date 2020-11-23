@@ -9,11 +9,11 @@ acpi main_acpi;
 void *get_rsdp(void)
 {
 
-    for (uint64_t i = get_mem_addr(0x80000); i < get_mem_addr(0x100000); i += 16)
+    for (uint64_t i = get_mem_addr((uint64_t)0x80000); i < get_mem_addr((uint64_t)0x100000); i += 16)
     {
-        if (i == get_mem_addr(0xa0000))
+        if (i == get_mem_addr((uint64_t)0xa0000))
         {
-            i = get_mem_addr(0xe0000 - 16);
+            i = get_mem_addr((uint64_t)0xe0000 - 16);
             continue;
         }
 
@@ -33,7 +33,7 @@ acpi::acpi()
 void *acpi::find_entry(const char *entry_name)
 {
 
-    RSDT *rsdt = reinterpret_cast<RSDT *>(get_mem_addr((descriptor->firstPart.RSDT_address)));
+    RSDT *rsdt = get_mem_addr<RSDT *>((descriptor->firstPart.RSDT_address));
     int entries = (rsdt->h.Length - sizeof(rsdt->h)) / 4;
 
     for (int i = 0; i < entries; i++)
@@ -44,7 +44,7 @@ void *acpi::find_entry(const char *entry_name)
             continue;
         }
 
-        RSDTHeader *h = reinterpret_cast<RSDTHeader *>(get_mem_addr((rsdt->PointerToOtherSDT[i])));
+        RSDTHeader *h = get_mem_addr<RSDTHeader *>((rsdt->PointerToOtherSDT[i]));
 
         if (!strncmp(h->Signature, entry_name, 4))
         {
@@ -102,6 +102,7 @@ void acpi::init_in_paging()
     virt_map(ddat + 4096, get_mem_addr(ddat + 4096), 0x03);
 
     rsdt = (RSDT *)get_mem_addr((uint64_t)rsdt);
+
     for (int i = 0; i < entries; i++)
     {
         uint64_t addr = rsdt->PointerToOtherSDT[i];

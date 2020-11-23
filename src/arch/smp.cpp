@@ -118,7 +118,7 @@ void smp::init_cpu_future_value(uint64_t id)
     get_current_cpu(id)->page_table = get_current_cpu()->page_table; // give the same
     // page table at 0x500
     POKE((0x500)) =
-        get_rmem_addr((uint64_t)get_current_cpu(id)->page_table);
+        get_rmem_addr(get_current_cpu(id)->page_table);
     // stack at 570
     POKE((0x570)) =
         (uint64_t)get_current_cpu(id)->stack_data + 8192;

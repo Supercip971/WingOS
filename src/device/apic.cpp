@@ -23,7 +23,7 @@ void apic::io_write(uint64_t base, uint32_t reg, uint32_t data)
 
 uint32_t apic::io_read(uint64_t base, uint32_t reg)
 {
-    base = (uint64_t)get_mem_addr(base);
+    base = get_mem_addr(base);
     POKE(base) = reg;
     return POKE(base + 16);
 }

@@ -205,10 +205,10 @@ void init_process_buffers(process *to_init)
         to_init->pr_buff[i].allocated_length = 128;
         if (to_init->pr_buff[i].data != nullptr)
         {
-            free((void *)get_rmem_addr((uint64_t)to_init->pr_buff[i].data));
+            free(get_rmem_addr<void *>(to_init->pr_buff[i].data));
         }
         to_init->pr_buff[i].length = 0;
-        to_init->pr_buff[i].data = (uint8_t *)get_mem_addr((uint64_t)malloc(128));
+        to_init->pr_buff[i].data = get_mem_addr<uint8_t *>(malloc(128));
     }
 }
 

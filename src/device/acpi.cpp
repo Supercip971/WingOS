@@ -83,8 +83,8 @@ void acpi::init(uint64_t rsdp)
 {
     log("acpi", LOG_DEBUG) << "loading acpi";
 
-    descriptor = (RSDPDescriptor20 *)((((uint64_t)get_rsdp() /* get with the offset as stivale doesn't give me the good address so fu** you stivale */)));
-    rsdt_table = (RSDT *)(get_mem_addr(descriptor->firstPart.RSDT_address));
+    descriptor = (RSDPDescriptor20 *)get_rsdp();
+    rsdt_table = get_mem_addr<RSDT *>(descriptor->firstPart.RSDT_address);
 }
 
 void acpi::init_in_paging()

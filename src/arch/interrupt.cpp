@@ -72,17 +72,14 @@ static idtr idt_descriptor = {
     .offset = (uint64_t)&idt[0],
 };
 
-uint64_t rip_count[16];
-uint32_t rip_counter = 0;
-
-uint64_t rip_backtrace[32];
+uintptr_t rip_backtrace[32];
 
 extern "C" void idt_flush(uint64_t);
 extern "C" void syscall_asm_entry();
 
 static idt_entry register_interrupt_handler(void *handler, uint8_t ist, uint8_t type)
 {
-    uint64_t p = (uint64_t)handler;
+    uintptr_t p = (uintptr_t)handler;
     idt_entry idt;
 
     idt.offset_low16 = (uint16_t)p;
@@ -96,7 +93,6 @@ static idt_entry register_interrupt_handler(void *handler, uint8_t ist, uint8_t 
     return idt;
 }
 
-lock_type int_lock = {0};
 void add_irq_handler(irq_handler_func func, unsigned int irq_target)
 {
     if (irq_target <= 32)
@@ -173,7 +169,7 @@ void dumpregister(InterruptStackFrame *stck)
     printf("rip = %x \n", stck->rip);
     printf("flags = %x \n", stck->rflags);
 
-    uint64_t CRX;
+    uintptr_t CRX;
     asm volatile("mov %0, cr2"
                  : "=r"(CRX));
     printf("CR2 = %x \n", CRX);
@@ -213,8 +209,10 @@ void update_backtrace(InterruptStackFrame *stackframe)
     }
 }
 
+bool error = false;
 void interrupt_error_handle(InterruptStackFrame *stackframe)
 {
+    error = true;
     log("pic", LOG_FATAL) << "!!! fatal interrupt error !!!" << stackframe->rip;
     log("pic", LOG_ERROR) << "ID   : " << stackframe->int_no;
     log("pic", LOG_ERROR) << "type : " << exception_messages[stackframe->int_no];
@@ -248,12 +246,16 @@ void interrupt_error_handle(InterruptStackFrame *stackframe)
     }
 }
 
-extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
+extern "C" uintptr_t interrupts_handler(InterruptStackFrame *stackframe)
 {
 
-    uint64_t nresult = reinterpret_cast<uint64_t>(stackframe);
+    uintptr_t nresult = reinterpret_cast<uintptr_t>(stackframe);
     update_backtrace(stackframe);
-
+    if (error)
+    {
+        while (true)
+            ;
+    }
     if (is_error(stackframe->int_no))
     {
         interrupt_error_handle(stackframe);
@@ -273,26 +275,6 @@ extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
     {
         call_irq_handlers(stackframe->int_no - 32, stackframe);
     }
-    /*else if (stackframe->int_no == 32 + 1)
-    {
-        lock(&ps_lock);
-        ps_keyboard::the()->interrupt_handler();
-        unlock(&ps_lock);
-    }
-    else if (stackframe->int_no == 32 + 11)
-    {
-        e1000::the()->irq_handle(stackframe);
-    }
-    else if (stackframe->int_no == 32 + 12) // DONE
-    {
-        lock(&ps_lock);
-        ps_mouse::the()->interrupt_handler();
-        unlock(&ps_lock);
-    }
-    else if (stackframe->int_no == 32 + 14 || stackframe->int_no == 32 + 15)
-    {
-        ata_driver::the()->irq_handle(stackframe->int_no - 32);
-    }*/
     else if (stackframe->int_no == 100)
     {
         nresult = irq_0_process_handler(stackframe);
@@ -305,5 +287,4 @@ extern "C" uint64_t interrupts_handler(InterruptStackFrame *stackframe)
     apic::the()->EOI();
 
     return nresult;
-    // unlock((&lock));
 }

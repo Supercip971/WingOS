@@ -10,7 +10,7 @@ uint64_t sys$null(uint64_t arg1, uint64_t arg2)
     //  log("syscall", LOG_INFO) << "receive null syscall with arg1 : " << arg1 << "arg 2 : " << arg2;
     return 32;
 }
-process_message *sys$send_message(uint64_t data_addr, uint64_t data_length, const char *to_process)
+process_message *sys$send_message(uintptr_t data_addr, uint64_t data_length, const char *to_process)
 {
     return send_message(data_addr, data_length, to_process);
 }
@@ -26,11 +26,11 @@ uint64_t sys$get_process_global_data(const char *target, uint64_t offset, uint64
 {
     if (target == nullptr)
     {
-        return (uint64_t)get_current_process_global_data(offset, length);
+        return (uintptr_t)get_current_process_global_data(offset, length);
     }
     else
     {
-        return (uint64_t)get_process_global_data_copy(offset, target);
+        return (uintptr_t)get_process_global_data_copy(offset, target);
     }
 }
 static void *syscalls[] = {

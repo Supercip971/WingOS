@@ -9,8 +9,8 @@ extern "C" void avx_init(void);
 uint64_t *fpu_reg;
 uint64_t fpu_data[128] __attribute__((aligned(16)));
 lock_type sse_lock = {0};
-extern "C" void asm_sse_save(uint64_t addr);
-extern "C" void asm_sse_load(uint64_t addr);
+extern "C" void asm_sse_save(uintptr_t addr);
+extern "C" void asm_sse_load(uintptr_t addr);
 void init_sse()
 {
 
@@ -24,7 +24,7 @@ void init_sse()
 __attribute__((optimize("O2"))) void save_sse_context(uint64_t *context)
 {
     lock(&sse_lock);
-    asm_sse_save((uint64_t)fpu_reg);
+    asm_sse_save((uintptr_t)fpu_reg);
     for (int i = 0; i < 128; i++)
     {
         context[i] = fpu_reg[i];
@@ -40,7 +40,7 @@ __attribute__((optimize("O2"))) void load_sse_context(uint64_t *context)
     {
         fpu_reg[i] = context[i];
     }
-    asm_sse_load((uint64_t)fpu_reg);
+    asm_sse_load((uintptr_t)fpu_reg);
 
     unlock(&sse_lock);
 }

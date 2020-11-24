@@ -86,7 +86,7 @@ struct message_identifier
 static process *process_array = nullptr;
 // TODO: make a get_current_process() function
 typedef void (*func)();
-void add_thread_map(process *p, uint64_t from, uint64_t to, uint64_t length);
+void add_thread_map(process *p, uintptr_t from, uintptr_t to, uint64_t length);
 
 /* if cpu_target == -1
  *  select the current cpu
@@ -101,9 +101,9 @@ void unlock_process();
 void lock_process();
 
 extern "C" void task_update_switch(process *next);
-extern "C" uint64_t irq_0_process_handler(InterruptStackFrame *isf);
+extern "C" uintptr_t irq_0_process_handler(InterruptStackFrame *isf);
 
-process_message *send_message(uint64_t data_addr, uint64_t data_length, const char *to_process);
+process_message *send_message(uintptr_t data_addr, uint64_t data_length, const char *to_process);
 process_message *read_message();
 uint64_t message_response(process_message *indentifier);
 

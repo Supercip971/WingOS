@@ -8,7 +8,7 @@
 #ifdef X64
 #define STACK_SIZE 8192
 static char stack[STACK_SIZE] = {0};
-static uint64_t bootdat = 0;
+static uintptr_t bootdat = 0;
 extern stivale_struct boot_loader_data_copy;
 inline void outb(uint16_t port, uint8_t value)
 {
@@ -53,23 +53,23 @@ inline void wait()
         inw(i);
     }
 }
-static inline uint64_t x86_get_cr3(void)
+static inline uintptr_t x86_get_cr3(void)
 {
-    uint64_t rv;
+    uintptr_t rv;
 
     __asm__ __volatile__("mov %%cr3, %0"
                          : "=r"(rv));
     return rv;
 }
 
-static inline void x86_set_cr3(uint64_t cr3)
+static inline void x86_set_cr3(uintptr_t cr3)
 {
     asm volatile("mov %0, %%cr3"
                  :
                  : "a"(cr3)
                  : "memory");
 }
-inline static uint64_t x86_rdmsr(uint64_t msr)
+inline static uintptr_t x86_rdmsr(uintptr_t msr)
 {
     log("rdmsr", LOG_INFO) << "reading msr : " << msr;
 
@@ -77,10 +77,10 @@ inline static uint64_t x86_rdmsr(uint64_t msr)
     asm volatile("rdmsr"
                  : "=a"(low), "=d"(high)
                  : "c"(msr));
-    return ((uint64_t)high << 32) | low;
+    return ((uintptr_t)high << 32) | low;
 }
 
-inline static void x86_wrmsr(uint64_t msr, uint64_t value)
+inline static void x86_wrmsr(uintptr_t msr, uintptr_t value)
 {
     log("rdmsr", LOG_INFO) << "writing msr : " << msr << " = " << value;
 
@@ -91,5 +91,5 @@ inline static void x86_wrmsr(uint64_t msr, uint64_t value)
                  : "c"(msr), "a"(low), "d"(high));
 }
 
-#define POKE(addr) (*((volatile uint64_t *)(addr)))
+#define POKE(addr) (*((volatile uintptr_t *)(addr)))
 #endif // DEBUG

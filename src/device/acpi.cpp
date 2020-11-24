@@ -9,11 +9,11 @@ acpi main_acpi;
 void *get_rsdp(void)
 {
 
-    for (uint64_t i = get_mem_addr((uint64_t)0x80000); i < get_mem_addr((uint64_t)0x100000); i += 16)
+    for (uintptr_t i = get_mem_addr(0x80000); i < get_mem_addr(0x100000); i += 16)
     {
-        if (i == get_mem_addr((uint64_t)0xa0000))
+        if (i == get_mem_addr(0xa0000))
         {
-            i = get_mem_addr((uint64_t)0xe0000 - 16);
+            i = get_mem_addr(0xe0000 - 16);
             continue;
         }
 
@@ -93,7 +93,7 @@ void acpi::init_in_paging()
     RSDT *rsdt = rsdt_table;
 
     int entries = (rsdt->h.Length - sizeof(rsdt->h)) / 4;
-    uint64_t ddat = (uint64_t)rsdt;
+    uintptr_t ddat = (uintptr_t)rsdt;
 
     ddat /= 4096;
     ddat *= 4096;

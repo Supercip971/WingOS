@@ -16,8 +16,8 @@
 #define SMP_MAP_PAGE_FLAGS 0x7
 smp main_smp;
 int cpu_counter = 0;
-extern "C" uint64_t start_cpu_entry;
-extern "C" uint64_t end_cpu_entry;
+extern "C" uintptr_t start_cpu_entry;
+extern "C" uintptr_t end_cpu_entry;
 extern "C" uint32_t trampoline_start, trampoline_end, nstack;
 volatile bool SMPloaded = false;
 
@@ -40,7 +40,6 @@ extern "C" void cpuupstart(void)
     asm("cli");
 
     SMPloaded = true;
-    uint64_t vo = 0;
     asm("sti");
     while (true)
     {
@@ -61,9 +60,9 @@ void smp::init()
     MADT_record_table_entry *mrte = madt::the()->get_madt_table_record();
 
     processor_count = 0;
-    while (uint64_t(mrte) < madt::the()->get_madt_table_lenght())
+    while ((uintptr_t)(mrte) < madt::the()->get_madt_table_lenght())
     {
-        mrte = (MADT_record_table_entry *)(((uint64_t)mrte) + mrte->tlenght);
+        mrte = (MADT_record_table_entry *)(((uintptr_t)mrte) + mrte->tlenght);
 
         if (mrte->ttype == MADT_type::MADT_LAPIC)
         {
@@ -100,7 +99,7 @@ void smp::wait()
 
 void smp::init_cpu_trampoline()
 {
-    uint64_t trampoline_len = (uint64_t)&trampoline_end - (uint64_t)&trampoline_start;
+    uint64_t trampoline_len = (uintptr_t)&trampoline_end - (uintptr_t)&trampoline_start;
     map_page(0, 0, SMP_MAP_PAGE_FLAGS);
 
     for (int i = 0; i < (trampoline_len / 4096) + 2; i++)
@@ -132,7 +131,7 @@ void smp::init_cpu_future_value(uint64_t id)
                  "sidt [0x590]\n");
 
     // start address at 0x520
-    POKE((0x520)) = (uint64_t)&cpuupstart;
+    POKE((0x520)) = (uintptr_t)&cpuupstart;
 }
 
 void smp::init_cpu(int apic, int id)

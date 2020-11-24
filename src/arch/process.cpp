@@ -15,10 +15,7 @@
 #include <syscall.h>
 #include <utility.h>
 
-process kernel_process;
 bool cpu_wait = false;
-char temp_esp[8192];
-process *nxt;
 
 int process_locked = 1;
 bool process_loaded = false;
@@ -28,7 +25,6 @@ uint64_t last_process = 0;
 uint8_t proc_last_selected_cpu = 0;
 
 lock_type task_lock = {0};
-lock_type lck_lck = {0};
 
 uint64_t next_upid = 1;
 
@@ -41,9 +37,6 @@ void unlock_process()
 {
     process_locked--;
 }
-
-extern "C" void irq0_first_jump();
-extern "C" void reload_cr3();
 
 extern "C" void start_task()
 {
@@ -65,12 +58,11 @@ void null_process()
     }
 }
 
-extern "C" void irq0_first_jump(void);
 void init_multi_process(func start)
 {
     log("proc", LOG_DEBUG) << "loading multi processing";
 
-    process_array = (process *)((uint64_t)malloc(sizeof(process) * MAX_PROCESS + 4096 /* for security */));
+    process_array = reinterpret_cast<process *>(malloc(sizeof(process) * MAX_PROCESS + 4096));
 
     get_current_cpu()->current_process = nullptr;
 
@@ -178,7 +170,7 @@ process *find_usable_process()
 
 void init_process_global_memory(process *to_init)
 {
-    to_init->global_process_memory = (uint8_t *)((uint64_t)malloc(4096));
+    to_init->global_process_memory = reinterpret_cast<uint8_t *>(malloc(4096));
     to_init->global_process_memory_length = 4096;
     memzero(to_init->global_process_memory, to_init->global_process_memory_length);
 }
@@ -228,6 +220,7 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
         log("proc", LOG_INFO) << "process with name already exist so add pid at the end";
         added_pid = true;
     }
+
     process_to_add->upid = next_upid;
     log("proc", LOG_INFO) << "adding process" << process_to_add->upid << "entry : " << (uint64_t)entry_point << "name : " << name;
     next_upid++;
@@ -273,12 +266,12 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
     return process_to_add;
 }
 
-extern "C" uint64_t switch_context(InterruptStackFrame *current_Isf, process *next)
+extern "C" uintptr_t switch_context(InterruptStackFrame *current_Isf, process *next)
 {
 
     if (process_locked != 0)
     {
-        return (uint64_t)current_Isf; // early return
+        return (uintptr_t)current_Isf; // early return
     }
 
     if (next == NULL)
@@ -288,7 +281,7 @@ extern "C" uint64_t switch_context(InterruptStackFrame *current_Isf, process *ne
             cpu_wait = false;
         }
 
-        return (uint64_t)current_Isf; // early return
+        return (uintptr_t)current_Isf; // early return
     }
 
     if (get_current_cpu()->current_process != NULL)
@@ -367,12 +360,12 @@ void send_switch_process_to_all_cpu()
         }
     }
 }
-extern "C" uint64_t irq_0_process_handler(InterruptStackFrame *isf)
+extern "C" uintptr_t irq_0_process_handler(InterruptStackFrame *isf)
 {
 
     if (process_locked != 0)
     {
-        return (uint64_t)isf;
+        return (uintptr_t)isf;
     }
     if (isf->int_no != 100)
     {
@@ -415,7 +408,7 @@ extern "C" void task_update_switch(process *next)
     update_paging();
 }
 
-void add_thread_map(process *p, uint64_t from, uint64_t to, uint64_t length)
+void add_thread_map(process *p, uintptr_t from, uintptr_t to, uint64_t length)
 {
     for (uint64_t i = 0; i < length; i++)
     {
@@ -462,7 +455,7 @@ process_message *get_new_process_message(process *target)
     return nullptr;
 }
 
-process_message *create_process_message(size_t tpid, uint64_t data_addr, uint64_t data_length)
+process_message *create_process_message(size_t tpid, uintptr_t data_addr, uint64_t data_length)
 {
 
     uint64_t target_kpid = upid_to_kpid(tpid);
@@ -487,7 +480,7 @@ process_message *create_process_message(size_t tpid, uint64_t data_addr, uint64_
     return copy;
 }
 
-process_message *send_message(uint64_t data_addr, uint64_t data_length, const char *to_process)
+process_message *send_message(uintptr_t data_addr, uint64_t data_length, const char *to_process)
 {
     for (int i = 0; i < MAX_PROCESS; i++)
     {
@@ -693,7 +686,7 @@ bool add_process_buffer(process_buffer *buf, uint64_t data_length, uint8_t *raw)
         // never gonna cast you doooooown
         buf->allocated_length += 512;
         uint8_t *new_buffer = (uint8_t *)realloc((void *)((uint64_t)buf->data), buf->allocated_length);
-        buf->data = (uint8_t *)((uint64_t)new_buffer);
+        buf->data = new_buffer;
     }
 
     memcpy(buf->data + buf->length, raw, data_length);

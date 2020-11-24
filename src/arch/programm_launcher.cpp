@@ -10,20 +10,20 @@
 
 uint8_t last_selected_cpu = 0;
 
-void load_segment(process *pro, uint64_t source, uint64_t size, uint64_t dest, uint64_t destsize)
+void load_segment(process *pro, uintptr_t source, uint64_t size, uintptr_t dest, uint64_t destsize)
 {
     uint64_t count = destsize / PAGE_SIZE;
-    uint64_t ndest = dest / PAGE_SIZE;
+    uintptr_t ndest = dest / PAGE_SIZE;
     ndest *= PAGE_SIZE;
     count++;
     source /= 4096;
     source *= 4096;
     for (uint64_t i = 0; i < count; i++)
     {
-        uint64_t target_virtual = ndest + i * PAGE_SIZE;
+        uintptr_t target_virtual = ndest + i * PAGE_SIZE;
         map_page(source + PAGE_SIZE * i, target_virtual, 0x1 | 0x2 | 0x4);
     }
-    add_thread_map(pro, (uint64_t)source, ndest, count + 1);
+    add_thread_map(pro, source, ndest, count + 1);
     update_paging();
 }
 
@@ -46,9 +46,9 @@ uint64_t get_elf_section_header(uint8_t *data, uint64_t code)
 char *read_elf_string_entry(uint8_t *data, uint64_t idx)
 {
     Elf64_Ehdr *programm_header = reinterpret_cast<Elf64_Ehdr *>(data);
-    Elf64_Shdr *p_entry = reinterpret_cast<Elf64_Shdr *>((uint64_t)data + programm_header->e_shoff);
+    Elf64_Shdr *p_entry = reinterpret_cast<Elf64_Shdr *>((uintptr_t)data + programm_header->e_shoff);
 
-    uint64_t result_offset = get_elf_section_header(data, SHT_STRTAB);
+    uintptr_t result_offset = get_elf_section_header(data, SHT_STRTAB);
     result_offset = p_entry[result_offset].sh_offset;
     return (char *)(data + result_offset + (idx));
 }
@@ -113,7 +113,7 @@ void read_elf_section_header(uint8_t *data)
 
     Elf64_Ehdr *programm_header = reinterpret_cast<Elf64_Ehdr *>(data);
 
-    Elf64_Shdr *p_entry = reinterpret_cast<Elf64_Shdr *>((uint64_t)data + programm_header->e_shoff);
+    Elf64_Shdr *p_entry = reinterpret_cast<Elf64_Shdr *>((uintptr_t)data + programm_header->e_shoff);
     for (int table_entry = 0; table_entry < programm_header->e_shnum; table_entry++)
     {
         log("prog launcher", LOG_INFO) << "detected sh entry : " << p_entry[table_entry].sh_type;
@@ -168,8 +168,8 @@ void elf64_load_programm_segment(Elf64_Phdr *entry, uint8_t *programm_code, proc
 {
     char *temp_copy = (char *)malloc(entry->p_memsz + 4096);
     memzero(temp_copy, entry->p_memsz + 4096);
-    memcpy(temp_copy, (char *)((uint64_t)programm_code + entry->p_offset), entry->p_filesz);
-    load_segment(target, (uint64_t)programm_code + entry->p_offset, entry->p_filesz, entry->p_vaddr, entry->p_memsz);
+    memcpy(temp_copy, (char *)((uintptr_t)programm_code + entry->p_offset), entry->p_filesz);
+    load_segment(target, (uintptr_t)programm_code + entry->p_offset, entry->p_filesz, entry->p_vaddr, entry->p_memsz);
     char *p_entry_data = (char *)entry->p_vaddr;
     memcpy(p_entry_data, temp_copy, entry->p_memsz);
 }
@@ -211,7 +211,7 @@ void launch_programm(const char *path, file_system *file_sys)
 
     process *to_launch = init_process((func)programm_header->e_entry, false, path, true, cpu_programm);
 
-    Elf64_Phdr *p_entry = reinterpret_cast<Elf64_Phdr *>((uint64_t)programm_code + programm_header->e_phoff);
+    Elf64_Phdr *p_entry = reinterpret_cast<Elf64_Phdr *>((uintptr_t)programm_code + programm_header->e_phoff);
 
     for (int table_entry = 0; table_entry < programm_header->e_phnum; table_entry++, p_entry += programm_header->e_phentsize)
     {

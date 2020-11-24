@@ -44,7 +44,7 @@ bool apic::isloaded()
 }
 void apic::log_all()
 {
-    log("apic", LOG_INFO) << "apic address" << (uint64_t)apic_addr;
+    log("apic", LOG_INFO) << "apic address" << (uintptr_t)apic_addr;
     log("apic", LOG_INFO) << "current processor id " << get_current_processor_id();
     table = madt::the()->get_madt_ioAPIC();
 
@@ -52,7 +52,7 @@ void apic::log_all()
     {
         log("io apic", LOG_INFO) << "info for io apic" << i;
 
-        uint64_t addr = (table[i]->ioapic_addr);
+        uintptr_t addr = (table[i]->ioapic_addr);
         log("io apic", LOG_INFO) << "io apic addr " << addr;
 
         uint32_t raw_table = (io_read(addr, version_reg));
@@ -95,7 +95,7 @@ void apic::init()
 {
     log("apic", LOG_DEBUG) << "loading apic";
 
-    apic_addr = (void *)((uint64_t)madt::the()->lapic_base);
+    apic_addr = (void *)((uintptr_t)madt::the()->lapic_base);
 
     if (apic_addr == nullptr)
     {
@@ -129,17 +129,17 @@ void apic::init()
 
 uint32_t apic::read(uint32_t regs)
 {
-    return *((volatile uint32_t *)((uint64_t)apic_addr + regs));
+    return *((volatile uint32_t *)((uintptr_t)apic_addr + regs));
 }
 
 void apic::write(uint32_t regs, uint32_t val)
 {
-    *((volatile uint32_t *)(((uint64_t)apic_addr) + regs)) = val;
+    *((volatile uint32_t *)(((uintptr_t)apic_addr) + regs)) = val;
 }
 
 uint32_t apic::IO_get_max_redirect(uint32_t apic_id)
 {
-    uint64_t addr = (table[apic_id]->ioapic_addr);
+    uintptr_t addr = (table[apic_id]->ioapic_addr);
     uint32_t raw_table = (io_read(addr, version_reg));
 
     io_apic_version_table *tables = (io_apic_version_table *)&raw_table;
@@ -212,7 +212,7 @@ void apic::set_raw_redirect(uint8_t vector, uint32_t target_gsi, uint16_t flags,
         end |= (1 << 16);
     }
 
-    end |= (((uint64_t)get_current_cpu(cpu)->lapic_id) << 56);
+    end |= (((uintptr_t)get_current_cpu(cpu)->lapic_id) << 56);
     uint32_t io_reg = (target_gsi - table[io_apic_target]->gsib) * 2 + 16;
 
     io_write(table[io_apic_target]->ioapic_addr, io_reg, (uint32_t)end);

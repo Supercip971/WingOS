@@ -10,12 +10,12 @@ madt::madt()
 }
 uint64_t madt::get_madt_table_lenght()
 {
-    return ((uint64_t)&madt_header->RShead) + madt_header->RShead.Length;
+    return ((uintptr_t)&madt_header->RShead) + madt_header->RShead.Length;
 }
 void madt::log_all()
 {
     MADT_record_table_entry *table = madt_header->MADT_table;
-    while (uint64_t(table) < get_madt_table_lenght())
+    while (uintptr_t(table) < get_madt_table_lenght())
     {
         printf("\n ===================");
         table = (MADT_record_table_entry *)(((uint64_t)table) + table->tlenght);
@@ -86,7 +86,7 @@ void madt::init()
     MADT_record_table_entry *table = madt_header->MADT_table;
     lapic_base = madt_header->lapic;
 
-    uint64_t lbase_addr = lapic_base;
+    uintptr_t lbase_addr = lapic_base;
     lbase_addr /= 4096;
     lbase_addr *= 4096;
 
@@ -103,7 +103,7 @@ MADT_table_IOAPIC **madt::get_madt_ioAPIC()
     MADT_table_IOAPIC **MTIO = (MADT_table_IOAPIC **)malloc(255);
     uint64_t count = 0;
 
-    while (uint64_t(table) < get_madt_table_lenght())
+    while (uintptr_t(table) < get_madt_table_lenght())
     {
         table = (MADT_record_table_entry *)(((uint64_t)table) + table->tlenght);
 
@@ -126,7 +126,7 @@ MADT_table_ISO **madt::get_madt_ISO()
     uint64_t count = 0;
     bool has_one = false;
 
-    while (uint64_t(table) < get_madt_table_lenght())
+    while (uintptr_t(table) < get_madt_table_lenght())
     {
         table = reinterpret_cast<MADT_record_table_entry *>(((uint64_t)table) + table->tlenght);
 

@@ -1,23 +1,23 @@
 #pragma once
-#include <int_value.h>
+#include <stdint.h>
 
 struct InterruptStackFrame
 {
-    uint64_t r15;
-    uint64_t r14;
-    uint64_t r13;
-    uint64_t r12;
-    uint64_t r11;
-    uint64_t r10;
-    uint64_t r9;
-    uint64_t r8;
-    uint64_t rbp;
-    uint64_t rdi;
-    uint64_t rsi;
-    uint64_t rdx;
-    uint64_t rcx;
-    uint64_t rbx;
-    uint64_t rax;
+    uintptr_t r15;
+    uintptr_t r14;
+    uintptr_t r13;
+    uintptr_t r12;
+    uintptr_t r11;
+    uintptr_t r10;
+    uintptr_t r9;
+    uintptr_t r8;
+    uintptr_t rbp;
+    uintptr_t rdi;
+    uintptr_t rsi;
+    uintptr_t rdx;
+    uintptr_t rcx;
+    uintptr_t rbx;
+    uintptr_t rax;
 
     // Contains error code and interrupt number for exceptions
     // Contains syscall number for syscalls
@@ -25,9 +25,9 @@ struct InterruptStackFrame
     uint32_t error_code;
     uint32_t int_no;
     // Interrupt stack frame
-    uint64_t rip;
-    uint64_t cs;
-    uint64_t rflags;
-    uint64_t rsp;
-    uint64_t ss;
+    uintptr_t rip;
+    uintptr_t cs;
+    uintptr_t rflags;
+    uintptr_t rsp;
+    uintptr_t ss;
 } __attribute__((packed));

@@ -21,9 +21,9 @@ void mboot_module::init(stivale_struct *main_struct)
         modules[i] = 0;
     }
 
-    uint64_t at = main_struct->modules;
+    uintptr_t at = main_struct->modules;
 
-    for (int i = 0; i < main_struct->module_count; i++)
+    for (uint64_t i = 0; i < main_struct->module_count; i++)
     {
         modules[i] = reinterpret_cast<stivale_module *>(at);
         at = modules[i]->next;
@@ -33,7 +33,7 @@ void mboot_module::init(stivale_struct *main_struct)
 
 stivale_module *mboot_module::get_fs_module()
 {
-    for (int i = 0; modules[i] != 0; i++)
+    for (uint64_t i = 0; modules[i] != 0; i++)
     {
         if (strncmp("ramdisk", modules[i]->string, 7) == 0)
         {

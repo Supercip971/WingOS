@@ -20,8 +20,8 @@ struct idt_entry
 } __attribute__((packed));
 struct idtr
 {
-    uint16_t size;   // size of the IDT
-    uint64_t offset; // address of the IDT
+    uint16_t size;    // size of the IDT
+    uintptr_t offset; // address of the IDT
 } __attribute__((packed));
 
 void init_idt(void);

@@ -13,6 +13,15 @@
     pour le moment tout ce qui est ici est un test
     for the moment everything here is for test
 */
+
+void test()
+{
+    while (true)
+    {
+        sleep(2);
+        log("kernel", LOG_INFO) << "hey hey";
+    }
+}
 void _start(stivale_struct *bootloader_data)
 {
     log("kernel", LOG_INFO) << "====                ====";
@@ -21,9 +30,13 @@ void _start(stivale_struct *bootloader_data)
 
     log("kernel", LOG_INFO) << "kernel started with " << get_total_memory() << "memory available";
     log("kernel", LOG_INFO) << "memory used : " << get_used_memory();
+    dump_process();
+    int pid = init_process(test, true, "testy", false, -1)->upid;
     while (true)
     {
         sleep(1000);
         log("kernel", LOG_INFO) << "==== KERNEL STARTED ====";
+
+        kill(pid);
     }
 }

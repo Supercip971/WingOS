@@ -10,7 +10,8 @@ enum process_state
     PROCESS_RUNNING = 1,
     PROCESS_WAITING = 2,
     PROCESS_CRASH = 3,
-    PROCESS_NOT_STARTED = 4
+    PROCESS_NOT_STARTED = 4,
+    PROCESS_SHOULD_BE_DEAD = 5
 };
 
 #define MAX_PROCESS_MEMORY_DATA_MAP 64
@@ -127,3 +128,5 @@ inline void yield()
 void sleep(uint64_t count);
 
 void sleep(uint64_t count, uint64_t pid);
+
+void kill(uint64_t pid);

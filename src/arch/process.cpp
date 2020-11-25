@@ -25,7 +25,7 @@ uint64_t last_process = 0;
 uint8_t proc_last_selected_cpu = 0;
 
 lock_type task_lock = {0};
-
+int dying_process_count = 0;
 uint64_t next_upid = 1;
 
 void lock_process()
@@ -57,7 +57,39 @@ void null_process()
         yield();
     }
 }
+void utility_process()
+{
+    asm("sti");
 
+    while (true)
+    {
+        while (dying_process_count == 0)
+        {
+            sleep(100);
+        }
+        for (uint64_t i = 0; i < MAX_PROCESS; i++)
+        {
+            if (process_loaded == true && i == 0) // process 0 is null only after the kernel start
+            {
+                continue;
+            }
+            if (process_array[i].current_process_state == PROCESS_SHOULD_BE_DEAD)
+            {
+                lock((&process_creator_lock));
+                lock_process();
+
+                log("proc", LOG_INFO) << "killing process [" << i << "] : " << process_array[i].process_name;
+                free(process_array[i].global_process_memory);
+                process_array[i].should_be_active = false;
+                process_array[i].current_process_state = PROCESS_AVAILABLE;
+                dying_process_count--;
+                unlock((&process_creator_lock));
+                unlock_process();
+            }
+        }
+        sleep(100);
+    }
+}
 void init_multi_process(func start)
 {
     log("proc", LOG_DEBUG) << "loading multi processing";
@@ -89,6 +121,8 @@ void init_multi_process(func start)
         init_process(null_process, true, "smp1", false, i);
         init_process(null_process, true, "smp2", false, i);
     }
+
+    init_process(utility_process, true, "kproc", false, 0);
 
     process_loaded = true;
 
@@ -498,26 +532,6 @@ process_message *send_message(uintptr_t data_addr, uint64_t data_length, const c
     return nullptr;
 }
 
-void dump_process()
-{
-    lock_process();
-
-    for (int i = 0; i < MAX_PROCESS; i++)
-    {
-        if (process_array[i].current_process_state != PROCESS_AVAILABLE)
-        {
-            log("proc", LOG_DEBUG) << "info for process : " << i;
-            log("proc", LOG_INFO) << "process name     : " << process_array[i].process_name;
-            log("proc", LOG_INFO) << "process state    : " << process_array[i].current_process_state;
-            log("proc", LOG_INFO) << "process cpu      : " << process_array[i].processor_target;
-            log("proc", LOG_INFO) << "process upid     : " << process_array[i].upid;
-            log("proc", LOG_INFO) << "process sleep    : " << process_array[i].sleeping;
-        }
-    }
-
-    unlock_process();
-}
-
 process_message *read_message()
 {
     for (uint64_t i = 0; i < MAX_PROCESS_MESSAGE_QUEUE; i++)
@@ -581,7 +595,6 @@ void set_on_request_service(bool is_ORS)
 {
 
     get_current_cpu()->current_process->is_ORS = is_ORS;
-
     get_current_cpu()->current_process->should_be_active = true;
 }
 
@@ -649,6 +662,7 @@ void set_on_interrupt_process(uint8_t added_int)
 
     log("process", LOG_ERROR) << "no free interrupt entry for process", get_current_cpu()->current_process->process_name;
 }
+
 uint64_t upid_to_kpid(uint64_t upid)
 {
     for (int i = 0; i < MAX_PROCESS; i++)
@@ -707,5 +721,38 @@ void sleep(uint64_t count, uint64_t pid)
     uint64_t kpid = upid_to_kpid(pid);
     lock_process();
     process_array[kpid].sleeping = count;
+    unlock_process();
+}
+
+void dump_process()
+{
+    lock_process();
+    for (int i = 0; i < MAX_PROCESS; i++)
+    {
+        if (process_array[i].current_process_state != PROCESS_AVAILABLE)
+        {
+            log("proc", LOG_DEBUG) << "info for process : " << i;
+            log("proc", LOG_INFO) << "process name     : " << process_array[i].process_name;
+            log("proc", LOG_INFO) << "process state    : " << process_array[i].current_process_state;
+            log("proc", LOG_INFO) << "process cpu      : " << process_array[i].processor_target;
+            log("proc", LOG_INFO) << "process upid     : " << process_array[i].upid;
+            log("proc", LOG_INFO) << "process sleep    : " << process_array[i].sleeping;
+        }
+    }
+    unlock_process();
+}
+
+void kill(uint64_t pid)
+{
+    uint64_t kpid = upid_to_kpid(pid);
+    if (process_array[kpid].current_process_state != PROCESS_WAITING && process_array[kpid].current_process_state != PROCESS_RUNNING)
+    {
+
+        log("proc", LOG_WARNING) << "process " << pid << "is already dead";
+        return;
+    }
+    lock_process();
+    dying_process_count++;
+    process_array[kpid].current_process_state = PROCESS_SHOULD_BE_DEAD;
     unlock_process();
 }

@@ -137,6 +137,7 @@ void start_process()
 
     pci_system::the()->init();
     //   launch_programm("init_fs/memory_service.exe", main_fs_system::the()->main_fs());
+    launch_programm("init_fs/wstart.exe", main_fs_system::the()->main_fs());
     launch_programm("init_fs/console_service.exe", main_fs_system::the()->main_fs());
 
     launch_programm("init_fs/graphic_service.exe", main_fs_system::the()->main_fs());

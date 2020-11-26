@@ -1,0 +1,30 @@
+{
+    "logging": true,
+
+    "//" : "startup_services_type can be all secure minimal nothing",
+    "startup_services_type": "all",
+
+    "startup_services":[
+        {
+            "name": "graphic_service",
+            "enabled": true,
+            "path": "init_fs/graphic_service.exe",
+        },
+        {
+            "name": "background",
+            "enabled": true,
+            "path": "init_fs/background.exe",
+        },
+        {
+            "name": "test2",
+            "enabled": true,
+            "path": "init_fs/test2.exe",
+        },
+        {
+            "name": "test",
+            "enabled": true,
+            "times": 3,
+            "path": "init_fs/test.exe",
+        },
+    ]
+}

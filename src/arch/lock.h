@@ -6,6 +6,7 @@ struct lock_type
 
     const char *file;
     uint64_t line;
+    bool cantforce;
     // you can add more data
 };
 
@@ -14,10 +15,16 @@ extern "C" void asm_spinlock_unlock(volatile uint32_t *lock);
 
 // we put define so we can do
 
-#define lock(a)           \
-    (a)->file = __FILE__; \
-    (a)->line = __LINE__; \
+#define lock(a)             \
+    (a)->file = __FILE__;   \
+    (a)->line = __LINE__;   \
+    (a)->cantforce = false; \
     asm_spinlock_lock(&((a)->data));
 
+#define flock(a)           \
+    (a)->file = __FILE__;  \
+    (a)->line = __LINE__;  \
+    (a)->cantforce = true; \
+    asm_spinlock_lock(&((a)->data));
 #define unlock(a) \
     asm_spinlock_unlock(&((a)->data));

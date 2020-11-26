@@ -361,7 +361,7 @@ uint64_t echfs::get_file_length(const char *path)
 }
 uint8_t *echfs::ech_read_file(const char *path)
 {
-    lock(&main_echfs_lock);
+    flock(&main_echfs_lock);
     log("echfs", LOG_INFO) << "reading file " << path;
     echfs_file_header file_to_read_header = (find_file(path));
     if (file_to_read_header.file_type == 1)

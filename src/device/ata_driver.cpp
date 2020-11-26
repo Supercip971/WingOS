@@ -98,7 +98,7 @@ void ata_driver::irq_handle(uint64_t irq_handle_num)
 lock_type ata_lock = {0};
 void ata_driver::read(uint32_t where, uint32_t count, uint8_t *buffer)
 {
-    lock(&ata_lock);
+    flock(&ata_lock);
     waiting_for_irq = 1;
     ata_write(true, ATA_reg_error_feature, 0);
     ata_write(true, ATA_reg_selector, 0xE0 | 0x40 | ((where >> 24) & 0x0F));

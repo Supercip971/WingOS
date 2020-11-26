@@ -79,7 +79,9 @@ app: $(APP_FILE_CHANGE)
 	@make -C ./app/memory_service all -j12
 	@make -C ./app/console_service all -j12
 	@make -C ./app/background all -j12
+	@make -C ./app/wstart all -j12
 travis_test: 
+	
 	@make clean 
 	@make -C . $(KERNEL_HDD)
 
@@ -116,6 +118,8 @@ $(KERNEL_HDD): $(KERNEL_ELF)
 	limine/limine-install limine/limine.bin $(KERNEL_HDD)
 
 clean:
+	-rm -f app/**.o
+	-rm -f usr_lib/**.o
 	-rm -f $(KERNEL_HDD) $(KERNEL_ELF) $(OBJ)
 all:
 	@make -C . super

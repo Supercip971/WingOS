@@ -450,7 +450,7 @@ int main()
     front_buffer = (sys::pixel *)real_gbuffer_addr;
     screen_width = sys::get_screen_width();
     screen_height = sys::get_screen_height();
-    back_buffer = new sys::pixel[screen_width * screen_height + 32];
+    back_buffer = new sys::pixel[(screen_width + 2) * (screen_height + 2) + 32];
     window_list = new raw_window_data[MAX_WINDOW + 32];
     mouse_on_window = (uint64_t *)sys::sys$get_current_process_global_data(0, 8);
     *mouse_on_window = 0;
@@ -490,7 +490,6 @@ int main()
         draw_mouse(m_x, m_y);
 
         swap_buffer(front_buffer, back_buffer, screen_width * screen_height);
-
         sys::switch_process();
     }
     return 1;

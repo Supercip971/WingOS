@@ -13,10 +13,10 @@ void add_kernel_service(func entry, const char *service_name)
 {
     log("kernel service", LOG_INFO) << "launching service : " << service_name;
 
-    process *service = init_process((func)entry, true, service_name, false, -2);
+    process *service = init_process((func)entry, true, service_name, false, AUTO_SELECT_CPU);
     while (service->kpid == 0)
     {
-        service = init_process((func)entry, true, service_name, false, -2);
+        service = init_process((func)entry, true, service_name, false, AUTO_SELECT_CPU);
     }
 }
 void load_kernel_service()

@@ -154,16 +154,6 @@ bool valid_elf_entry(Elf64_Ehdr *entry)
     return true;
 }
 
-uint64_t get_programm_cpu()
-{
-    last_selected_cpu++;
-    if (last_selected_cpu > smp::the()->processor_count)
-    {
-        last_selected_cpu = 0;
-    }
-    return last_selected_cpu;
-}
-
 void elf64_load_programm_segment(Elf64_Phdr *entry, uint8_t *programm_code, process *target)
 {
     char *temp_copy = (char *)malloc(entry->p_memsz + 4096);
@@ -205,11 +195,7 @@ void launch_programm(const char *path, file_system *file_sys)
         return;
     }
 
-    uint64_t cpu_programm = get_programm_cpu();
-
-    log("prog launcher", LOG_INFO) << "elf programm cpu : " << cpu_programm;
-
-    process *to_launch = init_process((func)programm_header->e_entry, false, path, true, cpu_programm);
+    process *to_launch = init_process((func)programm_header->e_entry, false, path, true, AUTO_SELECT_CPU);
 
     Elf64_Phdr *p_entry = reinterpret_cast<Elf64_Phdr *>((uintptr_t)programm_code + programm_header->e_phoff);
 

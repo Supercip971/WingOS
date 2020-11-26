@@ -139,11 +139,11 @@ void init_multi_process(func start)
 
 uint64_t interpret_cpu_request(uint64_t cpu)
 {
-    if (cpu == -1)
+    if (cpu == CURRENT_CPU)
     {
         return apic::the()->get_current_processor_id();
     }
-    else if (cpu == -2)
+    else if (cpu == AUTO_SELECT_CPU)
     {
         proc_last_selected_cpu++;
 

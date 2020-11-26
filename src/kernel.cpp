@@ -31,7 +31,7 @@ void _start(stivale_struct *bootloader_data)
     log("kernel", LOG_INFO) << "kernel started with " << get_total_memory() << "memory available";
     log("kernel", LOG_INFO) << "memory used : " << get_used_memory();
     dump_process();
-    int pid = init_process(test, true, "testy", false, -1)->upid;
+    int pid = init_process(test, true, "testy", false, CURRENT_CPU)->upid;
     while (true)
     {
         sleep(1000);

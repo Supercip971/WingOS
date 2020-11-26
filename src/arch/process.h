@@ -4,6 +4,10 @@
 #define MAX_PROCESS 64
 #define SLEEP_ALWAYS -1
 #define PROCESS_STACK_SIZE 8192
+
+#define CURRENT_CPU -1
+#define AUTO_SELECT_CPU -2
+
 enum process_state
 {
     PROCESS_AVAILABLE = 0,
@@ -95,7 +99,7 @@ void add_thread_map(process *p, uintptr_t from, uintptr_t to, uint64_t length);
  *  process select the 'least' used cpu
  */
 
-process *init_process(func entry_point, bool start_direct, const char *name, bool user, int cpu_target = -1);
+process *init_process(func entry_point, bool start_direct, const char *name, bool user, int cpu_target = CURRENT_CPU);
 void init_multi_process(func start);
 void dump_process();
 void unlock_process();

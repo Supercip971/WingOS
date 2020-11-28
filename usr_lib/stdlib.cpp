@@ -13,7 +13,7 @@ int abs(int j)
     }
     return j;
 }
-
+#ifdef __SSE__
 double atof(const char *s)
 {
     double result = 0.0;
@@ -70,7 +70,7 @@ double strtod(const char *nptr, char **endptr)
     }
     return res;
 }
-
+#endif
 long long strtoll(const char *nptr, char **endptr, int base)
 {
 

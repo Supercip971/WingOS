@@ -1,6 +1,6 @@
 #include <math.h>
 #include <stdint.h>
-
+#ifdef __SSE__
 double pow(double x, double y)
 {
     // can't do switch on a double
@@ -45,7 +45,6 @@ float powf(float x, float y)
     }
     return res;
 }
-
 #ifdef X87
 long double powl(long double x, long double y)
 {
@@ -152,3 +151,4 @@ double cos(double x)
 {
     return sin(x + PI / 2);
 }
+#endif

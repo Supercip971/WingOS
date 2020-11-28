@@ -25,7 +25,6 @@ public:
     process *current_process;
     uint64_t lapic_id;
     main_page_table *page_table;
-    uint64_t rip_backtrace[32];
 
     uint64_t fpu_data[128] __attribute__((aligned(16)));
     void load_sse(uint64_t *data);

@@ -80,6 +80,7 @@ struct process
     uint8_t interrupt_handle_list[8]; // max 8 interrupt per process
 
     process_buffer pr_buff[3];
+    uint64_t rip_backtrace[32];
 } __attribute__((packed));
 
 struct message_identifier

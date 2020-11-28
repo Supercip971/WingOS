@@ -199,13 +199,16 @@ bool is_error(int intno)
 // backtrace
 void update_backtrace(InterruptStackFrame *stackframe)
 {
-    if (get_current_cpu()->rip_backtrace[32] != stackframe->rip)
+    if (get_current_cpu()->current_process != nullptr)
     {
-        for (int i = 0; i < 31; i++)
+        if (get_current_cpu()->current_process->rip_backtrace[31] != stackframe->rip)
         {
-            get_current_cpu()->rip_backtrace[i] = get_current_cpu()->rip_backtrace[i + 1];
+            for (int i = 0; i < 30; i++)
+            {
+                get_current_cpu()->current_process->rip_backtrace[i] = get_current_cpu()->current_process->rip_backtrace[i + 1];
+            }
+            get_current_cpu()->current_process->rip_backtrace[31] = stackframe->rip;
         }
-        get_current_cpu()->rip_backtrace[32] = stackframe->rip;
     }
 }
 
@@ -225,11 +228,15 @@ void interrupt_error_handle(InterruptStackFrame *stackframe)
 
     log("pic", LOG_ERROR) << "backtrace : ";
 
-    for (size_t i = 0; i < 32; i++)
+    for (int i = 32; i >= 0; i--)
     {
-        if (get_current_cpu()->rip_backtrace[i] != -32)
+        if (get_current_cpu()->current_process != nullptr)
         {
-            log("pic", LOG_ERROR) << "id " << i << " = " << get_current_cpu()->rip_backtrace[i];
+
+            if (get_current_cpu()->current_process->rip_backtrace[i] != 0)
+            {
+                log("pic", LOG_ERROR) << "id " << i << " = " << get_current_cpu()->current_process->rip_backtrace[i];
+            }
         }
     }
 
@@ -253,11 +260,13 @@ extern "C" uintptr_t interrupts_handler(InterruptStackFrame *stackframe)
     update_backtrace(stackframe);
     if (error)
     {
-        while (true)
+        while (error)
             ;
     }
     if (is_error(stackframe->int_no))
     {
+        locker_print.data = 0;
+        print_locker.data = 0;
         interrupt_error_handle(stackframe);
     }
 

@@ -215,7 +215,6 @@ int e1000::send_packet(uint8_t *data, uint16_t length)
 }
 void e1000::irq_handle()
 {
-    com_write_str("\n\nirq\n\n");
     write(E_IMASK, 0x1);
 
     uint32_t status = read(0xc0);

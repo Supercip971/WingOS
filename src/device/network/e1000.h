@@ -1,8 +1,8 @@
 #pragma once
 #include <arch/64bit.h>
+#include <device/network/ethernet_protocol.h>
 #include <device/pci.h>
 #include <stdint.h>
-
 #define E_INTEL_VENDOR 0x8086
 #define E_DEVICE 0x100e
 #define E_DEVICE_I217 0x153a
@@ -92,10 +92,6 @@ enum e1000_TCTL_REGISTERS
 
 #define RX_DESCRIPTOR_COUNT 32
 #define TX_DESCRIPTOR_COUNT 8
-struct mac_address
-{
-    uint8_t mac[6];
-};
 class e1000
 {
     uint8_t bar_t;

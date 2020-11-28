@@ -15,7 +15,7 @@ asm_spinlock_lock:
 
 spin: ; never gonna lock you up never gonna lock you doooown
     inc rax
-    cmp rax, 0xfffff
+    cmp rax, 0xffffff
     je something_is_bad_i_want_to_die
     pause
     test dword [rdi], 1 ; finnaly the lock is not here
@@ -25,9 +25,11 @@ spin: ; never gonna lock you up never gonna lock you doooown
 
 
 something_is_bad_i_want_to_die:
-
+    push rdi
     call something_is_bad_i_want_to_die_higher_level
-    ret
+    pop rdi
+    mov rax, 0
+    jmp spin
 asm_spinlock_unlock:
     lock btr dword [rdi], 0 ; Set the bit to 0
     ret  ; unlocking :D

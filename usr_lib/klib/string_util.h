@@ -6,14 +6,14 @@ namespace sys
     template <class T>
     inline void int_to_string(char *buf, int base, T d)
     {
-        char *p = buf;
+        char *temp_buf = buf;
         char *p1, *p2;
         T ud = d;
         T divisor = 10;
 
         if (base == 'd' && d < 0)
         {
-            *p++ = '-';
+            *temp_buf++ = '-';
             buf++;
             ud = -d;
         }
@@ -24,13 +24,13 @@ namespace sys
         {
             T remainder = ud % divisor;
 
-            *p++ = (remainder < 10) ? remainder + '0' : remainder + 'a' - 10;
+            *temp_buf++ = (remainder < 10) ? remainder + '0' : remainder + 'a' - 10;
         } while (ud /= divisor);
 
-        *p = 0;
+        *temp_buf = 0;
 
         p1 = buf;
-        p2 = p - 1;
+        p2 = temp_buf - 1;
         while (p1 < p2)
         {
             char tmp = *p1;

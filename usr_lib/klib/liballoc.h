@@ -33,7 +33,7 @@ namespace sys
  * \return 0 if the lock was acquired successfully. Anything else is
  * failure.
  */
-        static inline int liballoc_lock()
+        inline int liballoc_lock()
         {
             return 0;
         }
@@ -44,7 +44,7 @@ namespace sys
  *
  * \return 0 if the lock was successfully released.
  */
-        static inline int liballoc_unlock()
+        inline int liballoc_unlock()
         {
             return 0;
         }
@@ -56,7 +56,7 @@ namespace sys
  * \return NULL if the pages were not allocated.
  * \return A pointer to the allocated memory.
  */
-        static void *liballoc_alloc(size_t s)
+        inline void *liballoc_alloc(size_t s)
         {
 
             return (void *)(service_pmm_malloc(s)); // never gonna cast you up
@@ -70,7 +70,7 @@ namespace sys
  *
  * \return 0 if the memory was successfully freed.
  */
-        static int liballoc_free(void *s, size_t d)
+        inline int liballoc_free(void *s, size_t d)
         {
             service_pmm_free(s, d);
             return 0; // free everytime

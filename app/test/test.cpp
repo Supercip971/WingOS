@@ -23,12 +23,7 @@ int main()
 
     button.set_click_callback(click);
     test_window.add_widget((gui::widget *)&button);
-    sys::process_buffer pb(sys::get_process_pid("init_fs/graphic_service.exe"), sys::process_buffer_type::STDOUT);
-    int pb_lenth = pb.get_length();
-    char *buffer = new char[pb_lenth + 2];
-    buffer[pb_lenth + 1] = 0;
-    pb.next((uint8_t *)buffer, pb_lenth);
-    printf("| %s | ", buffer);
+
     return test_window.start();
     return 0;
 }

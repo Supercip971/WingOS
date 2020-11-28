@@ -7,10 +7,10 @@ namespace gui
     class widget
     {
     protected:
-        uint64_t widget_width;
-        uint64_t widget_height;
-        uint64_t widget_x;
-        uint64_t widget_y;
+        int64_t widget_width;
+        int64_t widget_height;
+        int64_t widget_x;
+        int64_t widget_y;
         bool widget_should_draw = false;
         bool is_position_inside_widget(const sys::pos pos);
 

@@ -60,6 +60,7 @@ __attribute__((optimize("O3"))) void stackblur(unsigned char *src,  ///< input i
                                                unsigned int minY,
                                                unsigned int maxY)
 {
+    (void)h;
     unsigned int x, y, xp, yp, i;
     unsigned int sp;
     unsigned int stack_start;
@@ -134,7 +135,6 @@ __attribute__((optimize("O3"))) void stackblur(unsigned char *src,  ///< input i
             dst_ptr = src + y * w4 + (minX * 4);           // img.pix_ptr(0, y);
             for (x = minX; x < maxX; x++)
             {
-                unsigned int alpha = dst_ptr[3];
                 dst_ptr[0] = (sum_r * mul_sum) >> shr_sum;
                 dst_ptr[1] = (sum_g * mul_sum) >> shr_sum;
                 dst_ptr[2] = (sum_b * mul_sum) >> shr_sum;
@@ -233,7 +233,6 @@ __attribute__((optimize("O3"))) void stackblur(unsigned char *src,  ///< input i
             // img.pix_ptr(x, 0);
             for (y = minY; y < maxY; y++)
             {
-                unsigned int alpha = dst_ptr[3];
                 dst_ptr[0] = (sum_r * mul_sum) >> shr_sum;
                 dst_ptr[1] = (sum_g * mul_sum) >> shr_sum;
                 dst_ptr[2] = (sum_b * mul_sum) >> shr_sum;

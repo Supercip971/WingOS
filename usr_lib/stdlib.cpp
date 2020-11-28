@@ -46,11 +46,7 @@ double atof(const char *s)
 
 double strtod(const char *nptr, char **endptr)
 {
-    double current_num;
     const char *s = nptr;
-    const char *end;
-    char *end_buffer;
-    int current_error;
     while (*s == ' ')
     {
         s++;
@@ -79,10 +75,7 @@ long long strtoll(const char *nptr, char **endptr, int base)
 {
 
     const char *s = nptr;
-    const char *end;
     long long ret_value = 0;
-    char *end_buffer;
-    int current_error;
     bool is_neg = false;
 
     while (*s == ' ')

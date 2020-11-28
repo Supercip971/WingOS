@@ -230,6 +230,7 @@ uint64_t get_window_position(sys::graphic_system_service_protocol *request, uint
     }
     raw_window_data &target = window_list[request->get_request.window_handler_code];
     sys::raw_pos pos = {0};
+
     pos.rpos.x = target.px;
     pos.rpos.y = target.py;
 
@@ -463,7 +464,6 @@ int main()
     printf("g buffer width  : %x \n", screen_width);
     printf("g buffer height : %x \n", screen_height);
 
-    uint32_t soff = 0;
     while (true)
     {
         // read all message

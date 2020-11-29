@@ -113,9 +113,16 @@ namespace sys
     {
         const uint64_t str_length = strlen(str);
         uint64_t cur_x = x;
+        uint64_t cur_y = y;
         for (uint64_t i = 0; i < str_length; i++)
         {
-            draw_basic_char(cur_x, y, str[i] & 0x7F, color);
+            if (str[i] == '\n')
+            {
+                cur_x = x;
+                cur_y += 8;
+                continue;
+            }
+            draw_basic_char(cur_x, cur_y, str[i] & 0x7F, color);
             cur_x += 8;
         }
     }

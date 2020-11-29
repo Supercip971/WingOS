@@ -35,7 +35,7 @@ extern "C"
  */
     static inline int liballoc_lock()
     {
-        lock(&liballoc_locker);
+        flock(&liballoc_locker);
         return 0;
     }
 

@@ -18,7 +18,7 @@ GET_PROCESS_GLOBAL_DATA         = 4        // get process global data, if arg1 (
 the user app communicate with the kernel threw kernel service : 
     - graphic_buffer_service
     - kernel_process_service
-    - memory_serrvice
+    - memory_service
     - print_service // may be changed
     - ps2_device_service
     - time_service
@@ -34,7 +34,7 @@ and some service are called ORS (On Request Service)
 
 ORS are only active when they receive a message.
 
-for building WingOS go to Build_guide.md
+for building WingOS go to Build_guide.md <3
 ## Implemented things :
  - com
  - gdt
@@ -56,6 +56,8 @@ for building WingOS go to Build_guide.md
  - process message
  - little gui system
  - ps2 mouse driver
+ - basic e1000 driver
+ - basic rtl8139 driver
  - \[insert something here]
  
  

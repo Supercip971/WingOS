@@ -177,7 +177,7 @@ void elf64_load_entry(Elf64_Phdr *entry, uint8_t *programm_code, process *target
     }
 }
 
-void launch_programm(const char *path, file_system *file_sys)
+uint64_t launch_programm(const char *path, file_system *file_sys)
 {
 
     log("prog launcher", LOG_DEBUG) << "launching programm : " << path;
@@ -185,14 +185,14 @@ void launch_programm(const char *path, file_system *file_sys)
 
     if (programm_code == nullptr)
     {
-        return;
+        return -1;
     }
 
     Elf64_Ehdr *programm_header = reinterpret_cast<Elf64_Ehdr *>(programm_code);
     if (!valid_elf_entry(programm_header))
     {
         log("prog launcher", LOG_ERROR) << "not valid elf64 entry";
-        return;
+        return -1;
     }
 
     process *to_launch = init_process((func)programm_header->e_entry, false, path, true, AUTO_SELECT_CPU);
@@ -205,4 +205,5 @@ void launch_programm(const char *path, file_system *file_sys)
     }
 
     to_launch->current_process_state = process_state::PROCESS_WAITING;
+    return to_launch->upid;
 }

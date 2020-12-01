@@ -1,5 +1,6 @@
 #include <arch/mem/memory_manager.h>
 #include <arch/process.h>
+#include <arch/programm_launcher.h>
 #include <kernel.h>
 #include <kernel_service/kernel_process_service.h>
 #include <kernel_service/kernel_service.h>
@@ -81,7 +82,10 @@ void kernel_process_service()
                 sleep(prot->sleep_counter, msg->from_pid);
                 msg->response = 1;
                 break;
+            case LAUNCH_PROGRAMM:
 
+                msg->response = launch_programm(prot->lnp.path, main_fs_system::the()->main_fs());
+                break;
             default:
                 log("kernel_process_service", LOG_ERROR) << "invalid request id : " << (uint64_t)prot->type;
                 msg->response = -2;

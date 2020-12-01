@@ -26,12 +26,21 @@ struct get_process_buffer
     uint64_t length_to_read;
     uint64_t where;
 };
+struct launch_new_programm
+{
+    char path[128];
+    // not usable for the moment :/
+    int argc;
+    char **argv; // can't use raw data
+};
+
 enum process_request_id
 {
     GET_PROCESS_PID = 0,
     SET_CURRENT_PROCESS_AS_SERVICE = 1,
     GET_PROCESS_BUFFER = 2,
-    PROCESS_SLEEP = 3
+    PROCESS_SLEEP = 3,
+    LAUNCH_PROGRAMM = 4,
 };
 
 struct process_request
@@ -44,6 +53,7 @@ struct process_request
         set_current_process_as_service scpas;
         get_process_buffer gpb;
         uint64_t sleep_counter; // use like that instead of another struct
+        launch_new_programm lnp;
     };
 } __attribute__((packed));
 

@@ -47,4 +47,13 @@ namespace sys
         pr.sleep_counter = time;
         uint64_t result = sys::process_message("kernel_process_service", (uint64_t)&pr, sizeof(pr)).read();
     }
+
+    uint64_t start_programm(const char *path)
+    {
+
+        process_request pr = {0};
+        pr.type = LAUNCH_PROGRAMM;
+        memcpy(pr.lnp.path, path, strlen(path) + 1);
+        return sys::process_message("kernel_process_service", (uint64_t)&pr, sizeof(pr)).read();
+    }
 } // namespace sys

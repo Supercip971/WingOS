@@ -197,21 +197,42 @@ bool is_error(int intno)
 }
 
 // backtrace
+
+void update_backtrace_array(InterruptStackFrame *stackframe, uint64_t *array)
+{
+
+    if (array[31] != stackframe->rip)
+    {
+        for (int i = 0; i < 31; i++)
+        {
+            array[i] = array[i + 1];
+        }
+        array[31] = stackframe->rip;
+    }
+}
 void update_backtrace(InterruptStackFrame *stackframe)
 {
     if (get_current_cpu()->current_process != nullptr)
     {
-        if (get_current_cpu()->current_process->rip_backtrace[31] != stackframe->rip)
+        update_backtrace_array(stackframe, get_current_cpu()->current_process->rip_backtrace);
+        update_backtrace_array(stackframe, get_current_cpu()->local_backtrace);
+    }
+}
+void dump_backtrace(const char *msg, uint64_t *array)
+{
+    log("pic", LOG_ERROR) << "backtrace for : " << msg;
+    for (int i = 32; i >= 0; i--)
+    {
+        if (array != nullptr)
         {
-            for (int i = 0; i < 30; i++)
+
+            if (array[i] != 0)
             {
-                get_current_cpu()->current_process->rip_backtrace[i] = get_current_cpu()->current_process->rip_backtrace[i + 1];
+                log("pic", LOG_ERROR) << "id " << i << " = " << array[i];
             }
-            get_current_cpu()->current_process->rip_backtrace[31] = stackframe->rip;
         }
     }
 }
-
 bool error = false;
 void interrupt_error_handle(InterruptStackFrame *stackframe)
 {
@@ -227,18 +248,8 @@ void interrupt_error_handle(InterruptStackFrame *stackframe)
     printf("\n");
 
     log("pic", LOG_ERROR) << "backtrace : ";
-
-    for (int i = 32; i >= 0; i--)
-    {
-        if (get_current_cpu()->current_process != nullptr)
-        {
-
-            if (get_current_cpu()->current_process->rip_backtrace[i] != 0)
-            {
-                log("pic", LOG_ERROR) << "id " << i << " = " << get_current_cpu()->current_process->rip_backtrace[i];
-            }
-        }
-    }
+    dump_backtrace("current process", get_current_cpu()->current_process->rip_backtrace);
+    dump_backtrace("current cpu", get_current_cpu()->local_backtrace);
 
     if (get_current_cpu()->current_process != nullptr)
     {

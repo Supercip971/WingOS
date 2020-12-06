@@ -7,8 +7,6 @@
 
 #ifdef X64
 #define STACK_SIZE 8192
-static char stack[STACK_SIZE] = {0};
-static uintptr_t bootdat = 0;
 extern stivale_struct boot_loader_data_copy;
 inline void outb(uint16_t port, uint8_t value)
 {

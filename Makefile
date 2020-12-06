@@ -25,6 +25,7 @@ CHARDFLAGS := $(CFLAGS)               \
         -fno-pic                       \
         -no-pie \
         -m64 \
+		-Wall \
 		-Werror \
         -O3 \
         -mcmodel=kernel \

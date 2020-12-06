@@ -26,4 +26,5 @@ struct idtr
 
 void init_idt(void);
 
+void dumpregister(InterruptStackFrame *stck);
 void add_irq_handler(irq_handler_func func, unsigned int irq_target);

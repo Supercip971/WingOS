@@ -17,7 +17,7 @@ public:
     void init();
     void init_cpu(int apic, int id);
 
-    int processor_count = 1;
+    uint32_t processor_count = 1;
     // we need to do the APIC
     static smp *the();
 

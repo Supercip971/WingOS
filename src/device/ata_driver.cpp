@@ -112,7 +112,6 @@ void ata_driver::read(uint32_t where, uint32_t count, uint8_t *buffer)
 
     uint32_t new_count = count;
     uint32_t off = 0;
-    uint64_t wait_time = 0;
     while (new_count-- > 0)
     {
         uint8_t status = ata_read(true, ATA_reg_command_status);

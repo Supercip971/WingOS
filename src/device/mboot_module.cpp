@@ -16,7 +16,7 @@ void mboot_module::init(stivale_struct *main_struct)
     log("mboot", LOG_DEBUG) << "loading mboot mudules";
     log("mboot", LOG_INFO) << "mboot module count" << main_struct->module_count;
 
-    for (int i = 0; i < main_struct->module_count + 2; i++)
+    for (uint64_t i = 0; i < main_struct->module_count + 2; i++)
     {
         modules[i] = 0;
     }

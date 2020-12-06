@@ -60,7 +60,6 @@ char *elf_to_readable_string(const char *string)
     uint64_t temp_idx = 0;
     uint64_t cur_temp_idx = 0;
     bool first_d = false;
-    bool should_continue = 0;
     if (strncmp(string, "_Z", 2) == 0)
     {
         while (isdigit(string[temp_idx]) == false)
@@ -81,7 +80,7 @@ char *elf_to_readable_string(const char *string)
                 temp_idx++;
             }
             //  memcpy(temp + cur_temp_idx, string + temp_idx, string_to_read_length);
-            for (int i = 0; i < string_to_read_length; i++)
+            for (uint64_t i = 0; i < string_to_read_length; i++)
             {
                 temp[cur_temp_idx++] = string[temp_idx++];
             }
@@ -121,7 +120,7 @@ void read_elf_section_header(uint8_t *data)
         {
             Elf64_Sym *entry = reinterpret_cast<Elf64_Sym *>(data + p_entry[table_entry].sh_offset);
 
-            for (int64_t sym_entry_idx = 0; sym_entry_idx < p_entry[table_entry].sh_size / sizeof(Elf64_Sym); sym_entry_idx++)
+            for (uint64_t sym_entry_idx = 0; sym_entry_idx < p_entry[table_entry].sh_size / sizeof(Elf64_Sym); sym_entry_idx++)
             {
                 log("prog launcher", LOG_INFO) << "[sht symtab]" << sym_entry_idx
                                                << " name : " << entry[sym_entry_idx].st_name;

@@ -19,7 +19,7 @@ void hpet::init_hpet()
     uint64_t clock_period = temporary_check >> 32;
     uint64_t freq = 1000000000000000 / clock_period;
 
-    log("hpet", LOG_INFO) << "hpet frequency", freq;
+    log("hpet", LOG_INFO) << "hpet frequency" << freq;
 
     printf("HPET frequency = %x \n", freq);
 

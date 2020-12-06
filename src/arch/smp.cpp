@@ -83,7 +83,7 @@ void smp::init()
         log("smp", LOG_ERROR) << "too much processor count we will use only " << max_cpu - 1;
     }
 
-    for (int i = 0; i < processor_count; i++)
+    for (uint64_t i = 0; i < processor_count; i++)
     {
         log("smp", LOG_INFO) << "set up processor " << mt_lapic[i]->processor_id;
         if (apic::the()->get_current_processor_id() != mt_lapic[i]->processor_id)
@@ -102,7 +102,7 @@ void smp::init_cpu_trampoline()
     uint64_t trampoline_len = (uintptr_t)&trampoline_end - (uintptr_t)&trampoline_start;
     map_page(0, 0, SMP_MAP_PAGE_FLAGS);
 
-    for (int i = 0; i < (trampoline_len / 4096) + 2; i++)
+    for (uint64_t i = 0; i < (trampoline_len / 4096) + 2; i++)
     {
         map_page(TRAMPOLINE_START + (i * 4096), TRAMPOLINE_START + (i * 4096), SMP_MAP_PAGE_FLAGS);
     }

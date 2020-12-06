@@ -83,7 +83,7 @@ void madt::init()
 
     madt_header = reinterpret_cast<MADT_head *>(madt_address);
 
-    MADT_record_table_entry *table = madt_header->MADT_table;
+    //  MADT_record_table_entry *table = madt_header->MADT_table;
     lapic_base = madt_header->lapic;
 
     uintptr_t lbase_addr = lapic_base;

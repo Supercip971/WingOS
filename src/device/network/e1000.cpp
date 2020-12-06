@@ -178,15 +178,13 @@ void e1000::start()
 void e1000::handle_packet_reception()
 {
     uint16_t old_cursor;
-    bool got_it = false;
 
     while (rx_descriptor[rx_current_buf]->status & 0x1)
     {
-        got_it = true;
 
-        uint8_t *temp_buffer = (uint8_t *)rx_descriptor[rx_current_buf]->address;
+        //        uint8_t *temp_buffer = (uint8_t *)rx_descriptor[rx_current_buf]->address;
 
-        uint16_t length = rx_descriptor[rx_current_buf]->length;
+        //      uint16_t length = rx_descriptor[rx_current_buf]->length;
 
         // put your frickin packet in the frickin stack
 
@@ -239,6 +237,7 @@ void e1000::turn_on_int()
 }
 void e1000_int_handler(unsigned int v)
 {
+    (void)v;
     e1000::the()->irq_handle();
 }
 void e1000::init(pci_device *dev, uint8_t func)
@@ -258,7 +257,7 @@ void e1000::init(pci_device *dev, uint8_t func)
 
         log("e1000", LOG_INFO) << "e1000 is mm" << mm_address;
         log("e1000", LOG_INFO) << "e1000 is length" << d.size;
-        for (int i = 0; i < d.size / PAGE_SIZE + 2; i++)
+        for (uint64_t i = 0; i < d.size / PAGE_SIZE + 2; i++)
         {
             map_page(mm_to_map + 4096 * i, mm_to_map + 4096 * i, 0x03);
         }

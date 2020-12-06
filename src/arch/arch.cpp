@@ -30,6 +30,8 @@
 #include <kernel_service/kernel_service.h>
 #include <logging.h>
 
+static char stack[STACK_SIZE] = {0};
+static uintptr_t bootdat = 0;
 __attribute__((section(".stivalehdr"), used))
 stivale_header header = {.stack = (uintptr_t)stack + (sizeof(char) * STACK_SIZE),
                          .flags = 1,
@@ -42,13 +44,14 @@ stivale_struct boot_loader_data_copy;
 
 void start_process();
 
-//  ____    __    ____  __  .__   __.   _______      ______        _______.
+/* ____    __    ____  __  .__   __.   _______      ______        _______.
 //  \   \  /  \  /   / |  | |  \ |  |  /  _____|    /  __  \      /       |
 //   \   \/    \/   /  |  | |   \|  | |  |  __     |  |  |  |    |   (----`
 //    \            /   |  | |  . `  | |  | |_ |    |  |  |  |     \   \
 //     \    /\    /    |  | |  |\   | |  |__| |    |  `--'  | .----)   |
 //      \__/  \__/     |__| |__| \__|  \______|     \______/  |_______/
 //
+*/
 
 extern "C" void kernel_start(stivale_struct *bootloader_data)
 {

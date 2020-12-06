@@ -16,7 +16,7 @@
 #include <utility.h>
 
 bool cpu_wait = false;
-
+process *process_array = nullptr;
 int process_locked = 1;
 bool process_loaded = false;
 
@@ -238,7 +238,7 @@ void init_process_buffers(process *to_init)
     }
 }
 
-process *init_process(func entry_point, bool start_direct, const char *name, bool user, int cpu_target)
+process *init_process(func entry_point, bool start_direct, const char *name, bool user, uint64_t cpu_target)
 {
     lock((&process_creator_lock));
     process *process_to_add = find_usable_process();
@@ -249,7 +249,7 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
 
     bool added_pid = false;
 
-    if (get_pid_from_process_name(name) != -1)
+    if (get_pid_from_process_name(name) != (uint64_t)-1)
     {
         log("proc", LOG_INFO) << "process with name already exist so add pid at the end";
         added_pid = true;
@@ -385,7 +385,7 @@ void send_switch_process_to_all_cpu()
 {
     if (apic::the()->get_current_processor_id() == 0)
     {
-        for (int i = 0; i <= smp::the()->processor_count; i++)
+        for (uint32_t i = 0; i <= smp::the()->processor_count; i++)
         {
             if (i != apic::the()->get_current_processor_id())
             {
@@ -616,7 +616,7 @@ uint64_t get_process_global_data_copy(uint64_t offset, const char *process_name)
     uint64_t pid = get_pid_from_process_name(process_name);
 
     uint64_t kpid = upid_to_kpid(pid);
-    if (kpid == -1)
+    if (kpid == (uint64_t)-1)
     {
         log("process", LOG_ERROR) << "get global data copy, trying to get a non existant process : " << process_name;
         return -1;

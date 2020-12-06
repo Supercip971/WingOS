@@ -3,8 +3,9 @@
 #include <device/local_data.h>
 #include <logging.h>
 #include <syscall.h>
+lock_type lck_syscall = {0};
 typedef uint64_t (*syscall_functions)(uint64_t syscall_id, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5);
-
+InterruptStackFrame *stakframe_testing;
 uint64_t sys$null(uint64_t arg1, uint64_t arg2)
 {
     //  log("syscall", LOG_INFO) << "receive null syscall with arg1 : " << arg1 << "arg 2 : " << arg2;
@@ -12,7 +13,12 @@ uint64_t sys$null(uint64_t arg1, uint64_t arg2)
 }
 process_message *sys$send_message(uintptr_t data_addr, uint64_t data_length, const char *to_process)
 {
-    return send_message(data_addr, data_length, to_process);
+    auto res = send_message(data_addr, data_length, to_process);
+    if (res == nullptr)
+    {
+        dumpregister(stakframe_testing);
+    };
+    return res;
 }
 process_message *sys$read_message()
 {
@@ -44,7 +50,7 @@ void init_syscall()
 {
     log("syscall", LOG_DEBUG) << "loading syscall";
 }
-uint64_t syscall(uint64_t syscall_id, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5)
+uint64_t syscall(uint64_t syscall_id, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5, InterruptStackFrame *stackframe)
 {
     if (syscall_id > syscalls_length)
     {
@@ -54,6 +60,7 @@ uint64_t syscall(uint64_t syscall_id, uint64_t arg1, uint64_t arg2, uint64_t arg
     else
     {
         flock(&lck_syscall);
+        stakframe_testing = stackframe;
         //  log("syscall", LOG_INFO) << "syscall " << syscall_id << "from : " << get_current_cpu()->current_process->process_name;
         uint64_t (*func)(uint64_t, ...) = reinterpret_cast<uint64_t (*)(uint64_t, ...)>(syscalls[syscall_id]);
 

@@ -31,7 +31,6 @@ void PIT::init_PIT()
 
 void PIT::Pwait(uint16_t ms)
 {
-    uint16_t start_counter = read_pit_counter();
     outb(0x43, 0x30);
     uint16_t wait_val = PIT_START_FREQUENCY / (ms * 1000);
     uint8_t l = (uint8_t)(wait_val & 0xFF);

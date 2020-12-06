@@ -22,7 +22,7 @@ inline void *memset(void *data, const uint8_t value,
     return data;
 }
 
-inline void *memcpy(void *dst, const void *src, int64_t len)
+inline void *memcpy(void *dst, const void *src, uint64_t len)
 {
     char *dst8 = reinterpret_cast<char *>(dst);
     const char *src8 = reinterpret_cast<const char *>(src);

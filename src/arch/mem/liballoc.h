@@ -33,7 +33,7 @@ extern "C"
  * \return 0 if the lock was acquired successfully. Anything else is
  * failure.
  */
-    static inline int liballoc_lock()
+    inline int liballoc_lock()
     {
         flock(&liballoc_locker);
         return 0;
@@ -45,7 +45,7 @@ extern "C"
  *
  * \return 0 if the lock was successfully released.
  */
-    static inline int liballoc_unlock()
+    inline int liballoc_unlock()
     {
         unlock(&liballoc_locker);
         return 0;
@@ -58,7 +58,7 @@ extern "C"
  * \return NULL if the pages were not allocated.
  * \return A pointer to the allocated memory.
  */
-    static void *liballoc_alloc(size_t s)
+    inline void *liballoc_alloc(size_t s)
     {
         return (void *)((uint64_t)pmm_alloc_fast(s)); // never gonna cast you up
     }
@@ -71,7 +71,7 @@ extern "C"
  *
  * \return 0 if the memory was successfully freed.
  */
-    static int liballoc_free(void *s, size_t d)
+    inline int liballoc_free(void *s, size_t d)
     {
         pmm_free((void *)(((uint64_t)s)), d);
         return 0; // free everytime

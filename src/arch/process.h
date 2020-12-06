@@ -2,11 +2,11 @@
 #include <arch/64bit.h>
 #include <int_value.h>
 #define MAX_PROCESS 64
-#define SLEEP_ALWAYS -1
+#define SLEEP_ALWAYS ((uint64_t)-1)
 #define PROCESS_STACK_SIZE 8192
 
-#define CURRENT_CPU -1
-#define AUTO_SELECT_CPU -2
+#define CURRENT_CPU ((uint64_t)-1)
+#define AUTO_SELECT_CPU ((uint64_t)-2)
 
 enum process_state
 {
@@ -89,7 +89,7 @@ struct message_identifier
     uint16_t mid; // message_id
 } __attribute__((packed));
 
-static process *process_array = nullptr;
+extern process *process_array;
 // TODO: make a get_current_process() function
 typedef void (*func)();
 void add_thread_map(process *p, uintptr_t from, uintptr_t to, uint64_t length);
@@ -100,7 +100,7 @@ void add_thread_map(process *p, uintptr_t from, uintptr_t to, uint64_t length);
  *  process select the 'least' used cpu
  */
 
-process *init_process(func entry_point, bool start_direct, const char *name, bool user, int cpu_target = CURRENT_CPU);
+process *init_process(func entry_point, bool start_direct, const char *name, bool user, uint64_t cpu_target = CURRENT_CPU);
 void init_multi_process(func start);
 void dump_process();
 void unlock_process();

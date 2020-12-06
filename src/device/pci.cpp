@@ -354,7 +354,7 @@ pci_bar_data pci_device::get_bar(uint64_t id, uint8_t function)
     pci_bar_data ret;
     uint32_t value = read_dword(function, target);
     uint32_t base = 0;
-    uint32_t type = value & 0b111;
+    //uint32_t type = value & 0b111;
 
     if ((value & 0b0111) == 0b0110)
     {

@@ -10,7 +10,7 @@ uint64_t process_buffer_read(process_request *request)
     if (request->gpb.get_buffer_length)
     {
         uint64_t target = upid_to_kpid(request->gpb.pid_target);
-        if (target != -1 && request->gpb.buffer_type <= 3)
+        if (target != (uint64_t)-1 && request->gpb.buffer_type <= 3)
         {
             process_buffer *buf = &process_array[target].pr_buff[request->gpb.buffer_type];
             return buf->length;
@@ -24,7 +24,7 @@ uint64_t process_buffer_read(process_request *request)
     {
         uint64_t target = upid_to_kpid(request->gpb.pid_target);
 
-        if (target != -1 && request->gpb.buffer_type <= 3)
+        if (target != (uint64_t)-1 && request->gpb.buffer_type <= 3)
         {
             process_buffer *buf = &(process_array[target].pr_buff[request->gpb.buffer_type]);
             if (request->gpb.where > buf->length)

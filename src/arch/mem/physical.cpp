@@ -81,7 +81,7 @@ uint64_t pmm_find_free(uint64_t lenght)
 
 uint64_t pmm_find_free_fast(uint64_t lenght)
 {
-    int lenght_found = 0;
+    uint64_t lenght_found = 0;
     uint64_t result = 0;
     // find bitmap base
     for (uint64_t i = last_free_byte; i < pmm_length; i++)

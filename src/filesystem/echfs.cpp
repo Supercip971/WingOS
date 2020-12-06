@@ -94,13 +94,13 @@ void echfs::init(uint64_t start_sector, uint64_t sector_count)
     log("echfs", LOG_INFO) << "dir size              : " << sizeof(echfs_file_header);
     log("echfs", LOG_INFO) << "total dir count       : " << (header.main_directory_length * header.block_length) / sizeof(echfs_file_header);
 
-    uint64_t int64_per_sector = 512 / sizeof(uint64_t);
-    uint64_t echfs_alloc_table = 16;
+    // uint64_t int64_per_sector = 512 / sizeof(uint64_t);
+    // uint64_t echfs_alloc_table = 16;
 
     main_dir_start = ((header.block_count * sizeof(uint64_t) + header.block_length - 1) / header.block_length) + 16;
     uint64_t start_main_dir = ((header.block_count * sizeof(uint64_t) + header.block_length - 1) / header.block_length) + 16;
     log("echfs", LOG_INFO) << "end of allocation bloc : " << start_main_dir;
-    uint64_t entry = 0;
+    // uint64_t entry = 0;
 
     uint64_t entry_t = 0;
     while (true)
@@ -173,7 +173,7 @@ echfs_file_header echfs::get_directory_entry(const char *name, uint64_t forced_p
 
     uint64_t *temporary_buf = (uint64_t *)malloc(header.block_length);
 
-    uint64_t current_entry = 0;
+    //  uint64_t current_entry = 0;
     uint64_t second_check_length = header.block_length / sizeof(echfs_file_header);
     for (uint64_t i = 0; i < header.main_directory_length; i++)
     {
@@ -184,7 +184,7 @@ echfs_file_header echfs::get_directory_entry(const char *name, uint64_t forced_p
             echfs_file_header *cur_header = reinterpret_cast<echfs_file_header *>((uint64_t)temporary_buf + (j * sizeof(echfs_file_header)));
             if (strncmp(cur_header->file_name, name, name_length) == 0)
             {
-                if (forced_parent != -1)
+                if (forced_parent != (uint64_t)-1)
                 {
                     if (cur_header->parent_id == forced_parent)
                     {
@@ -219,7 +219,6 @@ uint64_t echfs::get_simple_file(const char *name, uint64_t forced_parent)
 
     uint64_t *temporary_buf = (uint64_t *)malloc(header.block_length);
 
-    uint64_t current_entry = 0;
     uint64_t second_check_length = header.block_length / sizeof(echfs_file_header);
     for (uint64_t i = 0; i < header.main_directory_length; i++)
     {
@@ -230,7 +229,7 @@ uint64_t echfs::get_simple_file(const char *name, uint64_t forced_parent)
             echfs_file_header *cur_header = reinterpret_cast<echfs_file_header *>((uint64_t)another_buffer + (j * sizeof(echfs_file_header)));
             if (strncmp(cur_header->file_name, name, name_length) == 0)
             {
-                if (forced_parent != -1)
+                if (forced_parent != (uint64_t)-1)
                 {
                     if (cur_header->parent_id == forced_parent)
                     {
@@ -275,7 +274,7 @@ echfs_file_header echfs::find_file(const char *path)
 
     memzero(buffer_temp, 255);
     bool is_end = false;
-    echfs_file_header current_header;
+    // echfs_file_header current_header;
 
     uint64_t current_parent = 0xffffffffffffffff;
     uint64_t last_buffer_temp_used_length = 255;
@@ -356,7 +355,7 @@ uint64_t echfs::get_file_length(const char *path)
 {
     echfs_file_header file_to_read_header = (find_file(path));
 
-    uint64_t size_to_read = file_to_read_header.size;
+    //  uint64_t size_to_read = file_to_read_header.size;
     return file_to_read_header.size;
 }
 uint8_t *echfs::ech_read_file(const char *path)

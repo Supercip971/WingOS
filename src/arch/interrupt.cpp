@@ -212,24 +212,18 @@ void update_backtrace_array(InterruptStackFrame *stackframe, uint64_t *array)
 }
 void update_backtrace(InterruptStackFrame *stackframe)
 {
-    if (get_current_cpu()->current_process != nullptr)
-    {
-        update_backtrace_array(stackframe, get_current_cpu()->current_process->rip_backtrace);
-        update_backtrace_array(stackframe, get_current_cpu()->local_backtrace);
-    }
+    update_backtrace_array(stackframe, get_current_cpu()->current_process->rip_backtrace);
+    update_backtrace_array(stackframe, get_current_cpu()->local_backtrace);
 }
 void dump_backtrace(const char *msg, uint64_t *array)
 {
     log("pic", LOG_ERROR) << "backtrace for : " << msg;
-    for (int i = 32; i >= 0; i--)
+    for (int i = 31; i >= 0; i--)
     {
         if (array != nullptr)
         {
 
-            if (array[i] != 0)
-            {
-                log("pic", LOG_ERROR) << "id " << i << " = " << array[i];
-            }
+            log("pic", LOG_ERROR) << "id " << i << " = " << array[i];
         }
     }
 }
@@ -284,7 +278,6 @@ extern "C" uintptr_t interrupts_handler(InterruptStackFrame *stackframe)
     if (stackframe->int_no == 0x7f)
     {
         stackframe->rax = syscall(stackframe->rax, stackframe->rbx, stackframe->rcx, stackframe->rdx, stackframe->rsi, stackframe->rdi, stackframe); // don't use r11 for future use with x64 syscalls
-        apic::the()->EOI();
     }
     else if (stackframe->int_no == 32)
     {

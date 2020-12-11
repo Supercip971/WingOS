@@ -17,6 +17,8 @@ process_message *sys$send_message(uintptr_t data_addr, uint64_t data_length, con
     if (res == nullptr)
     {
         dumpregister(stakframe_testing);
+        log("syscall", LOG_ERROR) << "in process" << get_current_cpu()->current_process->process_name;
+        dump_backtrace("back", get_current_cpu()->current_process->rip_backtrace);
     };
     return res;
 }

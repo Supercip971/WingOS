@@ -17,7 +17,6 @@ void click(uint64_t t)
 }
 int main()
 {
-    printf("g buffer addr : %x \n", sys::get_graphic_buffer_addr());
     gui::window test_window("my window", 300, 200);
     gui::button_widget button(10, 30, 70, 20, "a button");
 

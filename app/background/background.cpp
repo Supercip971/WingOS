@@ -13,7 +13,6 @@
 
 int main()
 {
-    printf("g buffer addr : %x \n", sys::get_graphic_buffer_addr());
     sys::graphic_context gc(sys::get_screen_width(), sys::get_screen_height(), "background");
 
     gc.clear_buffer(sys::pixel(70, 70, 70, 255));

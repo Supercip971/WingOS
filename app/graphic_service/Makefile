@@ -15,8 +15,10 @@ CHARDFLAGS := $(CFLAGS)               \
         -fno-pic                       \
         -no-pie \
 				-m64 \
-        -O1 \
+        -Os \
+        -floop-unroll-and-jam -fpeel-loops -fpredictive-commoning -fsplit-loops -fsplit-paths -ftree-loop-distribution -ftree-loop-vectorize -ftree-partial-pre -ftree-slp-vectorize -funswitch-loops -fvect-cost-model -fvect-cost-model=dynamic -fversion-loops-for-strides \
 				-msse \
+        -fno-reorder-blocks-and-partition \
         -mno-80387                     \
         -fno-rtti \
         -fno-exceptions \
@@ -33,4 +35,7 @@ all: ${OBJ}
 	@echo "[C++] [BUILDING $(PROJECT_NAME)] $<"
 	@$(CC) $(CHARDFLAGS) -c $< -o $@
 
+rebuild:
+	-rm $(OBJ)
+	@make all -j12
 

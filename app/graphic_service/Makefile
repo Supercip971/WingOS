@@ -14,15 +14,13 @@ CHARDFLAGS := $(CFLAGS)               \
         -masm=intel                    \
         -fno-pic                       \
         -no-pie \
-		-m64 \
-        -O2 \
+				-m64 \
+        -O1 \
 				-msse \
         -mno-80387                     \
-        -mno-red-zone                  \
         -fno-rtti \
         -fno-exceptions \
-		-ffreestanding                 \
-        -fno-stack-protector           \
+				-ffreestanding                 \
         -fno-omit-frame-pointer        \
         -I../../usr_lib -I.\
 

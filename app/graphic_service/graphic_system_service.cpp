@@ -8,11 +8,18 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-#define MAX_WINDOW 1024
+#define MAX_WINDOW 255
 
 // [!] BEFORE READING THIS CODE
 // [!] EVERYTHING HERE WILL BE DIVIDED IN MULTIPLE FILE FOR THE MOMENT IT IS LIKE THAT
 // [!] I WILL CLEAN UP EVERYTHING WHEN I WILL BE ABLE JUST TO CLEAR A WINDOW FROM AN APPLICATION
+void loop();
+int main()
+{
+    printf("started the wingos graphic system service \n");
+    loop();
+    return 1;
+}
 
 struct raw_window_data
 {
@@ -151,7 +158,6 @@ void draw_window(raw_window_data window, sys::pixel *buffer)
 }
 uint64_t create_window(sys::graphic_system_service_protocol *request, uint64_t pid)
 {
-    printf("creating window for process %x", pid);
     for (int i = 0; i < MAX_WINDOW; i++)
     {
         if (window_list[i].used == false)
@@ -442,17 +448,16 @@ void update_mouse_in_window()
         }
     }
 }
-int main()
+void loop()
 {
     window_count = 0;
-    printf("main graphic system service loading... \n");
 
     real_gbuffer_addr = sys::get_graphic_buffer_addr();
     front_buffer = (sys::pixel *)real_gbuffer_addr;
     screen_width = sys::get_screen_width();
     screen_height = sys::get_screen_height();
-    back_buffer = new sys::pixel[(screen_width + 2) * (screen_height + 2) + 32];
-    window_list = new raw_window_data[MAX_WINDOW + 32];
+    back_buffer = new sys::pixel[(screen_width + 1) * (screen_height + 1) + 32];
+    window_list = new raw_window_data[MAX_WINDOW + 3];
     mouse_on_window = (uint64_t *)sys::sys$get_current_process_global_data(0, 8);
     *mouse_on_window = 0;
     for (int i = 0; i < MAX_WINDOW; i++)
@@ -460,10 +465,6 @@ int main()
 
         window_list[i].used = false;
     }
-    printf("g buffer addr   : %x \n", real_gbuffer_addr);
-    printf("g buffer width  : %x \n", screen_width);
-    printf("g buffer height : %x \n", screen_height);
-
     while (true)
     {
         // read all message
@@ -492,5 +493,4 @@ int main()
         swap_buffer(front_buffer, back_buffer, screen_width * screen_height);
         sys::switch_process();
     }
-    return 1;
 }

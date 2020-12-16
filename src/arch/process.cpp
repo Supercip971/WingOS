@@ -518,7 +518,7 @@ process_message *send_message(uintptr_t data_addr, uint64_t data_length, const c
 {
     for (int i = 0; i < MAX_PROCESS; i++)
     {
-        if (process_array[i].current_process_state == PROCESS_WAITING || process_array[i].current_process_state == PROCESS_RUNNING)
+        if (process_array[i].current_process_state == PROCESS_WAITING || process_array[i].current_process_state == PROCESS_RUNNING || process_array[i].current_process_state == PROCESS_NOT_STARTED)
         {
             if (strcmp(to_process, process_array[i].process_name) == 0)
             {

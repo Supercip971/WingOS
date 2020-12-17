@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+
 int abs(int j)
 {
     if (j < 0)
@@ -13,6 +14,23 @@ int abs(int j)
     }
     return j;
 }
+
+long labs(long j){
+    if (j < 0)
+    {
+        return -j;
+    }
+    return j;
+}
+
+long long llabs(long long j){
+    if (j < 0)
+    {
+        return -j;
+    }
+    return j;
+}
+
 #ifdef __SSE__
 double atof(const char *s)
 {

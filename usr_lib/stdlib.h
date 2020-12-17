@@ -2,6 +2,8 @@
 #include <stddef.h>
 #include <stdint.h>
 int abs(int j);
+long labs(long j);
+long long llabs(long long j);
 
 #ifdef __SSE__
 double strtod(const char *nptr, char **endptr);

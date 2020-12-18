@@ -13,10 +13,10 @@ download_and_extract() {
 
 
 
-bin_utils_version="2.34"
+bin_utils_version="2.35.1"
 binutils_file="binutils-$bin_utils_version.tar.xz"
 
-gcc_version="10.1.0"
+gcc_version="10.2.0"
 gcc_file="gcc-$gcc_version.tar.xz"
 
 export PREFIX="$PWD/cross_compiler"

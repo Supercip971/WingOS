@@ -1,4 +1,5 @@
 #pragma once
+#include <com.h>
 #include <stdint.h>
 enum log_state
 {
@@ -21,15 +22,21 @@ private:
     };
 
 public:
-    logging();
     void set_log_type(const char *data, log_state log_state);
-    logging operator<<(const char *string);
-    logging operator<<(uint64_t address);
-    logging operator<<(int64_t address);
-    logging operator<<(uint32_t number);
-    logging operator<<(int number);
-    logging operator<<(uint16_t number);
-    logging operator<<(char chr);
+    template <typename T>
+    logging operator<<(T data);
 };
 
+template <>
+logging logging::operator<<(int64_t data);
+template <>
+logging logging::operator<<(uint64_t data);
+template <>
+logging logging::operator<<(const char *data);
+template <>
+logging logging::operator<<(char *data);
+template <>
+logging logging::operator<<(char data);
+template <>
+logging logging::operator<<(unsigned char data);
 logging log(const char *data, log_state color_mode);

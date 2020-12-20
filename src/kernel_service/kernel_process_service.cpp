@@ -76,6 +76,10 @@ void kernel_process_service()
 
             case GET_PROCESS_BUFFER:
                 msg->response = process_buffer_read(prot);
+                if (msg->response == 0)
+                {
+                    msg->response = 1;
+                }
                 break;
 
             case PROCESS_SLEEP:

@@ -18,7 +18,7 @@ void load_segment(process *pro, uintptr_t source, uint64_t size, uintptr_t dest,
     count++;
     source /= 4096;
     source *= 4096;
-    for (uint64_t i = 0; i < count; i++)
+    for (uint64_t i = 0; i <= count; i++)
     {
         uintptr_t target_virtual = ndest + i * PAGE_SIZE;
         map_page(source + PAGE_SIZE * i, target_virtual, 0x1 | 0x2 | 0x4);
@@ -178,6 +178,7 @@ void elf64_load_entry(Elf64_Phdr *entry, uint8_t *programm_code, process *target
 
 uint64_t launch_programm(const char *path, file_system *file_sys)
 {
+    lock_process();
 
     log("prog launcher", LOG_DEBUG) << "launching programm : " << path;
     uint8_t *programm_code = file_sys->read_file(path);
@@ -204,5 +205,6 @@ uint64_t launch_programm(const char *path, file_system *file_sys)
     }
 
     to_launch->current_process_state = process_state::PROCESS_WAITING;
+    unlock_process();
     return to_launch->upid;
 }

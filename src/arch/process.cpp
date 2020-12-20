@@ -733,7 +733,7 @@ void dump_process()
         {
             log("proc", LOG_DEBUG) << "info for process : " << i;
             log("proc", LOG_INFO) << "process name     : " << process_array[i].process_name;
-            log("proc", LOG_INFO) << "process state    : " << process_array[i].current_process_state;
+            log("proc", LOG_INFO) << "process state    : " << (int)process_array[i].current_process_state;
             log("proc", LOG_INFO) << "process cpu      : " << process_array[i].processor_target;
             log("proc", LOG_INFO) << "process upid     : " << process_array[i].upid;
             log("proc", LOG_INFO) << "process sleep    : " << process_array[i].sleeping;

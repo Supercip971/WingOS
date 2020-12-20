@@ -29,7 +29,6 @@ namespace sys
         get_bbuffer.request_type = sys::GRAPHIC_SYSTEM_REQUEST::GET_WINDOW_BACK_BUFFER;
         get_bbuffer.get_request.window_handler_code = wid;
         back_buffer = (sys::pixel *)sys::process_message("init_fs/graphic_service.exe", (uint64_t)&get_bbuffer, sizeof(sys::graphic_system_service_protocol)).read();
-        uint64_t t = 0;
     }
 
     void graphic_context::clear_buffer(const pixel color)

@@ -21,13 +21,13 @@ void memory_service()
 
             if (prot->request_type == REQUEST_PMM_MALLOC)
             {
-                msg->response = (uint64_t)(pmm_alloc_fast(prot->length));
+                msg->response = (uint64_t)get_mem_addr(pmm_alloc_zero(prot->length));
                 msg->has_been_readed = true;
             }
             else if (prot->request_type == REQUEST_PMM_FREE)
             {
                 msg->response = (uint64_t)1;
-                pmm_free((void *)(prot->address), prot->length);
+                pmm_free((void *)(get_rmem_addr(prot->address)), prot->length);
                 msg->has_been_readed = true;
             }
             else

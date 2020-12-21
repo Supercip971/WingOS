@@ -11,7 +11,7 @@ namespace gui
         int64_t widget_height;
         int64_t widget_x;
         int64_t widget_y;
-        bool widget_should_draw = false;
+        bool widget_should_draw = true;
         bool is_position_inside_widget(const sys::pos pos);
 
     public:

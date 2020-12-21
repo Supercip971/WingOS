@@ -77,17 +77,6 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
 
     ps_mouse::the()->init();
     pic_init();
-    log("memory manager", LOG_INFO) << "start test";
-    void *last = nullptr;
-    for (int i = 64; i < 100; i++)
-    {
-        log("memory manager", LOG_INFO) << "for" << i << "id : " << (uint64_t)last;
-        if (i % 3 == 0)
-        {
-            free(last);
-        }
-        last = malloc(i);
-    }
     RTC::the()->init();
     acpi::the()->init((reinterpret_cast<stivale_struct *>(bootdat))->rsdp);
 
@@ -129,11 +118,6 @@ extern "C" void kernel_start(stivale_struct *bootloader_data)
 void start_process()
 {
     load_kernel_service();
-    uint8_t *m = (uint8_t *)malloc(sizeof(uint8_t) * 128); // just for testing
-    for (uint64_t i = 0; i < 128; i++)
-    {
-        m[i] = i;
-    }
     ata_driver::the()->init();
 
     main_fs_system::the()->init_file_system();

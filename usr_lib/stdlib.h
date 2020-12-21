@@ -1,4 +1,5 @@
-#pragma once
+#ifndef STDLIB_H
+#define STDLIB_H
 #include <stddef.h>
 #include <stdint.h>
 int abs(int j);
@@ -21,3 +22,4 @@ void srand(uint32_t seed);
 void *malloc(size_t size);
 void free(void *ptr);
 void *realloc(void *ptr, size_t size);
+#endif

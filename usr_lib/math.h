@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef MATH_H
+#define MATH_H
 #include <stddef.h>
 #ifdef __SSE__
 #define PI 3.141592654
@@ -18,4 +18,5 @@ double fabs(double x);
 double sin(double x);
 double cos(double x);
 
+#endif
 #endif

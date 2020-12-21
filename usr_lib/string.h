@@ -1,4 +1,5 @@
-#pragma once
+#ifndef STRING_H
+#define STRING_H
 #include <stddef.h>
 #include <stdint.h>
 size_t strlen(const char *s);
@@ -12,3 +13,5 @@ void *memcpy(void *dest, const void *src, size_t length);
 void *memmove(void *dest, const void *src, size_t n);
 void *memset(void *data, uint8_t value, size_t lenght);
 void *memchr(const void *s, int c, size_t n);
+
+#endif

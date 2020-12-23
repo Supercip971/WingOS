@@ -53,11 +53,11 @@ void __attribute__((optimize("O0"))) setup_gdt()
     log("gdt", LOG_DEBUG) << "loading gdt";
 
     uintptr_t tss_base = (uintptr_t)&get_current_cpu()->ctss;
-    uintptr_t tss_limit = tss_base + sizeof(get_current_cpu()->ctss) - 1;
+    uintptr_t tss_limit = tss_base + sizeof(get_current_cpu()->ctss);
 
     log("gdt", LOG_INFO) << "resetting gdt";
 
-    memzero(&gdt_descriptors, sizeof(gdt_descriptors) * 64);
+    memzero(&gdt_descriptors, sizeof(gdt_descriptors[0]) * 64);
 
     log("gdt", LOG_INFO) << "setting gdt entry";
     gdt_set_descriptor(gdt_descriptors, SLTR_KERNEL_CODE, GDT_PRESENT | GDT_CS,
@@ -104,7 +104,6 @@ void gdt_ap_init()
 
     gdt_descriptor *new_gdt_descriptors = get_current_cpu()->gdt_descriptors;
 
-    log("gdt ap", LOG_INFO) << "resetting gdt 2";
     memzero(new_gdt_descriptors, sizeof(gdt_descriptor) * 32);
     gdtr *d = &get_current_cpu()->cgdt;
     memzero(d, sizeof(gdtr));

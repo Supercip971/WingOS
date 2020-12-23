@@ -96,6 +96,11 @@ super:
 
 	@objdump kernel.elf -f -s -d --source > kernel.map
 	@make run -j12
+check:
+	@make clean
+	@make $(KERNEL_ELF) -j12
+	@make app -j12
+
 %.o: %.cpp %.h
 	@echo "cpp [BUILD] $<"
 	@$(CC) $(CHARDFLAGS) -c $< -o $@

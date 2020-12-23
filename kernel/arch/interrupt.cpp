@@ -74,8 +74,8 @@ static idtr idt_descriptor = {
 
 uintptr_t rip_backtrace[32];
 
-extern "C" void idt_flush(uint64_t);
-extern "C" void syscall_asm_entry();
+ASM_FUNCTION void idt_flush(uint64_t);
+ASM_FUNCTION void syscall_asm_entry();
 
 static idt_entry register_interrupt_handler(void *handler, uint8_t ist, uint8_t type)
 {
@@ -258,7 +258,7 @@ void interrupt_error_handle(InterruptStackFrame *stackframe)
     }
 }
 
-extern "C" uintptr_t interrupts_handler(InterruptStackFrame *stackframe)
+ASM_FUNCTION uintptr_t interrupts_handler(InterruptStackFrame *stackframe)
 {
 
     uintptr_t nresult = reinterpret_cast<uintptr_t>(stackframe);

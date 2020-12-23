@@ -38,12 +38,12 @@ void unlock_process()
     process_locked--;
 }
 
-extern "C" void start_task()
+ASM_FUNCTION void start_task()
 {
     lock(&task_lock);
 }
 
-extern "C" void end_task()
+ASM_FUNCTION void end_task()
 {
     unlock(&task_lock);
 }
@@ -300,7 +300,7 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
     return process_to_add;
 }
 
-extern "C" uintptr_t switch_context(InterruptStackFrame *current_Isf, process *next)
+uintptr_t switch_context(InterruptStackFrame *current_Isf, process *next)
 {
 
     if (process_locked != 0)
@@ -342,7 +342,7 @@ bool is_valid_process(const process target, const int cpu_targ)
              process_state::PROCESS_WAITING) &&
             target.kpid != 0 && target.processor_target == cpu_targ);
 }
-extern "C" process *get_next_process(uint64_t current_id)
+process *get_next_process(uint64_t current_id)
 {
     if (process_locked != 0)
     {
@@ -394,7 +394,7 @@ void send_switch_process_to_all_cpu()
         }
     }
 }
-extern "C" uintptr_t irq_0_process_handler(InterruptStackFrame *isf)
+uintptr_t irq_0_process_handler(InterruptStackFrame *isf)
 {
 
     if (process_locked != 0)
@@ -434,7 +434,7 @@ extern "C" uintptr_t irq_0_process_handler(InterruptStackFrame *isf)
     return switch_context(isf, i);
 }
 
-extern "C" void task_update_switch(process *next)
+void task_update_switch(process *next)
 {
     tss_set_rsp0((uint64_t)next->stack + PROCESS_STACK_SIZE);
 

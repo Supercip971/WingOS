@@ -5,8 +5,8 @@
 #include <kernel.h>
 #include <logging.h>
 PIT global_PIT;
-extern "C" uint32_t read_pit_counter();
-extern "C" void pit_callback()
+uint32_t read_pit_counter();
+void pit_callback()
 {
     PIT::the()->update();
 }

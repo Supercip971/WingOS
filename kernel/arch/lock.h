@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include <kernel.h>
 struct lock_type
 {
     uint32_t data;
@@ -7,13 +8,11 @@ struct lock_type
     const char *file;
     uint64_t line;
     bool cantforce;
-    // you can add more data
 };
 
-extern "C" void asm_spinlock_lock(volatile uint32_t *lock);
-extern "C" void asm_spinlock_unlock(volatile uint32_t *lock);
+ASM_FUNCTION void asm_spinlock_lock(volatile uint32_t *lock);
+ASM_FUNCTION void asm_spinlock_unlock(volatile uint32_t *lock);
 
-// we put define so we can do
 
 #define lock(a)             \
     (a)->file = __FILE__;   \

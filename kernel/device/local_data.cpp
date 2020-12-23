@@ -6,8 +6,8 @@
 #include <logging.h>
 cpu procData[smp::max_cpu];
 
-extern "C" void asm_sse_save(uintptr_t addr);
-extern "C" void asm_sse_load(uintptr_t addr);
+ASM_FUNCTION void asm_sse_save(uintptr_t addr);
+ASM_FUNCTION void asm_sse_load(uintptr_t addr);
 void set_current_data(cpu *dat)
 {
 

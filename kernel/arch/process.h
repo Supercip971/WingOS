@@ -106,8 +106,8 @@ void dump_process();
 void unlock_process();
 void lock_process();
 
-extern "C" void task_update_switch(process *next);
-extern "C" uintptr_t irq_0_process_handler(InterruptStackFrame *isf);
+void task_update_switch(process *next);
+uintptr_t irq_0_process_handler(InterruptStackFrame *isf);
 
 process_message *send_message(uintptr_t data_addr, uint64_t data_length, const char *to_process);
 process_message *read_message();

@@ -18,7 +18,7 @@
 #define BASIC_PAGE_FLAGS 0x03
 #define PAGE_TABLE_FLAGS 0x07
 #define BIT_PRESENT 0x1
-extern "C" void set_paging();
+ASM_FUNCTION void set_paging();
 typedef uint64_t main_page_table;
 
 extern main_page_table *kernel_super_dir;

@@ -20,7 +20,6 @@ namespace gui
         buffer_offset = 0;
         widget_width = width;
         widget_height = heigth;
-        update_widget();
     }
     void terminal_widget::update_offset()
     {

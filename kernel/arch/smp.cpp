@@ -21,7 +21,6 @@ extern "C" uintptr_t end_cpu_entry;
 extern "C" uint32_t trampoline_start, trampoline_end, nstack;
 volatile bool SMPloaded = false;
 
-extern "C" void irq0_first_jump();
 
 smp::smp()
 {

@@ -11,7 +11,7 @@ char tss_ist1[8192] __attribute__((aligned(16)));
 char tss_ist2[8192] __attribute__((aligned(16)));
 char tss_ist3[8192] __attribute__((aligned(16)));
 
-extern "C" void gdtr_install(gdtr *, unsigned short, unsigned short);
+ASM_FUNCTION void gdtr_install(gdtr *, unsigned short, unsigned short);
 
 void tss_set_rsp0(uint64_t rsp0)
 {

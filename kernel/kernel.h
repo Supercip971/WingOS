@@ -2,6 +2,7 @@
 #include <com.h>
 #include <int_value.h>
 #include <stivale_struct.h>
+#define ASM_FUNCTION extern "C"
 void _start(struct stivale_struct *bootloader_data);
 inline void memzero(void const *s, const uint64_t n)
 {

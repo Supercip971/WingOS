@@ -72,9 +72,9 @@ void __attribute__((optimize("O0"))) setup_gdt()
                         tss_base, tss_limit);
 
     get_current_cpu()->cgdt.addr = (uint64_t)&gdt_descriptors;
-    get_current_cpu()->cgdt.len = sizeof(gdt_descriptors) * GDT_DESCRIPTORS - 1;
+    get_current_cpu()->cgdt.len = sizeof(gdt_descriptors[0]) * GDT_DESCRIPTORS;
 
-    gdtr_install(&get_current_cpu()->cgdt, SLTR_KERNEL_CODE, SLTR_KERNEL_DATA);
+    gdtr_install((&get_current_cpu()->cgdt), SLTR_KERNEL_CODE, SLTR_KERNEL_DATA);
 }
 
 void tss_init(uint64_t i)

@@ -19,6 +19,8 @@
 #include <utility.h>
 uint8_t current = 0;
 
+extern lock_type locker_print;
+extern lock_type print_locker;
 struct interrupt_handler_specific_array
 {
     irq_handler_func function_list[8]; // max 8 handler for an irq;

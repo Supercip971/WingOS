@@ -3,6 +3,9 @@
 #include <com.h>
 #include <kernel.h>
 #include <logging.h>
+
+extern lock_type locker_print;
+extern lock_type print_locker;
 ASM_FUNCTION void something_is_bad_i_want_to_die_higher_level(lock_type *the_bad_guy)
 {
     if (the_bad_guy->cantforce)

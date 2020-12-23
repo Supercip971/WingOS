@@ -13,11 +13,9 @@ uint8_t last_selected_cpu = 0;
 void load_segment(process *pro, uintptr_t source, uint64_t size, uintptr_t dest, uint64_t destsize)
 {
     uint64_t count = destsize / PAGE_SIZE;
-    uintptr_t ndest = dest / PAGE_SIZE;
-    ndest *= PAGE_SIZE;
+    uintptr_t ndest = ALIGN_DOWN(dest, PAGE_SIZE);
+    source = ALIGN_DOWN(source, PAGE_SIZE);
     count++;
-    source /= 4096;
-    source *= 4096;
     for (uint64_t i = 0; i <= count; i++)
     {
         uintptr_t target_virtual = ndest + i * PAGE_SIZE;

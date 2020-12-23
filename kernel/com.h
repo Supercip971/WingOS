@@ -9,8 +9,6 @@ enum COM_PORT
     COM4 = 0x2E8,
 };
 ///FIXME: should not exist
-extern lock_type locker_print;
-extern lock_type print_locker;
 void com_write_str(const char *buffer);
 bool com_write_strn(const char *buffer, uint64_t lenght);
 void com_write_reg(const char *buffer, uint64_t value);

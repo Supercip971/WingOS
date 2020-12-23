@@ -22,3 +22,8 @@ template <class T = uintptr_t, class F>
 inline constexpr T get_kern_addr(F addr) { return reinterpret_cast<T>((uintptr_t)(addr) + 0xffffffff80000000); }
 template <class T = uintptr_t, class F>
 inline constexpr T get_rkern_addr(F addr) { return reinterpret_cast<T>((uintptr_t)(addr)-0xffffffff80000000); }
+
+#define ALIGN_UP(addr, size) \
+    ((addr % size == 0) ? (addr) : (addr) + size - ((addr) % size))
+
+#define ALIGN_DOWN(addr, size) ((addr) - ((addr) % size))

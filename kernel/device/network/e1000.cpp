@@ -250,18 +250,8 @@ void e1000::init(pci_device *dev, uint8_t func)
     {
         bar_t = 0;
         mm_address = (d.base);
-        uint64_t mm_to_map = mm_address;
-        mm_to_map /= 4096;
-        mm_to_map = -1;
-        mm_to_map *= 4096;
-
         log("e1000", LOG_INFO) << "e1000 is mm" << mm_address;
         log("e1000", LOG_INFO) << "e1000 is length" << d.size;
-        for (uint64_t i = 0; i < d.size / PAGE_SIZE + 2; i++)
-        {
-            map_page(mm_to_map + 4096 * i, mm_to_map + 4096 * i, 0x03);
-        }
-
         update_paging();
     }
     else

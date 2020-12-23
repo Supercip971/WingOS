@@ -5,7 +5,7 @@
 #include <kernel.h>
 #include <logging.h>
 PIT global_PIT;
-uint32_t read_pit_counter();
+ASM_FUNCTION uint32_t read_pit_counter();
 void pit_callback()
 {
     PIT::the()->update();

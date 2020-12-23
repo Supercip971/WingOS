@@ -11,9 +11,8 @@ SECTIONS
 
 	.text  : ALIGN(4K)
 	{
-		*(.text)
-        
-        *(.text*)
+		*(.text)    
+    *(.text*)
 		*(.init)
 		*(.fini)
 		*(.ctors)
@@ -22,7 +21,7 @@ SECTIONS
 
 	.rodata  : ALIGN(4K)
 	{
-        *(.ctors)
+    *(.ctors)
 		*(.rodata)
 	}
 

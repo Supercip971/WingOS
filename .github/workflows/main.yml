@@ -30,6 +30,8 @@ jobs:
 
           sudo apt install -y make build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo nasm
           sudo apt install -y mtools wget unzip fuse libfuse-dev
+          sudo apt install -y uuid-dev
+          sudo apt install -y gcc binutils parted
           git clone --recursive https://github.com/qword-os/echfs.git
           make -C echfs
           cd echfs/

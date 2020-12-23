@@ -1,6 +1,6 @@
 #pragma once
-#include <stdint.h>
 #include <kernel.h>
+#include <stdint.h>
 struct lock_type
 {
     uint32_t data;
@@ -12,7 +12,6 @@ struct lock_type
 
 ASM_FUNCTION void asm_spinlock_lock(volatile uint32_t *lock);
 ASM_FUNCTION void asm_spinlock_unlock(volatile uint32_t *lock);
-
 
 #define lock(a)             \
     (a)->file = __FILE__;   \

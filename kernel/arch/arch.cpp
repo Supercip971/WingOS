@@ -57,6 +57,7 @@ ASM_FUNCTION void kernel_start(stivale_struct *bootloader_data)
 {
     asm volatile("and rsp, -16");
     asm volatile("cli");
+    // fs is used for getting cpu n°
     asm volatile("mov ax, 0");
     asm volatile("mov fs, ax");
     init_sse();

@@ -3,6 +3,7 @@
 #include <com.h>
 #include <kernel_service/print_service.h>
 
+extern lock_type locker_print;
 void print_service()
 {
     log("console_out", LOG_INFO) << "loaded print service";

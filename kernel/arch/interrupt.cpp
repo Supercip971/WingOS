@@ -85,7 +85,7 @@ static idt_entry register_interrupt_handler(void *handler, uint8_t ist, uint8_t 
     idt_entry idt;
 
     idt.offset_low16 = (uint16_t)p;
-    idt.cs = SLTR_KERNEL_CODE;
+    idt.cs = gdt_selector::KERNEL_CODE;
     idt.ist = ist;
     idt.attributes = type;
     idt.offset_mid16 = (uint16_t)(p >> 16);

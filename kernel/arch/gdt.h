@@ -2,28 +2,30 @@
 #include <stdint.h>
 #include <stivale_struct.h>
 #define GDT_DESCRIPTORS 7
+enum gdt_selector : uint16_t
+{
+    NULL_SELECTOR = 0,
+    KERNEL_CODE = 0x8,
+    KERNEL_DATA = 0x10,
+    USER_CODE = 0x20,
+    USER_DATA = 0x18,
+    TSS_SELECTOR = 0x28,
+};
 
-#define SLTR_NULL 0x0000
-#define SLTR_KERNEL_CODE 0x0008
-#define SLTR_KERNEL_DATA 0x0010
-#define SLTR_USER_DATA 0x0018
-#define SLTR_USER_CODE 0x0020
-#define SLTR_TSS 0x0028 /* occupies two GDT descriptors */
+enum gdt_flags : uint8_t
+{
+    WRITABLE = 0b10,
+    USER = 0b1100000,
+    PRESENT = 0b10000000,
+    TSS = 0b1001,
+    DS = 0b10000,
+    CS = 0b11000,
+};
 
-#define RPL0 0x0
-#define RPL1 0x1
-#define RPL2 0x2
-#define RPL3 0x3
-
-#define GDT_CS 0x18
-#define GDT_DS 0x10
-#define GDT_TSS 0x09
-#define GDT_WRITABLE 0x02
-#define GDT_USER 0x60
-#define GDT_PRESENT 0x80
-
-/* granularity */
-#define GDT_LM 0x2
+enum gdt_granularity : uint8_t
+{
+    LONG_MODE_GRANULARITY = 0x2,
+};
 
 struct gdtr
 {

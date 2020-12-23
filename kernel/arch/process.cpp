@@ -168,8 +168,8 @@ void init_process_stackframe(process *pro, func entry_point)
     InterruptStackFrame *ISF = (InterruptStackFrame *)(rsp - (sizeof(InterruptStackFrame)));
 
     ISF->rip = (uint64_t)entry_point;
-    ISF->ss = SLTR_KERNEL_DATA;
-    ISF->cs = SLTR_KERNEL_CODE;
+    ISF->ss = gdt_selector::KERNEL_DATA;
+    ISF->cs = gdt_selector::KERNEL_CODE;
     ISF->rflags = 0x286;
     ISF->rsp = (uint64_t)ISF;
     pro->rsp = (uint64_t)ISF;

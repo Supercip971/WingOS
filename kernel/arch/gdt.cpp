@@ -60,21 +60,21 @@ void __attribute__((optimize("O0"))) setup_gdt()
     memzero(&gdt_descriptors, sizeof(gdt_descriptors[0]) * 64);
 
     log("gdt", LOG_INFO) << "setting gdt entry";
-    gdt_set_descriptor(gdt_descriptors, SLTR_KERNEL_CODE, GDT_PRESENT | GDT_CS,
-                       GDT_LM);
-    gdt_set_descriptor(gdt_descriptors, SLTR_KERNEL_DATA,
-                       GDT_PRESENT | GDT_DS | GDT_WRITABLE, 0);
-    gdt_set_descriptor(gdt_descriptors, SLTR_USER_DATA,
-                       GDT_PRESENT | GDT_DS | GDT_USER | GDT_WRITABLE, 0);
-    gdt_set_descriptor(gdt_descriptors, SLTR_USER_CODE,
-                       GDT_PRESENT | GDT_CS | GDT_USER, GDT_LM);
-    gdt_set_xdescriptor(gdt_descriptors, SLTR_TSS, GDT_PRESENT | GDT_TSS, 0,
+    gdt_set_descriptor(gdt_descriptors, gdt_selector::KERNEL_CODE, gdt_flags::PRESENT | gdt_flags::CS,
+                       gdt_granularity::LONG_MODE_GRANULARITY);
+    gdt_set_descriptor(gdt_descriptors, gdt_selector::KERNEL_DATA,
+                       gdt_flags::PRESENT | gdt_flags::DS | gdt_flags::WRITABLE, 0);
+    gdt_set_descriptor(gdt_descriptors, gdt_selector::USER_DATA,
+                       gdt_flags::PRESENT | gdt_flags::DS | gdt_flags::USER | gdt_flags::WRITABLE, 0);
+    gdt_set_descriptor(gdt_descriptors, gdt_selector::USER_CODE,
+                       gdt_flags::PRESENT | gdt_flags::CS | gdt_flags::USER, gdt_granularity::LONG_MODE_GRANULARITY);
+    gdt_set_xdescriptor(gdt_descriptors, gdt_selector::TSS_SELECTOR, gdt_flags::PRESENT | gdt_flags::TSS, 0,
                         tss_base, tss_limit);
 
     get_current_cpu()->cgdt.addr = (uint64_t)&gdt_descriptors;
     get_current_cpu()->cgdt.len = sizeof(gdt_descriptors[0]) * GDT_DESCRIPTORS;
 
-    gdtr_install((&get_current_cpu()->cgdt), SLTR_KERNEL_CODE, SLTR_KERNEL_DATA);
+    gdtr_install((&get_current_cpu()->cgdt), gdt_selector::KERNEL_CODE, gdt_selector::KERNEL_DATA);
 }
 
 void tss_init(uint64_t i)
@@ -88,7 +88,7 @@ void tss_init(uint64_t i)
 
     asm volatile("mov ax, %0 \n ltr ax"
                  :
-                 : "i"(SLTR_TSS)
+                 : "i"(gdt_selector::TSS_SELECTOR)
                  : "rax");
 }
 
@@ -109,21 +109,21 @@ void gdt_ap_init()
     memzero(d, sizeof(gdtr));
 
     log("gdt ap", LOG_INFO) << "setting gdt entry";
-    gdt_set_descriptor(new_gdt_descriptors, SLTR_KERNEL_CODE, GDT_PRESENT | GDT_CS,
-                       GDT_LM);
-    gdt_set_descriptor(new_gdt_descriptors, SLTR_KERNEL_DATA,
-                       GDT_PRESENT | GDT_DS | GDT_WRITABLE, 0);
-    gdt_set_descriptor(new_gdt_descriptors, SLTR_USER_DATA,
-                       GDT_PRESENT | GDT_DS | GDT_USER | GDT_WRITABLE, 0);
-    gdt_set_descriptor(new_gdt_descriptors, SLTR_USER_CODE,
-                       GDT_PRESENT | GDT_CS | GDT_USER, GDT_LM);
-    gdt_set_xdescriptor(new_gdt_descriptors, SLTR_TSS, GDT_PRESENT | GDT_TSS, 0,
+    gdt_set_descriptor(new_gdt_descriptors, gdt_selector::KERNEL_CODE, gdt_flags::PRESENT | gdt_flags::CS,
+                       gdt_granularity::LONG_MODE_GRANULARITY);
+    gdt_set_descriptor(new_gdt_descriptors, gdt_selector::KERNEL_DATA,
+                       gdt_flags::PRESENT | gdt_flags::DS | gdt_flags::WRITABLE, 0);
+    gdt_set_descriptor(new_gdt_descriptors, gdt_selector::USER_DATA,
+                       gdt_flags::PRESENT | gdt_flags::DS | gdt_flags::USER | gdt_flags::WRITABLE, 0);
+    gdt_set_descriptor(new_gdt_descriptors, gdt_selector::USER_CODE,
+                       gdt_flags::PRESENT | gdt_flags::CS | gdt_flags::USER, gdt_granularity::LONG_MODE_GRANULARITY);
+    gdt_set_xdescriptor(new_gdt_descriptors, gdt_selector::TSS_SELECTOR, gdt_flags::PRESENT | gdt_flags::TSS, 0,
                         tss_base, tss_limit);
 
     get_current_cpu()->cgdt.addr = (uint64_t)new_gdt_descriptors;
     get_current_cpu()->cgdt.len = sizeof(gdt_descriptor) * GDT_DESCRIPTORS - 1;
 
-    gdtr_install(&get_current_cpu()->cgdt, SLTR_KERNEL_CODE, SLTR_KERNEL_DATA);
+    gdtr_install((&get_current_cpu()->cgdt), gdt_selector::KERNEL_CODE, gdt_selector::KERNEL_DATA);
     memzero(&get_current_cpu()->ctss, sizeof(tss));
 
     get_current_cpu()->ctss.iomap_base = sizeof(tss);
@@ -132,6 +132,6 @@ void gdt_ap_init()
 
     asm volatile("mov ax, %0 \n ltr ax"
                  :
-                 : "i"(SLTR_TSS)
+                 : "i"(gdt_selector::TSS_SELECTOR)
                  : "rax");
 }

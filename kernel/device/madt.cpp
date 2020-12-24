@@ -89,10 +89,9 @@ void madt::init()
     uintptr_t lbase_addr = lapic_base;
     lbase_addr = ALIGN_UP(lbase_addr, PAGE_SIZE);
 
-    virt_map(lbase_addr, get_mem_addr(lbase_addr), 0x03);
-    virt_map(lbase_addr + 4096, get_mem_addr(lbase_addr) + 4096, 0x03);
+    map_page(lbase_addr, lbase_addr, 0x03);
+    map_page(lbase_addr + 4096, lbase_addr + 4096, 0x03);
 
-    lapic_base = get_mem_addr(lapic_base);
     log_all();
 }
 

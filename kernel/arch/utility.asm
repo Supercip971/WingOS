@@ -52,13 +52,13 @@ sse_init:
 global asm_sse_save
 asm_sse_save:
     mov rax, rdi
-    fxsave [eax]
+    FXRSTOR64 [rax]
     ret
 global asm_sse_load
 asm_sse_load:
 
     mov rax, rdi
-    fxrstor [eax]
+    FXRSTOR64 [rax]
     ret
 
 

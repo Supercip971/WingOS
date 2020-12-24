@@ -111,7 +111,6 @@ uint64_t pmm_find_free_fast(uint64_t lenght)
     log("pmm", LOG_INFO) << "free protected memory top reached [ for fast ]";
     last_free_byte = 0;
     return pmm_find_free(lenght);
-    return 0x0;
 }
 
 void *pmm_alloc(uint64_t lenght)
@@ -222,7 +221,7 @@ void init_physical_memory(stivale_struct *bootdata)
 
         for (uint64_t ij = mementry[i].base; ij < mementry[i].length + mementry[i].base; ij += PAGE_SIZE)
         {
-            if (mementry[i].type != 1)
+            if (mementry[i].type != MEMMAP_USABLE)
             {
                 pmm_set_bit(ij / PAGE_SIZE);
             }

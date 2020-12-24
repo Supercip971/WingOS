@@ -83,6 +83,6 @@ logging logging::operator<<<char>(char data)
 template <>
 logging logging::operator<<<unsigned char>(unsigned char data)
 {
-    printf(" %c ", data);
+    printf(" %x ", data);
     return *this;
 }

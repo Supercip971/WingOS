@@ -9,7 +9,9 @@ long long llabs(long long j);
 #ifdef __SSE__
 double strtod(const char *nptr, char **endptr);
 #endif
+
 long long strtoll(const char *nptr, char **endptr, int base);
+long strtol(const char *nptr, char **endptr, int base);
 
 #ifdef __SSE__
 double atof(const char *s);

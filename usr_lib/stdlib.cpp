@@ -156,6 +156,71 @@ long long strtoll(const char *nptr, char **endptr, int base)
     }
     return ret_value;
 }
+long strtol(const char *nptr, char **endptr, int base)
+{
+
+    const char *s = nptr;
+    long ret_value = 0;
+    bool is_neg = false;
+
+    while (*s == ' ')
+    {
+        s++;
+    }
+    if (*s == '-')
+    {
+        is_neg = true;
+        s++;
+    }
+    // if base == 0 and detect 0x at the start of string put it at 16
+    if ((base == 0 || base == 16) && s[0] == '0' && (s[1] == 'x' || s[1] == 'X'))
+    {
+        s += 2;
+        base = 16;
+    }
+    if (base == 0)
+    {
+        base = 10;
+    }
+
+    char *start = (char *)s;
+    while (isalnum(*s))
+    {
+        if (base == 10)
+        {
+            if (isdigit(*s))
+            {
+                ret_value = (*s - '0') * base;
+            }
+            else
+            {
+                break;
+            }
+        }
+        else if (base == 16)
+        {
+            if (isdigit(*s))
+            {
+
+                ret_value = (*s - '0') * base;
+            }
+            else
+            {
+                ret_value = ((to_lower(*s) - 'a') + 10) * base;
+            }
+        }
+        s++;
+    }
+    if (is_neg)
+    {
+        ret_value *= -1;
+    }
+    if (endptr != 0)
+    {
+        *endptr = start;
+    }
+    return ret_value;
+}
 
 extern "C" void __cxa_pure_virtual()
 {

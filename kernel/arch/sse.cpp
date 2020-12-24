@@ -21,16 +21,16 @@ void init_sse()
     sse_init();
     asm volatile("fninit");
 
-    asm_sse_save((uint64_t)fpu_reg);
+    asm_sse_save(((uint64_t)fpu_data));
 }
 
 __attribute__((optimize("O2"))) void save_sse_context(uint64_t *context)
 {
     lock(&sse_lock);
-    asm_sse_save((uintptr_t)fpu_reg);
+    asm_sse_save(((uintptr_t)fpu_data));
     for (int i = 0; i < 128; i++)
     {
-        context[i] = fpu_reg[i];
+        context[i] = fpu_data[i];
     }
     unlock(&sse_lock);
 }
@@ -41,9 +41,9 @@ __attribute__((optimize("O2"))) void load_sse_context(uint64_t *context)
     lock((&sse_lock));
     for (int i = 0; i < 128; i++)
     {
-        fpu_reg[i] = context[i];
+        fpu_data[i] = context[i];
     }
-    asm_sse_load((uintptr_t)fpu_reg);
+    asm_sse_load(((uintptr_t)fpu_data));
 
     unlock(&sse_lock);
 }

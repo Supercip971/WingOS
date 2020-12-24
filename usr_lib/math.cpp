@@ -151,4 +151,65 @@ double cos(double x)
 {
     return sin(x + PI / 2);
 }
+double ldexp(double x, int exp)
+{
+    if (exp == 0)
+    {
+        return x;
+    }
+    else if (isnan(x))
+    {
+        return x;
+    }
+    else if (isinf(x))
+    {
+        return x;
+    }
+    else
+    {
+        return x * (2 ^ exp);
+    }
+}
+float ldexpf(float x, int exp)
+{
+    if (exp == 0)
+    {
+        return x;
+    }
+    else if (isnan(x))
+    {
+        return x;
+    }
+    else if (isinf(x))
+    {
+        return x;
+    }
+    else
+    {
+        return x * (2 ^ exp);
+    }
+}
+#ifdef X87
+long double ldexpl(long double x, int exp)
+{
+
+    if (exp == 0)
+    {
+        return x;
+    }
+    else if (isnan(x))
+    {
+        return x;
+    }
+    else if (isinf(x))
+    {
+        return x;
+    }
+    else
+    {
+        return x * (2 ^ exp);
+    }
+}
+#endif
+
 #endif

@@ -10,8 +10,6 @@
 #include <stivale_struct.h>
 
 #include <utility.h>
-main_page_table *kernel_super_dir;
-main_page_table *main_pml4 = kernel_super_dir;
 uint64_t entry_to_address(uint64_t pml4, uint64_t pdpt, uint64_t pd, uint64_t pt)
 {
     uint64_t result = 0;
@@ -181,16 +179,6 @@ main_page_table *new_vmm_page_dir()
     return ret_pml4;
 }
 
-void set_vmm_page_dir(main_page_table *table)
-{
-    get_current_cpu()->page_table = table;
-    update_paging();
-}
-void set_vmm_kernel_page_dir()
-{
-    get_current_cpu()->page_table = kernel_super_dir;
-    update_paging();
-}
 void init_vmm(stivale_struct *bootdata)
 {
     log("vmm", LOG_DEBUG) << "loading vmm";

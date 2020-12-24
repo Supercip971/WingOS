@@ -258,10 +258,6 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
     process_to_add->upid = next_upid;
     log("proc", LOG_INFO) << "adding process" << process_to_add->upid << "entry : " << (uint64_t)entry_point << "name : " << name;
     next_upid++;
-    if (start_direct == true)
-    {
-        process_to_add->current_process_state = process_state::PROCESS_WAITING;
-    }
 
     memcpy(process_to_add->process_name, name, strlen(name) + 2);
     if (added_pid)
@@ -293,6 +289,15 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
     if (get_current_cpu()->current_process == 0x0)
     {
         get_current_cpu()->current_process = process_to_add;
+    }
+    get_current_cpu()->save_sse(process_to_add->sse_context);
+    if (start_direct == true)
+    {
+        process_to_add->current_process_state = process_state::PROCESS_WAITING;
+    }
+    else
+    {
+        process_to_add->current_process_state = process_state::PROCESS_NOT_STARTED;
     }
 
     unlock((&process_creator_lock));

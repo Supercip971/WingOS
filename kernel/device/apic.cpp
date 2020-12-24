@@ -16,16 +16,15 @@ apic::apic()
 void apic::io_write(uint64_t base, uint32_t reg, uint32_t data)
 {
 
-    base = get_mem_addr(base);
-    POKE(base) = reg;
-    POKE(base + 16) = data;
+    *((volatile uint32_t *)(((uintptr_t)base))) = reg;
+    *((volatile uint32_t *)(((uintptr_t)base + 16))) = data;
 }
 
 uint32_t apic::io_read(uint64_t base, uint32_t reg)
 {
-    base = get_mem_addr(base);
-    POKE(base) = reg;
-    return POKE(base + 16);
+    *((volatile uint32_t *)(((uintptr_t)base))) = reg;
+
+    return *((volatile uint32_t *)(((uintptr_t)base + 16)));
 }
 
 void apic::enable()
@@ -54,7 +53,8 @@ void apic::log_all()
 
         uintptr_t addr = (table[i]->ioapic_addr);
         log("io apic", LOG_INFO) << "io apic addr " << addr;
-
+        virt_map(addr, addr, 0x03);
+        update_paging();
         uint32_t raw_table = (io_read(addr, version_reg));
 
         io_apic_version_table *tables = (io_apic_version_table *)&raw_table;
@@ -96,7 +96,11 @@ void apic::init()
     log("apic", LOG_DEBUG) << "loading apic";
 
     apic_addr = (void *)((uintptr_t)madt::the()->lapic_base);
+    for (int i = 0; i < 3; i++)
+    {
 
+        virt_map((uint64_t)apic_addr + i * PAGE_SIZE, (uint64_t)apic_addr + i * PAGE_SIZE, 0x03);
+    }
     if (apic_addr == nullptr)
     {
         log("apic", LOG_FATAL) << "can't find apic";

@@ -30,7 +30,7 @@ void _start(stivale_struct *bootloader_data)
 
     log("kernel", LOG_INFO) << "kernel started with " << get_total_memory() << "memory available";
     log("kernel", LOG_INFO) << "memory used : " << get_used_memory();
-    dump_process();
+    //  dump_process();
     while (true)
     {
     }

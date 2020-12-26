@@ -1,5 +1,6 @@
 #include <arch/arch.h>
 
+#include <arch/interrupt.h>
 #include <arch/lock.h>
 #include <arch/mem/memory_manager.h>
 #include <com.h>
@@ -7,6 +8,7 @@
 #include <logging.h>
 ata_driver main_driver;
 int waiting_for_irq = 0;
+lock_type waitin_irq_read_write_lock;
 ata_driver::ata_driver()
 {
 }
@@ -66,6 +68,7 @@ void ata_driver::init()
     {
         status = ata_read(true, ATA_reg_command_status);
     }
+   // add_irq_handler(ata_irq_handle, 14);
 }
 
 ata_driver *ata_driver::the()
@@ -96,22 +99,28 @@ void ata_driver::irq_handle(uint64_t irq_handle_num)
     }
 }
 lock_type ata_lock = {0};
-void ata_driver::read(uint32_t where, uint32_t count, uint8_t *buffer)
+void ata_driver::read(uint64_t where, uint32_t count, uint8_t *buffer)
 {
     flock(&ata_lock);
     waiting_for_irq = 1;
+    ata_write(true, ATA_reg_selector, 0x40 | 0xE0);
     ata_write(true, ATA_reg_error_feature, 0);
-    ata_write(true, ATA_reg_selector, 0xE0 | 0x40 | ((where >> 24) & 0x0F));
+
+    ata_write(true, ATA_reg_sector_count, count >> 8);
+    ata_write(true, ATA_reg_lba0, (uint8_t)(where >> 24));
+    ata_write(true, ATA_reg_lba1, (uint8_t)(where >> 32));
+    ata_write(true, ATA_reg_lba2, (uint8_t)(where >> 40));
 
     ata_write(true, ATA_reg_sector_count, count);
     ata_write(true, ATA_reg_lba0, (uint8_t)where);
     ata_write(true, ATA_reg_lba1, (uint8_t)(where >> 8));
     ata_write(true, ATA_reg_lba2, (uint8_t)(where >> 16));
 
-    ata_write(true, ATA_reg_command_status, 0x20); // call the read command
-
+    ata_write(true, ATA_reg_command_status, 0x24); // call the read command
+    wait(5);
     uint32_t new_count = count;
     uint32_t off = 0;
+
     while (new_count-- > 0)
     {
         wait(5);

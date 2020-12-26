@@ -82,15 +82,15 @@ namespace sys
             };
             uint32_t pix;
         };
-        pixel()
+        constexpr pixel()
         {
             pix = 0;
         };
-        pixel(uint32_t p)
+        constexpr pixel(uint32_t p)
         {
             pix = p;
         };
-        pixel(uint8_t vr, uint8_t vg, uint8_t vb, uint8_t va = 255)
+        constexpr pixel(uint8_t vr, uint8_t vg, uint8_t vb, uint8_t va = 255)
         {
             r = vr;
             g = vg;
@@ -152,6 +152,11 @@ namespace sys
             BOTTOM_LEFT,
             TOP_LEFT
         };
+        constexpr void set_pixel(pixel p, unsigned int x, unsigned int y)
+        {
+
+            back_buffer[(x) + (y)*context_width] = p;
+        }
         void apply_blur(uint64_t fromx, uint64_t fromy, uint64_t width, uint64_t height);
         void draw_filled_circle_part(const pos origin, const int radius, const pixel color, const filled_circle_part part);
         void draw_rounded_rectangle(int radius, const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const pixel color);

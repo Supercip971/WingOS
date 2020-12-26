@@ -17,7 +17,7 @@
 void loop();
 int main()
 {
-    printf("started graphics");
+    printf("started graphics \n");
     loop();
     return 1;
 }

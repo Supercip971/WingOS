@@ -12,6 +12,7 @@ uint64_t last_window_y = 10;
 void init_raw_windows()
 {
 
+    printf("init window \n");
     window_count = 0;
     window_list = new raw_window_data[MAX_WINDOW + 3];
 

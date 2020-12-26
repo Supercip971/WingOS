@@ -51,7 +51,7 @@ void draw_window(raw_window_data window)
 ///TODO: move that to cursor.h/.cpp
 uint64_t m_width = 7;
 uint64_t m_height = 8;
-char main_cursor_mouse_buffer[] = {
+const char main_cursor_mouse_buffer[] = {
     1, 0, 0, 0, 0, 0, 0,
     1, 1, 0, 0, 0, 0, 0,
     1, 2, 1, 0, 0, 0, 0,
@@ -97,11 +97,15 @@ void draw_mouse(uint64_t x, uint64_t y)
 void init_raw_graphic_system()
 {
 
+    printf("init raw graphic system \n");
     real_gbuffer_addr = sys::get_graphic_buffer_addr();
     front_buffer = (sys::pixel *)real_gbuffer_addr;
     screen_width = sys::get_screen_width();
+    printf("screen width = %x \n", screen_width);
     screen_height = sys::get_screen_height();
-    back_buffer = new sys::pixel[(screen_width + 1) * (screen_height + 1) + 32];
+    printf("screen width = %x \n", screen_height);
+    printf("init raw graphic system %x x %x \n", screen_width, screen_height);
+    back_buffer = new sys::pixel[(screen_width + 2) * (screen_height + 2) + 32];
 }
 void graphic_system_update()
 {

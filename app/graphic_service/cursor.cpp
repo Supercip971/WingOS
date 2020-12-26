@@ -25,6 +25,7 @@ int32_t last_my = 0;
 uint64_t *mouse_on_window;
 void init_cursor()
 {
+    printf("init cursor \n");
     mouse_on_window = (uint64_t *)sys::sys$get_current_process_global_data(0, 8);
     *mouse_on_window = 0;
 }

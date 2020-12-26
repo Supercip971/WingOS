@@ -16,13 +16,7 @@ void load_segment(process *pro, uintptr_t source, uint64_t size, uintptr_t dest,
     uintptr_t ndest = ALIGN_DOWN(dest, PAGE_SIZE);
     source = ALIGN_DOWN(source, PAGE_SIZE);
     count++;
-    for (uint64_t i = 0; i <= count; i++)
-    {
-        uintptr_t target_virtual = ndest + i * PAGE_SIZE;
-        map_page(source + PAGE_SIZE * i, target_virtual, 0x1 | 0x2 | 0x4);
-    }
     add_thread_map(pro, source, ndest, count + 1);
-    update_paging();
 }
 
 uint64_t get_elf_section_header(uint8_t *data, uint64_t code)
@@ -153,12 +147,10 @@ bool valid_elf_entry(Elf64_Ehdr *entry)
 
 void elf64_load_programm_segment(Elf64_Phdr *entry, uint8_t *programm_code, process *target)
 {
-    char *temp_copy = (char *)malloc(entry->p_memsz + 4096);
-    memzero(temp_copy, entry->p_memsz + 4096);
+    char *temp_copy = (char *)pmm_alloc_zero((entry->p_memsz + 4096) / 4096);
+    memzero(temp_copy, entry->p_memsz);
     memcpy(temp_copy, (char *)((uintptr_t)programm_code + entry->p_offset), entry->p_filesz);
-    load_segment(target, (uintptr_t)programm_code + entry->p_offset, entry->p_filesz, entry->p_vaddr, entry->p_memsz);
-    char *p_entry_data = (char *)entry->p_vaddr;
-    memcpy(p_entry_data, temp_copy, entry->p_memsz);
+    load_segment(target, (uintptr_t)temp_copy, entry->p_filesz, entry->p_vaddr, entry->p_memsz);
 }
 
 void elf64_load_entry(Elf64_Phdr *entry, uint8_t *programm_code, process *target)
@@ -166,6 +158,9 @@ void elf64_load_entry(Elf64_Phdr *entry, uint8_t *programm_code, process *target
     if (entry->p_type == PT_LOAD)
     {
         elf64_load_programm_segment(entry, programm_code, target);
+    }
+    else if (entry->p_type == PT_NULL)
+    {
     }
     else
     {

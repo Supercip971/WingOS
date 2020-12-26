@@ -45,5 +45,10 @@ void main_fs_system::init_file_system()
             file_systems[i] = dynamic_cast<file_system *>(ech_file_sys);
             file_systems[i]->init(mbr->get_partition_start(i), mbr->get_partition_length(i));
         }
+        else
+        {
+
+            log("main fs", LOG_WARNING) << "entry " << i << "is not a valid entry";
+        }
     }
 }

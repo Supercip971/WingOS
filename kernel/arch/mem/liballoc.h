@@ -1,10 +1,11 @@
 #ifndef _LIBALLOC_H
 #define _LIBALLOC_H
 #include <arch/lock.h>
+
 #include <arch/mem/physical.h>
 #include <arch/process.h>
 #include <stddef.h>
-static lock_type liballoc_locker = {0};
+extern lock_type liballoc_locker;
 /** \defgroup ALLOCHOOKS liballoc hooks
  *
  * These are the OS specific functions which need to

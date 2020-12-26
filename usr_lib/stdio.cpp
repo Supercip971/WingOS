@@ -1,7 +1,9 @@
 #include <klib/kernel_util.h>
 #include <klib/string_util.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 char temp_buf[64];
 
@@ -144,4 +146,76 @@ int vsprintf(char *buffer, const char *format, va_list vlist)
 {
     int return_value = vsn_printf(false, buffer, 0, format, vlist);
     return return_value;
+}
+
+FILE *fopen(const char *pathname, const char *mode)
+{
+    FILE *f = (FILE *)malloc(sizeof(FILE));
+    f->file_element = sys::file(); // mode are not supported for the moment :^(
+    f->file_element.open(pathname);
+    return f;
+}
+int fclose(FILE *stream)
+{
+    stream->file_element.close();
+    free(stream);
+    return 0;
+}
+
+int fseek(FILE *stream, long offset, int whence)
+{
+    if (whence == SEEK_SET)
+    {
+        stream->file_element.seek(offset);
+    }
+    else if (whence == SEEK_CUR)
+    {
+        stream->file_element.seek(stream->file_element.get_cursor_pos() + offset);
+    }
+    return 1;
+}
+long ftell(FILE *stream)
+{
+    return stream->file_element.get_cursor_pos();
+}
+
+size_t fread(void *ptr, size_t size, size_t count, FILE *stream)
+{
+    return stream->file_element.read((uint8_t *)ptr, size * count);
+}
+
+int fgetc(FILE *stream)
+{
+    if (stream->file_element.get_file_length() == stream->file_element.get_cursor_pos() + 1)
+    {
+        return EOF;
+    }
+    else
+    {
+
+        uint8_t *data = (uint8_t *)malloc(1);
+        stream->file_element.read(data, 1);
+        uint8_t d = *data;
+        free(data);
+        return d;
+    }
+}
+
+int ungetc(int c, FILE *stream)
+{
+    return 0;
+}
+
+int feof(FILE *stream)
+{
+    if (fgetc(stream) == EOF)
+    {
+        return true;
+    }
+    return false;
+}
+
+int ferror(FILE *stream)
+{
+    return true; // error not supported for the moment
 }

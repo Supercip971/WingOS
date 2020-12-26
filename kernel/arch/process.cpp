@@ -242,6 +242,8 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
 {
     lock((&process_creator_lock));
     process *process_to_add = find_usable_process();
+    process_to_add->current_process_state = process_state::PROCESS_NOT_STARTED;
+
     if (process_to_add == nullptr)
     {
         log("proc", LOG_ERROR) << "init_process : no free process found";
@@ -295,11 +297,6 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
     {
         process_to_add->current_process_state = process_state::PROCESS_WAITING;
     }
-    else
-    {
-        process_to_add->current_process_state = process_state::PROCESS_NOT_STARTED;
-    }
-
     unlock((&process_creator_lock));
 
     return process_to_add;
@@ -451,7 +448,7 @@ void add_thread_map(process *p, uintptr_t from, uintptr_t to, uint64_t length)
 {
     for (uint64_t i = 0; i < length; i++)
     {
-        map_page((main_page_table *)p->page_directory, from + i * PAGE_SIZE, to + i * PAGE_SIZE, PAGE_TABLE_FLAGS);
+        map_page((uint64_t *)p->page_directory, from + i * PAGE_SIZE, to + i * PAGE_SIZE, PAGE_TABLE_FLAGS);
     }
 }
 

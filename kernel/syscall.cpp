@@ -61,7 +61,7 @@ uint64_t syscall(uint64_t syscall_id, uint64_t arg1, uint64_t arg2, uint64_t arg
     }
     else
     {
-        flock(&lck_syscall);
+        lock(&lck_syscall);
         stakframe_testing = stackframe;
         //  log("syscall", LOG_INFO) << "syscall " << syscall_id << "from : " << get_current_cpu()->current_process->process_name;
         uint64_t (*func)(uint64_t, ...) = reinterpret_cast<uint64_t (*)(uint64_t, ...)>(syscalls[syscall_id]);

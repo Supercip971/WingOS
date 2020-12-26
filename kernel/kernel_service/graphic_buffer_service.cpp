@@ -29,9 +29,11 @@ void graphic_buffer_service()
                 if (data->data1 == 0)
                 {
                     msg->response = hdr->framebuffer_width;
+                    log("graphic_buffer", LOG_INFO) << "fb width " << hdr->framebuffer_width;
                 }
                 else
                 {
+                    log("graphic_buffer", LOG_INFO) << "fb height" << hdr->framebuffer_height;
                     msg->response = hdr->framebuffer_height;
                 }
                 msg->has_been_readed = true;

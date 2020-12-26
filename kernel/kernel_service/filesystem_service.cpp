@@ -161,6 +161,10 @@ void file_system_service()
                 msg->response = -1;
                 break;
             }
+            if (msg->response == 0)
+            {
+                msg->response = -1;
+            }
 
             msg->has_been_readed = true;
             set_on_request_service(true);

@@ -68,7 +68,6 @@ void ata_driver::init()
     {
         status = ata_read(true, ATA_reg_command_status);
     }
-   // add_irq_handler(ata_irq_handle, 14);
 }
 
 ata_driver *ata_driver::the()

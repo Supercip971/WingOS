@@ -271,7 +271,7 @@ void e1000::init(pci_device *dev, uint8_t func)
 
     for (int i = 0; i < 6; i++)
     {
-        log("e1000", LOG_INFO) << i << " = " << get_mac_addr().mac[i];
+        log("e1000", LOG_INFO) << i << " = " << (uint32_t)get_mac_addr().mac[i];
     }
 
     for (int i = 0; i < 0x80; i++)

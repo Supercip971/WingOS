@@ -15,7 +15,7 @@ CHARDFLAGS := $(CFLAGS)               \
         -fno-pic                       \
         -no-pie \
         -m64 \
-		-O1 \
+		-Os \
 		-Werror \
 		-msse \
 		-mno-avx \

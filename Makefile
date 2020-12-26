@@ -27,7 +27,7 @@ CHARDFLAGS := $(CFLAGS)               \
         -m64 \
 		-Wall \
 		-Werror \
-        -O3 \
+        -Os \
         -mcmodel=kernel \
         -mno-80387                     \
         -mno-red-zone                  \
@@ -95,7 +95,7 @@ super:
 	@make -j12
 
 	@objdump kernel.elf -f -s -d --source > kernel.map
-	@make run -j12
+	@make run
 check:
 	@make clean
 	@make $(KERNEL_ELF) -j12

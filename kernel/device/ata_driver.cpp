@@ -114,18 +114,23 @@ void ata_driver::read(uint32_t where, uint32_t count, uint8_t *buffer)
     uint32_t off = 0;
     while (new_count-- > 0)
     {
-        uint8_t status = ata_read(true, ATA_reg_command_status);
+        wait(5);
+        uint8_t status = poll_status();
 
-        while (((status & 0x80) == 0x80) && ((status & 0x01) != 0x01))
+        if ((status & 0x1) || (status & 0x20))
         {
-            status = ata_read(true, ATA_reg_command_status);
-            asm volatile("pause");
+            /* Wait for the drive */
+            wait(5);
+
+            uint8_t error = ata_read(true, ATA_reg_error_feature);
+            log("ata", LOG_ERROR) << "ata error" << error;
+            return;
         }
 
         for (uint16_t i = 0; i < 256; i++)
         {
 
-            *((unsigned short *)buffer + off + i) = inw(ATA_PRIMARY + ATA_reg_data);
+            *((unsigned short *)buffer + (off + i)) = inw(ATA_PRIMARY + ATA_reg_data);
         }
         off += 256;
     }

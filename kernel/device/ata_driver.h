@@ -65,8 +65,17 @@ public:
             ata_read(true, ATA_reg_command_status);
         }
     }
+    inline uint8_t poll_status()
+    {
+        uint8_t status = ata_read(true, ATA_reg_command_status);
 
-    void read(uint32_t where, uint32_t count, uint8_t *buffer);
+        while ((status & 0x80))
+        {
+            status = ata_read(true, ATA_reg_command_status);
+            asm volatile("pause");
+        }
+        return status;
+    }
     bool get_ata_status();
     void irq_handle(uint64_t irq_handle_num);
     void init();

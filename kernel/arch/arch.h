@@ -6,7 +6,7 @@
 #define X64
 
 #ifdef X64
-#define STACK_SIZE 8192
+#define STACK_SIZE 16384
 extern stivale_struct boot_loader_data_copy;
 inline void outb(uint16_t port, uint8_t value)
 {

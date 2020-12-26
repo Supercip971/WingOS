@@ -18,15 +18,15 @@ namespace sys
     {
         fcurrent_seek_pos = at;
     }
-    uint8_t *file::read(uint8_t *buffer, uint64_t length)
+    size_t file::read(uint8_t *buffer, uint64_t length)
     {
         if (opened == false)
         {
             printf("file is not opened \n");
-            return nullptr;
+            return 0;
         }
-        read_file(fid, buffer, fcurrent_seek_pos, length);
-        return buffer;
+
+        return read_file(fid, buffer, fcurrent_seek_pos, length);
     }
 
     void file::open(const char *path)

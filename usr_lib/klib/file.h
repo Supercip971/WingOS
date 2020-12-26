@@ -1,5 +1,6 @@
 #pragma once
 #include <klib/kernel_file_system.h>
+#include <stddef.h>
 namespace sys
 {
 
@@ -16,8 +17,9 @@ namespace sys
         file(const char *path);
 
         void seek(uint64_t at);
+
         uint64_t get_cursor_pos() { return fcurrent_seek_pos; };
-        uint8_t *read(uint8_t *buffer, uint64_t length);
+        size_t read(uint8_t *buffer, uint64_t length);
 
         void open(const char *path);
         void close();

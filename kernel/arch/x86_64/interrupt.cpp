@@ -75,8 +75,6 @@ static idtr idt_descriptor = {
     .offset = (uint64_t)&idt[0],
 };
 
-uintptr_t rip_backtrace[32];
-
 ASM_FUNCTION void idt_flush(uint64_t);
 ASM_FUNCTION void syscall_asm_entry();
 
@@ -201,35 +199,12 @@ bool is_error(int intno)
 
 // backtrace
 
-void update_backtrace_array(InterruptStackFrame *stackframe, uint64_t *array)
-{
-
-    if (array[31] != stackframe->rip)
-    {
-        for (int i = 0; i < 31; i++)
-        {
-            array[i] = array[i + 1];
-        }
-        array[31] = stackframe->rip;
-    }
-}
 void update_backtrace(InterruptStackFrame *stackframe)
 {
-    update_backtrace_array(stackframe, get_current_cpu()->current_process->arch_info.rip_backtrace);
-    update_backtrace_array(stackframe, get_current_cpu()->local_backtrace);
+    get_current_cpu()->current_process->process_backtrace.add_entry(stackframe->rip);
+    get_current_cpu()->local_backtrace.add_entry(stackframe->rip);
 }
-void dump_backtrace(const char *msg, uint64_t *array)
-{
-    log("pic", LOG_ERROR) << "backtrace for : " << msg;
-    for (int i = 31; i >= 0; i--)
-    {
-        if (array != nullptr)
-        {
 
-            log("pic", LOG_ERROR) << "id " << i << " = " << array[i];
-        }
-    }
-}
 bool error = false;
 void interrupt_error_handle(InterruptStackFrame *stackframe)
 {
@@ -244,9 +219,10 @@ void interrupt_error_handle(InterruptStackFrame *stackframe)
 
     printf("\n");
 
-    log("pic", LOG_ERROR) << "backtrace : ";
-    dump_backtrace("current process", get_current_cpu()->current_process->arch_info.rip_backtrace);
-    dump_backtrace("current cpu", get_current_cpu()->local_backtrace);
+    log("pic", LOG_ERROR) << "current process backtrace : ";
+    get_current_cpu()->current_process->process_backtrace.dump_backtrace();
+    log("pic", LOG_ERROR) << "current cpu backtrace :";
+    get_current_cpu()->local_backtrace.dump_backtrace();
 
     if (get_current_cpu()->current_process != nullptr)
     {

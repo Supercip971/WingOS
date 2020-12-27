@@ -1,5 +1,6 @@
 #pragma once
 #include <arch.h>
+#include <backtrace.h>
 #include <int_value.h>
 #include <process_context.h>
 #define MAX_PROCESS 64
@@ -66,6 +67,7 @@ struct process
     uint8_t interrupt_handle_list[8]; // max 8 interrupt per process
 
     process_buffer pr_buff[3];
+    backtrace process_backtrace;
 };
 
 struct message_identifier

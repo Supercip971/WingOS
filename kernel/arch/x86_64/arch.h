@@ -4,6 +4,7 @@
 #include <lock.h>
 #include <virtual.h>
 typedef main_page_table arch_page_table;
+typedef uint64_t backtrace_entry_type;
 #define arch_stackframe InterruptStackFrame
 void echo_out(const char *data, unsigned int size);
 
@@ -22,7 +23,6 @@ struct arch_process_data
     uint64_t sse_context[128] __attribute__((aligned(16)));
 
     uint64_t page_directory = 0;
-    uint64_t rip_backtrace[32];
 };
 inline void
 halt_interrupt()

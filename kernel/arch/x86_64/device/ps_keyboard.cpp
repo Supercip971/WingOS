@@ -134,9 +134,7 @@ ps_keyboard::ps_keyboard()
 }
 void ps_keyboard_interrupt_handler(unsigned int irq)
 {
-    lock(&ps_lock);
     ps_keyboard::the()->interrupt_handler();
-    unlock(&ps_lock);
 }
 void ps_keyboard::set_key(bool state, uint8_t keycode)
 {
@@ -165,7 +163,7 @@ void ps_keyboard::init()
 void ps_keyboard::interrupt_handler()
 {
     uint8_t state = inb(0x64);
-    if (state & 1)
+    while (state & 1 && (state & 0x20) == 0)
     {
         uint8_t key_code = inb(0x60);
         uint8_t scan_code = key_code & 0x7f;
@@ -175,6 +173,7 @@ void ps_keyboard::interrupt_handler()
         {
             log("keyboard", LOG_INFO) << asciiDefault[scan_code];
         }
+        state = inb(0x64);
     }
 }
 

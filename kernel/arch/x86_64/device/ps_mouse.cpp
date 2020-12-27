@@ -76,9 +76,7 @@ uint8_t ps_mouse::read()
 
 void irq_handle_mouse(unsigned int handler)
 {
-    lock(&ps_lock);
     ps_mouse::the()->interrupt_handler(handler);
-    unlock(&ps_lock);
 }
 
 void ps_mouse::init()
@@ -114,21 +112,12 @@ void ps_mouse::init()
     write(0xF6);
     read();
 
-    log("ps2 mouse", LOG_INFO) << "set mouse sample rate";
-    // set sample rate
-    set_sample_rate(20);
-
-    log("ps2 mouse", LOG_INFO) << "set mouse resolution";
-    // set resolution
-    set_resolution(3);
-
     log("ps2 mouse", LOG_INFO) << "enable mouse data receiving";
     // enable data receiving
     write(0xF4);
     read();
 }
-
-void ps_mouse::interrupt_handler(unsigned int irq)
+void ps_mouse::update_packets()
 {
 
     if (mouse_cycle == 0)
@@ -177,6 +166,15 @@ void ps_mouse::interrupt_handler(unsigned int irq)
         {
             *ptr_to_update_y = mouse_y;
         }
+    }
+}
+void ps_mouse::interrupt_handler(unsigned int irq)
+{
+    uint8_t status = inb(0x64);
+    while ((status & 0x20) == 0x20 && (status & 0x1))
+    {
+        update_packets();
+        status = inb(0x64);
     }
 }
 

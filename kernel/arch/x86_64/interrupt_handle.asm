@@ -3,8 +3,7 @@
 section .text
 global idt_flush
 idt_flush:
-    mov  rax, [rsp + 4]
-    lidt  [rax]
+    lidt  [rdi]
     ret
 
 %macro push_all 0

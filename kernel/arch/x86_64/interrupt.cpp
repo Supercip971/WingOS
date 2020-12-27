@@ -18,7 +18,6 @@
 #include <smp.h>
 #include <syscall.h>
 #include <utility.h>
-uint8_t current = 0;
 
 extern lock_type locker_print;
 extern lock_type print_locker;
@@ -28,44 +27,42 @@ struct interrupt_handler_specific_array
     int current_array_length = 0;
 };
 
-interrupt_handler_specific_array irq_hdlr_array[32];
+interrupt_handler_specific_array irq_array_handler[32];
 
-lock_type lock = {0};
-const char *exception_messages[] = {"Division By Zero",
-                                    "Debug",
-                                    "Non Maskable Interrupt",
-                                    "Breakpoint",
-                                    "Into Detected Overflow",
-                                    "Out of Bounds",
-                                    "Invalid Opcode",
-                                    "No Coprocessor",
+const char *interrupt_exception_name[] = {
+    "Division By 0",
+    "Debug interrupt",
+    "NMI (Non Maskable Interrupt)",
+    "Breakpoint interrupt",
+    "invalid (4)", // int 4 is not valid in 64 bit
+    "table overflow",
+    "Invalid opcode",
+    "No FPU",
+    "Double fault",
+    "invalid (9)", // int 9 is not used
+    "invalid TSS",
+    "Segment not present",
+    "invalid stack",
+    "General protection fault",
+    "Page fault",
+    "invalid (15)",
+    "x87 FPU fault",
+    "Alignment fault",
+    "Machine check fault",
+    "SIMD floating point exception",
+    "vitualisation excpetion",
+    "control protection exception",
+    "invalid (22)",
+    "invalid (23)",
 
-                                    "Double Fault",
-                                    "Coprocessor Segment Overrun",
-                                    "Bad TSS",
-                                    "Segment Not Present",
-                                    "Stack Fault",
-                                    "General Protection Fault",
-                                    "Page Fault",
-                                    "Unknown Interrupt",
-
-                                    "Coprocessor Fault",
-                                    "Alignment Check",
-                                    "Machine Check",
-                                    "Reserved",
-                                    "Reserved",
-                                    "Reserved",
-                                    "Reserved",
-                                    "Reserved",
-
-                                    "Reserved",
-                                    "Reserved",
-                                    "Reserved",
-                                    "Reserved",
-                                    "Reserved",
-                                    "Reserved",
-                                    "Reserved",
-                                    "Reserved"};
+    "invalid (24)",
+    "invalid (25)",
+    "invalid (26)",
+    "invalid (27)",
+    "invalid (28)",
+    "invalid (29)",
+    "invalid (30)",
+    "invalid (31)"};
 
 extern uintptr_t __interrupt_vector[128];
 static idt_entry idt[IDT_ENTRY_COUNT];
@@ -78,27 +75,11 @@ static idtr idt_descriptor = {
 ASM_FUNCTION void idt_flush(uint64_t);
 ASM_FUNCTION void syscall_asm_entry();
 
-static idt_entry register_interrupt_handler(void *handler, uint8_t ist, uint8_t type)
-{
-    uintptr_t p = (uintptr_t)handler;
-    idt_entry idt;
-
-    idt.offset_low16 = (uint16_t)p;
-    idt.cs = gdt_selector::KERNEL_CODE;
-    idt.ist = ist;
-    idt.attributes = type;
-    idt.offset_mid16 = (uint16_t)(p >> 16);
-    idt.offset_high32 = (uint32_t)(p >> 32);
-    idt.zero = 0;
-
-    return idt;
-}
-
-void add_irq_handler(irq_handler_func func, unsigned int irq_target)
+void add_irq_handler(irq_handler_func func, uint8_t irq_target)
 {
     if (irq_target <= 32)
     {
-        interrupt_handler_specific_array *target = &irq_hdlr_array[irq_target];
+        interrupt_handler_specific_array *target = &irq_array_handler[irq_target];
         if (target->current_array_length < 7)
         {
             target->function_list[target->current_array_length] = func;
@@ -111,7 +92,7 @@ void add_irq_handler(irq_handler_func func, unsigned int irq_target)
 
 void call_irq_handlers(unsigned int irq, InterruptStackFrame *isf)
 {
-    interrupt_handler_specific_array &target = irq_hdlr_array[irq];
+    interrupt_handler_specific_array &target = irq_array_handler[irq];
     if (target.current_array_length == 0)
     {
         return;
@@ -126,63 +107,27 @@ void init_irq_handlers()
 {
     for (int i = 0; i < 32; i++)
     {
-        irq_hdlr_array[i].current_array_length = 0;
+        irq_array_handler[i].current_array_length = 0;
     }
 }
 
 void init_idt()
 {
-    log("idt", LOG_DEBUG) << "loading idt";
-    for (int i = 0; i < 32; i++)
-    {
-        rip_backtrace[i] = -32;
-    }
 
     log("idt", LOG_INFO) << "loading idt table";
     for (int i = 0; i < 32 + 48; i++)
     {
-        idt[i] = register_interrupt_handler((void *)__interrupt_vector[i], 0, 0x8e);
+        idt[i] = idt_entry((void *)__interrupt_vector[i], 0, INTGATE);
     }
-    idt[127] = register_interrupt_handler((void *)__interrupt_vector[48], 0, 0x8e);
-    idt[100] = register_interrupt_handler((void *)__interrupt_vector[49], 0, 0x8e);
+    idt[127] = idt_entry((void *)__interrupt_vector[48], 0, INTGATE);
+    idt[100] = idt_entry((void *)__interrupt_vector[49], 0, INTGATE);
 
     log("idt", LOG_DEBUG) << "flushing idt";
     init_irq_handlers();
-    asm volatile("lidt [%0]"
-                 :
-                 : "m"(idt_descriptor));
+    idt_flush((uint64_t)&idt_descriptor);
 };
 
-void dumpregister(InterruptStackFrame *stck)
-{
-    // this is the least readable code EVER
-    printf(" ===== cpu dump ===== \n");
-    printf(" ===== cs and ss ===== \n");
-
-    printf("cs = %x | ss = %x \n", stck->cs, stck->ss);
-    printf(" ===== utility ===== \n");
-    printf("rsp = %x | rbp = %x | rdi = %x \n", stck->rsp, stck->rbp, stck->rdi);
-    printf("rsi = %x | rdx = %x | rcx = %x \n", stck->rsi, stck->rdx, stck->rcx);
-    printf("rbx = %x | rax = %x |  \n", stck->rbx, stck->rax);
-    printf(" ===== other ===== \n");
-    printf("error code = %x \n", stck->error_code);
-    printf("interrupt number = %x \n", stck->int_no);
-    printf("rip = %x \n", stck->rip);
-    printf("flags = %x \n", stck->rflags);
-
-    uintptr_t CRX;
-    asm volatile("mov %0, cr2"
-                 : "=r"(CRX));
-    printf("CR2 = %x \n", CRX);
-    asm volatile("mov %0, cr3"
-                 : "=r"(CRX));
-    printf("CR3 = %x \n", CRX);
-    asm volatile("mov %0, cr4"
-                 : "=r"(CRX));
-    printf("CR4 = %x \n", CRX);
-}
-
-bool is_error(int intno)
+bool is_interrupt_error(uint8_t intno)
 {
     if (intno > 31)
     {
@@ -211,7 +156,7 @@ void interrupt_error_handle(InterruptStackFrame *stackframe)
     error = true;
     log("pic", LOG_FATAL) << "!!! fatal interrupt error !!!" << stackframe->rip;
     log("pic", LOG_ERROR) << "ID   : " << stackframe->int_no;
-    log("pic", LOG_ERROR) << "type : " << exception_messages[stackframe->int_no];
+    log("pic", LOG_ERROR) << "type : " << interrupt_exception_name[stackframe->int_no];
 
     printf("\n");
 
@@ -227,13 +172,12 @@ void interrupt_error_handle(InterruptStackFrame *stackframe)
     if (get_current_cpu()->current_process != nullptr)
     {
         log("pic", LOG_INFO) << "in process: " << get_current_cpu()->current_process->process_name;
-
         log("pic", LOG_INFO) << "in processor : " << get_current_cpu()->current_process->processor_target;
         dump_process();
     }
     while (true)
     {
-        asm volatile("hlt");
+        halt_interrupt();
     }
 }
 
@@ -247,7 +191,7 @@ ASM_FUNCTION uintptr_t interrupts_handler(InterruptStackFrame *stackframe)
         while (error)
             ;
     }
-    if (is_error(stackframe->int_no))
+    if (is_interrupt_error(stackframe->int_no))
     {
         locker_print.data = 0;
         print_locker.data = 0;

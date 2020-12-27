@@ -251,7 +251,7 @@ process *get_next_process(uint64_t current_id)
         return get_current_cpu()->current_process;
     }
 
-    uint64_t dad = apic::the()->get_current_processor_id();
+    uint64_t dad = get_current_cpu_id();
     for (uint64_t i = current_id + 1; i < MAX_PROCESS; i++)
     {
 
@@ -276,8 +276,7 @@ process *get_next_process(uint64_t current_id)
     }
 
     log("proc", LOG_ERROR) << "no process found";
-    log("proc", LOG_ERROR) << "from cpu : " << apic::the()->get_current_processor_id();
-    log("proc", LOG_ERROR) << "maybe from : " << get_current_cpu()->current_process->process_name;
+    log("proc", LOG_ERROR) << "from cpu : " << get_current_cpu_id();
 
     dump_process();
     return get_current_cpu()->current_process;

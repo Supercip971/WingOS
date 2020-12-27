@@ -60,6 +60,7 @@ struct lock_type
 };
 
 unsigned int get_cpu_count();
+unsigned int get_current_cpu_id();
 #define lock klock
 #define flock kflock
 #define unlock kunlock

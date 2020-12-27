@@ -11,7 +11,6 @@ ASM_FUNCTION void asm_sse_load(uintptr_t addr);
 void set_current_data(cpu *dat)
 {
 
-    dat->me = dat;
     dat->current_processor_id = apic::the()->get_current_processor_id();
     x86_wrmsr(LOCAL_DATA_DMSR, (uintptr_t)dat);
 }

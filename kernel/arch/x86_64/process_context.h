@@ -1,9 +1,9 @@
 #pragma once
 #include <64bit.h>
 #include <arch.h>
+#include <device/local_data.h>
 #include <process.h>
 #include <stdint.h>
-
 struct process;
 void send_switch_process_to_all_cpu();
 
@@ -22,3 +22,6 @@ uint64_t interpret_cpu_request(uint64_t cpu); // with architecture with no multi
 void init_process_paging(process *pro, bool is_user);
 
 void init_process_arch_ext(process *pro);
+
+process *get_current_cpu_process();
+void set_current_cpu_process(process *new_proc);

@@ -10,10 +10,11 @@
 #include <smp.h>
 #include <virtual.h>
 #define LOCAL_DATA_DMSR 0xC0000100
+struct process;
 class cpu
 {
 public:
-    void *me;
+    process *current_process;
     uint64_t stack_base;
     uint64_t current_processor_id;
     idtr cidt;
@@ -23,7 +24,6 @@ public:
 
     uint8_t stack_data[8192] __attribute__((aligned(4096)));
     uint8_t stack_data_interrupt[8192] __attribute__((aligned(4096)));
-    process *current_process;
     uint64_t lapic_id;
     main_page_table *page_table;
 

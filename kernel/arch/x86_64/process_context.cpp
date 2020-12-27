@@ -131,3 +131,11 @@ void init_process_arch_ext(process *pro)
 
     get_current_cpu()->save_sse(pro->arch_info.sse_context);
 }
+process *get_current_cpu_process()
+{
+    return get_current_cpu()->current_process;
+}
+void set_current_cpu_process(process *new_proc)
+{
+    get_current_cpu()->current_process = new_proc;
+}

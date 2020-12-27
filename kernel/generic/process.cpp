@@ -1,7 +1,5 @@
 #include <64bit.h>
 #include <com.h>
-#include <device/apic.h>
-#include <device/local_data.h>
 #include <kernel.h>
 #include <liballoc.h>
 #include <logging.h>
@@ -78,8 +76,7 @@ void init_multi_process(func start)
     log("proc", LOG_DEBUG) << "loading multi processing";
 
     process_array = reinterpret_cast<process *>(malloc(sizeof(process) * MAX_PROCESS + 4096));
-
-    get_current_cpu()->current_process = nullptr;
+    set_current_cpu_process(nullptr);
 
     for (size_t i = 0; i < MAX_PROCESS; i++)
     {
@@ -225,9 +222,9 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
     init_process_paging(process_to_add, user);
 
     init_process_arch_ext(process_to_add);
-    if (get_current_cpu()->current_process == 0x0)
+    if (get_current_cpu_process() == 0x0)
     {
-        get_current_cpu()->current_process = process_to_add;
+        set_current_cpu_process(process_to_add);
     }
     if (start_direct == true)
     {
@@ -248,7 +245,7 @@ process *get_next_process(uint64_t current_id)
 {
     if (process_locked != 0)
     {
-        return get_current_cpu()->current_process;
+        return get_current_cpu_process();
     }
 
     uint64_t dad = get_current_cpu_id();
@@ -277,9 +274,10 @@ process *get_next_process(uint64_t current_id)
 
     log("proc", LOG_ERROR) << "no process found";
     log("proc", LOG_ERROR) << "from cpu : " << get_current_cpu_id();
+    log("proc", LOG_ERROR) << "maybe from : " << get_current_cpu_process()->process_name;
 
     dump_process();
-    return get_current_cpu()->current_process;
+    return get_current_cpu_process();
 }
 
 uintptr_t process_switch_handler(arch_stackframe *isf, bool switch_all) // switch all is true only for pit/hpet/... interrupt
@@ -305,13 +303,13 @@ uintptr_t process_switch_handler(arch_stackframe *isf, bool switch_all) // switc
     }
     process *i = nullptr;
 
-    if (get_current_cpu()->current_process == NULL)
+    if (get_current_cpu_process() == NULL)
     {
         i = get_next_process(0);
     }
     else
     {
-        i = get_next_process(get_current_cpu()->current_process->kpid);
+        i = get_next_process(get_current_cpu_process()->kpid);
     }
 
     if (i == 0)
@@ -377,7 +375,7 @@ process_message *create_process_message(size_t tpid, uintptr_t data_addr, uint64
     memcpy((void *)memory_kernel_copy, (void *)data_addr, data_length);
     todo->content_address = memory_kernel_copy;
 
-    todo->from_pid = get_current_cpu()->current_process->upid;
+    todo->from_pid = get_current_cpu_process()->upid;
     todo->to_pid = tpid;
 
     process_message *copy = (process_message *)malloc(sizeof(process_message));
@@ -408,18 +406,18 @@ process_message *read_message()
 {
     for (uint64_t i = 0; i < MAX_PROCESS_MESSAGE_QUEUE; i++)
     {
-        if (get_current_cpu()->current_process->msg_list[i].entry_free_to_use == false)
+        if (get_current_cpu_process()->msg_list[i].entry_free_to_use == false)
         {
-            if (get_current_cpu()->current_process->msg_list[i].has_been_readed == false)
+            if (get_current_cpu_process()->msg_list[i].has_been_readed == false)
             {
-                return &get_current_cpu()->current_process->msg_list[i];
+                return &get_current_cpu_process()->msg_list[i];
             }
         }
     }
 
-    if (get_current_cpu()->current_process->is_ORS == true)
+    if (get_current_cpu_process()->is_ORS == true)
     {
-        get_current_cpu()->current_process->should_be_active = false;
+        get_current_cpu_process()->should_be_active = false;
     }
 
     return 0x0;
@@ -428,7 +426,7 @@ process_message *read_message()
 uint64_t message_response(process_message *message_id)
 {
 
-    if (message_id->from_pid != get_current_cpu()->current_process->upid)
+    if (message_id->from_pid != get_current_cpu_process()->upid)
     {
         log("process", LOG_ERROR) << "not valid process from" << message_id->from_pid;
         return -1;
@@ -466,8 +464,8 @@ uint64_t message_response(process_message *message_id)
 void set_on_request_service(bool is_ORS)
 {
 
-    get_current_cpu()->current_process->is_ORS = is_ORS;
-    get_current_cpu()->current_process->should_be_active = true;
+    get_current_cpu_process()->is_ORS = is_ORS;
+    get_current_cpu_process()->should_be_active = true;
 }
 
 void set_on_request_service(bool is_ORS, uint64_t pid)
@@ -480,7 +478,7 @@ void set_on_request_service(bool is_ORS, uint64_t pid)
 
 void on_request_service_update()
 {
-    get_current_cpu()->current_process->should_be_active = false;
+    get_current_cpu_process()->should_be_active = false;
 }
 
 uint64_t get_process_global_data_copy(uint64_t offset, const char *process_name)
@@ -508,31 +506,31 @@ uint64_t get_process_global_data_copy(uint64_t offset, const char *process_name)
 
 void *get_current_process_global_data(uint64_t offset, uint64_t length)
 {
-    if (get_current_cpu()->current_process->global_process_memory_length < offset + length)
+    if (get_current_cpu_process()->global_process_memory_length < offset + length)
     {
         log("process", LOG_ERROR) << "getting out of range process data";
         return nullptr;
     }
     else
     {
-        return get_current_cpu()->current_process->global_process_memory + offset;
+        return get_current_cpu_process()->global_process_memory + offset;
     }
 }
 
 void set_on_interrupt_process(uint8_t added_int)
 {
-    get_current_cpu()->current_process->is_on_interrupt_process = true;
+    get_current_cpu_process()->is_on_interrupt_process = true;
 
     for (int i = 0; i < 8; i++)
     {
-        if (get_current_cpu()->current_process->interrupt_handle_list[i] == 0)
+        if (get_current_cpu_process()->interrupt_handle_list[i] == 0)
         {
-            get_current_cpu()->current_process->interrupt_handle_list[i] = added_int;
+            get_current_cpu_process()->interrupt_handle_list[i] = added_int;
             return;
         }
     }
 
-    log("process", LOG_ERROR) << "no free interrupt entry for process", get_current_cpu()->current_process->process_name;
+    log("process", LOG_ERROR) << "no free interrupt entry for process", get_current_cpu_process()->process_name;
 }
 
 uint64_t upid_to_kpid(uint64_t upid)
@@ -583,7 +581,7 @@ bool add_process_buffer(process_buffer *buf, uint64_t data_length, uint8_t *raw)
 void sleep(uint64_t count)
 {
     lock_process();
-    get_current_cpu()->current_process->sleeping += count;
+    get_current_cpu_process()->sleeping += count;
     unlock_process();
     yield();
 }

@@ -116,3 +116,5 @@ inline static void x86_wrmsr(uintptr_t msr, uintptr_t value)
 }
 
 #define POKE(addr) (*((volatile uintptr_t *)(addr)))
+
+void dump_register(InterruptStackFrame *stck);

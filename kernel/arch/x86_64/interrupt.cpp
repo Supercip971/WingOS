@@ -215,7 +215,7 @@ void interrupt_error_handle(InterruptStackFrame *stackframe)
 
     printf("\n");
 
-    dumpregister(stackframe);
+    dump_register(stackframe);
 
     printf("\n");
 

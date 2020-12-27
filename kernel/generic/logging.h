@@ -1,5 +1,6 @@
 #pragma once
 #include <com.h>
+#include <print.h>
 #include <stdint.h>
 enum log_state
 {

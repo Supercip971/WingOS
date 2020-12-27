@@ -61,6 +61,10 @@ unsigned int get_current_cpu_id()
 {
     return apic::the()->get_current_processor_id();
 }
+bool echo_out(const char *data, unsigned int size)
+{
+    return com_write_strn(data, size);
+}
 ASM_FUNCTION void kernel_start(stivale_struct *bootloader_data)
 {
     asm volatile("and rsp, -16");

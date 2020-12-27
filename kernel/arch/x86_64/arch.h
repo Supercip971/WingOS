@@ -6,7 +6,7 @@
 typedef main_page_table arch_page_table;
 typedef uint64_t backtrace_entry_type;
 #define arch_stackframe InterruptStackFrame
-void echo_out(const char *data, unsigned int size);
+bool echo_out(const char *data, unsigned int size);
 
 typedef void (*func)();
 //int map_page(uint64_t phys_addr, uint64_t virt_addr, uint64_t flags);

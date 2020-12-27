@@ -25,7 +25,7 @@ void print_service()
             while (locker_print.data != 0)
             {
             }
-            com_write_strn((char *)msg->content_address, msg->content_length);
+            echo_out((char *)msg->content_address, msg->content_length);
             msg->has_been_readed = true;
             msg->response = 10; // 10 for yes
         }

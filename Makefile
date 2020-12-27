@@ -1,20 +1,26 @@
-CFILES    := $(shell find kernel/ -type f -name '*.cpp')
-HFILES    := $(shell find kernel/ -type f -name '*.h')
+ARCH := x86_64
+END_PATH := kernel/generic kernel/arch/$(ARCH)
+
+
+
+CFILES    := $(shell find $(END_PATH) -type f -name '*.cpp')
+HFILES    := $(shell find $(END_PATH) -type f -name '*.h')
 USRCFILES    := $(shell find usr_lib/ -type f -name '*.cpp')
 USRHFILES    := $(shell find usr_lib/ -type f -name '*.h')
 USRAPPCFILES := $(shell find app/ -type f -name '*.cpp')
 USRAPPHFILES := $(shell find app/ -type f -name '*.h')
 CC         = ./cross_compiler/bin/x86_64-pc-elf-g++
 LD         = ./cross_compiler/bin/x86_64-pc-elf-ld
-OBJ := $(shell find kernel/ -type f -name '*.o')
+OBJ := $(shell find $(END_PATH) -type f -name '*.o')
+
 KERNEL_HDD = ./build/disk.hdd
 KERNEL_RAMDISK = ./build/ramdisk.hdd
 
 APP_FS_CHANGE = ./usr_lib/ ./app/
 APP_FILE_CHANGE := $(shell find $(APP_FS_CHANGE) -type f -name '*.cpp')
 KERNEL_ELF = kernel.elf
-ASMFILES := $(shell find kernel/ -type f -name '*.asm')
-
+ASMFILES := $(shell find $(END_PATH) -type f -name '*.asm')
+LINK_PATH := ./kernel/arch/$(ARCH)/linker.ld
 OBJFILES := $(patsubst %.cpp,%.o,$(CFILES))
 ASMOBJFILES := $(patsubst %.asm,%.o,$(ASMFILES))
 CHARDFLAGS := $(CFLAGS)               \
@@ -33,18 +39,19 @@ CHARDFLAGS := $(CFLAGS)               \
         -mno-red-zone                  \
         -fno-rtti \
         -fno-exceptions \
-		-ffreestanding                 \
+				-ffreestanding                 \
         -fno-stack-protector           \
         -fno-omit-frame-pointer        \
-		-fno-isolate-erroneous-paths-attribute \
-		-fno-delete-null-pointer-checks \
-		-Ikernel/                         \
+				-fno-isolate-erroneous-paths-attribute \
+				-fno-delete-null-pointer-checks \
+				-I./kernel/generic                        \
+				-I./kernel/arch/$(ARCH) \
 
 LDHARDFLAGS := $(LDFLAGS)        \
         -nostdlib                 \
         -no-pie                   \
         -z max-page-size=0x1000   \
-        -T kernel/linker.ld
+        -T $(LINK_PATH)
 
 .PHONY: clean
 .DEFAULT_GOAL = $(KERNEL_HDD)
@@ -102,7 +109,7 @@ check:
 	@make app -j12
 
 %.o: %.cpp %.h
-	@echo "cpp [BUILD] $<"
+	@echo "cpp [BUILD] $< $(CHARDFLAGS)"
 	@$(CC) $(CHARDFLAGS) -c $< -o $@
 
 %.o: %.asm

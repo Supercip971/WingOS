@@ -18,36 +18,6 @@ void tss_set_rsp0(uint64_t rsp0)
     get_current_cpu()->ctss.rsp0 = rsp0;
 };
 
-static void gdt_set_descriptor(gdt_descriptor *gdt_descriptors, uint16_t sel,
-                               uint8_t flags, uint8_t gran)
-{
-    gdt_descriptor *descriptor =
-        &gdt_descriptors[sel / sizeof(*gdt_descriptors)];
-    descriptor->flags = flags;
-    descriptor->granularity = (gran << 4) | 0x0F;
-    descriptor->limit_low = 0xFFFF;
-
-    log("gdt", LOG_INFO) << "setup gdt descriptor = " << *((uint64_t *)descriptor);
-}
-
-static void gdt_set_xdescriptor(gdt_descriptor *gdt_descriptors, uint16_t sel,
-                                uint8_t flags, uint8_t gran, uintptr_t base,
-                                uintptr_t limit)
-{
-    gdt_xdescriptor *descriptor =
-        (gdt_xdescriptor *)(&gdt_descriptors[sel / sizeof(*gdt_descriptors)]);
-
-    descriptor->low.flags = flags;
-    descriptor->low.granularity = (gran << 4) | ((limit >> 16) & 0x0F);
-    descriptor->low.limit_low = limit & 0xFFFF;
-    descriptor->low.base_low = base & 0xFFFF;
-    descriptor->low.base_mid = ((base >> 16) & 0xFF);
-    descriptor->low.base_high = ((base >> 24) & 0xFF);
-    descriptor->high.base_xhigh = ((base >> 32) & 0xFFFFFFFF);
-    descriptor->high.reserved = 0;
-    log("gdt", LOG_INFO) << "setup xgdt descriptor = " << *((uint64_t *)descriptor);
-}
-
 void __attribute__((optimize("O0"))) setup_gdt()
 {
     log("gdt", LOG_DEBUG) << "loading gdt";
@@ -60,16 +30,15 @@ void __attribute__((optimize("O0"))) setup_gdt()
     memzero(&gdt_descriptors, sizeof(gdt_descriptors[0]) * 64);
 
     log("gdt", LOG_INFO) << "setting gdt entry";
-    gdt_set_descriptor(gdt_descriptors, gdt_selector::KERNEL_CODE, gdt_flags::PRESENT | gdt_flags::CS,
-                       gdt_granularity::LONG_MODE_GRANULARITY);
-    gdt_set_descriptor(gdt_descriptors, gdt_selector::KERNEL_DATA,
-                       gdt_flags::PRESENT | gdt_flags::DS | gdt_flags::WRITABLE, 0);
-    gdt_set_descriptor(gdt_descriptors, gdt_selector::USER_DATA,
-                       gdt_flags::PRESENT | gdt_flags::DS | gdt_flags::USER | gdt_flags::WRITABLE, 0);
-    gdt_set_descriptor(gdt_descriptors, gdt_selector::USER_CODE,
-                       gdt_flags::PRESENT | gdt_flags::CS | gdt_flags::USER, gdt_granularity::LONG_MODE_GRANULARITY);
-    gdt_set_xdescriptor(gdt_descriptors, gdt_selector::TSS_SELECTOR, gdt_flags::PRESENT | gdt_flags::TSS, 0,
-                        tss_base, tss_limit);
+
+    gdt_descriptors[GDT_ARRAY_SEL(gdt_selector::KERNEL_CODE)] = gdt_descriptor(gdt_flags::CS, gdt_granularity::LONG_MODE_GRANULARITY);
+    gdt_descriptors[GDT_ARRAY_SEL(gdt_selector::KERNEL_DATA)] = gdt_descriptor(gdt_flags::DS | gdt_flags::WRITABLE, 0);
+    gdt_descriptors[GDT_ARRAY_SEL(gdt_selector::USER_DATA)] = gdt_descriptor(gdt_flags::DS | gdt_flags::USER | gdt_flags::WRITABLE, 0);
+    gdt_descriptors[GDT_ARRAY_SEL(gdt_selector::USER_CODE)] = gdt_descriptor(gdt_flags::CS | gdt_flags::USER, gdt_granularity::LONG_MODE_GRANULARITY);
+
+    gdt_xdescriptor *xdescriptor =
+        (gdt_xdescriptor *)(&gdt_descriptors[GDT_ARRAY_SEL(gdt_selector::TSS_SELECTOR)]);
+    *xdescriptor = gdt_xdescriptor(gdt_flags::TSS, tss_base, tss_limit);
 
     get_current_cpu()->cgdt.addr = (uint64_t)&gdt_descriptors;
     get_current_cpu()->cgdt.len = sizeof(gdt_descriptors[0]) * GDT_DESCRIPTORS;
@@ -109,17 +78,14 @@ void gdt_ap_init()
     memzero(d, sizeof(gdtr));
 
     log("gdt ap", LOG_INFO) << "setting gdt entry";
-    gdt_set_descriptor(new_gdt_descriptors, gdt_selector::KERNEL_CODE, gdt_flags::PRESENT | gdt_flags::CS,
-                       gdt_granularity::LONG_MODE_GRANULARITY);
-    gdt_set_descriptor(new_gdt_descriptors, gdt_selector::KERNEL_DATA,
-                       gdt_flags::PRESENT | gdt_flags::DS | gdt_flags::WRITABLE, 0);
-    gdt_set_descriptor(new_gdt_descriptors, gdt_selector::USER_DATA,
-                       gdt_flags::PRESENT | gdt_flags::DS | gdt_flags::USER | gdt_flags::WRITABLE, 0);
-    gdt_set_descriptor(new_gdt_descriptors, gdt_selector::USER_CODE,
-                       gdt_flags::PRESENT | gdt_flags::CS | gdt_flags::USER, gdt_granularity::LONG_MODE_GRANULARITY);
-    gdt_set_xdescriptor(new_gdt_descriptors, gdt_selector::TSS_SELECTOR, gdt_flags::PRESENT | gdt_flags::TSS, 0,
-                        tss_base, tss_limit);
+    new_gdt_descriptors[GDT_ARRAY_SEL(gdt_selector::KERNEL_CODE)] = gdt_descriptor(gdt_flags::CS, gdt_granularity::LONG_MODE_GRANULARITY);
+    new_gdt_descriptors[GDT_ARRAY_SEL(gdt_selector::KERNEL_DATA)] = gdt_descriptor(gdt_flags::DS | gdt_flags::WRITABLE, 0);
+    new_gdt_descriptors[GDT_ARRAY_SEL(gdt_selector::USER_DATA)] = gdt_descriptor(gdt_flags::DS | gdt_flags::USER | gdt_flags::WRITABLE, 0);
+    new_gdt_descriptors[GDT_ARRAY_SEL(gdt_selector::USER_CODE)] = gdt_descriptor(gdt_flags::CS | gdt_flags::USER, gdt_granularity::LONG_MODE_GRANULARITY);
 
+    gdt_xdescriptor *xdescriptor =
+        (gdt_xdescriptor *)(&new_gdt_descriptors[GDT_ARRAY_SEL(gdt_selector::TSS_SELECTOR)]);
+    *xdescriptor = gdt_xdescriptor(gdt_flags::TSS, tss_base, tss_limit);
     get_current_cpu()->cgdt.addr = (uint64_t)new_gdt_descriptors;
     get_current_cpu()->cgdt.len = sizeof(gdt_descriptor) * GDT_DESCRIPTORS - 1;
 

@@ -11,7 +11,6 @@ enum gdt_selector : uint16_t
     USER_DATA = 0x18,
     TSS_SELECTOR = 0x28,
 };
-
 enum gdt_flags : uint8_t
 {
     WRITABLE = 0b10,
@@ -41,8 +40,20 @@ struct gdt_descriptor
     uint8_t flags;
     uint8_t granularity; /* and high limit */
     uint8_t base_high;
+
+    gdt_descriptor(){};
+    gdt_descriptor(uint8_t flag, uint8_t gran)
+    {
+        base_high = 0;
+        base_mid = 0;
+        base_low = 0;
+        flags = flag | gdt_flags::PRESENT;
+        granularity = (gran << 4) | 0x0F;
+        limit_low = 0xFFFF;
+    }
 } __attribute__((packed));
 
+#define GDT_ARRAY_SEL(a) a / sizeof(gdt_descriptor)
 struct gdt_xdescriptor
 {
     gdt_descriptor low;
@@ -51,6 +62,17 @@ struct gdt_xdescriptor
         uint32_t base_xhigh;
         uint32_t reserved;
     } high;
+    gdt_xdescriptor(uint8_t flag, uintptr_t base, uintptr_t limit)
+    {
+        low.flags = flag | gdt_flags::PRESENT;
+        low.granularity = (0 << 4) | ((limit >> 16) & 0x0F);
+        low.limit_low = limit & 0xFFFF;
+        low.base_low = base & 0xFFFF;
+        low.base_mid = ((base >> 16) & 0xFF);
+        low.base_high = ((base >> 24) & 0xFF);
+        high.base_xhigh = ((base >> 32) & 0xFFFFFFFF);
+        high.reserved = 0;
+    }
 } __attribute__((packed));
 
 struct tss

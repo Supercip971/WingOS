@@ -1,4 +1,4 @@
-
+// this code is bad !! don't look at it i should die
 #include <arch.h>
 #include <device/ata_driver.h>
 #include <filesystem/echfs.h>

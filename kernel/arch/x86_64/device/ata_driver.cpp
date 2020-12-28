@@ -134,10 +134,8 @@ void ata_driver::read(uint64_t where, uint32_t count, uint8_t *buffer)
             log("ata", LOG_ERROR) << "ata error" << error;
             return;
         }
-
         for (uint16_t i = 0; i < 256; i++)
         {
-
             *((unsigned short *)buffer + (off + i)) = inw(ATA_PRIMARY + ATA_reg_data);
         }
         off += 256;

@@ -1,4 +1,5 @@
 #pragma once
+#include <io_device.h>
 #include <stdint.h>
 enum ATA_IO
 {
@@ -40,7 +41,7 @@ enum ATA_data
     ATA_state_error = 0x01
 };
 
-class ata_driver
+class ata_driver : public io_device
 {
     ATA_drive_type current_selected_drive;
     void ata_write(bool primary, uint16_t ata_register, uint16_t whattowrite);
@@ -77,8 +78,24 @@ public:
         return status;
     }
     void read(uint64_t where, uint32_t count, uint8_t *buffer);
+
     bool get_ata_status();
     void irq_handle(uint64_t irq_handle_num);
     void init();
     static ata_driver *the();
+
+    io_rw_output read(uint8_t *data, uint64_t count, uint64_t cursor) override
+    {
+        read(cursor, count, data);
+        return io_rw_output::io_OK;
+    }
+    io_rw_output write(uint8_t *data, uint64_t count, uint64_t cursor) override
+    {
+        read(cursor, count, data);
+        return io_rw_output::io_OK;
+    }
+    const char *get_io_device_name()
+    {
+        return "ata";
+    }
 };

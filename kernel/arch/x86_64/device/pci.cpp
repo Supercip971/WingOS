@@ -1,5 +1,6 @@
 #include <arch.h>
 
+#include <device/ahci.h>
 #include <device/network/e1000.h>
 #include <device/network/rtl8139.h>
 #include <device/pci.h>
@@ -466,12 +467,21 @@ void pci_system::init()
         if (dev.get_vendor(dev_func) == 0x8086)
         {
             log("pci", LOG_INFO) << "=intel=";
-            uint16_t id = dev.get_dev_id(dev_func);
-            if (id == 0x100E || id == 0x153A || id == 0x10EA)
+            if (dev.get_class(dev_func) == 2 && dev.get_subclass(dev_func) == 0)
             {
-                log("pci", LOG_INFO) << "==E1000==";
-                dev.enable_mastering(dev_func);
-                e1000::the()->init(&dev, dev_func);
+
+                uint16_t id = dev.get_dev_id(dev_func);
+
+                if (id == 0x100E || id == 0x153A || id == 0x10EA)
+                {
+                    log("pci", LOG_INFO) << "==E1000==";
+                    dev.enable_mastering(dev_func);
+                    e1000::the()->init(&dev, dev_func);
+                }
+            }
+            else if (dev.get_class(dev_func) == 1 && dev.get_subclass(dev_func) == 6)
+            {
+                ahci::the()->init(&dev, dev_func);
             }
         }
         else if (dev.get_vendor(dev_func) == 0x10EC)

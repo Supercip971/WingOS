@@ -69,7 +69,7 @@ disk:
 	@make -C . $(KERNEL_HDD)
 run: $(KERNEL_HDD)
 	qemu-system-x86_64 -m 4G -s -device pvpanic -smp 6 -serial stdio -enable-kvm --no-shutdown --no-reboot -d int -d guest_errors -hda $(KERNEL_HDD) \
-		-nic user,model=e1000 
+		-nic user,model=e1000 -M q35 
 runvbox: $(KERNEL_HDD)
 	@VBoxManage -q startvm --putenv VBOX_GUI_DBG_ENABLED=true wingOS64
 	@nc localhost 1234

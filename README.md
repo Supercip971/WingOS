@@ -58,6 +58,7 @@ To build WingOS, go to Build_guide.md <3
  - ps2 mouse driver
  - basic e1000 driver
  - basic rtl8139 driver
+ - AHCI support
  - \[insert something here]
  
  

@@ -2,6 +2,7 @@
 #include <arch.h>
 #include <device/ata_driver.h>
 #include <filesystem/echfs.h>
+#include <io_device.h>
 #include <kernel.h>
 #include <liballoc.h>
 #include <lock.h>
@@ -14,11 +15,12 @@ echfs::echfs() : file_system()
 }
 void echfs::read_block(uint64_t block_id, uint8_t *buffer)
 {
-    ata_driver::the()->read((start_sec + (block_id * header.block_length)) / 512, header.block_length / 512, buffer);
+
+    get_io_device(0)->read(buffer, header.block_length / 512, (start_sec + (block_id * header.block_length)) / 512);
 }
 void echfs::read_blocks(uint64_t block_id, uint64_t length, uint8_t *buffer)
 {
-    ata_driver::the()->read((start_sec + (block_id * header.block_length)) / 512, ((header.block_length) / 512) * length, buffer);
+    get_io_device(0)->read(buffer, ((header.block_length) / 512) * length, (start_sec + (block_id * header.block_length)) / 512);
 }
 uint64_t *another_buffer = nullptr;
 echfs_file_header echfs::read_directory_entry(uint64_t entry)
@@ -64,7 +66,7 @@ bool echfs::is_valid_echfs_entry(uint64_t start_sector)
 {
 
     uint8_t *temp_buffer = (uint8_t *)malloc(512);
-    ata_driver::the()->read(start_sector / 512, 1, temp_buffer);
+    get_io_device(0)->read(temp_buffer, 1, start_sector / 512);
     block0_header hdr = *reinterpret_cast<block0_header *>(temp_buffer);
     if (strncmp(hdr.echfs_signature, "_ECH_FS_", 8) != 0)
     {
@@ -79,7 +81,7 @@ void echfs::init(uint64_t start_sector, uint64_t sector_count)
     log("echfs", LOG_DEBUG) << "loading echfs";
     log("echfs", LOG_INFO) << "echfs start :" << start_sector << " end :" << (start_sector + sector_count);
     uint8_t *temp_buffer = (uint8_t *)malloc(512);
-    ata_driver::the()->read(start_sector / 512, 1, temp_buffer);
+    get_io_device(0)->read(temp_buffer, 1, start_sector / 512);
     start_sec = start_sector;
     header = *reinterpret_cast<block0_header *>(temp_buffer);
     if (strncmp(header.echfs_signature, "_ECH_FS_", 8) != 0)

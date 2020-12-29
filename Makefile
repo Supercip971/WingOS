@@ -59,7 +59,7 @@ setup_echfs_utils:
 	@make -C echfs/ clean
 	@make -C echfs/ all
 	@echo "running `sudo make -C echfs/ install` (needed for limine :^(  ) "
-	@sudo make -C echfs/ install
+	-sudo make -C echfs/ install
 setup_toolchain:
 	@bash ./make_cross_compiler.sh
 setup_limine:

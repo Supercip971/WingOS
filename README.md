@@ -3,6 +3,10 @@
 
 ![sample](screen_shot/sample4_26_12_2020png.png)
 
+### Building
+for building you can take a look at the [Build guide](./Build_guide.md)
+### Services
+
 It works with the concept of 'services' ,
 everything is a service and maybe later replacable with a user application, 
 WingOS has 4 syscalls : 
@@ -35,7 +39,7 @@ and some services are called ORS (On Request Service)
 ORS are only active when they receive a message.
 
 To build WingOS, go to Build_guide.md <3
-## Implemented things :
+### Implemented things :
  - com
  - gdt
  - idt
@@ -59,6 +63,7 @@ To build WingOS, go to Build_guide.md <3
  - basic e1000 driver
  - basic rtl8139 driver
  - AHCI support
+ - Sata AHCI
  - \[insert something here]
  
  

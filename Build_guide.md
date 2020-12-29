@@ -1,79 +1,52 @@
-## Before :
-you can't build wingOS on windows or in WSL 
+# WingOS Build Guide !
 
+Before anything you need to use linux (wsl 2 may work)
 
-# Build guide :
-how to build this os ?
+## SETUP
 
-## Set up :
-you have to install these packages : 
+before everything you have to install :
+`
+qemu make build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo nasm mtools wget unzip fuse libfuse-dev uuid-dev gcc binutils parted
+`
 
-```build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo gparted lib-fuse fuse```
+you can install everything in debian distribution with this command :
+```bash
+sudo apt install  make build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo nasmqemu-system-x86 mtools wget unzip fuse libfuse-dev uuid-dev gcc binutils parted
+```
 
-before making the toolchain
+## CLONING
 
-## Making the toolchain :
+when you clone the project you have to clone submodules (echfs and limine)
+```bash
+git clone --recursive https://github.com/Supercip971/WingOS_x64.git
+```
 
-then run the file make\_cross\_compiler.sh
+## SETUP #2
 
-## Making echfs-utils :
-run 
-``` make setup_echfs_utils ```
-then run in the echfs folder
-``` sudo make install ```
-now you have echfs-utils ! 
+to setup everything you can just run the command 
+```bash
+make first_setup -j$(nproc)
+```
 
-## Making wingOS :
+*WARNING:* this step will take a lot of time
 
-you have to run make to build wingOS
-there are some option : 
+*WARNING:* at one moment we need sudo for installing echfs 
+```
+sudo make -C echfs/ install -j$(nproc) 
+```
 
+## BUILD & RUN
 
+### BUILD
 
-- make clean
+you can just do 
+```bash
+make disk
+```
 
-to clean
+### RUN
 
-
-
-- make format 
-
-to run clang format
-
-
-
-- make super
-
-to clean, rebuild and run everything
-
-
-
-- make app
-
-to make wingOS app
-
-
-
-- make runvbox
-
-for running virtual box (you have to create a virtual machine named : wingOS64
-
-
-
-- make run
-
-for running qemu
-
-
-
-- make boch
-
-for running boch
-
-
-
-- make disk 
-
-for making the disk
-
-
+for running with qemu you just have to run 
+```bash
+make run 
+```

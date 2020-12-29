@@ -63,8 +63,7 @@ setup_echfs_utils:
 setup_toolchain:
 	@bash ./make_cross_compiler.sh
 setup_limine:
-	@make -C limine/ toolchain -j$(nproc)
-	@make -C limine/ all -j$(nproc)
+	-rm ./limine/limine-install
 	@make -C limine/ limine-install -j$(nproc)
 first_setup: 
 	@make setup_toolchain -j$(nproc)

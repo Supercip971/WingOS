@@ -1,10 +1,10 @@
 # WingOS Build Guide !
 
-Before anything you need to use linux (wsl 2 may work)
-
+First WingOS build only work on linux (*wsl 1/2 not tested*)
 ## SETUP
 
-before everything you have to install :
+before everything, you have to install :
+
 `
 qemu make build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo nasm mtools wget unzip fuse libfuse-dev uuid-dev gcc binutils parted
 `
@@ -16,21 +16,21 @@ sudo apt install  make build-essential bison flex libgmp3-dev libmpc-dev libmpfr
 
 ## CLONING
 
-when you clone the project you have to clone submodules (echfs and limine)
+when you clone the project you have to clone submodules (echfs and limine) : 
 ```bash
 git clone --recursive https://github.com/Supercip971/WingOS_x64.git
 ```
 
 ## SETUP #2
 
-to setup everything you can just run the command 
+to setup everything you can just run the command :
 ```bash
 make first_setup -j$(nproc)
 ```
 
 *WARNING:* this step will take a lot of time
 
-*WARNING:* at one moment we need sudo for installing echfs 
+*WARNING:* at one moment we use `sudo` for installing echfs ([here](https://github.com/Supercip971/WingOS_x64/blob/348dc7f55d4df0acaa6b18eadc40b7e1e8511df5/Makefile#L62)) :
 ```
 sudo make -C echfs/ install -j$(nproc) 
 ```
@@ -39,14 +39,14 @@ sudo make -C echfs/ install -j$(nproc)
 
 ### BUILD
 
-you can just do 
+for building WingOS you can just do :
 ```bash
 make disk
 ```
 
 ### RUN
 
-for running with qemu you just have to run 
+for running with qemu you just have to run : 
 ```bash
 make run 
 ```

@@ -56,20 +56,20 @@ ECHFS_PATH := ./echfs/echfs-utils
 .PHONY: clean boch disk run runvbox format app super all check
 .DEFAULT_GOAL = $(KERNEL_HDD)
 setup_echfs_utils:
-	@make -C echfs/ clean
-	@make -C echfs/ all
+	@make -C echfs/ clean -j$(nproc)
+	@make -C echfs/ all -j$(nproc)
 	@echo "running `sudo make -C echfs/ install` (needed for limine :^(  ) "
-	-sudo make -C echfs/ install
+	-sudo make -C echfs/ install -j$(nproc)
 setup_toolchain:
 	@bash ./make_cross_compiler.sh
 setup_limine:
-	@make -C limine/ toolchain
-	@make -C limine/ all
-	@make -C limine/ limine-install
+	@make -C limine/ toolchain -j$(nproc)
+	@make -C limine/ all -j$(nproc)
+	@make -C limine/ limine-install -j$(nproc)
 first_setup: 
-	@make setup_toolchain
-	@make setup_echfs_utils
-	@make setup_limine
+	@make setup_toolchain -j$(nproc)
+	@make setup_echfs_utils -j$(nproc)
+	@make setup_limine -j$(nproc)
 boch:
 	-rm disk.img
 	@bximage -q -mode=convert -imgmode=flat build/disk.hdd disk.img

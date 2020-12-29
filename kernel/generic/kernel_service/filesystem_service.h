@@ -43,7 +43,7 @@ struct file_write
 struct file_find_request
 {
     uint8_t file_directory[255]; // null terminated string
-};
+} __attribute__((packed));
 
 struct file_information
 {
@@ -55,13 +55,13 @@ struct file_information
     uint16_t owner_id;
     uint16_t group_id;
     uint64_t size;
-};
+} __attribute__((packed));
 
 struct fill_file_info
 {
     uint64_t file_request_id;
     file_information *target;
-};
+} __attribute__((packed));
 struct file_system_service_protocol
 {
     uint16_t request_type;

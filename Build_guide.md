@@ -30,10 +30,6 @@ make first_setup -j$(nproc)
 
 *WARNING:* this step will take a lot of time
 
-*WARNING:* at one moment we use `sudo` for installing echfs ([here](https://github.com/Supercip971/WingOS_x64/blob/348dc7f55d4df0acaa6b18eadc40b7e1e8511df5/Makefile#L62)) :
-```
-sudo make -C echfs/ install -j$(nproc) 
-```
 
 ## BUILD & RUN
 

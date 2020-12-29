@@ -58,8 +58,7 @@ ECHFS_PATH := ./echfs/echfs-utils
 setup_echfs_utils:
 	@make -C echfs/ clean -j$(nproc)
 	@make -C echfs/ all -j$(nproc)
-	@echo "running `sudo make -C echfs/ install` (needed for limine :^(  ) "
-	-sudo make -C echfs/ install -j$(nproc)
+
 setup_toolchain:
 	@bash ./make_cross_compiler.sh
 setup_limine:
@@ -88,7 +87,7 @@ format:
 	@clang-format -i --style=file $(USRCFILES) $(USRHFILES)
 	@clang-format -i --style=file $(USRAPPCFILES) $(USRAPPHFILES)
 foreachramfs: 
-	@for f in $(shell find init_fs/ -maxdepth 64 -type f); do echfs-utils -m -p0 $(KERNEL_HDD) import $${f} $${f}; done
+	@for f in $(shell find init_fs/ -maxdepth 64 -type f); do $(ECHFS_PATH) -m -p0 $(KERNEL_HDD) import $${f} $${f}; done
 
 app: $(APP_FILE_CHANGE)
 	@make -C ./app/test all -j12	

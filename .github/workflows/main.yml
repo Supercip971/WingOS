@@ -33,9 +33,9 @@ jobs:
           sudo apt install -y uuid-dev
           sudo apt install -y gcc binutils parted
           
-          sudo bash ./make_cross_compiler.sh
-          make check -j$(nproc)
-
+          make first_setup
+          make clean -j$(nproc)
+          make disk -j$(nproc)
       # Runs a set of commands using the runners shell
       - name: Run a multi-line script
         run: |

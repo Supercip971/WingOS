@@ -52,13 +52,17 @@ LDHARDFLAGS := $(LDFLAGS)        \
         -no-pie                   \
         -z max-page-size=0x1000   \
         -T $(LINK_PATH)
-
-.PHONY: clean
+ECHFS_PATH := ./echfs/echfs-utils
+.PHONY: clean boch disk run runvbox format app super all check
 .DEFAULT_GOAL = $(KERNEL_HDD)
 setup_echfs_utils:
-	@git clone --recursive https://github.com/qword-os/echfs.git
-	@make -C echfs/
-	@echo "now you have to run the command 'sudo make install' in the echfs direcory to install echfs-utils"
+	@make -C echfs/ clean
+	@make -C echfs/ all
+setup_toolchain:
+	@bash ./make_cross_compiler.sh
+first_setup: 
+	@make setup_toolchain
+	@make setup_echfs_utils
 boch:
 	-rm disk.img
 	@bximage -q -mode=convert -imgmode=flat build/disk.hdd disk.img
@@ -88,10 +92,6 @@ app: $(APP_FILE_CHANGE)
 	@make -C ./app/console_service all -j12
 	@make -C ./app/background all -j12
 	@make -C ./app/wstart all -j12
-travis_test: 
-	
-	@make clean 
-	@make -C . $(KERNEL_HDD)
 
 super:
 	@make clean 
@@ -124,10 +124,10 @@ $(KERNEL_HDD): $(KERNEL_ELF)
 	@dd if=/dev/zero bs=8M count=0 seek=64 of=$(KERNEL_HDD)
 	@parted -s $(KERNEL_HDD) mklabel msdos
 	@parted -s $(KERNEL_HDD) mkpart primary 1 100%
-	@echfs-utils -m -p0 $(KERNEL_HDD) format 4096
-	@echfs-utils -m -p0 $(KERNEL_HDD) import $(KERNEL_ELF) $(KERNEL_ELF)
+	@$(ECHFS_PATH) -m -p0 $(KERNEL_HDD) format 4096
+	@$(ECHFS_PATH) -m -p0 $(KERNEL_HDD) import $(KERNEL_ELF) $(KERNEL_ELF)
 	@make -C . foreachramfs	
-	@echfs-utils -m -p0 $(KERNEL_HDD) import limine.cfg limine.cfg
+	@$(ECHFS_PATH) -m -p0 $(KERNEL_HDD) import limine.cfg limine.cfg
 	limine/limine-install limine/limine.bin $(KERNEL_HDD)
 
 clean:

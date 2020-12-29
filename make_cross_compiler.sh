@@ -37,6 +37,9 @@ echo "downloading gcc"
 download_and_extract "ftp://ftp.gnu.org/gnu/gcc/gcc-$gcc_version/$gcc_file" "$gcc_file"
 export gcc_src="$PWD/gcc-$gcc_version"
 
+cd "gcc-$gcc_version"
+./contrib/download_prerequisites
+cd ..
 
 
 cd ..

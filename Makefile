@@ -58,11 +58,18 @@ ECHFS_PATH := ./echfs/echfs-utils
 setup_echfs_utils:
 	@make -C echfs/ clean
 	@make -C echfs/ all
+	@echo "running `sudo make -C echfs/ install` (needed for limine :^(  ) "
+	@sudo make -C echfs/ install
 setup_toolchain:
 	@bash ./make_cross_compiler.sh
+setup_limine:
+	@make -C limine/ toolchain
+	@make -C limine/ all
+	@make -C limine/ limine-install
 first_setup: 
 	@make setup_toolchain
 	@make setup_echfs_utils
+	@make setup_limine
 boch:
 	-rm disk.img
 	@bximage -q -mode=convert -imgmode=flat build/disk.hdd disk.img

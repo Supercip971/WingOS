@@ -31,10 +31,10 @@ void __attribute__((optimize("O0"))) setup_gdt()
 
     log("gdt", LOG_INFO) << "setting gdt entry";
 
-    gdt_descriptors[GDT_ARRAY_SEL(gdt_selector::KERNEL_CODE)] = gdt_descriptor(gdt_flags::CS, gdt_granularity::LONG_MODE_GRANULARITY);
+    gdt_descriptors[GDT_ARRAY_SEL(gdt_selector::KERNEL_CODE)] = gdt_descriptor(gdt_flags::CS | gdt_flags::WRITABLE, gdt_granularity::LONG_MODE_GRANULARITY);
     gdt_descriptors[GDT_ARRAY_SEL(gdt_selector::KERNEL_DATA)] = gdt_descriptor(gdt_flags::DS | gdt_flags::WRITABLE, 0);
+    gdt_descriptors[GDT_ARRAY_SEL(gdt_selector::USER_CODE)] = gdt_descriptor(gdt_flags::CS | gdt_flags::USER | gdt_flags::WRITABLE, gdt_granularity::LONG_MODE_GRANULARITY);
     gdt_descriptors[GDT_ARRAY_SEL(gdt_selector::USER_DATA)] = gdt_descriptor(gdt_flags::DS | gdt_flags::USER | gdt_flags::WRITABLE, 0);
-    gdt_descriptors[GDT_ARRAY_SEL(gdt_selector::USER_CODE)] = gdt_descriptor(gdt_flags::CS | gdt_flags::USER, gdt_granularity::LONG_MODE_GRANULARITY);
 
     gdt_xdescriptor *xdescriptor =
         (gdt_xdescriptor *)(&gdt_descriptors[GDT_ARRAY_SEL(gdt_selector::TSS_SELECTOR)]);
@@ -51,10 +51,7 @@ void tss_init(uint64_t i)
     memzero(&get_current_cpu()->ctss, sizeof(tss));
     get_current_cpu()->ctss.iomap_base = sizeof(tss);
     get_current_cpu()->ctss.rsp0 = (uintptr_t)i;
-    get_current_cpu()->ctss.ist1 = (uintptr_t)tss_ist1 + 8192;
-    get_current_cpu()->ctss.ist2 = (uintptr_t)tss_ist2 + 8192;
-    get_current_cpu()->ctss.ist3 = (uintptr_t)tss_ist3 + 8192;
-
+    get_current_cpu()->ctss.ist1 = (uintptr_t)i;
     asm volatile("mov ax, %0 \n ltr ax"
                  :
                  : "i"(gdt_selector::TSS_SELECTOR)
@@ -78,10 +75,10 @@ void gdt_ap_init()
     memzero(d, sizeof(gdtr));
 
     log("gdt ap", LOG_INFO) << "setting gdt entry";
-    new_gdt_descriptors[GDT_ARRAY_SEL(gdt_selector::KERNEL_CODE)] = gdt_descriptor(gdt_flags::CS, gdt_granularity::LONG_MODE_GRANULARITY);
+    new_gdt_descriptors[GDT_ARRAY_SEL(gdt_selector::KERNEL_CODE)] = gdt_descriptor(gdt_flags::CS | gdt_flags::WRITABLE, gdt_granularity::LONG_MODE_GRANULARITY);
     new_gdt_descriptors[GDT_ARRAY_SEL(gdt_selector::KERNEL_DATA)] = gdt_descriptor(gdt_flags::DS | gdt_flags::WRITABLE, 0);
+    new_gdt_descriptors[GDT_ARRAY_SEL(gdt_selector::USER_CODE)] = gdt_descriptor(gdt_flags::CS | gdt_flags::USER | gdt_flags::WRITABLE, gdt_granularity::LONG_MODE_GRANULARITY);
     new_gdt_descriptors[GDT_ARRAY_SEL(gdt_selector::USER_DATA)] = gdt_descriptor(gdt_flags::DS | gdt_flags::USER | gdt_flags::WRITABLE, 0);
-    new_gdt_descriptors[GDT_ARRAY_SEL(gdt_selector::USER_CODE)] = gdt_descriptor(gdt_flags::CS | gdt_flags::USER, gdt_granularity::LONG_MODE_GRANULARITY);
 
     gdt_xdescriptor *xdescriptor =
         (gdt_xdescriptor *)(&new_gdt_descriptors[GDT_ARRAY_SEL(gdt_selector::TSS_SELECTOR)]);

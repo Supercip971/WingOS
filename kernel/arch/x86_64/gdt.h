@@ -7,8 +7,8 @@ enum gdt_selector : uint16_t
     NULL_SELECTOR = 0,
     KERNEL_CODE = 0x8,
     KERNEL_DATA = 0x10,
-    USER_CODE = 0x20,
-    USER_DATA = 0x18,
+    USER_DATA = 0x1b,
+    USER_CODE = 0x23,
     TSS_SELECTOR = 0x28,
 };
 enum gdt_flags : uint8_t
@@ -49,7 +49,7 @@ struct gdt_descriptor
         base_low = 0;
         flags = flag | gdt_flags::PRESENT;
         granularity = (gran << 4) | 0x0F;
-        limit_low = 0xFFFF;
+        limit_low = 0;
     }
 } __attribute__((packed));
 

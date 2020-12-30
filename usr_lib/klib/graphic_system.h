@@ -144,7 +144,10 @@ namespace sys
     public:
         graphic_context(uint64_t width, uint64_t height, const char *name) __attribute__((__target__("no-sse")));
         void draw_filled_circle(const pos origin, const int radius, const pixel color);
-
+        constexpr uint64_t get_window_id() const
+        {
+            return wid;
+        }
         enum filled_circle_part
         {
             TOP_RIGHT = 0,

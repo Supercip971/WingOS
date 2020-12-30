@@ -20,7 +20,10 @@ void echfs::read_block(uint64_t block_id, uint8_t *buffer)
 }
 void echfs::read_blocks(uint64_t block_id, uint64_t length, uint8_t *buffer)
 {
-    get_io_device(0)->read(buffer, ((header.block_length) / 512) * length, (start_sec + (block_id * header.block_length)) / 512);
+    for (uint64_t i = 0; i < length; i++)
+    {
+        get_io_device(0)->read((buffer + ((header.block_length * i))), ((header.block_length) / 512), (start_sec + ((block_id + i) * header.block_length)) / 512);
+    }
 }
 uint64_t *another_buffer = nullptr;
 echfs_file_header echfs::read_directory_entry(uint64_t entry)
@@ -139,7 +142,7 @@ void echfs::init(uint64_t start_sector, uint64_t sector_count)
 
     log("echfs", LOG_INFO) << "reading file "
                            << "init_fs/test_directory/test_another.txt";
-    uint8_t *f = this->ech_read_file("init_fs/test_directory/test_another.txt");
+    uint8_t *f = this->ech_read_file("init_fs/background_pic.bmp");
     log("echfs", LOG_INFO) << (char *)f;
 
     free(temp_buffer);

@@ -77,9 +77,11 @@ uint64_t file_read(process_message *msg)
     file_system_service_protocol *prot = reinterpret_cast<file_system_service_protocol *>(msg->content_address);
 
     fss_file_handle *target = get_file(prot->read.file_request_id, msg->from_pid);
+    log("file system service", LOG_INFO) << "readed " << (char *)target->data;
     if (target == nullptr)
     {
-        log("file system service", LOG_INFO) << "no file founded :^( ) ";
+        log("file system service", LOG_INFO) << "no file opened :^( ) ";
+        return -1;
     }
     uint64_t readed_length = 0;
 
@@ -109,9 +111,9 @@ uint64_t file_read(process_message *msg)
     {
         readed_length = prot->read.length;
     }
-    memcpy((void *)((uint64_t)prot->read.target), target->data + prot->read.at, prot->read.length);
+    memcpy((void *)((uint64_t)prot->read.target), target->data + prot->read.at, readed_length);
 
-    log("file system service", LOG_INFO) << "readed " << path;
+    log("file system service", LOG_INFO) << "readed " << path << "for " << readed_length << "cursor" << prot->read.at;
     return readed_length;
 }
 

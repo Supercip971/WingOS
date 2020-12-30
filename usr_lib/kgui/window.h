@@ -22,7 +22,8 @@ namespace gui
         // todo: add a after_draw_update() and a before_draw_update()
         window(const char *name, uint64_t window_width, uint64_t window_height) __attribute__((__target__("no-sse")));
         void add_widget(widget *wdget);
-
+        bool is_mouse_on_window();
+        bool is_window_front();
         // get mouse position inside the window
         int32_t get_mouse_pos_relative_x();
         int32_t get_mouse_pos_relative_y();

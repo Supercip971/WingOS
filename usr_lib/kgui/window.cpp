@@ -4,6 +4,7 @@
 #include <klib/kernel_util.h>
 #include <klib/mem_util.h>
 #include <klib/mouse.h>
+#include <klib/syscall.h>
 #include <stdio.h>
 namespace gui
 {
@@ -29,14 +30,24 @@ namespace gui
         graphic_context.draw_basic_string((width / 2) - (sys::get_basic_font_width_text(window_name) / 2), 20 / 2 - (8 / 2), window_name, sys::pixel(255, 255, 255));
         lst.draw_all(graphic_context);
         graphic_context.swap_buffer();
+        bool start_click = false;
         while (true)
         {
-            if (graphic_context.is_mouse_inside())
+            if (sys::get_mouse_button(sys::GET_MOUSE_LEFT_CLICK) && start_click)
             {
-                if (sys::get_mouse_button(sys::GET_MOUSE_LEFT_CLICK))
+
+                if (graphic_context.is_mouse_inside())
                 {
-                    graphic_context.set_on_top();
+                    if (is_mouse_on_window())
+                    {
+                        graphic_context.set_on_top();
+                    }
                 }
+                start_click = false;
+            }
+            else if (!sys::get_mouse_button(sys::GET_MOUSE_LEFT_CLICK))
+            {
+                start_click = true;
             }
             has_at_least_one_redraw = lst.update_all();
 
@@ -86,5 +97,16 @@ namespace gui
         uint32_t x = position.x;
         uint32_t y = position.y;
         set_window_position(x, y);
+    }
+
+    bool window::is_mouse_on_window()
+    {
+
+        return (graphic_context.get_window_id() == sys::sys$get_process_global_data(0, "init_fs/graphic_service.exe"));
+    }
+    bool window::is_window_front()
+    {
+
+        return (graphic_context.is_on_top());
     }
 } // namespace gui

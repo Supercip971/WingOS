@@ -106,7 +106,7 @@ void ahci::reinit_port(hba_port *port)
     port->fis_base_addr_low = (uint64_t)(fis);
     port->fis_base_addr_up = 0;
 
-    hba_cmd_header *command_header = (hba_cmd_header *)fis;
+    volatile hba_cmd_header *command_header = (hba_cmd_header *)fis;
     for (int i = 0; i < 32; i++)
     {
         command_header[i].physical_region_descriptor_table_entry_count = 8;
@@ -154,7 +154,7 @@ void ahci_ata_device::end_command()
 }
 io_rw_output ahci_ata_device::read(uint8_t *data, uint64_t count, uint64_t cursor)
 {
-    lock(&ahci_lock);
+    flock(&ahci_lock);
     uint16_t *rdata = (uint16_t *)data;
     port->interrupt_status = (uint32_t)-1;
     int spin_timeout = 0;
@@ -179,16 +179,17 @@ io_rw_output ahci_ata_device::read(uint8_t *data, uint64_t count, uint64_t curso
     command_table->entry[0].dbc = (count * 512) - 1;
     // fill setup command
     volatile fis_reg_host2device *command = (fis_reg_host2device *)(command_table->command_fis);
+    memzero((fis_reg_host2device *)command, sizeof(fis_reg_host2device));
     command->type = FTYPE_REG_HOST2DEVICE;
     command->cmd_or_ctrl = 1;
     command->command_register = DMA_ATA_READ_EXTENDED;
-    command->lba0 = (uint8_t)(cursor);
-    command->lba1 = (uint8_t)(cursor >> 8);
-    command->lba2 = (uint8_t)(cursor >> 16);
+    command->lba0 = (uint8_t)((cursor & 0x000000000000ff));
+    command->lba1 = (uint8_t)((cursor & 0x0000000000ff00) >> 8);
+    command->lba2 = (uint8_t)((cursor & 0x00000000ff0000) >> 16);
     command->device = 1 << 6;
-    command->lba3 = (uint8_t)(cursor >> 24);
-    command->lba4 = (uint8_t)(cursor >> 32);
-    command->lba5 = (uint8_t)(cursor >> 40);
+    command->lba3 = (uint8_t)((cursor & 0x000000ff000000) >> 24);
+    command->lba4 = (uint8_t)((cursor & 0x0000ff00000000) >> 32);
+    command->lba5 = (uint8_t)((cursor & 0x00ff0000000000) >> 40);
     command->count_low = count & 0xff;
     command->count_high = (count >> 8) & 0xff;
 
@@ -236,7 +237,6 @@ int ahci_ata_device::find_command_slot()
     {
         if ((ata_slots & 1) == 0)
         {
-            unlock(&ahci_lock);
 
             return i;
         }

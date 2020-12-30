@@ -17,6 +17,8 @@ void click(uint64_t t)
 }
 int main()
 {
+    printf("starting test.exe \n");
+    printf("hello world ! <3 \n");
     gui::window test_window("my window", 300, 200);
     gui::button_widget *button = new gui::button_widget(10, 30, 70, 20, "a button");
 
@@ -24,5 +26,4 @@ int main()
     test_window.add_widget((gui::widget *)button);
 
     return test_window.start();
-    return 0;
 }

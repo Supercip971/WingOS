@@ -18,8 +18,10 @@ void click(uint64_t t)
 }
 int main()
 {
-    while (true)
-    {
-    }
-    return 0;
+    gui::window test_window("termix", 600, 400);
+    gui::terminal_widget *button = new gui::terminal_widget(10, 20, 600 - 20, 400 - 30, sys::get_process_pid("init_fs/test.exe"));
+
+    test_window.add_widget((gui::widget *)button);
+
+    return test_window.start();
 }

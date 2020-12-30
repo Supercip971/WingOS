@@ -36,7 +36,10 @@ namespace gui
                     {
                         if (y <= widget_y + widget_height)
                         {
-                            has_been_hovered = true;
+                            if (parent->is_window_front())
+                            {
+                                has_been_hovered = true;
+                            }
                         }
                     }
                 }

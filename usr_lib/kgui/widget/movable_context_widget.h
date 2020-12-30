@@ -13,6 +13,7 @@ namespace gui
         sys::pos start_dragging_pos;
         sys::pos current_dragging_pos;
         int drag_time = 0;
+        bool start_down;
 
     public:
         movable_context_widget();

@@ -22,22 +22,30 @@ namespace gui
 
         if (dragging == false)
         {
-            if (sys::get_mouse_button(sys::GET_MOUSE_LEFT_CLICK))
+            if (sys::get_mouse_button(sys::GET_MOUSE_LEFT_CLICK) && start_down)
             {
+                start_down = false;
                 sys::pos position;
                 position.x = parent->get_mouse_pos_relative_x();
                 position.y = parent->get_mouse_pos_relative_y();
                 if (is_position_inside_widget(position))
                 {
+                    if (parent->is_window_front())
+                    {
 
-                    sys::pos rposition;
-                    rposition.x = sys::get_mouse_x();
-                    rposition.y = sys::get_mouse_y();
-                    start_dragging_pos = rposition;
-                    current_dragging_pos = rposition;
-                    dragging = true;
-                    drag_time = 0;
+                        sys::pos rposition;
+                        rposition.x = sys::get_mouse_x();
+                        rposition.y = sys::get_mouse_y();
+                        start_dragging_pos = rposition;
+                        current_dragging_pos = rposition;
+                        dragging = true;
+                        drag_time = 0;
+                    }
                 }
+            }
+            else
+            {
+                start_down = true;
             }
         }
         else

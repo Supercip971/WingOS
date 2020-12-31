@@ -43,7 +43,7 @@ namespace sys
         // not usable for the moment :/
         int argc;
         char **argv; // can't use raw data
-    };
+    } __attribute__((packed));
 
     enum process_request_id
     {
@@ -53,6 +53,7 @@ namespace sys
         PROCESS_SLEEP = 3,
         LAUNCH_PROGRAMM = 4,
         OUT_PROCESS_BUFFER = 5,
+        GET_CURRENT_PID = 6,
     };
 
     struct process_request
@@ -67,9 +68,11 @@ namespace sys
             uint64_t sleep_counter; // use like that instead of another struct
             launch_new_programm lnp;
             out_process_buffer opb;
+            void *gcp;
         };
     } __attribute__((packed));
 
+    uint64_t get_current_pid();
     uint64_t get_process_pid(const char *process_name);
     inline void switch_process()
     {

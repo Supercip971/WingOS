@@ -95,6 +95,10 @@ void kernel_process_service()
                     prot->opb.length,
                     prot->opb.output_data);
             }
+            else if (prot->type == GET_CURRENT_PID)
+            {
+                msg->response = msg->from_pid;
+            }
             else
             {
                 log("kernel_process_service", LOG_ERROR) << "invalid request id : " << (uint64_t)prot->type << "from process" << msg->from_pid;

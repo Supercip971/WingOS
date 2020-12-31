@@ -51,6 +51,7 @@ enum process_request_id
     LAUNCH_PROGRAMM = 4,
     OUT_PROCESS_BUFFER = 5,
 
+    GET_CURRENT_PID = 6,
 };
 
 struct process_request
@@ -65,6 +66,7 @@ struct process_request
         uint64_t sleep_counter; // use like that instead of another struct
         launch_new_programm lnp;
         out_process_buffer opb;
+        void *gcp;
     };
 } __attribute__((packed));
 

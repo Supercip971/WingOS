@@ -50,54 +50,57 @@ void kernel_process_service()
 {
 
     log("kernel_process_service", LOG_INFO) << "loaded kernel_process_service service";
-    set_on_request_service(true);
-
     while (true)
     {
         process_message *msg = read_message();
 
         if (msg != 0)
         {
-            set_on_request_service(false);
             process_request *prot = (process_request *)msg->content_address;
-            switch (prot->type)
+            // don't like switch >:(
+            // they have some "optimization" but in this case meh
+            if (prot->type == GET_PROCESS_PID)
             {
-
-            case GET_PROCESS_PID:
                 msg->response = get_pid_from_process_name(prot->gpp.process_name);
-                break;
-
-            case SET_CURRENT_PROCESS_AS_SERVICE:
+            }
+            else if (prot->type == SET_CURRENT_PROCESS_AS_SERVICE)
+            {
                 log("kernel_process_service", LOG_INFO) << "SET_CURRENT_PROCESS_AS_SERVICE";
                 rename_process(prot->scpas.service_name, msg->from_pid);
                 set_on_request_service(prot->scpas.is_ors, msg->to_pid);
                 msg->response = 1;
-                break;
-
-            case GET_PROCESS_BUFFER:
+            }
+            else if (prot->type == GET_PROCESS_BUFFER)
+            {
                 msg->response = process_buffer_read(prot);
                 if (msg->response == 0)
                 {
                     msg->response = 1;
                 }
-                break;
+            }
+            else if (prot->type == PROCESS_SLEEP)
+            {
 
-            case PROCESS_SLEEP:
                 sleep(prot->sleep_counter, msg->from_pid);
                 msg->response = 1;
-                break;
-            case LAUNCH_PROGRAMM:
-
+            }
+            else if (prot->type == LAUNCH_PROGRAMM)
+            {
                 msg->response = launch_programm(prot->lnp.path, main_fs_system::the()->main_fs());
-                break;
-            default:
-                log("kernel_process_service", LOG_ERROR) << "invalid request id : " << (uint64_t)prot->type;
-                msg->response = -2;
-                break;
+            }
+            else if (prot->type == OUT_PROCESS_BUFFER)
+            {
+                msg->response = add_process_buffer(
+                    &process_array[upid_to_kpid(prot->opb.pid_target)].pr_buff[prot->opb.buffer_type],
+                    prot->opb.length,
+                    prot->opb.output_data);
+            }
+            else
+            {
+                log("kernel_process_service", LOG_ERROR) << "invalid request id : " << (uint64_t)prot->type << "from process" << msg->from_pid;
+                msg->response = -1;
             }
             msg->has_been_readed = true;
-
-            set_on_request_service(true);
         }
         else if (msg == 0)
         {

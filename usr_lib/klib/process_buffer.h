@@ -6,7 +6,7 @@ namespace sys
     enum process_buffer_type
     {
         STDOUT = 0,
-        STDIN = 1, // not supported
+        STDIN = 1,
         STDERR = 2
     };
     class process_buffer
@@ -19,6 +19,7 @@ namespace sys
         process_buffer(int pid, process_buffer_type type);
         uint64_t get_length();
         uint64_t next(uint8_t *data, int length);
+        void out_data(uint8_t *data, unsigned int length);
         void set_cursor(int at);
     };
 } // namespace sys

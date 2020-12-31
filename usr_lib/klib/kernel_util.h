@@ -8,16 +8,16 @@ namespace sys
     struct raw_process_request
     {
         uint64_t m[512];
-    };
+    } __attribute__((packed));
     struct get_process_pid
     {
         char process_name[128];
-    };
+    } __attribute__((packed));
     struct set_current_process_as_service
     {
         bool is_ors;
         char service_name[128];
-    };
+    } __attribute__((packed));
 
     struct get_process_buffer
     {
@@ -27,7 +27,15 @@ namespace sys
         uint8_t *target_buffer;
         uint64_t length_to_read;
         uint64_t where;
-    };
+    } __attribute__((packed));
+    struct out_process_buffer
+    {
+        int buffer_type;
+        int pid_target;
+        uint8_t *output_data;
+        uint64_t length;
+        uint64_t where;
+    } __attribute__((packed));
 
     struct launch_new_programm
     {
@@ -44,11 +52,12 @@ namespace sys
         GET_PROCESS_BUFFER = 2,
         PROCESS_SLEEP = 3,
         LAUNCH_PROGRAMM = 4,
+        OUT_PROCESS_BUFFER = 5,
     };
 
     struct process_request
     {
-        uint16_t type;
+        uint8_t type;
         union
         {
             raw_process_request rpr;
@@ -57,6 +66,7 @@ namespace sys
             get_process_buffer gpb;
             uint64_t sleep_counter; // use like that instead of another struct
             launch_new_programm lnp;
+            out_process_buffer opb;
         };
     } __attribute__((packed));
 

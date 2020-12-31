@@ -25,7 +25,6 @@ namespace sys
 
         uint64_t read(); // will be read
     };
-        // not implemented for the moment
     class process_message
     {
         raw_process_message *source;

@@ -14,7 +14,7 @@ namespace sys
         memcpy(dat.open.file_directory, path, strlen(path) + 1);
         memcpy(dat.open.mode, right, strlen(right) + 1);
         dat.open.file_request_id = 0; // for later re opening
-        uint64_t result = sys::process_message("file_system_service", (uint64_t)&dat, sizeof(sys::file_system_service_protocol)).read();
+        uint64_t result = sys::service_message("file_system_service", (uint64_t)&dat, sizeof(sys::file_system_service_protocol)).read();
         return result;
     }
     void file_close(uint64_t fid)
@@ -23,7 +23,7 @@ namespace sys
         dat.request_type = FILE_CLOSE;
         dat.close.file_request_id = fid;
 
-        sys::process_message("file_system_service", (uint64_t)&dat, sizeof(sys::file_system_service_protocol)).read();
+        sys::service_message("file_system_service", (uint64_t)&dat, sizeof(sys::file_system_service_protocol)).read();
     }
     file_information get_file_information(uint64_t fid)
     {
@@ -33,7 +33,7 @@ namespace sys
         dat.info.file_request_id = fid;
         dat.info.target = fi;
 
-        sys::process_message("file_system_service", (uint64_t)&dat, sizeof(sys::file_system_service_protocol)).read();
+        sys::service_message("file_system_service", (uint64_t)&dat, sizeof(sys::file_system_service_protocol)).read();
         file_information ret = *fi;
         free(fi);
         return ret;
@@ -46,7 +46,7 @@ namespace sys
         dat.read.file_request_id = fid;
         dat.read.length = length;
         dat.read.target = data;
-        uint64_t result = sys::process_message("file_system_service", (uint64_t)&dat, sizeof(sys::file_system_service_protocol)).read();
+        uint64_t result = sys::service_message("file_system_service", (uint64_t)&dat, sizeof(sys::file_system_service_protocol)).read();
         return result;
     }
 } // namespace sys

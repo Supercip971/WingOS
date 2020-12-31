@@ -36,7 +36,7 @@ namespace sys
         ps2_device_request request;
         request.device_target = TARGET_KEYBOARD;
         request.get_key_down.unused = true;
-        process_message proc_msg = process_message("ps2_device_service", (uint64_t)&request, sizeof(ps2_device_request));
+        service_message proc_msg = service_message("ps2_device_service", (uint64_t)&request, sizeof(ps2_device_request));
         return proc_msg.read();
     }
 } // namespace sys

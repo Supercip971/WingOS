@@ -18,7 +18,7 @@ namespace sys
             return -1;
         }
 
-        sys::process_message("console_out", (uint64_t)raw_data, length).read();
+        sys::service_message("console_out", (uint64_t)raw_data, length).read();
         return 1;
     }
 
@@ -27,14 +27,14 @@ namespace sys
         volatile process_request pr = {0};
         pr.type = GET_PROCESS_PID;
         memcpy((uint8_t *)pr.gpp.process_name, process_name, strlen(process_name) + 1);
-        uint64_t result = sys::process_message("kernel_process_service", (uint64_t)&pr, sizeof(pr)).read();
+        uint64_t result = sys::service_message("kernel_process_service", (uint64_t)&pr, sizeof(pr)).read();
         return result;
     }
     uint64_t get_current_pid()
     {
         volatile process_request pr = {0};
         pr.type = GET_CURRENT_PID;
-        uint64_t result = sys::process_message("kernel_process_service", (uint64_t)&pr, sizeof(pr)).read();
+        uint64_t result = sys::service_message("kernel_process_service", (uint64_t)&pr, sizeof(pr)).read();
         return result;
     }
 
@@ -44,7 +44,7 @@ namespace sys
         pr.type = SET_CURRENT_PROCESS_AS_SERVICE;
         pr.scpas.is_ors = is_request_only;
         memcpy(pr.scpas.service_name, service_name, strlen(service_name) + 1);
-        uint64_t result = sys::process_message("kernel_process_service", (uint64_t)&pr, sizeof(pr)).read();
+        uint64_t result = sys::service_message("kernel_process_service", (uint64_t)&pr, sizeof(pr)).read();
     }
 
     void ksleep(uint64_t time)
@@ -52,7 +52,7 @@ namespace sys
         process_request pr = {0};
         pr.type = PROCESS_SLEEP;
         pr.sleep_counter = time;
-        uint64_t result = sys::process_message("kernel_process_service", (uint64_t)&pr, sizeof(pr)).read();
+        uint64_t result = sys::service_message("kernel_process_service", (uint64_t)&pr, sizeof(pr)).read();
     }
 
     uint64_t start_programm(const char *path)
@@ -61,6 +61,6 @@ namespace sys
         process_request pr = {0};
         pr.type = LAUNCH_PROGRAMM;
         memcpy(pr.lnp.path, path, strlen(path) + 1);
-        return sys::process_message("kernel_process_service", (uint64_t)&pr, sizeof(pr)).read();
+        return sys::service_message("kernel_process_service", (uint64_t)&pr, sizeof(pr)).read();
     }
 } // namespace sys

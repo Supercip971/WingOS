@@ -13,7 +13,7 @@ namespace sys
         gbp_message.data3 = 0;
         gbp_message.request = sys::GET_CURRENT_BUFFER_ADDR;
 
-        uint64_t result = sys::process_message("graphic_buffer_service", (uint64_t)&gbp_message, sizeof(graphic_buffer_protocol)).read();
+        uint64_t result = sys::service_message("graphic_buffer_service", (uint64_t)&gbp_message, sizeof(graphic_buffer_protocol)).read();
         return result;
     }
 
@@ -25,7 +25,7 @@ namespace sys
         gbp_message.data3 = 0;
         gbp_message.request = sys::GET_SCREEN_SIZE;
 
-        uint64_t result = sys::process_message("graphic_buffer_service", (uint64_t)&gbp_message, sizeof(graphic_buffer_protocol)).read();
+        uint64_t result = sys::service_message("graphic_buffer_service", (uint64_t)&gbp_message, sizeof(graphic_buffer_protocol)).read();
         return result;
     }
 
@@ -37,7 +37,7 @@ namespace sys
         gbp_message.data3 = 0;
         gbp_message.request = sys::GET_SCREEN_SIZE;
 
-        uint64_t result = sys::process_message("graphic_buffer_service", (uint64_t)&gbp_message, sizeof(graphic_buffer_protocol)).read();
+        uint64_t result = sys::service_message("graphic_buffer_service", (uint64_t)&gbp_message, sizeof(graphic_buffer_protocol)).read();
         return result;
     }
 }; // namespace sys

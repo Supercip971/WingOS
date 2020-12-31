@@ -11,7 +11,7 @@ namespace sys
         prot_data.request_type = REQUEST_PMM_MALLOC;
         prot_data.length = length;
         prot_data.address = 0;
-        sys::process_message msg = sys::process_message("memory_service", (uint64_t)&prot_data, sizeof(prot_data));
+        sys::service_message msg = sys::service_message("memory_service", (uint64_t)&prot_data, sizeof(prot_data));
         uint64_t result = msg.read();
         return (void *)result;
     }
@@ -21,6 +21,6 @@ namespace sys
         prot_data.request_type = REQUEST_PMM_FREE;
         prot_data.length = length;
         prot_data.address = (uint64_t)addr;
-        sys::process_message msg = sys::process_message("memory_service", (uint64_t)&prot_data, sizeof(prot_data));
+        sys::service_message msg = sys::service_message("memory_service", (uint64_t)&prot_data, sizeof(prot_data));
     }
 } // namespace sys

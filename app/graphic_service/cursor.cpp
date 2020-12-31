@@ -14,8 +14,8 @@
 
 int32_t m_x = 0;
 int32_t m_y = 0;
-sys::process_message mouse_msg_x;
-sys::process_message mouse_msg_y;
+sys::service_message mouse_msg_x;
+sys::service_message mouse_msg_y;
 
 sys::ps2_device_request mouse_requestx = {0};
 sys::ps2_device_request mouse_requesty = {0};

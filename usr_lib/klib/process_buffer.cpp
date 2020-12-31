@@ -18,7 +18,7 @@ namespace sys
         pr.gpb.buffer_type = current_type;
         pr.gpb.get_buffer_length = true;
         pr.gpb.pid_target = current_pid;
-        uint64_t result = sys::process_message("kernel_process_service", (uint64_t)&pr, sizeof(pr)).read();
+        uint64_t result = sys::service_message("kernel_process_service", (uint64_t)&pr, sizeof(pr)).read();
         return result;
     }
 
@@ -38,7 +38,7 @@ namespace sys
         pr.gpb.where = current_cursor;
         pr.gpb.length_to_read = length;
         pr.gpb.target_buffer = data;
-        uint64_t result = sys::process_message("kernel_process_service", (uint64_t)&pr, sizeof(pr)).read();
+        uint64_t result = sys::service_message("kernel_process_service", (uint64_t)&pr, sizeof(pr)).read();
         current_cursor += result;
         return result;
     }
@@ -53,6 +53,6 @@ namespace sys
         pr.opb.output_data = data;
         pr.opb.pid_target = current_pid;
         pr.opb.where = current_cursor; // where doesn't work for the moment
-        sys::process_message("kernel_process_service", (uint64_t)&pr, sizeof(pr)).read();
+        sys::service_message("kernel_process_service", (uint64_t)&pr, sizeof(pr)).read();
     }
 } // namespace sys

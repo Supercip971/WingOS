@@ -3,12 +3,12 @@
 namespace sys
 {
 
-    process_message::process_message()
+    service_message::service_message()
     {
         loaded = false;
     }
 
-    process_message::process_message(const char *to, uint64_t address_to_send, uint64_t data_length)
+    service_message::service_message(const char *to, uint64_t address_to_send, uint64_t data_length)
     {
         for (int i = 0; i < 9999; i++)
         {
@@ -20,7 +20,7 @@ namespace sys
         }
     }
 
-    uint64_t process_message::read()
+    uint64_t service_message::read()
     {
         while (true)
         {

@@ -24,11 +24,12 @@ namespace sys
         tolaunch.request_type = sys::GRAPHIC_SYSTEM_REQUEST::CREATE_WINDOW;
         tolaunch.create_window_info.height = height;
         tolaunch.create_window_info.width = width;
-        wid = sys::process_message("init_fs/graphic_service.exe", (uint64_t)&tolaunch, sizeof(sys::graphic_system_service_protocol)).read();
+
+        wid = sys::service_message("init_fs/graphic_service.exe", (uint64_t)&tolaunch, sizeof(sys::graphic_system_service_protocol)).read();
         sys::graphic_system_service_protocol get_bbuffer = {0};
         get_bbuffer.request_type = sys::GRAPHIC_SYSTEM_REQUEST::GET_WINDOW_BACK_BUFFER;
         get_bbuffer.get_request.window_handler_code = wid;
-        back_buffer = (sys::pixel *)sys::process_message("init_fs/graphic_service.exe", (uint64_t)&get_bbuffer, sizeof(sys::graphic_system_service_protocol)).read();
+        back_buffer = (sys::pixel *)sys::service_message("init_fs/graphic_service.exe", (uint64_t)&get_bbuffer, sizeof(sys::graphic_system_service_protocol)).read();
     }
 
     void graphic_context::clear_buffer(const pixel color)
@@ -53,7 +54,7 @@ namespace sys
         sys::graphic_system_service_protocol swap_request = {0};
         swap_request.request_type = sys::GRAPHIC_SYSTEM_REQUEST::SWAP_WINDOW_BUFFER;
         swap_request.get_request.window_handler_code = wid;
-        uint64_t result = sys::process_message("init_fs/graphic_service.exe", (uint64_t)&swap_request, sizeof(sys::graphic_system_service_protocol)).read();
+        uint64_t result = sys::service_message("init_fs/graphic_service.exe", (uint64_t)&swap_request, sizeof(sys::graphic_system_service_protocol)).read();
     }
 
     void raw_clear_buffer(sys::pixel *buffer, uint64_t size, sys::pixel value)
@@ -131,7 +132,7 @@ namespace sys
         sys::graphic_system_service_protocol request = {0};
         request.request_type = sys::GRAPHIC_SYSTEM_REQUEST::GET_WINDOW_POSITION;
         request.get_request.window_handler_code = wid;
-        uint64_t result = sys::process_message("init_fs/graphic_service.exe", (uint64_t)&request, sizeof(sys::graphic_system_service_protocol)).read();
+        uint64_t result = sys::service_message("init_fs/graphic_service.exe", (uint64_t)&request, sizeof(sys::graphic_system_service_protocol)).read();
         sys::raw_pos p;
         p.pos = result;
         return p;
@@ -143,7 +144,7 @@ namespace sys
         request.request_type = sys::GRAPHIC_SYSTEM_REQUEST::SET_WINDOW_POSITION;
         request.set_pos.window_handler_code = wid;
         request.set_pos.position = position;
-        sys::process_message("init_fs/graphic_service.exe", (uint64_t)&request, sizeof(sys::graphic_system_service_protocol)).read();
+        sys::service_message("init_fs/graphic_service.exe", (uint64_t)&request, sizeof(sys::graphic_system_service_protocol)).read();
     }
     uint64_t get_basic_font_width_text(const char *text)
     {
@@ -291,7 +292,7 @@ namespace sys
         request.depth_request.window_handler_code = wid;
         request.depth_request.set = true;
         request.depth_request.type = sys::ON_TOP;
-        uint64_t result = sys::process_message("init_fs/graphic_service.exe", (uint64_t)&request, sizeof(sys::graphic_system_service_protocol)).read();
+        uint64_t result = sys::service_message("init_fs/graphic_service.exe", (uint64_t)&request, sizeof(sys::graphic_system_service_protocol)).read();
     }
     void graphic_context::set_as_background()
     {
@@ -300,7 +301,7 @@ namespace sys
         request.depth_request.window_handler_code = wid;
         request.depth_request.set = true;
         request.depth_request.type = sys::BACKGROUND;
-        uint64_t result = sys::process_message("init_fs/graphic_service.exe", (uint64_t)&request, sizeof(sys::graphic_system_service_protocol)).read();
+        uint64_t result = sys::service_message("init_fs/graphic_service.exe", (uint64_t)&request, sizeof(sys::graphic_system_service_protocol)).read();
     }
     void graphic_context::set_on_top_of_background()
     {
@@ -309,7 +310,7 @@ namespace sys
         request.depth_request.window_handler_code = wid;
         request.depth_request.set = true;
         request.depth_request.type = sys::TOP_BACKGROUND;
-        uint64_t result = sys::process_message("init_fs/graphic_service.exe", (uint64_t)&request, sizeof(sys::graphic_system_service_protocol)).read();
+        uint64_t result = sys::service_message("init_fs/graphic_service.exe", (uint64_t)&request, sizeof(sys::graphic_system_service_protocol)).read();
     }
     bool graphic_context::is_on_top()
     {
@@ -317,7 +318,7 @@ namespace sys
         request.request_type = sys::GRAPHIC_SYSTEM_REQUEST::WINDOW_DEPTH_ACTION;
         request.depth_request.window_handler_code = wid;
         request.depth_request.set = false;
-        uint64_t result = sys::process_message("init_fs/graphic_service.exe", (uint64_t)&request, sizeof(sys::graphic_system_service_protocol)).read();
+        uint64_t result = sys::service_message("init_fs/graphic_service.exe", (uint64_t)&request, sizeof(sys::graphic_system_service_protocol)).read();
         return result == 0;
     }
     bool graphic_context::is_mouse_inside()

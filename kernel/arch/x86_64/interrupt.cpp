@@ -65,9 +65,9 @@ const char *interrupt_exception_name[] = {
     "invalid (31)"};
 
 extern uintptr_t __interrupt_vector[128];
-static idt_entry idt[IDT_ENTRY_COUNT];
+idt_entry idt[IDT_ENTRY_COUNT];
 
-static idtr idt_descriptor = {
+idtr idt_descriptor = {
     .size = sizeof(idt_entry) * IDT_ENTRY_COUNT,
     .offset = (uint64_t)&idt[0],
 };

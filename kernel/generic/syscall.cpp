@@ -36,13 +36,21 @@ uint64_t sys$get_process_global_data(const char *target, uint64_t offset, uint64
         return (uintptr_t)get_process_global_data_copy(offset, target);
     }
 }
+process_message *sys$send_message_pid(uintptr_t data_addr, uint64_t data_length, uint64_t to_process)
+{
+    auto res = send_message_pid(data_addr, data_length, to_process);
+
+    return res;
+}
 static void *syscalls[] = {
     (void *)sys$null,
     (void *)sys$send_message,
     (void *)sys$read_message,
     (void *)sys$message_response,
-    (void *)sys$get_process_global_data};
-uint64_t syscalls_length = 5;
+    (void *)sys$get_process_global_data,
+    (void *)sys$send_message_pid,
+};
+uint64_t syscalls_length = 6;
 void init_syscall()
 {
     log("syscall", LOG_DEBUG) << "loading syscall";

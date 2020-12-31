@@ -94,6 +94,7 @@ void lock_process();
 void task_update_switch(process *next);
 uintptr_t process_switch_handler(arch_stackframe *isf, bool switch_all);
 process_message *send_message(uintptr_t data_addr, uint64_t data_length, const char *to_process);
+process_message *send_message_pid(uintptr_t data_addr, uint64_t data_length, uint64_t target_pid);
 process_message *read_message();
 uint64_t message_response(process_message *indentifier);
 

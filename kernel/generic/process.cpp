@@ -402,6 +402,19 @@ process_message *send_message(uintptr_t data_addr, uint64_t data_length, const c
     return nullptr;
 }
 
+process_message *send_message_pid(uintptr_t data_addr, uint64_t data_length, uint64_t target_pid)
+{
+    uint64_t kpid = upid_to_kpid(target_pid);
+    if (kpid == (uint64_t)-1)
+    {
+        log("process", LOG_ERROR) << "trying to send a message to pid : " << target_pid << "and not founded it :(";
+        return nullptr;
+    }
+
+    process_message *r = create_process_message(target_pid, data_addr, data_length);
+    process_array[kpid].should_be_active = true;
+    return r;
+}
 process_message *read_message()
 {
     for (uint64_t i = 0; i < MAX_PROCESS_MESSAGE_QUEUE; i++)

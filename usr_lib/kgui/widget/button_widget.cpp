@@ -1,6 +1,6 @@
 #include <kgui/widget.h>
 #include <kgui/widget/button_widget.h>
-#include <klib/mouse.h>
+#include <klib/mouse_keyboard.h>
 #include <stdlib.h>
 #include <string.h>
 namespace gui

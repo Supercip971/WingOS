@@ -1,5 +1,5 @@
 #include <kgui/widget/movable_context_widget.h>
-#include <klib/mouse.h>
+#include <klib/mouse_keyboard.h>
 #include <stdio.h>
 namespace gui
 {

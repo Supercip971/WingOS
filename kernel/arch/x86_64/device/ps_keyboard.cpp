@@ -4,129 +4,6 @@
 #include <interrupt.h>
 #include <logging.h>
 
-static const char asciiDefault[58] =
-    {
-        0,
-        0,  // ESC
-        49, // 1
-        50,
-        51,
-        52,
-        53,
-        54,
-        55,
-        56,
-        57, // 9
-        48, // 0
-        45, // -
-        61, // =
-        8,
-        0,
-        113, // q
-        119,
-        101,
-        114,
-        116,
-        121,
-        117,
-        105,
-        111,
-        112, // p
-        91,  // [
-        93,  // ]
-        28,
-        0,
-        97, // a
-        115,
-        100,
-        102,
-        103,
-        104,
-        106,
-        107,
-        108, // l
-        59,  // ;
-        39,  // '
-        96,  // `
-        0,
-        92,  // BACKSLASH
-        122, // z
-        120,
-        99,
-        118,
-        98,
-        110,
-        109, // m
-        44,  // ,
-        46,  // .
-        47,  // /
-        0,
-        42, // *
-        0,
-        32, // SPACE
-};
-const char asciiShift[] =
-    {
-        0,
-        0,  // ESC
-        33, // !
-        64, // @
-        35, // #
-        36, // $
-        37, // %
-        94, // ^
-        38, // &
-        42, // *
-        40, // (
-        41, // )
-        95, // _
-        43, // +
-        0,
-        0,
-        81, // Q
-        87,
-        69,
-        82,
-        84,
-        89,
-        85,
-        73,
-        79,
-        80,  // P
-        123, // {
-        125, // }
-        0,
-        0,
-        65, // A
-        83,
-        68,
-        70,
-        71,
-        72,
-        74,
-        75,
-        76,  // L
-        58,  // :
-        34,  // "
-        126, // ~
-        0,
-        124, // |
-        90,  // Z
-        88,
-        67,
-        86,
-        66,
-        78,
-        77, // M
-        60, // <
-        62, // >
-        63, // ?
-        0,
-        0,
-        0,
-        32, // SPACE
-};
-
 ps_keyboard main_ps_key;
 
 ps_keyboard::ps_keyboard()
@@ -139,7 +16,14 @@ void ps_keyboard_interrupt_handler(unsigned int irq)
 void ps_keyboard::set_key(bool state, uint8_t keycode)
 {
     key_pressed[keycode] = state;
-
+    if (state == true)
+    {
+        last_keypress = keycode;
+    }
+    else
+    {
+        last_keypress = 0;
+    }
     if (ptr_to_update != nullptr)
     {
         ptr_to_update[keycode] = state;
@@ -171,7 +55,7 @@ void ps_keyboard::interrupt_handler()
         set_key(key_state, scan_code);
         if (key_state)
         {
-            log("keyboard", LOG_INFO) << asciiDefault[scan_code];
+            log("keyboard", LOG_INFO) << (uint64_t)asciiDefault[scan_code];
         }
         state = inb(0x64);
     }

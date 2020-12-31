@@ -4,7 +4,7 @@
 #include <klib/graphic_system.h>
 #include <klib/kernel_util.h>
 #include <klib/mem_util.h>
-#include <klib/mouse.h>
+#include <klib/mouse_keyboard.h>
 #include <klib/process_message.h>
 #include <klib/raw_graphic.h>
 #include <klib/syscall.h>

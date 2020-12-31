@@ -1,3 +1,4 @@
+#include <device/ps_keyboard.h>
 #include <device/ps_mouse.h>
 #include <kernel_service/ps2_device_service.h>
 #include <logging.h>
@@ -6,17 +7,21 @@ struct raw_request_data
 {
 
     uint8_t raw_data[32];
-};
+} __attribute__((packed));
 
 struct mouse_get_position
 {
     bool get_x_value;
-};
+} __attribute__((packed));
 
 struct mouse_get_button
 {
     int mouse_button_type;
-};
+} __attribute__((packed));
+struct get_keyboard_key_down
+{
+    bool unused;
+} __attribute__((packed));
 
 struct ps2_device_request
 {
@@ -28,6 +33,7 @@ struct ps2_device_request
         raw_request_data data;
         mouse_get_position mouse_request_pos;
         mouse_get_button mouse_button_request;
+        get_keyboard_key_down get_key_down;
     };
 } __attribute__((packed));
 
@@ -35,6 +41,12 @@ enum mouse_request_type
 {
     GET_MOUSE_POSITION = 0,
     GET_MOUSE_BUTTON = 1
+};
+
+enum keyboard_request_type
+{
+
+    GET_KEYBOARD_KEY = 0,
 };
 
 enum mouse_button_type
@@ -60,15 +72,18 @@ uint64_t mouse_handle(ps2_device_request *request)
         return ps_mouse::the()->get_mouse_button(request->mouse_button_request.mouse_button_type);
     }
 
-    log("ps2 service", LOG_ERROR) << "error request not handled : " << request->request_type;
+    log("ps2 service", LOG_ERROR) << "mouse error request not handled : " << request->request_type;
     return -2;
 }
 
 uint64_t keyboard_handle(ps2_device_request *request)
 {
 
-    log("ps2 service", LOG_ERROR) << "error keyboard is not implemented for the moment";
-
+    if (request->request_type == GET_KEYBOARD_KEY)
+    {
+        return ps_keyboard::the()->get_last_keypress();
+    }
+    log("ps2 service", LOG_ERROR) << "keyboard error request not handled : " << request->request_type;
     return -2;
 }
 

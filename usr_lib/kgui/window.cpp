@@ -3,7 +3,7 @@
 #include <klib/graphic_system.h>
 #include <klib/kernel_util.h>
 #include <klib/mem_util.h>
-#include <klib/mouse.h>
+#include <klib/mouse_keyboard.h>
 #include <klib/syscall.h>
 #include <stdio.h>
 namespace gui

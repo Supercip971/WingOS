@@ -1,6 +1,7 @@
 #include <kgui/widget.h>
 #include <kgui/widget/terminal_widget.h>
 #include <klib/kernel_util.h>
+#include <klib/mouse_keyboard.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -97,7 +97,7 @@ app: $(APP_FILE_CHANGE)
 	@make -C ./app/console_service all -j12
 	@make -C ./app/background all -j12
 	@make -C ./app/wstart all -j12
-
+	@make -C ./app/shell all -j12
 super:
 	@make clean 
 	@make app -j12

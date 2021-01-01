@@ -14,7 +14,7 @@ namespace sys
 
     struct memory_service_protocol
     {
-        uint64_t request_type;
+        uint8_t request_type;
         uint64_t address;
         uint64_t length;
     } __attribute__((packed));

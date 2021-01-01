@@ -33,7 +33,7 @@ CHARDFLAGS := $(CFLAGS)               \
         -m64 \
 		-Wall \
 		-Werror \
-        -O3 \
+        -Os \
         -mcmodel=kernel \
         -mno-80387                     \
         -mno-red-zone                  \

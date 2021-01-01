@@ -15,26 +15,30 @@ void memory_service()
 
         if (msg != 0)
         {
-            memory_service_protocol *prot = (memory_service_protocol *)msg->content_address;
-
             set_on_request_service(false);
+            memory_service_protocol *prot = (memory_service_protocol *)msg->content_address;
 
             if (prot->request_type == REQUEST_PMM_MALLOC)
             {
-                msg->response = (uint64_t)(pmm_alloc_zero(prot->length));
+                log("memory_service", LOG_INFO) << "alloc" << (uint64_t)prot->length;
+
+                msg->response = (uint64_t)(pmm_alloc_fast(prot->length));
                 msg->has_been_readed = true;
             }
             else if (prot->request_type == REQUEST_PMM_FREE)
             {
                 msg->response = (uint64_t)1;
+                log("memory_service", LOG_INFO) << "free" << (uint64_t)prot->length;
                 pmm_free((void *)((prot->address)), prot->length);
                 msg->has_been_readed = true;
             }
             else
             {
-                msg->has_been_readed = true;
                 msg->response = 0;
+                msg->has_been_readed = true;
                 log("memory_service", LOG_ERROR) << "not valid request memory" << (uint64_t)prot->request_type;
+                log("memory_service", LOG_ERROR) << "with process" << (uint64_t)msg->from_pid << " | " << process_array[upid_to_kpid(msg->from_pid)].process_name;
+                process_array[upid_to_kpid(msg->from_pid)].process_backtrace.dump_backtrace();
             }
 
             set_on_request_service(true);

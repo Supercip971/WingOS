@@ -73,10 +73,6 @@ void kernel_process_service()
             else if (prot->type == GET_PROCESS_BUFFER)
             {
                 msg->response = process_buffer_read(prot);
-                if (msg->response == 0)
-                {
-                    msg->response = 1;
-                }
             }
             else if (prot->type == PROCESS_SLEEP)
             {
@@ -90,10 +86,18 @@ void kernel_process_service()
             }
             else if (prot->type == OUT_PROCESS_BUFFER)
             {
-                msg->response = add_process_buffer(
-                    &process_array[upid_to_kpid(prot->opb.pid_target)].pr_buff[prot->opb.buffer_type],
-                    prot->opb.length,
-                    prot->opb.output_data);
+                uint64_t target = upid_to_kpid(prot->opb.pid_target);
+                if (target == (uint64_t)-1)
+                {
+                    log("kernel_process_service", LOG_WARNING) << "upid" << prot->opb.pid_target << "is invalid";
+                }
+                else
+                {
+                    msg->response = add_process_buffer(
+                        &process_array[upid_to_kpid(prot->opb.pid_target)].pr_buff[prot->opb.buffer_type],
+                        prot->opb.length,
+                        prot->opb.output_data);
+                }
             }
             else if (prot->type == GET_CURRENT_PID)
             {

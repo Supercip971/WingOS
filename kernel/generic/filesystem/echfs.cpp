@@ -24,13 +24,9 @@ void echfs::read_blocks(uint64_t block_id, uint64_t length, uint8_t *buffer)
         get_io_device(0)->read((buffer + ((header.block_length * i))), ((header.block_length) / 512), (start_sec + ((block_id + i) * header.block_length)) / 512);
     }
 }
-uint64_t *another_buffer = nullptr;
 echfs_file_header echfs::read_directory_entry(uint64_t entry)
 {
-    if (another_buffer == nullptr)
-    {
-        another_buffer = (uint64_t *)malloc(header.block_length);
-    }
+    uint64_t *another_buffer = (uint64_t *)malloc(header.block_length);
     uint64_t current_entry = 0;
     uint64_t second_check_length = header.block_length / sizeof(echfs_file_header);
     for (uint64_t i = 0; i < header.main_directory_length; i++)
@@ -43,11 +39,13 @@ echfs_file_header echfs::read_directory_entry(uint64_t entry)
             if (current_entry == entry)
             {
                 echfs_file_header ret = *cur_header;
+                free(another_buffer);
                 return ret;
             }
             if (cur_header->parent_id == 0)
             {
                 log("echfs", LOG_INFO) << "reached the end of me :(";
+                free(another_buffer);
                 return {0};
             }
             else
@@ -61,6 +59,7 @@ echfs_file_header echfs::read_directory_entry(uint64_t entry)
             current_entry++;
         }
     }
+    free(another_buffer);
     return {0};
 }
 
@@ -231,7 +230,7 @@ uint64_t echfs::get_simple_file(const char *name, uint64_t forced_parent)
         read_block(main_dir_start + i, (uint8_t *)temporary_buf);
         for (uint64_t j = 0; j < second_check_length; j++)
         {
-            echfs_file_header *cur_header = reinterpret_cast<echfs_file_header *>((uint64_t)another_buffer + (j * sizeof(echfs_file_header)));
+            echfs_file_header *cur_header = reinterpret_cast<echfs_file_header *>((uint64_t)temporary_buf + (j * sizeof(echfs_file_header)));
             if (strncmp(cur_header->file_name, name, name_length) == 0)
             {
                 if (forced_parent != (uint64_t)-1)

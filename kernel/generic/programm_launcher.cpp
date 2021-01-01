@@ -9,7 +9,7 @@
 #include <process.h>
 #include <utility.h>
 uint8_t last_selected_cpu = 0;
-
+lock_type prg_launch = {0};
 void load_segment(process *pro, uintptr_t source, uint64_t size, uintptr_t dest, uint64_t destsize)
 {
     uint64_t count = destsize / PAGE_SIZE;
@@ -171,8 +171,9 @@ void elf64_load_entry(Elf64_Phdr *entry, uint8_t *programm_code, process *target
 
 uint64_t launch_programm(const char *path, file_system *file_sys)
 {
+    lock(&file_sys->fs_lock); // make sure that the fs lock is locked
     lock_process();
-
+    unlock(&file_sys->fs_lock);
     log("prog launcher", LOG_DEBUG) << "launching programm : " << path;
     uint8_t *programm_code = file_sys->read_file(path);
 

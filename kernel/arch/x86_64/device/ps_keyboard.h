@@ -31,8 +31,8 @@ static const char asciiDefault[58] =
         112, // p
         91,  // [
         93,  // ]
-        28,
-        0,
+        '\n',
+        10, // return
         97, // a
         115,
         100,
@@ -93,7 +93,7 @@ static const char asciiShift[] =
         123, // {
         125, // }
         0,
-        0,
+        10,
         65, // A
         83,
         68,

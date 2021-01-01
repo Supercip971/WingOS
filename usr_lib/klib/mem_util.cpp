@@ -7,7 +7,7 @@ namespace sys
 
     void *service_pmm_malloc(size_t length)
     {
-        memory_service_protocol prot_data;
+        memory_service_protocol prot_data = {0};
         prot_data.request_type = REQUEST_PMM_MALLOC;
         prot_data.length = length;
         prot_data.address = 0;
@@ -15,12 +15,13 @@ namespace sys
         uint64_t result = msg.read();
         return (void *)result;
     }
-    void service_pmm_free(void *addr, size_t length)
+    uint64_t service_pmm_free(void *addr, size_t length)
     {
-        memory_service_protocol prot_data;
+        memory_service_protocol prot_data = {0};
         prot_data.request_type = REQUEST_PMM_FREE;
         prot_data.length = length;
         prot_data.address = (uint64_t)addr;
         sys::service_message msg = sys::service_message("memory_service", (uint64_t)&prot_data, sizeof(prot_data));
+        return msg.read();
     }
 } // namespace sys

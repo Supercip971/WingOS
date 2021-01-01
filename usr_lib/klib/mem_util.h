@@ -14,11 +14,11 @@ namespace sys
 
     struct memory_service_protocol
     {
-        uint8_t request_type;
+        uint64_t request_type;
         uint64_t address;
         uint64_t length;
     } __attribute__((packed));
 
     void *service_pmm_malloc(size_t length);
-    void service_pmm_free(void *addr, size_t length);
+    uint64_t service_pmm_free(void *addr, size_t length);
 } // namespace sys

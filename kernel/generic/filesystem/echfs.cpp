@@ -9,7 +9,6 @@
 #include <logging.h>
 #include <physical.h>
 #include <utility.h>
-lock_type main_echfs_lock = {0};
 echfs::echfs() : file_system()
 {
 }
@@ -366,13 +365,13 @@ uint64_t echfs::get_file_length(const char *path)
 }
 uint8_t *echfs::ech_read_file(const char *path)
 {
-    flock(&main_echfs_lock);
+    flock(&fs_lock);
     log("echfs", LOG_INFO) << "reading file " << path;
     echfs_file_header file_to_read_header = (find_file(path));
     if (file_to_read_header.file_type == 1)
     {
         log("echfs", LOG_ERROR) << "trying to read a folder";
-        unlock(&main_echfs_lock);
+        unlock(&fs_lock);
         return nullptr;
     }
     log("echfs", LOG_INFO) << "reading file 1 " << path;
@@ -388,6 +387,6 @@ uint8_t *echfs::ech_read_file(const char *path)
     read_blocks(block_to_read, block_count_to_read, data);
 
     log("echfs", LOG_INFO) << "readed file size  " << size_to_read;
-    unlock(&main_echfs_lock);
+    unlock(&fs_lock);
     return data;
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include <filesystem/partition/base_partition.h>
+#include <lock.h>
 #include <logging.h>
 #include <stdint.h>
 class fs_file
@@ -16,6 +17,7 @@ protected:
 class file_system
 {
 public:
+    lock_type fs_lock = {0};
     file_system();
     virtual void init(uint64_t start_sector, uint64_t sector_count) = 0;
 

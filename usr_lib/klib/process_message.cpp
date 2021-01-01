@@ -40,11 +40,13 @@ namespace sys
             }
         }
     }
-    process_message::process_message(){
+    process_message::process_message()
+    {
 
         loaded = false;
     }
-    process_message::process_message(uint64_t to_pid, uint64_t address_to_send, uint64_t data_length){
+    process_message::process_message(uint64_t to_pid, uint64_t address_to_send, uint64_t data_length)
+    {
         for (int i = 0; i < 9999; i++)
         {
             source = sys$send_message_pid(address_to_send, data_length, to_pid);
@@ -55,7 +57,8 @@ namespace sys
         }
     }
 
-    uint64_t process_message::read(){
+    uint64_t process_message::read()
+    {
         while (true)
         {
             uint64_t response = 0;

@@ -23,7 +23,7 @@ namespace sys
     {
         uint64_t window_handler_code;
         sys::raw_pos position;
-    };
+    } __attribute__((packed));
     enum WINDOW_DEPTH_TYPE
     {
         BACKGROUND = 1,     // back
@@ -36,7 +36,7 @@ namespace sys
         uint64_t window_handler_code;
         bool set;
         uint8_t type; // 0 on top
-    };
+    } __attribute__((packed));
     enum GRAPHIC_SYSTEM_REQUEST
     {
         NULL_REQUEST = 0,
@@ -79,9 +79,9 @@ namespace sys
                 uint8_t g;
                 uint8_t b;
                 uint8_t a;
-            };
+            } __attribute__((packed));
             uint32_t pix;
-        };
+        } __attribute__((packed));
         constexpr pixel()
         {
             pix = 0;
@@ -123,7 +123,7 @@ namespace sys
             x = vx;
             y = vy;
         }
-    };
+    } __attribute__((packed));
 
     class graphic_context
     {

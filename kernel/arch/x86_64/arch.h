@@ -15,7 +15,7 @@ typedef void (*func)();
 
 #define PAGE_SIZE 4096
 
-#define PROCESS_STACK_SIZE 8192
+#define PROCESS_STACK_SIZE 65536
 struct arch_process_data
 {
     uint8_t stack[PROCESS_STACK_SIZE];

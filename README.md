@@ -9,15 +9,24 @@ for building you can take a look at the [Build guide](./Build_guide.md)
 
 It works with the concept of 'services' ,
 everything is a service and maybe later replacable with a user application, 
-WingOS has 4 syscalls : 
-```
-SEND_SERVICE_SYSCALL            = 1        // send a message to a service
+WingOS has 6 syscalls : 
+```cpp
 
-READ_SERVICE_SYSCALL            = 2        // read all message that you have
+enum syscall_codes
+{
+    NULL_SYSCALL = 0,
+    SEND_SERVICE_SYSCALL            = 1,        // send a message to a service
 
-GET_RESPONSE_SERVICE_SYSCALL    = 3        // if the message sended has been responded
+    READ_SERVICE_SYSCALL            = 2,        // read all message that you have
 
-GET_PROCESS_GLOBAL_DATA         = 4        // get process global data, if arg1 (target) is nullptr, return self global data, else return a process global data return -1 if there is an error
+    GET_RESPONSE_SERVICE_SYSCALL    = 3,        // if the message sended has been responded
+
+    GET_PROCESS_GLOBAL_DATA         = 4,        // get process global data, if arg1 (target) is nullptr, return self global data, else return a process global data return -1 if there is an error
+    
+    SEND_PROCESS_SYSCALL_PID        = 5,        // this is used to send a message to a process and not a service
+    MEMORY_ALLOC                    = 6,        // alloc some pages
+    MEMORY_FREE                     = 7, 
+};
 ```
 the user application communicates with the kernel through kernel services : 
     - graphic_buffer_service

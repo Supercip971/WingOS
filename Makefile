@@ -1,8 +1,6 @@
 ARCH := x86_64
 END_PATH := kernel/generic kernel/arch/$(ARCH)
 
-
-
 CFILES    := $(shell find $(END_PATH) -type f -name '*.cpp')
 HFILES    := $(shell find $(END_PATH) -type f -name '*.h')
 USRCFILES    := $(shell find usr_lib/ -type f -name '*.cpp')
@@ -15,7 +13,7 @@ OBJ := $(shell find $(END_PATH) -type f -name '*.o')
 
 KERNEL_HDD = ./build/disk.hdd
 KERNEL_RAMDISK = ./build/ramdisk.hdd
-
+APP_FS_MAKEFILE_FLAGS = all -j$(nproc)
 APP_FS_CHANGE = ./usr_lib/ ./app/
 APP_FILE_CHANGE := $(shell find $(APP_FS_CHANGE) -type f -name '*.cpp')
 KERNEL_ELF = kernel.elf
@@ -33,19 +31,19 @@ CHARDFLAGS := $(CFLAGS)               \
         -m64 \
 		-Wall \
 		-Werror \
-        -O3 \
+        -O2 \
         -mcmodel=kernel \
         -mno-80387                     \
         -mno-red-zone                  \
         -fno-rtti \
         -fno-exceptions \
-				-ffreestanding                 \
+		-ffreestanding                 \
         -fno-stack-protector           \
         -fno-omit-frame-pointer        \
-				-fno-isolate-erroneous-paths-attribute \
-				-fno-delete-null-pointer-checks \
-				-I./kernel/generic                        \
-				-I./kernel/arch/$(ARCH) \
+		-fno-isolate-erroneous-paths-attribute \
+		-fno-delete-null-pointer-checks \
+		-I./kernel/generic                        \
+		-I./kernel/arch/$(ARCH) \
 
 LDHARDFLAGS := $(LDFLAGS)        \
         -nostdlib                 \
@@ -70,7 +68,7 @@ first_setup:
 	@make setup_limine -j$(nproc)
 boch:
 	-rm disk.img
-	@bximage -q -mode=convert -imgmode=flat build/disk.hdd disk.img
+	@bximage -q -mode=convert -imgmode=flat $(KERNEL_HDD) disk.img
 	@bochs
 
 disk:
@@ -90,19 +88,17 @@ foreachramfs:
 	@for f in $(shell find init_fs/ -maxdepth 64 -type f); do $(ECHFS_PATH) -m -p0 $(KERNEL_HDD) import $${f} $${f}; done
 
 app: $(APP_FILE_CHANGE)
-	@make -C ./app/test all -j12	
-	@make -C ./app/test2 all -j12
-	@make -C ./app/graphic_service all -j12
-	@make -C ./app/memory_service all -j12
-	@make -C ./app/console_service all -j12
-	@make -C ./app/background all -j12
-	@make -C ./app/wstart all -j12
-	@make -C ./app/shell all -j12
+	@make -C ./app/test $(APP_FS_MAKEFILE_FLAGS)	
+	@make -C ./app/test2 $(APP_FS_MAKEFILE_FLAGS)	
+	@make -C ./app/graphic_service $(APP_FS_MAKEFILE_FLAGS)	
+	@make -C ./app/memory_service $(APP_FS_MAKEFILE_FLAGS)	
+	@make -C ./app/console_service $(APP_FS_MAKEFILE_FLAGS)	
+	@make -C ./app/background $(APP_FS_MAKEFILE_FLAGS)	
+	@make -C ./app/wstart $(APP_FS_MAKEFILE_FLAGS)	
+	@make -C ./app/shell $(APP_FS_MAKEFILE_FLAGS)	
 super:
 	@make clean 
 	@make app -j12
-	-killall -9 VirtualBoxVM
-	-killall -9 qemu-system-x86_64
 	@make format
 	@make -j12
 
@@ -114,12 +110,13 @@ check:
 	@make app -j12
 
 %.o: %.cpp %.h
-	@echo "cpp [BUILD] $< $(CHARDFLAGS)"
+	@echo "[KERNEL $(ARCH)] (cpp) $<"
 	@$(CC) $(CHARDFLAGS) -c $< -o $@
 
 %.o: %.asm
-	@echo "nasm [BUILD] $<"
+	@echo "[KERNEL $(ARCH)] (nasm) $<"
 	@nasm $< -o $@ -felf64 -F dwarf -g -w+all -Werror
+
 $(KERNEL_ELF): $(OBJFILES) $(ASMOBJFILES)
 	@ld $(LDHARDFLAGS) $(OBJFILES) $(ASMOBJFILES) -o $@
 

@@ -379,7 +379,7 @@ process_message *create_process_message(size_t tpid, uintptr_t data_addr, uint64
     todo->to_pid = tpid;
 
     process_message *copy = (process_message *)malloc(sizeof(process_message));
-    *copy = *todo;
+    memcpy((void *)copy, (void *)todo, sizeof(process_message));
     copy->content_address = -1;
     return copy;
 }

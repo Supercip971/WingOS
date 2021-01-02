@@ -11,15 +11,15 @@ namespace sys
     {
 
         uint8_t raw_data[32];
-    };
+    } __attribute__((packed));
     struct mouse_get_position
     {
         bool get_x_value;
-    };
+    } __attribute__((packed));
     struct mouse_get_button
     {
         int mouse_button_type;
-    };
+    } __attribute__((packed));
     enum device_target_type
     {
         TARGET_MOUSE = 1,
@@ -35,7 +35,7 @@ namespace sys
     struct get_keyboard_key_down
     {
         bool unused;
-    };
+    } __attribute__((packed));
 
     struct ps2_device_request
     {

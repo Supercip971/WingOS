@@ -33,8 +33,9 @@ namespace sys
 
     char get_last_key_press()
     {
-        ps2_device_request request;
+        ps2_device_request request = {0};
         request.device_target = TARGET_KEYBOARD;
+        request.request_type = GET_KEYBOARD_KEY;
         request.get_key_down.unused = true;
         service_message proc_msg = service_message("ps2_device_service", (uint64_t)&request, sizeof(ps2_device_request));
         return proc_msg.read();

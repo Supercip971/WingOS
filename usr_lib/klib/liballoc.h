@@ -59,7 +59,7 @@ namespace sys
         inline void *liballoc_alloc(size_t s)
         {
 
-            return (void *)(service_pmm_malloc(s));
+            return (void *)(pmm_malloc(s));
         }
 
         /** This frees previously allocated memory. The void* parameter passed
@@ -72,7 +72,7 @@ namespace sys
  */
         inline int liballoc_free(void *s, size_t d)
         {
-            service_pmm_free(s, d);
+            pmm_free(s, d);
             return 0; // free everytime
         }
 

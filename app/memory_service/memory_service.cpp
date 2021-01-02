@@ -21,7 +21,7 @@ struct memory_map_children
 memory_map_children *heap = nullptr;
 void init_mm()
 {
-    heap = reinterpret_cast<memory_map_children *>(sys::service_pmm_malloc(MM_BIG_BLOCK_SIZE / 4096));
+    heap = reinterpret_cast<memory_map_children *>(sys::pmm_malloc(MM_BIG_BLOCK_SIZE / 4096));
     heap->code = 0xf2ee;
     heap->length = MM_BIG_BLOCK_SIZE - sizeof(memory_map_children);
     heap->is_free = true;
@@ -44,7 +44,7 @@ void increase_mmap()
         if (current->next == nullptr)
         {
 
-            current->next = reinterpret_cast<memory_map_children *>(sys::service_pmm_malloc(MM_BIG_BLOCK_SIZE / 4096));
+            current->next = reinterpret_cast<memory_map_children *>(sys::pmm_malloc(MM_BIG_BLOCK_SIZE / 4096));
 
             current->next->code = 0xf2ee;
             current->next->length = MM_BIG_BLOCK_SIZE - sizeof(memory_map_children);

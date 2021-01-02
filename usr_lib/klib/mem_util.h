@@ -3,6 +3,8 @@
 #include <stdint.h>
 namespace sys
 {
+
+    // this now unused code will be deleted later
     enum memory_service_protocol_request
     {
         REQUEST_MALLOC = 0,
@@ -19,6 +21,6 @@ namespace sys
         uint64_t length;
     } __attribute__((packed));
 
-    void *service_pmm_malloc(size_t length);
-    uint64_t service_pmm_free(void *addr, size_t length);
+    void *pmm_malloc(size_t length);
+    uint64_t pmm_free(void *addr, size_t length);
 } // namespace sys

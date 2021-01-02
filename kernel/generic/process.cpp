@@ -180,7 +180,7 @@ void init_process_buffers(process *to_init)
 
 process *init_process(func entry_point, bool start_direct, const char *name, bool user, uint64_t cpu_target)
 {
-    lock((&process_creator_lock));
+    flock((&process_creator_lock));
     process *process_to_add = find_usable_process();
     process_to_add->current_process_state = process_state::PROCESS_NOT_STARTED;
 

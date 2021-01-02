@@ -551,7 +551,7 @@ uint64_t upid_to_kpid(uint64_t upid)
     for (int i = 0; i < MAX_PROCESS; i++)
     {
 
-        if (process_array[i].upid == upid)
+        if (process_array[i].upid == upid && (process_array[i].current_process_state != PROCESS_SHOULD_BE_DEAD && process_array[i].current_process_state != PROCESS_AVAILABLE))
         {
             return process_array[i].kpid;
         }

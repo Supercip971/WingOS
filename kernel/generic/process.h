@@ -45,7 +45,7 @@ struct process_message
     bool has_been_readed;
     bool entry_free_to_use;
 } __attribute__((packed));
-#define MAX_PROCESS_MESSAGE_QUEUE 32
+#define MAX_PROCESS_MESSAGE_QUEUE 128
 struct process
 {
     arch_process_data arch_info;

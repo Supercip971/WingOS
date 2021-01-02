@@ -50,7 +50,6 @@ void smp::init()
     SMPloaded = false;
     log("smp", LOG_DEBUG) << "loading smp";
     memzero(cpu_tss, sizeof(tss) * max_cpu);
-    memzero(get_current_cpu(processor_count)->fpu_data, sizeof(get_current_cpu(processor_count)->fpu_data));
     for (int i = 0; i < max_cpu; i++)
     {
         mt_lapic[i] = 0x0;
@@ -73,6 +72,7 @@ void smp::init()
             processor_count++;
         }
     }
+    processor_count--;
 
     log("smp", LOG_INFO) << "total processor count" << processor_count;
     if (processor_count > max_cpu)
@@ -136,6 +136,7 @@ void smp::init_cpu(int apic, int id)
 
     log("smp cpu", LOG_DEBUG) << "loading smp cpu : " << id << "/ apic id :" << apic;
 
+    memzero(get_current_cpu(id)->fpu_data, sizeof(get_current_cpu(id)->fpu_data));
     apic::the()->preinit_processor(apic);
 
     get_current_cpu(id)->lapic_id = apic;

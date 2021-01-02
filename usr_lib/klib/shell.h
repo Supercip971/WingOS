@@ -37,7 +37,7 @@ namespace sys
             shell_exit exit;
             shell_raw raw;
         };
-    };
+    } __attribute__((packed));
 
     class shell
     {

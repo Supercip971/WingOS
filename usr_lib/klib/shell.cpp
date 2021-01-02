@@ -28,7 +28,7 @@ namespace sys
         shell_protocol prot;
         prot.action = SHELL_SEND_COMMAND;
         prot.command.command = new char[strlen(command) + 5];
-        memcpy(prot.command.command, command, strlen(command) + 2);
+        memcpy(prot.command.command, command, strlen(command) + 1);
         sys::process_message msg = sys::process_message((uint64_t)shell_pid, (uint64_t)&prot, sizeof(shell_protocol));
         msg.read();
         delete[] prot.command.command;

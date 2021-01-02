@@ -24,7 +24,7 @@ namespace sys
 
     uint64_t get_process_pid(const char *process_name)
     {
-        volatile process_request pr = {0};
+        process_request pr = {0};
         pr.type = GET_PROCESS_PID;
         memcpy((uint8_t *)pr.gpp.process_name, process_name, strlen(process_name) + 1);
         uint64_t result = sys::service_message("kernel_process_service", (uint64_t)&pr, sizeof(pr)).read();
@@ -32,7 +32,7 @@ namespace sys
     }
     uint64_t get_current_pid()
     {
-        volatile process_request pr = {0};
+        process_request pr = {0};
         pr.type = GET_CURRENT_PID;
         uint64_t result = sys::service_message("kernel_process_service", (uint64_t)&pr, sizeof(pr)).read();
         return result;

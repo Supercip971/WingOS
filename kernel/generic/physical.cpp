@@ -164,9 +164,16 @@ void pmm_free(void *where, uint64_t lenght)
     used_memory -= lenght;
     uint64_t where_aligned = (uint64_t)where;
     where_aligned /= PAGE_SIZE;
-
+    if ((uint64_t)where > bitmap_base && (uint64_t)where < bitmap_base + pmm_length)
+    {
+        log("pmm", LOG_WARNING) << "you are freeing bitmap memory";
+    }
     for (uint64_t i = 0; i < lenght; i++)
     {
+        if (pmm_get_bit(where_aligned + i) == 0)
+        {
+            log("pmm", LOG_WARNING) << "you are freeing already free pmm memory";
+        }
         pmm_clear_bit(where_aligned + i);
     }
     unlock(&pmm_lock);

@@ -183,7 +183,7 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
     flock((&process_creator_lock));
     process *process_to_add = find_usable_process();
     process_to_add->current_process_state = process_state::PROCESS_NOT_STARTED;
-
+    process_to_add->user = user;
     if (process_to_add == nullptr)
     {
         log("proc", LOG_ERROR) << "init_process : no free process found";

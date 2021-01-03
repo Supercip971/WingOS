@@ -65,7 +65,7 @@ struct process
     uint64_t sleeping = 0; // 0 = running | 1[..]infinity = sleeping | SLEEP_ALWAYS = always sleep
     bool is_on_interrupt_process = false;
     uint8_t interrupt_handle_list[8]; // max 8 interrupt per process
-
+    bool user;
     process_buffer pr_buff[3];
     backtrace process_backtrace;
 };

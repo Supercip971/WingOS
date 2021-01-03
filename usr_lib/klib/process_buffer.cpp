@@ -13,7 +13,7 @@ namespace sys
 
     uint64_t process_buffer::get_length()
     {
-         process_buffer_request pr = {0};
+        process_buffer_request pr = {0};
         pr.type = GET_PROCESS_BUFFER;
         pr.gpb.buffer_type = current_type;
         pr.gpb.get_buffer_length = true;
@@ -30,7 +30,7 @@ namespace sys
     uint64_t process_buffer::next(uint8_t *data, int length)
     {
 
-         process_buffer_request pr = {0};
+        process_buffer_request pr = {0};
         pr.type = GET_PROCESS_BUFFER;
         pr.gpb.buffer_type = current_type;
         pr.gpb.get_buffer_length = false;
@@ -46,7 +46,7 @@ namespace sys
     void process_buffer::out_data(uint8_t *data, unsigned int length)
     {
 
-         process_buffer_request pr = {0};
+        process_buffer_request pr = {0};
         pr.type = OUT_PROCESS_BUFFER;
         pr.opb.buffer_type = current_type;
         pr.opb.length = length;

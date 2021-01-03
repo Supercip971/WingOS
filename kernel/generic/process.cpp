@@ -152,7 +152,7 @@ void init_process_global_memory(process *to_init)
 void init_process_message(process *to_init)
 {
     to_init->last_message_used = 0;
-
+    to_init->msg_list = new process_message[MAX_PROCESS_MESSAGE_QUEUE + 1];
     for (uint64_t j = 0; j < MAX_PROCESS_MESSAGE_QUEUE; j++)
     {
         to_init->msg_list[j].entry_free_to_use = true;

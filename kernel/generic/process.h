@@ -55,7 +55,7 @@ struct process
     uint64_t entry_point = 0x0;
     char backed_name[128];
     char process_name[128];
-    process_message msg_list[MAX_PROCESS_MESSAGE_QUEUE];
+    process_message *msg_list;
     uint64_t last_message_used;
     bool is_ORS = false;
     bool should_be_active = false; // used with ORS

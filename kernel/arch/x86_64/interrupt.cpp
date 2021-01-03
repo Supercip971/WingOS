@@ -119,8 +119,8 @@ void init_idt()
     {
         idt[i] = idt_entry((void *)__interrupt_vector[i], 0, INTGATE);
     }
-    idt[127] = idt_entry((void *)__interrupt_vector[48], 0, INTGATE);
-    idt[100] = idt_entry((void *)__interrupt_vector[49], 0, INTGATE);
+    idt[127] = idt_entry((void *)__interrupt_vector[48], 0, INTGATE | INT_USER);
+    idt[100] = idt_entry((void *)__interrupt_vector[49], 0, INTGATE | INT_USER);
 
     log("idt", LOG_DEBUG) << "flushing idt";
     init_irq_handlers();

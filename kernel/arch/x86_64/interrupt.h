@@ -6,7 +6,7 @@
 #define IDT_ENTRY_COUNT 256
 #define INTGATE 0x8e
 #define TRAPGATE 0xeF
-
+#define INT_USER 0x60
 typedef void (*irq_handler_func)(unsigned int irq);
 class idt_entry
 {

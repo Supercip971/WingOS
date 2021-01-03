@@ -244,6 +244,7 @@ int main()
         sys::raw_process_message *msg = sys::service_read_current_queue();
         if (msg != 0x0)
         {
+            /*
             sys::memory_service_protocol *pr = (sys::memory_service_protocol *)msg->content_address;
             if (pr->request_type == sys::REQUEST_MALLOC)
             {
@@ -257,7 +258,7 @@ int main()
             if (pr->request_type == sys::REQUEST_REALLOC)
             {
                 msg->response = (uint64_t)srealloc((void *)pr->address, pr->length);
-            }
+            }*/
             msg->has_been_readed = true;
         }
         else

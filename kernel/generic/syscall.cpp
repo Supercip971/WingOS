@@ -44,11 +44,11 @@ process_message *sys$send_message_pid(uintptr_t data_addr, uint64_t data_length,
 }
 void *sys$alloc(uint64_t count)
 {
-    return pmm_alloc_fast(count);
+    return (void *)get_mem_addr(pmm_alloc_zero(count));
 }
 int sys$free(uintptr_t target, uint64_t count)
 {
-    pmm_free((void *)target, count);
+    pmm_free((void *)get_rmem_addr(target), count);
     return 1;
 }
 static void *syscalls[] = {

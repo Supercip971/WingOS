@@ -115,6 +115,30 @@ inline static void x86_wrmsr(uintptr_t msr, uintptr_t value)
                  : "c"(msr), "a"(low), "d"(high));
 }
 
+#define MSR_EFER_SCE 1
+enum MSR_REGISTERS
+{
+    EFER = 0xC0000080,
+    STAR = 0xC0000081,
+    LSTAR = 0xC0000082,
+    COMPAT_STAR = 0xC0000083,
+    SYSCALL_FLAG_MASK = 0xC0000084,
+    FS_BASE = 0xc0000100,
+    GS_BASE = 0xc0000101,
+    KERN_GS_BASE = 0xc0000102,
+};
+union wrmsr_star_register
+{
+    struct
+    {
+
+        uint32_t eip; // unused
+        uint16_t kernel_segment;
+        uint16_t user_segment;
+    };
+    uint64_t raw;
+} __attribute__((packed));
+
 #define POKE(addr) (*((volatile uintptr_t *)(addr)))
 
 void dump_register(InterruptStackFrame *stck);

@@ -37,8 +37,14 @@ enum ATA_data
     ATA_type_master = 0xA0,
     ATA_type_slave = 0xB0,
     ATA_state_busy = 0x80,
+    ATA_state_fault = 0x20,
     ATA_state_sr_drq = 0x08,
     ATA_state_error = 0x01
+};
+enum ATA_command
+{
+    ATA_cmd_identify = 0xEC,
+    ATA_cmd_read = 0x24,
 };
 
 class ata_driver : public io_device
@@ -51,14 +57,7 @@ class ata_driver : public io_device
 
 public:
     ata_driver();
-    inline void ata_write_primary(uint16_t ata_register, uint16_t whattowrit)
-    {
-        ata_write(true, ata_register, whattowrit);
-    }
-    inline void ata_write_secondary(uint16_t ata_register, uint16_t whattowrit)
-    {
-        ata_write(false, ata_register, whattowrit);
-    }
+    static bool has_ata_device();
 
     inline void wait(uint8_t time)
     {

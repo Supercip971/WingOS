@@ -49,11 +49,33 @@ bool ata_driver::get_ata_status()
             return true;
     }
 }
+bool ata_driver::has_ata_device()
+{
+    bool is_primary = true;
+    ata_write(is_primary, ATA_reg_sector_count, 0);
+    ata_write(is_primary, ATA_reg_lba0, 0);
+    ata_write(is_primary, ATA_reg_lba1, 0);
+    ata_write(is_primary, ATA_reg_lba2, 0);
+    ata_write(is_primary, ATA_reg_command_status, ATA_command::ATA_cmd_identify);
 
+    uint8_t state = ata_read(is_primary, ATA_state_error);
+    if (ata_read(is_primary, ATA_reg_command_status) == 0 || state != 0)
+    {
+        return false;
+    }
+
+    return true;
+}
 void ata_driver::init()
 {
     waiting_for_irq = 0;
     log("ata", LOG_DEBUG) << "loading ata";
+    // get
+    if (!has_ata_device())
+    {
+        log("ata", LOG_WARNING) << "no ata device found for this system";
+        return;
+    }
     current_selected_drive = ATA_PRIMARY_MASTER;
 
     outb(ATA_PRIMARY_DCR, 0x04);
@@ -111,7 +133,7 @@ void ata_driver::read(uint64_t where, uint32_t count, uint8_t *buffer)
     ata_write(true, ATA_reg_lba1, (uint8_t)(where >> 8));
     ata_write(true, ATA_reg_lba2, (uint8_t)(where >> 16));
 
-    ata_write(true, ATA_reg_command_status, 0x24); // call the read command
+    ata_write(true, ATA_reg_command_status, ATA_command::ATA_cmd_read); // call the read command
     wait(5);
     uint32_t new_count = count;
     uint32_t off = 0;

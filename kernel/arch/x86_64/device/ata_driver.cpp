@@ -41,10 +41,6 @@ bool ata_driver::get_ata_status()
 {
     uint8_t cur_status;
     bool is_primary = true;
-    if (current_selected_drive == ATA_SECONDARY_MASTER || current_selected_drive == ATA_SECONDARY_MASTER)
-    {
-        is_primary = false;
-    }
     while (true)
     {
 

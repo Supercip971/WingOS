@@ -44,8 +44,9 @@ enum ATA_data
 class ata_driver : public io_device
 {
     ATA_drive_type current_selected_drive;
-    void ata_write(bool primary, uint16_t ata_register, uint16_t whattowrite);
-    uint8_t ata_read(bool primary, uint16_t ata_register);
+    static void ata_write(bool primary, uint16_t ata_register, uint16_t whattowrite);
+    static uint8_t ata_read(bool primary, uint16_t ata_register);
+    static bool get_ata_status();
     uint8_t ide_temp_buf[256];
 
 public:

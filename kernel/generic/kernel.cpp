@@ -4,6 +4,7 @@
 #include <filesystem/file_system.h>
 #include <int_value.h>
 #include <kernel.h>
+#include <kernel_service/kernel_service.h>
 #include <logging.h>
 #include <physical.h>
 #include <process.h>
@@ -26,6 +27,8 @@ void test()
 }
 void _start(stivale_struct *bootloader_data)
 {
+    main_fs_system::the()->init_file_system();
+    load_kernel_service();
 
     launch_programm("init_fs/wstart.exe", main_fs_system::the()->main_fs());
     launch_programm("init_fs/graphic_service.exe", main_fs_system::the()->main_fs());

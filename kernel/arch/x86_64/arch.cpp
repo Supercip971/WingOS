@@ -132,12 +132,14 @@ ASM_FUNCTION void kernel_start(stivale_struct *bootloader_data)
 }
 void start_process()
 {
-    load_kernel_service();
-    pci_system::the()->init();
-    //ata_driver::the()->init();
-    //  set_io_device((io_device *)ata_driver::the(), 0);
 
-    main_fs_system::the()->init_file_system();
+    if (ata_driver::has_ata_device())
+    {
+        ata_driver *me = new ata_driver();
+        me->init();
+        add_io_device((io_device *)me);
+    }
+    pci_system::the()->init();
 
     //   launch_programm("init_fs/memory_service.exe", main_fs_system::the()->main_fs());
 

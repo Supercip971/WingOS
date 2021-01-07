@@ -79,10 +79,8 @@ public:
     }
     void read(uint64_t where, uint32_t count, uint8_t *buffer);
 
-    bool get_ata_status();
     void irq_handle(uint64_t irq_handle_num);
     void init();
-    static ata_driver *the();
 
     io_rw_output read(uint8_t *data, uint64_t count, uint64_t cursor) override
     {

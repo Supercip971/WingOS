@@ -88,11 +88,6 @@ void ata_driver::init()
     }
 }
 
-ata_driver *ata_driver::the()
-{
-    return &main_driver;
-}
-
 void ata_driver::irq_handle(uint64_t irq_handle_num)
 {
     if (waiting_for_irq == 1)

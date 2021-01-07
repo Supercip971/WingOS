@@ -37,7 +37,7 @@ void ahci::init(pci_device *dev, uint8_t func)
             {
                 ahci_ata_device *ahci_device = new ahci_ata_device();
                 ahci_device->set_port(&hba_mem->ports[i]);
-                set_io_device((ahci_device), 0);
+                add_io_device((ahci_device));
 
                 log("ahci", LOG_INFO) << "sata port at" << i;
             }

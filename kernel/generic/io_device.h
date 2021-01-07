@@ -16,4 +16,4 @@ public:
     io_device();
 };
 io_device *get_io_device(uint64_t id);
-void set_io_device(io_device *dev, uint64_t id);
+void add_io_device(io_device *dev);

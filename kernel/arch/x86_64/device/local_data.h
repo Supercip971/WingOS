@@ -21,9 +21,11 @@ public:
     gdtr cgdt;
     tss ctss;
     gdt_descriptor gdt_descriptors[64];
+    static const uint32_t stack_size = 8192;
+    uint8_t stack_data[stack_size] __attribute__((aligned(4096)));
+    uint8_t stack_data_interrupt[stack_size] __attribute__((aligned(4096)));
+    uint8_t syscall_stack[stack_size] __attribute__((aligned(4096)));
 
-    uint8_t stack_data[8192] __attribute__((aligned(4096)));
-    uint8_t stack_data_interrupt[8192] __attribute__((aligned(4096)));
     uint64_t lapic_id;
     main_page_table *page_table;
 

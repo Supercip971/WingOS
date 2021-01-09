@@ -34,7 +34,6 @@ public:
     void save_sse(uint64_t *data);
     backtrace local_backtrace;
 };
-void set_current_data(cpu *dat);
 //local_data *get_current_data();
 //local_data *get_current_data(int id);
 extern cpu procData[smp::max_cpu];

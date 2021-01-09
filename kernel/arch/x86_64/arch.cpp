@@ -110,8 +110,6 @@ ASM_FUNCTION void kernel_start(stivale_struct *bootloader_data)
         apic::the()->set_redirect_irq(0, i, 1);
     }
 
-    set_current_data(get_current_cpu());
-
     mboot_module::the()->init(bootloader_data);
     bootdat = ((uint64_t)&boot_loader_data_copy);
 

@@ -10,7 +10,7 @@ class smp
     void init_cpu_future_value(uint64_t id);
 
 public:
-    static const int max_cpu = 64;
+    static const unsigned int max_cpu = 64;
     tss cpu_tss[max_cpu];
     smp();
     void wait();

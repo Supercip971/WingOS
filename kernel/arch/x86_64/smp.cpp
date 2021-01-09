@@ -50,7 +50,7 @@ void smp::init()
     SMPloaded = false;
     log("smp", LOG_DEBUG) << "loading smp";
     memzero(cpu_tss, sizeof(tss) * max_cpu);
-    for (int i = 0; i < max_cpu; i++)
+    for (unsigned int i = 0; i < max_cpu; i++)
     {
         mt_lapic[i] = 0x0;
     }

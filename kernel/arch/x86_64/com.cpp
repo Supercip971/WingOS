@@ -14,7 +14,7 @@ inline void com_wait_write(COM_PORT port)
     int timeout = 0;
     while ((inb(port + 5) & 0x20) == 0)
     {
-        if (timeout++ > 100)
+        if (timeout++ > 10000)
         {
             break;
         }

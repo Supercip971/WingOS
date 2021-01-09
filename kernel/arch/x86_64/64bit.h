@@ -118,13 +118,14 @@ inline static void x86_wrmsr(uintptr_t msr, uintptr_t value)
 #define MSR_EFER_SCE 1
 enum MSR_REGISTERS
 {
+    APIC = 0x1B,
     EFER = 0xC0000080,
     STAR = 0xC0000081,
     LSTAR = 0xC0000082,
     COMPAT_STAR = 0xC0000083,
     SYSCALL_FLAG_MASK = 0xC0000084,
-    FS_BASE = 0xc0000100,
-    GS_BASE = 0xc0000101,
+    FS_BASE = 0xC0000100,
+    GS_BASE = 0xC0000101,
     KERN_GS_BASE = 0xc0000102,
 };
 union wrmsr_star_register

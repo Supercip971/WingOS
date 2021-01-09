@@ -29,7 +29,7 @@ smp::smp()
 extern "C" void cpuupstart(void)
 {
 
-    x86_wrmsr(0x1B, (x86_rdmsr(0x1B) | 0x800) & ~(LAPIC_ENABLE));
+    x86_wrmsr(MSR_REGISTERS::APIC, (x86_rdmsr(MSR_REGISTERS::APIC) | 0x800) & ~(LAPIC_ENABLE));
     apic::the()->enable();
 
     asm volatile(

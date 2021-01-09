@@ -111,7 +111,7 @@ void apic::init()
         return;
     }
 
-    x86_wrmsr(0x1B, (x86_rdmsr(0x1B) | 0x800) & ~(LAPIC_ENABLE));
+    x86_wrmsr(MSR_REGISTERS::APIC, (x86_rdmsr(MSR_REGISTERS::APIC) | 0x800) & ~(LAPIC_ENABLE));
     enable();
 
     outb(PIC1_DATA, 0xff); // turn off the pic

@@ -9,7 +9,6 @@
 #include <process.h>
 #include <smp.h>
 #include <virtual.h>
-#define LOCAL_DATA_DMSR 0xC0000100
 struct process;
 class cpu
 {

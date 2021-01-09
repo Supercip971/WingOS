@@ -174,7 +174,7 @@ void apic::preinit_processor(uint32_t processorid)
 void apic::init_processor(uint32_t processorid, uint64_t entry)
 {
     write(icr2, (processorid << 24));
-    write(icr1, 0x600 | ((uint32_t)entry / 4096));
+    write(icr1, 0x600 | ((uint32_t)entry / PAGE_SIZE));
 }
 
 void apic::set_raw_redirect(uint8_t vector, uint32_t target_gsi, uint16_t flags, int cpu, int status)
@@ -227,8 +227,8 @@ void apic::send_ipi(uint8_t cpu, uint32_t interrupt_num)
 {
     interrupt_num = (1 << 14) | interrupt_num;
 
-    write(0x310, (cpu << 24));
-    write(0x300, interrupt_num);
+    write(apic_register::icr2, (cpu << 24));
+    write(apic_register::icr1, interrupt_num);
 }
 
 void apic::set_redirect_irq(int cpu, uint8_t irq, int status)

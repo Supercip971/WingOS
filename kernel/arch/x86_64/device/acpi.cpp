@@ -96,7 +96,7 @@ void acpi::init_in_paging()
     uintptr_t ddat = ALIGN_DOWN((uintptr_t)rsdt, PAGE_SIZE);
 
     virt_map(ddat, get_mem_addr(ddat), 0x03);
-    virt_map(ddat + 4096, get_mem_addr(ddat + 4096), 0x03);
+    virt_map(ddat + PAGE_SIZE, get_mem_addr(ddat + PAGE_SIZE), 0x03);
 
     rsdt = (RSDT *)get_mem_addr((uint64_t)rsdt);
 
@@ -106,8 +106,8 @@ void acpi::init_in_paging()
         addr = ALIGN_DOWN(addr, PAGE_SIZE);
 
         virt_map(addr, get_mem_addr(addr), 0x03);
-        virt_map(addr + 4096, get_mem_addr(addr + 4096), 0x03);
-        virt_map(addr + (4096 * 2), get_mem_addr(addr + (4096 * 2)), 0x03);
+        virt_map(addr + PAGE_SIZE, get_mem_addr(addr + PAGE_SIZE), 0x03);
+        virt_map(addr + (PAGE_SIZE * 2), get_mem_addr(addr + (PAGE_SIZE * 2)), 0x03);
     }
 }
 

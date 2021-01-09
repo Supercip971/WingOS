@@ -92,7 +92,7 @@ void ahci::reinit_port(hba_port *port)
 {
 
     void *data = pmm_alloc(1);
-    memzero(data, 4096);
+    memzero(data, PAGE_SIZE);
     port->command_list_base_addr_low = (uint64_t)data;
     port->fis_base_addr_up = 0; // i don't think the kernel will eat 4g of memory
 

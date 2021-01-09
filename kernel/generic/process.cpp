@@ -75,7 +75,7 @@ void init_multi_process(func start)
 {
     log("proc", LOG_DEBUG) << "loading multi processing";
 
-    process_array = reinterpret_cast<process *>(malloc(sizeof(process) * MAX_PROCESS + 4096));
+    process_array = reinterpret_cast<process *>(malloc(sizeof(process) * MAX_PROCESS + PAGE_SIZE));
     set_current_cpu_process(nullptr);
 
     for (size_t i = 0; i < MAX_PROCESS; i++)

@@ -61,10 +61,10 @@ struct liballoc_minor
 static struct liballoc_major *l_memRoot = NULL; ///< The root memory block acquired from the system.
 static struct liballoc_major *l_bestBet = NULL; ///< The major with the most free memory.
 
-static const unsigned int l_pageSize = 4096; ///< The size of an individual page. Set up in liballoc_init.
-static const unsigned int l_pageCount = 16;  ///< The number of pages to request per chunk. Set up in liballoc_init.
-static unsigned long long l_allocated = 0;   ///< Running total of allocated memory.
-static unsigned long long l_inuse = 0;       ///< Running total of used memory.
+static const unsigned int l_pageSize = PAGE_SIZE; ///< The size of an individual page. Set up in liballoc_init.
+static const unsigned int l_pageCount = 16;       ///< The number of pages to request per chunk. Set up in liballoc_init.
+static unsigned long long l_allocated = 0;        ///< Running total of allocated memory.
+static unsigned long long l_inuse = 0;            ///< Running total of used memory.
 
 //static long long l_warningCount = 0;     ///< Number of warnings encountered
 static long long l_errorCount = 0;       ///< Number of actual errors

@@ -89,7 +89,7 @@ void madt::init()
     lbase_addr = ALIGN_UP(lbase_addr, PAGE_SIZE);
 
     map_page(lbase_addr, lbase_addr, 0x03);
-    map_page(lbase_addr + 4096, lbase_addr + 4096, 0x03);
+    map_page(lbase_addr + PAGE_SIZE, lbase_addr + PAGE_SIZE, 0x03);
 
     log_all();
 }

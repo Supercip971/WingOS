@@ -2,6 +2,16 @@
 #include <device/madt.h>
 #include <gdt.h>
 #include <lock.h>
+
+enum smp_cpu_init_address
+{
+    PAGE_TABLE = 0x500,
+    START_ADDR = 0x520,
+    STACK = 0x570,
+    GDT = 0x580,
+    IDT = 0x590,
+};
+
 class smp
 {
 

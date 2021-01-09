@@ -5,6 +5,7 @@
 #include <liballoc.h>
 #include <logging.h>
 #include <utility.h>
+
 gdt_descriptor gdt_descriptors[64];
 
 char tss_ist1[8192] __attribute__((aligned(16)));
@@ -90,7 +91,7 @@ void gdt_ap_init()
     memzero(&get_current_cpu()->ctss, sizeof(tss));
 
     get_current_cpu()->ctss.iomap_base = sizeof(tss);
-    get_current_cpu()->ctss.rsp0 = (uintptr_t)POKE(0x570);
+    get_current_cpu()->ctss.rsp0 = (uintptr_t)POKE(smp_cpu_init_address::STACK);
     get_current_cpu()->ctss.ist1 = (uintptr_t)get_current_cpu()->stack_data_interrupt + 8192;
 
     asm volatile("mov ax, %0 \n ltr ax"

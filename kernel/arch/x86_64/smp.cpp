@@ -99,9 +99,9 @@ void smp::init_cpu_trampoline()
     uint64_t trampoline_len = (uintptr_t)&trampoline_end - (uintptr_t)&trampoline_start;
     map_page(0, 0, SMP_MAP_PAGE_FLAGS);
 
-    for (uint64_t i = 0; i < (trampoline_len / 4096) + 2; i++)
+    for (uint64_t i = 0; i < (trampoline_len / PAGE_SIZE) + 2; i++)
     {
-        map_page(TRAMPOLINE_START + (i * 4096), TRAMPOLINE_START + (i * 4096), SMP_MAP_PAGE_FLAGS);
+        map_page(TRAMPOLINE_START + (i * PAGE_SIZE), TRAMPOLINE_START + (i * PAGE_SIZE), SMP_MAP_PAGE_FLAGS);
     }
 
     update_paging();
@@ -112,14 +112,13 @@ void smp::init_cpu_trampoline()
 void smp::init_cpu_future_value(uint64_t id)
 {
     get_current_cpu(id)->page_table = get_current_cpu()->page_table; // give the same
-    // page table at 0x500
-    POKE((0x500)) =
+    POKE((smp_cpu_init_address::PAGE_TABLE)) =
         get_rmem_addr(get_current_cpu(id)->page_table);
-    // stack at 570
-    POKE((0x570)) =
-        (uint64_t)get_current_cpu(id)->stack_data + 8192;
 
-    memzero(get_current_cpu(id)->stack_data, 8192);
+    memzero(get_current_cpu(id)->stack_data, get_current_cpu(id)->stack_size);
+
+    POKE((smp_cpu_init_address::STACK)) =
+        (uint64_t)get_current_cpu(id)->stack_data + get_current_cpu(id)->stack_size;
 
     // gdt at 0x580
     // idt at 0x590
@@ -128,7 +127,7 @@ void smp::init_cpu_future_value(uint64_t id)
                  "sidt [0x590]\n");
 
     // start address at 0x520
-    POKE((0x520)) = (uintptr_t)&cpuupstart;
+    POKE((smp_cpu_init_address::START_ADDR)) = (uintptr_t)&cpuupstart;
 }
 
 void smp::init_cpu(int apic, int id)

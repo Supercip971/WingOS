@@ -14,6 +14,7 @@ typedef void (*func)();
 #define arch_map_page_tbl(table, phys, virt, flags) map_page(table, phys, virt, flags)
 
 #define PAGE_SIZE 4096
+#define PAGE_ALIGN __attribute__((aligned(PAGE_SIZE)));
 
 #define PROCESS_STACK_SIZE 65536
 struct arch_process_data

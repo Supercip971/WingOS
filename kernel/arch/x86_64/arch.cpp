@@ -88,8 +88,8 @@ ASM_FUNCTION void kernel_start(stivale_struct *bootloader_data)
 
     init_physical_memory(bootloader_data);
     init_vmm(bootloader_data);
-
-    ps_mouse::the()->init();
+    ps_mouse *psmouse = new ps_mouse;
+    psmouse->init();
     ps_keyboard::the()->init();
     pic_init();
     RTC::the()->init();

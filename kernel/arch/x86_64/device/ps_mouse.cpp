@@ -3,7 +3,7 @@
 #include <device/ps_mouse.h>
 #include <interrupt.h>
 #include <logging.h>
-ps_mouse main_ps_mouse;
+ps_mouse *main_ps_mouse;
 
 ps_mouse::ps_mouse()
 {
@@ -63,11 +63,6 @@ void ps_mouse::set_resolution(uint16_t resolution)
     read();
 }
 
-ps_mouse *ps_mouse::the()
-{
-    return &main_ps_mouse;
-}
-
 uint8_t ps_mouse::read()
 {
     wait(false);
@@ -76,11 +71,14 @@ uint8_t ps_mouse::read()
 
 void irq_handle_mouse(unsigned int handler)
 {
-    ps_mouse::the()->interrupt_handler(handler);
+    main_ps_mouse->interrupt_handler(handler);
 }
 
 void ps_mouse::init()
 {
+
+    main_ps_mouse = this;
+    add_device(this);
     mouse_x = 0;
     mouse_x_offset = 0;
     mouse_y = 0;

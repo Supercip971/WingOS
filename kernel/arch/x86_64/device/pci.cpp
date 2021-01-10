@@ -430,10 +430,6 @@ void pci_system::scan_dev(uint8_t dev_id, uint8_t bus_id)
             }
         }
     }
-    else
-    {
-        log("pci", LOG_INFO) << "device : " << dev_id << "bus : " << bus_id << "doesn't have a function";
-    }
 }
 
 void pci_system::scan_bus(uint8_t bus_id)
@@ -451,6 +447,42 @@ void pci_system::init_top_bus()
     scan_bus(0);
 }
 
+void pci_system::init_device()
+{
+    log("pci", LOG_DEBUG) << "loading pci device";
+    for (int i = 0; i < pci_devices_count; i++)
+    {
+        pci_device dev = pci_device(pci_devices[i].bus, pci_devices[i].device);
+        uint8_t dev_func = pci_devices[i].function;
+
+        if (dev.get_vendor(dev_func) == 0x8086)
+        {
+            if (dev.get_class(dev_func) == 2 && dev.get_subclass(dev_func) == 0)
+            {
+
+                uint16_t id = dev.get_dev_id(dev_func);
+
+                if (id == 0x100E || id == 0x153A || id == 0x10EA)
+                {
+                    dev.enable_mastering(dev_func);
+                    e1000::the()->init(&dev, dev_func);
+                }
+            }
+            else if (dev.get_class(dev_func) == 1 && dev.get_subclass(dev_func) == 6)
+            {
+                ahci::the()->init(&dev, dev_func);
+            }
+        }
+        else if (dev.get_vendor(dev_func) == 0x10EC)
+        {
+            if (dev.get_dev_id(dev_func) == 0x8139)
+            {
+                dev.enable_mastering(dev_func);
+                rtl8139::the()->init(&dev, dev_func);
+            }
+        }
+    }
+}
 void pci_system::init()
 {
     log("pci", LOG_DEBUG) << "loading pci";
@@ -475,13 +507,11 @@ void pci_system::init()
                 if (id == 0x100E || id == 0x153A || id == 0x10EA)
                 {
                     log("pci", LOG_INFO) << "==E1000==";
-                    dev.enable_mastering(dev_func);
-                    e1000::the()->init(&dev, dev_func);
                 }
             }
             else if (dev.get_class(dev_func) == 1 && dev.get_subclass(dev_func) == 6)
             {
-                ahci::the()->init(&dev, dev_func);
+                log("pci", LOG_INFO) << "AHCI";
             }
         }
         else if (dev.get_vendor(dev_func) == 0x10EC)
@@ -491,8 +521,6 @@ void pci_system::init()
             if (id == 0x8139)
             {
                 log("pci", LOG_INFO) << "==rtl8139==";
-                dev.enable_mastering(dev_func);
-                rtl8139::the()->init(&dev, dev_func);
             }
         }
         log("pci", LOG_INFO) << "pci device = " << i;
@@ -507,4 +535,5 @@ void pci_system::init()
         log("pci", LOG_INFO) << "progif     = " << dev.get_progif(dev_func);
         log("pci", LOG_INFO) << "device name= " << device_code_to_string(dev.get_class(dev_func), dev.get_subclass(dev_func), dev.get_progif(dev_func));
     }
+    init_device();
 }

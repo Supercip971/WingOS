@@ -58,5 +58,6 @@ public:
     void scan_dev(uint8_t dev_id, uint8_t bus_id);
     void scan_bus(uint8_t bus_id);
     void init_top_bus();
+    void init_device();
     void init();
 };

@@ -47,7 +47,7 @@ enum ATA_command
     ATA_cmd_read = 0x24,
 };
 
-class ata_driver : public io_device
+class ata_driver : public generic_io_device
 {
     ATA_drive_type current_selected_drive;
     static void ata_write(bool primary, uint16_t ata_register, uint16_t whattowrite);
@@ -92,8 +92,8 @@ public:
         read(cursor, count, data);
         return io_rw_output::io_OK;
     }
-    const char *get_io_device_name()
+    const char *get_name() const final
     {
-        return "ata";
+        return "pio ata";
     }
 };

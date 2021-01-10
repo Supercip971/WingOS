@@ -470,7 +470,8 @@ void pci_system::init_device()
             }
             else if (dev.get_class(dev_func) == 1 && dev.get_subclass(dev_func) == 6)
             {
-                ahci::the()->init(&dev, dev_func);
+                ahci *ahci_new_dev = new ahci();
+                ahci_new_dev->init(&dev, dev_func);
             }
         }
         else if (dev.get_vendor(dev_func) == 0x10EC)

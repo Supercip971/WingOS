@@ -270,12 +270,11 @@ class ahci
     void reinit_port(hba_port *port);
 
 public:
-    ahci(){};
     static ahci *the();
     void init(pci_device *dev, uint8_t func);
 };
 
-class ahci_ata_device : public io_device
+class ahci_ata_device : public generic_io_device
 {
     volatile hba_port *port;
     int find_command_slot();
@@ -284,17 +283,17 @@ class ahci_ata_device : public io_device
     void end_command();
 
 public:
-    ahci_ata_device() : io_device()
+    ahci_ata_device()
     {
     }
     void set_port(hba_port *new_port)
     {
         port = new_port;
     }
-    void init() override{};
+    void init();
     io_rw_output read(uint8_t *data, uint64_t count, uint64_t cursor) override;
     io_rw_output write(uint8_t *data, uint64_t count, uint64_t cursor) override;
-    const char *get_io_device_name() override
+    const char *get_name() const final
     {
         return "ahci ata device";
     }

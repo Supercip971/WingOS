@@ -53,4 +53,18 @@ public:
     virtual void set_ptr_to_update(uint32_t *d) = 0;
 };
 
+class generic_io_device : public general_device
+{
+public:
+    device_type get_type() const final { return device_type::DRIVE_DEVICE; };
+
+    enum io_rw_output
+    {
+        io_ERROR = 0,
+        io_OK = 1,
+    };
+    virtual io_rw_output read(uint8_t *data, uint64_t count, uint64_t cursor) = 0;
+    virtual io_rw_output write(uint8_t *data, uint64_t count, uint64_t cursor) = 0;
+};
+
 #endif // TIMER_DEVICE_H

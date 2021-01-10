@@ -5,11 +5,6 @@
 #include <logging.h>
 #include <utility.h>
 lock_type ahci_lock;
-ahci main_ahci;
-ahci *ahci::the()
-{
-    return &main_ahci;
-}
 
 void ahci::init(pci_device *dev, uint8_t func)
 {
@@ -152,7 +147,7 @@ void ahci_ata_device::end_command()
     }
     nport->command_and_status &= ~COMMAND_FRE;
 }
-io_rw_output ahci_ata_device::read(uint8_t *data, uint64_t count, uint64_t cursor)
+generic_io_device::io_rw_output ahci_ata_device::read(uint8_t *data, uint64_t count, uint64_t cursor)
 {
     flock(&ahci_lock);
     uint16_t *rdata = (uint16_t *)data;
@@ -225,7 +220,7 @@ io_rw_output ahci_ata_device::read(uint8_t *data, uint64_t count, uint64_t curso
     unlock(&ahci_lock);
     return io_rw_output::io_OK;
 }
-io_rw_output ahci_ata_device::write(uint8_t *data, uint64_t count, uint64_t cursor)
+generic_io_device::io_rw_output ahci_ata_device::write(uint8_t *data, uint64_t count, uint64_t cursor)
 {
 
     return io_rw_output::io_OK;

@@ -136,7 +136,7 @@ void start_process()
     {
         ata_driver *me = new ata_driver();
         me->init();
-        add_io_device((io_device *)me);
+        add_io_device(me);
     }
     pci_system::the()->init();
 

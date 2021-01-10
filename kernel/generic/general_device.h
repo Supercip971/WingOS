@@ -14,13 +14,8 @@ enum device_type : uint32_t
     NULL_DEVICE = 0xfffff,
 };
 extern const char *device_type_to_str[];
-class general_device
-{
-public:
-    virtual const char *get_name() const;
-    virtual device_type get_type() const;
-    uint32_t device_id;
-};
+
+class general_device;
 
 void add_device(general_device *dev);
 
@@ -29,6 +24,14 @@ uint32_t get_device_count();
 
 template <class end_type>
 extern end_type *find_device(device_type type);
+
+class general_device
+{
+public:
+    virtual const char *get_name() const;
+    virtual device_type get_type() const;
+    uint32_t device_id;
+};
 
 class general_mouse : public general_device
 {
@@ -39,4 +42,15 @@ public:
     virtual uint64_t get_mouse_button(int code) = 0;
     virtual void set_ptr_to_update(uint32_t *x, uint32_t *y);
 };
+
+class general_keyboard : public general_device
+{
+public:
+    device_type get_type() const final { return device_type::KEYBOARD_DEVICE; };
+
+    virtual bool get_key(uint8_t keycode) const = 0;
+    virtual uint8_t get_last_keypress() const = 0;
+    virtual void set_ptr_to_update(uint32_t *d) = 0;
+};
+
 #endif // TIMER_DEVICE_H

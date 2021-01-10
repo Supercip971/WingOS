@@ -4,14 +4,14 @@
 #include <interrupt.h>
 #include <logging.h>
 
-ps_keyboard main_ps_key;
+ps_keyboard *main_ps_key;
 
 ps_keyboard::ps_keyboard()
 {
 }
 void ps_keyboard_interrupt_handler(unsigned int irq)
 {
-    ps_keyboard::the()->interrupt_handler();
+    main_ps_key->interrupt_handler();
 }
 void ps_keyboard::set_key(bool state, uint8_t keycode)
 {
@@ -30,13 +30,16 @@ void ps_keyboard::set_key(bool state, uint8_t keycode)
     }
 }
 
-bool ps_keyboard::get_key(uint8_t keycode)
+bool ps_keyboard::get_key(uint8_t keycode) const
 {
     return key_pressed[keycode];
 }
 
 void ps_keyboard::init()
 {
+
+    main_ps_key = this;
+    add_device(this);
     for (int i = 0; i < KEY_COUNT; i++)
     {
         key_pressed[i] = false;
@@ -68,9 +71,4 @@ void ps_keyboard::set_ptr_to_update(uint32_t *d)
     {
         ptr_to_update[i] = 0;
     }
-}
-
-ps_keyboard *ps_keyboard::the()
-{
-    return &main_ps_key;
 }

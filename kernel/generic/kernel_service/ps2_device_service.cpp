@@ -4,6 +4,7 @@
 #include <logging.h>
 #include <process.h>
 general_mouse *mouse_target;
+general_keyboard *keyb_target;
 struct raw_request_data
 {
 
@@ -82,7 +83,7 @@ uint64_t keyboard_handle(ps2_device_request *request)
 
     if (request->request_type == GET_KEYBOARD_KEY)
     {
-        return ps_keyboard::the()->get_last_keypress();
+        return keyb_target->get_last_keypress();
     }
     log("ps2 service", LOG_ERROR) << "keyboard error request not handled : " << request->request_type;
     return -2;

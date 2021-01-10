@@ -90,7 +90,8 @@ ASM_FUNCTION void kernel_start(stivale_struct *bootloader_data)
     init_vmm(bootloader_data);
     ps_mouse *psmouse = new ps_mouse;
     psmouse->init();
-    ps_keyboard::the()->init();
+    ps_keyboard *keyboard = new ps_keyboard;
+    keyboard->init();
     pic_init();
     RTC::the()->init();
     acpi::the()->init((reinterpret_cast<stivale_struct *>(bootdat))->rsdp);

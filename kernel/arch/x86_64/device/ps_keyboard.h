@@ -1,4 +1,5 @@
 #pragma once
+#include <general_device.h>
 #include <stdint.h>
 #define KEY_COUNT 128
 static const char asciiDefault[58] =
@@ -124,7 +125,7 @@ static const char asciiShift[] =
         32, // SPACE
 };
 
-class ps_keyboard
+class ps_keyboard : general_keyboard
 {
 
     void wait(bool is_signal);
@@ -145,11 +146,15 @@ public:
     void init();
     void interrupt_handler();
     void set_key(bool state, uint8_t keycode);
-    bool get_key(uint8_t keycode);
+    bool get_key(uint8_t keycode) const;
     uint8_t get_last_keypress() const
     {
         return asciiDefault[last_keypress];
     }
     void set_ptr_to_update(uint32_t *d);
-    static ps_keyboard *the();
+
+    const char *get_name() const final
+    {
+        return "ps2 keyboard";
+    };
 };

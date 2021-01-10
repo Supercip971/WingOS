@@ -3,7 +3,7 @@
 #include <kernel_service/ps2_device_service.h>
 #include <logging.h>
 #include <process.h>
-general_mouse *target;
+general_mouse *mouse_target;
 struct raw_request_data
 {
 
@@ -64,13 +64,13 @@ uint64_t mouse_handle(ps2_device_request *request)
     {
         if (request->mouse_request_pos.get_x_value == true)
         {
-            return target->get_mouse_x();
+            return mouse_target->get_mouse_x();
         }
-        return target->get_mouse_y();
+        return mouse_target->get_mouse_y();
     }
     else if (request->request_type == GET_MOUSE_BUTTON)
     {
-        return target->get_mouse_button(request->mouse_button_request.mouse_button_type);
+        return mouse_target->get_mouse_button(request->mouse_button_request.mouse_button_type);
     }
 
     log("ps2 service", LOG_ERROR) << "mouse error request not handled : " << request->request_type;
@@ -103,15 +103,15 @@ void ps2_device_service()
     *mclickm = 0;
     *my = 0;
     *mx = 0;
-    target = find_device<general_mouse>(device_type::MOUSE_DEVICE);
-    target->set_ptr_to_update((uint32_t *)(mx), (uint32_t *)(my));
+    mouse_target = find_device<general_mouse>(device_type::MOUSE_DEVICE);
+    mouse_target->set_ptr_to_update((uint32_t *)(mx), (uint32_t *)(my));
     while (true)
     {
         //  *mx = (uint64_t)ps_mouse::the()->get_mouse_x();
         //  *my = (uint64_t)ps_mouse::the()->get_mouse_y();
-        *mclickl = (uint64_t)target->get_mouse_button(GET_MOUSE_LEFT_CLICK);
-        *mclickm = (uint64_t)target->get_mouse_button(GET_MOUSE_MIDDLE_CLICK);
-        *mclickr = (uint64_t)target->get_mouse_button(GET_MOUSE_RIGHT_CLICK);
+        *mclickl = (uint64_t)mouse_target->get_mouse_button(GET_MOUSE_LEFT_CLICK);
+        *mclickm = (uint64_t)mouse_target->get_mouse_button(GET_MOUSE_MIDDLE_CLICK);
+        *mclickr = (uint64_t)mouse_target->get_mouse_button(GET_MOUSE_RIGHT_CLICK);
         process_message *msg = read_message();
 
         if (msg != 0)

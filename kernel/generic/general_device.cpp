@@ -1,4 +1,5 @@
 #include "general_device.h"
+#include <logging.h>
 uint32_t current_array_count = 0;
 general_device *device_array[MAX_DEVICE];
 const char *device_type_to_str[] = {
@@ -8,6 +9,7 @@ const char *device_type_to_str[] = {
     "mouse",
     "keyboard",
     "clock",
+    "debug",
 };
 const char *general_device::get_name() const
 {
@@ -36,7 +38,7 @@ uint32_t get_device_count()
     return current_array_count;
 }
 template <class end_type>
-end_type *find_device(device_type type)
+auto find_device(device_type type) -> end_type *
 {
     for (uint32_t i = 0; i < current_array_count; i++)
     {
@@ -50,3 +52,4 @@ end_type *find_device(device_type type)
 }
 
 template general_mouse *find_device(device_type type);
+template debug_device *find_device(device_type type);

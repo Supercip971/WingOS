@@ -1,6 +1,5 @@
-#ifndef TIMER_DEVICE_H
-#define TIMER_DEVICE_H
-#include <logging.h>
+#ifndef GENERAL_DEVICE_H
+#define GENERAL_DEVICE_H
 #include <stdint.h>
 #define MAX_DEVICE 128
 enum device_type : uint32_t
@@ -11,6 +10,7 @@ enum device_type : uint32_t
     MOUSE_DEVICE = 3,
     KEYBOARD_DEVICE = 4,
     CLOCK_DEVICE = 5,
+    DEBUG_DEVICE = 6,
     NULL_DEVICE = 0xfffff,
 };
 extern const char *device_type_to_str[];
@@ -23,7 +23,7 @@ general_device *get_device(uint32_t id);
 uint32_t get_device_count();
 
 template <class end_type>
-extern end_type *find_device(device_type type);
+extern auto find_device(device_type type) -> end_type *;
 
 class general_device
 {
@@ -65,6 +65,15 @@ public:
     };
     virtual io_rw_output read(uint8_t *data, uint64_t count, uint64_t cursor) = 0;
     virtual io_rw_output write(uint8_t *data, uint64_t count, uint64_t cursor) = 0;
+};
+
+class debug_device : public general_device
+{
+
+public:
+    device_type get_type() const final { return device_type::DEBUG_DEVICE; };
+    virtual bool echo_out(const char *data, uint64_t data_length) = 0;
+    virtual bool echo_out(const char *data) = 0;
 };
 
 #endif // TIMER_DEVICE_H

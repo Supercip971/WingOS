@@ -1,5 +1,6 @@
 #include <arch.h>
 #include <com.h>
+#include <general_device.h>
 #include <kernel_service/print_service.h>
 #include <process.h>
 
@@ -25,7 +26,7 @@ void print_service()
             while (locker_print.data != 0)
             {
             }
-            echo_out((char *)msg->content_address, msg->content_length);
+            find_device<debug_device>(DEBUG_DEVICE)->echo_out((char *)msg->content_address, msg->content_length);
             msg->has_been_readed = true;
             msg->response = 10; // 10 for yes
         }

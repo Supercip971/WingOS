@@ -1,6 +1,7 @@
 #include "print.h"
 
 #include <arch.h>
+#include <general_device.h>
 #include <stdarg.h>
 #include <utility.h>
 lock_type print_locker = {0};
@@ -11,7 +12,7 @@ void printf(const char *format, ...)
     lock((&print_locker));
     va_list parameters;
     va_start(parameters, format);
-
+    debug_device *dev = find_device<debug_device>(device_type::DEBUG_DEVICE);
     int written = 0;
 
     while (*format != '\0')
@@ -30,7 +31,7 @@ void printf(const char *format, ...)
                 unlock((&print_locker));
                 return;
             }
-            if (!echo_out(format, amount))
+            if (!dev->echo_out(format, amount))
             {
 
                 unlock((&print_locker));
@@ -52,7 +53,7 @@ void printf(const char *format, ...)
                 unlock((&print_locker));
                 return;
             }
-            if (!echo_out(&c, sizeof(c)))
+            if (!dev->echo_out(&c, sizeof(c)))
             {
 
                 unlock((&print_locker));
@@ -71,7 +72,7 @@ void printf(const char *format, ...)
                 unlock((&print_locker));
                 return;
             }
-            if (!echo_out(str, len))
+            if (!dev->echo_out(str, len))
             {
 
                 unlock((&print_locker));
@@ -85,7 +86,7 @@ void printf(const char *format, ...)
             uint64_t d = va_arg(parameters, uint64_t);
             if (d == 0)
             {
-                echo_out("0", 1);
+                dev->echo_out("0", 1);
                 written += 1;
             }
             else
@@ -102,7 +103,7 @@ void printf(const char *format, ...)
                     // TODO: Set errno to EOVERFLOW.
                     return;
                 }
-                if (!echo_out(temp_buf, len))
+                if (!dev->echo_out(temp_buf, len))
                 {
 
                     unlock((&print_locker));
@@ -121,7 +122,7 @@ void printf(const char *format, ...)
                 unlock((&print_locker));
                 return;
             }
-            if (!echo_out(format, len))
+            if (!dev->echo_out(format, len))
             {
 
                 unlock((&print_locker));

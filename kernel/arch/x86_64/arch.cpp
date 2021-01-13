@@ -62,10 +62,6 @@ unsigned int get_current_cpu_id()
 {
     return apic::the()->get_current_processor_id();
 }
-bool echo_out(const char *data, unsigned int size)
-{
-    return com_write_strn(data, size);
-}
 ASM_FUNCTION void kernel_start(stivale_struct *bootloader_data)
 {
     asm volatile("and rsp, -16");
@@ -74,8 +70,9 @@ ASM_FUNCTION void kernel_start(stivale_struct *bootloader_data)
     asm volatile("mov ax, 0");
     asm volatile("mov fs, ax");
     init_sse();
+    com_device com = com_device();
+    com.init(COM_PORT::COM1);
 
-    com_initialize(COM_PORT::COM1);
     log("COM1", LOG_INFO) << "com port 1 loaded";
 
     memcpy(&boot_loader_data_copy, bootloader_data, sizeof(stivale_struct));

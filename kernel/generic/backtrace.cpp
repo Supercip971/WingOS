@@ -3,7 +3,7 @@
 backtrace::backtrace()
 {
 }
-void backtrace::add_entry(backtrace_entry_type added_entry)
+void backtrace::add_entry(const backtrace_entry_type added_entry)
 {
     if (entry[backtrace_max_entry_count - 1] != added_entry)
     {

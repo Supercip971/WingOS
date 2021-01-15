@@ -2,6 +2,7 @@
 #define ASM_FUNCTION extern "C"
 #include <64bit.h>
 #include <lock.h>
+#include <stddef.h>
 #include <virtual.h>
 typedef main_page_table arch_page_table;
 typedef uint64_t backtrace_entry_type;
@@ -59,8 +60,8 @@ struct lock_type
     bool cantforce;
 };
 
-unsigned int get_cpu_count();
-unsigned int get_current_cpu_id();
+size_t get_cpu_count();
+size_t get_current_cpu_id();
 #define lock klock
 #define flock kflock
 #define unlock kunlock

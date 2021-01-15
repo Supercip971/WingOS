@@ -30,6 +30,7 @@
 #include <programm_launcher.h>
 #include <smp.h>
 #include <sse.h>
+#include <stddef.h>
 
 static char stack[STACK_SIZE] = {0};
 static uintptr_t bootdat = 0;
@@ -54,11 +55,11 @@ void start_process();
 //
 */
 
-unsigned int get_cpu_count()
+size_t get_cpu_count()
 {
     return smp::the()->processor_count;
 }
-unsigned int get_current_cpu_id()
+size_t get_current_cpu_id()
 {
     return apic::the()->get_current_processor_id();
 }

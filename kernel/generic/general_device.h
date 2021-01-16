@@ -40,7 +40,8 @@ protected:
     uint32_t current_clock;
 
 public:
-    device_type get_type() const final { return device_type::TIMER_DEVICE; };
+    static device_type get_stype() { return device_type::TIMER_DEVICE; };
+    device_type get_type() const final { return get_stype(); };
 
     virtual void set_clock(uint32_t clock) = 0;
     virtual void turn_off() = 0;
@@ -51,7 +52,8 @@ public:
 class general_mouse : public general_device
 {
 public:
-    device_type get_type() const final { return device_type::MOUSE_DEVICE; };
+    static device_type get_stype() { return device_type::MOUSE_DEVICE; };
+    device_type get_type() const final { return get_stype(); };
     virtual int32_t get_mouse_x() = 0;
     virtual int32_t get_mouse_y() = 0;
     virtual uint64_t get_mouse_button(int code) = 0;
@@ -61,7 +63,8 @@ public:
 class general_keyboard : public general_device
 {
 public:
-    device_type get_type() const final { return device_type::KEYBOARD_DEVICE; };
+    static device_type get_stype() { return device_type::KEYBOARD_DEVICE; };
+    device_type get_type() const final { return get_stype(); };
 
     virtual bool get_key(uint8_t keycode) const = 0;
     virtual uint8_t get_last_keypress() const = 0;
@@ -71,7 +74,8 @@ public:
 class generic_io_device : public general_device
 {
 public:
-    device_type get_type() const final { return device_type::DRIVE_DEVICE; };
+    static device_type get_stype() { return device_type::DRIVE_DEVICE; };
+    device_type get_type() const final { return get_stype(); };
 
     enum io_rw_output
     {
@@ -86,7 +90,8 @@ class debug_device : public general_device
 {
 
 public:
-    device_type get_type() const final { return device_type::DEBUG_DEVICE; };
+    static device_type get_stype() { return device_type::DEBUG_DEVICE; };
+    device_type get_type() const final { return get_stype(); };
     virtual bool echo_out(const char *data, uint64_t data_length) = 0;
     virtual bool echo_out(const char *data) = 0;
 };

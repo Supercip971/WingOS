@@ -23,7 +23,7 @@ general_device *get_device(uint32_t id);
 uint32_t get_device_count();
 
 template <class end_type>
-extern auto find_device(device_type type) -> end_type *;
+extern auto find_device() -> end_type *;
 
 class general_device
 {

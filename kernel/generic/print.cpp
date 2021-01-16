@@ -12,7 +12,7 @@ void printf(const char *format, ...)
     lock((&print_locker));
     va_list parameters;
     va_start(parameters, format);
-    debug_device *dev = find_device<debug_device>(device_type::DEBUG_DEVICE);
+    debug_device *dev = find_device<debug_device>();
     int written = 0;
 
     while (*format != '\0')

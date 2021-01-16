@@ -104,7 +104,7 @@ void ps2_device_service()
     *mclickm = 0;
     *my = 0;
     *mx = 0;
-    mouse_target = find_device<general_mouse>(device_type::MOUSE_DEVICE);
+    mouse_target = find_device<general_mouse>();
     mouse_target->set_ptr_to_update((uint32_t *)(mx), (uint32_t *)(my));
     while (true)
     {

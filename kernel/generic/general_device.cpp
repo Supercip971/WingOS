@@ -38,18 +38,20 @@ uint32_t get_device_count()
     return current_array_count;
 }
 template <class end_type>
-auto find_device(device_type type) -> end_type *
+auto find_device() -> end_type *
 {
     for (uint32_t i = 0; i < current_array_count; i++)
     {
-        if (device_array[i]->get_type() == type)
+        if (device_array[i]->get_type() == end_type::get_stype())
         {
             return static_cast<end_type *>(device_array[i]);
         }
     }
-    log("device", LOG_WARNING) << "no device with type " << (int)type << "founded";
+    log("device", LOG_WARNING) << "no device with type " << (int)end_type::get_stype() << "founded";
     return static_cast<end_type *>(nullptr);
 }
-
-template general_mouse *find_device(device_type type);
-template debug_device *find_device(device_type type);
+template general_keyboard *find_device();
+template interrupt_timer *find_device();
+template general_mouse *find_device();
+template generic_io_device *find_device();
+template debug_device *find_device();

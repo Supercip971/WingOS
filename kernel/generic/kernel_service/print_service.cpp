@@ -26,7 +26,7 @@ void print_service()
             while (locker_print.data != 0)
             {
             }
-            find_device<debug_device>(DEBUG_DEVICE)->echo_out((char *)msg->content_address, msg->content_length);
+            find_device<debug_device>()->echo_out((char *)msg->content_address, msg->content_length);
             msg->has_been_readed = true;
             msg->response = 10; // 10 for yes
         }

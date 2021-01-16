@@ -33,6 +33,21 @@ public:
     uint32_t device_id;
 };
 
+class interrupt_timer : public general_device
+{
+protected:
+    bool state;
+    uint32_t current_clock;
+
+public:
+    device_type get_type() const final { return device_type::TIMER_DEVICE; };
+
+    virtual void set_clock(uint32_t clock) = 0;
+    virtual void turn_off() = 0;
+    virtual void turn_on() = 0;
+    bool get_state() const { return state; }
+};
+
 class general_mouse : public general_device
 {
 public:

@@ -71,17 +71,16 @@ ASM_FUNCTION void kernel_start(stivale_struct *bootloader_data)
     asm volatile("mov ax, 0");
     asm volatile("mov fs, ax");
     init_sse();
+
     com_device com = com_device();
     com.init(COM_PORT::COM1);
-
-    log("COM1", LOG_INFO) << "com port 1 loaded";
 
     memcpy(&boot_loader_data_copy, bootloader_data, sizeof(stivale_struct));
 
     setup_gdt();
-
     init_idt();
     PIT::the()->init_PIT();
+
     tss_init((uintptr_t)stack + sizeof(char) * STACK_SIZE);
 
     init_physical_memory(bootloader_data);
@@ -102,10 +101,10 @@ ASM_FUNCTION void kernel_start(stivale_struct *bootloader_data)
 
     smp::the()->init();
 
-    apic_timer::the()->init();
+    apic_timer *timer = new apic_timer();
+    timer->init();
     for (int i = 0; i < 16; i++)
     {
-
         apic::the()->set_redirect_irq(0, i, 1);
     }
 

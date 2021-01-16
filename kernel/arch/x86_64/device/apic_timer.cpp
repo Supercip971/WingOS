@@ -3,12 +3,10 @@
 #include <device/rtc.h>
 #include <logging.h>
 apic_timer main_apic_timer;
-apic_timer::apic_timer()
-{
-}
 
 void apic_timer::init()
 {
+    add_device(this);
     log("apic timer", LOG_DEBUG) << "loading apic timer";
     apic::the()->write(timer_div, 0x3);
 
@@ -31,11 +29,15 @@ void apic_timer::init()
     apic::the()->write(timer_init_counter, ticks);
 }
 
-apic_timer *apic_timer::the()
+void apic_timer::set_clock(uint32_t clock)
 {
-    return &main_apic_timer;
-}
-
-void apic_timer::update()
+    log("apic timer", LOG_WARNING) << __PRETTY_FUNCTION__ << "not implemented";
+};
+void apic_timer::turn_off()
 {
+    log("apic timer", LOG_WARNING) << __PRETTY_FUNCTION__ << "not implemented";
+};
+void apic_timer::turn_on()
+{
+    log("apic timer", LOG_WARNING) << __PRETTY_FUNCTION__ << "not implemented";
 }

@@ -50,6 +50,13 @@ public:
     bool is_bridge();
 };
 
+class pci_device_driver : public pci_device
+{
+public:
+    pci_device_driver(uint8_t bus, uint8_t device, uint8_t function) : pci_device(bus, device, function){};
+    pci_device_driver(pci_device d) : pci_device(d){};
+};
+
 class pci_system
 {
     uint16_t pci_devices_count = 0;

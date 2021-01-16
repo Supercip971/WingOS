@@ -484,8 +484,8 @@ void pci_system::init_device()
             }
             else if (dev.get_class() == 1 && dev.get_subclass() == 6)
             {
-                ahci *ahci_new_dev = new ahci();
-                ahci_new_dev->init(&dev);
+                ahci *ahci_new_dev = new ahci(dev);
+                ahci_new_dev->init();
             }
         }
         else if (dev.get_vendor() == 0x10EC)

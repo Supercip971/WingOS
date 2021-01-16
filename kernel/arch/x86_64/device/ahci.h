@@ -259,7 +259,7 @@ struct hba_command_table
 }
 __attribute__((packed));
 
-class ahci
+class ahci : public pci_device_driver
 {
     hba_memory *hba_mem;
     pci_bar_data ahci_bar;
@@ -270,8 +270,8 @@ class ahci
     void reinit_port(hba_port *port);
 
 public:
-    static ahci *the();
-    void init(pci_device *dev);
+    ahci(pci_device v) : pci_device_driver(v){};
+    void init();
 };
 
 class ahci_ata_device : public generic_io_device

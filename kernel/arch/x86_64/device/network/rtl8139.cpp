@@ -23,9 +23,9 @@ rtl8139 *rtl8139::the()
     return &main_rtl;
 }
 
-void rtl8139::init(pci_device *device, uint64_t func)
+void rtl8139::init(pci_device *device)
 {
-    mm_addr = device->get_bar(0, func).base;
+    mm_addr = device->get_bar(0).base;
     update_paging();
     log("rtl8139", LOG_DEBUG) << "loadingt rtl8139 addr : " << mm_addr;
     write(CONFIG_1, 0x0);

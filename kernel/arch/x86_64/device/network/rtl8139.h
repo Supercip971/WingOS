@@ -40,7 +40,7 @@ public:
     rtl8139();
 
     void interrupt_handle();
-    void init(pci_device *device, uint64_t func);
+    void init(pci_device *device);
 
     static rtl8139 *the();
 };

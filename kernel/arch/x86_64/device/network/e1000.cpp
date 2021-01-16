@@ -240,11 +240,11 @@ void e1000_int_handler(unsigned int v)
     (void)v;
     e1000::the()->irq_handle();
 }
-void e1000::init(pci_device *dev, uint8_t func)
+void e1000::init(pci_device *dev)
 {
 
     log("e1000", LOG_DEBUG) << "loading e1000";
-    pci_bar_data d = dev->get_bar(0, func);
+    pci_bar_data d = dev->get_bar(0);
     add_irq_handler(e1000_int_handler, 11);
     if (d.type == pci_bar_type::MM_IO_32)
     {

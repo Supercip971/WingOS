@@ -6,10 +6,10 @@
 #include <utility.h>
 lock_type ahci_lock;
 
-void ahci::init(pci_device *dev, uint8_t func)
+void ahci::init(pci_device *dev)
 {
     log("ahci", LOG_DEBUG) << "loading ahci...";
-    ahci_bar = dev->get_bar(5, func);
+    ahci_bar = dev->get_bar(5);
     log("ahci", LOG_INFO) << "ahci addr : " << ahci_bar.base;
     data_addr = ahci_bar.base;
     hba_mem = (hba_memory *)data_addr;

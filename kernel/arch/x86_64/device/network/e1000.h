@@ -138,7 +138,7 @@ class e1000
 
 public:
     e1000();
-    void init(pci_device *dev, uint8_t func);
+    void init(pci_device *dev);
     static e1000 *the();
     void irq_handle();
     constexpr mac_address &get_mac_addr()

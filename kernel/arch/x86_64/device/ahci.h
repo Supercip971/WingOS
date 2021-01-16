@@ -271,7 +271,7 @@ class ahci
 
 public:
     static ahci *the();
-    void init(pci_device *dev, uint8_t func);
+    void init(pci_device *dev);
 };
 
 class ahci_ata_device : public generic_io_device

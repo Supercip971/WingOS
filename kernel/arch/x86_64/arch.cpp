@@ -79,7 +79,7 @@ ASM_FUNCTION void kernel_start(stivale_struct *bootloader_data)
 
     setup_gdt();
     init_idt();
-    PIT::the()->init_PIT();
+    //   PIT::the()->init_PIT();
 
     tss_init((uintptr_t)stack + sizeof(char) * STACK_SIZE);
 

@@ -4,16 +4,10 @@
 #include <device/pit.h>
 #include <kernel.h>
 #include <logging.h>
-PIT global_PIT;
 ASM_FUNCTION uint32_t read_pit_counter();
-void pit_callback()
+void PIT::init()
 {
-    PIT::the()->update();
-}
-
-void PIT::init_PIT()
-{
-    *this = PIT();
+    add_device(this);
     log("pit", LOG_DEBUG) << "loading pit...";
     uint16_t divisor = PIT_START_FREQUENCY /
                        PIT_TARGET_FREQUECY; // to do : make this more portable
@@ -46,18 +40,4 @@ void PIT::Pwait(uint16_t ms)
         }
     }
 }
-
-void PIT::update()
-{
-    total_count++;
-    current_count++;
-    if (current_count > PIT_TARGET_FREQUECY)
-    {
-        current_count = 0;
-        passed_sec += 1;
-    }
-}
-
 bool loaded = false;
-
-PIT *PIT::the() { return &global_PIT; }

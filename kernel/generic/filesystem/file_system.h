@@ -29,6 +29,11 @@ public:
         log("fs", LOG_ERROR) << "invalid call of file system read file" << path;
         return nullptr;
     }
+    virtual int write_file(const char *path, uint8_t *data)
+    {
+        log("fs", LOG_ERROR) << "invalid call of file system write file" << path;
+        return -1;
+    }
 
     // mainly not implemented
 

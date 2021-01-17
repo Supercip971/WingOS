@@ -204,7 +204,6 @@ ASM_FUNCTION uintptr_t interrupts_handler(InterruptStackFrame *stackframe)
     }
     else if (stackframe->int_no == 32)
     {
-        PIT::the()->update();
         nresult = process_switch_handler((arch_stackframe *)stackframe, true);
     }
     else if (stackframe->int_no > 32 && stackframe->int_no < 64)

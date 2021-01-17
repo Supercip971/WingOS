@@ -42,6 +42,7 @@ enum hba_port_command
     COMMAND_FR = 0x4000,
     COMMAND_CR = 0x8000,
 };
+#define DMA_ATA_WRITE_EXTENDED 0x35
 #define DMA_ATA_READ_EXTENDED 0x25
 #define TASK_FILE_ERROR (1 << 30)
 enum ata_device_status

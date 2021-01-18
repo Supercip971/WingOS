@@ -13,6 +13,16 @@ size_t strlen(const char *s)
     return string_length;
 }
 
+size_t strnlen(const char *s, size_t maxlen)
+{
+    size_t string_length = 0;
+    while (s[string_length] != 0 && string_length < maxlen)
+    {
+        string_length++;
+    }
+    return string_length;
+}
+
 int strcmp(const char *s1, const char *s2)
 {
     while (*s1 == *s2 && (*s1))

@@ -83,7 +83,9 @@ public:
         io_OK = 1,
     };
     virtual io_rw_output read(uint8_t *data, uint64_t count, uint64_t cursor) = 0;
+    io_rw_output read_unaligned(uint8_t *data, uint64_t count, uint64_t cursor);
     virtual io_rw_output write(uint8_t *data, uint64_t count, uint64_t cursor) = 0;
+    io_rw_output write_unaligned(uint8_t *data, uint64_t count, uint64_t cursor);
 };
 
 class debug_device : public general_device

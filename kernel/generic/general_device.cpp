@@ -1,5 +1,7 @@
 #include "general_device.h"
+#include <liballoc.h>
 #include <logging.h>
+#include <utility.h>
 uint32_t current_array_count = 0;
 general_device *device_array[MAX_DEVICE];
 const char *device_type_to_str[] = {
@@ -55,3 +57,19 @@ template interrupt_timer *find_device();
 template general_mouse *find_device();
 template generic_io_device *find_device();
 template debug_device *find_device();
+
+generic_io_device::io_rw_output generic_io_device::read_unaligned(uint8_t *data, uint64_t count, uint64_t cursor)
+{
+    uint64_t max_block_count = (((cursor % 512) + (count)) / 512) + 1;
+    uint8_t *raw = (uint8_t *)malloc(max_block_count);
+
+    io_rw_output r = read(raw, max_block_count, (cursor / 512));
+
+    memcpy(data, raw + cursor % 512, (count));
+    free(raw);
+    return r;
+}
+generic_io_device::io_rw_output generic_io_device::write_unaligned(uint8_t *data, uint64_t count, uint64_t cursor)
+{
+    return generic_io_device::io_rw_output ::io_ERROR;
+}

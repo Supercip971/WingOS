@@ -61,7 +61,7 @@ template debug_device *find_device();
 generic_io_device::io_rw_output generic_io_device::read_unaligned(uint8_t *data, uint64_t count, uint64_t cursor)
 {
     uint64_t max_block_count = (((cursor % 512) + (count)) / 512) + 1;
-    uint8_t *raw = (uint8_t *)malloc(max_block_count);
+    uint8_t *raw = (uint8_t *)malloc(max_block_count * 512);
 
     io_rw_output r = read(raw, max_block_count, (cursor / 512));
 

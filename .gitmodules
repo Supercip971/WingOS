@@ -1,7 +1,8 @@
 
-[submodule "limine"]
-	path = limine
-	url = https://github.com/limine-bootloader/limine.git
 [submodule "echfs"]
 	path = echfs
 	url = git://github.com/qword-os/echfs.git
+[submodule "limine"]
+	path = limine
+	url = https://github.com/limine-bootloader/limine.git
+	

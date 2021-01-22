@@ -154,16 +154,10 @@ check:
 $(KERNEL_ELF): $(OBJFILES) $(ASMOBJFILES) $(LINK_PATH)
 	@ld $(LDHARDFLAGS) $(OBJFILES) $(ASMOBJFILES) -o $@
 
-$(KERNEL_HDD): $(KERNEL_ELF)
+$(KERNEL_HDD): $(KERNEL_ELF) 
 	-rm -rf $(KERNEL_HDD)
 	-mkdir build
-	@dd if=/dev/zero bs=8M count=0 seek=64 of=$(KERNEL_HDD)
-	@parted -s $(KERNEL_HDD) mklabel msdos
-	@parted -s $(KERNEL_HDD) mkpart primary 1 100%
-	@$(ECHFS_PATH) -m -p0 $(KERNEL_HDD) format 4096
-	@$(ECHFS_PATH) -m -p0 $(KERNEL_HDD) import $(KERNEL_ELF) $(KERNEL_ELF)
-	@make -C . foreachramfs	
-	@$(ECHFS_PATH) -m -p0 $(KERNEL_HDD) import limine.cfg limine.cfg
+	bash ./make_disk.sh
 	limine/limine-install limine/limine.bin $(KERNEL_HDD)
 
 .PHONY:clean

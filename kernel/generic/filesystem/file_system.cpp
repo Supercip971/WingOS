@@ -1,5 +1,6 @@
 #include "file_system.h"
 #include "filesystem/echfs.h"
+#include "filesystem/ext2fs.h"
 #include <logging.h>
 file_system::file_system()
 {
@@ -42,6 +43,13 @@ void main_fs_system::init_file_system()
             log("main fs", LOG_INFO) << "entry " << i << "is an echfs entry";
             echfs *ech_file_sys = new echfs();
             file_systems[i] = dynamic_cast<file_system *>(ech_file_sys);
+            file_systems[i]->init(mbr->get_partition_start(i), mbr->get_partition_length(i));
+        }
+        else if (ext2fs::is_valid_ext2fs_entry(mbr->get_partition_start(i)))
+        {
+            log("main fs", LOG_INFO) << "entry " << i << "is an ext2fs entry";
+            ext2fs *ext_file_sys = new ext2fs();
+            file_systems[i] = dynamic_cast<file_system *>(ext_file_sys);
             file_systems[i]->init(mbr->get_partition_start(i), mbr->get_partition_length(i));
         }
         else

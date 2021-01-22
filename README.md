@@ -28,14 +28,16 @@ WingOS work with the concept of 'services'... If user app want to communicate wi
  - basic ATA driver
  - echfs support
  - program launcher (only elf64 programs for the moment)
- - really basic pci table parser
  - process message
  - little gui system
  - ps2 mouse driver
+ - ps2 keyboard driver
+ - pci system
  - basic e1000 driver
  - basic rtl8139 driver
  - AHCI support
  - Sata AHCI
+ - ext2fs support
  - \[insert something here]
  
  

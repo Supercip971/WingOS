@@ -20,6 +20,44 @@ uint64_t entry_to_address(uint64_t pml4, uint64_t pdpt, uint64_t pd, uint64_t pt
 
     return result;
 }
+uint64_t get_physical_addr(uint64_t virt)
+{
+
+    uint64_t pml4_entry = PML4_GET_INDEX(virt);
+    uint64_t pdpt_entry = PDPT_GET_INDEX(virt);
+    uint64_t pd_entry = PAGE_DIR_GET_INDEX(virt);
+    uint64_t pt_entry = PAGE_TABLE_GET_INDEX(virt);
+
+    main_page_table *pdpt, *pd, *pt;
+    if (get_current_cpu()->page_table[pml4_entry] & BIT_PRESENT)
+    {
+        pdpt = get_mem_addr<uint64_t *>(get_current_cpu()->page_table[pml4_entry] & FRAME_ADDR);
+    }
+    else
+    {
+        return virt;
+    }
+
+    if (pdpt[pdpt_entry] & BIT_PRESENT)
+    {
+        pd = get_mem_addr<uint64_t *>(pdpt[pdpt_entry] & FRAME_ADDR);
+    }
+    else
+    {
+        return virt;
+    }
+
+    if (pd[pd_entry] & BIT_PRESENT)
+    {
+        pt = get_mem_addr<uint64_t *>(pd[pd_entry] & FRAME_ADDR);
+    }
+    else
+    {
+        return virt;
+    }
+
+    return pt[pt_entry] & FRAME_ADDR;
+}
 int map_page(main_page_table *table, uint64_t phys_addr, uint64_t virt_addr, uint64_t flags)
 {
     uint64_t pml4_entry = PML4_GET_INDEX(virt_addr);

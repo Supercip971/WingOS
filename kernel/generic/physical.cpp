@@ -118,6 +118,10 @@ void *pmm_alloc(uint64_t lenght)
 {
     flock(&pmm_lock);
     used_memory += lenght;
+    if (used_memory >= available_memory)
+    {
+        log("pmm", LOG_WARNING) << "too much memory used" << used_memory << "/" << available_memory;
+    }
     uint64_t res = pmm_find_free(lenght);
 
     for (uint64_t i = 0; i < lenght; i++)
@@ -133,6 +137,11 @@ void *pmm_alloc_fast(uint64_t lenght)
 {
     flock(&pmm_lock);
     used_memory += lenght;
+    if (used_memory >= available_memory)
+    {
+        log("pmm", LOG_WARNING) << "too much memory used" << used_memory << "/" << available_memory;
+    }
+
     uint64_t res = pmm_find_free_fast(lenght);
 
     for (uint64_t i = 0; i < lenght; i++)

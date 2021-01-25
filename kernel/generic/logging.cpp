@@ -26,6 +26,13 @@ logging log(const char *data, log_state color_mode)
     return main_logging_system;
 }
 template <>
+logging logging::operator<<(void *data)
+{
+
+    printf(" %x ", data);
+    return *this;
+}
+template <>
 logging logging::operator<<(char *data)
 {
     printf(data);

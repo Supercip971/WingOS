@@ -35,6 +35,8 @@ logging logging::operator<<(uint64_t data);
 template <>
 logging logging::operator<<(const char *data);
 template <>
+logging logging::operator<<(void *data);
+template <>
 logging logging::operator<<(char *data);
 template <>
 logging logging::operator<<(char data);

@@ -101,7 +101,7 @@ void ahci::reinit_port(hba_port *port)
     port->fis_base_addr_low = (uint64_t)(fis);
     port->fis_base_addr_up = 0;
 
-    volatile hba_cmd_header *command_header = (hba_cmd_header *)fis;
+    volatile hba_cmd_header *command_header = reinterpret_cast<volatile hba_cmd_header *>((uintptr_t)port->command_list_base_addr_low);
     for (int i = 0; i < 32; i++)
     {
         command_header[i].physical_region_descriptor_table_entry_count = 8;

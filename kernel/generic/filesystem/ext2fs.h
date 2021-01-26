@@ -162,13 +162,13 @@ class ext2fs : public file_system
     void read_blocks(uint64_t block_id, uint64_t length, uint8_t *buffer);
     uint64_t get_folder(uint64_t folder_id);
     uint64_t get_simple_file(const char *name, uint64_t forced_parent = -1);
-    volatile uint32_t *create_inode_block_map(ext2fs_inode_structure *inode_struct);
+    uint32_t *create_inode_block_map(ext2fs_inode_structure *inode_struct);
     ext2fs_inode_structure *get_inode(uint64_t inode);
     uint8_t *ext_read_file(const char *path);
     ext2fs_inode_structure *get_file(const char *path);
     ext2fs_inode_structure *find_subdir(ext2fs_inode_structure *inode_struct, const char *name);
     void print_ext2_feature();
-
+    uint64_t get_inode_block_map(ext2fs_inode_structure *inode_struct, uint64_t block_id);
     void list_sub_directory(ext2fs_inode_structure *inode, int offset);
 
 public:

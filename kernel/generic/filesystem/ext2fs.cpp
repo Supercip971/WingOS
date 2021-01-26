@@ -59,22 +59,67 @@ bool ext2fs::inode_read(void *buffer, uint64_t cursor, uint64_t count, ext2fs_in
         }
 
         // log("ext2fs", LOG_INFO) << "reading inode " << chunk_size_to_read << "offset" << block_offset << " super block size " << block_size << "with block" << current_block << "readed" << readed << "count" << count;
-        get_io_device(0)->read_unaligned((uint8_t *)buffer + readed, chunk_size_to_read, (offset + (inode_block_map[current_block] * block_size)) + block_offset);
+        get_io_device(0)->read_unaligned((uint8_t *)buffer + readed, chunk_size_to_read, (offset + (get_inode_block_map(parent, current_block) * block_size)) + block_offset);
         readed += chunk_size_to_read;
     }
-    free((void *)inode_block_map);
     return true;
 }
+uint64_t ext2fs::get_inode_block_map(ext2fs_inode_structure *inode_struct, uint64_t block_id)
+{
+    if (inode_struct->flag & 0x80000)
+    {
+        log("ext2fs", LOG_ERROR) << "not supported file flag EXTENT FLAG";
+    };
+    if (block_id > inode_struct->block_count)
+    {
+        log("ext2fs", LOG_WARNING) << "block" << block_id << "out of bound";
+        return 0;
+    }
+    uint64_t r = 0;
+    uint64_t entry_per_blkc = block_size / sizeof(uint32_t);
 
-// read indirect block
-volatile uint32_t *ext2fs::create_inode_block_map(ext2fs_inode_structure *inode_struct)
+    if (block_id < 12)
+    {
+        r = inode_struct->block_ptr[block_id];
+    }
+    // indirect block start after block 13
+    else if ((block_id - 12) < entry_per_blkc)
+    { // indirect block
+        uint32_t nid = block_id - 12;
+        get_io_device(0)->read_unaligned((uint8_t *)(&r), sizeof(uint32_t), offset + inode_struct->singly_indirect_block_ptr * block_size + (nid * sizeof(uint32_t)));
+    }
+    // double indirect block start after (entry per block)
+    else if (((block_id - 12) / entry_per_blkc) < entry_per_blkc)
+    { // double indirect
+
+        uint32_t nid = (block_id - (12 + entry_per_blkc));
+        uint32_t block_idx = nid / entry_per_blkc;
+        uint32_t indirect_block_id = 0;
+        uint32_t sub_entry = nid % entry_per_blkc;
+        get_io_device(0)->read_unaligned((uint8_t *)(&indirect_block_id), sizeof(uint32_t), offset + inode_struct->doubly_indirect_block_ptr * block_size + (block_idx * sizeof(uint32_t)));
+
+        get_io_device(0)->read_unaligned(
+            (uint8_t *)(&r),
+            sizeof(uint32_t),
+            offset + indirect_block_id * block_size + ((sub_entry) * sizeof(uint32_t)));
+    }
+    else
+    {
+        log("ext2fs", LOG_WARNING) << "no support for triple indirect block" << block_id;
+        while (true)
+        {
+        }
+    }
+    return r;
+}
+uint32_t *ext2fs::create_inode_block_map(ext2fs_inode_structure *inode_struct)
 {
     if (inode_struct->flag & 0x80000)
     {
         log("ext2fs", LOG_ERROR) << "not supported file flag EXTENT FLAG";
     };
     uint64_t entry_per_blkc = block_size / sizeof(uint32_t);
-    volatile uint32_t *data = (uint32_t *)malloc(((inode_struct->block_count + 2) * sizeof(uint32_t))); // why does clang say that this is garbage ? O.o
+    uint32_t *data = (uint32_t *)malloc(((inode_struct->block_count + 2) * sizeof(uint32_t))); // why does clang say that this is garbage ? O.o
     for (uint32_t block_id = 0; block_id < inode_struct->block_count; block_id++)
     {
         if (block_id < 12)
@@ -101,6 +146,7 @@ volatile uint32_t *ext2fs::create_inode_block_map(ext2fs_inode_structure *inode_
             {
                 if (block_id + sub_entry > inode_struct->block_count)
                 {
+                    log("ext2fs", LOG_INFO) << "double indirect dend" << block_id;
                     return data;
                 }
                 get_io_device(0)->read_unaligned(

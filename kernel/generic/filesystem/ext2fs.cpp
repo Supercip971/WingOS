@@ -37,9 +37,9 @@ ext2fs_block_group_descriptor ext2fs::read_group(uint64_t inode)
     get_io_device(0)->read_unaligned((uint8_t *)&group, sizeof(ext2fs_block_group_descriptor), group_offset);
     return group;
 }
+
 bool ext2fs::inode_read(void *buffer, uint64_t cursor, uint64_t count, ext2fs_inode_structure *parent)
 {
-    volatile uint32_t *inode_block_map = create_inode_block_map(parent);
     for (uint64_t readed = 0; readed < count;)
     {
         uint64_t current_block = 0;
@@ -291,6 +291,7 @@ void ext2fs::list_sub_directory(ext2fs_inode_structure *inode, int offset)
         i += dir->directory_size;
         v++;
     }
+    free(dir);
 }
 ext2fs_inode_structure *ext2fs::find_subdir(ext2fs_inode_structure *inode_struct, const char *name)
 {
@@ -356,7 +357,7 @@ ext2fs_inode_structure *ext2fs::get_file(const char *path)
 lock_type l;
 uint8_t *ext2fs::ext_read_file(const char *path)
 {
-    lock((&l));
+    flock((&l));
     log("ext2fs", LOG_INFO) << "reading " << path;
     log("ext2fs", LOG_INFO) << "getting " << path;
     ext2fs_inode_structure *f = get_file(path);
@@ -379,17 +380,19 @@ uint8_t *ext2fs::ext_read_file(const char *path)
 }
 uint64_t ext2fs::get_file_length(const char *path)
 {
-    lock((&l));
+    flock((&l));
+    log("ext2fs", LOG_INFO) << "getting file length " << path;
     ext2fs_inode_structure *f = get_file(path);
     if (f == nullptr)
     {
         log("ext2fs", LOG_WARNING) << "can't find file " << path << " for " << __PRETTY_FUNCTION__;
         unlock((&l));
-        return 0;
+        return (uint64_t)-1;
     }
     uint64_t size = f->lower_size;
     free(f);
     unlock((&l));
+    log("ext2fs", LOG_INFO) << "getting file length " << path << " = " << size;
     return size;
 }
 void ext2fs::init(uint64_t start_sector, uint64_t sector_count)
@@ -426,6 +429,46 @@ void ext2fs::init(uint64_t start_sector, uint64_t sector_count)
     get_file("init_fs/test_directory/test_another.txt");
 }
 
+uint64_t ext2fs::read_file(const char *path, uint64_t at, uint64_t size, uint8_t *buffer)
+{
+
+    flock((&l));
+    log("ext2fs", LOG_INFO) << "reading " << path;
+    log("ext2fs", LOG_INFO) << "getting " << path;
+    ext2fs_inode_structure *f = get_file(path);
+    if (f == nullptr)
+    {
+        log("ext2fs", LOG_WARNING) << "can't find file " << path << " for " << __PRETTY_FUNCTION__;
+
+        unlock((&l));
+        return 0;
+    }
+    uint64_t readed_size = size;
+    if (f->lower_size < at)
+    {
+        log("ext2fs", LOG_WARNING) << "cursor of" << path << " is out of file bound ( " << at << " should be <= " << f->lower_size;
+
+        free(f);
+        unlock((&l));
+        return 0;
+    }
+    if (f->lower_size < at + size)
+    {
+        readed_size = f->lower_size - at;
+    }
+    uint8_t *buffer_copy = (uint8_t *)malloc(readed_size + 12);
+    log("ext2fs", LOG_INFO) << "disk read " << path;
+
+    inode_read(buffer_copy, at, readed_size, f);
+    log("ext2fs", LOG_INFO) << "disk readed " << path;
+    free(f);
+
+    log("ext2fs", LOG_INFO) << "readed " << path;
+    memcpy(buffer, buffer_copy, size);
+    free(buffer_copy);
+    unlock((&l));
+    return readed_size;
+}
 constexpr uint64_t ext2fs::get_group_from_inode(uint64_t inode)
 {
     return inode / inode_per_group;

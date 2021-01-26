@@ -183,6 +183,7 @@ public:
         return ext_read_file(path);
     }
 
+    virtual uint64_t read_file(const char *path, uint64_t at, uint64_t size, uint8_t *buffer) override;
     // mainly not implemented
     //    virtual fs_file *get_file(const char *path) override;
 

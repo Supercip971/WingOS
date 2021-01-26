@@ -12,7 +12,6 @@ struct fss_file_handle
     bool free_to_use;
     char file_path[255];
     uint64_t opened_by_process;
-    uint8_t *data;
 };
 
 uint64_t next_fss_uid = 1;       // 0 = null
@@ -45,7 +44,6 @@ uint64_t file_open(process_message *msg)
             handle_list[i].free_to_use = false;
             handle_list[i].opened = true;
 
-            handle_list[i].data = nullptr;
             handle_list[i].id = next_fss_uid++;
             handle_list[i].opened_by_process = msg->from_pid;
             memcpy(handle_list[i].file_path, prot->open.file_directory, strlen((char *)prot->open.file_directory) + 1);
@@ -62,11 +60,6 @@ uint64_t file_close(process_message *msg)
     fss_file_handle *target = get_file(prot->close.file_request_id, msg->from_pid);
     target->opened = false;
     target->id = 0;
-    if (target->data != nullptr)
-    {
-        free(target->data);
-    }
-    target->data = nullptr;
     target->free_to_use = true;
     return 0;
 }
@@ -77,43 +70,20 @@ uint64_t file_read(process_message *msg)
     file_system_service_protocol *prot = reinterpret_cast<file_system_service_protocol *>(msg->content_address);
 
     fss_file_handle *target = get_file(prot->read.file_request_id, msg->from_pid);
-    log("file system service", LOG_INFO) << "readed " << (char *)target->data;
     if (target == nullptr)
     {
         log("file system service", LOG_INFO) << "no file opened :^( ) ";
         return -1;
     }
-    uint64_t readed_length = 0;
 
     char *path = (char *)target->file_path;
     log("file system service", LOG_INFO) << "reading " << path;
 
-    if (target->data == nullptr)
-    {
-        log("file system service", LOG_INFO) << "reading for first time" << path;
-        target->data = main_fs_system::the()->main_fs()->read_file(path);
-    }
-    else
-    {
-        log("file system service", LOG_INFO) << "file has already been readed";
-    }
-    uint64_t file_lenth = main_fs_system::the()->main_fs()->get_file_length(path);
-    if (prot->read.at > file_lenth)
-    {
-        log("file system service", LOG_ERROR) << "trying to read outside of data";
-        return 0;
-    }
-    if (prot->read.length + prot->read.at > main_fs_system::the()->main_fs()->get_file_length(path))
-    {
-        readed_length = main_fs_system::the()->main_fs()->get_file_length(path) - prot->read.at;
-    }
-    else
-    {
-        readed_length = prot->read.length;
-    }
-    memcpy((void *)((uint64_t)prot->read.target), target->data + prot->read.at, readed_length);
+    size_t readed_length = main_fs_system::the()->main_fs()->read_file(path, prot->read.at, prot->read.length, prot->read.target);
 
     log("file system service", LOG_INFO) << "readed " << path << "for " << readed_length << "cursor" << prot->read.at;
+
+    log("file system service", LOG_INFO) << "readed " << (char *)prot->read.target;
     return readed_length;
 }
 

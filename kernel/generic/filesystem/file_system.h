@@ -26,13 +26,23 @@ public:
     // return 0 when not found
     virtual uint8_t *read_file(const char *path)
     {
-        log("fs", LOG_ERROR) << "invalid call of file system read file" << path;
+        log("fs", LOG_ERROR) << "not implemented file system function" << __PRETTY_FUNCTION__;
         return nullptr;
+    }
+    virtual uint64_t read_file(const char *path, uint64_t at, uint64_t size, uint8_t *buffer)
+    {
+        log("fs", LOG_ERROR) << "not implemented file system function" << __PRETTY_FUNCTION__;
+        return 0;
     }
     virtual int write_file(const char *path, uint8_t *data)
     {
-        log("fs", LOG_ERROR) << "invalid call of file system write file" << path;
+        log("fs", LOG_ERROR) << "not implemented file system function" << __PRETTY_FUNCTION__;
         return -1;
+    }
+    virtual uint64_t write_file(const char *path, uint64_t at, uint64_t size, const uint8_t *buffer)
+    {
+        log("fs", LOG_ERROR) << "not implemented file system function" << __PRETTY_FUNCTION__;
+        return 0;
     }
 
     // mainly not implemented
@@ -55,3 +65,9 @@ public:
     void init_file_system();
     static main_fs_system *the();
 };
+
+size_t fs_read(int fd, void *buffer, size_t count);
+size_t fs_write(int fd, const void *buffer, size_t count);
+int fs_open(const char *path_name, int flags, int mode);
+int fs_close(int fd);
+size_t fs_lseek(int fd, size_t offset, int whence);

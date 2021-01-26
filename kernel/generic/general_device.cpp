@@ -62,9 +62,17 @@ generic_io_device::io_rw_output generic_io_device::read_unaligned(uint8_t *data,
 {
     uint64_t max_block_count = (((cursor % 512) + (count)) / 512) + 1;
     uint8_t *raw = (uint8_t *)malloc(max_block_count * 512);
+    io_rw_output r = io_rw_output::io_OK;
+    for (size_t i = 0; i < max_block_count; i++)
+    {
 
-    io_rw_output r = read(raw, max_block_count, (cursor / 512));
-
+        r = read(raw + (i * 512), 1, i + (cursor / 512));
+        if (r != io_rw_output::io_OK)
+        {
+            free(raw);
+            return r;
+        }
+    }
     memcpy(data, raw + cursor % 512, (count));
     free(raw);
     return r;

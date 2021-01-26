@@ -5,7 +5,7 @@
 namespace sys
 {
 
-    enum syscall_codes
+    enum class syscall_codes
     {
         NULL_SYSCALL = 0,                 // don't use >:^(
         SEND_SERVICE_SYSCALL = 1,         // send a message to a service (later non-service process may be forced to use send message with pid)
@@ -15,6 +15,11 @@ namespace sys
         SEND_PROCESS_SYSCALL_PID = 5,     // send a message to a process with pid
         MEMORY_ALLOC = 6,                 // pmm alloc
         MEMORY_FREE = 7,                  // pmm free
+        FILE_OPEN = 8,
+        FILE_CLOSE = 9,
+        FILE_READ = 10,
+        FILE_WRITE = 11,
+        FILE_SEEK = 12,
     };
 
     __attribute__((optimize("O0"), always_inline)) inline uint64_t syscall(uint64_t syscall_id, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5)
@@ -30,39 +35,59 @@ namespace sys
     };
     static inline raw_process_message *sys$send_message(uint64_t data_addr, uint64_t data_length, const char *target)
     {
-        return (raw_process_message *)syscall(SEND_SERVICE_SYSCALL, data_addr, data_length, (uint64_t)target, 0, 0);
+        return (raw_process_message *)syscall((uint64_t)syscall_codes::SEND_SERVICE_SYSCALL, data_addr, data_length, (uint64_t)target, 0, 0);
     }
 
     static inline raw_process_message *sys$read_message()
     {
-        return (raw_process_message *)syscall(READ_SERVICE_SYSCALL, 0, 0, 0, 0, 0);
+        return (raw_process_message *)syscall((uint64_t)syscall_codes::READ_SERVICE_SYSCALL, 0, 0, 0, 0, 0);
     }
 
     static inline uint64_t sys$message_response(raw_process_message *identifier)
     {
-        return syscall(GET_RESPONSE_SERVICE_SYSCALL, (uint64_t)identifier, 0, 0, 0, 0);
+        return syscall((uint64_t)syscall_codes::GET_RESPONSE_SERVICE_SYSCALL, (uint64_t)identifier, 0, 0, 0, 0);
     }
 
     static inline uint64_t sys$get_process_global_data(uint64_t offset, const char *target)
     {
-        return syscall(GET_PROCESS_GLOBAL_DATA, (uint64_t)target, offset, 0, 0, 0);
+        return syscall((uint64_t)syscall_codes::GET_PROCESS_GLOBAL_DATA, (uint64_t)target, offset, 0, 0, 0);
     }
 
     static inline void *sys$get_current_process_global_data(uint64_t offset, uint64_t length)
     {
-        return (void *)syscall(GET_PROCESS_GLOBAL_DATA, 0, offset, length, 0, 0);
+        return (void *)syscall((uint64_t)syscall_codes::GET_PROCESS_GLOBAL_DATA, 0, offset, length, 0, 0);
     }
     static inline raw_process_message *sys$send_message_pid(uint64_t data_addr, uint64_t data_length, uint64_t pid)
     {
-        return (raw_process_message *)syscall(SEND_PROCESS_SYSCALL_PID, data_addr, data_length, pid, 0, 0);
+        return (raw_process_message *)syscall((uint64_t)syscall_codes::SEND_PROCESS_SYSCALL_PID, data_addr, data_length, pid, 0, 0);
     }
     static inline void *sys$alloc(uint64_t count)
     {
-        return (void *)syscall(MEMORY_ALLOC, count, 0, 0, 0, 0);
+        return (void *)syscall((uint64_t)syscall_codes::MEMORY_ALLOC, count, 0, 0, 0, 0);
     }
     static inline int sys$free(uintptr_t target, uint64_t count)
     {
-        return syscall(MEMORY_FREE, target, count, 0, 0, 0);
+        return syscall((uint64_t)syscall_codes::MEMORY_FREE, target, count, 0, 0, 0);
+    }
+    static inline size_t sys$read(int fd, void *buffer, size_t count)
+    {
+        return syscall((uint64_t)syscall_codes::FILE_READ, fd, (uint64_t)buffer, count, 0, 0);
+    }
+    static inline size_t sys$write(int fd, const void *buffer, size_t count)
+    {
+        return syscall((uint64_t)syscall_codes::FILE_WRITE, fd, (uint64_t)buffer, count, 0, 0);
+    }
+    static inline int sys$open(const char *path_name, int flags, int mode)
+    {
+        return syscall((uint64_t)syscall_codes::FILE_OPEN, (uint64_t)path_name, flags, mode, 0, 0);
+    }
+    static inline int sys$close(int fd)
+    {
+        return syscall((uint64_t)syscall_codes::FILE_CLOSE, fd, 0, 0, 0, 0);
+    }
+    static inline size_t sys$lseek(int fd, size_t offset, int whence)
+    {
+        return syscall((uint64_t)syscall_codes::FILE_SEEK, fd, offset, whence, 0, 0);
     }
 
 } // namespace sys

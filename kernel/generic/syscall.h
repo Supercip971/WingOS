@@ -11,7 +11,13 @@ enum syscall_codes
     SEND_SERVICE_SYSCALL_PID = 5,
     MEMORY_ALLOC = 6, // pmm alloc
     MEMORY_FREE = 7,  // pmm free
+    FILE_OPEN = 8,
+    FILE_CLOSE = 9,
+    FILE_READ = 10,
+    FILE_WRITE = 11,
+    FILE_SEEK = 12
 };
 extern lock_type lck_syscall;
+
 void init_syscall();
 uint64_t syscall(uint64_t syscall_id, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5, InterruptStackFrame *stackframe);

@@ -13,8 +13,9 @@ struct FILE
     sys::file file_element;
 };
 
-#define SEEK_SET 2
-#define SEEK_CUR 3
+#define SEEK_SET 0
+#define SEEK_CUR 1
+#define SEEK_END 2
 #define EOF 0x0E0F
 FILE *fopen(const char *pathname, const char *mode);
 int fclose(FILE *stream);

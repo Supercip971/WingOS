@@ -1,5 +1,5 @@
-
 #include <device/local_data.h>
+#include <filesystem/file_system.h>
 #include <logging.h>
 #include <process.h>
 #include <syscall.h>
@@ -51,6 +51,27 @@ int sys$free(uintptr_t target, uint64_t count)
     pmm_free((void *)get_rmem_addr(target), count);
     return 1;
 }
+size_t sys$read(int fd, void *buffer, size_t count)
+{
+    return fs_read(fd, buffer, count);
+}
+size_t sys$write(int fd, const void *buffer, size_t count)
+{
+    return fs_write(fd, buffer, count);
+}
+int sys$open(const char *path_name, int flags, int mode)
+{
+    return fs_open(path_name, flags, mode);
+}
+int sys$close(int fd)
+{
+    return fs_close(fd);
+}
+
+size_t sys$lseek(int fd, size_t offset, int whence)
+{
+    return fs_lseek(fd, offset, whence);
+}
 static void *syscalls[] = {
     (void *)sys$null,
     (void *)sys$send_message,
@@ -60,8 +81,13 @@ static void *syscalls[] = {
     (void *)sys$send_message_pid,
     (void *)sys$alloc,
     (void *)sys$free,
+    (void *)sys$open,
+    (void *)sys$close,
+    (void *)sys$read,
+    (void *)sys$write,
+    (void *)sys$lseek,
 };
-uint64_t syscalls_length = 8;
+uint64_t syscalls_length = sizeof(syscalls) / sizeof(void *);
 void init_syscall()
 {
     log("syscall", LOG_DEBUG) << "loading syscall";

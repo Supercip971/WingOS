@@ -1,7 +1,7 @@
 #ifndef _LIBALLOC_H
 #define _LIBALLOC_H
 #include <arch.h>
-
+#include <lock.h>
 #include <stddef.h>
 extern lock_type liballoc_locker;
 /** \defgroup ALLOCHOOKS liballoc hooks

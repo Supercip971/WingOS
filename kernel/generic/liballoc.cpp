@@ -1,5 +1,5 @@
 #include "liballoc.h"
-
+#include <logging.h>
 /**  Durand's Amazing Super Duper Memory functions.  */
 
 lock_type liballoc_locker = {0};
@@ -436,6 +436,7 @@ void PREFIX(free)(void *ptr)
         }
         else
         {
+            log("liballoc", LOG_ERROR) << "Bad free() " << ptr << " from " << __builtin_return_address(0);
 #if defined DEBUG || defined INFO
             printf("liballoc: ERROR: Bad PREFIX(free)( %x ) called from %x\n",
                    ptr,
@@ -561,6 +562,7 @@ void *PREFIX(realloc)(void *p, size_t size)
             ((min->magic & 0xFF) == (LIBALLOC_MAGIC & 0xFF)))
         {
             l_possibleOverruns += 1;
+            log("liballoc", LOG_ERROR) << "Possible 1-3 byte overrun for magic " << min->magic << "!=" << LIBALLOC_MAGIC;
 #if defined DEBUG || defined INFO
             printf("liballoc: ERROR: Possible 1-3 byte overrun for magic %x != %x\n",
                    min->magic,
@@ -571,6 +573,7 @@ void *PREFIX(realloc)(void *p, size_t size)
 
         if (min->magic == LIBALLOC_DEAD)
         {
+            log("liballoc", LOG_ERROR) << "multiple free() attempt on" << ptr << " from " << __builtin_return_address(0);
 #if defined DEBUG || defined INFO
             printf("liballoc: ERROR: multiple PREFIX(free)() attempt on %x from %x.\n",
                    ptr,
@@ -580,6 +583,7 @@ void *PREFIX(realloc)(void *p, size_t size)
         }
         else
         {
+            log("liballoc", LOG_ERROR) << "Bad free() attempt on" << ptr << " from " << __builtin_return_address(0);
 #if defined DEBUG || defined INFO
             printf("liballoc: ERROR: Bad PREFIX(free)( %x ) called from %x\n",
                    ptr,

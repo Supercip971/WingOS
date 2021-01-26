@@ -10,12 +10,12 @@ namespace gui
     img_bmp::img_bmp(const char *path)
     {
         sys::file f = sys::file(path);
-        data = new uint8_t[f.get_file_length() + 2];
-        f.read(data, f.get_file_length());
-        header = (raw_bmp_header *)data;
+        header = new raw_bmp_header();
+        f.seek(0);
+        f.read((uint8_t *)header, sizeof(raw_bmp_header));
         if (header->Signature_B != 'B' || header->Signature_M != 'M')
         {
-            printf("error invalid bmp signature for file %s with size %x \n", path, f.get_file_length());
+            printf("error invalid bmp signature (%c & %c) for file %s with size %x \n", header->Signature_B, header->Signature_M, path, f.get_file_length());
             return;
         }
         printf("for %s \n with size %x \n width = %x \n height = %x \n", path, f.get_file_length(), header->width, header->height);
@@ -26,9 +26,11 @@ namespace gui
             paddedRowSize = (int)(((header->width))) * (header->bpp);
         }
         int unpaddedRowSize = (header->width) * (header->bpp);
-        int total_size = unpaddedRowSize * header->height;
+        uint64_t total_size = unpaddedRowSize * header->height;
         pix_data = new uint8_t[total_size + 2];
-        memcpy(pix_data, data + (header->data_offset), unpaddedRowSize * header->height);
+        f.seek(header->data_offset);
+
+        f.read(pix_data, unpaddedRowSize * header->height);
         f.close();
     }
 } // namespace gui

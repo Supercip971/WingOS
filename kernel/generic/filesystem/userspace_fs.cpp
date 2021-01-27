@@ -16,6 +16,33 @@ enum file_system_file_state
     FS_STATE_RESERVED = 3, // may be used later
 
 };
+
+void init_process_userspace_fs(per_process_userspace_fs &target)
+{
+    /*
+    for (int i = 4; i < per_process_userspace_fs::ram_files_count; i++)
+    {
+        target.ram_files[i] = new ram_file;
+    }
+
+    target.ram_files[0] = new std_zero_file();
+    target.ram_files[1] = new std_stdout_file();
+    target.ram_files[2] = new std_stderr_file();
+    target.ram_files[3] = new std_stdin_file();
+*/
+}
+int ram_file::read(void *buffer, size_t offset, size_t count)
+{
+    log("ram file", LOG_ERROR) << "can't use " << __PRETTY_FUNCTION__ << " in file " << get_npath() << " in process" << get_current_cpu_process()->process_name;
+    return -1;
+}
+int ram_file::write(const void *buffer, size_t offset, size_t count)
+{
+    log("ram file", LOG_ERROR) << "can't use " << __PRETTY_FUNCTION__ << " in file " << get_npath() << " in process" << get_current_cpu_process()->process_name;
+    return -1;
+}
+
+/*
 #define MAX_FILE_HANDLE 255
 filesystem_file_t fs_handle_table[MAX_FILE_HANDLE];
 

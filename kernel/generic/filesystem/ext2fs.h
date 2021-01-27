@@ -114,6 +114,22 @@ struct ext2fs_inode_structure
 
     uint8_t os_specifics[12];
 } __attribute__((packed));
+class ext2fs_inode
+{
+public:
+    ext2fs_inode_structure strct;
+    size_t id;
+    ext2fs_inode()
+    {
+        id = 0;
+        strct = {0};
+    };
+    ext2fs_inode(ext2fs_inode &other);
+    ext2fs_inode(const ext2fs_inode &other);
+    const size_t get_size() { return strct.lower_size; };
+    const bool is_valid() { return id != 0; };
+};
+
 enum ext2fs_directory_type
 {
     UNKNOWN_DIR = 0,
@@ -151,25 +167,25 @@ class ext2fs : public file_system
     constexpr uint64_t get_group_from_inode(uint64_t inode);
     constexpr uint64_t get_local_group_inode_from_inode(uint64_t inode);
     ext2fs_superblock *super_block;
-    ext2fs_inode_structure *root_inode;
+    ext2fs_inode root_inode;
     uint64_t block_group_descriptor_table;
     uint64_t block_size;
     uint64_t offset; // offset with the partition
 
     ext2fs_block_group_descriptor read_group(uint64_t inode);
-    bool inode_read(void *buffer, uint64_t cursor, uint64_t count, ext2fs_inode_structure *parent);
+    bool inode_read(void *buffer, uint64_t cursor, uint64_t count, ext2fs_inode parent);
     void read_block(uint64_t block_id, uint8_t *buffer);
     void read_blocks(uint64_t block_id, uint64_t length, uint8_t *buffer);
     uint64_t get_folder(uint64_t folder_id);
     uint64_t get_simple_file(const char *name, uint64_t forced_parent = -1);
-    uint32_t *create_inode_block_map(ext2fs_inode_structure *inode_struct);
-    ext2fs_inode_structure *get_inode(uint64_t inode);
+    uint32_t *create_inode_block_map(ext2fs_inode inode_struct);
+    ext2fs_inode get_inode(uint64_t inode);
     uint8_t *ext_read_file(const char *path);
-    ext2fs_inode_structure *get_file(const char *path);
-    ext2fs_inode_structure *find_subdir(ext2fs_inode_structure *inode_struct, const char *name);
+    ext2fs_inode get_file(const char *path);
+    ext2fs_inode find_subdir(ext2fs_inode inode_struct, const char *name);
     void print_ext2_feature();
-    uint64_t get_inode_block_map(ext2fs_inode_structure *inode_struct, uint64_t block_id);
-    void list_sub_directory(ext2fs_inode_structure *inode, int offset);
+    uint64_t get_inode_block_map(ext2fs_inode inode_struct, uint64_t block_id);
+    void list_sub_directory(ext2fs_inode inode, int offset);
 
 public:
     ext2fs();

@@ -1,6 +1,7 @@
 #pragma once
 #include <arch.h>
 #include <backtrace.h>
+#include <filesystem/userspace_fs.h>
 #include <process_context.h>
 #include <stdint.h>
 #define MAX_PROCESS 64
@@ -68,6 +69,7 @@ struct process
     bool user;
     process_buffer pr_buff[3];
     backtrace process_backtrace;
+    per_process_userspace_fs ufs;
 };
 
 struct message_identifier

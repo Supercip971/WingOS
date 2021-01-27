@@ -1,5 +1,6 @@
 #pragma once
 #include <filesystem/partition/base_partition.h>
+#include <filesystem/userspace_fs.h>
 #include <lock.h>
 #include <logging.h>
 #include <stdint.h>
@@ -65,9 +66,3 @@ public:
     void init_file_system();
     static main_fs_system *the();
 };
-
-size_t fs_read(int fd, void *buffer, size_t count);
-size_t fs_write(int fd, const void *buffer, size_t count);
-int fs_open(const char *path_name, int flags, int mode);
-int fs_close(int fd);
-size_t fs_lseek(int fd, size_t offset, int whence);

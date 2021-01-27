@@ -1,7 +1,7 @@
 #pragma once
 #include <arch.h>
 #include <general_device.h>
-#include <int_value.h>
+#include <stdint.h>
 enum COM_PORT
 {
     COM1 = 0x3F8,

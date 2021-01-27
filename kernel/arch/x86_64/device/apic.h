@@ -1,7 +1,7 @@
 #pragma once
 #include <device/acpi.h>
 #include <device/madt.h>
-#include <int_value.h>
+#include <stdint.h>
 #define LAPIC_ENABLE (1 << 10)
 enum apic_register
 {

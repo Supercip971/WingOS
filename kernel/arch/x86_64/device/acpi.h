@@ -1,5 +1,5 @@
 #pragma once
-#include <int_value.h>
+#include <stdint.h>
 
 // https://wiki.osdev.org/RSDP
 struct RSDP_descriptor_10

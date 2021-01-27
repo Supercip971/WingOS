@@ -4,10 +4,10 @@
 #include <backtrace.h>
 #include <device/apic.h>
 #include <gdt.h>
-#include <int_value.h>
 #include <interrupt.h>
 #include <process.h>
 #include <smp.h>
+#include <stdint.h>
 #include <virtual.h>
 struct process;
 class cpu

@@ -1,8 +1,8 @@
 #pragma once
 #include <arch.h>
 #include <backtrace.h>
-#include <int_value.h>
 #include <process_context.h>
+#include <stdint.h>
 #define MAX_PROCESS 64
 #define SLEEP_ALWAYS ((uint64_t)-1)
 

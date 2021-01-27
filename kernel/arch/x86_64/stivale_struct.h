@@ -1,5 +1,5 @@
 #pragma once
-#include <int_value.h>
+#include <stdint.h>
 struct stivale_header
 {
     // stack pointer that's going to be loaded

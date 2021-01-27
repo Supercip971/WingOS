@@ -1,8 +1,8 @@
 #pragma once
 
-#include <int_value.h>
 #include <logging.h>
 #include <stddef.h>
+#include <stdint.h>
 int isdigit(int c);
 char *strtok(char *s, const char *delm);
 

@@ -1,8 +1,8 @@
 
 
 #include <arch.h>
-#include <int_value.h>
 #include <pic.h>
+#include <stdint.h>
 
 void pic_init()
 {

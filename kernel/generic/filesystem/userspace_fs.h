@@ -12,6 +12,13 @@ struct filesystem_file_t
     int state;
 };
 
+struct per_process_userspace_fs
+{
+    static const int ram_files_count = 16;
+    ram_file *ram_files[ram_files_count]; // in this we have stdio / stdin / stderr ...
+};
+
+
 size_t fs_read(int fd, void *buffer, size_t count);
 size_t fs_write(int fd, const void *buffer, size_t count);
 int fs_open(const char *path_name, int flags, int mode);

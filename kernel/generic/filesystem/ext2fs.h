@@ -119,8 +119,10 @@ class ext2fs_inode
 public:
     ext2fs_inode_structure strct;
     size_t id;
+    size_t last_free_gid;
     ext2fs_inode()
     {
+        last_free_gid = 0;
         id = 0;
         strct = {0};
     };
@@ -172,20 +174,32 @@ class ext2fs : public file_system
     uint64_t block_size;
     uint64_t offset; // offset with the partition
 
-    ext2fs_block_group_descriptor read_group(uint64_t inode);
+    ext2fs_block_group_descriptor read_group_from_inode(uint64_t inode);
+    void write_group_from_inode(uint64_t inode, ext2fs_block_group_descriptor group);
+
+    ext2fs_block_group_descriptor read_group_from_group_id(uint64_t gid);
+    void write_group_from_group_id(uint64_t gid, ext2fs_block_group_descriptor group);
+    void clear_block(size_t block_addr);
     bool inode_read(void *buffer, uint64_t cursor, uint64_t count, ext2fs_inode parent);
+    bool inode_write(const void *buffer, uint64_t cursor, uint64_t count, ext2fs_inode parent);
     void read_block(uint64_t block_id, uint8_t *buffer);
     void read_blocks(uint64_t block_id, uint64_t length, uint8_t *buffer);
     uint64_t get_folder(uint64_t folder_id);
     uint64_t get_simple_file(const char *name, uint64_t forced_parent = -1);
     uint32_t *create_inode_block_map(ext2fs_inode inode_struct);
     ext2fs_inode get_inode(uint64_t inode);
+    bool write_inode(ext2fs_inode inode);
     uint8_t *ext_read_file(const char *path);
     ext2fs_inode get_file(const char *path);
     ext2fs_inode find_subdir(ext2fs_inode inode_struct, const char *name);
     void print_ext2_feature();
     uint64_t get_inode_block_map(ext2fs_inode inode_struct, uint64_t block_id);
     void list_sub_directory(ext2fs_inode inode, int offset);
+    void resize_file(ext2fs_inode &inode, uint64_t new_size);
+
+    uint64_t alloc_block_for_inode(ext2fs_inode &inode);
+
+    void add_inode_block_map(ext2fs_inode &inode_struct, uint32_t block_addr);
 
 public:
     ext2fs();
@@ -200,6 +214,7 @@ public:
     }
 
     virtual uint64_t read_file(const char *path, uint64_t at, uint64_t size, uint8_t *buffer) override;
+    virtual uint64_t write_file(const char *path, uint64_t at, uint64_t size, const uint8_t *buffer) override;
     // mainly not implemented
     //    virtual fs_file *get_file(const char *path) override;
 

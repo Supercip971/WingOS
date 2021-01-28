@@ -38,7 +38,7 @@ void ext2fs::read_blocks(uint64_t block_id, uint64_t length, uint8_t *buffer)
         get_io_device(0)->read((buffer + ((block_size * i))), ((block_size) / 512), (offset + ((block_id + i) * block_size)) / 512);
     }
 }
-ext2fs_block_group_descriptor ext2fs::read_group(uint64_t inode)
+ext2fs_block_group_descriptor ext2fs::read_group_from_inode(uint64_t inode)
 {
     uint64_t current_block_group = (inode - 1) / super_block->inode_count_per_group;
     uint64_t block_group_start = block_group_descriptor_table * block_size;
@@ -49,6 +49,35 @@ ext2fs_block_group_descriptor ext2fs::read_group(uint64_t inode)
     ext2fs_block_group_descriptor rgroup = *group;
     free(group);
     return rgroup;
+}
+
+void ext2fs::write_group_from_inode(uint64_t inode, ext2fs_block_group_descriptor group)
+{
+    uint64_t current_block_group = (inode - 1) / super_block->inode_count_per_group;
+    uint64_t block_group_start = block_group_descriptor_table * block_size;
+
+    uint64_t group_offset = block_group_start + ((sizeof(ext2fs_block_group_descriptor) * current_block_group));
+    get_io_device(0)->write_unaligned((uint8_t *)(&group), sizeof(ext2fs_block_group_descriptor), offset + group_offset);
+}
+ext2fs_block_group_descriptor ext2fs::read_group_from_group_id(uint64_t gid)
+{
+    uint64_t current_block_group = gid;
+    uint64_t block_group_start = block_group_descriptor_table * block_size;
+
+    ext2fs_block_group_descriptor *group = (ext2fs_block_group_descriptor *)malloc(sizeof(ext2fs_block_group_descriptor));
+    uint64_t group_offset = block_group_start + ((sizeof(ext2fs_block_group_descriptor) * current_block_group));
+    get_io_device(0)->read_unaligned((uint8_t *)(group), sizeof(ext2fs_block_group_descriptor), offset + group_offset);
+    ext2fs_block_group_descriptor rgroup = *group;
+    free(group);
+    return rgroup;
+}
+void ext2fs::write_group_from_group_id(uint64_t gid, ext2fs_block_group_descriptor group)
+{
+    uint64_t current_block_group = gid;
+    uint64_t block_group_start = block_group_descriptor_table * block_size;
+
+    uint64_t group_offset = block_group_start + ((sizeof(ext2fs_block_group_descriptor) * current_block_group));
+    get_io_device(0)->write_unaligned((uint8_t *)(&group), sizeof(ext2fs_block_group_descriptor), offset + group_offset);
 }
 
 bool ext2fs::inode_read(void *buffer, uint64_t cursor, uint64_t count, ext2fs_inode parent)
@@ -70,10 +99,37 @@ bool ext2fs::inode_read(void *buffer, uint64_t cursor, uint64_t count, ext2fs_in
         { // if the block is too big
             chunk_size_to_read = block_size - block_offset;
         }
+        auto block = get_inode_block_map(parent, current_block);
 
-        // log("ext2fs", LOG_INFO) << "reading inode " << chunk_size_to_read << "offset" << block_offset << " super block size " << block_size << "with block" << current_block << "readed" << readed << "count" << count;
-        get_io_device(0)->read_unaligned((uint8_t *)buffer + readed, chunk_size_to_read, (offset + (get_inode_block_map(parent, current_block) * block_size)) + block_offset);
+        //  log("ext2fs", LOG_INFO) << "reading inode " << chunk_size_to_read << "offset" << block << "with block" << current_block << "readed" << readed << "count" << count;
+        get_io_device(0)->read_unaligned((uint8_t *)buffer + readed, chunk_size_to_read, (offset + (block * block_size)) + block_offset);
         readed += chunk_size_to_read;
+    }
+    return true;
+}
+bool ext2fs::inode_write(const void *buffer, uint64_t cursor, uint64_t count, ext2fs_inode parent)
+{
+    for (uint64_t writed = 0; writed < count;)
+    {
+        uint64_t current_block = 0;
+        uint64_t block_offset = 0;
+        current_block = (cursor + writed) / block_size;
+        if (current_block > parent.strct.block_count)
+        {
+            log("ext2fs", LOG_ERROR) << "trying to write out of bound of block at" << current_block << ">" << parent.strct.block_count;
+            break;
+        }
+        uint64_t chunk_size_to_write = count - writed;
+
+        block_offset = (cursor + writed) % block_size;
+        if (chunk_size_to_write > block_size - block_offset)
+        { // if the block is too big
+            chunk_size_to_write = block_size - block_offset;
+        }
+        auto block = get_inode_block_map(parent, current_block);
+        //  log("ext2fs", LOG_INFO) << "writing inode " << chunk_size_to_write << "offset" << block << " super block size " << block_size << " with block " << current_block << " writed " << writed << " count " << count;
+        get_io_device(0)->write_unaligned((uint8_t *)buffer + writed, chunk_size_to_write, (offset + (block * block_size)) + block_offset);
+        writed += chunk_size_to_write;
     }
     return true;
 }
@@ -124,6 +180,68 @@ uint64_t ext2fs::get_inode_block_map(ext2fs_inode inode_struct, uint64_t block_i
         }
     }
     return r;
+}
+void ext2fs::add_inode_block_map(ext2fs_inode &inode_struct, uint32_t block_addr)
+{
+    if (inode_struct.strct.flag & 0x80000)
+    {
+        log("ext2fs", LOG_ERROR) << "not supported file flag EXTENT FLAG";
+    };
+    uint64_t entry_per_blkc = block_size / sizeof(uint32_t);
+    uint64_t block_id = inode_struct.strct.block_count - 1;
+    inode_struct.strct.block_count++;
+
+    log("ext2fs", LOG_INFO) << "adding block" << inode_struct.strct.block_count - 1 << " at " << block_addr;
+    if (block_id < 12)
+    {
+        inode_struct.strct.block_ptr[block_id] = block_addr;
+        write_inode(inode_struct);
+        return;
+    }
+    // indirect block start after block 13
+    else if ((block_id - 12) < entry_per_blkc)
+    { // indirect block
+        if (block_id - 1 < 12)
+        { // create for single indirection
+            inode_struct.strct.singly_indirect_block_ptr = alloc_block_for_inode(inode_struct);
+        }
+        uint32_t nid = block_id - 12;
+        get_io_device(0)->write_unaligned((uint8_t *)(&block_addr), sizeof(uint32_t), offset + inode_struct.strct.singly_indirect_block_ptr * block_size + (nid * sizeof(uint32_t)));
+        write_inode(inode_struct);
+        return;
+    }
+    // double indirect block start after (entry per block)
+    else if (((block_id - 12) / entry_per_blkc) < entry_per_blkc)
+    { // double indirect
+        if ((block_id - 1) < entry_per_blkc)
+        { // create for single indirection
+            inode_struct.strct.doubly_indirect_block_ptr = alloc_block_for_inode(inode_struct);
+        }
+        uint32_t nid = (block_id - (12 + entry_per_blkc));
+        uint32_t block_idx = nid / entry_per_blkc;
+        uint32_t indirect_block_id = 0;
+        uint32_t sub_entry = nid % entry_per_blkc;
+        get_io_device(0)->read_unaligned((uint8_t *)(&indirect_block_id), sizeof(uint32_t), offset + inode_struct.strct.doubly_indirect_block_ptr * block_size + (block_idx * sizeof(uint32_t)));
+        if (indirect_block_id == 0)
+        {
+
+            indirect_block_id = alloc_block_for_inode(inode_struct);
+            get_io_device(0)->write_unaligned((uint8_t *)(&indirect_block_id), sizeof(uint32_t), offset + inode_struct.strct.doubly_indirect_block_ptr * block_size + (block_idx * sizeof(uint32_t)));
+        }
+        get_io_device(0)->write_unaligned(
+            (uint8_t *)(&block_addr),
+            sizeof(uint32_t),
+            offset + indirect_block_id * block_size + ((sub_entry) * sizeof(uint32_t)));
+        write_inode(inode_struct);
+        return;
+    }
+    else
+    {
+        log("ext2fs", LOG_WARNING) << "no support for writing triple indirect block" << block_id;
+        while (true)
+        {
+        }
+    }
 }
 uint32_t *ext2fs::create_inode_block_map(ext2fs_inode inode_struct)
 {
@@ -200,6 +318,23 @@ ext2fs_inode ext2fs::get_inode(uint64_t inode)
     free(ret);
     rret.id = inode;
     return rret;
+}
+bool ext2fs::write_inode(ext2fs_inode inode)
+{
+    uint64_t current_block_group = (inode.id - 1) / super_block->inode_count_per_group;
+    uint64_t inside_block_group = (inode.id - 1) % super_block->inode_count_per_group;
+    uint64_t block_group_start = block_group_descriptor_table * block_size;
+
+    uint64_t inode_size = super_block->inode_size;
+
+    ext2fs_block_group_descriptor *group = (ext2fs_block_group_descriptor *)malloc(sizeof(ext2fs_block_group_descriptor));
+    uint64_t group_offset = block_group_start + ((sizeof(ext2fs_block_group_descriptor) * current_block_group));
+    get_io_device(0)->read_unaligned((uint8_t *)(group), sizeof(ext2fs_block_group_descriptor), offset + group_offset);
+
+    uint64_t inode_offset = (group->inode_table * block_size) + (inode_size * inside_block_group);
+    get_io_device(0)->write_unaligned((uint8_t *)(&inode.strct), sizeof(ext2fs_inode_structure), offset + inode_offset);
+    free(group);
+    return true;
 }
 bool ext2fs::is_valid_ext2fs_entry(uint64_t start_sector)
 {
@@ -353,6 +488,7 @@ ext2fs_inode ext2fs::get_file(const char *path)
             log("ext2fs", LOG_WARNING) << "can't find file " << path << " with " << searching_file;
 
             free(searching_file);
+            return ext2fs_inode();
         }
         else
         {
@@ -476,11 +612,113 @@ uint64_t ext2fs::read_file(const char *path, uint64_t at, uint64_t size, uint8_t
     unlock((&l));
     return readed_size;
 }
+uint64_t ext2fs::write_file(const char *path, uint64_t at, uint64_t size, const uint8_t *buffer)
+{
+
+    flock((&l));
+    auto f = get_file(path);
+    if (!f.is_valid())
+    {
+        log("ext2fs", LOG_WARNING) << "can't find file " << path << " for " << __PRETTY_FUNCTION__;
+
+        unlock((&l));
+        return 0;
+    }
+    uint64_t write_size = size + at;
+
+    if (f.strct.block_count * block_size < (write_size))
+    {
+        /*   resize_file(f, write_size); */
+        log("ext2fs", LOG_WARNING) << "can't resize file " << path;
+        return 0;
+    }
+    else if (f.strct.lower_size < write_size)
+    {
+        f.strct.lower_size = write_size;
+    }
+    write_inode(f);
+    log("ext2fs", LOG_INFO) << "disk write " << path;
+    inode_write(buffer, at, size, f);
+    // uint8_t *buffer_copy = (uint8_t *)malloc(write_size + 12);
+    log("ext2fs", LOG_INFO) << "disk write end " << path;
+
+    unlock((&l));
+    return size;
+}
+uint64_t ext2fs::alloc_block_for_inode(ext2fs_inode &inode)
+{
+    auto group = read_group_from_inode(inode.id);
+    size_t gid = get_group_from_inode(inode.id);
+    if (group.free_block < 1)
+    {
+        while (group.free_block < 1)
+        {
+            group = read_group_from_group_id(gid);
+            log("ext2fs", LOG_WARNING) << "group haven't free blocks" << gid;
+            gid++;
+        }
+    }
+    log("ext2fs", LOG_INFO) << "block group size " << super_block->block_count_per_group * block_size;
+
+    uint8_t *bitmap = (uint8_t *)malloc(block_size);
+    memzero(bitmap, block_size);
+    get_io_device(0)->read_unaligned(bitmap, block_size, group.block_bitmap * block_size + offset);
+    uint64_t start_block = 0;
+    bool founded = false;
+    for (size_t i = 0; i < block_size; i++)
+    { // find free block
+        if (!get_bit(bitmap, i))
+        {
+            start_block = i;
+            founded = true;
+            break;
+        }
+    }
+    if (!founded)
+    {
+        log("ext2fs", LOG_ERROR) << "group haven't free blocks founded " << gid;
+        return false;
+    }
+    // set founded block as used
+    set_bit(bitmap, start_block, 1);
+    group.free_block -= 1;
+
+    write_group_from_group_id(gid, group);
+
+    get_io_device(0)->write_unaligned(bitmap, block_size, group.block_bitmap * block_size + offset);
+    uint64_t block_offset = (super_block->block_count_per_group * gid) + (start_block);
+    free(bitmap);
+    clear_block(block_offset);
+
+    return block_offset;
+}
+void ext2fs::clear_block(size_t block_addr)
+{
+    uint8_t *block_data = new uint8_t[block_size];
+    memzero(block_data, block_size);
+    get_io_device(0)->write_unaligned(block_data, block_size, block_addr * block_size + offset);
+    delete[] block_data;
+}
+void ext2fs::resize_file(ext2fs_inode &inode, uint64_t new_size)
+{
+    uint64_t block_diff = (new_size - inode.strct.lower_size) / block_size;
+    log("ext2fs", LOG_INFO) << "resizing inode" << inode.id << "from" << inode.strct.lower_size << "to " << new_size << " new block count " << block_diff;
+    block_diff++;
+    for (uint64_t i = 0; i < block_diff; i++)
+    {
+        auto res = alloc_block_for_inode(inode);
+        log("ext2fs", LOG_INFO) << "alloc block ret " << res;
+        add_inode_block_map(inode, res);
+        log("ext2fs", LOG_INFO) << "alloc block rret " << get_inode_block_map(inode, inode.strct.block_count - 1);
+    }
+    inode.strct.block_count += block_diff;
+    write_inode(inode);
+}
 constexpr uint64_t ext2fs::get_group_from_inode(uint64_t inode)
 {
-    return inode / inode_per_group;
+    return (inode - 1) / super_block->inode_count_per_group;
 }
 constexpr uint64_t ext2fs::get_local_group_inode_from_inode(uint64_t inode)
 {
-    return inode % inode_per_group;
+    return (inode - 1) % super_block->inode_count_per_group;
 }

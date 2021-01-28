@@ -20,6 +20,7 @@ namespace sys
 
         uint64_t get_cursor_pos() { return fcurrent_seek_pos; };
         size_t read(uint8_t *buffer, uint64_t length);
+        size_t write(const uint8_t *buffer, uint64_t length);
 
         void open(const char *path);
         void close();

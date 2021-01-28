@@ -207,13 +207,13 @@ generic_io_device::io_rw_output ahci_ata_device::read(uint8_t *data, uint64_t co
         }
         if (port->interrupt_status & TASK_FILE_ERROR)
         {
-            log("ahci", LOG_ERROR) << "ata device task file error";
+            log("ahci", LOG_ERROR) << "ata device task file error while reading at" << cursor << " count " << count;
             return io_rw_output::io_ERROR;
         }
     }
     if (port->interrupt_status & TASK_FILE_ERROR)
     {
-        log("ahci", LOG_ERROR) << "ata device task file error";
+        log("ahci", LOG_ERROR) << "ata device task file error while reading at" << cursor << " count " << count;
         return io_rw_output::io_ERROR;
     }
     end_command();
@@ -281,13 +281,13 @@ generic_io_device::io_rw_output ahci_ata_device::write(uint8_t *data, uint64_t c
         }
         if (port->interrupt_status & TASK_FILE_ERROR)
         {
-            log("ahci", LOG_ERROR) << "ata device task file error";
+            log("ahci", LOG_ERROR) << "ata device task file error while writing at" << cursor << " count " << count;
             return io_rw_output::io_ERROR;
         }
     }
     if (port->interrupt_status & TASK_FILE_ERROR)
     {
-        log("ahci", LOG_ERROR) << "ata device task file error";
+        log("ahci", LOG_ERROR) << "ata device task file error while writing at" << cursor << " count " << count;
         return io_rw_output::io_ERROR;
     }
     end_command();

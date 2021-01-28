@@ -45,3 +45,24 @@ inline void *memcpy(void *dst, const void *src, uint64_t len)
     }
     return dst;
 }
+
+inline uint8_t get_bit(uint8_t *bitmap, size_t bit_id)
+{
+    size_t bitmap_idx = bit_id / 8;
+    size_t bit_idx = bit_id % 8;
+    return bitmap[bitmap_idx] & (1 << bit_idx);
+}
+inline void set_bit(uint8_t *bitmap, size_t bit_id, uint8_t value)
+{
+    size_t bitmap_idx = bit_id / 8;
+    size_t bit_idx = bit_id % 8;
+    if (value)
+    {
+
+        bitmap[bitmap_idx] |= (1 << bit_idx);
+    }
+    else
+    {
+        bitmap[bitmap_idx] &= ~(1 << bit_idx);
+    }
+}

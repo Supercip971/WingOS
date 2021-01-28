@@ -211,6 +211,7 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
     init_process_message(process_to_add);
     init_process_stackframe(process_to_add, entry_point);
     init_process_buffers(process_to_add);
+    init_process_userspace_fs(process_to_add->ufs);
 
     process_to_add->entry_point = (uint64_t)entry_point;
 
@@ -565,14 +566,12 @@ void rename_process(const char *name, uint64_t pid)
     uint64_t kpid = upid_to_kpid(pid);
     log("process", LOG_INFO) << "renamming process: " << process_array[kpid].process_name << " to : " << name;
 
-    lock(&lck_syscall); // turn off syscall
     lock_process();
     memcpy(process_array[kpid].backed_name, process_array[kpid].process_name, 128);
     memzero(process_array[kpid].process_name, 128);
     memcpy(process_array[kpid].process_name, name, strlen(name) + 1);
 
     unlock_process();
-    unlock(&lck_syscall);
 }
 
 bool add_process_buffer(process_buffer *buf, uint64_t data_length, uint8_t *raw)

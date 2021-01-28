@@ -173,7 +173,6 @@ uint64_t launch_programm(const char *path, file_system *file_sys)
 {
     lock(&file_sys->fs_lock); // make sure that the fs lock is locked
     lock_process();
-    unlock(&file_sys->fs_lock);
     log("prog launcher", LOG_DEBUG) << "launching programm : " << path;
     uint8_t *programm_code = file_sys->read_file(path);
 
@@ -199,6 +198,7 @@ uint64_t launch_programm(const char *path, file_system *file_sys)
     }
 
     to_launch->current_process_state = process_state::PROCESS_WAITING;
+    unlock(&file_sys->fs_lock);
     unlock_process();
     return to_launch->upid;
 }

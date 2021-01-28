@@ -43,6 +43,11 @@ int ram_file::write(const void *buffer, size_t offset, size_t count)
 }
 
 /*
+ram_file* ram_dir::get(const char *full_path){
+    log("ram dir", LOG_ERROR) << "can't use " << __PRETTY_FUNCTION__ << " in file " << get_base() << " in process" << get_current_cpu_process()->process_name;
+    return nullptr;
+}
+*/
 #define MAX_FILE_HANDLE 255
 filesystem_file_t fs_handle_table[MAX_FILE_HANDLE];
 

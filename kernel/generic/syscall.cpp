@@ -6,40 +6,59 @@
 lock_type lck_syscall = {0};
 typedef uint64_t (*syscall_functions)(uint64_t syscall_id, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5);
 InterruptStackFrame *stakframe_testing;
-uint64_t sys$null(uint64_t arg1, uint64_t arg2)
+uint64_t sys$null(const char *arg1)
 {
-    //  log("syscall", LOG_INFO) << "receive null syscall with arg1 : " << arg1 << "arg 2 : " << arg2;
+    log(get_current_cpu_process()->process_name, LOG_INFO) << arg1;
+
     return 32;
 }
 process_message *sys$send_message(uintptr_t data_addr, uint64_t data_length, const char *to_process)
 {
+    lock(&lck_syscall);
     auto res = send_message(data_addr, data_length, to_process);
 
+    unlock(&lck_syscall);
     return res;
 }
 process_message *sys$read_message()
 {
-    return read_message();
+    lock(&lck_syscall);
+    auto v = read_message();
+
+    unlock(&lck_syscall);
+    return v;
 }
 uint64_t sys$message_response(process_message *identifier)
 {
-    return message_response(identifier);
+    lock(&lck_syscall);
+    auto v = message_response(identifier);
+
+    unlock(&lck_syscall);
+    return v;
 }
 uint64_t sys$get_process_global_data(const char *target, uint64_t offset, uint64_t length)
 {
+
+    lock(&lck_syscall);
+    uintptr_t v = 0;
     if (target == nullptr)
     {
-        return (uintptr_t)get_current_process_global_data(offset, length);
+        v = (uintptr_t)get_current_process_global_data(offset, length);
     }
     else
     {
-        return (uintptr_t)get_process_global_data_copy(offset, target);
+        v = (uintptr_t)get_process_global_data_copy(offset, target);
     }
+
+    unlock(&lck_syscall);
+    return v;
 }
 process_message *sys$send_message_pid(uintptr_t data_addr, uint64_t data_length, uint64_t to_process)
 {
+    lock(&lck_syscall);
     auto res = send_message_pid(data_addr, data_length, to_process);
 
+    unlock(&lck_syscall);
     return res;
 }
 void *sys$alloc(uint64_t count)
@@ -101,13 +120,11 @@ uint64_t syscall(uint64_t syscall_id, uint64_t arg1, uint64_t arg2, uint64_t arg
     }
     else
     {
-        flock(&lck_syscall);
         stakframe_testing = stackframe;
         //  log("syscall", LOG_INFO) << "syscall " << syscall_id << "from : " << get_current_cpu()->current_process->process_name;
         uint64_t (*func)(uint64_t, ...) = reinterpret_cast<uint64_t (*)(uint64_t, ...)>(syscalls[syscall_id]);
 
         uint64_t res = func(arg1, arg2, arg3, arg4, arg5);
-        unlock(&lck_syscall);
         return res;
     }
 }

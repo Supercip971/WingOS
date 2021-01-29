@@ -15,7 +15,14 @@ enum syscall_codes
     FILE_CLOSE = 9,
     FILE_READ = 10,
     FILE_WRITE = 11,
-    FILE_SEEK = 12
+    FILE_SEEK = 12,
+    NANO_SLEEP = 13,
+};
+typedef long int time_t;
+struct timespec
+{
+    time_t tv_sec; /* time in seconds */
+    long tv_nsec;  /* time in nanoseconds */
 };
 extern lock_type lck_syscall;
 

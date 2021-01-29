@@ -91,6 +91,13 @@ size_t sys$lseek(int fd, size_t offset, int whence)
 {
     return fs_lseek(fd, offset, whence);
 }
+
+int sys$nano_sleep(const timespec *request, timespec *remaning)
+{
+    uint64_t total_time = request->tv_nsec / 1000000 + request->tv_sec * 1000;
+    sleep(total_time);
+    return 0;
+}
 static void *syscalls[] = {
     (void *)sys$null,
     (void *)sys$send_message,
@@ -105,6 +112,7 @@ static void *syscalls[] = {
     (void *)sys$read,
     (void *)sys$write,
     (void *)sys$lseek,
+    (void *)sys$nano_sleep,
 };
 uint64_t syscalls_length = sizeof(syscalls) / sizeof(void *);
 void init_syscall()

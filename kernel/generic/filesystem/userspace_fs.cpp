@@ -17,6 +17,7 @@ enum file_system_file_state
 
 };
 ram_file rmf;
+ram_dir *ram_directory[1];
 void init_process_userspace_fs(per_process_userspace_fs &target)
 {
     lock(&handle_lock);
@@ -31,6 +32,33 @@ void init_process_userspace_fs(per_process_userspace_fs &target)
     target.ram_files[3] = new std_stdin_file();
     unlock(&handle_lock);
 }
+
+ram_file *process_ramdir::get(const char *msg)
+{
+    msg += strlen("/proc/");
+
+    auto pid = atoi(msg);
+    if (upid_to_kpid(pid) == (uint64_t)-1)
+    {
+        log("ram_dir", LOG_INFO) << "invalid pid for path /proc/" << pid << "for path+" << msg;
+        return nullptr;
+    }
+    for (; *msg != '/'; msg++)
+        ;
+    if (strncmp(msg, "/fd/", 4) == 0)
+    {
+        msg += 4;
+        int fd = atoi(msg);
+
+        log("ram_dir", LOG_INFO) << "getting buffer" << fd << "of process" << pid << "for path+" << msg;
+        return process_array[upid_to_kpid(pid)].ufs.ram_files[fd];
+    }
+    else
+    {
+        return nullptr;
+    }
+}
+
 size_t ram_file::read(void *buffer, size_t offset, size_t count)
 {
     log("ram file", LOG_ERROR) << "can't use " << __PRETTY_FUNCTION__ << " in file " << get_npath() << " in process" << get_current_cpu_process()->process_name;
@@ -115,6 +143,7 @@ filesystem_file_t fs_handle_table[MAX_FILE_HANDLE];
 
 void init_userspace_fs()
 {
+    ram_directory[0] = new process_ramdir();
     for (int i = 0; i < MAX_FILE_HANDLE; i++)
     {
         fs_handle_table[i].state = FS_STATE_FREE;
@@ -284,6 +313,31 @@ int fs_open(const char *path_name, int flags, int mode)
         fs_handle_table[fd].ram_file = true;
         fs_handle_table[fd].file = get_ram_file(path_name);
         return fd;
+    }
+    else if (main_fs_system::the()->main_fs()->get_file_length(path_name) == (uint64_t)-1)
+    {
+        ram_dir *target = nullptr;
+        for (size_t i = 0; i < sizeof(ram_directory) / sizeof(ram_directory[0]); i++)
+        {
+            if (strncmp(ram_directory[i]->get_path(), path_name, strlen(ram_directory[i]->get_path())) == 0)
+            {
+                target = ram_directory[i];
+                break;
+            }
+        }
+        if (target == nullptr)
+        {
+
+            log("fs", LOG_WARNING) << "process " << get_current_cpu_process()->process_name << " trying to open file" << path_name << "but it doesn't exits";
+
+            return -1;
+        }
+        else
+        {
+            fs_handle_table[fd].ram_file = true;
+            fs_handle_table[fd].file = target->get(path_name);
+            return fd;
+        }
     }
     else
     {

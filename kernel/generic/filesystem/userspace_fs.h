@@ -58,6 +58,20 @@ public:
     virtual const char *get_npath() { return "/dev/stdout"; };
 };
 
+class ram_dir
+{
+public:
+    virtual const char *get_path() { return "invalid path"; };
+    virtual ram_file *get(const char *msg) { return nullptr; };
+};
+
+class process_ramdir : public ram_dir
+{
+public:
+    virtual const char *get_path() { return "/proc/"; };
+    virtual ram_file *get(const char *msg);
+};
+
 struct per_process_userspace_fs
 {
     static const int ram_files_count = 16;

@@ -1,7 +1,6 @@
 #pragma once
 #include <stdint.h>
-
-typedef long int time_t;
+#include <time.h>
 namespace sys
 {
 

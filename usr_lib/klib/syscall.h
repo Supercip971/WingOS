@@ -2,6 +2,7 @@
 #include <klib/process_message.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <time.h>
 namespace sys
 {
 
@@ -20,6 +21,7 @@ namespace sys
         FILE_READ = 10,
         FILE_WRITE = 11,
         FILE_SEEK = 12,
+        NANO_SLEEP = 13,
     };
 
     __attribute__((optimize("O0"), always_inline)) inline uint64_t syscall(uint64_t syscall_id, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5)
@@ -88,6 +90,11 @@ namespace sys
     static inline size_t sys$lseek(int fd, size_t offset, int whence)
     {
         return syscall((uint64_t)syscall_codes::FILE_SEEK, fd, offset, whence, 0, 0);
+    }
+    static inline int sys$nano_sleep(const timespec *request, timespec *remaning)
+    {
+
+        return syscall((uintptr_t)syscall_codes::NANO_SLEEP, (uintptr_t)request, (uintptr_t)remaning, 0, 0, 0);
     }
 
 } // namespace sys

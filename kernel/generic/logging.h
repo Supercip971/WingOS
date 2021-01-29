@@ -1,6 +1,7 @@
 #pragma once
 #include <com.h>
 #include <print.h>
+#include <stddef.h>
 #include <stdint.h>
 enum log_state
 {
@@ -23,9 +24,20 @@ private:
     };
 
 public:
+    logging();
+    ~logging();
     void set_log_type(const char *data, log_state log_state);
     template <typename T>
     logging operator<<(T data);
+};
+
+class range_str
+{
+
+public:
+    const char *rdata;
+    size_t rlength;
+    range_str(const char *data, size_t size) : rdata(data), rlength(size){};
 };
 
 template <>
@@ -42,4 +54,6 @@ template <>
 logging logging::operator<<(char data);
 template <>
 logging logging::operator<<(unsigned char data);
+template <>
+logging logging::operator<<(range_str data);
 logging log(const char *data, log_state color_mode);

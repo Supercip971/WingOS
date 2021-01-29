@@ -1,7 +1,7 @@
 
 #include <device/local_data.h>
+#include <kernel.h>
 #include <logging.h>
-
 void logging::set_log_type(const char *data, log_state log_state)
 {
     uint64_t pid = 0;
@@ -18,13 +18,21 @@ void logging::set_log_type(const char *data, log_state log_state)
     }
     printf(log_type_table[log_state], current_cpu, pid, data);
 }
+lock_type log_lock;
+logging::logging()
+{
+}
+logging::~logging()
+{
+}
 logging main_logging_system;
 logging log(const char *data, log_state color_mode)
 {
-
-    main_logging_system.set_log_type(data, color_mode);
-    return main_logging_system;
+    logging log = logging();
+    log.set_log_type(data, color_mode);
+    return log;
 }
+
 template <>
 logging logging::operator<<(void *data)
 {
@@ -91,5 +99,11 @@ template <>
 logging logging::operator<<<unsigned char>(unsigned char data)
 {
     printf(" %x ", data);
+    return *this;
+}
+template <>
+logging logging::operator<<<range_str>(range_str data)
+{
+    find_device<debug_device>()->echo_out(data.rdata, data.rlength);
     return *this;
 }

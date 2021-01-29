@@ -17,6 +17,7 @@ enum syscall_codes
     FILE_WRITE = 11,
     FILE_SEEK = 12,
     NANO_SLEEP = 13,
+    GET_PID = 14,
 };
 typedef long int time_t;
 struct timespec

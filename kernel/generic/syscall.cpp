@@ -98,6 +98,10 @@ int sys$nano_sleep(const timespec *request, timespec *remaning)
     sleep(total_time);
     return 0;
 }
+size_t sys$getpid()
+{
+    return get_current_cpu_process()->upid;
+}
 static void *syscalls[] = {
     (void *)sys$null,
     (void *)sys$send_message,
@@ -113,6 +117,7 @@ static void *syscalls[] = {
     (void *)sys$write,
     (void *)sys$lseek,
     (void *)sys$nano_sleep,
+    (void *)sys$getpid,
 };
 uint64_t syscalls_length = sizeof(syscalls) / sizeof(void *);
 void init_syscall()

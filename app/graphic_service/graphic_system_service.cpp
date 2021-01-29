@@ -15,7 +15,7 @@
 // [!] EVERYTHING HERE WILL BE DIVIDED IN MULTIPLE FILE FOR THE MOMENT IT IS LIKE THAT
 // [!] I WILL CLEAN UP EVERYTHING WHEN I WILL BE ABLE JUST TO CLEAR A WINDOW FROM AN APPLICATION
 void loop();
-int main()
+int main(int argc, char **argv)
 {
     printf("started graphics \n");
     loop();

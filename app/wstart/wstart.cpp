@@ -6,7 +6,7 @@
 #include <klib/process_message.h>
 #include <klib/syscall.h>
 #include <stdio.h>
-int main()
+int main(int argc, char **argv)
 {
     sys::file f = sys::file("init_fs/startup.json");
     uint8_t *t = new uint8_t[f.get_file_length() + 2];

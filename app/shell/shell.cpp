@@ -26,7 +26,7 @@ uint64_t interpret(sys::shell_protocol *protocol)
     }
     return 1;
 }
-int main()
+int main(int argc, char **argv)
 {
     while (true)
     {

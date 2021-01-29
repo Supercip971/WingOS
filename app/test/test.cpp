@@ -15,7 +15,7 @@ void click(uint64_t t)
 {
     printf("%x \n", t);
 }
-int main()
+int main(int argc, char **argv)
 {
     printf("starting test.exe \n");
     printf("hello world ! <3 \n");

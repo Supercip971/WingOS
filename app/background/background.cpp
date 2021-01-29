@@ -11,7 +11,8 @@
 #include <klib/raw_graphic.h>
 #include <stdio.h>
 #include <stdlib.h>
-int main()
+#include <string.h>
+int main(int argc, char **argv)
 {
     sys::graphic_context gc(sys::get_screen_width(), sys::get_screen_height(), "background");
     int texWidth, texHeight, texChannels;

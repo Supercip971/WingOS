@@ -1,5 +1,5 @@
 
-ENTRY(main)
+ENTRY(__entry_point)
 OUTPUT_FORMAT(elf64-x86-64)
 SECTIONS
 {

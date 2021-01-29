@@ -12,7 +12,7 @@
 
 void add_kernel_service(func entry, const char *service_name)
 {
-    log("kernel service", LOG_INFO) << "launching service : " << service_name;
+    //   log("kernel service", LOG_INFO) << "launching service : " << service_name;
 
     process *service = init_process((func)entry, true, service_name, false, AUTO_SELECT_CPU);
     while (service->kpid == 0)
@@ -26,9 +26,9 @@ void load_kernel_service()
 
     add_kernel_service(kernel_process_service, "kernel_process_service");
     add_kernel_service(kernel_process_buffer_service, "kernel_buffer_service");
-    add_kernel_service(print_service, "console_out");
+    //add_kernel_service(print_service, "console_out");
     add_kernel_service(graphic_buffer_service, "graphic_buffer_service");
-    add_kernel_service(time_service, "time_service");
+    //add_kernel_service(time_service, "time_service");
     add_kernel_service(ps2_device_service, "ps2_device_service");
-    add_kernel_service(file_system_service, "file_system_service");
+    // add_kernel_service(file_system_service, "file_system_service");
 }

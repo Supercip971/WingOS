@@ -26,4 +26,7 @@ namespace sys
         void close();
         uint64_t get_file_length();
     };
+    extern file stdin;
+    extern file stdout;
+    extern file stderr;
 } // namespace sys

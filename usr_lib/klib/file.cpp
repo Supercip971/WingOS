@@ -4,6 +4,9 @@
 namespace sys
 {
 
+    file stdin;
+    file stdout;
+    file stderr;
     file::file()
     {
         opened = false;

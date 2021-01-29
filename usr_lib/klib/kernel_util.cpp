@@ -1,4 +1,5 @@
 #include <klib/console.h>
+#include <klib/file.h>
 #include <klib/kernel_util.h>
 #include <klib/process_message.h>
 #include <klib/syscall.h>
@@ -18,8 +19,8 @@ namespace sys
         {
             return -1;
         }
+        stdout.write((const uint8_t *)raw_data, length);
 
-        sys::service_message("console_out", (uint64_t)raw_data, length).read();
         return 1;
     }
 

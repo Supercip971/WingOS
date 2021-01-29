@@ -3,7 +3,7 @@
 # inspired from https://github.com/ozkl/soso/blob/master/create-image.sh (from soso os) made by ozkl <3
 
 DISK="./build/disk.hdd"
-dd if=/dev/zero of=$DISK bs=25M count=2
+dd if=/dev/zero of=$DISK bs=255M count=1
 
 fdisk $DISK << EOF
 n

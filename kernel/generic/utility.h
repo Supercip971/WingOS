@@ -66,3 +66,4 @@ inline void set_bit(uint8_t *bitmap, size_t bit_id, uint8_t value)
         bitmap[bitmap_idx] &= ~(1 << bit_idx);
     }
 }
+long atoi(const char *S);

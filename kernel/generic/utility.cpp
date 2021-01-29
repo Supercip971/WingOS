@@ -298,3 +298,54 @@ extern "C" void __cxa_pure_virtual()
 {
     log("virtual", LOG_ERROR) << "error while trying to call a virtual function D:";
 }
+inline int isalnum(int c)
+{
+    if (c <= 'z' && c >= 'a')
+    {
+        return 1;
+    }
+    if (c <= 'Z' && c >= 'A')
+    {
+        return 1;
+    }
+    if (c <= '9' && c >= '0')
+    {
+        return 1;
+    }
+    return 0;
+}
+inline int to_lower(int c)
+{
+    if (c >= 'A' && c <= 'Z')
+    {
+        c -= 'A';
+        c += 'a';
+    }
+    return c;
+}
+
+inline int to_upper(int c)
+{
+    if (c >= 'a' && c <= 'z')
+    {
+        c -= 'a';
+        c += 'A';
+    }
+    return c;
+}
+long atoi(const char *S)
+{
+    long num = 0;
+
+    int i = 0;
+
+    // run till we have reached end of the string or
+    // current character is non-numeric
+    while (S[i] && (S[i] >= '0' && S[i] <= '9'))
+    {
+        num = num * 10 + (S[i] - '0');
+        i++;
+    }
+
+    return num;
+}

@@ -62,13 +62,13 @@ const char main_cursor_mouse_buffer[] = {
     1, 1, 1, 1, 1, 1, 1};
 void draw_mouse(uint64_t x, uint64_t y)
 {
-    if (x >= (screen_width - (m_width + 1)))
+    if (x > (screen_width - (m_width + 2)))
     {
-        x = screen_width - (m_width + 1);
+        x = screen_width - (m_width + 2);
     }
-    if (y >= screen_height - (m_height + 1))
+    if (y > screen_height - (m_height + 2))
     {
-        y = screen_height - (m_height + 1);
+        y = screen_height - (m_height + 2);
     }
     for (uint64_t ix = 0; ix < m_width; ix++)
     {

@@ -485,7 +485,6 @@ ext2fs_inode ext2fs::get_file(const char *path)
 
         if (!v.is_valid())
         {
-            log("ext2fs", LOG_WARNING) << "can't find file " << path << " with " << searching_file;
 
             free(searching_file);
             return ext2fs_inode();
@@ -524,6 +523,14 @@ uint8_t *ext2fs::ext_read_file(const char *path)
     unlock((&l));
     return dat;
 }
+bool ext2fs::exist(const char *path)
+{
+
+    flock((&l));
+    ext2fs_inode f = get_file(path);
+    unlock((&l));
+    return f.is_valid();
+}
 uint64_t ext2fs::get_file_length(const char *path)
 {
     flock((&l));
@@ -531,7 +538,6 @@ uint64_t ext2fs::get_file_length(const char *path)
     ext2fs_inode f = get_file(path);
     if (!f.is_valid())
     {
-        log("ext2fs", LOG_WARNING) << "can't find file " << path << " for " << __PRETTY_FUNCTION__;
         unlock((&l));
         return (uint64_t)-1;
     }
@@ -578,8 +584,6 @@ uint64_t ext2fs::read_file(const char *path, uint64_t at, uint64_t size, uint8_t
 {
 
     flock((&l));
-    log("ext2fs", LOG_INFO) << "reading " << path;
-    log("ext2fs", LOG_INFO) << "getting " << path;
     auto f = get_file(path);
     if (!f.is_valid())
     {
@@ -601,12 +605,8 @@ uint64_t ext2fs::read_file(const char *path, uint64_t at, uint64_t size, uint8_t
         readed_size = f.strct.lower_size - at;
     }
     uint8_t *buffer_copy = (uint8_t *)malloc(readed_size + 12);
-    log("ext2fs", LOG_INFO) << "disk read " << path;
 
     inode_read(buffer_copy, at, readed_size, f);
-    log("ext2fs", LOG_INFO) << "disk readed " << path;
-
-    log("ext2fs", LOG_INFO) << "readed " << path;
     memcpy(buffer, buffer_copy, size);
     free(buffer_copy);
     unlock((&l));

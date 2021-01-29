@@ -45,6 +45,11 @@ public:
         log("fs", LOG_ERROR) << "not implemented file system function" << __PRETTY_FUNCTION__;
         return 0;
     }
+    virtual bool exist(const char *path)
+    {
+        log("fs", LOG_ERROR) << "not implemented file system function" << __PRETTY_FUNCTION__;
+        return 0;
+    }
 
     // mainly not implemented
 

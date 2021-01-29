@@ -204,7 +204,7 @@ class ext2fs : public file_system
 public:
     ext2fs();
     virtual void init(uint64_t start_sector, uint64_t sector_count) override;
-
+    virtual bool exist(const char *path) override;
     // read a file and redirect it to an address
     // return 0 when not found
     virtual uint64_t get_file_length(const char *path) override;

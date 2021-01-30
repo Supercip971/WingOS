@@ -21,7 +21,7 @@ void memory_service()
             if (prot->request_type == REQUEST_PMM_MALLOC)
             {
 
-                msg->response = (uint64_t)(pmm_alloc_fast(prot->length));
+                msg->response = (uint64_t)(pmm_alloc(prot->length));
                 msg->has_been_readed = true;
             }
             else if (prot->request_type == REQUEST_PMM_FREE)

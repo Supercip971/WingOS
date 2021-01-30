@@ -59,7 +59,7 @@ extern "C"
  */
     inline void *liballoc_alloc(size_t s)
     {
-        return (void *)((uint64_t)pmm_alloc_fast(s)); // never gonna cast you up
+        return (void *)((uint64_t)pmm_alloc(s)); // never gonna cast you up
     }
 
     /** This frees previously allocated memory. The void* parameter passed

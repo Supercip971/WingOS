@@ -1,6 +1,5 @@
 #pragma once
 #include <arch.h>
-#include <kernel.h>
 #include <stdint.h>
 ASM_FUNCTION void asm_spinlock_lock(volatile uint32_t *lock);
 ASM_FUNCTION void asm_spinlock_unlock(volatile uint32_t *lock);

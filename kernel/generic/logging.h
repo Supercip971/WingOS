@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LOGGING_H
+#define LOGGING_H
 #include <com.h>
 #include <print.h>
 #include <stddef.h>
@@ -57,3 +58,4 @@ logging logging::operator<<(unsigned char data);
 template <>
 logging logging::operator<<(range_str data);
 logging log(const char *data, log_state color_mode);
+#endif

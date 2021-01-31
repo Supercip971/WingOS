@@ -40,4 +40,12 @@ WingOS work with the concept of 'services'... If user app want to communicate wi
  - ext2fs support
  - \[insert something here]
  
- 
+
+### planned: 
+ - terminal app
+ - fat32 support
+ - resizable window (gui)
+ - better virtual memory management 
+ - user app run in ring 3
+ - better libc
+ - 

@@ -36,8 +36,8 @@ jobs:
           make first_setup
           make clean -j$(nproc)
           make disk -j$(nproc)
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: build/disk.hdd
+          path: build/disk.hdd

@@ -46,3 +46,7 @@ for running with qemu you just have to run :
 ```bash
 make run 
 ```
+
+## You can't build ?
+
+try to contact me ! you can do an issue or start a discussion in github discussion tab ! 

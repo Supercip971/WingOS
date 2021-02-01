@@ -72,7 +72,6 @@ void smp::init()
             processor_count++;
         }
     }
-    processor_count--;
 
     log("smp", LOG_INFO) << "total processor count" << processor_count;
     if (processor_count > max_cpu)

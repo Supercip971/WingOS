@@ -4,6 +4,9 @@
 ![sample](screen_shot/sample4_26_12_2020png.png)
 
 ### Building
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/dbef66169c97435fb45fe7520ec891df)](https://app.codacy.com/gh/Supercip971/WingOS_x64?utm_source=github.com&utm_medium=referral&utm_content=Supercip971/WingOS_x64&utm_campaign=Badge_Grade)
+
 for building you can take a look at the [Build guide](./Build_guide.md)
 
 ### WingOS

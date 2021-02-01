@@ -112,6 +112,38 @@ void printf(const char *format, ...)
                 written += len;
             }
         }
+        else if (*format == 'i')
+        {
+            format++;
+            uint64_t d = va_arg(parameters, uint64_t);
+            if (d == 0)
+            {
+                dev->echo_out("0", 1);
+                written += 1;
+            }
+            else
+            {
+                for (int i = 0; i < 64; i++)
+                {
+                    temp_buf[i] = 0;
+                }
+                kitoaT(temp_buf, 'd', d);
+                uint64_t len = strlen(temp_buf);
+                if (maxrem < len)
+                {
+                    unlock((&print_locker));
+                    // TODO: Set errno to EOVERFLOW.
+                    return;
+                }
+                if (!dev->echo_out(temp_buf, len))
+                {
+
+                    unlock((&print_locker));
+                    return;
+                }
+                written += len;
+            }
+        }
         else
         {
             format = format_begun_at;

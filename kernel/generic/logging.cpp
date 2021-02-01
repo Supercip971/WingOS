@@ -38,7 +38,7 @@ void print_log_str(const char *d, log_state state)
 template <>
 void log_print_element<>(void *element)
 {
-    printf("%x", element);
+    printf("0x%x", element);
 }
 template <>
 void log_print_element<>(const char *element)
@@ -63,33 +63,33 @@ void log_print_element<>(range_str element)
 template <>
 void log_print_element<>(uint64_t element)
 {
-    printf("%x", element);
+    printf("0x%x", element);
 }
 template <>
 void log_print_element<>(uint32_t element)
 {
-    printf("%x", element);
+    printf("0x%x", element);
 }
 template <>
 void log_print_element<>(uint16_t element)
 {
-    printf("%x", element);
+    printf("0x%x", element);
 }
 template <>
 void log_print_element<>(uint8_t element)
 {
-    printf("%x", element);
+    printf("0x%x", element);
 }
 template <>
 void log_print_element<>(int element)
 {
-    printf("%x", element);
+    printf("%i", element);
 }
 template <>
 void log_print_element<>(long element)
 {
 
-    printf("%x", element);
+    printf("%i", element);
 }
 
 void slog(const char *msg)
@@ -100,9 +100,11 @@ void slog(const char *msg)
 void start_log()
 {
     flock(&log_lock);
+    lock_process();
 }
 void end_log()
 {
+    unlock_process();
     unlock(&log_lock);
 }
 

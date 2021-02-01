@@ -36,12 +36,18 @@ void _start(stivale_struct *bootloader_data)
     launch_programm("init_fs/test.exe", main_fs_system::the()->main_fs());
     launch_programm("init_fs/test.exe", main_fs_system::the()->main_fs());
     launch_programm("init_fs/test.exe", main_fs_system::the()->main_fs());
-    log("kernel", LOG_INFO) << "====                ====";
-    log("kernel", LOG_INFO) << "==== KERNEL STARTED ====";
-    log("kernel", LOG_INFO) << "====                ====";
+    log("kernel", LOG_INFO, "==== KERNEL STARTED ====");
 
-    log("kernel", LOG_INFO) << "kernel started with " << get_total_memory() << "memory available";
-    log("kernel", LOG_INFO) << "memory used : " << get_used_memory();
+    log("kernel", LOG_INFO, ":::       ::: ::::::::::: ::::    :::  ::::::::         ::::::::   ::::::::");
+    log("kernel", LOG_INFO, ":+:       :+:     :+:     :+:+:   :+: :+:    :+:       :+:    :+: :+:    :+:");
+    log("kernel", LOG_INFO, "+:+       +:+     +:+     :+:+:+  +:+ +:+              +:+    +:+ +:+        ");
+    log("kernel", LOG_INFO, "+#+  +:+  +#+     +#+     +#+ +:+ +#+ :#:              +#+    +:+ +#++:++#++ ");
+    log("kernel", LOG_INFO, "+#+ +#+#+ +#+     +#+     +#+  +#+#+# +#+   +#+#       +#+    +#+        +#+ ");
+    log("kernel", LOG_INFO, " #+#+# #+#+#      #+#     #+#   #+#+# #+#    #+#       #+#    #+# #+#    #+# ");
+    log("kernel", LOG_INFO, "  ###   ###   ########### ###    ####  ########         ########   ########  ");
+
+    log("kernel", LOG_INFO, "kernel started with: {} memory available ", get_total_memory() * PAGE_SIZE);
+    log("kernel", LOG_INFO, "memory used: {}", get_used_memory() * PAGE_SIZE);
     //  dump_process();
     while (true)
     {

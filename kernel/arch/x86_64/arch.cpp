@@ -111,17 +111,6 @@ ASM_FUNCTION void kernel_start(stivale_struct *bootloader_data)
     mboot_module::the()->init(bootloader_data);
     bootdat = ((uint64_t)&boot_loader_data_copy);
 
-    lock_process();
-    printf("\n\n");
-    printf(":::       ::: ::::::::::: ::::    :::  ::::::::         ::::::::   ::::::::\n");
-    printf(":+:       :+:     :+:     :+:+:   :+: :+:    :+:       :+:    :+: :+:    :+:\n");
-    printf("+:+       +:+     +:+     :+:+:+  +:+ +:+              +:+    +:+ +:+        \n");
-    printf("+#+  +:+  +#+     +#+     +#+ +:+ +#+ :#:              +#+    +:+ +#++:++#++ \n");
-    printf("+#+ +#+#+ +#+     +#+     +#+  +#+#+# +#+   +#+#       +#+    +#+        +#+ \n");
-    printf(" #+#+# #+#+#      #+#     #+#   #+#+# #+#    #+#       #+#    #+# #+#    #+# \n");
-    printf("  ###   ###   ########### ###    ####  ########         ########   ########  \n");
-
-    printf("\n");
     init_multi_process(start_process);
     asm volatile("sti");
     asm("hlt");

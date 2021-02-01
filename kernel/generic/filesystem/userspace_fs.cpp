@@ -40,7 +40,7 @@ ram_file *process_ramdir::get(const char *msg)
     auto pid = atoi(msg);
     if (upid_to_kpid(pid) == (uint64_t)-1)
     {
-        log("ram_dir", LOG_INFO) << "invalid pid for path /proc/" << pid << "for path+" << msg;
+        log("ram_dir", LOG_INFO, "invalid pid for path /proc/{} for path+:{}", pid, msg);
         return nullptr;
     }
     for (; *msg != '/'; msg++)
@@ -50,7 +50,7 @@ ram_file *process_ramdir::get(const char *msg)
         msg += 4;
         int fd = atoi(msg);
 
-        log("ram_dir", LOG_INFO) << "getting buffer" << fd << "of process" << pid << "for path+" << msg;
+        log("ram_dir", LOG_INFO, "getting buffer: {} of process: {} for path: {}", fd, pid, msg);
         return process_array[upid_to_kpid(pid)].ufs.ram_files[fd];
     }
     else
@@ -61,12 +61,12 @@ ram_file *process_ramdir::get(const char *msg)
 
 size_t ram_file::read(void *buffer, size_t offset, size_t count)
 {
-    log("ram file", LOG_ERROR) << "can't use " << __PRETTY_FUNCTION__ << " in file " << get_npath() << " in process" << get_current_cpu_process()->process_name;
+    log("ram file", LOG_ERROR, "can't use: {} in file: {} in process: {}", __PRETTY_FUNCTION__, get_npath(), get_current_cpu_process()->process_name);
     return -1;
 }
 size_t ram_file::write(const void *buffer, size_t offset, size_t count)
 {
-    log("ram file", LOG_ERROR) << "can't use " << __PRETTY_FUNCTION__ << " in file " << get_npath() << " in process" << get_current_cpu_process()->process_name;
+    log("ram file", LOG_ERROR, "can't use: {} in file: {} in process: {}", __PRETTY_FUNCTION__, get_npath(), get_current_cpu_process()->process_name);
     return -1;
 }
 
@@ -77,7 +77,7 @@ size_t std_zero_file::read(void *dbuffer, size_t offset, size_t count)
 }
 size_t std_zero_file::write(const void *dbuffer, size_t offset, size_t count)
 {
-    log("stdzero", LOG_WARNING) << "trying to write to" << get_npath();
+    log("stdzero", LOG_WARNING, "trying to write to: {}", get_npath());
     return 0;
 }
 size_t std_stdbuf_file::read(void *dbuffer, size_t offset, size_t count)
@@ -113,7 +113,7 @@ size_t std_stdbuf_file::write(const void *dbuffer, size_t offset, size_t count)
     {
         if (buffer[logging_pos] == '\n')
         {
-            log("std", LOG_INFO) << range_str(buffer + logging_pos_start, logging_pos - logging_pos_start);
+            log("std", LOG_INFO, "{}", range_str(buffer + logging_pos_start, logging_pos - logging_pos_start));
             logging_pos_start = logging_pos + 1;
         }
     }
@@ -154,19 +154,19 @@ filesystem_file_t *get_if_valid_handle(int fd, bool check_free = true)
 {
     if (fd > MAX_FILE_HANDLE)
     {
-        log("fs", LOG_WARNING) << "process " << get_current_cpu_process()->process_name << " trying to use an invalid file descriptor";
+        log("fs", LOG_WARNING, "process: {} trying to use an invalid file descriptor", get_current_cpu_process()->process_name);
 
         return nullptr;
     }
     else if (fs_handle_table[fd].state != file_system_file_state::FS_STATE_USED && check_free)
     {
-        log("fs", LOG_WARNING) << "process " << get_current_cpu_process()->process_name << " trying to use a file descriptor already free";
+        log("fs", LOG_WARNING, "process: {} trying to use a file descriptor already free", get_current_cpu_process()->process_name);
 
         return nullptr;
     }
     else if (fs_handle_table[fd].rpid != get_current_cpu_process()->upid && check_free)
     {
-        log("fs", LOG_WARNING) << "process " << get_current_cpu_process()->process_name << " trying to use a file descriptor used by another process";
+        log("fs", LOG_WARNING, "process: {} trying to use a file descriptor used by another process", get_current_cpu_process()->process_name);
 
         return nullptr;
     }
@@ -190,7 +190,7 @@ int set_free_handle(int fd)
     auto handle = get_if_valid_handle(fd);
     if (handle == nullptr)
     {
-        log("fs", LOG_WARNING) << "process " << get_current_cpu_process()->process_name << " trying to free an invalid file descriptor";
+        log("fs", LOG_WARNING, "process: {} trying to free an invalid file descriptor", get_current_cpu_process()->process_name);
 
         return -1;
     }
@@ -204,7 +204,7 @@ int set_used_handle(int fd)
 
     if (handle == nullptr)
     {
-        log("fs", LOG_WARNING) << "process " << get_current_cpu_process()->process_name << " trying to set used an invalid file descriptor";
+        log("fs", LOG_WARNING, "process: {} trying to set used an invalid file descriptor", get_current_cpu_process()->process_name);
 
         return -1;
     }
@@ -217,7 +217,7 @@ size_t fs_read(int fd, void *buffer, size_t count)
     filesystem_file_t *file = get_if_valid_handle(fd);
     if (file == nullptr)
     {
-        log("fs", LOG_ERROR) << "process " << get_current_cpu_process()->process_name << " can't read file";
+        log("fs", LOG_WARNING, "process: {} can't read file {}", get_current_cpu_process()->process_name, fd);
         return 0;
     }
     if (file->ram_file)
@@ -240,7 +240,7 @@ size_t fs_lseek(int fd, size_t offset, int whence)
     filesystem_file_t *file = get_if_valid_handle(fd);
     if (file == nullptr)
     {
-        log("fs", LOG_ERROR) << "process " << get_current_cpu_process()->process_name << " can't seek file invalid fd";
+        log("fs", LOG_WARNING, "process: {} can't seek file with invalid fd {}", get_current_cpu_process()->process_name, fd);
         return 0;
     }
     if (whence == SEEK_SET)
@@ -271,7 +271,7 @@ size_t fs_write(int fd, const void *buffer, size_t count)
     filesystem_file_t *file = get_if_valid_handle(fd);
     if (file == nullptr)
     {
-        log("fs", LOG_ERROR) << "process " << get_current_cpu_process()->process_name << " can't read file";
+        log("fs", LOG_WARNING, "process: {} can't read file with invalid fd {}", get_current_cpu_process()->process_name, fd);
         return 0;
     }
     if (file->ram_file)
@@ -295,7 +295,7 @@ int fs_open(const char *path_name, int flags, int mode)
     int fd = get_free_handle();
     if (fd == -1)
     {
-        log("fs", LOG_ERROR) << "process " << get_current_cpu_process()->process_name << " can't get free handle";
+        log("fs", LOG_WARNING, "process: {} can't get free file descriptor", get_current_cpu_process()->process_name);
 
         return 0;
     }
@@ -328,7 +328,7 @@ int fs_open(const char *path_name, int flags, int mode)
         if (target == nullptr)
         {
 
-            log("fs", LOG_WARNING) << "process " << get_current_cpu_process()->process_name << " trying to open file" << path_name << "but it doesn't exits";
+            log("fs", LOG_WARNING, "process {} trying to open file {} but it doesn't exist", get_current_cpu_process()->process_name, path_name);
 
             return -1;
         }
@@ -344,7 +344,7 @@ int fs_open(const char *path_name, int flags, int mode)
 
         if (main_fs_system::the()->main_fs()->get_file_length(path_name) == (uint64_t)-1)
         {
-            log("fs", LOG_WARNING) << "process " << get_current_cpu_process()->process_name << " trying to open file" << path_name << "but it doesn't exits";
+            log("fs", LOG_WARNING, "process {} trying to open file {} but it doesn't exist", get_current_cpu_process()->process_name, path_name);
 
             return -1;
         }
@@ -359,14 +359,14 @@ int fs_close(int fd)
     auto file = get_if_valid_handle(fd);
     if (file == nullptr)
     {
-        log("fs", LOG_ERROR) << "process " << get_current_cpu_process()->process_name << " invalid fd for closing file ";
+        log("fs", LOG_ERROR, "process {} invalid fd for closing file", get_current_cpu_process()->process_name);
 
         return 0;
     }
     lock(&handle_lock);
 
     set_free_handle(fd);
-    log("fs", LOG_INFO) << "process " << get_current_cpu_process()->process_name << " closed " << file->path;
+    log("fs", LOG_INFO, "process {} closed {}", get_current_cpu_process()->process_name, file->path);
 
     unlock(&handle_lock);
     return 1;

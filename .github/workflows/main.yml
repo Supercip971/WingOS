@@ -36,8 +36,8 @@ jobs:
           make first_setup
           make clean -j$(nproc)
           make disk -j$(nproc)
-
+      
       - uses: actions/upload-artifact@v2
         with:
-          name: build/disk.hdd
-          path: build/disk.hdd
+          name: "build/disk.hdd"
+          path: "build/disk.hdd"

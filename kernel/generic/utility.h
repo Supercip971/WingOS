@@ -3,6 +3,31 @@
 #include <logging.h>
 #include <stddef.h>
 #include <stdint.h>
+
+template <class A>
+constexpr A max(const A a, const A b)
+{
+    if (a > b)
+    {
+        return a;
+    }
+    else
+    {
+        return b;
+    }
+}
+template <class A>
+constexpr A min(const A a, const A b)
+{
+    if (a < b)
+    {
+        return a;
+    }
+    else
+    {
+        return b;
+    }
+}
 int isdigit(int c);
 char *strtok(char *s, const char *delm);
 

@@ -4,7 +4,7 @@
 #include <logging.h>
 
 #include <arch.h>
-lock_type log_lock;
+lock_type log_locker;
 // ------------------------ SHOULD BE REMOVED START ------------------------
 
 // ------------------------ SHOULD BE REMOVED END ------------------------
@@ -99,13 +99,13 @@ void slog(const char *msg)
 }
 void start_log()
 {
-    flock(&log_lock);
+    flock(&log_locker);
     lock_process();
 }
 void end_log()
 {
     unlock_process();
-    unlock(&log_lock);
+    unlock(&log_locker);
 }
 
 void logging::set_log_type(const char *data, log_state log_state)

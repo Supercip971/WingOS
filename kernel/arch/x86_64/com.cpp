@@ -5,33 +5,28 @@
 #include <process.h>
 #include <stdarg.h>
 #include <utility.h>
-lock_type locker_print = {0};
 char temp_buffer[17];
 uint64_t last_count = 17;
 
 bool com_device::echo_out(const char *data, uint64_t data_length)
 {
 
-    lock(&locker_print);
     for (uint64_t i = 0; i < data_length; i++)
     {
         write(data[i]);
     }
-    unlock(&locker_print);
 
     return true;
 }
 bool com_device::echo_out(const char *data)
 {
 
-    lock(&locker_print);
     uint64_t i = 0;
     while (data[i] != 0)
     {
         write(data[i]);
         i++;
     }
-    unlock(&locker_print);
     return true;
 }
 

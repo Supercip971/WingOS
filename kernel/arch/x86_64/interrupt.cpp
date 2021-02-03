@@ -19,7 +19,7 @@
 #include <syscall.h>
 #include <utility.h>
 
-extern lock_type locker_print;
+extern lock_type log_locker;
 extern lock_type print_locker;
 struct interrupt_handler_specific_array
 {
@@ -193,7 +193,7 @@ ASM_FUNCTION uintptr_t interrupts_handler(InterruptStackFrame *stackframe)
     }
     if (is_interrupt_error(stackframe->int_no))
     {
-        locker_print.data = 0;
+        log_locker.data = 0;
         print_locker.data = 0;
         interrupt_error_handle(stackframe);
     }

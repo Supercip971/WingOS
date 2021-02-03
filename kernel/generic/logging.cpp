@@ -22,9 +22,9 @@ void print_log_str(const char *d, log_state state)
 
     uint64_t pid = 0;
     uint64_t current_cpu = 0;
-    if (get_current_cpu_process() != nullptr)
+    if (process::current() != nullptr)
     {
-        pid = get_current_cpu_process()->upid;
+        pid = process::current()->get_pid();
         current_cpu = get_current_cpu_id();
     }
     if (state > 4 || state == 3)
@@ -112,9 +112,9 @@ void logging::set_log_type(const char *data, log_state log_state)
 {
     uint64_t pid = 0;
     uint64_t current_cpu = 0;
-    if (get_current_cpu_process() != nullptr)
+    if (process::current() != nullptr)
     {
-        pid = get_current_cpu_process()->upid;
+        pid = process::current()->get_pid();
         current_cpu = get_current_cpu_id();
     }
     if (log_state > 4 || log_state == 3)

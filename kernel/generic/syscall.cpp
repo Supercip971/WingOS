@@ -8,7 +8,7 @@ typedef uint64_t (*syscall_functions)(uint64_t syscall_id, uint64_t arg1, uint64
 InterruptStackFrame *stakframe_testing;
 uint64_t sys$null(const char *arg1)
 {
-    log(get_current_cpu_process()->process_name, LOG_INFO) << arg1;
+    log(process::current()->get_name(), LOG_INFO) << arg1;
 
     return 32;
 }
@@ -100,7 +100,7 @@ int sys$nano_sleep(const timespec *request, timespec *remaning)
 }
 size_t sys$getpid()
 {
-    return get_current_cpu_process()->upid;
+    return process::current()->get_pid();
 }
 static void *syscalls[] = {
     (void *)sys$null,

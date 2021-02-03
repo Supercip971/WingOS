@@ -18,11 +18,7 @@ void kernel_process_service()
             process_request *prot = (process_request *)msg->content_address;
             // don't like switch >:(
             // they have some "optimization" but in this case meh
-            if (prot->type == GET_PROCESS_PID)
-            {
-                msg->response = get_pid_from_process_name(prot->gpp.process_name);
-            }
-            else if (prot->type == SET_CURRENT_PROCESS_AS_SERVICE)
+            if (prot->type == SET_CURRENT_PROCESS_AS_SERVICE)
             {
                 log("kernel_process_service", LOG_INFO) << "SET_CURRENT_PROCESS_AS_SERVICE";
                 rename_process(prot->scpas.service_name, msg->from_pid);

@@ -22,6 +22,3 @@ uint64_t interpret_cpu_request(uint64_t cpu); // with architecture with no multi
 void init_process_paging(process *pro, bool is_user);
 
 void init_process_arch_ext(process *pro);
-
-process *get_current_cpu_process();
-void set_current_cpu_process(process *new_proc);

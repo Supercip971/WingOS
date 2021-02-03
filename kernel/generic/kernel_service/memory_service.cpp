@@ -35,8 +35,6 @@ void memory_service()
                 msg->response = 0;
                 msg->has_been_readed = true;
                 log("memory_service", LOG_ERROR) << "not valid request memory" << (uint64_t)prot->request_type;
-                log("memory_service", LOG_ERROR) << "with process" << (uint64_t)msg->from_pid << " | " << process_array[upid_to_kpid(msg->from_pid)].process_name;
-                process_array[upid_to_kpid(msg->from_pid)].process_backtrace.dump_backtrace();
             }
 
             set_on_request_service(true);

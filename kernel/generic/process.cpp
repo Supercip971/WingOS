@@ -14,6 +14,16 @@ bool process_loaded = false;
 
 lock_type process_creator_lock = {0};
 uint64_t last_process = 0;
+process *current_cpu_process[255]; // FIXME: don't use 255 and use a #define
+
+process *process::current()
+{
+    return current_cpu_process[get_current_cpu_id()];
+}
+void process::set_current(process *target)
+{
+    current_cpu_process[get_current_cpu_id()] = target;
+}
 
 lock_type task_lock = {0};
 int dying_process_count = 0;
@@ -38,6 +48,15 @@ void null_process()
         yield();
     }
 }
+bool process::destroy()
+{
+
+    free(global_process_memory);
+    set_active(false);
+    set_state(PROCESS_AVAILABLE);
+
+    return true;
+}
 void utility_process()
 {
     turn_on_interrupt();
@@ -54,15 +73,13 @@ void utility_process()
             {
                 continue;
             }
-            if (process_array[i].current_process_state == PROCESS_SHOULD_BE_DEAD)
+            if (process_array[i].get_state() == PROCESS_SHOULD_BE_DEAD)
             {
                 lock((&process_creator_lock));
                 lock_process();
 
-                log("proc", LOG_INFO) << "killing process [" << i << "] : " << process_array[i].process_name;
-                free(process_array[i].global_process_memory);
-                process_array[i].should_be_active = false;
-                process_array[i].current_process_state = PROCESS_AVAILABLE;
+                log("proc", LOG_INFO) << "killing process [" << i << "] : " << process_array[i].get_name();
+                process_array[i].destroy();
                 dying_process_count--;
                 unlock((&process_creator_lock));
                 unlock_process();
@@ -76,17 +93,11 @@ void init_multi_process(func start)
     log("proc", LOG_DEBUG) << "loading multi processing";
 
     process_array = reinterpret_cast<process *>(malloc(sizeof(process) * MAX_PROCESS + PAGE_SIZE));
-    set_current_cpu_process(nullptr);
+    process::set_current(nullptr);
 
     for (size_t i = 0; i < MAX_PROCESS; i++)
     {
-        for (int j = 0; j < 3; j++)
-        {
-            process_array[i].pr_buff[j].data = nullptr;
-        }
-        process_array[i].kpid = i;
-        process_array[i].upid = -1;
-        process_array[i].current_process_state = process_state::PROCESS_AVAILABLE;
+        process_array[i] = process(i);
     }
 
     init_process(null_process, true, "testing1", false);
@@ -115,7 +126,7 @@ void init_multi_process(func start)
     }
 }
 
-process *find_usable_process()
+int64_t find_free_process()
 {
     for (uint64_t i = last_process; i < MAX_PROCESS; i++)
     {
@@ -123,147 +134,97 @@ process *find_usable_process()
         {
             continue;
         }
-        if (process_array[i].current_process_state ==
-            process_state::PROCESS_AVAILABLE)
+        if (!process_array[i].is_used())
         {
             last_process = i + 1;
-            process_array[i].current_process_state = process_state::PROCESS_NOT_STARTED;
-            return &process_array[i];
+            return i;
         }
     }
     if (last_process == 0)
     {
-        return nullptr;
+        return -1;
     }
     else
     {
         last_process = 0;
-        return find_usable_process();
+        return find_free_process();
     }
 }
 
-void init_process_global_memory(process *to_init)
+void process::init_global_memory()
 {
-    to_init->global_process_memory = reinterpret_cast<uint8_t *>(malloc(4096));
-    to_init->global_process_memory_length = 4096;
-    memzero(to_init->global_process_memory, to_init->global_process_memory_length);
-}
 
-void init_process_message(process *to_init)
+    global_process_memory = reinterpret_cast<uint8_t *>(malloc(4096));
+    global_process_memory_length = 4096;
+    memzero(global_process_memory, global_process_memory_length);
+}
+void process::init_message_system()
 {
-    to_init->last_message_used = 0;
-    to_init->msg_list = new process_message[MAX_PROCESS_MESSAGE_QUEUE + 1];
+
+    last_message_used = 0;
+    msg_list = new process_message[MAX_PROCESS_MESSAGE_QUEUE + 1];
     for (uint64_t j = 0; j < MAX_PROCESS_MESSAGE_QUEUE; j++)
     {
-        to_init->msg_list[j].entry_free_to_use = true;
-        to_init->msg_list[j].message_id = j;
-    }
-}
-
-void init_process_buffers(process *to_init)
-{
-
-    to_init->pr_buff[0].type = STDOUT;
-    to_init->pr_buff[1].type = STDIN;
-    to_init->pr_buff[2].type = STDERR;
-    for (int i = 0; i < 3; i++)
-    {
-        to_init->pr_buff[i].allocated_length = 128;
-        if (to_init->pr_buff[i].data != nullptr)
-        {
-            free(get_rmem_addr<void *>(to_init->pr_buff[i].data));
-        }
-        to_init->pr_buff[i].length = 0;
-        to_init->pr_buff[i].data = get_mem_addr<uint8_t *>(malloc(128));
+        msg_list[j].entry_free_to_use = true;
+        msg_list[j].message_id = j;
     }
 }
 
 process *init_process(func entry_point, bool start_direct, const char *name, bool user, uint64_t cpu_target)
 {
     flock((&process_creator_lock));
-    process *process_to_add = find_usable_process();
-    process_to_add->current_process_state = process_state::PROCESS_NOT_STARTED;
-    process_to_add->user = user;
-    if (process_to_add == nullptr)
+    int64_t process_to_add_kpid = find_free_process();
+    if (process_to_add_kpid == -1)
     {
         log("proc", LOG_ERROR) << "init_process : no free process found";
+        return nullptr;
     }
 
-    bool added_pid = false;
+    //    bool added_pid = false;
 
-    if (get_pid_from_process_name(name) != (uint64_t)-1)
-    {
-        log("proc", LOG_INFO) << "process with name already exist so add pid at the end";
-        added_pid = true;
-    }
-
-    process_to_add->upid = next_upid;
-    log("proc", LOG_INFO) << "adding process" << process_to_add->upid << "entry : " << (uint64_t)entry_point << "name : " << name;
     next_upid++;
+    auto process_to_add = &process_array[process_to_add_kpid];
+    *process_to_add = process(name, process_to_add_kpid, next_upid, reinterpret_cast<uintptr_t>(entry_point), user);
+    process_to_add->set_state(process_state::PROCESS_NOT_STARTED);
+    log("proc", LOG_INFO) << "adding process" << process_to_add->get_pid() << "entry : " << (uint64_t)entry_point << "name : " << name;
 
-    memcpy(process_to_add->process_name, name, strlen(name) + 2);
-    if (added_pid)
-    {
-        process_to_add->process_name[strlen(name) + 1] = process_to_add->upid;
-    }
-
-    init_process_global_memory(process_to_add);
-    init_process_message(process_to_add);
+    process_to_add->init_global_memory();
+    process_to_add->init_message_system();
     init_process_stackframe(process_to_add, entry_point);
-    init_process_buffers(process_to_add);
-    init_process_userspace_fs(process_to_add->ufs);
+    init_process_userspace_fs(process_to_add->get_ufs());
 
-    process_to_add->entry_point = (uint64_t)entry_point;
+    process_to_add->set_cpu(interpret_cpu_request(cpu_target));
 
-    process_to_add->processor_target = interpret_cpu_request(cpu_target);
-
-    process_to_add->is_ORS = false;
-
-    process_to_add->sleeping = 0;
     init_process_paging(process_to_add, user);
 
     init_process_arch_ext(process_to_add);
-    if (get_current_cpu_process() == 0x0)
+    if (process::current() == nullptr)
     {
-        set_current_cpu_process(process_to_add);
+        process::set_current(process_to_add);
     }
     if (start_direct == true)
     {
-        process_to_add->current_process_state = process_state::PROCESS_WAITING;
+        process_to_add->set_state(process_state::PROCESS_WAITING);
     }
     unlock((&process_creator_lock));
 
     return process_to_add;
 }
 
-bool is_valid_process(const process target, const int cpu_targ)
-{
-    return ((target.current_process_state ==
-             process_state::PROCESS_WAITING) &&
-            target.kpid != 0 && target.processor_target == cpu_targ);
-}
 process *get_next_process(uint64_t current_id)
 {
     if (process_locked != 0)
     {
-        return get_current_cpu_process();
+        return process::current();
     }
 
     uint64_t dad = get_current_cpu_id();
     for (uint64_t i = current_id + 1; i < MAX_PROCESS; i++)
     {
 
-        if (is_valid_process(process_array[i], dad))
+        if (process_array[i].is_runnable(dad))
         {
 
-            if (process_array[i].is_ORS == true && process_array[i].should_be_active == false)
-            {
-                continue;
-            }
-            if (process_array[i].sleeping != 0)
-            {
-                continue;
-            }
             return &process_array[i];
         }
     }
@@ -275,10 +236,10 @@ process *get_next_process(uint64_t current_id)
 
     log("proc", LOG_ERROR) << "no process found";
     log("proc", LOG_ERROR) << "from cpu : " << get_current_cpu_id();
-    log("proc", LOG_ERROR) << "maybe from : " << get_current_cpu_process()->process_name;
+    log("proc", LOG_ERROR) << "maybe from : " << process::current()->get_name();
 
     dump_process();
-    return get_current_cpu_process();
+    return process::current();
 }
 
 uintptr_t process_switch_handler(arch_stackframe *isf, bool switch_all) // switch all is true only for pit/hpet/... interrupt
@@ -293,24 +254,22 @@ uintptr_t process_switch_handler(arch_stackframe *isf, bool switch_all) // switc
         for (uint64_t i = 0; i < MAX_PROCESS; i++)
         {
 
-            if ((process_array[i].current_process_state ==
-                 process_state::PROCESS_WAITING) &&
-                process_array[i].kpid != 0 && process_array[i].sleeping != 0)
+            if (process_array[i].is_used() && process_array[i].is_sleeping())
             {
-                process_array[i].sleeping--;
+                process_array[i].decrease_sleep(1);
             }
         }
         send_switch_process_to_all_cpu();
     }
     process *i = nullptr;
 
-    if (get_current_cpu_process() == NULL)
+    if (process::current() == NULL)
     {
         i = get_next_process(0);
     }
     else
     {
-        i = get_next_process(get_current_cpu_process()->kpid);
+        i = get_next_process(process::current()->get_kpid());
     }
 
     if (i == 0)
@@ -321,53 +280,68 @@ uintptr_t process_switch_handler(arch_stackframe *isf, bool switch_all) // switc
     return switch_context(isf, i);
 }
 
-uint64_t get_pid_from_process_name(const char *name)
+process *process::from_name(const char *name)
 {
     for (size_t i = 0; i < MAX_PROCESS; i++)
     {
-        if (process_array[i].current_process_state == PROCESS_WAITING || process_array[i].current_process_state == PROCESS_RUNNING)
+        if (process_array[i].is_used())
         {
-            if (strcmp(name, process_array[i].process_name) == 0)
+            if (strcmp(name, process_array[i].get_name()) == 0)
             {
-                return process_array[i].upid;
+                return &process_array[i];
             }
         }
     }
-    return -1;
+    return nullptr;
 }
-
-process_message *get_new_process_message(process *target)
+process *process::from_pid(size_t pid)
 {
-    for (int j = target->last_message_used; j < MAX_PROCESS_MESSAGE_QUEUE; j++)
+
+    for (size_t i = 0; i < MAX_PROCESS; i++)
     {
-        if (target->msg_list[j].entry_free_to_use == true)
+        if (process_array[i].is_used())
         {
-            process_message *msg = &target->msg_list[j];
+            if (process_array[i].get_pid() == pid)
+            {
+                return &process_array[i];
+            }
+        }
+    }
+    return nullptr;
+}
+process_message *process::alloc_message()
+{
+
+    for (int j = last_message_used; j < MAX_PROCESS_MESSAGE_QUEUE; j++)
+    {
+        if (msg_list[j].entry_free_to_use == true)
+        {
+            process_message *msg = &msg_list[j];
             msg->entry_free_to_use = false;
             msg->has_been_readed = false;
             msg->response = -1;
-            target->last_message_used = j;
+            last_message_used = j;
             return msg;
         }
     }
 
     // if no free entry founded reloop
-    if (target->last_message_used != 0)
+    if (last_message_used != 0)
     {
-        target->last_message_used = 0;
-        return get_new_process_message(target);
+        last_message_used = 0;
+        return alloc_message();
     }
+    log(get_name(), LOG_WARNING, "no free message founded with last used");
     return nullptr;
 }
-
-process_message *create_process_message(size_t tpid, uintptr_t data_addr, uint64_t data_length)
+process_message *process::create_message(uintptr_t data_addr, uint64_t data_length, uint64_t to_pid)
 {
 
-    uint64_t target_kpid = upid_to_kpid(tpid);
-    process_message *todo = get_new_process_message(&process_array[target_kpid]);
+    process_message *todo = alloc_message();
     if (todo == nullptr)
     {
-        log("proc", LOG_ERROR) << "can't create a process message";
+        log("process", LOG_ERROR, "can't create a message for process {}", get_name());
+        dump_process();
         return nullptr;
     }
     todo->content_length = data_length;
@@ -376,62 +350,65 @@ process_message *create_process_message(size_t tpid, uintptr_t data_addr, uint64
     memcpy((void *)memory_kernel_copy, (void *)data_addr, data_length);
     todo->content_address = memory_kernel_copy;
 
-    todo->from_pid = get_current_cpu_process()->upid;
-    todo->to_pid = tpid;
+    todo->from_pid = to_pid;
+    todo->to_pid = get_pid();
 
     process_message *copy = (process_message *)malloc(sizeof(process_message));
     memcpy((void *)copy, (void *)todo, sizeof(process_message));
     copy->content_address = -1;
     return copy;
 }
-
 process_message *send_message(uintptr_t data_addr, uint64_t data_length, const char *to_process)
 {
-    for (int i = 0; i < MAX_PROCESS; i++)
+
+    auto target = process::from_name(to_process);
+    if (target == nullptr)
     {
-        if (process_array[i].current_process_state == PROCESS_WAITING || process_array[i].current_process_state == PROCESS_RUNNING || process_array[i].current_process_state == PROCESS_NOT_STARTED)
-        {
-            if (strcmp(to_process, process_array[i].process_name) == 0)
-            {
-                process_array[i].should_be_active = true;
-                return create_process_message(process_array[i].upid, data_addr, data_length);
-            }
-        }
+        log("process", LOG_ERROR, "trying to send a message to not founded process: {}", to_process);
+        return nullptr;
     }
 
-    log("process", LOG_ERROR) << "trying to send a message to : " << to_process << "and not founded it :(";
-    return nullptr;
+    target->set_active(true);
+    return target->create_message(data_addr, data_length, process::current()->get_pid());
 }
 
 process_message *send_message_pid(uintptr_t data_addr, uint64_t data_length, uint64_t target_pid)
 {
-    uint64_t kpid = upid_to_kpid(target_pid);
-    if (kpid == (uint64_t)-1)
+    auto target = process::from_pid(target_pid);
+    if (target == nullptr)
     {
-        log("process", LOG_ERROR) << "trying to send a message to pid : " << target_pid << "and not founded it :(";
+        log("process", LOG_ERROR, "trying to send a message to not founded process: {}", target_pid);
         return nullptr;
     }
 
-    process_message *r = create_process_message(target_pid, data_addr, data_length);
-    process_array[kpid].should_be_active = true;
-    return r;
+    target->set_active(true);
+    return target->create_message(data_addr, data_length, target->get_pid());
 }
-process_message *read_message()
+process_message *process::read_msg()
 {
+
     for (uint64_t i = 0; i < MAX_PROCESS_MESSAGE_QUEUE; i++)
     {
-        if (get_current_cpu_process()->msg_list[i].entry_free_to_use == false)
+        if (msg_list[i].entry_free_to_use == false)
         {
-            if (get_current_cpu_process()->msg_list[i].has_been_readed == false)
+            if (msg_list[i].has_been_readed == false)
             {
-                return &get_current_cpu_process()->msg_list[i];
+                return &msg_list[i];
             }
         }
     }
-
-    if (get_current_cpu_process()->is_ORS == true)
+    return nullptr;
+}
+process_message *read_message()
+{
+    auto msg = process::current()->read_msg();
+    if (msg != nullptr)
     {
-        get_current_cpu_process()->should_be_active = false;
+        return msg;
+    }
+    if (process::current()->is_on_request())
+    {
+        process::current()->set_active(false);
     }
 
     return 0x0;
@@ -440,20 +417,19 @@ process_message *read_message()
 uint64_t message_response(process_message *message_id)
 {
 
-    if (message_id->from_pid != get_current_cpu_process()->upid)
+    if (message_id->from_pid != process::current()->get_pid())
     {
         log("process", LOG_ERROR) << "not valid process from" << message_id->from_pid;
         return -1;
     }
 
-    uint64_t target_kpid = upid_to_kpid(message_id->to_pid);
-    if (process_array[target_kpid].current_process_state != PROCESS_WAITING && process_array[target_kpid].current_process_state != PROCESS_RUNNING)
+    auto target = process::from_pid(message_id->to_pid);
+    if (target == nullptr)
     {
-        log("process", LOG_ERROR) << "trying to send a message to a not started pid" << message_id->to_pid;
-        return -1;
+        return 0;
     }
 
-    process_message *msg = &process_array[target_kpid].msg_list[message_id->message_id];
+    process_message *msg = target->get_message(message_id->message_id);
 
     if (msg->has_been_readed == false)
     {
@@ -477,37 +453,33 @@ uint64_t message_response(process_message *message_id)
 
 void set_on_request_service(bool is_ORS)
 {
-
-    get_current_cpu_process()->is_ORS = is_ORS;
-    get_current_cpu_process()->should_be_active = true;
+    process::current()->set_on_request(is_ORS);
+    process::current()->set_active(true);
 }
 
 void set_on_request_service(bool is_ORS, uint64_t pid)
 {
 
-    uint64_t kpid = upid_to_kpid(pid);
-    process_array[kpid].is_ORS = is_ORS;
-    process_array[kpid].should_be_active = true;
+    auto proc = process::from_pid(pid);
+    if (proc == nullptr)
+    {
+        log("process", LOG_ERROR, "can't find process: {} for: {}", pid, __PRETTY_FUNCTION__);
+        return;
+    }
+    proc->set_on_request(is_ORS);
+    proc->set_active(true);
 }
 
 void on_request_service_update()
 {
-    get_current_cpu_process()->should_be_active = false;
+    process::current()->set_active(false);
 }
 
-uint64_t get_process_global_data_copy(uint64_t offset, const char *process_name)
+uintptr_t process::get_global_data_copy(uint64_t offset)
 {
-    uint64_t pid = get_pid_from_process_name(process_name);
-
-    uint64_t kpid = upid_to_kpid(pid);
-    if (kpid == (uint64_t)-1)
+    if (global_process_memory_length < offset + sizeof(uint64_t))
     {
-        log("process", LOG_ERROR) << "get global data copy, trying to get a non existant process : " << process_name;
-        return -1;
-    }
-    if (process_array[kpid].global_process_memory_length < offset + sizeof(uint64_t))
-    {
-        log("process", LOG_ERROR) << "getting out of range process data";
+        log("process", LOG_ERROR, "getting out of range process data {}", get_name());
         return -1;
     }
     else
@@ -517,60 +489,44 @@ uint64_t get_process_global_data_copy(uint64_t offset, const char *process_name)
         return *((uint64_t *)(data_from + offset));
     }
 }
-
-void *get_current_process_global_data(uint64_t offset, uint64_t length)
+uint64_t get_process_global_data_copy(uint64_t offset, const char *process_name)
 {
-    if (get_current_cpu_process()->global_process_memory_length < offset + length)
+
+    auto target = process::from_name(process_name);
+    if (target == nullptr)
     {
-        log("process", LOG_ERROR) << "getting out of range process data";
+        log("process", LOG_ERROR, "get global data copy, trying to get a non existant process: {}", process_name);
+        return -1;
+    }
+    return target->get_global_data_copy(offset);
+}
+
+void *process::get_global_data(uint64_t offset)
+{
+    if (global_process_memory_length < offset + sizeof(uint64_t))
+    {
+        log("process", LOG_ERROR, "getting out of range process data {}", get_name());
         return nullptr;
     }
     else
     {
-        return get_current_cpu_process()->global_process_memory + offset;
+
+        return global_process_memory + offset;
     }
 }
-
-void set_on_interrupt_process(uint8_t added_int)
+void *get_current_process_global_data(uint64_t offset, uint64_t length)
 {
-    get_current_cpu_process()->is_on_interrupt_process = true;
-
-    for (int i = 0; i < 8; i++)
-    {
-        if (get_current_cpu_process()->interrupt_handle_list[i] == 0)
-        {
-            get_current_cpu_process()->interrupt_handle_list[i] = added_int;
-            return;
-        }
-    }
-
-    log("process", LOG_ERROR) << "no free interrupt entry for process", get_current_cpu_process()->process_name;
+    return process::current()->get_global_data(offset);
 }
 
-uint64_t upid_to_kpid(uint64_t upid)
-{
-    for (int i = 0; i < MAX_PROCESS; i++)
-    {
-
-        if (process_array[i].upid == upid && (process_array[i].current_process_state != PROCESS_SHOULD_BE_DEAD && process_array[i].current_process_state != PROCESS_AVAILABLE))
-        {
-            return process_array[i].kpid;
-        }
-    }
-    log("process", LOG_ERROR) << "not founded process with upid : " << upid;
-    return -1;
-}
 void rename_process(const char *name, uint64_t pid)
 {
 
-    uint64_t kpid = upid_to_kpid(pid);
-    log("process", LOG_INFO) << "renamming process: " << process_array[kpid].process_name << " to : " << name;
+    process *target = process::from_pid(pid);
+    log("process", LOG_INFO) << "renamming process: " << target->get_name() << " to : " << name;
 
     lock_process();
-    memcpy(process_array[kpid].backed_name, process_array[kpid].process_name, 128);
-    memzero(process_array[kpid].process_name, 128);
-    memcpy(process_array[kpid].process_name, name, strlen(name) + 1);
-
+    target->rename(name);
     unlock_process();
 }
 
@@ -593,16 +549,16 @@ bool add_process_buffer(process_buffer *buf, uint64_t data_length, uint8_t *raw)
 void sleep(uint64_t count)
 {
     lock_process();
-    get_current_cpu_process()->sleeping += count;
+    process::current()->increase_sleep(count);
     unlock_process();
     yield();
 }
 
 void sleep(uint64_t count, uint64_t pid)
 {
-    uint64_t kpid = upid_to_kpid(pid);
     lock_process();
-    process_array[kpid].sleeping = count;
+
+    process::from_pid(pid)->increase_sleep(count);
     unlock_process();
 }
 
@@ -611,14 +567,14 @@ void dump_process()
     lock_process();
     for (int i = 0; i < MAX_PROCESS; i++)
     {
-        if (process_array[i].current_process_state != PROCESS_AVAILABLE)
+        if (process_array[i].is_used())
         {
             log("proc", LOG_DEBUG) << "info for process : " << i;
-            log("proc", LOG_INFO) << "process name     : " << process_array[i].process_name;
-            log("proc", LOG_INFO) << "process state    : " << (int)process_array[i].current_process_state;
-            log("proc", LOG_INFO) << "process cpu      : " << process_array[i].processor_target;
-            log("proc", LOG_INFO) << "process upid     : " << process_array[i].upid;
-            log("proc", LOG_INFO) << "process sleep    : " << process_array[i].sleeping;
+            log("proc", LOG_INFO) << "process name     : " << process_array[i].get_name();
+            log("proc", LOG_INFO) << "process state    : " << (int)process_array[i].get_state();
+            log("proc", LOG_INFO) << "process cpu      : " << process_array[i].get_cpu();
+            log("proc", LOG_INFO) << "process upid     : " << process_array[i].get_pid();
+            log("proc", LOG_INFO) << "process sleep    : " << process_array[i].get_sleep_count();
         }
     }
     unlock_process();
@@ -626,15 +582,15 @@ void dump_process()
 
 void kill(uint64_t pid)
 {
-    uint64_t kpid = upid_to_kpid(pid);
-    if (process_array[kpid].current_process_state != PROCESS_WAITING && process_array[kpid].current_process_state != PROCESS_RUNNING)
+    auto target = process::from_pid(pid);
+    if (target == nullptr)
     {
 
-        log("proc", LOG_WARNING) << "process " << pid << "is already dead";
+        log("proc", LOG_ERROR, "can't kill process {} ", pid);
         return;
     }
     lock_process();
+    target->kill();
     dying_process_count++;
-    process_array[kpid].current_process_state = PROCESS_SHOULD_BE_DEAD;
     unlock_process();
 }

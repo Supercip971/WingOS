@@ -9,11 +9,9 @@
 #include <smp.h>
 #include <stdint.h>
 #include <virtual.h>
-struct process;
 class cpu
 {
 public:
-    process *current_process;
     uint64_t stack_base;
     uint64_t current_processor_id;
     idtr cidt;
@@ -37,7 +35,6 @@ public:
 //local_data *get_current_data();
 //local_data *get_current_data(int id);
 extern cpu procData[smp::max_cpu];
-
 inline cpu *get_current_cpu()
 {
     uint64_t cc = 0;

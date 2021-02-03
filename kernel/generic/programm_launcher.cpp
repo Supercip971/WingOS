@@ -197,8 +197,8 @@ uint64_t launch_programm(const char *path, file_system *file_sys)
         elf64_load_entry(p_entry, programm_code, to_launch);
     }
 
-    to_launch->current_process_state = process_state::PROCESS_WAITING;
+    to_launch->set_state(process_state::PROCESS_WAITING);
     unlock(&file_sys->fs_lock);
     unlock_process();
-    return to_launch->upid;
+    return to_launch->get_pid();
 }

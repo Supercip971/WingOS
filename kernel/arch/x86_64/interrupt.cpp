@@ -146,7 +146,7 @@ bool is_interrupt_error(uint8_t intno)
 
 void update_backtrace(InterruptStackFrame *stackframe)
 {
-    get_current_cpu()->current_process->process_backtrace.add_entry(stackframe->rip);
+    process::current()->get_backtrace().add_entry(stackframe->rip);
     get_current_cpu()->local_backtrace.add_entry(stackframe->rip);
 }
 
@@ -165,14 +165,14 @@ void interrupt_error_handle(InterruptStackFrame *stackframe)
     printf("\n");
 
     log("pic", LOG_ERROR) << "current process backtrace : ";
-    get_current_cpu()->current_process->process_backtrace.dump_backtrace();
+    process::current()->get_backtrace().dump_backtrace();
     log("pic", LOG_ERROR) << "current cpu backtrace :";
     get_current_cpu()->local_backtrace.dump_backtrace();
 
-    if (get_current_cpu()->current_process != nullptr)
+    if (process::current() != nullptr)
     {
-        log("pic", LOG_INFO) << "in process: " << get_current_cpu()->current_process->process_name;
-        log("pic", LOG_INFO) << "in processor : " << get_current_cpu()->current_process->processor_target;
+        log("pic", LOG_INFO) << "in process: " << process::current()->get_name();
+        log("pic", LOG_INFO) << "in processor : " << process::current()->get_cpu();
         dump_process();
     }
     while (true)

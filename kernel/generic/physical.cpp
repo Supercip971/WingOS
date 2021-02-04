@@ -127,6 +127,6 @@ void init_physical_memory(stivale_struct *bootdata)
         }
         pmm_page_entry_count += mementry[i].length / PAGE_SIZE;
     }
-
+    pmm_bitmap.reset_last_free();
     log("pmm", LOG_INFO) << "free memory " << available_memory;
 }

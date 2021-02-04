@@ -32,6 +32,8 @@ public:
 
     size_t set_free(size_t idx, size_t length);
     size_t set_used(size_t idx, size_t length);
+
+    void reset_last_free() { last_free = 0; };
 };
 
 #endif // BITMAP_H

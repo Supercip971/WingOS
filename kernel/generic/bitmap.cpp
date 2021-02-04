@@ -6,6 +6,7 @@ bitmap::bitmap(uint8_t *data, size_t size) : bitmap_size(size)
     log("bitmap", LOG_INFO) << "creating bitmap " << (uint64_t)data << " of size " << size << "bit and " << size / 8 << "bytes";
     memset(data, 0xff, size / 8);
     buffer = data;
+    last_free = 0;
 }
 constexpr void bitmap::set(size_t idx, bool value)
 {
@@ -14,8 +15,8 @@ constexpr void bitmap::set(size_t idx, bool value)
         log("bitmap", LOG_ERROR) << "trying to read out of bound of the bitmap" << idx << " > " << bitmap_size;
         return;
     }
-    uint8_t bit = idx % 8;
-    uint64_t byte = idx / 8;
+    size_t bit = idx % 8;
+    size_t byte = idx / 8;
     if (value)
     {
         buffer[byte] |= (1 << (bit));
@@ -32,7 +33,9 @@ constexpr bool bitmap::get(size_t idx) const
         log("bitmap", LOG_ERROR) << "trying to read out of bound of the bitmap" << idx << " > " << bitmap_size;
         return false;
     }
-    return (buffer[idx / 8] & (1 << (idx % 8)));
+    size_t bit = idx % 8;
+    size_t byte = idx / 8;
+    return (buffer[byte] & (1 << (bit)));
 }
 size_t bitmap::find_free(size_t length)
 {
@@ -98,6 +101,7 @@ size_t bitmap::set_free(size_t idx, size_t length)
     {
         set(idx + i, false);
     }
+    last_free = idx;
     return 1;
 }
 size_t bitmap::set_used(size_t idx, size_t length)

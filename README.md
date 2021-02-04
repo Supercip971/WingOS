@@ -8,19 +8,12 @@ WingOS is a small hobbyist 64 bit kernel made with <3 ;
 
 *oh and i'm 14 years old so sorry if the code is not the best code in the world.*
 
-
-
-----
 ## Running:
 
 if you just want to run the os **without building** it, you can just install Qemu  (for Qemu argument you can see the Makefile) , and grab the latest Artifacts in the github action
 
----- 
-
 ## Building:
 for building you can take a look at the [Build guide](./Build_guide.md)
-
-----
 
 ## Support: 
 
@@ -33,8 +26,6 @@ for building you can take a look at the [Build guide](./Build_guide.md)
 - little gui 
 - ...
 
-----
-
 ## Planned: 
  - terminal app
  - fat32 support
@@ -43,8 +34,6 @@ for building you can take a look at the [Build guide](./Build_guide.md)
  - user app run in ring 3
  - better libc
  - ...
-
-----
 
 ## Screenshots:
 

@@ -2,15 +2,15 @@ DIRECTORY_GUARD=mkdir -p $(@D)
 
 ARCH := x86_64
 END_PATH := kernel/generic kernel/arch/$(ARCH)
+BUILD_OUT := ./build
 # kernel files
 CFILES    := $(shell find $(END_PATH) -type f -name '*.cpp')
 HFILES    := $(shell find $(END_PATH) -type f -name '*.h')
 ASMFILES  := $(shell find $(END_PATH) -type f -name '*.asm')
-OBJFILES := $(patsubst %.cpp,%.o,$(CFILES))
-ASMOBJFILES := $(patsubst %.asm,%.o,$(ASMFILES))
-DPEND_FILES := $(patsubst %.cpp,%.d,$(CFILES))
+OBJFILES := $(patsubst %.cpp,$(BUILD_OUT)/%.o,$(CFILES))
+ASMOBJFILES := $(patsubst %.asm,$(BUILD_OUT)/%.o,$(ASMFILES))
+DPEND_FILES := $(patsubst %.h,$(BUILD_OUT)/%.d,$(HFILES))
 LINK_PATH := ./kernel/arch/$(ARCH)/linker.ld
-
 # user_lib code files
 USRCFILES    := $(shell find usr_lib/ -type f -name '*.cpp')
 USRHFILES    := $(shell find usr_lib/ -type f -name '*.h')
@@ -23,7 +23,7 @@ CC         = ./cross_compiler/bin/x86_64-pc-elf-g++
 LD         = ./cross_compiler/bin/x86_64-pc-elf-ld
 ECHFS_PATH = ./echfs/echfs-utils
 
-OBJ := $(shell find $(END_PATH) -type f -name '*.o')
+OBJ := $(shell find $(BUILD_OUT) -type f -name '*.o')
 
 APP_FS_MAKEFILE_FLAGS 	= all -j$(nproc)
 APP_FS_CHANGE 			= ./usr_lib/ ./app/
@@ -32,6 +32,7 @@ APP_FILE_CHANGE 		= $(shell find $(APP_FS_CHANGE) -type f -name '*.cpp')
 KERNEL_HDD = ./build/disk.hdd
 KERNEL_ELF = kernel.elf
 
+.DEFAULT_GOAL =$(KERNEL_ELF)
 CHARDFLAGS := $(CFLAGS)               \
         -DBUILD_TIME='"$(BUILD_TIME)"' \
         -std=c++20                     \
@@ -64,7 +65,6 @@ LDHARDFLAGS := $(LDFLAGS)        \
         -z max-page-size=0x1000   \
         -T $(LINK_PATH)
 
-.DEFAULT_GOAL = $(KERNEL_HDD)
 
 .PHONY:setup_echfs_utils
 setup_echfs_utils:
@@ -141,11 +141,13 @@ check:
 	@make app -j12
 
 -include $(DPEND_FILES)
-%.o: %.cpp 
+$(BUILD_OUT)/%.o: %.cpp 
+	$(DIRECTORY_GUARD)
 	@echo "[KERNEL $(ARCH)] (cpp) $<"
 	@$(CC) $(CHARDFLAGS) -c $< -o $@
 
-%.o: %.asm
+$(BUILD_OUT)/%.o: %.asm
+	$(DIRECTORY_GUARD)
 	@echo "[KERNEL $(ARCH)] (nasm) $<"
 	@nasm $< -o $@ -felf64 -F dwarf -g -w+all -Werror
 

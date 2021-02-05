@@ -11,7 +11,7 @@ qemu make build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo 
 
 you can install everything in debian distribution with this command :
 ```bash
-sudo apt install  make build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo nasmqemu-system-x86 mtools wget unzip fuse libfuse-dev uuid-dev gcc binutils parted
+sudo apt install  make build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo nasm qemu mtools wget unzip fuse libfuse-dev uuid-dev gcc binutils parted
 ```
 
 ## CLONING

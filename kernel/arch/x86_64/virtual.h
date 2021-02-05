@@ -4,7 +4,6 @@
 #include <stivale_struct.h>
 #define KERNEL_PHYS_OFFSET ((uint64_t)0xffffffff80000000)
 #define MEM_PHYS_OFFSET ((uint64_t)0xffff800000000000)
-
 #define PML4_GET_INDEX(addr) (addr & ((uint64_t)0x1ff << 39)) >> 39
 #define PDPT_GET_INDEX(addr) (addr & ((uint64_t)0x1ff << 30)) >> 30
 #define PAGE_DIR_GET_INDEX(addr) (addr & ((uint64_t)0x1ff << 21)) >> 21
@@ -12,7 +11,7 @@
 #define FRAME_ADDR 0xfffffffffffff000
 
 #define PAGE_SIZE 4096
-#define TWO_MEGS 0x2000000
+#define TWO_MEGS (0x2000000)
 #define FOUR_GIGS 0x100000000
 #define BASIC_PAGE_FLAGS 0x03
 #define PAGE_TABLE_FLAGS 0x07
@@ -36,3 +35,5 @@ inline void virt_map(uint64_t from, uint64_t to, uint64_t flags)
     map_page(from, to, flags);
 }
 void init_vmm(stivale_struct *bootdata);
+
+uintptr_t alloc_vmm_page(size_t length);

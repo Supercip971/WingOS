@@ -1,10 +1,13 @@
 PROJECT_NAME := shell
-PROJECT_DIRS := . ../../usr_lib
+DIRECTORY_GUARD=mkdir -p $(@D)
+
+LIBS_DIR := ../../libs/
+BUILD_DIR := ../../build/
+PROJECT_DIRS := . $(LIBS_DIR)
 CFILES := $(shell find $(PROJECT_DIRS) -type f -name \*.cpp)
 HFILES := $(shell find $(PROJECT_DIRS) -type f -name \*.h)
 
-OBJ := ${CFILES:.cpp=.o}
-
+OBJ := $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(CFILES))
 CC = ../../cross_compiler/bin/x86_64-pc-elf-g++
 LD = ../../cross_compiler/bin/x86_64-pc-elf-ld
 CHARDFLAGS := $(CFLAGS)               \
@@ -15,8 +18,9 @@ CHARDFLAGS := $(CFLAGS)               \
         -fno-pic                       \
         -no-pie \
         -m64 \
-        -O2 \
+        -O1 \
         -Werror \
+        -msse \
         -mno-avx \
         -mno-avx2 \
         -mno-avx512f \
@@ -24,18 +28,17 @@ CHARDFLAGS := $(CFLAGS)               \
         -mno-red-zone                  \
         -fno-rtti \
         -fno-exceptions \
-				-ffreestanding                 \
+		-ffreestanding                 \
         -fno-stack-protector           \
         -fno-omit-frame-pointer        \
-        -I../../usr_lib -I.\
+        -I$(LIBS_DIR) -I$(LIBS_DIR)/libc -I$(LIBS_DIR)/utils \
 
 all: ${OBJ}
 	@$(LD) -nostdlib -no-pie -z max-page-size=0x1000 -T ../link.ld -o $(PROJECT_NAME).exe $(OBJ)
 	@$(LD) -nostdlib -no-pie -z max-page-size=0x1000 -T ../link.ld -o ../../init_fs/$(PROJECT_NAME).exe $(OBJ)
 
 
-%.o : %.cpp ${CFILES} ${HFILES}
+$(BUILD_DIR)/%.o : %.cpp ${CFILES} ${HFILES}
+	$(DIRECTORY_GUARD)
 	@echo "[C++] [BUILDING $(PROJECT_NAME)] $<"
 	@$(CC) $(CHARDFLAGS) -c $< -o $@
-
-

@@ -1,13 +1,16 @@
 #include <process_context.h>
 
 #include <arch.h>
+#include <ctypes.h>
 #include <elf_gnu_structure.h>
 #include <filesystem/file_system.h>
 #include <kernel.h>
-#include <liballoc.h>
 #include <logging.h>
 #include <process.h>
+#include <stdlib.h>
+#include <string.h>
 #include <utility.h>
+#include <utils/liballoc.h>
 uint8_t last_selected_cpu = 0;
 lock_type prg_launch = {0};
 void load_segment(process *pro, uintptr_t source, uint64_t size, uintptr_t dest, uint64_t destsize)
@@ -64,9 +67,9 @@ char *elf_to_readable_string(const char *string)
         }
         while (true)
         {
-
-            uint64_t string_to_read_length = strtoint(string + temp_idx);
-
+            // FIXME: just implement strtoint in libc
+            // uint64_t string_to_read_length = strtoint(string + temp_idx);
+            uint64_t string_to_read_length = 0;
             while (isdigit(string[temp_idx]) == true)
             {
                 temp_idx++;

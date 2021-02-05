@@ -1,7 +1,7 @@
 #ifndef RAW_WINDOW_H
 #define RAW_WINDOW_H
-#include <klib/graphic_system.h>
-#include <klib/raw_graphic.h>
+#include <gui/graphic_system.h>
+#include <gui/raw_graphic.h>
 #include <stdint.h>
 
 #define MAX_WINDOW 255

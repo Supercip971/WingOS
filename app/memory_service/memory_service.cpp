@@ -1,11 +1,9 @@
-#include <kgui/window.h>
-#include <klib/graphic_system.h>
-#include <klib/kernel_util.h>
-#include <klib/mem_util.h>
-#include <klib/process_message.h>
-#include <klib/syscall.h>
+#include <kern/kernel_util.h>
+#include <kern/mem_util.h>
+#include <kern/process_message.h>
+#include <kern/syscall.h>
 //#include <feather_language_lib/feather.h>
-#include <klib/raw_graphic.h>
+#include <gui/raw_graphic.h>
 #include <stdio.h>
 struct memory_map_children
 {

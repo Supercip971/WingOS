@@ -2,9 +2,9 @@
 #include <device/local_data.h>
 #include <gdt.h>
 #include <kernel.h>
-#include <liballoc.h>
 #include <logging.h>
 #include <utility.h>
+#include <utils/liballoc.h>
 
 gdt_descriptor gdt_descriptors[64];
 

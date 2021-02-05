@@ -1,8 +1,8 @@
 #include <com.h>
 #include <device/acpi.h>
 #include <device/madt.h>
-#include <liballoc.h>
 #include <logging.h>
+#include <utils/liballoc.h>
 madt main_madt;
 madt::madt()
 {

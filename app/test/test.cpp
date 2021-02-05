@@ -1,14 +1,14 @@
-#include <kgui/window.h>
-#include <klib/graphic_system.h>
-#include <klib/kernel_util.h>
-#include <klib/mem_util.h>
-#include <klib/process_message.h>
-#include <klib/syscall.h>
+#include <gui/graphic_system.h>
+#include <gui/window.h>
+#include <kern/kernel_util.h>
+#include <kern/mem_util.h>
+#include <kern/process_message.h>
+#include <kern/syscall.h>
 //#include <feather_language_lib/feather.h>
-#include <kgui/widget/button_widget.h>
-#include <kgui/widget/rectangle_widget.h>
-#include <klib/process_buffer.h>
-#include <klib/raw_graphic.h>
+#include <gui/raw_graphic.h>
+#include <gui/widget/button_widget.h>
+#include <gui/widget/rectangle_widget.h>
+#include <kern/process_buffer.h>
 #include <stdio.h>
 #include <stdlib.h>
 void click(uint64_t t)

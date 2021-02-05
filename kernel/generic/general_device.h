@@ -1,6 +1,7 @@
 #ifndef GENERAL_DEVICE_H
 #define GENERAL_DEVICE_H
 #include <stdint.h>
+#include <stdlib.h>
 #define MAX_DEVICE 128
 enum device_type : uint32_t
 {

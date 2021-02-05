@@ -2,8 +2,8 @@
 #include <com.h>
 #include <device/network/e1000.h>
 #include <interrupt.h>
-#include <liballoc.h>
 #include <logging.h>
+#include <utils/liballoc.h>
 #include <virtual.h>
 e1000 main_e1000;
 e1000::e1000()

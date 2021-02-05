@@ -1,9 +1,8 @@
 
+#include <arch.h>
 #include <device/local_data.h>
 #include <kernel.h>
 #include <logging.h>
-
-#include <arch.h>
 lock_type log_locker;
 // ------------------------ SHOULD BE REMOVED START ------------------------
 

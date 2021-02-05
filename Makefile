@@ -1,7 +1,7 @@
 DIRECTORY_GUARD=mkdir -p $(@D)
 
 ARCH := x86_64
-END_PATH := kernel/generic kernel/arch/$(ARCH)
+END_PATH := kernel/generic kernel/arch/$(ARCH) libs/libc libs/utils
 BUILD_OUT := ./build
 # kernel files
 CFILES    := $(shell find $(END_PATH) -type f -name '*.cpp')
@@ -12,8 +12,8 @@ ASMOBJFILES := $(patsubst %.asm,$(BUILD_OUT)/%.o,$(ASMFILES))
 DPEND_FILES := $(patsubst %.h,$(BUILD_OUT)/%.d,$(HFILES))
 LINK_PATH := ./kernel/arch/$(ARCH)/linker.ld
 # user_lib code files
-USRCFILES    := $(shell find usr_lib/ -type f -name '*.cpp')
-USRHFILES    := $(shell find usr_lib/ -type f -name '*.h')
+USRCFILES    := $(shell find libs/ -type f -name '*.cpp')
+USRHFILES    := $(shell find libs/ -type f -name '*.h')
 # user app code files
 USRAPPCFILES := $(shell find app/ -type f -name '*.cpp')
 USRAPPHFILES := $(shell find app/ -type f -name '*.h')
@@ -26,7 +26,7 @@ ECHFS_PATH = ./echfs/echfs-utils
 OBJ := $(shell find $(BUILD_OUT) -type f -name '*.o')
 
 APP_FS_MAKEFILE_FLAGS 	= all -j$(nproc)
-APP_FS_CHANGE 			= ./usr_lib/ ./app/
+APP_FS_CHANGE 			= ./libs/ ./app/
 APP_FILE_CHANGE 		= $(shell find $(APP_FS_CHANGE) -type f -name '*.cpp')
 
 KERNEL_HDD = ./build/disk.hdd
@@ -41,23 +41,25 @@ CHARDFLAGS := $(CFLAGS)               \
         -fno-pic                       \
         -no-pie \
         -m64 \
-		-Wall \
-		-MD \
-		-MMD \
-		-Werror \
+	      -Wall \
+	      -MD \
+	      -MMD \
+	      -Werror \
         -O2 \
         -mcmodel=kernel \
         -mno-80387                     \
         -mno-red-zone                  \
         -fno-rtti \
         -fno-exceptions \
-		-ffreestanding                 \
+	      -ffreestanding                 \
         -fno-stack-protector           \
         -fno-omit-frame-pointer        \
-		-fno-isolate-erroneous-paths-attribute \
-		-fno-delete-null-pointer-checks \
-		-I./kernel/generic                        \
-		-I./kernel/arch/$(ARCH) \
+	      -fno-isolate-erroneous-paths-attribute \
+        -fno-delete-null-pointer-checks \
+        -I./kernel/generic                        \
+	      -I./kernel/arch/$(ARCH) \
+        -I./libs/libc \
+        -I./libs/
 
 LDHARDFLAGS := $(LDFLAGS)        \
         -nostdlib                 \

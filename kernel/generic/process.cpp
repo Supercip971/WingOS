@@ -1,11 +1,12 @@
 #include <64bit.h>
 #include <com.h>
 #include <kernel.h>
-#include <liballoc.h>
 #include <logging.h>
 #include <process.h>
+#include <stdlib.h>
 #include <syscall.h>
 #include <utility.h>
+#include <utils/liballoc.h>
 
 bool cpu_wait = false;
 process *process_array = nullptr;
@@ -79,6 +80,7 @@ void utility_process()
                 lock_process();
 
                 log("proc", LOG_INFO) << "killing process [" << i << "] : " << process_array[i].get_name();
+
                 process_array[i].destroy();
                 dying_process_count--;
                 unlock((&process_creator_lock));
@@ -90,7 +92,7 @@ void utility_process()
 }
 void init_multi_process(func start)
 {
-    log("proc", LOG_DEBUG) << "loading multi processing";
+    log("proc", LOG_DEBUG, "loading multi processing");
 
     process_array = reinterpret_cast<process *>(malloc(sizeof(process) * MAX_PROCESS + PAGE_SIZE));
     process::set_current(nullptr);
@@ -104,7 +106,7 @@ void init_multi_process(func start)
 
     init_process(start, true, "kernel process", false);
 
-    log("proc", LOG_INFO) << "loading smp process for cpus :" << get_cpu_count();
+    log("proc", LOG_INFO, "loading smp process for cpus: {}", get_cpu_count());
 
     for (size_t i = 0; i <= get_cpu_count(); i++)
     {
@@ -176,7 +178,7 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
     int64_t process_to_add_kpid = find_free_process();
     if (process_to_add_kpid == -1)
     {
-        log("proc", LOG_ERROR) << "init_process : no free process found";
+        log("process", LOG_ERROR, "no free process founded");
         return nullptr;
     }
 
@@ -186,8 +188,7 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
     auto process_to_add = &process_array[process_to_add_kpid];
     *process_to_add = process(name, process_to_add_kpid, next_upid, reinterpret_cast<uintptr_t>(entry_point), user);
     process_to_add->set_state(process_state::PROCESS_NOT_STARTED);
-    log("proc", LOG_INFO) << "adding process" << process_to_add->get_pid() << "entry : " << (uint64_t)entry_point << "name : " << name;
-
+    log("process", LOG_INFO, "adding process: {} entry: {} name: {}", process_to_add->get_pid(), reinterpret_cast<uintptr_t>(entry_point), process_to_add->get_name());
     process_to_add->init_global_memory();
     process_to_add->init_message_system();
     init_process_stackframe(process_to_add, entry_point);
@@ -234,9 +235,9 @@ process *get_next_process(uint64_t current_id)
         return get_next_process(0);
     }
 
-    log("proc", LOG_ERROR) << "no process found";
-    log("proc", LOG_ERROR) << "from cpu : " << get_current_cpu_id();
-    log("proc", LOG_ERROR) << "maybe from : " << process::current()->get_name();
+    log("proc", LOG_ERROR, "no process found");
+    log("proc", LOG_ERROR, "from cpu: {}", get_current_cpu_id());
+    log("proc", LOG_ERROR, "maybe from: {}", process::current()->get_name());
 
     dump_process();
     return process::current();
@@ -419,7 +420,7 @@ uint64_t message_response(process_message *message_id)
 
     if (message_id->from_pid != process::current()->get_pid())
     {
-        log("process", LOG_ERROR) << "not valid process from" << message_id->from_pid;
+        log("process", LOG_ERROR, "not valid process from: {}", message_id->from_pid);
         return -1;
     }
 
@@ -437,7 +438,7 @@ uint64_t message_response(process_message *message_id)
     }
     else if (msg->entry_free_to_use == true)
     {
-        log("process", LOG_ERROR) << "message has already been readed";
+        log("process", LOG_ERROR, "message has already been readed");
         return -3;
     }
     else
@@ -505,7 +506,7 @@ void *process::get_global_data(uint64_t offset)
 {
     if (global_process_memory_length < offset + sizeof(uint64_t))
     {
-        log("process", LOG_ERROR, "getting out of range process data {}", get_name());
+        log("process", LOG_ERROR, "getting out of range process data for: {}", get_name());
         return nullptr;
     }
     else
@@ -523,7 +524,7 @@ void rename_process(const char *name, uint64_t pid)
 {
 
     process *target = process::from_pid(pid);
-    log("process", LOG_INFO) << "renamming process: " << target->get_name() << " to : " << name;
+    log("process", LOG_INFO, "renamming process: {} to: {}", target->get_name(), name);
 
     lock_process();
     target->rename(name);
@@ -569,12 +570,12 @@ void dump_process()
     {
         if (process_array[i].is_used())
         {
-            log("proc", LOG_DEBUG) << "info for process : " << i;
-            log("proc", LOG_INFO) << "process name     : " << process_array[i].get_name();
-            log("proc", LOG_INFO) << "process state    : " << (int)process_array[i].get_state();
-            log("proc", LOG_INFO) << "process cpu      : " << process_array[i].get_cpu();
-            log("proc", LOG_INFO) << "process upid     : " << process_array[i].get_pid();
-            log("proc", LOG_INFO) << "process sleep    : " << process_array[i].get_sleep_count();
+            log("proc", LOG_DEBUG, "info for process: {}", i);
+            log("proc", LOG_INFO, "process name : {}", process_array[i].get_name());
+            log("proc", LOG_INFO, "process state: {}", (int)process_array[i].get_state());
+            log("proc", LOG_INFO, "process cpu  : {}", process_array[i].get_cpu());
+            log("proc", LOG_INFO, "process upid : {}", process_array[i].get_pid());
+            log("proc", LOG_INFO, "process sleep: {}", process_array[i].get_sleep_count());
         }
     }
     unlock_process();

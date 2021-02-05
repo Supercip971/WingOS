@@ -3,9 +3,10 @@
 #include <com.h>
 #include <general_device.h>
 #include <lock.h>
-#include <print.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 #include <utility.h>
 enum log_state
 {

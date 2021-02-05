@@ -3,9 +3,9 @@
 #include <com.h>
 #include <device/ata_driver.h>
 #include <interrupt.h>
-#include <liballoc.h>
 #include <lock.h>
 #include <logging.h>
+#include <utils/liballoc.h>
 ata_driver main_driver;
 int waiting_for_irq = 0;
 lock_type waitin_irq_read_write_lock;

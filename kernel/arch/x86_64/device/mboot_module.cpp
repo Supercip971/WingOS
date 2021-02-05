@@ -2,9 +2,9 @@
 #include <com.h>
 #include <device/mboot_module.h>
 #include <kernel.h>
-#include <liballoc.h>
 #include <logging.h>
 #include <utility.h>
+#include <utils/liballoc.h>
 mboot_module main_boot_module_list;
 mboot_module::mboot_module()
 {

@@ -5,11 +5,11 @@
 #include <filesystem/echfs.h>
 #include <io_device.h>
 #include <kernel.h>
-#include <liballoc.h>
 #include <lock.h>
 #include <logging.h>
 #include <physical.h>
 #include <utility.h>
+#include <utils/liballoc.h>
 
 ext2fs::ext2fs()
     : file_system()

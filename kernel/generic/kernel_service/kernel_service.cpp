@@ -3,7 +3,6 @@
 #include <kernel_service/kernel_buffer_service.h>
 #include <kernel_service/kernel_process_service.h>
 #include <kernel_service/kernel_service.h>
-#include <kernel_service/memory_service.h>
 #include <kernel_service/print_service.h>
 #include <kernel_service/ps2_device_service.h>
 #include <kernel_service/time_service.h>

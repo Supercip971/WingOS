@@ -175,13 +175,6 @@ struct message_identifier
 } __attribute__((packed));
 
 extern process *process_array;
-// TODO: make a get_current_process() function
-
-/* if cpu_target == -1
- *  select the current cpu
- * if cpu_target == -2
- *  process select the 'least' used cpu
- */
 
 process *init_process(func entry_point, bool start_direct, const char *name, bool user, uint64_t cpu_target = CURRENT_CPU);
 void init_multi_process(func start);

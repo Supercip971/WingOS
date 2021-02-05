@@ -1,9 +1,11 @@
 #include "userspace_fs.h"
 #include <device/local_data.h>
 #include <filesystem/file_system.h>
-#include <liballoc.h>
 #include <logging.h>
+#include <stdlib.h>
+#include <string.h>
 #include <utility.h>
+#include <utils/liballoc.h>
 lock_type handle_lock;
 #define SEEK_SET 0
 #define SEEK_CUR 1

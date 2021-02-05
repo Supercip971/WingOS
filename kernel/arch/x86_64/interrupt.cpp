@@ -20,7 +20,6 @@
 #include <utility.h>
 
 extern lock_type log_locker;
-extern lock_type print_locker;
 struct interrupt_handler_specific_array
 {
     irq_handler_func function_list[8]; // max 8 handler for an irq;
@@ -194,7 +193,6 @@ ASM_FUNCTION uintptr_t interrupts_handler(InterruptStackFrame *stackframe)
     if (is_interrupt_error(stackframe->int_no))
     {
         log_locker.data = 0;
-        print_locker.data = 0;
         interrupt_error_handle(stackframe);
     }
 

@@ -1,10 +1,10 @@
-#include <flib/json_parser.h>
-#include <klib/file.h>
-#include <klib/kernel_file_system.h>
-#include <klib/kernel_util.h>
-#include <klib/process_buffer.h>
-#include <klib/process_message.h>
-#include <klib/syscall.h>
+#include <kern/file.h>
+#include <kern/kernel_util.h>
+#include <kern/process_buffer.h>
+#include <kern/process_message.h>
+#include <kern/syscall.h>
+#include <utils/json_parser.h>
+
 #include <stdio.h>
 int main(int argc, char **argv)
 {

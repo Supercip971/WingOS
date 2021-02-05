@@ -1,9 +1,9 @@
 #include "ahci.h"
 #include <arch.h>
 #include <io_device.h>
-#include <liballoc.h>
 #include <logging.h>
 #include <utility.h>
+#include <utils/liballoc.h>
 lock_type ahci_lock;
 
 void ahci::init()

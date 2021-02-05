@@ -25,20 +25,17 @@ struct arch_process_data
 
     uint64_t page_directory = 0;
 };
-inline void
-halt_interrupt()
-{
 
+inline void halt_interrupt()
+{
     asm volatile("hlt");
 }
 inline void turn_on_interrupt()
 {
-
     asm volatile("sti");
 }
 inline void turn_off_interrupt()
 {
-
     asm volatile("cli");
 }
 

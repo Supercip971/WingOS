@@ -1,12 +1,12 @@
 #include <device/local_data.h>
 #include <gdt.h>
-#include <liballoc.h>
 #include <lock.h>
 #include <process.h>
 #include <process_context.h>
 #include <smp.h>
 #include <sse.h>
 #include <utility.h>
+#include <utils/liballoc.h>
 #include <virtual.h>
 extern int process_locked;
 extern bool cpu_wait;

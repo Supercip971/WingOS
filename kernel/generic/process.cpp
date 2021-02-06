@@ -7,13 +7,14 @@
 #include <syscall.h>
 #include <utility.h>
 #include <utils/liballoc.h>
+#include <utils/lock.h>
 
 bool cpu_wait = false;
 process *process_array = nullptr;
 int process_locked = 1;
 bool process_loaded = false;
 
-lock_type process_creator_lock = {0};
+wos::lock_type process_creator_lock;
 uint64_t last_process = 0;
 process *current_cpu_process[255]; // FIXME: don't use 255 and use a #define
 
@@ -26,7 +27,7 @@ void process::set_current(process *target)
     current_cpu_process[get_current_cpu_id()] = target;
 }
 
-lock_type task_lock = {0};
+wos::lock_type task_lock;
 int dying_process_count = 0;
 uint64_t next_upid = 1;
 
@@ -76,14 +77,14 @@ void utility_process()
             }
             if (process_array[i].get_state() == PROCESS_SHOULD_BE_DEAD)
             {
-                lock((&process_creator_lock));
+                process_creator_lock.lock();
                 lock_process();
 
                 log("proc", LOG_INFO) << "killing process [" << i << "] : " << process_array[i].get_name();
 
                 process_array[i].destroy();
                 dying_process_count--;
-                unlock((&process_creator_lock));
+                process_creator_lock.unlock();
                 unlock_process();
             }
         }
@@ -174,7 +175,7 @@ void process::init_message_system()
 
 process *init_process(func entry_point, bool start_direct, const char *name, bool user, uint64_t cpu_target)
 {
-    flock((&process_creator_lock));
+    process_creator_lock.lock();
     int64_t process_to_add_kpid = find_free_process();
     if (process_to_add_kpid == -1)
     {
@@ -207,7 +208,7 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
     {
         process_to_add->set_state(process_state::PROCESS_WAITING);
     }
-    unlock((&process_creator_lock));
+    process_creator_lock.unlock();
 
     return process_to_add;
 }

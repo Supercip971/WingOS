@@ -3,7 +3,7 @@
 #include <logging.h>
 #include <process.h>
 #include <syscall.h>
-lock_type lck_syscall = {0};
+wos::lock_type msg_lock;
 typedef uint64_t (*syscall_functions)(uint64_t syscall_id, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5);
 InterruptStackFrame *stakframe_testing;
 uint64_t sys$null(const char *arg1)
@@ -14,32 +14,32 @@ uint64_t sys$null(const char *arg1)
 }
 process_message *sys$send_message(uintptr_t data_addr, uint64_t data_length, const char *to_process)
 {
-    lock(&lck_syscall);
+    msg_lock.lock();
     auto res = send_message(data_addr, data_length, to_process);
 
-    unlock(&lck_syscall);
+    msg_lock.unlock();
     return res;
 }
 process_message *sys$read_message()
 {
-    lock(&lck_syscall);
+    msg_lock.lock();
     auto v = read_message();
 
-    unlock(&lck_syscall);
+    msg_lock.unlock();
     return v;
 }
 uint64_t sys$message_response(process_message *identifier)
 {
-    lock(&lck_syscall);
+    msg_lock.lock();
     auto v = message_response(identifier);
 
-    unlock(&lck_syscall);
+    msg_lock.unlock();
     return v;
 }
 uint64_t sys$get_process_global_data(const char *target, uint64_t offset, uint64_t length)
 {
 
-    lock(&lck_syscall);
+    msg_lock.lock();
     uintptr_t v = 0;
     if (target == nullptr)
     {
@@ -50,15 +50,15 @@ uint64_t sys$get_process_global_data(const char *target, uint64_t offset, uint64
         v = (uintptr_t)get_process_global_data_copy(offset, target);
     }
 
-    unlock(&lck_syscall);
+    msg_lock.unlock();
     return v;
 }
 process_message *sys$send_message_pid(uintptr_t data_addr, uint64_t data_length, uint64_t to_process)
 {
-    lock(&lck_syscall);
+    msg_lock.lock();
     auto res = send_message_pid(data_addr, data_length, to_process);
 
-    unlock(&lck_syscall);
+    msg_lock.unlock();
     return res;
 }
 void *sys$alloc(uint64_t count)

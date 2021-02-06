@@ -5,10 +5,11 @@
 #include <logging.h>
 #include <physical.h>
 #include <utility.h>
+#include <utils/lock.h>
 bitmap pmm_bitmap;
 extern "C" uint64_t kernel_end;
 extern "C" uint64_t addr_kernel_start;
-lock_type pmm_lock = {0};
+wos::lock_type pmm_lock;
 uint64_t available_memory;
 uint64_t bitmap_base;
 uint64_t pmm_length = 0;
@@ -27,7 +28,7 @@ uint64_t get_total_memory()
 
 void *pmm_alloc(uint64_t lenght)
 {
-    flock(&pmm_lock);
+    pmm_lock.lock();
     used_memory += lenght;
     if (used_memory >= available_memory)
     {
@@ -36,28 +37,28 @@ void *pmm_alloc(uint64_t lenght)
 
     uint64_t res = pmm_bitmap.alloc(lenght);
 
-    unlock(&pmm_lock);
+    pmm_lock.unlock();
     return (void *)(res * PAGE_SIZE);
 }
 
 void *pmm_alloc_zero(uint64_t lenght)
 {
     void *d = pmm_alloc(lenght);
-    flock(&pmm_lock);
+    pmm_lock.lock();
     uint64_t *pages = (get_mem_addr<uint64_t *>((uint64_t)d));
 
     for (uint64_t i = 0; i < (lenght * PAGE_SIZE) / sizeof(uint64_t); i++)
     {
         pages[i] = 0;
     }
-    unlock(&pmm_lock);
+    pmm_lock.unlock();
 
     return d;
 }
 
 void pmm_free(void *where, uint64_t lenght)
 {
-    flock(&pmm_lock);
+    pmm_lock.lock();
     used_memory -= lenght;
     uint64_t where_aligned = (uint64_t)where;
     where_aligned /= PAGE_SIZE;
@@ -68,7 +69,7 @@ void pmm_free(void *where, uint64_t lenght)
         return;
     }
     pmm_bitmap.set_free((uint64_t)where / PAGE_SIZE, lenght);
-    unlock(&pmm_lock);
+    pmm_lock.unlock();
 }
 
 void init_physical_memory(stivale_struct *bootdata)

@@ -2,12 +2,12 @@
 #define LOGGING_H
 #include <com.h>
 #include <general_device.h>
-#include <lock.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <utility.h>
+#include <utils/lock.h>
 enum log_state
 {
     LOG_INFO = 0,

@@ -3,7 +3,7 @@
 #include <device/local_data.h>
 #include <kernel.h>
 #include <logging.h>
-lock_type log_locker;
+wos::lock_type log_locker;
 // ------------------------ SHOULD BE REMOVED START ------------------------
 
 // ------------------------ SHOULD BE REMOVED END ------------------------
@@ -98,13 +98,13 @@ void slog(const char *msg)
 }
 void start_log()
 {
-    flock(&log_locker);
+    log_locker.lock();
     lock_process();
 }
 void end_log()
 {
     unlock_process();
-    unlock(&log_locker);
+    log_locker.unlock();
 }
 
 void logging::set_log_type(const char *data, log_state log_state)

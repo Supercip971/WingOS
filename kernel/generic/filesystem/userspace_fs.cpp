@@ -6,7 +6,8 @@
 #include <string.h>
 #include <utility.h>
 #include <utils/liballoc.h>
-lock_type handle_lock;
+#include <utils/lock.h>
+wos::lock_type handle_lock;
 #define SEEK_SET 0
 #define SEEK_CUR 1
 #define SEEK_END 2
@@ -22,7 +23,7 @@ ram_file rmf;
 ram_dir *ram_directory[1];
 void init_process_userspace_fs(per_process_userspace_fs &target)
 {
-    lock(&handle_lock);
+    handle_lock.lock();
     for (int i = 0; i < per_process_userspace_fs::ram_files_count; i++)
     {
         target.ram_files[i] = &rmf;
@@ -32,7 +33,7 @@ void init_process_userspace_fs(per_process_userspace_fs &target)
     target.ram_files[1] = new std_stdout_file();
     target.ram_files[2] = new std_stderr_file();
     target.ram_files[3] = new std_stdin_file();
-    unlock(&handle_lock);
+    handle_lock.unlock();
 }
 
 ram_file *process_ramdir::get(const char *msg)
@@ -294,7 +295,7 @@ size_t fs_write(int fd, const void *buffer, size_t count)
 
 int fs_open(const char *path_name, int flags, int mode)
 {
-    lock(&handle_lock);
+    handle_lock.lock();
     int fd = get_free_handle();
     if (fd == -1)
     {
@@ -303,7 +304,7 @@ int fs_open(const char *path_name, int flags, int mode)
         return 0;
     }
     set_used_handle(fd);
-    unlock(&handle_lock);
+    handle_lock.unlock();
     fs_handle_table[fd].rpid = process::current()->get_pid();
     fs_handle_table[fd].path = path_name;
     fs_handle_table[fd].mode = mode;
@@ -366,12 +367,12 @@ int fs_close(int fd)
 
         return 0;
     }
-    lock(&handle_lock);
+    handle_lock.lock();
 
     set_free_handle(fd);
     log("fs", LOG_INFO, "process {} closed {}", process::current()->get_name(), file->path);
 
-    unlock(&handle_lock);
+    handle_lock.unlock();
     return 1;
 }
 

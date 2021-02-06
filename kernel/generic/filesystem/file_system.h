@@ -1,8 +1,9 @@
 #pragma once
 #include <filesystem/partition/base_partition.h>
 #include <filesystem/userspace_fs.h>
-#include <lock.h>
 #include <logging.h>
+#include <utils/lock.h>
+
 #include <stdint.h>
 class fs_file
 {
@@ -18,7 +19,7 @@ protected:
 class file_system
 {
 public:
-    lock_type fs_lock = {0};
+    wos::lock_type fs_lock;
     file_system();
     virtual void init(uint64_t start_sector, uint64_t sector_count) = 0;
 

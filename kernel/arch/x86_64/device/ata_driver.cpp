@@ -3,12 +3,12 @@
 #include <com.h>
 #include <device/ata_driver.h>
 #include <interrupt.h>
-#include <lock.h>
 #include <logging.h>
 #include <utils/liballoc.h>
+#include <utils/lock.h>
 ata_driver main_driver;
+wos::lock_type ata_lock;
 int waiting_for_irq = 0;
-lock_type waitin_irq_read_write_lock;
 ata_driver::ata_driver()
 {
 }
@@ -110,10 +110,9 @@ void ata_driver::irq_handle(uint64_t irq_handle_num)
         //    printf("[ERROR] ata driver receive not supported irq");
     }
 }
-lock_type ata_lock = {0};
 void ata_driver::read(uint64_t where, uint32_t count, uint8_t *buffer)
 {
-    flock(&ata_lock);
+    ata_lock.lock();
     waiting_for_irq = 1;
     ata_write(true, ATA_reg_selector, 0x40 | 0xE0);
     ata_write(true, ATA_reg_error_feature, 0);
@@ -145,6 +144,7 @@ void ata_driver::read(uint64_t where, uint32_t count, uint8_t *buffer)
 
             uint8_t error = ata_read(true, ATA_reg_error_feature);
             log("ata", LOG_ERROR) << "ata error" << error;
+            ata_lock.unlock();
             return;
         }
         for (uint16_t i = 0; i < 256; i++)
@@ -153,6 +153,6 @@ void ata_driver::read(uint64_t where, uint32_t count, uint8_t *buffer)
         }
         off += 256;
     }
-    unlock(&ata_lock);
+    ata_lock.unlock();
     return;
 }

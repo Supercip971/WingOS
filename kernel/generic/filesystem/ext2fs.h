@@ -165,6 +165,7 @@ struct ext2fs_block_group_descriptor
 
 class ext2fs : public file_system
 {
+    wos::lock_type ext_lock;
     uint64_t inode_per_group;
     constexpr uint64_t get_group_from_inode(uint64_t inode);
     constexpr uint64_t get_local_group_inode_from_inode(uint64_t inode);

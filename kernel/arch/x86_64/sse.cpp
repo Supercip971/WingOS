@@ -1,4 +1,4 @@
-#include <lock.h>
+#include <utils/lock.h>
 #define SSE_LOW_LEVEL_FUNC __attribute__((optimize("O2")))
 #include <device/local_data.h>
 #include <logging.h>
@@ -11,7 +11,7 @@ ASM_FUNCTION void asm_sse_load(uintptr_t addr);
 
 uint64_t *fpu_reg;
 uint64_t fpu_data[128] __attribute__((aligned(16)));
-lock_type sse_lock = {0};
+wos::lock_type sse_lock;
 
 SSE_LOW_LEVEL_FUNC void init_sse()
 {
@@ -25,24 +25,24 @@ SSE_LOW_LEVEL_FUNC void init_sse()
 
 SSE_LOW_LEVEL_FUNC void save_sse_context(uint64_t *context)
 {
-    lock(&sse_lock);
+    sse_lock.lock();
     asm_sse_save(((uintptr_t)fpu_data));
     for (int i = 0; i < 128; i++)
     {
         context[i] = fpu_data[i];
     }
-    unlock(&sse_lock);
+    sse_lock.unlock();
 }
 
 SSE_LOW_LEVEL_FUNC void load_sse_context(uint64_t *context)
 {
 
-    lock((&sse_lock));
+    sse_lock.lock();
     for (int i = 0; i < 128; i++)
     {
         fpu_data[i] = context[i];
     }
     asm_sse_load(((uintptr_t)fpu_data));
 
-    unlock(&sse_lock);
+    sse_lock.unlock();
 }

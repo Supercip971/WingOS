@@ -1,7 +1,6 @@
 #include <arch.h>
 #include <com.h>
 #include <kernel.h>
-#include <lock.h>
 #include <process.h>
 #include <stdarg.h>
 #include <utility.h>

@@ -11,15 +11,15 @@
 #include <gdt.h>
 #include <interrupt.h>
 #include <kernel.h>
-#include <lock.h>
 #include <logging.h>
 #include <pic.h>
 #include <process.h>
 #include <smp.h>
 #include <syscall.h>
 #include <utility.h>
+#include <utils/lock.h>
 
-extern lock_type log_locker;
+extern wos::lock_type log_locker;
 struct interrupt_handler_specific_array
 {
     irq_handler_func function_list[8]; // max 8 handler for an irq;
@@ -192,7 +192,7 @@ ASM_FUNCTION uintptr_t interrupts_handler(InterruptStackFrame *stackframe)
     }
     if (is_interrupt_error(stackframe->int_no))
     {
-        log_locker.data = 0;
+        log_locker.unlock();
         interrupt_error_handle(stackframe);
     }
 

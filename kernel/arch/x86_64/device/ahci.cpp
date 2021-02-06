@@ -4,7 +4,7 @@
 #include <logging.h>
 #include <utility.h>
 #include <utils/liballoc.h>
-lock_type ahci_lock;
+wos::lock_type ahci_lock;
 
 void ahci::init()
 {
@@ -149,7 +149,7 @@ void ahci_ata_device::end_command()
 }
 generic_io_device::io_rw_output ahci_ata_device::read(uint8_t *data, uint64_t count, uint64_t cursor)
 {
-    flock(&ahci_lock);
+    ahci_lock.lock();
     uint16_t *rdata = (uint16_t *)data;
     port->interrupt_status = (uint32_t)-1;
     int spin_timeout = 0;
@@ -217,13 +217,12 @@ generic_io_device::io_rw_output ahci_ata_device::read(uint8_t *data, uint64_t co
         return io_rw_output::io_ERROR;
     }
     end_command();
-    unlock(&ahci_lock);
+    ahci_lock.unlock();
     return io_rw_output::io_OK;
 }
 generic_io_device::io_rw_output ahci_ata_device::write(uint8_t *data, uint64_t count, uint64_t cursor)
 {
-
-    flock(&ahci_lock);
+    ahci_lock.lock();
     uint16_t *rdata = (uint16_t *)data;
     port->interrupt_status = (uint32_t)-1;
     int spin_timeout = 0;
@@ -291,7 +290,7 @@ generic_io_device::io_rw_output ahci_ata_device::write(uint8_t *data, uint64_t c
         return io_rw_output::io_ERROR;
     }
     end_command();
-    unlock(&ahci_lock);
+    ahci_lock.unlock();
     return io_rw_output::io_OK;
 }
 int ahci_ata_device::find_command_slot()

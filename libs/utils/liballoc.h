@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <system_plug.h>
+#include <utils/lock.h>
 namespace wos
 {
 
@@ -20,7 +21,18 @@ namespace wos
 
 //This lets you prefix malloc and friends
 #define PREFIX(func) w##func
+    extern lock_type liballoc_locker;
 
+    inline int liballoc_lock()
+    {
+        liballoc_locker.lock();
+        return 0;
+    }
+    inline int liballoc_unlock()
+    {
+        liballoc_locker.unlock();
+        return 0;
+    }
 #ifdef __cplusplus
     extern "C"
     {
@@ -33,10 +45,6 @@ namespace wos
  * \return 0 if the lock was acquired successfully. Anything else is
  * failure.
  */
-        inline int liballoc_lock()
-        {
-            return 0;
-        }
 
         /** This function unlocks what was previously locked by the liballoc_lock
  * function.  If it disabled interrupts, it enables interrupts. If it
@@ -44,10 +52,6 @@ namespace wos
  *
  * \return 0 if the lock was successfully released.
  */
-        inline int liballoc_unlock()
-        {
-            return 0;
-        }
 
         /** This is the hook into the local system which allocates pages. It
  * accepts an integer parameter which is the number of pages

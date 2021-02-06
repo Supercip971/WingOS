@@ -11,8 +11,9 @@
 #include <string.h>
 #include <utility.h>
 #include <utils/liballoc.h>
+#include <utils/lock.h>
 uint8_t last_selected_cpu = 0;
-lock_type prg_launch = {0};
+wos::lock_type prg_launch;
 void load_segment(process *pro, uintptr_t source, uint64_t size, uintptr_t dest, uint64_t destsize)
 {
     uint64_t count = destsize / PAGE_SIZE;
@@ -174,7 +175,7 @@ void elf64_load_entry(Elf64_Phdr *entry, uint8_t *programm_code, process *target
 
 uint64_t launch_programm(const char *path, file_system *file_sys)
 {
-    lock(&file_sys->fs_lock); // make sure that the fs lock is locked
+    file_sys->fs_lock.lock(); // make sure that the fs lock is locked
     lock_process();
     log("prog launcher", LOG_DEBUG) << "launching programm : " << path;
     uint8_t *programm_code = file_sys->read_file(path);
@@ -201,7 +202,7 @@ uint64_t launch_programm(const char *path, file_system *file_sys)
     }
 
     to_launch->set_state(process_state::PROCESS_WAITING);
-    unlock(&file_sys->fs_lock);
+    file_sys->fs_lock.unlock();
     unlock_process();
     return to_launch->get_pid();
 }

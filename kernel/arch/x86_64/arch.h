@@ -1,8 +1,8 @@
 #pragma once
 #define ASM_FUNCTION extern "C"
 #include <64bit.h>
-#include <lock.h>
 #include <stddef.h>
+#include <utils/lock.h>
 #include <virtual.h>
 typedef main_page_table arch_page_table;
 typedef uint64_t backtrace_entry_type;
@@ -48,17 +48,5 @@ inline constexpr T get_kern_addr(F addr) { return reinterpret_cast<T>((uintptr_t
 template <class T = uintptr_t, class F>
 inline constexpr T get_rkern_addr(F addr) { return reinterpret_cast<T>((uintptr_t)(addr)-0xffffffff80000000); }
 
-struct lock_type
-{
-    uint32_t data;
-
-    const char *file;
-    uint64_t line;
-    bool cantforce;
-};
-
 size_t get_cpu_count();
 size_t get_current_cpu_id();
-#define lock klock
-#define flock kflock
-#define unlock kunlock

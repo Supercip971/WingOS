@@ -6,6 +6,7 @@
 namespace wos
 {
 
+    lock_type liballoc_locker;
     /**  Durand's Amazing Super Duper Memory functions.  */
 
 #define VERSION "1.1"

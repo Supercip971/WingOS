@@ -14,11 +14,10 @@ int sprintf(char *buffer, const char *format, ...);
 #define EOF 0x0E0F
 
 // TEMPORARY FIX FOR LATER
-/*
 
 struct FILE
 {
-    sys::file file_element;
+    int file_element;
 };
 
 FILE *fopen(const char *pathname, const char *mode);
@@ -34,6 +33,5 @@ long ftell(FILE *stream);
 
 int feof(FILE *stream);
 int ferror(FILE *stream);
-*/
 
 #endif

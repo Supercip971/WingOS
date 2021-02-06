@@ -176,58 +176,39 @@ int vsprintf(char *buffer, const char *format, va_list vlist)
     int return_value = vsn_printf(false, buffer, 0, format, vlist);
     return return_value;
 }
-/*
+
 FILE *fopen(const char *pathname, const char *mode)
 {
     FILE *f = (FILE *)malloc(sizeof(FILE));
-    f->file_element = sys::file(); // mode are not supported for the moment :^(
-    f->file_element.open(pathname);
+    f->file_element = plug::open(pathname, 0, 0);
     return f;
 }
 int fclose(FILE *stream)
 {
-    stream->file_element.close();
+    plug::close(stream->file_element);
     free(stream);
     return 0;
 }
 
 int fseek(FILE *stream, long offset, int whence)
 {
-    if (whence == SEEK_SET)
-    {
-        stream->file_element.seek(offset);
-    }
-    else if (whence == SEEK_CUR)
-    {
-        stream->file_element.seek(stream->file_element.get_cursor_pos() + offset);
-    }
-    return 1;
+    return plug::lseek(stream->file_element, offset, whence);
 }
 long ftell(FILE *stream)
 {
-    return stream->file_element.get_cursor_pos();
+    return fseek(stream, 0, SEEK_CUR);
 }
 
 size_t fread(void *ptr, size_t size, size_t count, FILE *stream)
 {
-    return stream->file_element.read((uint8_t *)ptr, size * count);
+    return plug::read(stream->file_element, ptr, size * count);
 }
 
 int fgetc(FILE *stream)
 {
-    if (stream->file_element.get_file_length() == stream->file_element.get_cursor_pos() + 1)
-    {
-        return EOF;
-    }
-    else
-    {
-
-        uint8_t *data = (uint8_t *)malloc(1);
-        stream->file_element.read(data, 1);
-        uint8_t d = *data;
-        free(data);
-        return d;
-    }
+    char off = 0;
+    fread(&off, sizeof(char), 1, stream);
+    return off;
 }
 
 int ungetc(int c, FILE *stream)
@@ -248,4 +229,3 @@ int ferror(FILE *stream)
 {
     return true; // error not supported for the moment
 }
-*/

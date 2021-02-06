@@ -2,7 +2,7 @@
 #define JSON_PARSER_H
 #include "wvector.h"
 #include <stdint.h>
-namespace fth
+namespace wos
 {
     enum json_type
     {
@@ -45,7 +45,7 @@ namespace fth
         const char *storage_value;
         bool is_an_array;
         json_storage *parent;
-        wvector<json_storage *> sub_storage;
+        vector<json_storage *> sub_storage;
         json_value get_value();
         json_storage &operator[](const char *name);
     };
@@ -69,8 +69,8 @@ namespace fth
         char *json_raw_data;
 
         json_storage storage;
-        wvector<char> higher_storage;
+        vector<char> higher_storage;
     };
-} // namespace fth
+} // namespace wos
 
 #endif // JSON_PARSER_H

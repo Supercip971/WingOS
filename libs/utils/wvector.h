@@ -2,10 +2,10 @@
 #define WVECTOR_H
 
 #include <stdlib.h>
-namespace fth
+namespace wos
 {
     template <typename vtype>
-    class wvector
+    class vector
     {
         vtype *buffer = nullptr; // to do : do a direct buffer type
         unsigned int sz;
@@ -32,7 +32,7 @@ namespace fth
         }
 
     public:
-        wvector()
+        vector()
         {
             sz = 0;
             allocated_size = 0;
@@ -80,7 +80,7 @@ namespace fth
             return buffer;
         }
 
-        ~wvector()
+        ~vector()
         {
             clear();
         }
@@ -90,6 +90,6 @@ namespace fth
             return sz;
         }
     };
-} // namespace fth
+} // namespace wos
 
 #endif // WVECTOR_H

@@ -1,7 +1,7 @@
 #include "json_parser.h"
 #include <stdio.h>
 #include <string.h>
-namespace fth
+namespace wos
 {
 
     template <>
@@ -177,7 +177,7 @@ namespace fth
                 target->parent = current_storage;
 
                 target->storage_name = current_var_name;
-                target->sub_storage = wvector<json_storage *>();
+                target->sub_storage = vector<json_storage *>();
                 current_storage->sub_storage.push_back(target);
                 current_storage = target;
             }
@@ -220,7 +220,7 @@ namespace fth
                 json_storage *target = new json_storage;
                 target->parent = current_storage;
                 target->storage_name = current_var_name;
-                target->sub_storage = wvector<json_storage *>();
+                target->sub_storage = vector<json_storage *>();
                 target->storage_value = current_var_value;
                 current_storage->sub_storage.push_back(target);
                 if (current_storage->storage_name == nullptr)
@@ -265,4 +265,4 @@ namespace fth
         create_higher_storage();
         read();
     }
-} // namespace fth
+} // namespace wos

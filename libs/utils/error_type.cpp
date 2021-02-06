@@ -1,6 +1,6 @@
 #include "error_type.h"
 
-namespace wpp
+namespace wos
 {
     error_type::error_type()
     {
@@ -17,4 +17,4 @@ namespace wpp
         this->msg = msg;
         this->subtype = subtype;
     }
-} // namespace wpp
+} // namespace wos

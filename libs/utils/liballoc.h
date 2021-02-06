@@ -2,7 +2,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <system_plug.h>
-namespace sys
+namespace wos
 {
 
 /** \defgroup ALLOCHOOKS liballoc hooks
@@ -85,4 +85,4 @@ namespace sys
     }
 #endif
 
-} // namespace sys
+} // namespace wos

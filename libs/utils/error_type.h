@@ -1,6 +1,6 @@
 #pragma once
 
-namespace wpp
+namespace wos
 {
     enum class error_class : int
     {
@@ -34,4 +34,4 @@ namespace wpp
         const char *msg;
     };
 
-} // namespace wpp
+} // namespace wos

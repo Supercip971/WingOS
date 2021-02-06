@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <utils/liballoc.h>
 
-namespace sys
+namespace wos
 {
 
     /**  Durand's Amazing Super Duper Memory functions.  */
@@ -788,4 +788,4 @@ namespace sys
         return ptr;
     }
 
-} // namespace sys
+} // namespace wos

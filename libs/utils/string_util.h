@@ -1,6 +1,6 @@
 #pragma once
 
-namespace sys
+namespace wos
 {
 
     template <class T>
@@ -40,4 +40,4 @@ namespace sys
             p2--;
         }
     }
-} // namespace sys
+} // namespace wos

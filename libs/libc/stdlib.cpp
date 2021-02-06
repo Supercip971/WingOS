@@ -317,15 +317,15 @@ void srand(uint32_t seed)
 
 void *malloc(size_t size)
 {
-    return sys::wmalloc(size);
+    return wos::wmalloc(size);
 }
 
 void free(void *ptr)
 {
-    sys::wfree(ptr);
+    wos::wfree(ptr);
 }
 
 void *realloc(void *ptr, size_t size)
 {
-    return sys::wrealloc(ptr, size);
+    return wos::wrealloc(ptr, size);
 }

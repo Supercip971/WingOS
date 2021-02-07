@@ -9,7 +9,7 @@ namespace sys
         uint64_t fid;
         uint64_t fcurrent_seek_pos;
         bool opened = false;
-        const char *fpath;
+        char *fpath;
 
     public:
         file();

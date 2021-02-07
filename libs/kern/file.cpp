@@ -1,6 +1,8 @@
 #include "file.h"
 #include <kern/syscall.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 namespace sys
 {
 
@@ -14,8 +16,7 @@ namespace sys
     file::file(const char *path)
     {
         opened = false;
-        fpath = path;
-        open(fpath);
+        open(path);
     }
 
     void file::seek(uint64_t at)
@@ -56,13 +57,19 @@ namespace sys
         fcurrent_seek_pos = 0;
 
         opened = true;
-        fpath = path;
+        fpath = new char[strlen(path) + 1];
+        memcpy(fpath, path, strlen(path) + 1);
         fid = sys$open(path, 0, 0);
     }
     void file::close()
     {
         opened = false;
         sys$close(fid);
+        if (fpath != nullptr)
+        {
+            delete[] fpath;
+            fpath = nullptr;
+        }
         fid = 0;
     }
     uint64_t file::get_file_length()

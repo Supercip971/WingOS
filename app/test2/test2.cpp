@@ -18,13 +18,13 @@ void click(uint64_t t)
 }
 int main(int argc, char **argv)
 {
-    /*
+    auto pid = sys::start_programm("init_fs/shell.exe");
     gui::window test_window("termix", 600, 400);
-    gui::terminal_widget *button = new gui::terminal_widget(10, 20, 600 - 20, 400 - 30, sys::get_process_pid("init_fs/test.exe"));
+    gui::terminal_widget *button = new gui::terminal_widget(10, 20, 600 - 20, 400 - 30, pid);
 
     test_window.add_widget((gui::widget *)button);
-*/
 
+    test_window.start();
     while (true)
     {
     }

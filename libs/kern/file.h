@@ -28,4 +28,6 @@ namespace sys
     extern file stdin;
     extern file stdout;
     extern file stderr;
+
+    file get_process_stdf(int idx, int pid);
 } // namespace sys

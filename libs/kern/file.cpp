@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <utils/string_util.h>
 namespace sys
 {
 
@@ -83,5 +84,30 @@ namespace sys
         sys$lseek(fid, fcurrent_seek_pos, SEEK_SET);
 
         return size;
+    }
+
+    file get_process_stdf(int idx, int pid)
+    {
+        char *temp = (char *)malloc(255);
+        char *path = (char *)malloc(255);
+        int str_idx = 0;
+        memcpy(path + str_idx, "/proc/", strlen("/proc/"));
+        str_idx += strlen("/proc/");
+
+        wos::int_to_string<int>(temp, 'd', pid);
+        memcpy(path + str_idx, temp, strlen(temp));
+        str_idx += strlen(temp);
+
+        memcpy(path + str_idx, "/fd/", strlen("/fd/"));
+        str_idx += strlen("/fd/");
+
+        wos::int_to_string<int>(temp, 'd', idx);
+        memcpy(path + str_idx, temp, strlen(temp));
+        str_idx += strlen(temp);
+
+        file f = file(path);
+        free(path);
+        free(temp);
+        return f;
     }
 } // namespace sys

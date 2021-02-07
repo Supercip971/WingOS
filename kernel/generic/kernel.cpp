@@ -29,13 +29,14 @@ void _start(stivale_struct *bootloader_data)
     main_fs_system::the()->init_file_system();
     load_kernel_service();
 
-    launch_programm("init_fs/wstart.exe", main_fs_system::the()->main_fs());
-    launch_programm("init_fs/graphic_service.exe", main_fs_system::the()->main_fs());
-    launch_programm("init_fs/background.exe", main_fs_system::the()->main_fs());
-    launch_programm("init_fs/test2.exe", main_fs_system::the()->main_fs());
-    launch_programm("init_fs/test.exe", main_fs_system::the()->main_fs());
-    launch_programm("init_fs/test.exe", main_fs_system::the()->main_fs());
-    launch_programm("init_fs/test.exe", main_fs_system::the()->main_fs());
+    launch_programm("init_fs/wstart.exe", main_fs_system::the()->main_fs(), 0, nullptr);
+    launch_programm("init_fs/graphic_service.exe", main_fs_system::the()->main_fs(), 0, nullptr);
+    launch_programm("init_fs/background.exe", main_fs_system::the()->main_fs(), 0, nullptr);
+    launch_programm("init_fs/test2.exe", main_fs_system::the()->main_fs(), 0, nullptr);
+    launch_programm("init_fs/test.exe", main_fs_system::the()->main_fs(), 0, nullptr);
+    launch_programm("init_fs/test.exe", main_fs_system::the()->main_fs(), 0, nullptr);
+    const char *argv[] = {"hello", "world"};
+    launch_programm("init_fs/test.exe", main_fs_system::the()->main_fs(), 2, argv);
     log("kernel", LOG_INFO, "==== KERNEL STARTED ====");
 
     log("kernel", LOG_INFO, ":::       ::: ::::::::::: ::::    :::  ::::::::         ::::::::   ::::::::");

@@ -76,7 +76,7 @@ uintptr_t switch_context(InterruptStackFrame *current_Isf, process *next)
     }
     return next->get_arch_info().rsp;
 }
-void init_process_stackframe(process *pro, func entry_point)
+void init_process_stackframe(process *pro, func entry_point, int argc, char **argv)
 {
     memzero(pro->get_arch_info().stack, PROCESS_STACK_SIZE);
     pro->get_arch_info().rsp =
@@ -91,6 +91,8 @@ void init_process_stackframe(process *pro, func entry_point)
     ISF->cs = gdt_selector::KERNEL_CODE;
     ISF->rflags = 0x286;
     ISF->rsp = (uint64_t)ISF;
+    ISF->rdi = argc;
+    ISF->rsi = (uint64_t)argv;
     pro->get_arch_info().rsp = (uint64_t)ISF;
 }
 

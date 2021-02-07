@@ -67,6 +67,7 @@ class process
     uint8_t interrupt_handle_list[8]; // max 8 interrupt per process
     backtrace process_backtrace;
     per_process_userspace_fs ufs;
+
     process_message *msg_list;
 
 public:
@@ -176,7 +177,7 @@ struct message_identifier
 
 extern process *process_array;
 
-process *init_process(func entry_point, bool start_direct, const char *name, bool user, uint64_t cpu_target = CURRENT_CPU);
+process *init_process(func entry_point, bool start_direct, const char *name, bool user, uint64_t cpu_target = CURRENT_CPU, int argc = 0, char **argv = nullptr);
 void init_multi_process(func start);
 void dump_process();
 void unlock_process();

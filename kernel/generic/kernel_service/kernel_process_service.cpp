@@ -33,7 +33,7 @@ void kernel_process_service()
             }
             else if (prot->type == LAUNCH_PROGRAMM)
             {
-                msg->response = launch_programm(prot->lnp.path, main_fs_system::the()->main_fs());
+                msg->response = launch_programm(prot->lnp.path, main_fs_system::the()->main_fs(), 0, nullptr);
             }
             else if (prot->type == GET_CURRENT_PID)
             {

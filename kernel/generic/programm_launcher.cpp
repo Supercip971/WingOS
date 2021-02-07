@@ -173,7 +173,7 @@ void elf64_load_entry(Elf64_Phdr *entry, uint8_t *programm_code, process *target
     }
 }
 
-uint64_t launch_programm(const char *path, file_system *file_sys)
+uint64_t launch_programm(const char *path, file_system *file_sys, int argc, const char **argv)
 {
     file_sys->fs_lock.lock(); // make sure that the fs lock is locked
     lock_process();
@@ -191,8 +191,16 @@ uint64_t launch_programm(const char *path, file_system *file_sys)
         log("prog launcher", LOG_ERROR) << "not valid elf64 entry";
         return -1;
     }
+    char **end_argv = (char **)malloc(sizeof(char *) * argc + 1);
+    end_argv[0] = (char *)malloc(strlen(path) + 1);
+    memcpy(end_argv[0], path, strlen(path) + 1);
+    for (int i = 0; i < argc; i++)
+    {
 
-    process *to_launch = init_process((func)programm_header->e_entry, false, path, true, AUTO_SELECT_CPU);
+        end_argv[i + 1] = (char *)malloc(strlen(argv[i]) + 1);
+        memcpy(end_argv[i + 1], argv[i], strlen(argv[i]) + 1);
+    }
+    process *to_launch = init_process((func)programm_header->e_entry, false, path, true, AUTO_SELECT_CPU, argc + 1, end_argv);
 
     Elf64_Phdr *p_entry = reinterpret_cast<Elf64_Phdr *>((uintptr_t)programm_code + programm_header->e_phoff);
 

@@ -172,8 +172,7 @@ void process::init_message_system()
         msg_list[j].message_id = j;
     }
 }
-
-process *init_process(func entry_point, bool start_direct, const char *name, bool user, uint64_t cpu_target)
+process *init_process(func entry_point, bool start_direct, const char *name, bool user, uint64_t cpu_target, int argc, char **argv)
 {
     process_creator_lock.lock();
     int64_t process_to_add_kpid = find_free_process();
@@ -192,7 +191,7 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
     log("process", LOG_INFO, "adding process: {} entry: {} name: {}", process_to_add->get_pid(), reinterpret_cast<uintptr_t>(entry_point), process_to_add->get_name());
     process_to_add->init_global_memory();
     process_to_add->init_message_system();
-    init_process_stackframe(process_to_add, entry_point);
+    init_process_stackframe(process_to_add, entry_point, argc, argv);
     init_process_userspace_fs(process_to_add->get_ufs());
 
     process_to_add->set_cpu(interpret_cpu_request(cpu_target));

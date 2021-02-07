@@ -15,7 +15,7 @@ inline void yield()
     asm volatile("int 100");
 }
 
-void init_process_stackframe(process *pro, func entry_point);
+void init_process_stackframe(process *pro, func entry_point, int argc, char **argv);
 
 uint64_t interpret_cpu_request(uint64_t cpu); // with architecture with no multi cpu return always 0
 

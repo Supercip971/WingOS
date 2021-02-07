@@ -267,7 +267,7 @@ size_t fs_lseek(int fd, size_t offset, int whence)
     {
         if (file->ram_file)
         {
-            file->cur = file->file->size;
+            file->cur = file->file->get_size();
         }
         else
         {

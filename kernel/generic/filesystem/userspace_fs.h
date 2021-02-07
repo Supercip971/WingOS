@@ -7,9 +7,12 @@
 
 class ram_file
 { // ram_file are file that are stored in the ram such as stdout stdin ...
+protected:
+    size_t size = 0;
+
 public:
     char *buffer = nullptr;
-    size_t size = 0;
+    virtual size_t get_size() const { return size; };
     virtual const char *get_npath() { return "invalid ram file"; };
     virtual size_t read(void *dbuffer, size_t offset, size_t count);
     virtual size_t write(const void *dbuffer, size_t offset, size_t count);

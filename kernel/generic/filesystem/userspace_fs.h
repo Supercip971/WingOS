@@ -28,6 +28,34 @@ struct filesystem_file_t
     bool ram_file;
     class ram_file *file;
 };
+class dev_keyboard_file : public ram_file
+{
+public:
+    virtual const char *get_npath() { return "/dev/keyboard"; };
+    virtual size_t read(void *dbuffer, size_t offset, size_t count)
+    {
+
+        return find_device<general_keyboard>()->read_key_buffer(dbuffer, offset, count);
+    }
+    virtual size_t get_size() const
+    {
+
+        return find_device<general_keyboard>()->get_key_buffer_size();
+    };
+};
+class dev_mouse_file : public ram_file
+{
+public:
+    virtual const char *get_npath() { return "/dev/mouse"; };
+
+    virtual size_t read(void *dbuffer, size_t offset, size_t count)
+    {
+
+        return find_device<general_mouse>()->read_mouse_buffer(dbuffer, offset, count);
+    }
+    virtual size_t get_size() const { return sizeof(mouse_buff_info); };
+};
+
 class std_zero_file : public ram_file
 {
 public:

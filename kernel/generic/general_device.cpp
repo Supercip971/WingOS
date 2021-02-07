@@ -99,3 +99,27 @@ generic_io_device::io_rw_output generic_io_device::write_unaligned(uint8_t *data
     free(raw);
     return r;
 }
+
+size_t general_mouse::
+    read_mouse_buffer(void *addr, size_t buffer_idx, size_t length)
+{
+    size_t rlength = length;
+
+    if (buffer_idx > sizeof(mouse_buff_info))
+    {
+        log("general_mouse", LOG_WARNING, "trying to read out of bount {}-{}", buffer_idx, buffer_idx + length);
+        return 0;
+    }
+    else if (buffer_idx + length > sizeof(mouse_buff_info))
+    {
+        rlength = sizeof(mouse_buff_info) - buffer_idx;
+    }
+    mouse_buff_info info;
+    info.mouse_x = get_mouse_x();
+    info.mouse_y = get_mouse_y();
+    info.left = get_mouse_button(0);
+    info.right = get_mouse_button(1);
+    info.middle = get_mouse_button(2);
+    memcpy((uint8_t *)addr, (uint8_t *)&info + buffer_idx, rlength);
+    return rlength;
+}

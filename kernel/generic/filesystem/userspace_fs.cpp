@@ -150,6 +150,7 @@ void std_stdbuf_file::realocate(size_t new_size)
         size = new_size;
     }
 }
+
 #define MAX_FILE_HANDLE 255
 filesystem_file_t fs_handle_table[MAX_FILE_HANDLE];
 
@@ -160,6 +161,8 @@ void init_userspace_fs()
     {
         fs_handle_table[i].state = FS_STATE_FREE;
     }
+    add_ram_file(new dev_keyboard_file);
+    add_ram_file(new dev_mouse_file);
 }
 
 filesystem_file_t *get_if_valid_handle(int fd, bool check_free = true)

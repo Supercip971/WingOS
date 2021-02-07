@@ -2,6 +2,9 @@
 #define GENERAL_DEVICE_H
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
+#include <utils/device_file_info.h>
+#include <utils/wvector.h>
 #define MAX_DEVICE 128
 enum device_type : uint32_t
 {
@@ -59,17 +62,40 @@ public:
     virtual int32_t get_mouse_y() = 0;
     virtual uint64_t get_mouse_button(int code) = 0;
     virtual void set_ptr_to_update(uint32_t *x, uint32_t *y);
+    size_t read_mouse_buffer(void *addr, size_t buffer_idx, size_t length);
 };
 
 class general_keyboard : public general_device
 {
+protected:
+    wos::vector<keyboard_buff_info> buffer;
+
 public:
     static device_type get_stype() { return device_type::KEYBOARD_DEVICE; };
     device_type get_type() const final { return get_stype(); };
-
+    void update_key_out(char out);
     virtual bool get_key(uint8_t keycode) const = 0;
     virtual uint8_t get_last_keypress() const = 0;
     virtual void set_ptr_to_update(uint32_t *d) = 0;
+    size_t read_key_buffer(void *addr, size_t buffer_idx, size_t length)
+    {
+
+        size_t rlength = length;
+        if (buffer_idx > buffer.size() * sizeof(keyboard_buff_info))
+        {
+            return 0;
+        }
+        else if (buffer_idx + length > buffer.size() * sizeof(keyboard_buff_info))
+        {
+            rlength = sizeof(mouse_buff_info) - buffer_idx;
+        }
+        memcpy((uint8_t *)addr, ((uint8_t *)buffer.buf()) + buffer_idx, rlength);
+        return rlength;
+    }
+    size_t get_key_buffer_size()
+    {
+        return buffer.size() * sizeof(keyboard_buff_info);
+    }
 };
 
 class generic_io_device : public general_device

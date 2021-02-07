@@ -52,6 +52,7 @@ void ps_keyboard::interrupt_handler()
     uint8_t state = inb(0x64);
     while (state & 1 && (state & 0x20) == 0)
     {
+
         uint8_t key_code = inb(0x60);
         uint8_t scan_code = key_code & 0x7f;
         uint8_t key_state = !(key_code & 0x80);
@@ -61,6 +62,10 @@ void ps_keyboard::interrupt_handler()
             log("keyboard", LOG_INFO) << (uint64_t)asciiDefault[scan_code];
         }
         state = inb(0x64);
+        keyboard_buff_info info;
+        info.button = scan_code;
+        info.state = key_state;
+        buffer.push_back(info);
     }
 }
 

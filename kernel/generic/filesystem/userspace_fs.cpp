@@ -1,6 +1,7 @@
 #include "userspace_fs.h"
 #include <device/local_data.h>
 #include <filesystem/file_system.h>
+#include <io_device.h>
 #include <logging.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,6 +9,13 @@
 #include <utils/liballoc.h>
 #include <utils/lock.h>
 wos::lock_type handle_lock;
+wos::vector<ram_file *> ram_file_list;
+
+void add_ram_file(ram_file *file)
+{
+    log("ram_file", LOG_INFO, "added new general ram file {}", file->get_npath());
+    ram_file_list.push_back(file);
+}
 #define SEEK_SET 0
 #define SEEK_CUR 1
 #define SEEK_END 2
@@ -370,7 +378,7 @@ int fs_close(int fd)
     handle_lock.lock();
 
     set_free_handle(fd);
-    log("fs", LOG_INFO, "process {} closed {}", process::current()->get_name(), file->path);
+    //log("fs", LOG_INFO, "process {} closed {}", process::current()->get_name(), file->path);
 
     handle_lock.unlock();
     return 1;
@@ -378,7 +386,14 @@ int fs_close(int fd)
 
 bool is_ram_file(const char *path)
 {
+    for (size_t i = 0; i < ram_file_list.size(); i++)
+    {
 
+        if (strcmp(ram_file_list[i]->get_npath(), path) == 0)
+        {
+            return true;
+        }
+    }
     for (int i = 0; i < per_process_userspace_fs::ram_files_count; i++)
     {
         if (strcmp(process::current()->get_ufs().ram_files[i]->get_npath(), path) == 0)
@@ -392,6 +407,14 @@ bool is_ram_file(const char *path)
 ram_file *get_ram_file(const char *path)
 {
 
+    for (size_t i = 0; i < ram_file_list.size(); i++)
+    {
+
+        if (strcmp(ram_file_list[i]->get_npath(), path) == 0)
+        {
+            return ram_file_list[i];
+        }
+    }
     for (int i = 0; i < per_process_userspace_fs::ram_files_count; i++)
     {
         if (strcmp(process::current()->get_ufs().ram_files[i]->get_npath(), path) == 0)

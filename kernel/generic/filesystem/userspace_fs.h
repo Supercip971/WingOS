@@ -1,7 +1,9 @@
 #ifndef USER_FS_H
 #define USER_FS_H
+#include <io_device.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <utils/wvector.h>
 
 class ram_file
 { // ram_file are file that are stored in the ram such as stdout stdin ...
@@ -12,6 +14,7 @@ public:
     virtual size_t read(void *dbuffer, size_t offset, size_t count);
     virtual size_t write(const void *dbuffer, size_t offset, size_t count);
 };
+void add_ram_file(ram_file *file);
 struct filesystem_file_t
 {
     const char *path;

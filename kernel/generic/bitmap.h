@@ -17,8 +17,8 @@ class bitmap
 
 public:
     constexpr size_t get_size() const { return bitmap_size; };
-    constexpr void set(size_t idx, bool value);
-    constexpr bool get(size_t idx) const;
+    void set(size_t idx, bool value);
+    bool get(size_t idx) const;
     bitmap(uint8_t *data, size_t size);
     bitmap() : bitmap_size(0)
     {

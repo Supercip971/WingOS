@@ -1,6 +1,6 @@
 #include "bitmap.h"
+#include <device/local_data.h>
 #include <logging.h>
-
 bitmap::bitmap(uint8_t *data, size_t size) : bitmap_size(size)
 {
     log("bitmap", LOG_INFO) << "creating bitmap " << (uint64_t)data << " of size " << size << "bit and " << size / 8 << "bytes";
@@ -8,11 +8,14 @@ bitmap::bitmap(uint8_t *data, size_t size) : bitmap_size(size)
     buffer = data;
     last_free = 0;
 }
-constexpr void bitmap::set(size_t idx, bool value)
+void bitmap::set(size_t idx, bool value)
 {
     if (idx > bitmap_size)
     {
-        log("bitmap", LOG_ERROR) << "trying to read out of bound of the bitmap" << idx << " > " << bitmap_size;
+        log("bitmap", LOG_ERROR) << "trying to set out of bound of the bitmap" << idx << " > " << bitmap_size;
+
+        log("bitmap", LOG_INFO, "call stack: for {}", process::current()->get_name());
+        process::current()->get_backtrace().dump_backtrace();
         return;
     }
     size_t bit = idx % 8;
@@ -26,11 +29,15 @@ constexpr void bitmap::set(size_t idx, bool value)
         buffer[byte] &= ~(1 << (bit));
     }
 }
-constexpr bool bitmap::get(size_t idx) const
+bool bitmap::get(size_t idx) const
 {
     if (idx > bitmap_size)
     {
         log("bitmap", LOG_ERROR) << "trying to read out of bound of the bitmap" << idx << " > " << bitmap_size;
+
+        log("bitmap", LOG_INFO, "call stack: for {}", process::current()->get_name());
+        process::current()->get_backtrace().dump_backtrace();
+
         return false;
     }
     size_t bit = idx % 8;

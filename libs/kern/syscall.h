@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <time.h>
+#include <utils/programm_exec_info.h>
 #include <utils/syscall_codes.h>
 namespace sys
 {
@@ -18,7 +19,7 @@ namespace sys
             : "memory"); // for debugging
         return kernel_return;
     };
-    static inline raw_process_message *sys$send_message(uint64_t data_addr, uint64_t data_length, const char *target)
+    static inline raw_process_message *sys$send_message(uintptr_t data_addr, uintptr_t data_length, const char *target)
     {
         return (raw_process_message *)syscall((uint64_t)syscall_codes::SEND_SERVICE_SYSCALL, data_addr, data_length, (uint64_t)target, 0, 0);
     }
@@ -28,51 +29,51 @@ namespace sys
         return (raw_process_message *)syscall((uint64_t)syscall_codes::READ_SERVICE_SYSCALL, 0, 0, 0, 0, 0);
     }
 
-    static inline uint64_t sys$message_response(raw_process_message *identifier)
+    static inline uintptr_t sys$message_response(raw_process_message *identifier)
     {
         return syscall((uint64_t)syscall_codes::GET_RESPONSE_SERVICE_SYSCALL, (uint64_t)identifier, 0, 0, 0, 0);
     }
 
-    static inline uint64_t sys$get_process_global_data(uint64_t offset, const char *target)
+    static inline uintptr_t sys$get_process_global_data(uint64_t offset, const char *target)
     {
-        return syscall((uint64_t)syscall_codes::GET_PROCESS_GLOBAL_DATA, (uint64_t)target, offset, 0, 0, 0);
+        return syscall((uintptr_t)syscall_codes::GET_PROCESS_GLOBAL_DATA, (uint64_t)target, offset, 0, 0, 0);
     }
 
     static inline void *sys$get_current_process_global_data(uint64_t offset, uint64_t length)
     {
-        return (void *)syscall((uint64_t)syscall_codes::GET_PROCESS_GLOBAL_DATA, 0, offset, length, 0, 0);
+        return (void *)syscall((uintptr_t)syscall_codes::GET_PROCESS_GLOBAL_DATA, 0, offset, length, 0, 0);
     }
     static inline raw_process_message *sys$send_message_pid(uint64_t data_addr, uint64_t data_length, uint64_t pid)
     {
-        return (raw_process_message *)syscall((uint64_t)syscall_codes::SEND_PROCESS_SYSCALL_PID, data_addr, data_length, pid, 0, 0);
+        return (raw_process_message *)syscall((uintptr_t)syscall_codes::SEND_PROCESS_SYSCALL_PID, data_addr, data_length, pid, 0, 0);
     }
-    static inline void *sys$alloc(uint64_t count)
+    static inline void *sys$alloc(uintptr_t count)
     {
-        return (void *)syscall((uint64_t)syscall_codes::MEMORY_ALLOC, count, 0, 0, 0, 0);
+        return (void *)syscall((uintptr_t)syscall_codes::MEMORY_ALLOC, count, 0, 0, 0, 0);
     }
     static inline int sys$free(uintptr_t target, uint64_t count)
     {
-        return syscall((uint64_t)syscall_codes::MEMORY_FREE, target, count, 0, 0, 0);
+        return syscall((uintptr_t)syscall_codes::MEMORY_FREE, target, count, 0, 0, 0);
     }
     static inline size_t sys$read(int fd, void *buffer, size_t count)
     {
-        return syscall((uint64_t)syscall_codes::FILE_READ, fd, (uint64_t)buffer, count, 0, 0);
+        return syscall((uintptr_t)syscall_codes::FILE_READ, fd, (uint64_t)buffer, count, 0, 0);
     }
     static inline size_t sys$write(int fd, const void *buffer, size_t count)
     {
-        return syscall((uint64_t)syscall_codes::FILE_WRITE, fd, (uint64_t)buffer, count, 0, 0);
+        return syscall((uintptr_t)syscall_codes::FILE_WRITE, fd, (uint64_t)buffer, count, 0, 0);
     }
     static inline int sys$open(const char *path_name, int flags, int mode)
     {
-        return syscall((uint64_t)syscall_codes::FILE_OPEN, (uint64_t)path_name, flags, mode, 0, 0);
+        return syscall((uintptr_t)syscall_codes::FILE_OPEN, (uint64_t)path_name, flags, mode, 0, 0);
     }
     static inline int sys$close(int fd)
     {
-        return syscall((uint64_t)syscall_codes::FILE_CLOSE, fd, 0, 0, 0, 0);
+        return syscall((uintptr_t)syscall_codes::FILE_CLOSE, fd, 0, 0, 0, 0);
     }
     static inline size_t sys$lseek(int fd, size_t offset, int whence)
     {
-        return syscall((uint64_t)syscall_codes::FILE_SEEK, fd, offset, whence, 0, 0);
+        return syscall((uintptr_t)syscall_codes::FILE_SEEK, fd, offset, whence, 0, 0);
     }
     static inline int sys$nano_sleep(const timespec *request, timespec *remaning)
     {
@@ -81,6 +82,10 @@ namespace sys
     static inline int sys$getpid()
     {
         return syscall((uintptr_t)syscall_codes::GET_PID, 0, 0, 0, 0, 0);
+    }
+    static inline int sys$exec(programm_exec_info *execution_info)
+    {
+        return syscall((uintptr_t)syscall_codes::EXEC, (uintptr_t)execution_info, 0, 0, 0, 0);
     }
 
 } // namespace sys

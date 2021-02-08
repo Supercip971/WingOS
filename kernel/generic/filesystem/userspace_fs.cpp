@@ -315,7 +315,6 @@ int fs_open(const char *path_name, int flags, int mode)
         return 0;
     }
     set_used_handle(fd);
-    handle_lock.unlock();
     fs_handle_table[fd].rpid = process::current()->get_pid();
     fs_handle_table[fd].path = path_name;
     fs_handle_table[fd].mode = mode;
@@ -327,6 +326,7 @@ int fs_open(const char *path_name, int flags, int mode)
         //  log("fs", LOG_INFO) << "process " << process::current()->get_name() << " open (ram file) " << path_name;
         fs_handle_table[fd].ram_file = true;
         fs_handle_table[fd].file = get_ram_file(path_name);
+        handle_lock.unlock();
         return fd;
     }
     else if (main_fs_system::the()->main_fs()->get_file_length(path_name) == (uint64_t)-1)
@@ -345,12 +345,14 @@ int fs_open(const char *path_name, int flags, int mode)
 
             log("fs", LOG_WARNING, "process {} trying to open file {} but it doesn't exist", process::current()->get_name(), path_name);
 
+            handle_lock.unlock();
             return -1;
         }
         else
         {
             fs_handle_table[fd].ram_file = true;
             fs_handle_table[fd].file = target->get(path_name);
+            handle_lock.unlock();
             return fd;
         }
     }
@@ -365,6 +367,7 @@ int fs_open(const char *path_name, int flags, int mode)
         }
         log("fs", LOG_INFO) << "process " << process::current()->get_name() << " open " << path_name;
 
+        handle_lock.unlock();
         return fd;
     }
 }

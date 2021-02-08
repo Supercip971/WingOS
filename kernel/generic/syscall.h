@@ -1,4 +1,5 @@
 #pragma once
+#include <arch.h>
 #include <stdint.h>
 #include <utils/lock.h>
 #include <utils/syscall_codes.h>

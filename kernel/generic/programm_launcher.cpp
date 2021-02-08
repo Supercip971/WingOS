@@ -12,6 +12,7 @@
 #include <utility.h>
 #include <utils/liballoc.h>
 #include <utils/lock.h>
+#include <utils/programm_exec_info.h>
 uint8_t last_selected_cpu = 0;
 wos::lock_type prg_launch;
 void load_segment(process *pro, uintptr_t source, uint64_t size, uintptr_t dest, uint64_t destsize)
@@ -211,6 +212,48 @@ uint64_t launch_programm(const char *path, file_system *file_sys, int argc, cons
 
     to_launch->set_state(process_state::PROCESS_WAITING);
     file_sys->fs_lock.unlock();
+    unlock_process();
+    return to_launch->get_pid();
+}
+size_t launch_programm_usr(programm_exec_info *info)
+{
+    lock_process();
+    log("prog launcher", LOG_DEBUG, "starting {} with name {}", info->path, info->name);
+    uint8_t *programm_code = main_fs_system::the()->main_fs()->read_file(info->path);
+
+    if (programm_code == nullptr)
+    {
+        return -1;
+    }
+
+    Elf64_Ehdr *programm_header = reinterpret_cast<Elf64_Ehdr *>(programm_code);
+    if (!valid_elf_entry(programm_header))
+    {
+        log("prog launcher", LOG_ERROR) << "not valid elf64 entry";
+        return -1;
+    }
+    char **end_argv = (char **)malloc(sizeof(char *) * info->argc + 1);
+    end_argv[0] = (char *)malloc(strlen(info->path) + 1);
+    memcpy(end_argv[0], info->path, strlen(info->path) + 1);
+    for (int i = 0; i < info->argc; i++)
+    {
+
+        end_argv[i + 1] = (char *)malloc(strlen(info->argv[i]) + 1);
+        memcpy(end_argv[i + 1], info->argv[i], strlen(info->argv[i]) + 1);
+    }
+    process *to_launch = init_process((func)programm_header->e_entry, false, info->path, true, AUTO_SELECT_CPU, info->argc + 1, end_argv);
+
+    Elf64_Phdr *p_entry = reinterpret_cast<Elf64_Phdr *>((uintptr_t)programm_code + programm_header->e_phoff);
+
+    for (int table_entry = 0; table_entry < programm_header->e_phnum; table_entry++, p_entry += programm_header->e_phentsize)
+    {
+        elf64_load_entry(p_entry, programm_code, to_launch);
+    }
+    if (info->name != nullptr)
+    {
+        to_launch->rename(info->name);
+    }
+    to_launch->set_state(process_state::PROCESS_WAITING);
     unlock_process();
     return to_launch->get_pid();
 }

@@ -2,7 +2,9 @@
 #include <filesystem/file_system.h>
 #include <logging.h>
 #include <process.h>
+#include <programm_launcher.h>
 #include <syscall.h>
+#include <utils/programm_exec_info.h>
 wos::lock_type msg_lock;
 typedef uint64_t (*syscall_functions)(uint64_t syscall_id, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5);
 InterruptStackFrame *stakframe_testing;
@@ -101,6 +103,10 @@ int sys$nano_sleep(const timespec *request, timespec *remaning)
 size_t sys$getpid()
 {
     return process::current()->get_pid();
+}
+size_t sys$exec(programm_exec_info *info)
+{
+    return launch_programm_usr(info);
 }
 static void *syscalls[] = {
     (void *)sys$null,

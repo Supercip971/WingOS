@@ -10,11 +10,12 @@ enum class syscall_codes
     SEND_PROCESS_SYSCALL_PID = 5,     // send a message to a process with pid
     MEMORY_ALLOC = 6,                 // pmm alloc
     MEMORY_FREE = 7,                  // pmm free
-    FILE_OPEN = 8,
-    FILE_CLOSE = 9,
-    FILE_READ = 10,
-    FILE_WRITE = 11,
-    FILE_SEEK = 12,
-    NANO_SLEEP = 13,
-    GET_PID = 14,
+    FILE_OPEN = 8,                    // open a file
+    FILE_CLOSE = 9,                   // close a file
+    FILE_READ = 10,                   // read file
+    FILE_WRITE = 11,                  // write file
+    FILE_SEEK = 12,                   // seek a file
+    NANO_SLEEP = 13,                  // sleep the current process
+    GET_PID = 14,                     // get current pid
+    EXEC = 15,                        // execute a new programm
 };

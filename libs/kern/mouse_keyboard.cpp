@@ -7,35 +7,49 @@
 #include <utils/device_file_info.h>
 namespace sys
 {
-
+    sys::file mouse_file = sys::file(MOUSE_FILE_BUFFER);
+    sys::file keyboard_file = sys::file(KEYBOARD_FILE_BUFFER);
+    inline void use_mouse_file()
+    {
+        if (!mouse_file.is_openned())
+        {
+            mouse_file.open(MOUSE_FILE_BUFFER);
+        }
+    }
+    inline void use_keyboard_file()
+    {
+        if (!keyboard_file.is_openned())
+        {
+            keyboard_file.open(KEYBOARD_FILE_BUFFER);
+        }
+    }
     int32_t get_mouse_x()
     {
-        sys::file mouse_file = sys::file(MOUSE_FILE_BUFFER);
+        use_mouse_file();
         mouse_file.seek(0);
         mouse_buff_info buff;
         mouse_file.read((uint8_t *)&buff, sizeof(mouse_buff_info));
 
-        mouse_file.close();
         return buff.mouse_x;
     }
 
     int32_t get_mouse_y()
     {
-        sys::file mouse_file = sys::file(MOUSE_FILE_BUFFER);
+        use_mouse_file();
         mouse_buff_info buff;
+        mouse_file.seek(0);
         mouse_file.read((uint8_t *)&buff, sizeof(mouse_buff_info));
 
-        mouse_file.close();
         return buff.mouse_y;
     }
 
     bool get_mouse_button(int button_id)
     {
-        sys::file mouse_file = sys::file(MOUSE_FILE_BUFFER);
+        use_mouse_file();
         mouse_buff_info buff;
+        mouse_file.seek(0);
         mouse_file.read((uint8_t *)&buff, sizeof(mouse_buff_info));
 
-        mouse_file.close();
         if (button_id == mouse_button_type::GET_MOUSE_LEFT_CLICK)
         {
             return buff.left;
@@ -53,40 +67,36 @@ namespace sys
 
     keyboard_buff_info get_key_press(size_t id)
     {
-
-        sys::file keybfile = sys::file(KEYBOARD_FILE_BUFFER);
+        use_keyboard_file();
         keyboard_buff_info target;
-        keybfile.seek(id * sizeof(keyboard_buff_info));
-        if (keybfile.read((uint8_t *)&target, sizeof(keyboard_buff_info)) == 0)
+        keyboard_file.seek(id * sizeof(keyboard_buff_info));
+        if (keyboard_file.read((uint8_t *)&target, sizeof(keyboard_buff_info)) == 0)
         {
             printf("unable to read offset %x", id);
         }
-        keybfile.close();
         return target;
     }
     size_t get_current_keyboard_offset()
     {
+        use_keyboard_file();
 
-        sys::file keybfile = sys::file(KEYBOARD_FILE_BUFFER);
-        size_t length = keybfile.get_file_length() / sizeof(keyboard_buff_info);
-        keybfile.close();
+        size_t length = keyboard_file.get_file_length() / sizeof(keyboard_buff_info);
         return length;
     }
     char get_last_key_press()
     {
-        sys::file keybfile = sys::file(KEYBOARD_FILE_BUFFER);
+        use_keyboard_file();
         keyboard_buff_info target;
-        size_t length = (keybfile.get_file_length() / sizeof(keyboard_buff_info)) - 1;
+        size_t length = (keyboard_file.get_file_length() / sizeof(keyboard_buff_info)) - 1;
         if (length < 0)
         {
             return 0;
         }
-        keybfile.seek(length * sizeof(keyboard_buff_info));
-        if (keybfile.read((uint8_t *)&target, sizeof(keyboard_buff_info)) == 0)
+        keyboard_file.seek(length * sizeof(keyboard_buff_info));
+        if (keyboard_file.read((uint8_t *)&target, sizeof(keyboard_buff_info)) == 0)
         {
             printf("unable to read offset %x", length);
         }
-        keybfile.close();
         if (target.state == 1)
         {
 

@@ -1,15 +1,16 @@
 #ifndef WVECTOR_H
 #define WVECTOR_H
-
+#include <stdio.h>
 #include <stdlib.h>
+#include <utils/container.h>
 namespace wos
 {
     template <typename vtype>
-    class vector
+    class vector : container<vtype>
     {
         vtype *buffer = nullptr; // to do : do a direct buffer type
-        unsigned int sz;
-        unsigned int allocated_size;
+        size_t sz;
+        size_t allocated_size;
 
         void create()
         {
@@ -50,7 +51,7 @@ namespace wos
 
         void push_back(vtype data)
         {
-            const unsigned int last = sz;
+            const size_t last = sz;
             increase();
             buffer[last] = data;
         }
@@ -66,16 +67,45 @@ namespace wos
             sz = 0;
         }
 
-        vtype &operator[](unsigned int idx)
+        vtype &operator[](size_t idx)
         {
             if (idx > sz)
             {
+                printf("out of bound error\n");
+                return buffer[0];
+            }
+            return buffer[idx];
+        }
+        const vtype operator[](size_t idx) const
+        {
+            if (idx > sz)
+            {
+                printf("out of bound error\n");
                 return buffer[0];
             }
             return buffer[idx];
         }
 
-        vtype *buf()
+        vtype &get(size_t idx) override
+        {
+            if (idx > sz)
+            {
+                printf("out of bound error\n");
+                return buffer[0];
+            }
+            return buffer[idx];
+        };
+        const vtype get(size_t idx) const override
+        {
+            if (idx > sz)
+            {
+                printf("out of bound error\n");
+                return buffer[0];
+            }
+            return buffer[idx];
+        };
+
+        vtype *raw()
         { // really not recommanded
             return buffer;
         }
@@ -85,7 +115,7 @@ namespace wos
             clear();
         }
 
-        unsigned int size()
+        size_t size() const override
         {
             return sz;
         }

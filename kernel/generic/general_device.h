@@ -89,7 +89,7 @@ public:
         {
             rlength = sizeof(mouse_buff_info) - buffer_idx;
         }
-        memcpy((uint8_t *)addr, ((uint8_t *)buffer.buf()) + buffer_idx, rlength);
+        memcpy((uint8_t *)addr, ((uint8_t *)buffer.raw()) + buffer_idx, rlength);
         return rlength;
     }
     size_t get_key_buffer_size()

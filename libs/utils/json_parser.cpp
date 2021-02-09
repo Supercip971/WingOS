@@ -184,7 +184,7 @@ namespace wos
             else if (higher_storage[i] == '"')
             {
 
-                int length = str_str_len(higher_storage.buf() + i + 1, '"');
+                int length = str_str_len(higher_storage.raw() + i + 1, '"');
                 current_var_name = (char *)malloc(length + 2);
                 for (int j = i + 1; higher_storage[j] != '"'; j++)
                 {
@@ -200,7 +200,7 @@ namespace wos
                     continue;
                 }
                 char next = get_next_data_close_delimitor(i);
-                int length = str_str_len(higher_storage.buf() + i + 1, next);
+                int length = str_str_len(higher_storage.raw() + i + 1, next);
                 current_var_value = (char *)malloc(length + 2);
 
                 for (int j = i + 1; higher_storage[j] != next; j++)

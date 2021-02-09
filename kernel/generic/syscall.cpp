@@ -5,7 +5,7 @@
 #include <programm_launcher.h>
 #include <syscall.h>
 #include <utils/programm_exec_info.h>
-wos::lock_type msg_lock;
+utils::lock_type msg_lock;
 typedef uint64_t (*syscall_functions)(uint64_t syscall_id, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5);
 InterruptStackFrame *stakframe_testing;
 uint64_t sys$null(const char *arg1)

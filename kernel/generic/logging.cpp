@@ -3,7 +3,7 @@
 #include <device/local_data.h>
 #include <kernel.h>
 #include <logging.h>
-wos::lock_type log_locker;
+utils::lock_type log_locker;
 // ------------------------ SHOULD BE REMOVED START ------------------------
 
 // ------------------------ SHOULD BE REMOVED END ------------------------

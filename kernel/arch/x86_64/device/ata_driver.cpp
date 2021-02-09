@@ -7,7 +7,7 @@
 #include <utils/liballoc.h>
 #include <utils/lock.h>
 ata_driver main_driver;
-wos::lock_type ata_lock;
+utils::lock_type ata_lock;
 int waiting_for_irq = 0;
 ata_driver::ata_driver()
 {

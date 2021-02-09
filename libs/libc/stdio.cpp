@@ -95,7 +95,7 @@ int vsn_printf(bool just_print, char *buffer /* nullptr say no buffer just print
                 {
                     temp_buf[i] = 0;
                 }
-                wos::int_to_string<uint64_t>(temp_buf, 'x', d);
+                utils::int_to_string<uint64_t>(temp_buf, 'x', d);
                 size_t len = strlen(temp_buf);
                 if (maxrem < len)
                 {
@@ -123,7 +123,7 @@ int vsn_printf(bool just_print, char *buffer /* nullptr say no buffer just print
                 {
                     temp_buf[i] = 0;
                 }
-                wos::int_to_string<long>(temp_buf, 'd', d);
+                utils::int_to_string<long>(temp_buf, 'd', d);
                 size_t len = strlen(temp_buf);
                 if (maxrem < len)
                 {

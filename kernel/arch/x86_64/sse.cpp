@@ -11,7 +11,7 @@ ASM_FUNCTION void asm_sse_load(uintptr_t addr);
 
 uint64_t *fpu_reg;
 uint64_t fpu_data[128] __attribute__((aligned(16)));
-wos::lock_type sse_lock;
+utils::lock_type sse_lock;
 
 SSE_LOW_LEVEL_FUNC void init_sse()
 {

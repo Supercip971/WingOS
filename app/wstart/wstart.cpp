@@ -13,7 +13,7 @@ int main(int argc, char **argv)
     f.read(t, f.get_file_length());
     t[f.get_file_length() + 1] = 0;
 
-    wos::json_data js;
+    utils::json_data js;
     js.from_data((char *)t);
     while (true)
     {

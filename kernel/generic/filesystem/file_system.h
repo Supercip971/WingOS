@@ -19,7 +19,7 @@ protected:
 class file_system
 {
 public:
-    wos::lock_type fs_lock;
+    utils::lock_type fs_lock;
     file_system();
     virtual void init(uint64_t start_sector, uint64_t sector_count) = 0;
 

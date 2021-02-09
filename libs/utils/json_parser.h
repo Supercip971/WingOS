@@ -2,7 +2,7 @@
 #define JSON_PARSER_H
 #include "wvector.h"
 #include <stdint.h>
-namespace wos
+namespace utils
 {
     enum json_type
     {
@@ -71,6 +71,6 @@ namespace wos
         json_storage storage;
         vector<char> higher_storage;
     };
-} // namespace wos
+} // namespace utils
 
 #endif // JSON_PARSER_H

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace wos
+namespace utils
 {
     enum class error_class : int
     {
@@ -34,4 +34,4 @@ namespace wos
         const char *msg;
     };
 
-} // namespace wos
+} // namespace utils

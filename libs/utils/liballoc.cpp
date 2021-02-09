@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <utils/liballoc.h>
 
-namespace wos
+namespace utils
 {
 
     lock_type liballoc_locker;
@@ -789,4 +789,4 @@ namespace wos
         return ptr;
     }
 
-} // namespace wos
+} // namespace utils

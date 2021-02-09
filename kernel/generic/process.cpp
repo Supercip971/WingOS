@@ -14,7 +14,7 @@ process *process_array = nullptr;
 int process_locked = 1;
 bool process_loaded = false;
 
-wos::lock_type process_creator_lock;
+utils::lock_type process_creator_lock;
 uint64_t last_process = 0;
 process *current_cpu_process[255]; // FIXME: don't use 255 and use a #define
 
@@ -27,7 +27,7 @@ void process::set_current(process *target)
     current_cpu_process[get_current_cpu_id()] = target;
 }
 
-wos::lock_type task_lock;
+utils::lock_type task_lock;
 int dying_process_count = 0;
 uint64_t next_upid = 1;
 

@@ -1,6 +1,6 @@
 #include "error_type.h"
 
-namespace wos
+namespace utils
 {
     error_type::error_type()
     {
@@ -17,4 +17,4 @@ namespace wos
         this->msg = msg;
         this->subtype = subtype;
     }
-} // namespace wos
+} // namespace utils

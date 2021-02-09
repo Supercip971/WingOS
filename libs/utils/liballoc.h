@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <system_plug.h>
 #include <utils/lock.h>
-namespace wos
+namespace utils
 {
 
 /** \defgroup ALLOCHOOKS liballoc hooks
@@ -89,4 +89,4 @@ namespace wos
     }
 #endif
 
-} // namespace wos
+} // namespace utils

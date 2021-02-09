@@ -4,7 +4,7 @@
 #include <logging.h>
 #include <utility.h>
 #include <utils/liballoc.h>
-wos::lock_type ahci_lock;
+utils::lock_type ahci_lock;
 
 void ahci::init()
 {

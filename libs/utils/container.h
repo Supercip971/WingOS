@@ -2,7 +2,7 @@
 #define CONTAINER_H
 #include <stddef.h>
 #include <stdint.h>
-namespace wos
+namespace utils
 {
     template <class T>
     class container
@@ -16,5 +16,5 @@ namespace wos
         virtual size_t size() const = 0;
     };
 
-} // namespace wos
+} // namespace utils
 #endif // CONTAINER_H

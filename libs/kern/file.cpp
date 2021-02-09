@@ -94,14 +94,14 @@ namespace sys
         memcpy(path + str_idx, "/proc/", strlen("/proc/"));
         str_idx += strlen("/proc/");
 
-        wos::int_to_string<int>(temp, 'd', pid);
+        utils::int_to_string<int>(temp, 'd', pid);
         memcpy(path + str_idx, temp, strlen(temp));
         str_idx += strlen(temp);
 
         memcpy(path + str_idx, "/fd/", strlen("/fd/"));
         str_idx += strlen("/fd/");
 
-        wos::int_to_string<int>(temp, 'd', idx);
+        utils::int_to_string<int>(temp, 'd', idx);
         memcpy(path + str_idx, temp, strlen(temp));
         str_idx += strlen(temp);
 

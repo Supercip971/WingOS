@@ -8,8 +8,8 @@
 #include <utility.h>
 #include <utils/liballoc.h>
 #include <utils/lock.h>
-wos::lock_type handle_lock;
-wos::vector<ram_file *> ram_file_list;
+utils::lock_type handle_lock;
+utils::vector<ram_file *> ram_file_list;
 
 void add_ram_file(ram_file *file)
 {

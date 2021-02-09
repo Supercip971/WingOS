@@ -5,7 +5,7 @@
 
 file_system::file_system()
 {
-    fs_lock = wos::lock_type();
+    fs_lock = utils::lock_type();
 }
 
 main_fs_system sys;

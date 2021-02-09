@@ -1,5 +1,5 @@
 #include <utils/string_util.h>
 
-namespace wos
+namespace utils
 {
 }

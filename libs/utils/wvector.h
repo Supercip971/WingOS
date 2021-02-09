@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <utils/container.h>
-namespace wos
+namespace utils
 {
     template <typename vtype>
     class vector : container<vtype>
@@ -120,6 +120,6 @@ namespace wos
             return sz;
         }
     };
-} // namespace wos
+} // namespace utils
 
 #endif // WVECTOR_H

@@ -9,7 +9,7 @@
 bitmap pmm_bitmap;
 extern "C" uint64_t kernel_end;
 extern "C" uint64_t addr_kernel_start;
-wos::lock_type pmm_lock;
+utils::lock_type pmm_lock;
 uint64_t available_memory;
 uint64_t bitmap_base;
 uint64_t pmm_length = 0;

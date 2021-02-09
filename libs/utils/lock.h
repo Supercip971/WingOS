@@ -2,7 +2,7 @@
 #define LOCK_H
 #include <stddef.h>
 #include <stdint.h>
-namespace wos
+namespace utils
 {
     enum lock_state
     {
@@ -41,6 +41,6 @@ namespace wos
             raw = LOCK_FREE;
         };
     };
-} // namespace wos
+} // namespace utils
 
 #endif // LOCK_H

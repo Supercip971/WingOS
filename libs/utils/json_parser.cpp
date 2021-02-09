@@ -1,7 +1,7 @@
 #include "json_parser.h"
 #include <stdio.h>
 #include <string.h>
-namespace wos
+namespace utils
 {
 
     template <>
@@ -265,4 +265,4 @@ namespace wos
         create_higher_storage();
         read();
     }
-} // namespace wos
+} // namespace utils

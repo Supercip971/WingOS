@@ -68,7 +68,7 @@ public:
 class general_keyboard : public general_device
 {
 protected:
-    wos::vector<keyboard_buff_info> buffer;
+    utils::vector<keyboard_buff_info> buffer;
 
 public:
     static device_type get_stype() { return device_type::KEYBOARD_DEVICE; };

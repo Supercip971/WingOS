@@ -1,6 +1,6 @@
 #pragma once
 
-namespace wos
+namespace utils
 {
 
     template <class T>
@@ -40,4 +40,4 @@ namespace wos
             p2--;
         }
     }
-} // namespace wos
+} // namespace utils

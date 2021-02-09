@@ -14,7 +14,7 @@
 #include <utils/lock.h>
 #include <utils/programm_exec_info.h>
 uint8_t last_selected_cpu = 0;
-wos::lock_type prg_launch;
+utils::lock_type prg_launch;
 void load_segment(process *pro, uintptr_t source, uint64_t size, uintptr_t dest, uint64_t destsize)
 {
     uint64_t count = destsize / PAGE_SIZE;

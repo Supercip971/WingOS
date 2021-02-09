@@ -19,7 +19,7 @@
 #include <utility.h>
 #include <utils/lock.h>
 
-extern wos::lock_type log_locker;
+extern utils::lock_type log_locker;
 struct interrupt_handler_specific_array
 {
     irq_handler_func function_list[8]; // max 8 handler for an irq;

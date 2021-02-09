@@ -1,5 +1,5 @@
 #include <gui/widget.h>
-#include <gui/widget/button_widget.h>
+#include <gui/widget/button.h>
 #include <kern/mouse_keyboard.h>
 #include <stdlib.h>
 #include <string.h>

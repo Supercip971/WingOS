@@ -1,5 +1,5 @@
 #include <gui/graphic_system.h>
-#include <gui/widget/movable_context_widget.h>
+#include <gui/widget/movable.h>
 #include <gui/window.h>
 #include <kern/kernel_util.h>
 #include <kern/mem_util.h>

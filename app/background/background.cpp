@@ -7,8 +7,8 @@
 //#include <feather_language_lib/feather.h>
 #include <gui/img_bmp.h>
 #include <gui/raw_graphic.h>
-#include <gui/widget/button_widget.h>
-#include <gui/widget/rectangle_widget.h>
+#include <gui/widget/button.h>
+#include <gui/widget/rectangle.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

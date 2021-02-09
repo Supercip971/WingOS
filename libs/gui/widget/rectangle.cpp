@@ -1,5 +1,5 @@
 #include <gui/widget.h>
-#include <gui/widget/rectangle_widget.h>
+#include <gui/widget/rectangle.h>
 
 namespace gui
 {

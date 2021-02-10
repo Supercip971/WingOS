@@ -49,6 +49,21 @@ namespace utils
             return true;
         }
 
+        bool remove(size_t idx)
+        {
+            if (idx > sz)
+            {
+                printf("out of bound error\n");
+                return false;
+            }
+            for (size_t i = idx; i < sz; i++)
+            {
+                buffer[i] = buffer[i + 1];
+            }
+            sz--;
+            return true;
+        }
+
         void push_back(vtype data)
         {
             const size_t last = sz;

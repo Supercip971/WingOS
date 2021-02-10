@@ -9,29 +9,27 @@ utils::lock_type log_locker;
 // ------------------------ SHOULD BE REMOVED END ------------------------
 
 constexpr const char *log_type_table[5] = {
-    "\n\033[36m[C%x/T%x] [%s] :\033[0m ",
-    "\n\n\033[1m\033[32m[C%x/T%x] [%s] :\033[0m ",
-    "\n\033[31;1m[C%x/T%x] [%s] :\033[0m ",
-    "\n\033[4m\033[1m\033[31m[C%x/T%x][%s][ FATAL ]: \033[0m",
-    "\n\033[31m[C%x/T%x] [%s] :",
+    "\n\033[36m[%s][%s] :\033[0m ",
+    "\n\n\033[1m\033[32m[%s][%s] :\033[0m ",
+    "\n\033[31;1m[%s][%s] :\033[0m ",
+    "\n\033[4m\033[1m\033[31m[%s][%s][ FATAL ]: \033[0m",
+    "\n\033[31m[%s][%s] :",
 };
 
 void print_log_str(const char *d, log_state state)
 {
 
-    uint64_t pid = 0;
-    uint64_t current_cpu = 0;
+    const char *name = "kernel";
     if (process::current() != nullptr)
     {
-        pid = process::current()->get_pid();
-        current_cpu = get_current_cpu_id();
+        name = process::current()->get_name();
     }
     if (state > 4 || state == 3)
     {
-        printf(log_type_table[LOG_FATAL], current_cpu, pid, d);
+        printf(log_type_table[LOG_FATAL], name, d);
         return;
     }
-    printf(log_type_table[state], current_cpu, pid, d);
+    printf(log_type_table[state], name, d);
 }
 
 template <>
@@ -109,19 +107,18 @@ void end_log()
 
 void logging::set_log_type(const char *data, log_state log_state)
 {
-    uint64_t pid = 0;
-    uint64_t current_cpu = 0;
+
+    const char *name = "kernel";
     if (process::current() != nullptr)
     {
-        pid = process::current()->get_pid();
-        current_cpu = get_current_cpu_id();
+        name = process::current()->get_name();
     }
     if (log_state > 4 || log_state == 3)
     {
-        printf(log_type_table[LOG_FATAL], current_cpu, pid, data);
+        printf(log_type_table[LOG_FATAL], name, data);
         return;
     }
-    printf(log_type_table[log_state], current_cpu, pid, data);
+    printf(log_type_table[log_state], name, data);
 }
 logging::logging()
 {

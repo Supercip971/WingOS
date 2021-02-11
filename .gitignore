@@ -3,6 +3,7 @@ cross_compiler/
 vscode/
 .vscode/
 app/wingos-wren/
+app/bash/
 kernel.elf
 disk.img
 *.exe

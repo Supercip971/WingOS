@@ -10,17 +10,17 @@ download_and_extract() {
         echo "Extracting $2"
         tar xf "$2"
 }
+patch_path="$PWD/patch/"
 
 
-
-bin_utils_version="2.35.1"
+bin_utils_version="2.33.1"
 binutils_file="binutils-$bin_utils_version.tar.xz"
 
-gcc_version="10.2.0"
+gcc_version="10.1.0"
 gcc_file="gcc-$gcc_version.tar.xz"
 
 export PREFIX="$PWD/cross_compiler"
-export TARGET="x86_64-pc-elf"
+export TARGET="x86_64-pc-wingos"
 export PATH="$PREFIX/bin:$PATH"
 
 mkdir -p ./cross_compiler/build/gcc ./cross_compiler/build/binutils
@@ -31,11 +31,22 @@ cd ./cross_compiler/src
 echo "downloading bin_utils"
 download_and_extract "https://ftp.gnu.org/gnu/binutils/$binutils_file" "$binutils_file"
 export binutils_src="$PWD/binutils-$bin_utils_version"
+cd $binutils_src
+patch -p1 < "$patch_path/binutils.patch"
+cd ..
+
+
 
 
 echo "downloading gcc"
 download_and_extract "ftp://ftp.gnu.org/gnu/gcc/gcc-$gcc_version/$gcc_file" "$gcc_file"
+
 export gcc_src="$PWD/gcc-$gcc_version"
+cd $gcc_src
+patch -p1 < "$patch_path/gcc.patch"
+cd ..
+
+
 
 cd "gcc-$gcc_version"
 ./contrib/download_prerequisites

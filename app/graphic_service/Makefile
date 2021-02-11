@@ -8,8 +8,8 @@ CFILES := $(shell find $(PROJECT_DIRS) -type f -name \*.cpp)
 HFILES := $(shell find $(PROJECT_DIRS) -type f -name \*.h)
 
 OBJ := $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(CFILES))
-CC = ../../cross_compiler/bin/x86_64-pc-elf-g++
-LD = ../../cross_compiler/bin/x86_64-pc-elf-ld
+CC = ../../cross_compiler/bin/x86_64-pc-wingos-g++
+LD = ../../cross_compiler/bin/x86_64-pc-wingos-ld
 CHARDFLAGS := $(CFLAGS)               \
         -DBUILD_TIME='"$(BUILD_TIME)"' \
         -std=c++20                     \

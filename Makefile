@@ -19,8 +19,8 @@ USRAPPCFILES := $(shell find app/ -type f -name '*.cpp')
 USRAPPHFILES := $(shell find app/ -type f -name '*.h')
 
 
-CC         = ./cross_compiler/bin/x86_64-pc-elf-g++
-LD         = ./cross_compiler/bin/x86_64-pc-elf-ld
+CC         = ./cross_compiler/bin/x86_64-pc-wingos-g++
+LD         = ./cross_compiler/bin/x86_64-pc-wingos-ld
 ECHFS_PATH = ./echfs/echfs-utils
 
 OBJ := $(shell find $(BUILD_OUT) -type f -name '*.o')
@@ -62,8 +62,6 @@ CHARDFLAGS := $(CFLAGS)               \
         -I./libs/
 
 LDHARDFLAGS := $(LDFLAGS)        \
-        -nostdlib                 \
-        -no-pie                   \
         -z max-page-size=0x1000   \
         -T $(LINK_PATH)
 

@@ -19,6 +19,13 @@ void click(uint64_t t)
 int main(int argc, char **argv)
 {
     auto pid = sys::start_programm("init_fs/shell.exe");
+    if (pid == 0)
+    {
+        printf("unable to start shell programm ");
+        while (true)
+        {
+        }
+    }
     gui::window test_window("termix", 600, 400);
     gui::terminal_widget *button = new gui::terminal_widget(10, 20, 600 - 20, 400 - 30, pid);
 

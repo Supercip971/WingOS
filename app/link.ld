@@ -1,6 +1,5 @@
 
 ENTRY(__entry_point)
-OUTPUT_FORMAT(elf64-x86-64)
 SECTIONS
 {
 
@@ -9,29 +8,29 @@ SECTIONS
 
 
 
-	.text  :
+	.text ALIGN(4K) :
 	{
 		*(.text)    
-    *(.text*)
+        *(.text*)
 		*(.init)
 		*(.fini)
 		*(.ctors)
 		*(.dtors)
 	}
 
-	.rodata  : 
+	.rodata ALIGN(4K) : 
 	{
-    *(.ctors)
+        *(.ctors)
 		*(.rodata)
 	}
 
-	.data  : 
+	.data ALIGN(4K) : 
 	{
 		*(.data)
 	}
 
-	.bss  : 
-  {
+	.bss ALIGN(4K) : 
+    {
 		*(COMMON)
 		*(.bss)
 	}

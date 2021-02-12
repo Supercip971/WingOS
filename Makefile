@@ -4,22 +4,30 @@ ARCH := x86_64
 END_PATH := kernel/generic kernel/arch/$(ARCH) libs/libc libs/utils
 BUILD_OUT := ./build
 # kernel files
-CFILES    := $(shell find $(END_PATH) -type f -name '*.cpp')
 HFILES    := $(shell find $(END_PATH) -type f -name '*.h')
-ASMFILES  := $(shell find $(END_PATH) -type f -name '*.asm')
-OBJFILES := $(patsubst %.cpp,$(BUILD_OUT)/%.o,$(CFILES))
-ASMOBJFILES := $(patsubst %.asm,$(BUILD_OUT)/%.o,$(ASMFILES))
 DPEND_FILES := $(patsubst %.h,$(BUILD_OUT)/%.d,$(HFILES))
+
+CFILES    := $(shell find $(END_PATH) -type f -name '*.c')
+COBJFILES := $(patsubst %.c,$(BUILD_OUT)/%.o,$(CFILES))
+
+CXXFILES    := $(shell find $(END_PATH) -type f -name '*.cpp')
+CXXOBJFILES := $(patsubst %.cpp,$(BUILD_OUT)/%.o,$(CXXFILES))
+
+ASMFILES  := $(shell find $(END_PATH) -type f -name '*.asm')
+ASMOBJFILES := $(patsubst %.asm,$(BUILD_OUT)/%.o,$(ASMFILES))
+
+
 LINK_PATH := ./kernel/arch/$(ARCH)/linker.ld
 # user_lib code files
-USRCFILES    := $(shell find libs/ -type f -name '*.cpp')
+USRCFILES    := $(shell find libs/ -type f -name '*.cpp') $(shell find libs/ -type f -name '*.c')
 USRHFILES    := $(shell find libs/ -type f -name '*.h')
 # user app code files
-USRAPPCFILES := $(shell find app/ -type f -name '*.cpp')
+USRAPPCFILES := $(shell find app/ -type f -name '*.cpp') $(shell find app/ -type f -name '*.c')
 USRAPPHFILES := $(shell find app/ -type f -name '*.h')
 
 
-CC         = ./cross_compiler/bin/x86_64-pc-wingos-g++
+CC         = ./cross_compiler/bin/x86_64-pc-wingos-gcc
+CXX        = ./cross_compiler/bin/x86_64-pc-wingos-g++
 LD         = ./cross_compiler/bin/x86_64-pc-wingos-ld
 ECHFS_PATH = ./echfs/echfs-utils
 
@@ -27,7 +35,7 @@ OBJ := $(shell find $(BUILD_OUT) -type f -name '*.o')
 
 APP_FS_MAKEFILE_FLAGS 	= all -j$(nproc)
 APP_FS_CHANGE 			= ./libs/ ./app/
-APP_FILE_CHANGE 		= $(shell find $(APP_FS_CHANGE) -type f -name '*.cpp')
+APP_FILE_CHANGE 		= $(shell find $(APP_FS_CHANGE) -type f -name '*.cpp') $(shell find $(APP_FS_CHANGE) -type f -name '*.c')
 
 KERNEL_HDD = ./build/disk.hdd
 KERNEL_ELF = kernel.elf
@@ -35,29 +43,56 @@ KERNEL_ELF = kernel.elf
 .DEFAULT_GOAL =$(KERNEL_ELF)
 CHARDFLAGS := $(CFLAGS)               \
         -DBUILD_TIME='"$(BUILD_TIME)"' \
-        -std=c++20                     \
+        -std=c11                     \
         -g \
         -masm=intel                    \
         -fno-pic                       \
         -no-pie \
         -m64 \
-	      -Wall \
-	      -MD \
-	      -MMD \
-	      -Werror \
+	    -Wall \
+	    -MD \
+	    -MMD \
+	    -Werror \
         -O2 \
         -mcmodel=kernel \
         -mno-80387                     \
         -mno-red-zone                  \
         -fno-rtti \
         -fno-exceptions \
-	      -ffreestanding                 \
+	    -ffreestanding                 \
         -fno-stack-protector           \
         -fno-omit-frame-pointer        \
-	      -fno-isolate-erroneous-paths-attribute \
+	    -fno-isolate-erroneous-paths-attribute \
         -fno-delete-null-pointer-checks \
         -I./kernel/generic                        \
-	      -I./kernel/arch/$(ARCH) \
+	    -I./kernel/arch/$(ARCH) \
+        -I./libs/libc \
+        -I./libs/
+CXXHARDFLAGS := $(CFLAGS)               \
+        -DBUILD_TIME='"$(BUILD_TIME)"' \
+        -std=c++20                     \
+        -g \
+        -masm=intel                    \
+        -fno-pic                       \
+        -no-pie \
+        -m64 \
+	    -Wall \
+	    -MD \
+	    -MMD \
+	    -Werror \
+        -O2 \
+        -mcmodel=kernel \
+        -mno-80387                     \
+        -mno-red-zone                  \
+        -fno-rtti \
+        -fno-exceptions \
+	    -ffreestanding                 \
+        -fno-stack-protector           \
+        -fno-omit-frame-pointer        \
+	    -fno-isolate-erroneous-paths-attribute \
+        -fno-delete-null-pointer-checks \
+        -I./kernel/generic                        \
+	    -I./kernel/arch/$(ARCH) \
         -I./libs/libc \
         -I./libs/
 
@@ -142,20 +177,24 @@ check:
 	@make app -j12
 
 -include $(DPEND_FILES)
-$(BUILD_OUT)/%.o: %.cpp 
-	$(DIRECTORY_GUARD)
-	@echo "[KERNEL $(ARCH)] (cpp) $<"
+$(BUILD_OUT)/%.o: %.c 
+	@$(DIRECTORY_GUARD)
+	@echo "[KERNEL $(ARCH)] (c) $<"
 	@$(CC) $(CHARDFLAGS) -c $< -o $@
+$(BUILD_OUT)/%.o: %.cpp 
+	@$(DIRECTORY_GUARD)
+	@echo "[KERNEL $(ARCH)] (cpp) $<"
+	@$(CXX) $(CXXHARDFLAGS) -c $< -o $@
 
 $(BUILD_OUT)/%.o: %.asm
-	$(DIRECTORY_GUARD)
-	@echo "[KERNEL $(ARCH)] (nasm) $<"
+	@$(DIRECTORY_GUARD)
+	@echo "[KERNEL $(ARCH)] (asm) $<"
 	@nasm $< -o $@ -felf64 -F dwarf -g -w+all -Werror
 
 
 .PHONY:$(KERNEL_ELF)
-$(KERNEL_ELF): $(OBJFILES) $(ASMOBJFILES) $(LINK_PATH)
-	@ld $(LDHARDFLAGS) $(OBJFILES) $(ASMOBJFILES) -o $@
+$(KERNEL_ELF): $(COBJFILES) $(CXXOBJFILES) $(ASMOBJFILES) $(LINK_PATH)
+	@ld $(LDHARDFLAGS) $(COBJFILES) $(CXXOBJFILES) $(ASMOBJFILES) -o $@
 
 $(KERNEL_HDD): $(KERNEL_ELF) 
 	-rm -rf $(KERNEL_HDD)

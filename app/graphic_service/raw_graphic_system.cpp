@@ -11,8 +11,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-sys::pixel *front_buffer;
-sys::pixel *back_buffer;
+gui::pixel *front_buffer;
+gui::pixel *back_buffer;
 uint64_t real_gbuffer_addr = 0x0;
 uint64_t screen_width = 0;
 uint64_t screen_height = 0;
@@ -84,11 +84,11 @@ void draw_mouse(uint64_t x, uint64_t y)
 
             if (m_col == 1)
             {
-                back_buffer[m_toscreen_idx] = sys::pixel(255, 255, 255);
+                back_buffer[m_toscreen_idx] = gui::pixel(255, 255, 255);
             }
             else
             {
-                back_buffer[m_toscreen_idx] = sys::pixel(0, 0, 0);
+                back_buffer[m_toscreen_idx] = gui::pixel(0, 0, 0);
             }
         }
     }
@@ -99,13 +99,13 @@ void init_raw_graphic_system()
 
     printf("init raw graphic system \n");
     real_gbuffer_addr = sys::get_graphic_buffer_addr();
-    front_buffer = (sys::pixel *)real_gbuffer_addr;
+    front_buffer = (gui::pixel *)real_gbuffer_addr;
     screen_width = sys::get_screen_width();
     printf("screen width = %x \n", screen_width);
     screen_height = sys::get_screen_height();
     printf("screen width = %x \n", screen_height);
     printf("init raw graphic system %x x %x \n", screen_width, screen_height);
-    back_buffer = new sys::pixel[(screen_width + 2) * (screen_height + 2) + 32];
+    back_buffer = new gui::pixel[(screen_width + 2) * (screen_height + 2) + 32];
 }
 void graphic_system_update()
 {

@@ -10,11 +10,11 @@ namespace gui
     {
         size_t line_count();
         size_t render_line_count();
-        sys::pixel col;
         char *buffer;
         char *input_buffer;
         size_t input_buffer_length;
         size_t input_buffer_length_allocated;
+        pixel col;
         void add_input_key(char key);
 
         size_t sbuffer_length = 0;
@@ -25,7 +25,7 @@ namespace gui
         sys::file inbuffer;
         size_t last_key_press = 0;
         int buffer_offset;
-        void draw_term_text(sys::graphic_context &context);
+        void draw_term_text(graphic_context &context);
         void update_offset();
         void increase(size_t new_size);
         void skip_line(size_t &idx);
@@ -50,7 +50,7 @@ namespace gui
         terminal_widget(size_t x, size_t y, size_t width, size_t heigth, int pid);
 
         virtual void update_widget() override;
-        virtual void draw_widget(sys::graphic_context &context) override;
+        virtual void draw_widget(graphic_context &context) override;
         virtual void init_widget(void *new_parent) override;
     };
 } // namespace gui

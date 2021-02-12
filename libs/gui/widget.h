@@ -12,12 +12,12 @@ namespace gui
         int64_t widget_x;
         int64_t widget_y;
         bool widget_should_draw = true;
-        bool is_position_inside_widget(const sys::pos pos);
+        bool is_position_inside_widget(const pos pos);
 
     public:
         widget();
         virtual void update_widget() = 0;
-        virtual void draw_widget(sys::graphic_context &context) = 0;
+        virtual void draw_widget(graphic_context &context) = 0;
         constexpr bool &should_redraw()
         {
             return widget_should_draw;
@@ -38,6 +38,6 @@ namespace gui
         void add_widget(widget *widget);
 
         bool update_all();
-        void draw_all(sys::graphic_context &context);
+        void draw_all(graphic_context &context);
     };
 } // namespace gui

@@ -7,7 +7,7 @@ namespace gui
     class window
     {
         const char *window_name;
-        sys::graphic_context graphic_context;
+        graphic_context window_graphic_context;
         uint64_t width;
         uint64_t height;
         widget_list lst;
@@ -27,9 +27,9 @@ namespace gui
         // get mouse position inside the window
         int32_t get_mouse_pos_relative_x();
         int32_t get_mouse_pos_relative_y();
-        sys::pos get_window_position();
+        pos get_window_position();
         void set_window_position(uint32_t x, uint32_t y);
-        void set_window_position(sys::pos position);
+        void set_window_position(pos position);
         uint64_t start();
     };
 } // namespace gui

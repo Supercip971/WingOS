@@ -148,7 +148,7 @@ void set_window_top_background(uint64_t wid)
     window_list[widt].depth = max_depth;
 }
 
-uint64_t create_window(sys::graphic_system_service_protocol *request, uint64_t pid)
+uint64_t create_window(gui::graphic_system_service_protocol *request, uint64_t pid)
 {
     for (int i = 0; i < MAX_WINDOW; i++)
     {
@@ -171,8 +171,8 @@ uint64_t create_window(sys::graphic_system_service_protocol *request, uint64_t p
             window_list[i].py = last_window_y;
             window_list[i].window_name = request->create_window_info.name;
             window_list[i].wid = i;
-            window_list[i].window_front_buffer = (sys::pixel *)malloc(request->create_window_info.width * request->create_window_info.height * sizeof(sys::pixel));
-            window_list[i].window_back_buffer = (sys::pixel *)malloc(request->create_window_info.width * request->create_window_info.height * sizeof(sys::pixel));
+            window_list[i].window_front_buffer = (gui::pixel *)malloc(request->create_window_info.width * request->create_window_info.height * sizeof(gui::pixel));
+            window_list[i].window_back_buffer = (gui::pixel *)malloc(request->create_window_info.width * request->create_window_info.height * sizeof(gui::pixel));
             window_list[i].depth = 100;
             set_window_on_top(window_list[i].wid);
 
@@ -183,7 +183,7 @@ uint64_t create_window(sys::graphic_system_service_protocol *request, uint64_t p
     return -1;
 }
 
-uint64_t get_window_back_buffer(sys::graphic_system_service_protocol *request, uint64_t pid)
+uint64_t get_window_back_buffer(gui::graphic_system_service_protocol *request, uint64_t pid)
 {
     if (!valid_window(request->get_request.window_handler_code, pid))
     {
@@ -192,7 +192,7 @@ uint64_t get_window_back_buffer(sys::graphic_system_service_protocol *request, u
     return (uint64_t)window_list[request->get_request.window_handler_code].window_back_buffer;
 }
 
-uint64_t window_swap_buffer(sys::graphic_system_service_protocol *request, uint64_t pid)
+uint64_t window_swap_buffer(gui::graphic_system_service_protocol *request, uint64_t pid)
 {
     if (!valid_window(request->get_request.window_handler_code, pid))
     {
@@ -202,7 +202,7 @@ uint64_t window_swap_buffer(sys::graphic_system_service_protocol *request, uint6
     swap_buffer(target.window_front_buffer, target.window_back_buffer, target.width * target.height);
     return 1;
 }
-uint64_t get_window_position(sys::graphic_system_service_protocol *request, uint64_t pid)
+uint64_t get_window_position(gui::graphic_system_service_protocol *request, uint64_t pid)
 {
     if (!valid_window(request->get_request.window_handler_code, pid))
     {
@@ -216,7 +216,7 @@ uint64_t get_window_position(sys::graphic_system_service_protocol *request, uint
 
     return (uint64_t)pos.pos;
 }
-uint64_t set_window_position(sys::graphic_system_service_protocol *request, uint64_t pid)
+uint64_t set_window_position(gui::graphic_system_service_protocol *request, uint64_t pid)
 {
     if (!valid_window(request->set_pos.window_handler_code, pid))
     {
@@ -237,7 +237,7 @@ uint64_t set_window_position(sys::graphic_system_service_protocol *request, uint
     return 1;
 }
 
-uint64_t window_depth_action(sys::graphic_system_service_protocol *request, uint64_t pid)
+uint64_t window_depth_action(gui::graphic_system_service_protocol *request, uint64_t pid)
 {
     if (request->depth_request.set)
     {
@@ -246,17 +246,17 @@ uint64_t window_depth_action(sys::graphic_system_service_protocol *request, uint
             printf("havn't the right to use the window\n");
             return -2;
         }
-        if (request->depth_request.type == sys::ON_TOP)
+        if (request->depth_request.type == gui::ON_TOP)
         {
             set_window_on_top(request->depth_request.window_handler_code);
             return 1;
         }
-        else if (request->depth_request.type == sys::TOP_BACKGROUND)
+        else if (request->depth_request.type == gui::TOP_BACKGROUND)
         {
             set_window_top_background(request->depth_request.window_handler_code);
             return 1;
         }
-        else if (request->depth_request.type == sys::BACKGROUND)
+        else if (request->depth_request.type == gui::BACKGROUND)
         {
             set_window_background(request->depth_request.window_handler_code);
             return 1;

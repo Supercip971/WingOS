@@ -25,7 +25,7 @@ namespace gui
             if (sys::get_mouse_button(sys::GET_MOUSE_LEFT_CLICK) && start_down)
             {
                 start_down = false;
-                sys::pos position;
+                pos position;
                 position.x = parent->get_mouse_pos_relative_x();
                 position.y = parent->get_mouse_pos_relative_y();
                 if (is_position_inside_widget(position))
@@ -33,7 +33,7 @@ namespace gui
                     if (parent->is_window_front())
                     {
 
-                        sys::pos rposition;
+                        pos rposition;
                         rposition.x = sys::get_mouse_x();
                         rposition.y = sys::get_mouse_y();
                         start_dragging_pos = rposition;
@@ -56,7 +56,7 @@ namespace gui
                 return;
             }
             drag_time++;
-            sys::pos position;
+            pos position;
             position.x = sys::get_mouse_x();
             position.y = sys::get_mouse_y();
 
@@ -68,7 +68,7 @@ namespace gui
             int32_t result_y = (int)position.y - (int)current_dragging_pos.y;
             current_dragging_pos = position;
 
-            sys::pos p = parent->get_window_position();
+            pos p = parent->get_window_position();
             p.x += result_x;
             p.y += result_y;
             if (p.x < 0)
@@ -83,7 +83,7 @@ namespace gui
         }
     }
 
-    void movable_context_widget::draw_widget(sys::graphic_context &context)
+    void movable_context_widget::draw_widget(graphic_context &context)
     {
     }
     void movable_context_widget::init_widget(void *new_parent)

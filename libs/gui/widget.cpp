@@ -8,7 +8,7 @@ namespace gui
     {
     }
 
-    bool widget::is_position_inside_widget(const sys::pos pos)
+    bool widget::is_position_inside_widget(const pos pos)
     {
         if (pos.x >= widget_x)
         {
@@ -64,7 +64,7 @@ namespace gui
         }
         return should_redraw;
     }
-    void widget_list::draw_all(sys::graphic_context &context)
+    void widget_list::draw_all(graphic_context &context)
     {
 
         for (size_t i = 0; i < list_length; i++)

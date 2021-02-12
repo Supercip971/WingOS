@@ -15,8 +15,8 @@ struct raw_window_data
     uint64_t width;
     uint64_t height;
     char *window_name;
-    sys::pixel *window_front_buffer;
-    sys::pixel *window_back_buffer;
+    gui::pixel *window_front_buffer;
+    gui::pixel *window_back_buffer;
     bool used;
     bool background;
 
@@ -31,15 +31,15 @@ void set_window_on_top(uint64_t wid);
 void set_window_background(uint64_t wid);
 void set_window_top_background(uint64_t wid);
 
-uint64_t create_window(sys::graphic_system_service_protocol *request, uint64_t pid);
+uint64_t create_window(gui::graphic_system_service_protocol *request, uint64_t pid);
 
 bool valid_window(uint64_t target_wid, uint64_t pid);
 
-uint64_t get_window_back_buffer(sys::graphic_system_service_protocol *request, uint64_t pid);
-uint64_t window_swap_buffer(sys::graphic_system_service_protocol *request, uint64_t pid);
-uint64_t get_window_position(sys::graphic_system_service_protocol *request, uint64_t pid);
-uint64_t set_window_position(sys::graphic_system_service_protocol *request, uint64_t pid);
-uint64_t window_depth_action(sys::graphic_system_service_protocol *request, uint64_t pid);
+uint64_t get_window_back_buffer(gui::graphic_system_service_protocol *request, uint64_t pid);
+uint64_t window_swap_buffer(gui::graphic_system_service_protocol *request, uint64_t pid);
+uint64_t get_window_position(gui::graphic_system_service_protocol *request, uint64_t pid);
+uint64_t set_window_position(gui::graphic_system_service_protocol *request, uint64_t pid);
+uint64_t window_depth_action(gui::graphic_system_service_protocol *request, uint64_t pid);
 
 void update_mouse_in_window();
 

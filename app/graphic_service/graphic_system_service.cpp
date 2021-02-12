@@ -22,34 +22,34 @@ int main(int argc, char **argv)
     return 1;
 }
 
-uint64_t interpret(sys::graphic_system_service_protocol *request, uint64_t pid)
+uint64_t interpret(gui::graphic_system_service_protocol *request, uint64_t pid)
 {
     if (request->request_type == 0)
     {
         printf("graphic error : request null type");
         return -2;
     }
-    else if (request->request_type == sys::GRAPHIC_SYSTEM_REQUEST::CREATE_WINDOW)
+    else if (request->request_type == gui::GRAPHIC_SYSTEM_REQUEST::CREATE_WINDOW)
     {
         return create_window(request, pid);
     }
-    else if (request->request_type == sys::GRAPHIC_SYSTEM_REQUEST::GET_WINDOW_BACK_BUFFER)
+    else if (request->request_type == gui::GRAPHIC_SYSTEM_REQUEST::GET_WINDOW_BACK_BUFFER)
     {
         return get_window_back_buffer(request, pid);
     }
-    else if (request->request_type == sys::GRAPHIC_SYSTEM_REQUEST::SWAP_WINDOW_BUFFER)
+    else if (request->request_type == gui::GRAPHIC_SYSTEM_REQUEST::SWAP_WINDOW_BUFFER)
     {
         return window_swap_buffer(request, pid);
     }
-    else if (request->request_type == sys::GRAPHIC_SYSTEM_REQUEST::GET_WINDOW_POSITION)
+    else if (request->request_type == gui::GRAPHIC_SYSTEM_REQUEST::GET_WINDOW_POSITION)
     {
         return get_window_position(request, pid);
     }
-    else if (request->request_type == sys::GRAPHIC_SYSTEM_REQUEST::SET_WINDOW_POSITION)
+    else if (request->request_type == gui::GRAPHIC_SYSTEM_REQUEST::SET_WINDOW_POSITION)
     {
         return set_window_position(request, pid);
     }
-    else if (request->request_type == sys::GRAPHIC_SYSTEM_REQUEST::WINDOW_DEPTH_ACTION)
+    else if (request->request_type == gui::GRAPHIC_SYSTEM_REQUEST::WINDOW_DEPTH_ACTION)
     {
         return window_depth_action(request, pid);
     }
@@ -71,7 +71,7 @@ void loop()
             sys::raw_process_message *msg = sys::service_read_current_queue();
             if (msg != 0x0)
             {
-                sys::graphic_system_service_protocol *pr = (sys::graphic_system_service_protocol *)msg->content_address;
+                gui::graphic_system_service_protocol *pr = (gui::graphic_system_service_protocol *)msg->content_address;
 
                 msg->response = interpret(pr, msg->from_pid);
                 msg->has_been_readed = true;

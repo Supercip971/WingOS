@@ -1,7 +1,7 @@
 #pragma once
 #include <gui/raw_graphic.h>
 #include <stdint.h>
-namespace sys
+namespace gui
 {
     // FOR GRAPHIC MESSAGE :
     struct graphic_raw_request
@@ -79,9 +79,9 @@ namespace sys
                 uint8_t g;
                 uint8_t b;
                 uint8_t a;
-            } __attribute__((packed));
+            };
             uint32_t pix;
-        } __attribute__((packed));
+        };
         constexpr pixel()
         {
             pix = 0;
@@ -179,7 +179,7 @@ namespace sys
     };
     uint64_t get_basic_font_width_text(const char *text);
 
-    void swap_buffer(sys::pixel *buffer1, const sys::pixel *buffer2, uint64_t buffer_length);
+    void swap_buffer(pixel *buffer1, const pixel *buffer2, uint64_t buffer_length);
 
-    void raw_clear_buffer(sys::pixel *buffer, uint64_t size, sys::pixel value = {0, 0, 0, 255});
-} // namespace sys
+    void raw_clear_buffer(pixel *buffer, uint64_t size, pixel value = {0, 0, 0, 255});
+} // namespace gui

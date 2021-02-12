@@ -8,7 +8,7 @@
 namespace gui
 {
 
-    terminal_widget::terminal_widget(size_t x, size_t y, size_t width, size_t heigth, int pid) : col(sys::pixel(0, 0, 0, 0)),
+    terminal_widget::terminal_widget(size_t x, size_t y, size_t width, size_t heigth, int pid) : col(pixel(0, 0, 0, 0)),
                                                                                                  outbuffer(sys::get_process_stdf(1, pid)),
                                                                                                  inbuffer(sys::get_process_stdf(3, pid))
     {
@@ -99,11 +99,11 @@ namespace gui
             }
         }
     }
-    void terminal_widget::draw_term_text(sys::graphic_context &context)
+    void terminal_widget::draw_term_text(graphic_context &context)
     {
         int x = 0;
         int y = 0;
-        sys::pixel current_col = sys::pixel(255, 255, 255);
+        pixel current_col = pixel(255, 255, 255);
         size_t line_renderer = render_line_count();
         size_t line_offset = 0;
         if ((terminal_height - 3) < line_renderer)
@@ -221,7 +221,7 @@ namespace gui
         input_buffer_length_allocated = 0;
         input_buffer_length = 0;
     }
-    void terminal_widget::draw_widget(sys::graphic_context &context)
+    void terminal_widget::draw_widget(graphic_context &context)
     {
         context.draw_rectangle(widget_x, widget_y, widget_width, widget_height, col);
         draw_term_text(context);

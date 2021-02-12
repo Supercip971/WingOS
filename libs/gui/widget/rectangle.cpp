@@ -3,11 +3,11 @@
 
 namespace gui
 {
-    rectangle_widget::rectangle_widget() : col(sys::pixel(0, 0, 0, 0))
+    rectangle_widget::rectangle_widget() : col(pixel(0, 0, 0, 0))
     {
         widget_should_draw = true;
     }
-    rectangle_widget::rectangle_widget(uint64_t x, uint64_t y, uint64_t width, uint64_t heigth, sys::pixel color) : col(color)
+    rectangle_widget::rectangle_widget(uint64_t x, uint64_t y, uint64_t width, uint64_t heigth, pixel color) : col(color)
     {
 
         widget_should_draw = true;
@@ -19,7 +19,7 @@ namespace gui
     void rectangle_widget::update_widget(){
 
     };
-    void rectangle_widget::draw_widget(sys::graphic_context &context)
+    void rectangle_widget::draw_widget(graphic_context &context)
     {
         context.draw_rectangle(widget_x, widget_y, widget_width, widget_height, col);
     };

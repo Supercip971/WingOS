@@ -53,7 +53,7 @@ CHARDFLAGS := $(CFLAGS)               \
 	    -MD \
 	    -MMD \
 	    -Werror \
-        -O2 \
+        -O3 \
         -mcmodel=kernel \
         -mno-80387                     \
         -mno-red-zone                  \
@@ -76,11 +76,13 @@ CXXHARDFLAGS := $(CFLAGS)               \
         -fno-pic                       \
         -no-pie \
         -m64 \
+				-mavx \
 	    -Wall \
 	    -MD \
+			-msse \
 	    -MMD \
 	    -Werror \
-        -O2 \
+        -O3 \
         -mcmodel=kernel \
         -mno-80387                     \
         -mno-red-zone                  \
@@ -132,8 +134,8 @@ disk: $(KERNEL_HDD)
 
 .PHONY:run
 run: $(KERNEL_HDD)
-	qemu-system-x86_64 -m 4G -s -device pvpanic -smp 6 -serial stdio -enable-kvm --no-shutdown --no-reboot -d int -d guest_errors -hda $(KERNEL_HDD) \
-		-nic user,model=e1000 -M q35 
+	qemu-system-x86_64 -m 4G -s -device pvpanic -smp 6 -serial stdio -enable-kvm -d cpu_reset -d guest_errors -hda $(KERNEL_HDD) \
+		-nic user,model=e1000 -M q35 -cpu host 
 
 .PHONY:runvbox
 runvbox: $(KERNEL_HDD)

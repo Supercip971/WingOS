@@ -21,7 +21,7 @@ CXXHARDFLAGS := $(CFLAGS)               \
         -fno-pic                       \
         -no-pie \
         -m64 \
-        -O1 \
+        -O3 \
         -Werror \
         -msse \
         -mno-avx \
@@ -44,7 +44,7 @@ CHARDFLAGS := $(CFLAGS)               \
         -fno-pic                       \
         -no-pie \
         -m64 \
-        -O1 \
+        -O3 \
         -Werror \
         -msse \
         -mno-avx \

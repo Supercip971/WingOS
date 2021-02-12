@@ -116,6 +116,7 @@ foreachramfs:
 
 .PHONY:app
 app: $(APP_FILE_CHANGE)
+	@bash make_sysroot.sh
 	@make -C ./app/test $(APP_FS_MAKEFILE_FLAGS)	
 	@make -C ./app/test2 $(APP_FS_MAKEFILE_FLAGS)	
 	@make -C ./app/graphic_service $(APP_FS_MAKEFILE_FLAGS)	

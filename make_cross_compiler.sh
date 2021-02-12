@@ -4,6 +4,8 @@ set -e
 # using : https://wiki.osdev.org/Cross-Compiler_Successful_Builds
 echo "creating wingOS_cross Compiler"
 
+SYSROOT="$PWD/sysroot/"
+mkdir -p $SYSROOT
 download_and_extract() {
         echo "Downloading $2"
         wget -c "$1"
@@ -60,7 +62,7 @@ echo "building bin_utils"
 cd binutils
 "$binutils_src/configure" --target="$TARGET" 	\
         --prefix="$PREFIX" 	\
-        --with-sysroot 		\
+        --with-sysroot=$SYSROOT		\
         --disable-nls 		\
         --disable-werror
 
@@ -74,7 +76,8 @@ cd gcc
         --prefix="$PREFIX" 		\
         --disable-nls			\
         --enable-languages=c,c++	\
-        --with-newlib
+        --with-newlib \
+        --with-sysroot=$SYSROOT
 
 make all-gcc -j$(nproc)
 make all-target-libgcc -j$(nproc)

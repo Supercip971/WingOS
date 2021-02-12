@@ -10,10 +10,10 @@ namespace utils
     /**  Durand's Amazing Super Duper Memory functions.  */
 
 #define VERSION "1.1"
-#define ALIGNMENT 16ul //4ul				///< This is the byte alignment that memory must be allocated on. IMPORTANT for GTK and other stuff.
+#define ALIGNMENT 64ul //4ul				///< This is the byte alignment that memory must be allocated on. IMPORTANT for GTK and other stuff.
 
 #define ALIGN_TYPE char                    ///unsigned char[16] /// unsigned short
-#define ALIGN_INFO sizeof(ALIGN_TYPE) * 16 ///< Alignment information is stored right before the pointer. This is the number of bytes of information stored there.
+#define ALIGN_INFO sizeof(ALIGN_TYPE) * 64 ///< Alignment information is stored right before the pointer. This is the number of bytes of information stored there.
 
 #define USE_CASE1
 #define USE_CASE2

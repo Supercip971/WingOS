@@ -80,10 +80,10 @@ namespace utils
             return 0; // free everytime
         }
 
-        extern void *PREFIX(malloc)(size_t);          ///< The standard function.
-        extern void *PREFIX(realloc)(void *, size_t); ///< The standard function.
-        extern void *PREFIX(calloc)(size_t, size_t);  ///< The standard function.
-        extern void PREFIX(free)(void *);             ///< The standard function.
+        extern void *PREFIX(malloc)(size_t) __attribute__((alloc_size(1)));              ///< The standard function.
+        extern void *PREFIX(realloc)(void *, size_t) __attribute__((assume_aligned(8))); ///< The standard function.
+        extern void *PREFIX(calloc)(size_t, size_t) __attribute__((assume_aligned(8)));  ///< The standard function.
+        extern void PREFIX(free)(void *);                                                ///< The standard function.
 
 #ifdef __cplusplus
     }

@@ -13,6 +13,7 @@
 #include <utility.h>
 #include <utils/liballoc.h>
 #include <virtual.h>
+#include <sse.h>
 #define TRAMPOLINE_START 0x1000
 #define SMP_MAP_PAGE_FLAGS 0x7
 smp main_smp;
@@ -28,7 +29,7 @@ smp::smp()
 
 extern "C" void cpuupstart(void)
 {
-
+    init_sse();
     x86_wrmsr(MSR_REGISTERS::APIC, (x86_rdmsr(MSR_REGISTERS::APIC) | 0x800) & ~(LAPIC_ENABLE));
     apic::the()->enable();
 

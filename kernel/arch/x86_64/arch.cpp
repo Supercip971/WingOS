@@ -70,15 +70,21 @@ ASM_FUNCTION void kernel_start(stivale_struct *bootloader_data)
     // fs is used for getting cpu n°
     asm volatile("mov ax, 0");
     asm volatile("mov fs, ax");
-    init_sse();
-
     com_device com = com_device();
     com.init(COM_PORT::COM1);
 
-    memcpy(&boot_loader_data_copy, bootloader_data, sizeof(stivale_struct));
+
 
     setup_gdt();
     init_idt();
+    init_sse();
+    if(has_xsave()){
+        log("xsave", LOG_INFO, "cpu has support for xsave");
+    }
+    if(has_avx()){
+        log("avx", LOG_INFO, "cpu has support for avx");
+    }
+    memcpy(&boot_loader_data_copy, bootloader_data, sizeof(stivale_struct));
     //   PIT::the()->init_PIT();
 
     tss_init((uintptr_t)stack + sizeof(char) * STACK_SIZE);

@@ -51,29 +51,21 @@ dq __interrupt%1
 
 %macro INTERRUPT_ERR 1
 __interrupt%1:
-    mov dword [rsp + 4], %1
+    push %1
     jmp __interrupt_common
 %endmacro
 
 %macro INTERRUPT_NOERR 1
 __interrupt%1:
-    push qword 0
-    mov dword [rsp + 4], %1
+    push 0
+    push %1
     jmp __interrupt_common
 %endmacro
 section .text
 
-%macro INTERRUPT_SYSCALL 1
-__interrupt%1:
-    push qword 0
-    mov dword [rsp + 4], %1
-    jmp __interrupt_common
-%endmacro
-
 extern interrupts_handler
 
 __interrupt_common:
-    cli
     cld
     push_all
     
@@ -84,7 +76,7 @@ __interrupt_common:
     mov rsp, rax
     pop_all
 
-    add rsp, 8 ; pop errcode and int number
+    add rsp, 16 ; pop errcode and int number
     sti
     iretq
     
@@ -106,7 +98,7 @@ INTERRUPT_ERR   13
 INTERRUPT_ERR   14
 INTERRUPT_NOERR 15
 INTERRUPT_NOERR 16
-INTERRUPT_NOERR 17
+INTERRUPT_ERR   17
 INTERRUPT_NOERR 18
 INTERRUPT_NOERR 19
 INTERRUPT_NOERR 20

@@ -24,8 +24,8 @@ struct InterruptStackFrame
     // Contains error code and interrupt number for exceptions
     // Contains syscall number for syscalls
     // Contains just the interrupt number otherwise
-    uint32_t error_code;
-    uint32_t int_no;
+    uint64_t int_no;
+    uint64_t error_code;
     // Interrupt stack frame
     uintptr_t rip;
     uintptr_t cs;
@@ -115,6 +115,24 @@ inline static void x86_wrmsr(uintptr_t msr, uintptr_t value)
                  : "c"(msr), "a"(low), "d"(high));
 }
 
+inline static void x86_wrxcr(uintptr_t value)
+{
+    uint32_t edx = (value >> 32);
+    uint32_t eax = (uint32_t)value;
+    asm volatile("xsetbv"
+                 :
+                 : "a"(eax), "d"(edx), "c"(0));
+}
+
+static inline int x86_cpuid(uint32_t target, uint32_t low_target,
+                            uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx)
+{
+
+    asm volatile("cpuid"
+                 : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx)
+                 : "a"(target), "c"(low_target));
+    return 1;
+}
 #define MSR_EFER_SCE 1
 enum MSR_REGISTERS
 {

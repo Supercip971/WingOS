@@ -97,7 +97,7 @@ public:
         memcpy(this, &move, sizeof(process));
         return *this;
     }
-    arch_process_data &get_arch_info() { return arch_info; };
+    arch_process_data *get_arch_info() { return &arch_info; };
 
     void init_global_memory();
     void init_message_system();

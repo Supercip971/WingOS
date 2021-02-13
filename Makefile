@@ -77,6 +77,7 @@ CXXHARDFLAGS := $(CFLAGS)               \
         -no-pie \
         -m64 \
 				-mavx \
+				-mavx2 \
 	    -Wall \
 	    -MD \
 			-msse \

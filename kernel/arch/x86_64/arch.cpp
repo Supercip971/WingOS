@@ -75,9 +75,9 @@ ASM_FUNCTION void kernel_start(stivale_struct *bootloader_data)
 
 
 
+    init_sse();
     setup_gdt();
     init_idt();
-    init_sse();
     if(has_xsave()){
         log("xsave", LOG_INFO, "cpu has support for xsave");
     }

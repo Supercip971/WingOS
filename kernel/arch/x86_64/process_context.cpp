@@ -83,8 +83,7 @@ void init_process_stackframe(process *pro, func entry_point, int argc, char **ar
     pro->get_arch_info()->rsp =
         ((uint64_t)pro->get_arch_info()->stack) + PROCESS_STACK_SIZE;
 
-  //  uint64_t *rsp = (uint64_t *)pro->get_arch_info()->rsp;
-    InterruptStackFrame *ISF = (InterruptStackFrame *)(pro->get_arch_info()->rsp - (sizeof(InterruptStackFrame)));
+    InterruptStackFrame *ISF = (InterruptStackFrame *)(pro->get_arch_info()->rsp - (sizeof(InterruptStackFrame)) - 8);
 
     ISF->rip = (uint64_t)entry_point;
     ISF->ss = gdt_selector::KERNEL_DATA;

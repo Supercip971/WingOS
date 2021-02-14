@@ -4,6 +4,7 @@
 #include <filesystem/userspace_fs.h>
 #include <process_context.h>
 #include <stdint.h>
+#include <utils/math.h>
 #define MAX_PROCESS 64
 #define SLEEP_ALWAYS ((uint64_t)-1)
 
@@ -165,7 +166,7 @@ public:
     void rename(const char *new_name)
     {
 
-        memcpy(process_name, new_name, max(strlen(process_name), strlen(new_name)));
+        memcpy(process_name, new_name, utils::max(strlen(process_name), strlen(new_name)));
     }
 };
 

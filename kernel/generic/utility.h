@@ -4,31 +4,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-template <class A>
-constexpr A max(const A a, const A b)
-{
-    if (a > b)
-    {
-        return a;
-    }
-    else
-    {
-        return b;
-    }
-}
-template <class A>
-constexpr A min(const A a, const A b)
-{
-    if (a < b)
-    {
-        return a;
-    }
-    else
-    {
-        return b;
-    }
-}
-
 void kitoaT(char *buf, int base, size_t d);
 inline void memzero(void const *s, const uint64_t n)
 {

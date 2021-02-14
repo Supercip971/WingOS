@@ -20,7 +20,8 @@ public:
 void add_ram_file(ram_file *file);
 struct filesystem_file_t
 {
-    const char *path;
+
+    char *path;
     int mode;
     size_t cur;
     uint64_t rpid;

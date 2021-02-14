@@ -1,6 +1,7 @@
 #pragma once
 #include <stddef.h>
 #include <stdint.h>
+#include <utils/wstring.h>
 namespace sys
 {
 
@@ -9,11 +10,11 @@ namespace sys
         uint64_t fid;
         uint64_t fcurrent_seek_pos;
         bool opened = false;
-        char *fpath;
+        utils::string fpath;
 
     public:
         file();
-        file(const char *path);
+        file(const utils::string path);
 
         void seek(uint64_t at);
 
@@ -21,7 +22,7 @@ namespace sys
         size_t read(uint8_t *buffer, uint64_t length);
         size_t write(const uint8_t *buffer, uint64_t length);
         bool is_openned() const { return opened; };
-        void open(const char *path);
+        void open(const utils::string path);
         void close();
         uint64_t get_file_length();
     };

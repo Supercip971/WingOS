@@ -14,7 +14,7 @@ namespace sys
     {
         opened = false;
     }
-    file::file(const char *path)
+    file::file(const utils::string path)
     {
         opened = false;
         open(path);
@@ -49,7 +49,7 @@ namespace sys
         return writed;
     }
 
-    void file::open(const char *path)
+    void file::open(const utils::string path)
     {
         if (opened == true)
         {
@@ -58,19 +58,14 @@ namespace sys
         fcurrent_seek_pos = 0;
 
         opened = true;
-        fpath = new char[strlen(path) + 1];
-        memcpy(fpath, path, strlen(path) + 1);
-        fid = sys$open(path, 0, 0);
+        fpath = path;
+        fid = sys$open(fpath.c_str(), 0, 0);
     }
     void file::close()
     {
         opened = false;
         sys$close(fid);
-        if (fpath != nullptr)
-        {
-            delete[] fpath;
-            fpath = nullptr;
-        }
+        fpath = "";
         fid = 0;
     }
     uint64_t file::get_file_length()

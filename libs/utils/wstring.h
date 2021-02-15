@@ -29,6 +29,15 @@ namespace utils
             this->write_value(value, strlen(value) + 1);
             string_length = strlen(value);
         }
+        string(const char value) : memory_buffer<char>(16)
+        {
+            this->seek(0);
+            this->write_value(&value, 1);
+            this->seek(1);
+            char null_str = 0;
+            this->write_value(&null_str, 1);
+            string_length = 1;
+        }
         string(const char *value, size_t length) : memory_buffer<char>(length + 16)
         {
             this->seek(0);
@@ -51,6 +60,8 @@ namespace utils
         {
             this->seek(0);
             copy(this, value);
+
+            string_length = strlen((char *)value->raw());
         }
         ~string()
         {
@@ -94,9 +105,10 @@ namespace utils
         void append(const string value)
         {
             size_t added_length = value.length();
-            resize(string_length + added_length);
-            seek(length());
+            resize(string_length + added_length + 1);
+            seek(string_length);
             write(value.raw(), value.length() + 1);
+            string_length += added_length;
         }
         string &operator+=(const string v)
         {

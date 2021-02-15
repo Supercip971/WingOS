@@ -18,7 +18,7 @@ void click(uint64_t t)
 }
 int main(int argc, char **argv)
 {
-    auto pid = sys::start_programm("init_fs/shell.exe");
+    auto pid = sys::start_programm("initfs/shell.exe");
     if (pid == 0)
     {
         printf("unable to start shell programm ");

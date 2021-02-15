@@ -150,7 +150,7 @@ format:
 	@clang-format -i --style=file $(USRAPPCFILES) $(USRAPPHFILES)
 
 foreachramfs: 
-	@for f in $(shell find init_fs/ -maxdepth 64 -type f); do $(ECHFS_PATH) -m -p0 $(KERNEL_HDD) import $${f} $${f}; done
+	@for f in $(shell find initfs/ -maxdepth 64 -type f); do $(ECHFS_PATH) -m -p0 $(KERNEL_HDD) import $${f} $${f}; done
 
 .PHONY:app
 app: $(APP_FILE_CHANGE)

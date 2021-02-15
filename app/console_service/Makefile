@@ -61,7 +61,7 @@ CHARDFLAGS := $(CFLAGS)               \
 
 all: $(CXXOBJ) $(COBJ)
 	@$(LD) -nostdlib -no-pie -z max-page-size=0x1000 -T ../link.ld -o $(PROJECT_NAME).exe $(COBJ) $(CXXOBJ)
-	@$(LD) -nostdlib -no-pie -z max-page-size=0x1000 -T ../link.ld -o ../../init_fs/$(PROJECT_NAME).exe $(COBJ) $(CXXOBJ)
+	@$(LD) -nostdlib -no-pie -z max-page-size=0x1000 -T ../link.ld -o ../../initfs/$(PROJECT_NAME).exe $(COBJ) $(CXXOBJ)
 
 
 $(BUILD_DIR)/%.o : %.cpp ${CXXFILES} ${HFILES}

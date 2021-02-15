@@ -16,8 +16,8 @@ int main(int argc, char **argv)
 {
     gui::graphic_context gc(sys::get_screen_width(), sys::get_screen_height(), "background");
     int texWidth, texHeight, texChannels;
-    //   uint8_t *data = stbi_load("init_fs/boot_pic.bmp", &texWidth, &texHeight, &texChannels, STBI_rgb);
-    gui::img_bmp bmp = gui::img_bmp("init_fs/background_pic.bmp");
+    //   uint8_t *data = stbi_load("initfs/boot_pic.bmp", &texWidth, &texHeight, &texChannels, STBI_rgb);
+    gui::img_bmp bmp = gui::img_bmp("initfs/background_pic.bmp");
     gc.clear_buffer(gui::pixel(70, 70, 70, 255));
     for (unsigned int x = 0; x < bmp.get_width(); x++)
     {

@@ -8,7 +8,7 @@
 #include <stdio.h>
 int main(int argc, char **argv)
 {
-    sys::file f = sys::file("init_fs/startup.json");
+    sys::file f = sys::file("initfs/startup.json");
     uint8_t *t = new uint8_t[f.get_file_length() + 2];
     f.read(t, f.get_file_length());
     t[f.get_file_length() + 1] = 0;

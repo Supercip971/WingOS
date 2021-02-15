@@ -573,7 +573,7 @@ void ext2fs::init(uint64_t start_sector, uint64_t sector_count)
     log("ext2", LOG_INFO, "root inode block subdir: {}", dir->inode_dir);
     log("ext2", LOG_INFO, "root inode size: {}", root_inode.strct.lower_size);
     list_sub_directory(root_inode, 0);
-    get_file("init_fs/test_directory/test_another.txt");
+    get_file("initfs/test_directory/test_another.txt");
 }
 
 uint64_t ext2fs::read_file(const char *path, uint64_t at, uint64_t size, uint8_t *buffer)

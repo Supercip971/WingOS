@@ -23,12 +23,12 @@ sudo losetup $LOOP_DISK_PARTIITION $DISK -o 1048576
 sudo mke2fs $LOOP_DISK_PARTIITION
 sudo mount $LOOP_DISK_PARTIITION /mnt
 
-mkdir /mnt/init_fs
-cp -r ./init_fs/* /mnt/init_fs/
+mkdir /mnt/initfs
+cp -r ./initfs/* /mnt/initfs/
 cp ./limine.cfg /mnt/limine.cfg
 cp ./kernel.elf /mnt/kernel.elf
 ls -la /mnt
-ls -la /mnt/init_fs
+ls -la /mnt/initfs
 umount /mnt
 losetup -d $LOOP_DISK_PARTIITION
 losetup -d $LOOP_DISK

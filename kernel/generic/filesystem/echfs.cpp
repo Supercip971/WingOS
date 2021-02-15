@@ -136,11 +136,11 @@ void echfs::init(uint64_t start_sector, uint64_t sector_count)
         entry_t++;
     }
 
-    log("echfs", LOG_INFO) << "found file : init_fs/test_directory/test_another.txt" << find_file("init_fs/test_directory/test_another.txt").parent_id;
+    log("echfs", LOG_INFO) << "found file : initfs/test_directory/test_another.txt" << find_file("initfs/test_directory/test_another.txt").parent_id;
 
     log("echfs", LOG_INFO) << "reading file "
-                           << "init_fs/test_directory/test_another.txt";
-    uint8_t *f = this->ech_read_file("init_fs/background_pic.bmp");
+                           << "initfs/test_directory/test_another.txt";
+    uint8_t *f = this->ech_read_file("initfs/background_pic.bmp");
     log("echfs", LOG_INFO) << (char *)f;
 
     free(temp_buffer);

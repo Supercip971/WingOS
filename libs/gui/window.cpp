@@ -102,7 +102,7 @@ namespace gui
     bool window::is_mouse_on_window()
     {
 
-        return (window_graphic_context.get_window_id() == sys::sys$get_process_global_data(0, "init_fs/graphic_service.exe"));
+        return (window_graphic_context.get_window_id() == sys::sys$get_process_global_data(0, "initfs/graphic_service.exe"));
     }
     bool window::is_window_front()
     {

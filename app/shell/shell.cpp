@@ -4,7 +4,9 @@
 #include <kern/mem_util.h>
 #include <kern/process_message.h>
 #include <kern/syscall.h>
+#include <utils/wstring.h>
 //#include <feather_language_lib/feather.h>
+#include "interpret_command.h"
 #include <ctypes.h>
 #include <gui/raw_graphic.h>
 #include <gui/widget/button.h>
@@ -50,6 +52,9 @@ int main(int argc, char **argv)
     sys::stdin.seek(stdin_length);
     printf("wingos shell \n");
     printf("hello world ! \n");
+    utils::string v = utils::string("hello");
+    v.append("world");
+    printf("hello + world = %s\n", v.c_str());
     printf(">");
     int i = 0;
     temp_buffer = (char *)malloc(2048);
@@ -57,8 +62,15 @@ int main(int argc, char **argv)
     while (true)
     {
         next_command();
-        printf("%s", temp_buffer);
-        printf("\n runned command %s", temp_buffer);
+        printf("%s \n", temp_buffer);
+        int res = interpret_command(temp_buffer);
+        if (res == 0)
+        {
+        }
+        else
+        {
+            printf("error: {%i} \n", res);
+        }
         printf("\n>");
     }
     free(temp_buffer);

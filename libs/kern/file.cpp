@@ -60,11 +60,20 @@ namespace sys
         opened = true;
         fpath = path;
         fid = sys$open(fpath.c_str(), 0, 0);
+        if (fid == -1)
+        {
+            opened = false;
+            close();
+        }
     }
     void file::close()
     {
-        opened = false;
-        sys$close(fid);
+        if (opened)
+        {
+            sys$close(fid);
+
+            opened = false;
+        }
         fpath = "";
         fid = 0;
     }

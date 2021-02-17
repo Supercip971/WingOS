@@ -10,10 +10,18 @@ WingOS is a small hobbyist 64 bit kernel made with <3 in C++
 Email: supercyp@protonmail.com
 
 Discord: supercyp#1592 
-## Running:
+## Try it:
 
-if you just want to run the os **without building** it, you can just install Qemu  (for Qemu argument you can see the Makefile) , and grab the latest Artifacts in the github action
+if you just want to try the os **without building** it, you can just install Qemu, and grab the latest Artifacts in the github action 
 
+configuration for running qemu: 
+
+[MEMORY] : recommanded memory: 4G | minimum: 2G
+
+[CPU_CORES] : recommanded : 6 | minimum : 1 (warning: 1 cpu core is really slow)
+```
+qemu-system-x86_64 -m [MEMORY] -s -device pvpanic -smp [CPU_CORES] -serial stdio -enable-kvm -d cpu_reset -d guest_errors -hda [DISK_PATH] -nic user,model=e1000 -M q35 -cpu host 
+```
 ## Building:
 for building you can take a look at the [Build guide](./Build_guide.md)
 

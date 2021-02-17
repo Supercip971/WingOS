@@ -50,3 +50,9 @@ make run
 ## You can't build ?
 
 try to contact me ! you can do an issue or start a discussion in github discussion tab ! 
+
+### Contact: 
+
+Email: supercyp@protonmail.com
+
+Discord: supercyp#1592 

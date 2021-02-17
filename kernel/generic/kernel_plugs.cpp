@@ -8,12 +8,12 @@ namespace plug
     uintptr_t allocate_page(size_t count)
     {
 
-        return reinterpret_cast<uintptr_t>(pmm_alloc(count));
+        return reinterpret_cast<uintptr_t>(get_mem_addr(pmm_alloc(count)));
     }
     bool free_page(uintptr_t addr, size_t count)
     {
 
-        pmm_free(reinterpret_cast<void *>(addr), count);
+        pmm_free(reinterpret_cast<void *>(get_rmem_addr(addr)), count);
         return true;
     }
     void debug_out(const char *str, size_t length)

@@ -7,7 +7,7 @@
 #include <physical.h>
 #include <stivale_struct.h>
 #include <virtual.h>
-
+#include <bitmap.h>
 #include <utility.h>
 uint64_t entry_to_address(uint64_t pml4, uint64_t pdpt, uint64_t pd, uint64_t pt)
 {
@@ -210,7 +210,6 @@ main_page_table *new_vmm_page_dir()
     {
         uint64_t addr = i * PAGE_SIZE;
         map_page(ret_pml4, addr, (addr), BASIC_PAGE_FLAGS);
-        map_page(ret_pml4, addr, get_mem_addr(addr), BASIC_PAGE_FLAGS);
     }
 
     return ret_pml4;
@@ -241,7 +240,6 @@ void init_vmm(stivale_struct *bootdata)
     {
         uint64_t addr = i * PAGE_SIZE;
         map_page(table, addr, get_mem_addr(addr), BASIC_PAGE_FLAGS);
-        map_page(table, addr, (addr), BASIC_PAGE_FLAGS);
     }
 
     log("vmm", LOG_INFO) << "loading vmm with memory entries";

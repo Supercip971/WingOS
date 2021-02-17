@@ -249,7 +249,7 @@ void e1000::init(pci_device *dev)
     if (d.type == pci_bar_type::MM_IO_32)
     {
         bar_t = 0;
-        mm_address = (d.base);
+        mm_address = get_mem_addr(d.base);
         log("e1000", LOG_INFO) << "e1000 is mm" << mm_address;
         log("e1000", LOG_INFO) << "e1000 is length" << d.size;
         update_paging();

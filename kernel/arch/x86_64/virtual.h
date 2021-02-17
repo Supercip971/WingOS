@@ -2,6 +2,7 @@
 #include <logging.h>
 #include <physical.h>
 #include <stivale_struct.h>
+#include <utils/wvector.h>
 #define KERNEL_PHYS_OFFSET ((uint64_t)0xffffffff80000000)
 #define MEM_PHYS_OFFSET ((uint64_t)0xffff800000000000)
 #define PML4_GET_INDEX(addr) (addr & ((uint64_t)0x1ff << 39)) >> 39
@@ -25,9 +26,13 @@ inline void set_paging_dir(uint64_t pd)
 {
     asm volatile("mov cr3, %0" ::"r"(pd & FRAME_ADDR));
 }
+
 void update_paging();
 int map_page(uint64_t phys_addr, uint64_t virt_addr, uint64_t flags);
 int map_page(main_page_table *table, uint64_t phys_addr, uint64_t virt_addr, uint64_t flags);
+uint64_t alloc_map_page(main_page_table *table, uint64_t phys_addr, uint64_t flags);
+uint64_t alloc_map_region(main_page_table *table, uint64_t phys_addr, uint64_t count, uint64_t flags);
+
 uint64_t get_physical_addr(uint64_t virt);
 main_page_table *new_vmm_page_dir();
 inline void virt_map(uint64_t from, uint64_t to, uint64_t flags)

@@ -11,7 +11,7 @@ void ahci::init()
     log("ahci", LOG_DEBUG) << "loading ahci...";
     ahci_bar = get_bar(5);
     log("ahci", LOG_INFO) << "ahci addr : " << ahci_bar.base;
-    data_addr = ahci_bar.base;
+    data_addr = get_mem_addr(ahci_bar.base);
     hba_mem = (hba_memory *)data_addr;
     log("ahci", LOG_INFO) << "implemented register value = " << hba_mem->port_implemented;
     uint32_t dev_target = hba_mem->port_implemented;
@@ -150,7 +150,7 @@ void ahci_ata_device::end_command()
 generic_io_device::io_rw_output ahci_ata_device::read(uint8_t *data, uint64_t count, uint64_t cursor)
 {
     ahci_lock.lock();
-    uint16_t *rdata = (uint16_t *)data;
+    uint16_t *rdata = (uint16_t *)get_rmem_addr(data);
     port->interrupt_status = (uint32_t)-1;
     int spin_timeout = 0;
     int slot = find_command_slot();

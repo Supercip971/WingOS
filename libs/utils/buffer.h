@@ -176,7 +176,7 @@ namespace utils
             {
                 v = current_data_size - cursor;
             }
-            memcpy(target, (uint8_t*)data +cursor, v);
+            memcpy(target, (uint8_t *)data + cursor, v);
 
             cursor += v;
             return v;
@@ -193,7 +193,7 @@ namespace utils
             {
                 v = current_data_size - at;
             }
-            memcpy(target, data+at, v);
+            memcpy(target, data + at, v);
 
             return v;
         };
@@ -209,7 +209,7 @@ namespace utils
             {
                 v = current_data_size - cursor;
             }
-            memcpy((uint8_t *)target, (uint8_t *)data+cursor, v);
+            memcpy((uint8_t *)target, (uint8_t *)data + cursor, v);
 
             cursor += v;
             return v;
@@ -245,7 +245,7 @@ namespace utils
             {
                 v = current_data_size - at;
             }
-            memcpy((uint8_t *)data+at, (uint8_t *)target, v);
+            memcpy((uint8_t *)data + at, (uint8_t *)target, v);
 
             return v;
         }

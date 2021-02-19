@@ -2,7 +2,9 @@
 #include <device/acpi.h>
 #include <device/madt.h>
 #include <stdint.h>
+
 #define LAPIC_ENABLE (1 << 10)
+
 enum apic_register
 {
     lapic_id = 0x20,
@@ -43,33 +45,43 @@ struct io_apic_version_table
 class apic
 {
     void *apic_addr;
+
     MADT_table_IOAPIC **table;
     MADT_table_ISO **iso_table;
     io_apic_version_table io_version_data;
+
     bool loaded = false;
+
     void set_raw_redirect(uint8_t vector, uint32_t target_gsi, uint16_t flags, int cpu, int status);
 
 public:
     apic();
+
     void log_all();
     void set_apic_addr(uint32_t new_address);
+
     void init();
     void enable();
+
     void send_ipi(uint8_t cpu, uint32_t interrupt_num);
     bool isloaded();
     void EOI(); // signal end of interrupt
+
     void load_interrupt_system();
     void preinit_processor(uint32_t processorid);
+
     void init_processor(uint32_t processorid, uint64_t entry);
 
     void set_redirect_irq(int cpu, uint8_t irq, int status = 0);
 
     uint32_t get_current_processor_id();
+
     uint32_t read(uint32_t regs);
     void write(uint32_t regs, uint32_t val);
-    void io_write(uint64_t base, uint32_t reg, uint32_t data);
 
+    void io_write(uint64_t base, uint32_t reg, uint32_t data);
     uint32_t io_read(uint64_t base, uint32_t reg);
+
     void ipi_write(uint64_t val);
 
     uint32_t IO_get_max_redirect(uint32_t apic_id);

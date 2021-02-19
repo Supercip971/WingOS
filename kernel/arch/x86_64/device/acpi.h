@@ -10,6 +10,7 @@ struct RSDP_descriptor_10
     uint8_t rev;
     uint32_t RSDT_address;
 } __attribute__((packed));
+
 struct RSDPDescriptor20
 {
     RSDP_descriptor_10 firstPart;
@@ -19,6 +20,7 @@ struct RSDPDescriptor20
     uint8_t ExtendedChecksum;
     uint8_t reserved[3];
 } __attribute__((packed));
+
 struct RSDTHeader
 {
     char Signature[4];
@@ -31,11 +33,13 @@ struct RSDTHeader
     uint32_t CreatorID;
     uint32_t CreatorRevision;
 } __attribute__((packed));
+
 struct RSDT
 {
     RSDTHeader h;
     uint32_t PointerToOtherSDT[]; //
 } __attribute__((packed));
+
 class acpi
 {
     uint64_t version = 0;

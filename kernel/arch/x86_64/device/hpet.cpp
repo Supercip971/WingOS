@@ -3,10 +3,13 @@
 #include <device/apic.h>
 #include <device/hpet.h>
 #include <logging.h>
+
 hpet main_hpet;
+
 hpet::hpet()
 {
 }
+
 void hpet::init_hpet()
 {
     // why setting up log for hpet if we doesn't use it ?

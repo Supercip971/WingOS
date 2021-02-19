@@ -1,7 +1,9 @@
 #ifndef AHCI_H
 #define AHCI_H
+
 #include <device/pci.h>
 #include <io_device.h>
+
 enum fis_type_def
 {
     FTYPE_REG_HOST2DEVICE = 0x27,
@@ -13,6 +15,7 @@ enum fis_type_def
     FTYPE_PIO_SETUP = 0x5F,
     FTYPE_DEVICE_BITS = 0xA1,
 };
+
 enum ahci_port_type
 {
     NULL_PORT = 0,
@@ -21,6 +24,7 @@ enum ahci_port_type
     PM_PORT = 3,
     SATAPI_PORT = 3,
 };
+
 enum sata_sig_type
 {
     SATA_SIG_ATA = 0x101,
@@ -42,9 +46,11 @@ enum hba_port_command
     COMMAND_FR = 0x4000,
     COMMAND_CR = 0x8000,
 };
+
 #define DMA_ATA_WRITE_EXTENDED 0x35
 #define DMA_ATA_READ_EXTENDED 0x25
 #define TASK_FILE_ERROR (1 << 30)
+
 enum ata_device_status
 {
     ATA_DEV_BUSY = 0x80,
@@ -263,10 +269,13 @@ __attribute__((packed));
 class ahci : public pci_device_driver
 {
     hba_memory *hba_mem;
+
     pci_bar_data ahci_bar;
     uint64_t data_addr;
+
     void start_command(hba_port *port);
     void end_command(hba_port *port);
+
     ahci_port_type check_device_type(hba_port *port) const;
     void reinit_port(hba_port *port);
 
@@ -284,16 +293,17 @@ class ahci_ata_device : public generic_io_device
     void end_command();
 
 public:
-    ahci_ata_device()
-    {
-    }
+    ahci_ata_device() = default;
+
     void set_port(hba_port *new_port)
     {
         port = new_port;
     }
     void init();
+
     io_rw_output read(uint8_t *data, uint64_t count, uint64_t cursor) override;
     io_rw_output write(uint8_t *data, uint64_t count, uint64_t cursor) override;
+
     const char *get_name() const final
     {
         return "ahci ata device";

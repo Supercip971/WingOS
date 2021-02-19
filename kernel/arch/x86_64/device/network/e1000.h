@@ -3,6 +3,7 @@
 #include <device/network/ethernet_protocol.h>
 #include <device/pci.h>
 #include <stdint.h>
+
 #define E_INTEL_VENDOR 0x8086
 #define E_DEVICE 0x100e
 #define E_DEVICE_I217 0x153a
@@ -57,6 +58,7 @@ enum e1000_RCONTROL
     MAC_CONTROL_FRAME = (1 << 23),
     STRIP_ETHERNET = (1 << 26)
 };
+
 #define RCONTROL_SIZE_256 (3 << 16)
 #define RCONTROL_SIZE_512 (2 << 16)
 #define RCONTROL_SIZE_1024 (1 << 16)
@@ -92,13 +94,20 @@ enum e1000_TCTL_REGISTERS
 
 #define RX_DESCRIPTOR_COUNT 32
 #define TX_DESCRIPTOR_COUNT 8
+
 class e1000
 {
     uint8_t bar_t;
+
     uint16_t io_base_addr;
     uint64_t mm_address;
+
+    bool eerp_rom_detection();
     bool does_eerprom_exists;
+
+    bool mac_detection();
     mac_address maddr;
+
     struct rx_desc
     {
         volatile uint64_t address;
@@ -108,8 +117,11 @@ class e1000
         volatile uint8_t errors;
         volatile uint16_t special;
     } __attribute__((packed));
+
     rx_desc *rx_descriptor[RX_DESCRIPTOR_COUNT];
     uint16_t rx_current_buf = 0;
+    void setup_rx();
+
     struct tx_desc
     {
         volatile uint64_t address;
@@ -123,16 +135,13 @@ class e1000
 
     tx_desc *tx_descriptor[TX_DESCRIPTOR_COUNT];
     uint16_t tx_current_buf = 0;
+    void setup_tx();
 
     void write(uint16_t addr, uint32_t val);
     uint32_t read(uint16_t addr);
     uint32_t errp_rom_read(uint8_t addr);
 
-    bool eerp_rom_detection();
-    bool mac_detection();
     void start();
-    void setup_tx();
-    void setup_rx();
     void turn_on_int();
     void handle_packet_reception();
 

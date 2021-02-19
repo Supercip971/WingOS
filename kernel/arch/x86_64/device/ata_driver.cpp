@@ -1,14 +1,15 @@
 #include <arch.h>
-
 #include <com.h>
 #include <device/ata_driver.h>
 #include <interrupt.h>
 #include <logging.h>
 #include <utils/liballoc.h>
 #include <utils/lock.h>
+
 ata_driver main_driver;
 utils::lock_type ata_lock;
 int waiting_for_irq = 0;
+
 ata_driver::ata_driver()
 {
 }
@@ -49,6 +50,7 @@ bool ata_driver::get_ata_status()
             return true;
     }
 }
+
 bool ata_driver::has_ata_device()
 {
     bool is_primary = true;
@@ -66,6 +68,7 @@ bool ata_driver::has_ata_device()
 
     return true;
 }
+
 void ata_driver::init()
 {
     waiting_for_irq = 0;
@@ -107,9 +110,9 @@ void ata_driver::irq_handle(uint64_t irq_handle_num)
     }
     else
     {
-        //    printf("[ERROR] ata driver receive not supported irq");
     }
 }
+
 void ata_driver::read(uint64_t where, uint32_t count, uint8_t *buffer)
 {
     ata_lock.lock();
@@ -139,7 +142,6 @@ void ata_driver::read(uint64_t where, uint32_t count, uint8_t *buffer)
 
         if ((status & 0x1) || (status & 0x20))
         {
-            /* Wait for the drive */
             wait(5);
 
             uint8_t error = ata_read(true, ATA_reg_error_feature);

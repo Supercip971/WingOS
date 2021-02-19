@@ -6,6 +6,7 @@ struct mac_address
 {
     uint8_t mac[6];
 } __attribute__((packed));
+
 enum ethernet_types : uint16_t
 {
     ET_ARP = 0x0806,

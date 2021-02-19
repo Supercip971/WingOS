@@ -47,6 +47,7 @@ struct main_hpet_struct
     uint64_t i_dont_exist4;
     hpet_individual_timer timers[];
 } __attribute__((packed));
+
 struct entry_hpet
 {
 

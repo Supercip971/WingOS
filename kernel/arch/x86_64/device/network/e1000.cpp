@@ -6,6 +6,7 @@
 #include <utils/liballoc.h>
 #include <virtual.h>
 e1000 main_e1000;
+
 e1000::e1000()
 {
 }
@@ -23,7 +24,6 @@ void e1000::write(uint16_t addr, uint32_t val)
 {
     if (bar_t == 0)
     {
-
         (*(uint32_t volatile *)(((char *)mm_address) + (addr))) = val;
     }
     else
@@ -32,6 +32,7 @@ void e1000::write(uint16_t addr, uint32_t val)
         outl(io_base_addr + 4, val);
     }
 }
+
 uint32_t e1000::read(uint16_t addr)
 {
     if (bar_t == 0)
@@ -40,11 +41,11 @@ uint32_t e1000::read(uint16_t addr)
     }
     else
     {
-
         outl(io_base_addr, addr);
         return inl(io_base_addr + 4);
     }
 }
+
 bool e1000::eerp_rom_detection()
 {
     uint32_t val = 0;
@@ -69,18 +70,21 @@ uint32_t e1000::errp_rom_read(uint8_t addr)
 {
     uint16_t data = 0;
     uint32_t tmp = 0;
+
     if (does_eerprom_exists)
     {
         write(E_EEPROM, (1) | ((uint32_t)(addr) << 8));
         while (!((tmp = read(E_EEPROM)) & (1 << 4)))
             ;
     }
+
     else
     {
         write(E_EEPROM, (1) | ((uint32_t)(addr) << 2));
         while (!((tmp = read(E_EEPROM)) & (1 << 1)))
             ;
     }
+
     data = (uint16_t)((tmp >> 16) & 0xFFFF);
     return data;
 }
@@ -91,12 +95,15 @@ bool e1000::mac_detection()
     {
 
         uint32_t temp;
+
         temp = errp_rom_read(0);
         maddr.mac[0] = temp & 0xff;
         maddr.mac[1] = temp >> 8;
+
         temp = errp_rom_read(1);
         maddr.mac[2] = temp & 0xff;
         maddr.mac[3] = temp >> 8;
+
         temp = errp_rom_read(2);
         maddr.mac[4] = temp & 0xff;
         maddr.mac[5] = temp >> 8;
@@ -121,6 +128,7 @@ void e1000::setup_rx()
     rx_desc *descriptor;
     tmp_ptr = (uint8_t *)malloc(sizeof(rx_desc) * RX_DESCRIPTOR_COUNT + 16);
     descriptor = (rx_desc *)tmp_ptr;
+
     for (int i = 0; i < RX_DESCRIPTOR_COUNT; i++)
     {
         rx_descriptor[i] = (rx_desc *)((uint8_t *)descriptor + i * 16);
@@ -131,6 +139,7 @@ void e1000::setup_rx()
     write(E_TX_DESCRIPTOR_LOW, (uint64_t)tmp_ptr >> 32);
     write(E_TX_DESCRIPTOR_HIGH, (uint64_t)tmp_ptr & 0xFFFFFFFF);
     write(E_RX_DESCRIPTOR_LOW, (uint64_t)tmp_ptr);
+
     write(E_RX_DESCRIPTOR_HIGH, 0);
 
     write(E_RX_DESCRIPTOR_LENGTH, RX_DESCRIPTOR_COUNT * 16);
@@ -152,9 +161,10 @@ void e1000::setup_tx()
     {
         tx_descriptor[i] = (tx_desc *)((uint8_t *)descriptor + i * 16);
         tx_descriptor[i]->address = 0;
-        tx_descriptor[i]->status = DESC_DONE;
         tx_descriptor[i]->command = 0;
+        tx_descriptor[i]->status = DESC_DONE;
     }
+
     write(E_TX_DESCRIPTOR_LOW, (uint64_t)tmp_ptr >> 32);
     write(E_TX_DESCRIPTOR_HIGH, (uint64_t)tmp_ptr & 0xFFFFFFFF);
 
@@ -169,9 +179,9 @@ void e1000::setup_tx()
     write(E_TCONTROL, 0b0110000000000111111000011111010);
     write(E_TRANSMIT_INTER_PACKET_GAP, 0x0060200A);
 }
+
 void e1000::start()
 {
-
     uint32_t flags = read(0);
     write(0, flags | 0x40);
 }
@@ -181,16 +191,10 @@ void e1000::handle_packet_reception()
 
     while (rx_descriptor[rx_current_buf]->status & 0x1)
     {
-
-        //        uint8_t *temp_buffer = (uint8_t *)rx_descriptor[rx_current_buf]->address;
-
-        //      uint16_t length = rx_descriptor[rx_current_buf]->length;
-
-        // put your frickin packet in the frickin stack
-
         rx_descriptor[rx_current_buf]->status = 0;
         old_cursor = rx_current_buf;
         rx_current_buf = (rx_current_buf + 1) % RX_DESCRIPTOR_COUNT;
+
         write(E_RX_DESCRIPTOR_TAIL, old_cursor);
     }
 }
@@ -198,6 +202,7 @@ void e1000::handle_packet_reception()
 int e1000::send_packet(uint8_t *data, uint16_t length)
 {
     tx_desc *target = tx_descriptor[tx_current_buf];
+
     target->address = (uint64_t)data;
     target->length = length;
     target->command = END_OF_PACKET | INSERT_FCS | REPORT_STATUS;
@@ -237,7 +242,6 @@ void e1000::turn_on_int()
 }
 void e1000_int_handler(unsigned int v)
 {
-    (void)v;
     e1000::the()->irq_handle();
 }
 void e1000::init(pci_device *dev)
@@ -246,6 +250,7 @@ void e1000::init(pci_device *dev)
     log("e1000", LOG_DEBUG) << "loading e1000";
     pci_bar_data d = dev->get_bar(0);
     add_irq_handler(e1000_int_handler, 11);
+
     if (d.type == pci_bar_type::MM_IO_32)
     {
         bar_t = 0;

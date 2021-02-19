@@ -67,6 +67,7 @@ void *findFACP(void *RootSDT)
         {
             continue;
         }
+
         RSDTHeader *h = reinterpret_cast<RSDTHeader *>(rsdt->PointerToOtherSDT[i]);
 
         if (!strncmp(h->Signature, "FACP", 4))

@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #define RTL_RECEIVE_BUFFER_SIZE (8192 + 16)
+
 enum rtl_register
 {
     RMAC = 0,
@@ -20,6 +21,7 @@ enum rtl_register
     CONFIG_1 = 0x52,
 
 };
+
 enum rtl_r_command
 {
     RESTART = 0x10,
@@ -29,10 +31,12 @@ class rtl8139
 {
     uint64_t io_addr;
     uint64_t mm_addr;
+
     uint8_t mac_address[6];
 
     void *rx_buffer;
     uint64_t rx_length;
+
     uint32_t read(uint32_t at);
     void write(uint32_t at, uint32_t data);
 

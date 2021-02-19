@@ -41,10 +41,12 @@ bool apic::isloaded()
 {
     return loaded;
 }
+
 void apic::log_all()
 {
     log("apic", LOG_INFO) << "apic address" << (uintptr_t)apic_addr;
     log("apic", LOG_INFO) << "current processor id " << get_current_processor_id();
+
     table = madt::the()->get_madt_ioAPIC();
 
     for (int i = 0; table[i] != 0; i++)
@@ -52,9 +54,12 @@ void apic::log_all()
         log("io apic", LOG_INFO) << "info for io apic" << i;
 
         uintptr_t addr = (table[i]->ioapic_addr);
+
         log("io apic", LOG_INFO) << "io apic addr " << addr;
+
         virt_map(addr, addr, 0x03);
         update_paging();
+
         uint32_t raw_table = (io_read(addr, version_reg));
 
         io_apic_version_table *tables = (io_apic_version_table *)&raw_table;
@@ -98,16 +103,17 @@ void apic::init()
     apic_addr = (void *)((uintptr_t)madt::the()->lapic_base);
     for (int i = 0; i < 3; i++)
     {
-
         virt_map((uint64_t)apic_addr + i * PAGE_SIZE, (uint64_t)apic_addr + i * PAGE_SIZE, 0x03);
     }
     if (apic_addr == nullptr)
     {
         log("apic", LOG_FATAL) << "can't find apic";
+
         while (true)
         {
             asm("hlt");
         }
+
         return;
     }
 

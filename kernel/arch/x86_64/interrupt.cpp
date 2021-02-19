@@ -153,9 +153,9 @@ bool error = false;
 void interrupt_error_handle(InterruptStackFrame *stackframe)
 {
     error = true;
-    log("pic", LOG_FATAL) << "!!! fatal interrupt error !!!" << stackframe->rip;
-    log("pic", LOG_ERROR) << "ID   : " << stackframe->int_no;
-    log("pic", LOG_ERROR) << "type : " << interrupt_exception_name[stackframe->int_no];
+    log("pic", LOG_FATAL, "!!! fatal interrupt error !!! {}",stackframe->rip);
+    log("pic", LOG_ERROR, "ID   : {}", stackframe->int_no);
+    log("pic", LOG_ERROR, "type : {}",interrupt_exception_name[stackframe->int_no]);
 
     printf("\n");
 

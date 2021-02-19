@@ -9,15 +9,20 @@
 #include <smp.h>
 #include <stdint.h>
 #include <virtual.h>
+
 class cpu
 {
 public:
     uint64_t stack_base;
+
     uint64_t current_processor_id;
+
     idtr cidt;
+
     gdtr cgdt;
-    tss ctss;
     gdt_descriptor gdt_descriptors[64];
+
+    tss ctss;
 
     static const uint32_t stack_size = 8192;
     uint8_t stack_data[stack_size] PAGE_ALIGN;
@@ -28,13 +33,16 @@ public:
     main_page_table *page_table;
 
     uint64_t fpu_data[128] __attribute__((aligned(16)));
+
     void load_sse(uint64_t *data);
     void save_sse(uint64_t *data);
+
     backtrace local_backtrace;
 };
 //local_data *get_current_data();
 //local_data *get_current_data(int id);
 extern cpu procData[smp::max_cpu];
+
 inline cpu *get_current_cpu()
 {
     uint64_t cc = 0;
@@ -43,6 +51,7 @@ inline cpu *get_current_cpu()
 
     return &procData[cc];
 }
+
 inline cpu *get_current_cpu(int id)
 {
 

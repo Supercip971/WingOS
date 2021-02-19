@@ -1,6 +1,7 @@
 #pragma once
 #include <io_device.h>
 #include <stdint.h>
+
 enum ATA_IO
 {
     ATA_PRIMARY = 0x1F0,
@@ -8,6 +9,7 @@ enum ATA_IO
     ATA_PRIMARY_DCR = 0x3F6,
     ATA_SECONDARY_DCR = 0x376
 };
+
 enum ATA_drive_type
 {
     ATA_PRIMARY_MASTER = 1,
@@ -15,6 +17,7 @@ enum ATA_drive_type
     ATA_SECONDARY_MASTER = 3,
     ATA_SECONDARY_SLAVE = 4
 };
+
 enum ATA_register
 {
     ATA_reg_data = 0,
@@ -32,6 +35,7 @@ enum ATA_register
     ATA_reg_control_status = 12,
     ATA_reg_dev_address = 13
 };
+
 enum ATA_data
 {
     ATA_type_master = 0xA0,
@@ -41,6 +45,7 @@ enum ATA_data
     ATA_state_sr_drq = 0x08,
     ATA_state_error = 0x01
 };
+
 enum ATA_command
 {
     ATA_cmd_identify = 0xEC,
@@ -50,10 +55,13 @@ enum ATA_command
 class ata_driver : public generic_io_device
 {
     ATA_drive_type current_selected_drive;
+
     static void ata_write(bool primary, uint16_t ata_register, uint16_t whattowrite);
     static uint8_t ata_read(bool primary, uint16_t ata_register);
+
     static bool get_ata_status();
     uint8_t ide_temp_buf[256];
+    void read(uint64_t where, uint32_t count, uint8_t *buffer);
 
 public:
     ata_driver();
@@ -66,6 +74,7 @@ public:
             ata_read(true, ATA_reg_command_status);
         }
     }
+
     inline uint8_t poll_status()
     {
         uint8_t status = ata_read(true, ATA_reg_command_status);
@@ -77,7 +86,7 @@ public:
         }
         return status;
     }
-    void read(uint64_t where, uint32_t count, uint8_t *buffer);
+
 
     void irq_handle(uint64_t irq_handle_num);
     void init();
@@ -87,11 +96,13 @@ public:
         read(cursor, count, data);
         return io_rw_output::io_OK;
     }
+
     io_rw_output write(uint8_t *data, uint64_t count, uint64_t cursor) override
     {
         read(cursor, count, data);
         return io_rw_output::io_OK;
     }
+
     const char *get_name() const final
     {
         return "pio ata";

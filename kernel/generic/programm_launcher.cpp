@@ -152,8 +152,10 @@ bool valid_elf_entry(Elf64_Ehdr *entry)
 
 void elf64_load_programm_segment(Elf64_Phdr *entry, uint8_t *programm_code, process *target)
 {
-    char *temp_copy = (char *)get_mem_addr(pmm_alloc_zero((entry->p_memsz + PAGE_SIZE) / PAGE_SIZE));
-    memzero(temp_copy, entry->p_memsz);
+
+    size_t max_size = utils::max(entry->p_memsz, entry->p_filesz);
+    char *temp_copy = (char *)get_mem_addr(pmm_alloc_zero((max_size + PAGE_SIZE) / PAGE_SIZE));
+    memzero(temp_copy, max_size);
     memcpy(temp_copy, (char *)((uintptr_t)programm_code + entry->p_offset), entry->p_filesz);
     load_segment(target, (uintptr_t)get_rmem_addr(temp_copy), entry->p_filesz, entry->p_vaddr, entry->p_memsz);
 }

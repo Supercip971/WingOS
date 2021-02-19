@@ -1,6 +1,7 @@
 #pragma once
 #include <arch.h>
 #include <backtrace.h>
+#include <bitmap.h>
 #include <filesystem/userspace_fs.h>
 #include <process_context.h>
 #include <stdint.h>
@@ -112,7 +113,10 @@ public:
     {
         return (current_process_state != process_state::PROCESS_AVAILABLE && current_process_state != process_state::PROCESS_CRASH) && is_valid();
     };
-
+    bool is_user() const
+    {
+        return user;
+    }
     bool is_sleeping() const
     {
         return sleeping != 0;

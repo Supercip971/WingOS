@@ -18,7 +18,11 @@ namespace gui
         widget();
         virtual void update_widget() = 0;
         virtual void draw_widget(graphic_context &context) = 0;
-        constexpr bool &should_redraw()
+        constexpr bool should_redraw()
+        {
+            return widget_should_draw;
+        }
+        bool set_should_redraw(bool value)
         {
             return widget_should_draw;
         }

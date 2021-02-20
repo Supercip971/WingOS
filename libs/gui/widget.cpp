@@ -73,7 +73,7 @@ namespace gui
             {
                 if (list[i]->should_redraw())
                 {
-                    list[i]->should_redraw() = false;
+                    list[i]->set_should_redraw(false);
 
                     list[i]->draw_widget(context);
                 }

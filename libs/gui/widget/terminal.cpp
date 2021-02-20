@@ -8,7 +8,7 @@
 namespace gui
 {
 
-    terminal_widget::terminal_widget(size_t x, size_t y, size_t width, size_t heigth, int pid) : col(pixel(0, 0, 0, 0)),
+    terminal_widget::terminal_widget(size_t x, size_t y, size_t width, size_t heigth, int pid) : col(color(0, 0, 0, 255)),
                                                                                                  outbuffer(sys::get_process_stdf(1, pid)),
                                                                                                  inbuffer(sys::get_process_stdf(3, pid))
     {
@@ -103,7 +103,7 @@ namespace gui
     {
         int x = 0;
         int y = 0;
-        pixel current_col = pixel(255, 255, 255);
+        color current_col = color(255, 255, 255);
         size_t line_renderer = render_line_count();
         size_t line_offset = 0;
         if ((terminal_height - 3) < line_renderer)

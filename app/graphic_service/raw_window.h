@@ -15,8 +15,8 @@ struct raw_window_data
     uint64_t width;
     uint64_t height;
     char *window_name;
-    gui::pixel *window_front_buffer;
-    gui::pixel *window_back_buffer;
+    gui::color *window_front_buffer;
+    gui::color *window_back_buffer;
     bool used;
     bool background;
 

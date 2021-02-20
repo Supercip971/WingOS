@@ -69,7 +69,7 @@ namespace gui
         };
     } __attribute__((packed));
     // FOR OTHER THING
-    struct pixel
+    struct color
     {
         union
         {
@@ -82,33 +82,33 @@ namespace gui
             };
             uint32_t pix;
         };
-        constexpr pixel()
+        constexpr color()
         {
-            pix = 0;
+            r = 0;
+            g = 0;
+            b = 0;
+            a = 0;
         };
-        constexpr pixel(uint32_t p)
-        {
-            pix = p;
-        };
-        constexpr pixel(uint8_t vr, uint8_t vg, uint8_t vb, uint8_t va = 255)
+        constexpr color(uint8_t vr, uint8_t vg, uint8_t vb, uint8_t va = 255)
         {
             r = vr;
             g = vg;
             b = vb;
             a = va;
         }
-
-        void blend_alpha(unsigned int colora, unsigned int alpha)
+        constexpr uint32_t raw() const
         {
-            unsigned int rb1 = ((0x100 - alpha) * (colora & 0xFF00FF)) >> 8;
-            unsigned int rb2 = (alpha * (pix & 0xFF00FF)) >> 8;
-            unsigned int g1 = ((0x100 - alpha) * (colora & 0x00FF00)) >> 8;
-            unsigned int g2 = (alpha * (pix & 0x00FF00)) >> 8;
-
-            this->pix = ((rb1 | rb2) & 0xFF00FF) + ((g1 | g2) & 0x00FF00);
-            a = 255;
+            return r << 24 | g << 16 | b << 8 | a;
+        }
+        constexpr void blend(color val)
+        {
+            r = ((255 - a) * val.a * val.r + a * r) / a;
+            g = ((255 - a) * val.a * val.g + a * g) / a;
+            b = ((255 - a) * val.a * val.b + a * b) / a;
+            a = (255 - a) * val.a + a;
         }
     };
+    static_assert(sizeof(color) == sizeof(uint32_t), "sizeof(color) must be the same as a uint32_t");
     struct pos
     {
         int32_t x;
@@ -130,7 +130,7 @@ namespace gui
         uint64_t context_width;
         uint64_t context_height;
         uint64_t wid = 0;
-        pixel *back_buffer;
+        color *back_buffer;
         char *context_name;
         int graphic_pid = 0;
         static constexpr int filter_width = 3;
@@ -143,7 +143,7 @@ namespace gui
 
     public:
         graphic_context(uint64_t width, uint64_t height, const char *name) __attribute__((__target__("no-sse")));
-        void draw_filled_circle(const pos origin, const int radius, const pixel color);
+        void draw_filled_circle(const pos origin, const int radius, const color color);
         constexpr uint64_t get_window_id() const
         {
             return wid;
@@ -155,19 +155,19 @@ namespace gui
             BOTTOM_LEFT,
             TOP_LEFT
         };
-        constexpr void set_pixel(pixel p, unsigned int x, unsigned int y)
+        constexpr void set_pixel(color p, unsigned int x, unsigned int y)
         {
 
             back_buffer[(x) + (y)*context_width] = p;
         }
         void apply_blur(uint64_t fromx, uint64_t fromy, uint64_t width, uint64_t height);
-        void draw_filled_circle_part(const pos origin, const int radius, const pixel color, const filled_circle_part part);
-        void draw_rounded_rectangle(int radius, const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const pixel color);
-        void draw_rounded_rectangle_b(int radius, const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const pixel color);
-        void draw_rectangle(const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const pixel color);
-        void draw_basic_char(const uint64_t x, const uint64_t y, const char chr, const pixel color);
-        void draw_basic_string(const uint64_t x, const uint64_t y, const char *str, const pixel color);
-        void clear_buffer(const pixel color);
+        void draw_filled_circle_part(const pos origin, const int radius, const color color, const filled_circle_part part);
+        void draw_rounded_rectangle(int radius, const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const color color);
+        void draw_rounded_rectangle_b(int radius, const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const color color);
+        void draw_rectangle(const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const color color);
+        void draw_basic_char(const uint64_t x, const uint64_t y, const char chr, const color color);
+        void draw_basic_string(const uint64_t x, const uint64_t y, const char *str, const color color);
+        void clear_buffer(const color color);
         void swap_buffer();
         void set_on_top();
         void set_as_background();
@@ -179,7 +179,7 @@ namespace gui
     };
     uint64_t get_basic_font_width_text(const char *text);
 
-    void swap_buffer(pixel *buffer1, const pixel *buffer2, uint64_t buffer_length);
+    void swap_buffer(color *buffer1, const color *buffer2, uint64_t buffer_length);
 
-    void raw_clear_buffer(pixel *buffer, uint64_t size, pixel value = {0, 0, 0, 255});
+    void raw_clear_buffer(color *buffer, uint64_t size, color value = {0, 0, 0, 255});
 } // namespace gui

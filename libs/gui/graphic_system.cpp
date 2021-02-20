@@ -30,16 +30,16 @@ namespace gui
         gui::graphic_system_service_protocol get_bbuffer = {0};
         get_bbuffer.request_type = gui::GRAPHIC_SYSTEM_REQUEST::GET_WINDOW_BACK_BUFFER;
         get_bbuffer.get_request.window_handler_code = wid;
-        back_buffer = (gui::pixel *)sys::service_message("initfs/graphic_service.exe", (uint64_t)&get_bbuffer, sizeof(gui::graphic_system_service_protocol)).read();
+        back_buffer = (gui::color *)sys::service_message("initfs/graphic_service.exe", (uint64_t)&get_bbuffer, sizeof(gui::graphic_system_service_protocol)).read();
     }
 
-    void graphic_context::clear_buffer(const pixel color)
+    void graphic_context::clear_buffer(const color color)
     {
         const uint64_t context_length = (context_width * context_height);
         raw_clear_buffer(back_buffer, context_length, color);
     }
 
-    void swap_buffer(gui::pixel *buffer1, const gui::pixel *buffer2, uint64_t buffer_length)
+    void swap_buffer(gui::color *buffer1, const gui::color *buffer2, uint64_t buffer_length)
     {
         uint64_t buffer_length_r64 = buffer_length / 2;
         uint64_t *to = (uint64_t *)buffer1;
@@ -58,7 +58,7 @@ namespace gui
         uint64_t result = sys::service_message("initfs/graphic_service.exe", (uint64_t)&swap_request, sizeof(gui::graphic_system_service_protocol)).read();
     }
 
-    void raw_clear_buffer(gui::pixel *buffer, uint64_t size, gui::pixel value)
+    void raw_clear_buffer(gui::color *buffer, uint64_t size, gui::color value)
     {
         const uint64_t msize = size / 2; // copy uint64_t
         uint64_t *conv_buffer = (uint64_t *)buffer;
@@ -69,7 +69,7 @@ namespace gui
         }
     }
 
-    void graphic_context::draw_rectangle(const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const pixel color)
+    void graphic_context::draw_rectangle(const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const color color)
     {
         const uint64_t this_width = this->context_width;
         const uint64_t limit = context_height * context_width;
@@ -85,7 +85,7 @@ namespace gui
                 if (color.a != 255)
                 {
 
-                    back_buffer[pos_f].blend_alpha(color.pix, color.a);
+                    back_buffer[pos_f].blend(color);
                 }
                 else
                 {
@@ -96,7 +96,7 @@ namespace gui
         }
     }
 
-    void graphic_context::draw_basic_char(const uint64_t x, const uint64_t y, const char chr, const pixel color)
+    void graphic_context::draw_basic_char(const uint64_t x, const uint64_t y, const char chr, const color color)
     {
         for (size_t cx = 0; cx < 8; cx++)
         {
@@ -104,13 +104,13 @@ namespace gui
             {
                 if (((font8x8_basic[chr][cy] >> cx) & 1) == true)
                 {
-                    back_buffer[(cx + x) + (cy + y) * context_width].pix = color.pix;
+                    back_buffer[(cx + x) + (cy + y) * context_width] = color;
                 }
             }
         }
     }
 
-    void graphic_context::draw_basic_string(const uint64_t x, const uint64_t y, const char *str, const pixel color)
+    void graphic_context::draw_basic_string(const uint64_t x, const uint64_t y, const char *str, const color color)
     {
         const uint64_t str_length = strlen(str);
         uint64_t cur_x = x;
@@ -156,7 +156,7 @@ namespace gui
     {
         stackblur((uint8_t *)back_buffer, context_width, context_height, 10, fromx, fromx + width, fromy, fromy + height);
     }
-    void graphic_context::draw_filled_circle_part(const pos origin, const int radius, const pixel color, const filled_circle_part part)
+    void graphic_context::draw_filled_circle_part(const pos origin, const int radius, const color color, const filled_circle_part part)
     {
         const int radius_to_ckeck = radius * radius;
         int y_start = 0;
@@ -214,7 +214,7 @@ namespace gui
                     if (color.a != 255)
                     {
 
-                        back_buffer[origin.x + x + y_end_pos].blend_alpha(color.pix, color.a);
+                        back_buffer[origin.x + x + y_end_pos].blend(color);
                     }
                     else
                     {
@@ -225,7 +225,7 @@ namespace gui
             }
         }
     }
-    void graphic_context::draw_filled_circle(const pos origin, const int radius, const pixel color)
+    void graphic_context::draw_filled_circle(const pos origin, const int radius, const color color)
     {
         const int radius_to_ckeck = radius * radius;
         for (int y = -radius; y <= radius; y++)
@@ -242,7 +242,7 @@ namespace gui
                     if (color.a != 255)
                     {
 
-                        back_buffer[origin.x + x + y_end_pos].blend_alpha(color.pix, color.a);
+                        back_buffer[origin.x + x + y_end_pos].blend(color);
                     }
                     else
                     {
@@ -254,7 +254,7 @@ namespace gui
         }
     }
 
-    void graphic_context::draw_rounded_rectangle(int radius, const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const pixel color)
+    void graphic_context::draw_rounded_rectangle(int radius, const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const color color)
     {
         if (radius > height / 2)
         {
@@ -276,10 +276,10 @@ namespace gui
         draw_filled_circle_part(pos(left_x, bottom_y), radius, color, BOTTOM_LEFT);   // bottom left
         draw_filled_circle_part(pos(right_x, bottom_y), radius, color, BOTTOM_RIGHT); // bottom right
     }
-    void graphic_context::draw_rounded_rectangle_b(int radius, const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const pixel color)
+    void graphic_context::draw_rounded_rectangle_b(int radius, const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const color color)
     {
 
-        draw_rectangle(x, y, width, height, gui::pixel(0, 0, 0, 100));
+        draw_rectangle(x, y, width, height, gui::color(0, 0, 0, 100));
         apply_blur(x - 10, y - 10, width + 20, height + 20);
         draw_rounded_rectangle(radius, x, y, width, height, color);
     }

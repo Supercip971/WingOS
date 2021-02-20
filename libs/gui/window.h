@@ -4,6 +4,12 @@
 #include <stdint.h>
 namespace gui
 {
+
+    constexpr color back_window_color = {31, 41, 55, 255};
+    constexpr color highlight_wingow_color = {29, 78, 216, 255};
+    constexpr color text_window_color = {249, 250, 251, 255};
+    constexpr color window_bar_color = {75, 85, 99, 255};
+
     class window
     {
         const char *window_name;

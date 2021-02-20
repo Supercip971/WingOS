@@ -171,8 +171,8 @@ uint64_t create_window(gui::graphic_system_service_protocol *request, uint64_t p
             window_list[i].py = last_window_y;
             window_list[i].window_name = request->create_window_info.name;
             window_list[i].wid = i;
-            window_list[i].window_front_buffer = (gui::pixel *)malloc(request->create_window_info.width * request->create_window_info.height * sizeof(gui::pixel));
-            window_list[i].window_back_buffer = (gui::pixel *)malloc(request->create_window_info.width * request->create_window_info.height * sizeof(gui::pixel));
+            window_list[i].window_front_buffer = (gui::color *)malloc(request->create_window_info.width * request->create_window_info.height * sizeof(gui::color));
+            window_list[i].window_back_buffer = (gui::color *)malloc(request->create_window_info.width * request->create_window_info.height * sizeof(gui::color));
             window_list[i].depth = 100;
             set_window_on_top(window_list[i].wid);
 

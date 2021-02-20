@@ -14,7 +14,7 @@ namespace gui
         height = window_height;
         window_name = name;
 
-        window_graphic_context.clear_buffer(pixel(100, 100, 100, 0));
+        window_graphic_context.clear_buffer(color(100, 100, 100, 0));
         window_graphic_context.swap_buffer();
         lst = widget_list();
         lst.init(128); // wax 128 widget may be increase later, but you will be able to put widget list as a widget so meh
@@ -25,9 +25,9 @@ namespace gui
     uint64_t window::start()
     {
         window_graphic_context.clear_buffer({100, 100, 100, 0});
-        window_graphic_context.draw_rounded_rectangle(4, 0, 0, width, height, pixel(100, 100, 100));
-        window_graphic_context.draw_rounded_rectangle(4, 0, 0, width, 20, pixel(75, 75, 75));
-        window_graphic_context.draw_basic_string((width / 2) - (get_basic_font_width_text(window_name) / 2), 20 / 2 - (8 / 2), window_name, pixel(255, 255, 255));
+        window_graphic_context.draw_rounded_rectangle(4, 0, 0, width, height, color(100, 100, 100));
+        window_graphic_context.draw_rounded_rectangle(4, 0, 0, width, 20, color(75, 75, 75));
+        window_graphic_context.draw_basic_string((width / 2) - (get_basic_font_width_text(window_name) / 2), 20 / 2 - (8 / 2), window_name, color(255, 255, 255));
         lst.draw_all(window_graphic_context);
         window_graphic_context.swap_buffer();
         bool start_click = false;
@@ -54,9 +54,9 @@ namespace gui
             if (has_at_least_one_redraw)
             {
                 window_graphic_context.clear_buffer({100, 100, 100, 0});
-                window_graphic_context.draw_rounded_rectangle(4, 0, 0, width, height, pixel(100, 100, 100));
-                window_graphic_context.draw_rounded_rectangle(4, 0, 0, width, 20, pixel(75, 75, 75));
-                window_graphic_context.draw_basic_string((width / 2) - (get_basic_font_width_text(window_name) / 2), 20 / 2 - (8 / 2), window_name, pixel(255, 255, 255));
+                window_graphic_context.draw_rounded_rectangle(4, 0, 0, width, height, color(100, 100, 100));
+                window_graphic_context.draw_rounded_rectangle(4, 0, 0, width, 20, color(75, 75, 75));
+                window_graphic_context.draw_basic_string((width / 2) - (get_basic_font_width_text(window_name) / 2), 20 / 2 - (8 / 2), window_name, color(255, 255, 255));
                 lst.draw_all(window_graphic_context);
                 window_graphic_context.swap_buffer();
             }

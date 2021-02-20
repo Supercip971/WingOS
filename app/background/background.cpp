@@ -18,12 +18,12 @@ int main(int argc, char **argv)
     int texWidth, texHeight, texChannels;
     //   uint8_t *data = stbi_load("initfs/boot_pic.bmp", &texWidth, &texHeight, &texChannels, STBI_rgb);
     gui::img_bmp bmp = gui::img_bmp("initfs/background_pic.bmp");
-    gc.clear_buffer(gui::pixel(70, 70, 70, 255));
+    gc.clear_buffer(gui::color(70, 70, 70, 255));
     for (unsigned int x = 0; x < bmp.get_width(); x++)
     {
         for (unsigned int y = 0; y < bmp.get_height(); y++)
         {
-            gui::pixel target = ((gui::pixel *)bmp.get_pix_data())[x + y * bmp.get_width()];
+            gui::color target = ((gui::color *)bmp.get_pix_data())[x + y * bmp.get_width()];
             target.a = 255;
             gc.set_pixel(target, x, bmp.get_height() - y);
         }

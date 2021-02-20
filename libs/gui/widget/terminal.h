@@ -14,7 +14,7 @@ namespace gui
         char *input_buffer;
         size_t input_buffer_length;
         size_t input_buffer_length_allocated;
-        pixel col;
+        color col;
         void add_input_key(char key);
 
         size_t sbuffer_length = 0;

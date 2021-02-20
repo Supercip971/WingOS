@@ -3,11 +3,11 @@
 
 namespace gui
 {
-    rectangle_widget::rectangle_widget() : col(pixel(0, 0, 0, 0))
+    rectangle_widget::rectangle_widget() : col(color(0, 0, 0, 0))
     {
         widget_should_draw = true;
     }
-    rectangle_widget::rectangle_widget(uint64_t x, uint64_t y, uint64_t width, uint64_t heigth, pixel color) : col(color)
+    rectangle_widget::rectangle_widget(uint64_t x, uint64_t y, uint64_t width, uint64_t heigth, color color) : col(color)
     {
 
         widget_should_draw = true;

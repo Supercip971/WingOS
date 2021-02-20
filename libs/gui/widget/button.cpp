@@ -85,7 +85,7 @@ namespace gui
             context.draw_rounded_rectangle(4, widget_x, widget_y, widget_width, widget_height, {80, 80, 80, 255});
         }
         //  context.draw_rounded_rectangle(6, widget_x, widget_y, widget_width, widget_height, {200, 200, 200, 255});
-        context.draw_basic_string(widget_x + (widget_width / 2) - text_length / 2, widget_y + (widget_height / 2) - 4, button_title, pixel(255, 255, 255));
+        context.draw_basic_string(widget_x + (widget_width / 2) - text_length / 2, widget_y + (widget_height / 2) - 4, button_title, color(255, 255, 255));
     };
     void button_widget::init_widget(void *new_parent)
     {

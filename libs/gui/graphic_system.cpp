@@ -219,7 +219,7 @@ namespace gui
                     else
                     {
 
-                        back_buffer[origin.x + x + y_end_pos] = color;
+                        back_buffer[origin.x + x + y_end_pos].pix = color.pix;
                     }
                 }
             }

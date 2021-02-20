@@ -91,10 +91,6 @@ ASM_FUNCTION void kernel_start(stivale_struct *bootloader_data)
 
     init_physical_memory(bootloader_data);
     init_vmm(bootloader_data);
-    ps_mouse *psmouse = new ps_mouse;
-    psmouse->init();
-    ps_keyboard *keyboard = new ps_keyboard;
-    keyboard->init();
     pic_init();
     RTC::the()->init();
     acpi::the()->init((reinterpret_cast<stivale_struct *>(bootdat))->rsdp);
@@ -124,6 +120,10 @@ ASM_FUNCTION void kernel_start(stivale_struct *bootloader_data)
 void start_process()
 {
 
+    ps_mouse *psmouse = new ps_mouse;
+    psmouse->init();
+    ps_keyboard *keyboard = new ps_keyboard;
+    keyboard->init();
     if (ata_driver::has_ata_device())
     {
         ata_driver *me = new ata_driver();

@@ -27,39 +27,24 @@ namespace gui
     }
     void widget_list::init(size_t length)
     {
-        list = (gui::widget **)malloc(length * sizeof(uint64_t));
-        for (size_t i = 0; i < length; i++)
-        {
-            list[i] = nullptr;
-        }
-        list_length = length;
+        list.clear();
     }
 
     void widget_list::add_widget(widget *widget)
     {
-        for (size_t i = 0; i < list_length; i++)
-        {
-            if (list[i] == nullptr)
-            {
-                list[i] = widget;
-                return;
-            }
-        }
+        list.push_back(widget);
     }
 
     bool widget_list::update_all()
     {
         bool should_redraw = false;
-        for (size_t i = 0; i < list_length; i++)
+        for (size_t i = 0; i < list.size(); i++)
         {
-            if (list[i] != nullptr)
-            {
 
-                list[i]->update_widget();
-                if (should_redraw == false && list[i]->should_redraw())
-                {
-                    should_redraw = true;
-                }
+            list[i]->update_widget();
+            if (should_redraw == false && list[i]->should_redraw())
+            {
+                should_redraw = true;
             }
         }
         return should_redraw;
@@ -67,16 +52,13 @@ namespace gui
     void widget_list::draw_all(graphic_context &context)
     {
 
-        for (size_t i = 0; i < list_length; i++)
+        for (size_t i = 0; i < list.size(); i++)
         {
-            if (list[i] != nullptr)
+            if (list[i]->should_redraw())
             {
-                if (list[i]->should_redraw())
-                {
-                    list[i]->set_should_redraw(false);
+                list[i]->set_should_redraw(false);
 
-                    list[i]->draw_widget(context);
-                }
+                list[i]->draw_widget(context);
             }
         }
     }

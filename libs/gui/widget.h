@@ -1,6 +1,7 @@
 #pragma once
 #include <gui/graphic_system.h>
 #include <stddef.h>
+#include <utils/wvector.h>
 
 namespace gui
 {
@@ -16,7 +17,7 @@ namespace gui
 
     public:
         widget();
-        virtual void update_widget() = 0;
+        virtual void update_widget(){};
         virtual void draw_widget(graphic_context &context) = 0;
         constexpr bool should_redraw()
         {
@@ -27,13 +28,12 @@ namespace gui
             return widget_should_draw;
         }
         // note: i do void* as c++ doesn't like recursive include
-        virtual void init_widget(void *new_parent) = 0;
+        virtual void init_widget(void *new_parent){};
     };
 
     class widget_list
     {
-
-        widget **list;
+        utils::vector<widget *> list;
         uint64_t list_length = 0;
 
     public:

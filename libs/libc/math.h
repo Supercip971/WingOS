@@ -8,8 +8,8 @@ float powf(float x, float y);
 #ifdef X87
 long double powl(long double x, long double y);
 #endif
-int isinf(double x);
-int isnan(double x);
+#define isinf(v) __builtin_isinf_sign(v)
+#define isnan(v) __builtin_isnan(v)
 
 double trunc(double x);
 double floor(double x);

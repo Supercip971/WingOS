@@ -9,6 +9,9 @@ double pow(double x, double y)
     {
         return 1;
     }
+    else if(isnan(x) || isnan(y)){
+        return x;
+    }
     else if (x == 0)
     {
         return 0;
@@ -45,6 +48,9 @@ float powf(float x, float y)
     if (y == 0)
     {
         return 1;
+    }
+    else if(isnan(x) || isnan(y)){
+        return x;
     }
     else if (x == 0)
     {
@@ -100,17 +106,6 @@ long double powl(long double x, long double y)
 }
 #endif
 
-int isinf(double x)
-{
-    uint64_t nbres = (uint64_t)x;
-    return ((unsigned)(nbres >> 32) & 0x7fffffff) == 0x7ff00000 && ((unsigned)nbres == 0);
-}
-
-int isnan(double x)
-{
-    uint64_t nbres = (uint64_t)x;
-    return ((unsigned)(nbres >> 32) & 0x7fffffff) + ((unsigned)nbres != 0) > 0x7ff00000;
-}
 
 double trunc(double x)
 {

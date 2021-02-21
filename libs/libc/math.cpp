@@ -1,27 +1,43 @@
 #include <math.h>
 #include <stdint.h>
+
 #ifdef __SSE__
 double pow(double x, double y)
 {
-    // can't do switch on a double
+
     if (y == 0)
     {
         return 1;
     }
-    else if (y == 2)
+    else if (x == 0)
     {
-        return x * x;
+        return 0;
     }
     else if (y == 1)
     {
         return x;
     }
-    double res = 1;
-    for (size_t count = 0; count < y; count++)
+    int res = (int)y;
+    if (res == y)
     {
-        res *= x;
+
+        double dresult = x;
+        double yabs = fabs(y);
+        for (size_t count = 0; count < yabs; count++)
+        {
+            dresult *= x;
+        }
+        if (yabs < 0)
+        {
+            return (double)1 / dresult;
+        }
+        return res;
     }
-    return res;
+    else
+    {
+        // not supported for the moment
+        return 0;
+    }
 }
 
 float powf(float x, float y)
@@ -30,20 +46,35 @@ float powf(float x, float y)
     {
         return 1;
     }
-    else if (y == 2)
+    else if (x == 0)
     {
-        return x * x;
+        return 0;
     }
     else if (y == 1)
     {
         return x;
     }
-    float res = 1;
-    for (size_t count = 0; count < y; count++)
+    int res = (int)y;
+    if (res == y)
     {
-        res *= x;
+
+        float dresult = x;
+        float yabs = fabs(y);
+        for (size_t count = 0; count < yabs; count++)
+        {
+            dresult *= x;
+        }
+        if (yabs < 0)
+        {
+            return (float)1 / dresult;
+        }
+        return res;
     }
-    return res;
+    else
+    {
+        // not supported for the moment
+        return 0;
+    }
 }
 #ifdef X87
 long double powl(long double x, long double y)

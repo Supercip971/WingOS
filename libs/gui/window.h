@@ -5,10 +5,10 @@
 namespace gui
 {
 
-    constexpr color back_window_color = {31, 41, 55, 255};
-    constexpr color highlight_wingow_color = {29, 78, 216, 255};
-    constexpr color text_window_color = {249, 250, 251, 255};
-    constexpr color window_bar_color = {75, 85, 99, 255};
+    constexpr color window_front_color = color(24, 24, 24, 255);
+    constexpr color highlight_wingow_color = color(59, 130, 246, 255);
+    constexpr color text_window_color = color(249, 250, 251, 255);
+    constexpr color back_window_color = color(12, 12, 12, 255);
 
     class window
     {

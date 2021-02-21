@@ -1,15 +1,18 @@
 #include <gui/widget.h>
 #include <gui/widget/button.h>
+#include <gui/window.h>
 #include <kern/mouse_keyboard.h>
 #include <stdlib.h>
 #include <string.h>
 namespace gui
 {
     button_widget::button_widget()
+        : widget()
     {
         button_title = "null";
     }
     button_widget::button_widget(uint64_t x, uint64_t y, uint64_t width, uint64_t heigth, const char *title)
+        : widget()
     {
         widget_x = x;
         widget_y = y;
@@ -78,14 +81,13 @@ namespace gui
     {
         if (is_hovered)
         {
-            context.draw_rounded_rectangle(4, widget_x, widget_y, widget_width, widget_height, {115, 70, 70, 255});
+            context.draw_rounded_rectangle(4, widget_x, widget_y, widget_width, widget_height, highlight_wingow_color);
         }
         else
         {
-            context.draw_rounded_rectangle(4, widget_x, widget_y, widget_width, widget_height, {80, 80, 80, 255});
+            context.draw_rounded_rectangle(4, widget_x, widget_y, widget_width, widget_height, window_front_color);
         }
-        //  context.draw_rounded_rectangle(6, widget_x, widget_y, widget_width, widget_height, {200, 200, 200, 255});
-        context.draw_basic_string(widget_x + (widget_width / 2) - text_length / 2, widget_y + (widget_height / 2) - 4, button_title, color(255, 255, 255));
+        context.draw_basic_string(widget_x + (widget_width / 2) - text_length / 2, widget_y + (widget_height / 2) - 4, button_title, text_window_color);
     };
     void button_widget::init_widget(void *new_parent)
     {

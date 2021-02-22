@@ -8,6 +8,9 @@
 #include <utils/string_util.h>
 char temp_buf[64];
 
+FILE *stdin;
+FILE *stdout;
+FILE *stderr;
 int vsn_printf_out(bool just_print, char *buffer, uint64_t count, const char *data)
 {
     if (just_print == true)

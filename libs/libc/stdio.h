@@ -23,7 +23,11 @@ extern "C"
     {
         int file_element;
     };
+    typedef struct FILE FILE;
 
+    extern FILE *stdin;
+    extern FILE *stdout;
+    extern FILE *stderr;
     FILE *fopen(const char *pathname, const char *mode);
     int fclose(FILE *stream);
 

@@ -25,6 +25,7 @@ namespace sys
         void open(const utils::string path);
         void close();
         uint64_t get_file_length();
+        uint64_t get_fid() const { return fid; };
     };
     extern file stdin;
     extern file stdout;

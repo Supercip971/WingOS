@@ -25,7 +25,7 @@ int main(int argc, char **argv)
         {
             gui::color target = ((gui::color *)bmp.get_pix_data())[x + y * bmp.get_width()];
             target.a = 255;
-            gc.set_pixel(target, x, bmp.get_height() - y);
+            gc.set_pixel(target, x, (bmp.get_height() - y) - 1);
         }
     }
     gc.set_as_background();

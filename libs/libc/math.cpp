@@ -9,7 +9,8 @@ double pow(double x, double y)
     {
         return 1;
     }
-    else if(isnan(x) || isnan(y)){
+    else if (isnan(x) || isnan(y))
+    {
         return x;
     }
     else if (x == 0)
@@ -49,7 +50,8 @@ float powf(float x, float y)
     {
         return 1;
     }
-    else if(isnan(x) || isnan(y)){
+    else if (isnan(x) || isnan(y))
+    {
         return x;
     }
     else if (x == 0)
@@ -105,7 +107,6 @@ long double powl(long double x, long double y)
     return res;
 }
 #endif
-
 
 double trunc(double x)
 {

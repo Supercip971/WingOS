@@ -83,7 +83,6 @@ void ps_mouse::init()
     mouse_x_offset = 0;
     mouse_y = 0;
     mouse_y_offset = 0;
-    add_irq_handler(irq_handle_mouse, 12);
     log("ps2 mouse", LOG_DEBUG) << "loading ps2 mouse";
 
     log("ps2 mouse", LOG_INFO) << "turning on mouse";
@@ -114,6 +113,7 @@ void ps_mouse::init()
     // enable data receiving
     write(0xF4);
     read();
+    add_irq_handler(irq_handle_mouse, 12);
 }
 void ps_mouse::update_packets()
 {

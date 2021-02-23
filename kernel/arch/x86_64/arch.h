@@ -40,6 +40,10 @@ inline void turn_off_interrupt()
 }
 
 template <class T = uintptr_t, class F>
+inline constexpr T get_usr_addr(F addr) { return reinterpret_cast<T>((uintptr_t)(addr) + 0xffffff8000000000); }
+template <class T = uintptr_t, class F>
+inline constexpr T get_rusr_addr(F addr) { return reinterpret_cast<T>((uintptr_t)(addr)-0xffffff8000000000); }
+template <class T = uintptr_t, class F>
 inline constexpr T get_mem_addr(F addr) { return reinterpret_cast<T>((uintptr_t)(addr) + 0xffff800000000000); }
 template <class T = uintptr_t, class F>
 inline constexpr T get_rmem_addr(F addr) { return reinterpret_cast<T>((uintptr_t)(addr)-0xffff800000000000); }

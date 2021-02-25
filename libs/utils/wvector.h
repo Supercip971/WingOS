@@ -84,20 +84,10 @@ namespace utils
 
         vtype &operator[](size_t idx)
         {
-            if (idx > sz)
-            {
-                printf("out of bound error\n");
-                return buffer[0];
-            }
             return buffer[idx];
         }
         const vtype operator[](size_t idx) const
         {
-            if (idx > sz)
-            {
-                printf("out of bound error\n");
-                return buffer[0];
-            }
             return buffer[idx];
         }
 

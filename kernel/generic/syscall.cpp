@@ -66,16 +66,11 @@ process_message *sys$send_message_pid(uintptr_t data_addr, uint64_t data_length,
 void *sys$alloc(uint64_t count)
 {
     auto res = (pmm_alloc(count));
-    
-    for(size_t i = 0; i < count; i++){
-        map_page((uintptr_t)res+ i * PAGE_SIZE, get_usr_addr(res) + i * PAGE_SIZE, 0x7);
-    }
-
-    return (void*)get_usr_addr(res);
+    return (void *)get_mem_addr(res);
 }
 int sys$free(uintptr_t target, uint64_t count)
 {
-    pmm_free((void *)get_rusr_addr(target), count);
+    pmm_free((void *)get_rmem_addr(target), count);
     return 1;
 }
 size_t sys$read(int fd, void *buffer, size_t count)

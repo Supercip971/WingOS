@@ -318,8 +318,8 @@ int fs_open(const char *path_name, int flags, int mode)
     set_used_handle(fd);
     fs_handle_table[fd].rpid = process::current()->get_pid();
 
-    fs_handle_table[fd].path = new char[strlen(path_name)+1];
-    memcpy(fs_handle_table[fd].path, path_name, strlen(path_name)+1);
+    fs_handle_table[fd].path = new char[strlen(path_name) + 1];
+    memcpy(fs_handle_table[fd].path, path_name, strlen(path_name) + 1);
     fs_handle_table[fd].mode = mode;
     fs_handle_table[fd].cur = 0;
     fs_handle_table[fd].ram_file = false;
@@ -388,7 +388,7 @@ int fs_close(int fd)
 
     set_free_handle(fd);
     //log("fs", LOG_INFO, "process {} closed {}", process::current()->get_name(), file->path);
-    delete [] fs_handle_table[fd].path;
+    delete[] fs_handle_table[fd].path;
     handle_lock.unlock();
     return 1;
 }

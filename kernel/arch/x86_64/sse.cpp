@@ -1,7 +1,7 @@
-#include <utils/lock.h>
 #include <device/local_data.h>
 #include <logging.h>
 #include <sse.h>
+#include <utils/lock.h>
 ASM_FUNCTION void sse_init(void);
 ASM_FUNCTION void avx_init(void);
 ASM_FUNCTION void enable_xsave(void);
@@ -12,42 +12,46 @@ ASM_FUNCTION void asm_avx_load(uintptr_t addr);
 bool use_xsave = false;
 bool checked_xsave = false;
 uint64_t *fpu_reg = nullptr;
-size_t xsave_size ;
+size_t xsave_size;
 uint64_t fpu_data[128] __attribute__((aligned(64)));
 utils::lock_type sse_lock;
 
-SSE_LOW_LEVEL_FUNC bool has_xsave(){
+SSE_LOW_LEVEL_FUNC bool has_xsave()
+{
 
     uint32_t ecx = 0;
-    asm volatile ("cpuid"
-                  : "=c" (ecx)
-                  : "a" (1), "c" (0));
-    return ecx & (((uint32_t)1)<<26);
+    asm volatile("cpuid"
+                 : "=c"(ecx)
+                 : "a"(1), "c"(0));
+    return ecx & (((uint32_t)1) << 26);
 }
 
-SSE_LOW_LEVEL_FUNC bool has_avx(){
+SSE_LOW_LEVEL_FUNC bool has_avx()
+{
     uint32_t ecx = 0;
-    asm volatile ("cpuid"
-                  : "=c" (ecx)
-                  : "a" (1), "c" (0));
-    return ecx & (1<<28);
-
+    asm volatile("cpuid"
+                 : "=c"(ecx)
+                 : "a"(1), "c"(0));
+    return ecx & (1 << 28);
 }
- uint32_t get_xsave_size(){
+uint32_t get_xsave_size()
+{
     uint32_t ecx = 0;
-    asm volatile ("cpuid"
-                  : "=c" (ecx)
-                  : "a" (0xd), "c" (0));
-    return ecx ;
-
+    asm volatile("cpuid"
+                 : "=c"(ecx)
+                 : "a"(0xd), "c"(0));
+    return ecx;
 }
-SSE_LOW_LEVEL_FUNC void init_xsave(){
+SSE_LOW_LEVEL_FUNC void init_xsave()
+{
 
-    if(has_xsave()){
+    if (has_xsave())
+    {
 
         enable_xsave();
 
-        if(has_avx()){
+        if (has_avx())
+        {
             avx_init();
         }
 
@@ -76,11 +80,13 @@ SSE_LOW_LEVEL_FUNC void init_sse()
 SSE_LOW_LEVEL_FUNC void save_sse_context(uint64_t *context)
 {
     sse_lock.lock();
-    if(use_xsave){
+    if (use_xsave)
+    {
         asm_avx_save((uintptr_t)(fpu_data));
-    }else{
+    }
+    else
+    {
         asm_sse_save((uintptr_t)(fpu_data));
-
     }
     for (int i = 0; i < 128; i++)
     {
@@ -97,9 +103,12 @@ SSE_LOW_LEVEL_FUNC void load_sse_context(uint64_t *context)
     {
         fpu_data[i] = context[i];
     }
-    if(use_xsave){
+    if (use_xsave)
+    {
         asm_avx_load((uintptr_t)fpu_data);
-    }else{
+    }
+    else
+    {
         asm_sse_load(((uintptr_t)fpu_data));
     }
 

@@ -78,7 +78,7 @@ uintptr_t switch_context(InterruptStackFrame *current_Isf, process *next)
 }
 void init_process_stackframe(process *pro, func entry_point, int argc, char **argv)
 {
-    pro->get_arch_info()->stack = (uint8_t*)get_mem_addr(pmm_alloc(PROCESS_STACK_SIZE/PAGE_SIZE));
+    pro->get_arch_info()->stack = (uint8_t *)get_mem_addr(pmm_alloc(PROCESS_STACK_SIZE / PAGE_SIZE));
     memzero(pro->get_arch_info()->stack, PROCESS_STACK_SIZE);
     pro->get_arch_info()->rsp =
         ((uint64_t)pro->get_arch_info()->stack) + PROCESS_STACK_SIZE;

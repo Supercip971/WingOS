@@ -244,7 +244,6 @@ generic_io_device::io_rw_output ahci_ata_device::read(uint8_t *data, uint64_t co
             log("ahci", LOG_ERROR) << "ata device task file error while reading at" << cursor << " count " << count;
             return io_rw_output::io_ERROR;
         }
-
     }
 
     if (port->interrupt_status & TASK_FILE_ERROR)

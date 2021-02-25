@@ -73,15 +73,15 @@ ASM_FUNCTION void kernel_start(stivale_struct *bootloader_data)
     com_device com = com_device();
     com.init(COM_PORT::COM1);
 
-
-
     init_sse();
     setup_gdt();
     init_idt();
-    if(has_xsave()){
+    if (has_xsave())
+    {
         log("xsave", LOG_INFO, "cpu has support for xsave");
     }
-    if(has_avx()){
+    if (has_avx())
+    {
         log("avx", LOG_INFO, "cpu has support for avx");
     }
     memcpy(&boot_loader_data_copy, bootloader_data, sizeof(stivale_struct));

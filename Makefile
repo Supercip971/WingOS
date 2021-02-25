@@ -145,7 +145,7 @@ runvbox: $(KERNEL_HDD)
 
 .PHONY:format
 format:
-	@clang-format -i --style=file $(CFILES) $(HFILES)
+	@clang-format -i --style=file $(CFILES) $(HFILES) $(CXXFILES)
 	@clang-format -i --style=file $(USRCFILES) $(USRHFILES)
 	@clang-format -i --style=file $(USRAPPCFILES) $(USRAPPHFILES)
 

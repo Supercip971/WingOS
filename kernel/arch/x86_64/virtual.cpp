@@ -1,14 +1,14 @@
 #include <arch.h>
 
+#include <bitmap.h>
 #include <com.h>
 #include <device/acpi.h>
 #include <device/local_data.h>
 #include <kernel.h>
 #include <physical.h>
 #include <stivale_struct.h>
-#include <virtual.h>
-#include <bitmap.h>
 #include <utility.h>
+#include <virtual.h>
 uint64_t entry_to_address(uint64_t pml4, uint64_t pdpt, uint64_t pd, uint64_t pt)
 {
     uint64_t result = 0;

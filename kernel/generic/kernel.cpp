@@ -50,6 +50,7 @@ void _start(stivale_struct *bootloader_data)
     log("kernel", LOG_INFO, "kernel started with: {} memory available ", get_total_memory() * PAGE_SIZE);
     log("kernel", LOG_INFO, "memory used: {}", get_used_memory() * PAGE_SIZE);
     //  dump_process();
+
     while (true)
     {
     }

@@ -87,7 +87,6 @@ public:
         return status;
     }
 
-
     void irq_handle(uint64_t irq_handle_num);
     void init();
 

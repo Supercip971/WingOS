@@ -10,10 +10,10 @@
 #include <physical.h>
 #include <process.h>
 #include <smp.h>
+#include <sse.h>
 #include <utility.h>
 #include <utils/liballoc.h>
 #include <virtual.h>
-#include <sse.h>
 #define TRAMPOLINE_START 0x1000
 #define SMP_MAP_PAGE_FLAGS 0x7
 smp main_smp;

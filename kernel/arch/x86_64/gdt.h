@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <stivale_struct.h>
+#include <string.h>
 #define GDT_DESCRIPTORS 7
 enum gdt_selector : uint16_t
 {
@@ -53,15 +54,16 @@ struct gdt_descriptor
     }
 } __attribute__((packed));
 
-#define GDT_ARRAY_SEL(a) a / sizeof(gdt_descriptor)
 struct gdt_xdescriptor
 {
     gdt_descriptor low;
+
     struct
     {
         uint32_t base_xhigh;
         uint32_t reserved;
     } high;
+
     gdt_xdescriptor(uint8_t flag, uintptr_t base, uintptr_t limit)
     {
         low.flags = flag | gdt_flags::PRESENT;
@@ -93,6 +95,50 @@ struct tss
     uint16_t reserved3;
     uint16_t iomap_base;
 } __attribute__((packed));
+
+#define GDT_ARRAY_SEL(a) a / sizeof(gdt_descriptor)
+
+template <int entry_count>
+class gdt_descriptor_array
+{
+    gdt_descriptor entrys[entry_count];
+
+public:
+    constexpr size_t size() const
+    {
+        return sizeof(gdt_descriptor) * entry_count;
+    }
+    void zero()
+    {
+        memset(entrys, 0, sizeof(entrys[0]) * entry_count);
+    }
+    gdt_descriptor *get_entry(gdt_selector entry)
+    {
+        return &entrys[GDT_ARRAY_SEL(entry)];
+    }
+    gdt_xdescriptor *get_entry_x(gdt_selector entry)
+    {
+        return (gdt_xdescriptor *)&entrys[GDT_ARRAY_SEL(entry)];
+    }
+    void set(gdt_selector entry, gdt_descriptor desc)
+    {
+        *get_entry(entry) = desc;
+    }
+    void xset(gdt_selector entry, gdt_xdescriptor desc)
+    {
+        *get_entry_x(entry) = desc;
+    }
+    gdt_descriptor *raw()
+    {
+        return entrys;
+    }
+    void fill_gdt_register(gdtr *target)
+    {
+        target->len = size();
+        target->addr = (uintptr_t)raw();
+    }
+};
+
 void tss_init(uint64_t i);
 void tss_set_rsp0(uint64_t rsp0);
 

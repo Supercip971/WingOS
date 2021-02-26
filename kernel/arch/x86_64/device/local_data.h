@@ -20,7 +20,6 @@ public:
     idtr cidt;
 
     gdtr cgdt;
-    gdt_descriptor gdt_descriptors[64];
 
     tss ctss;
 

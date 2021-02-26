@@ -8,7 +8,7 @@ enum xsave_reg
     AVX_XSAVE_REG = (1 << 2),
 
 };
-#define SSE_LOW_LEVEL_FUNC __attribute__((optimize("O0")))
+#define SSE_LOW_LEVEL_FUNC __attribute__((optimize("O2")))
 
 SSE_LOW_LEVEL_FUNC bool has_xsave();
 SSE_LOW_LEVEL_FUNC bool has_avx();

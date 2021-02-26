@@ -1,6 +1,7 @@
 #pragma once
 #include <device/madt.h>
 #include <gdt.h>
+#include <utils/config.h>
 
 enum smp_cpu_init_address
 {
@@ -19,7 +20,7 @@ class smp
     void init_cpu_future_value(uint64_t id);
 
 public:
-    static const unsigned int max_cpu = 64;
+    static const unsigned int max_cpu = MAX_CPU_COUNT;
     tss cpu_tss[max_cpu];
     smp();
     void wait();

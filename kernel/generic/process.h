@@ -5,8 +5,8 @@
 #include <filesystem/userspace_fs.h>
 #include <process_context.h>
 #include <stdint.h>
+#include <utils/config.h>
 #include <utils/math.h>
-#define MAX_PROCESS 64
 #define SLEEP_ALWAYS ((uint64_t)-1)
 
 #define CURRENT_CPU ((uint64_t)-1)

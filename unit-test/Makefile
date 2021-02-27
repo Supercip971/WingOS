@@ -6,7 +6,7 @@ PLUG_FILE_CPP   := ./plug/unit-test-plug.cpp
 CFILES := $(shell find $(PROJECT_DIR) -type f -name *.cpp)
 HFILES := $(shell find $(PROJECT_DIR) -type f -name *.h)
 
-SANITIZER := 
+SANITIZER := -fsanitize=address -fsanitize=leak -fsanitize=undefined
 
 OBJFILES := $(patsubst %.cpp, %.to, $(CFILES))
 OUTPUT := $(BUILD_PATH)test
@@ -33,17 +33,17 @@ GCC_FLAGS := \
 %.to: %.cpp $(CFILES) $(HFILES)
 	@$(DIR_GUARD)
 	@echo " [ CXX ] $<"
-	@g++ -c $(GCC_FLAGS)  -nostdlib -no-pie -o $@ $<
+	@g++ -c $(GCC_FLAGS) $(SANITIZER) -nostdlib -no-pie -o $@ $<
 
 $(PLUG_FILE_OBJ): $(PLUG_FILE_CPP)
 	@$(DIR_GUARD)
 	@echo " [ PLUG ] $<"
-	@g++ -c  -I../libs/libc/plug/ -std=c++14 -m64 -O0 -g $(LIB) -no-pie -o $@ $<
+	@g++ -c  -I../libs/libc/plug/ -std=c++14 -m64 -O0 -g $(LIB) $(SANITIZER) -no-pie -o $@ $<
 
 $(OUTPUT): $(OBJFILES) $(PLUG_FILE_OBJ)
 	@$(DIR_GUARD)
 	@echo " [ unit-test ] $(OUTPUT) "
-	@g++ $(OBJFILES) $(PLUG_FILE_OBJ) $(LIB) --freestanding -no-pie  -m64 -g -pthread -o $(OUTPUT)
+	@g++ $(OBJFILES) $(PLUG_FILE_OBJ) $(LIB) $(SANITIZER) --freestanding -no-pie  -m64 -g -pthread -o $(OUTPUT)
 
 
 clean:

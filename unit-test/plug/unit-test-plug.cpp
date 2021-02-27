@@ -50,7 +50,11 @@ namespace plug
     }
     void debug_out(const char *str, size_t length)
     {
-        printf("hello \n");
+        char* str2 = (char*)malloc(length+2);
+        memcpy(str2,str, length+1);
+        str2[length+1] = 0;
+        printf(str2);
+        free(str2);
     }
 
     int open(const char *path_name, int flags, int mode)

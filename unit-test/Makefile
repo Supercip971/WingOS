@@ -16,7 +16,7 @@ LIB :=
 
 GCC_FLAGS := \
 	-g \
-	-Og \
+	-O0 \
 	-m64 \
 	-Wall \
         -fno-rtti \
@@ -38,7 +38,7 @@ GCC_FLAGS := \
 $(PLUG_FILE_OBJ): $(PLUG_FILE_CPP)
 	@$(DIR_GUARD)
 	@echo " [ PLUG ] $<"
-	@g++ -c  -I../libs/libc/plug/ -std=c++14 -m64 -Og -g $(LIB) -no-pie -o $@ $<
+	@g++ -c  -I../libs/libc/plug/ -std=c++14 -m64 -O0 -g $(LIB) -no-pie -o $@ $<
 
 $(OUTPUT): $(OBJFILES) $(PLUG_FILE_OBJ)
 	@$(DIR_GUARD)

@@ -4,6 +4,7 @@
 #include "string_check.h"
 #include <plug/system_plug.h>
 #include "math_check.h"
+#include "stdlib_check.h"
 #include <stdio.h>
 #include <string.h>
 int test(){
@@ -18,6 +19,10 @@ unit_test v[] = {
     {"(libc) string.h", "strnlen", "check for clamp",              strnlen_check_1},
     {"(libc) string.h", "strcmp",  "check for true return",        strcmp_check_true},
     {"(libc) string.h", "strcmp",  "check for false return",        strcmp_check_false},
+    {"(libc) string.h", "memcmp",  "check for true return",         memcmp_check_true},
+    {"(libc) string.h", "memcmp",  "check for false return",        memcmp_check_false},
+    {"(libc) string.h", "memset",  "check for good memset",        memset_check_0},
+    {"(libc) stdlib.h", "abs",  "check for good return",        abs_check},
     {"(utils) math.h", "max",  "check for good return",        max_check_utils},
     {"(utils) math.h", "min",  "check for good return",        min_check_utils}
     };

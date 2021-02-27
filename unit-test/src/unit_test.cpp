@@ -1,9 +1,10 @@
 #include "unit_test.h"
 #include <string.h>
 #include <stdio.h>
-    const char* last_lib_target = "null";
-    const char* last_target = "null";
-    const char* last_test = "null";
+    
+const char* last_lib_target = "null";
+const char* last_target = "null";
+const char* last_test = "null";
 
 
 

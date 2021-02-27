@@ -1,7 +1,7 @@
 #include "string_check.h"
 #include <string.h>
-
-
+#include <stdint.h>
+#include <stdio.h>
 int strlen_check_0(){ 
     size_t str_length = 5;
     const char* str = "hello";
@@ -82,6 +82,71 @@ int strcmp_check_false(){
     }
     if(strcmp(c1,c2) == 0){
         return -3;
+    }
+    return 0;
+}
+
+
+int memcmp_check_true(){
+    uint8_t a1[] = { 0, 0, 0, 10, 10, 20};
+    uint8_t a2[] = { 0, 0, 0, 10, 10, 20};
+
+    uint8_t b1[] = { 1};
+    uint8_t b2[] = { 1};
+
+    uint8_t c1[] = { 0,5,0,0,10,10};
+    uint8_t c2[] = { 0,5,0,0,10,10};
+
+    if(!memcmp(a1,a2, sizeof(a1))){
+        return -1;
+    }if(!memcmp(b1,b2, sizeof(b1))){
+        return -2;
+    }if(!memcmp(c1,c2, sizeof(c1))){
+        return -3;
+    }
+    return 0;
+}
+int memcmp_check_false(){
+    uint8_t a1[] = { 0, 0, 0, 10, 10, 20};
+    uint8_t a2[] = { 0, 0, 0, 10, 10, 30};
+
+    uint8_t b1[] = { 0};
+    uint8_t b2[] = { 1};
+
+    uint8_t c1[] = { 1,0,0,0,10,10};
+    uint8_t c2[] = { 0,0,0,0,10,10};
+
+    if(memcmp(a1,a2, sizeof(a1))){
+        return -1;
+    }if(memcmp(b1,b2, sizeof(b1))){
+        return -2;
+    }if(memcmp(c1,c2, sizeof(c1))){
+        return -3;
+    }
+    return 0;
+}
+
+int memset_check_0(){ 
+    uint8_t buffer[512];
+    for(int i = 16; i < 254; i++){
+
+        for(int j = 0; j < 512; j++){
+            buffer[j] = 0;
+        }
+        memset(buffer, i, i);
+        for(int j = 0; j < 512; j++){
+            if(j < i){
+                if(buffer[j] != i){
+                    printf("bad memset %i %i should be i \n", i, j);
+                    return i << 16 | j;
+                }
+            }else{
+                if(buffer[j] != 0){
+                    printf("bad memset %i %i should be 0 \n", i, j);
+                    return i << 16 | j;
+                }
+            }
+        }
     }
     return 0;
 }

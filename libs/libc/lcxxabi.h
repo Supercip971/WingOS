@@ -1,6 +1,6 @@
 #ifndef LCXXABI_H
 #define LCXXABI_H
-
+#ifndef UNIT_TEST
 extern "C"
 {
 #define ATEXIT_MAX_FUNCS 128
@@ -21,5 +21,5 @@ extern "C"
     int __cxa_atexit(void (*f)(void *), void *objptr, void *dso);
     void __cxa_finalize(void *f);
 }
-
+#endif
 #endif // LCXXABI_H

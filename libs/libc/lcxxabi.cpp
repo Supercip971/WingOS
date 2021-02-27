@@ -1,3 +1,5 @@
+
+#ifndef UNIT_TEST
 #include "lcxxabi.h"
 extern "C"
 {
@@ -49,3 +51,4 @@ extern "C"
         };
     };
 }
+#endif

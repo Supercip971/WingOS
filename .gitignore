@@ -10,6 +10,7 @@ disk.img
 *.exe
 *.d
 *.o
+*.to
 *.map
 *.cflags
 *.config

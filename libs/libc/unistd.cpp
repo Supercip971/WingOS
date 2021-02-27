@@ -1,5 +1,6 @@
 #include "unistd.h"
 #include <kern/syscall.h>
+#ifndef UNIT_TEST
 unsigned int sleep(unsigned int sec)
 {
     timespec time = {0, 0};
@@ -15,3 +16,4 @@ suseconds_t usleep(suseconds_t sec)
     time.tv_nsec = sec * 1000;
     return sys::sys$nano_sleep(&time, nullptr);
 }
+#endif

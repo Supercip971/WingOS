@@ -29,6 +29,10 @@ namespace utils
 
         template <typename T>
         T get_as();
+        template <bool>
+        bool get_as();
+        template <const char *>
+        const char *get_as();
         bool is_array();
 
         json_type get_type()

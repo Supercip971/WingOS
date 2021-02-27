@@ -134,15 +134,14 @@ namespace utils
             memcpy(data, from_data, size);
         }
 
-        bool can_be_destroyied() const { return true; };
-        virtual void destroy()
+        virtual void destroy() override
         {
             free(data);
         }
 
-        virtual bool is_seekable() const { return true; };
-        virtual size_t cur() const { return cursor; };
-        virtual size_t seek(int target_index, int whence = SEEK_SET)
+        virtual bool is_seekable() const override { return true; };
+        virtual size_t cur() const override { return cursor; };
+        virtual size_t seek(int target_index, int whence = SEEK_SET) override
         {
             if (whence == SEEK_SET)
             {
@@ -163,9 +162,9 @@ namespace utils
             return cur();
         };
 
-        virtual bool is_readable() const { return true; };
-        virtual bool is_readable() { return true; };
-        virtual size_t read(void *target, size_t size)
+        virtual bool is_readable() const override { return true; };
+        virtual bool is_readable() override { return true; };
+        virtual size_t read(void *target, size_t size) override
         {
             size_t v = size;
             if (cursor > v)
@@ -182,7 +181,7 @@ namespace utils
             return v;
         };
 
-        virtual size_t read(void *target, size_t size, size_t at) const
+        virtual size_t read(void *target, size_t size, size_t at) const override
         {
             size_t v = size;
             if (at > v)
@@ -215,8 +214,8 @@ namespace utils
             return v;
         };
 
-        virtual bool is_writable() { return true; };
-        virtual size_t write(const void *target, size_t size)
+        virtual bool is_writable() override { return true; };
+        virtual size_t write(const void *target, size_t size) override
         {
 
             size_t v = size;
@@ -233,7 +232,7 @@ namespace utils
             cursor += v;
             return v;
         }
-        virtual size_t write(const void *target, size_t size, size_t at)
+        virtual size_t write(const void *target, size_t size, size_t at) override
         {
 
             size_t v = size;
@@ -267,8 +266,8 @@ namespace utils
             return v;
         }
 
-        virtual bool can_be_resized() { return true; };
-        void resize(size_t new_size)
+        virtual bool can_be_resized() override { return true; };
+        void resize(size_t new_size) override
         {
             current_data_size = new_size;
             if (current_data_size > allocated_size)
@@ -278,8 +277,8 @@ namespace utils
             }
         }
 
-        virtual bool can_get_raw() { return true; };
-        virtual uint8_t *raw()
+        virtual bool can_get_raw() override { return true; };
+        virtual uint8_t *raw() override
         {
             return (uint8_t *)data;
         };
@@ -292,8 +291,8 @@ namespace utils
             return data;
         };
 
-        virtual bool can_get_raw() const { return true; };
-        virtual const uint8_t *raw() const
+        virtual bool can_get_raw() const override { return true; };
+        virtual const uint8_t *raw() const override
         {
             return (uint8_t *)data;
         };
@@ -302,10 +301,10 @@ namespace utils
             return raw();
         }
 
-        virtual bool can_get_size() const { return true; };
-        virtual bool can_get_size() { return true; };
-        virtual size_t get_size() const { return current_data_size; };
-        virtual size_t get_size() { return current_data_size; };
+        virtual bool can_get_size() const override { return true; };
+        virtual bool can_get_size() override { return true; };
+        virtual size_t get_size() const override { return current_data_size; };
+        virtual size_t get_size() override { return current_data_size; };
     };
     using raw_memory_buffer = memory_buffer<uint8_t>;
 

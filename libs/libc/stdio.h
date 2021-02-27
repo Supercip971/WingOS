@@ -4,10 +4,10 @@
 extern "C"
 {
 #endif
+#include <plug/system_plug.h>
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <system_plug.h>
     int printf(const char *format, ...);
     int vsprintf(char *buffer, const char *format, va_list vlist);
     int sprintf(char *buffer, const char *format, ...);

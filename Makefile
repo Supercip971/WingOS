@@ -190,6 +190,8 @@ $(BUILD_OUT)/%.o: %.cpp
 	@$(DIRECTORY_GUARD)
 	@echo "[KERNEL $(ARCH)] (cpp) $<"
 	@$(CXX) $(CXXHARDFLAGS) -c $< -o $@
+%.h : %.h 
+	@echo "[KERNEL $(ARCH)] (h) $<"
 
 $(BUILD_OUT)/%.o: %.asm
 	@$(DIRECTORY_GUARD)

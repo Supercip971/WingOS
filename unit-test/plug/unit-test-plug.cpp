@@ -12,7 +12,7 @@ static int page_size = -1;
     #include <sys/syscall.h>
     #include <sys/types.h>
     #include <sys/mman.h>
-
+    #include <stdlib.h>
     #include <unistd.h>
 namespace plug
 {
@@ -29,23 +29,23 @@ namespace plug
     };
     uintptr_t allocate_page(size_t count)
     {
-	    if ( page_size < 0 ) page_size = getpagesize();
-        unsigned int size = count * page_size;
-            
+        if ( page_size < 0 ) page_size = 4096;
+        size_t size = count * page_size;
+
         char *p2 = (char*)mmap(0, size, PROT_NONE, MAP_PRIVATE|MAP_NORESERVE|MAP_ANONYMOUS, -1, 0);
         if ( p2 == MAP_FAILED) return 0;
 
-        if(mprotect(p2, size, PROT_READ|PROT_WRITE) != 0) 
+        if(mprotect(p2, size, PROT_READ|PROT_WRITE) != 0)
         {
             munmap(p2, size);
             return 0;
         }
 
-	    return (uintptr_t)p2;
+        return (uintptr_t)p2;
     }
     bool free_page(uintptr_t addr, size_t count)
     {
-	     munmap( (void*)addr, count * page_size );
+         munmap( (void*)addr, count * page_size );
         return true;
     }
     void debug_out(const char *str, size_t length)

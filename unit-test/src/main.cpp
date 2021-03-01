@@ -5,6 +5,7 @@
 #include <plug/system_plug.h>
 #include "math_check.h"
 #include "stdlib_check.h"
+#include "vector_check.h"
 #include <stdio.h>
 #include <string.h>
 int test(){
@@ -24,7 +25,12 @@ unit_test v[] = {
     {"(libc) string.h", "memset",  "check for good memset",        memset_check_0},
     {"(libc) stdlib.h", "abs",  "check for good return",        abs_check},
     {"(utils) math.h", "max",  "check for good return",        max_check_utils},
-    {"(utils) math.h", "min",  "check for good return",        min_check_utils}
+    {"(utils) math.h", "min",  "check for good return",        min_check_utils},
+    {"(utils) wvector.h", "vector", "creation test", wvector_create_check},
+    {"(utils) wvector.h", "vector", "push back test", wvector_push_back_check},
+    {"(utils) wvector.h", "vector", "get test", wvector_get_check},
+    {"(utils) wvector.h", "vector", "remove test", wvector_remove_check},
+    {"(utils) wvector.h", "vector", "clear test", wvector_clear_check},
     };
 int main(int argc, char **argv){
     int error_count = 0;

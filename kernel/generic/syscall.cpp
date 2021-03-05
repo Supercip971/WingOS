@@ -63,14 +63,28 @@ process_message *sys$send_message_pid(uintptr_t data_addr, uint64_t data_length,
     msg_lock.unlock();
     return res;
 }
-void *sys$alloc(uint64_t count)
+void *sys$alloc(uint64_t count, uint8_t flag)
 {
     auto res = (pmm_alloc(count));
-    return (void *)get_mem_addr(res);
+    if (flag & SYS_ALLOC_SHARED)
+    {
+
+        return (void *)get_mem_addr(res);
+    }
+    else
+    {
+
+        for (uint64_t i = 0; i < count; i++)
+        {
+            map_page((uintptr_t)res + i * PAGE_SIZE, get_usr_addr(res) + i * PAGE_SIZE, PAGE_TABLE_FLAGS);
+        }
+        update_paging();
+        return (void *)get_usr_addr(res);
+    }
 }
 int sys$free(uintptr_t target, uint64_t count)
 {
-    pmm_free((void *)get_rmem_addr(target), count);
+    pmm_free((void *)get_rusr_addr(target), count);
     return 1;
 }
 size_t sys$read(int fd, void *buffer, size_t count)

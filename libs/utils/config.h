@@ -2,7 +2,7 @@
 #define CONFIG_H
 
 #define PROCESS_STACK_SIZE 65536
-#define USR_ADDR 0xffffff8000000000
+#define USR_ADDR 0x0000002000000000
 #define MEM_ADDR 0xffff800000000000
 #define KER_ADDR 0xffffffff80000000
 

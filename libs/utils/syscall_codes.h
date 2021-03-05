@@ -19,3 +19,5 @@ enum class syscall_codes
     GET_PID = 14,                     // get current pid
     EXEC = 15,                        // execute a new programm
 };
+
+#define SYS_ALLOC_SHARED 0x2

@@ -57,7 +57,7 @@ void apic::log_all()
 
         log("io apic", LOG_INFO) << "io apic addr " << addr;
 
-        virt_map(addr, addr, 0x03);
+        map_page(addr, addr, 0x03);
         update_paging();
 
         uint32_t raw_table = (io_read(addr, version_reg));
@@ -103,7 +103,7 @@ void apic::init()
     apic_addr = (void *)((uintptr_t)madt::the()->lapic_base);
     for (int i = 0; i < 3; i++)
     {
-        virt_map((uint64_t)apic_addr + i * PAGE_SIZE, (uint64_t)apic_addr + i * PAGE_SIZE, 0x03);
+        map_page((uint64_t)apic_addr + i * PAGE_SIZE, (uint64_t)apic_addr + i * PAGE_SIZE, 0x03);
     }
     if (apic_addr == nullptr)
     {

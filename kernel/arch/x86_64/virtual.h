@@ -35,10 +35,6 @@ uint64_t alloc_map_region(main_page_table *table, uint64_t phys_addr, uint64_t c
 
 uint64_t get_physical_addr(uint64_t virt);
 main_page_table *new_vmm_page_dir();
-inline void virt_map(uint64_t from, uint64_t to, uint64_t flags)
-{
-    map_page(from, to, flags);
-}
 void init_vmm(stivale_struct *bootdata);
 
 uintptr_t alloc_vmm_page(size_t length);

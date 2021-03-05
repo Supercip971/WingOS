@@ -96,8 +96,8 @@ void acpi::init_in_paging()
     int entries = (rsdt->h.Length - sizeof(rsdt->h)) / 4;
     uintptr_t ddat = ALIGN_DOWN((uintptr_t)rsdt, PAGE_SIZE);
 
-    virt_map(ddat, get_mem_addr(ddat), 0x03);
-    virt_map(ddat + PAGE_SIZE, get_mem_addr(ddat + PAGE_SIZE), 0x03);
+    map_page(ddat, get_mem_addr(ddat), 0x03);
+    map_page(ddat + PAGE_SIZE, get_mem_addr(ddat + PAGE_SIZE), 0x03);
 
     rsdt = (RSDT *)get_mem_addr((uint64_t)rsdt);
 
@@ -106,9 +106,9 @@ void acpi::init_in_paging()
         uint64_t addr = rsdt->PointerToOtherSDT[i];
         addr = ALIGN_DOWN(addr, PAGE_SIZE);
 
-        virt_map(addr, get_mem_addr(addr), 0x03);
-        virt_map(addr + PAGE_SIZE, get_mem_addr(addr + PAGE_SIZE), 0x03);
-        virt_map(addr + (PAGE_SIZE * 2), get_mem_addr(addr + (PAGE_SIZE * 2)), 0x03);
+        map_page(addr, get_mem_addr(addr), 0x03);
+        map_page(addr + PAGE_SIZE, get_mem_addr(addr + PAGE_SIZE), 0x03);
+        map_page(addr + (PAGE_SIZE * 2), get_mem_addr(addr + (PAGE_SIZE * 2)), 0x03);
     }
 }
 

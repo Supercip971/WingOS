@@ -47,9 +47,9 @@ namespace sys
     {
         return (raw_process_message *)syscall((uintptr_t)syscall_codes::SEND_PROCESS_SYSCALL_PID, data_addr, data_length, pid, 0, 0);
     }
-    static inline void *sys$alloc(uintptr_t count)
+    static inline void *sys$alloc(uintptr_t count, uint8_t flag)
     {
-        return (void *)syscall((uintptr_t)syscall_codes::MEMORY_ALLOC, count, 0, 0, 0, 0);
+        return (void *)syscall((uintptr_t)syscall_codes::MEMORY_ALLOC, count, flag, 0, 0, 0);
     }
     static inline int sys$free(uintptr_t target, uint64_t count)
     {

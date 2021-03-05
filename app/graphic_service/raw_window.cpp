@@ -1,6 +1,8 @@
 #include "raw_window.h"
 #include "cursor.h"
 #include "raw_graphic_system.h"
+#include <kern/mem_util.h>
+#include <kern/process_message.h>
 #include <stdio.h>
 #include <stdlib.h>
 uint64_t window_count = 0;
@@ -171,8 +173,8 @@ uint64_t create_window(gui::graphic_system_service_protocol *request, uint64_t p
             window_list[i].py = last_window_y;
             window_list[i].window_name = request->create_window_info.name;
             window_list[i].wid = i;
-            window_list[i].window_front_buffer = (gui::color *)malloc(request->create_window_info.width * request->create_window_info.height * sizeof(gui::color));
-            window_list[i].window_back_buffer = (gui::color *)malloc(request->create_window_info.width * request->create_window_info.height * sizeof(gui::color));
+            window_list[i].window_front_buffer = (gui::color *)sys::pmm_malloc_shared(request->create_window_info.width * request->create_window_info.height * sizeof(gui::color));
+            window_list[i].window_back_buffer = (gui::color *)sys::pmm_malloc_shared(request->create_window_info.width * request->create_window_info.height * sizeof(gui::color));
             window_list[i].depth = 100;
             set_window_on_top(window_list[i].wid);
 
@@ -315,4 +317,10 @@ void update_mouse_in_window()
             }
         }
     }
+}
+
+void window_key_update(char keycode)
+{
+
+    sys::process_message target_info = sys::process_message(get_window_list()[0].pid, 0, 0);
 }

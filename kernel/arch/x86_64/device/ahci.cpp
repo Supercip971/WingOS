@@ -98,10 +98,10 @@ ahci_port_type ahci::check_device_type(hba_port *port) const
 void ahci::reinit_port(hba_port *port)
 {
 
-    void *data = pmm_alloc(1);
+    void *data = (void *)get_mem_addr(pmm_alloc(1));
     memzero(data, PAGE_SIZE);
 
-    port->command_list_base_addr_low = (uint64_t)data;
+    port->command_list_base_addr_low = (uint64_t)get_rmem_addr(data);
     port->fis_base_addr_up = 0; // i don't think the kernel will eat 4g of memory
 
     hba_fis *fis = new hba_fis;
@@ -111,10 +111,10 @@ void ahci::reinit_port(hba_port *port)
     fis->rfis.type = fis_type_def::FTYPE_REG_DEVICE2HOST;
     fis->psfis.type = fis_type_def::FTYPE_PIO_SETUP;
 
-    port->fis_base_addr_low = (uint64_t)(fis);
+    port->fis_base_addr_low = (uint64_t)get_rmem_addr(fis);
     port->fis_base_addr_up = 0;
 
-    volatile hba_cmd_header *command_header = reinterpret_cast<volatile hba_cmd_header *>((uintptr_t)port->command_list_base_addr_low);
+    volatile hba_cmd_header *command_header = reinterpret_cast<volatile hba_cmd_header *>((uintptr_t)data);
     for (int i = 0; i < 32; i++)
     {
         command_header[i].physical_region_descriptor_table_entry_count = 8;
@@ -182,7 +182,7 @@ generic_io_device::io_rw_output ahci_ata_device::read(uint8_t *data, uint64_t co
         return io_rw_output::io_ERROR;
     }
 
-    volatile hba_cmd_header *command_header = (hba_cmd_header *)(uint64_t)port->command_list_base_addr_low;
+    volatile hba_cmd_header *command_header = (hba_cmd_header *)get_mem_addr((uint64_t)port->command_list_base_addr_low);
 
     // fill command header
     command_header += slot;
@@ -191,7 +191,7 @@ generic_io_device::io_rw_output ahci_ata_device::read(uint8_t *data, uint64_t co
     command_header->physical_region_descriptor_table_entry_count = 1;
 
     // fill command tables
-    volatile hba_command_table *command_table = (hba_command_table *)(uint64_t)command_header->command_table_desc_base_addr;
+    volatile hba_command_table *command_table = (hba_command_table *)get_mem_addr((uint64_t)command_header->command_table_desc_base_addr);
     memzero((hba_command_table *)command_table, sizeof(hba_command_table) + command_header->physical_region_descriptor_table_entry_count - 1 * sizeof(hba_prdt_entry));
 
     command_table->entry[0].data_base_addr_low = (uint64_t)rdata;

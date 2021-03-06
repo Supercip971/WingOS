@@ -34,6 +34,7 @@ class general_device
 public:
     virtual const char *get_name() const;
     virtual device_type get_type() const;
+    virtual ~general_device(){};
     uint32_t device_id;
 };
 

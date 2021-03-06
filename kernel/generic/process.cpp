@@ -53,10 +53,10 @@ void null_process()
 bool process::destroy()
 {
 
-    free(global_process_memory);
     set_active(false);
     set_state(PROCESS_AVAILABLE);
 
+    free(global_process_memory);
     return true;
 }
 void utility_process()
@@ -75,19 +75,19 @@ void utility_process()
             {
                 continue;
             }
+            process_creator_lock.lock();
+            lock_process();
             if (process_array[i].get_state() == PROCESS_SHOULD_BE_DEAD)
             {
-                process_creator_lock.lock();
-                lock_process();
 
-                log("proc", LOG_INFO) << "killing process [" << i << "] : " << process_array[i].get_name();
+                log("proc", LOG_INFO, "killing process [{}] : {}", i, process_array[i].get_name());
 
                 process_array[i].destroy();
                 dying_process_count--;
                 process_creator_lock.unlock();
+            }
                 unlock_process();
             }
-        }
         sleep(100);
     }
 }
@@ -240,6 +240,9 @@ process *get_next_process(uint64_t current_id)
     log("proc", LOG_ERROR, "maybe from: {}", process::current()->get_name());
 
     dump_process();
+    while (true)
+    {
+    }
     return process::current();
 }
 
@@ -594,4 +597,22 @@ void kill(uint64_t pid)
     target->kill();
     dying_process_count++;
     unlock_process();
+}
+
+void kill_current()
+{
+    lock_process();
+
+    asm volatile("cli");
+
+    log("proc", LOG_INFO, "killing current process");
+    process::current()->kill();
+    dying_process_count++;
+    unlock_process();
+    asm volatile("sti");
+    while (true)
+    {
+
+        yield();
+    }
 }

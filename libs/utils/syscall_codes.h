@@ -18,6 +18,7 @@ enum class syscall_codes
     NANO_SLEEP = 13,                  // sleep the current process
     GET_PID = 14,                     // get current pid
     EXEC = 15,                        // execute a new programm
+    EXIT = 16,                        // current process exit
 };
 
 #define SYS_ALLOC_SHARED 0x2

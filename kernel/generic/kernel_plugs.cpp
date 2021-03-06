@@ -38,4 +38,8 @@ namespace plug
     {
         return fs_read(fd, buffer, count);
     }
+    void exit(int s)
+    {
+        log("plug", LOG_ERROR, "trying to call plug exit({}) in the kernel", s);
+    }
 } // namespace plug

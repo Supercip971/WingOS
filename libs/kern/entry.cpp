@@ -1,6 +1,7 @@
 #include <kern/file.h>
 #include <lcxxabi.h>
 #include <stdio.h>
+#include <stdlib.h>
 extern "C" int main(int argc, char **argv);
 
 extern "C" void __entry_point(int argc, char **argv, char **env)
@@ -19,10 +20,11 @@ extern "C" void __entry_point(int argc, char **argv, char **env)
     stderr = (FILE *)malloc(sizeof(FILE));
     stderr->file_element = sys::stderr.get_fid();
 
-    main(argc, argv);
+    int res = main(argc, argv);
 
     __cxa_finalize(nullptr);
     free(stdin);
     free(stdout);
     free(stderr);
+    exit(res);
 }

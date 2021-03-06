@@ -60,10 +60,13 @@ uintptr_t switch_context(InterruptStackFrame *current_Isf, process *next)
 
     if (process::current() != NULL)
     {
-        process::current()->set_state(PROCESS_WAITING);
-        process::current()->get_arch_info()->rsp = (uint64_t)current_Isf;
+        if (process::current()->get_state() != PROCESS_SHOULD_BE_DEAD)
+        {
 
-        get_current_cpu()->save_sse(process::current()->get_arch_info()->sse_context);
+            process::current()->set_state(PROCESS_WAITING);
+            process::current()->get_arch_info()->rsp = (uint64_t)current_Isf;
+            get_current_cpu()->save_sse(process::current()->get_arch_info()->sse_context);
+        }
     }
     next->set_state(process_state::PROCESS_RUNNING);
     process::set_current(next);

@@ -87,5 +87,9 @@ namespace sys
     {
         return syscall((uintptr_t)syscall_codes::EXEC, (uintptr_t)execution_info, 0, 0, 0, 0);
     }
+    static inline int sys$exit(int code)
+    {
+        return syscall((uintptr_t)syscall_codes::EXIT, (uintptr_t)code, 0, 0, 0, 0);
+    }
 
 } // namespace sys

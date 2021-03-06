@@ -271,3 +271,8 @@ void *realloc(void *ptr, size_t size)
 {
     return utils::wrealloc(ptr, size);
 }
+
+void exit(int status)
+{
+    plug::exit(status);
+}

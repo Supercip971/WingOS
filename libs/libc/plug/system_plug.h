@@ -12,4 +12,5 @@ namespace plug
     int close(int fd);
     size_t lseek(int fd, size_t offset, int whence);
     size_t read(int fd, void *buffer, size_t count);
+    void exit(int s);
 } // namespace plug

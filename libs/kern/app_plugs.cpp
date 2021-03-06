@@ -36,4 +36,8 @@ namespace plug
     {
         return sys::sys$read(fd, buffer, count);
     }
+
+    void exit(int s){
+        sys::sys$exit(s);
+    }
 } // namespace plug

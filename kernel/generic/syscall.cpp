@@ -123,6 +123,16 @@ size_t sys$exec(programm_exec_info *info)
 {
     return launch_programm_usr(info);
 }
+size_t sys$exit(int code)
+{
+    if (code != 0)
+    {
+        log("proc", LOG_ERROR, "process exiting with code: {}", code);
+    }
+    kill_current();
+
+    return 0;
+}
 static void *syscalls[] = {
     (void *)sys$null,
     (void *)sys$send_message,
@@ -139,6 +149,8 @@ static void *syscalls[] = {
     (void *)sys$lseek,
     (void *)sys$nano_sleep,
     (void *)sys$getpid,
+    (void *)sys$exec,
+    (void *)sys$exit,
 };
 uint64_t syscalls_length = sizeof(syscalls) / sizeof(void *);
 void init_syscall()

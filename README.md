@@ -9,7 +9,7 @@ WingOS is a small hobbyist 64 bit kernel made with <3 in C++
 
 Email: supercyp@protonmail.com
 
-Discord: supercyp#1592 
+Discord server: [xK8jEswcyx](https://discord.gg/xK8jEswcyx)
 ## Try it:
 
 if you just want to try the os **without building** it, you can just install Qemu, and grab the latest Artifacts in the github action 

@@ -4,6 +4,7 @@
 #include <logging.h>
 #include <utility.h>
 #include <utils/liballoc.h>
+#include <utils/smart_ptr.h>
 utils::lock_type ahci_lock;
 
 void ahci::init()
@@ -36,9 +37,10 @@ void ahci::init()
 
             else if (dev_type == SATA_PORT)
             {
-                ahci_ata_device *ahci_device = new ahci_ata_device();
-                ahci_device->set_port(&hba_mem->ports[i]);
-                add_io_device((ahci_device));
+                utils::unique_ptr<ahci_ata_device> dev = utils::make_unique<ahci_ata_device>();
+
+                dev.get().set_port(&hba_mem->ports[i]);
+                add_io_device((dev.release()));
 
                 log("ahci", LOG_INFO) << "sata port at" << i;
             }

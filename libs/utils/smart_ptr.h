@@ -29,13 +29,18 @@ namespace utils
         {
             return raw;
         }
-        type &operator->()
+        template <typename ret_t>
+        ret_t as()
         {
-            return *raw;
+            return reinterpret_cast<ret_t>(raw);
         }
-        const type operator->() const
+        type *operator->()
         {
-            return *raw;
+            return raw;
+        }
+        const type *operator->() const
+        {
+            return raw;
         }
         unique_ptr &operator=(unique_ptr &&val)
         {
@@ -50,7 +55,7 @@ namespace utils
 
         type &operator[](size_t idx)
         {
-            return raw + idx;
+            return *(raw + idx);
         }
 
         type *release()

@@ -10,6 +10,7 @@
 #include <utility.h>
 #include <utils/liballoc.h>
 #include <utils/lock.h>
+#include <utils/smart_ptr.h>
 
 ext2fs::ext2fs()
     : file_system()
@@ -40,20 +41,18 @@ void ext2fs::read_blocks(uint64_t block_id, uint64_t length, uint8_t *buffer)
 }
 ext2fs_block_group_descriptor ext2fs::read_group_from_inode(uint64_t inode)
 {
-    uint64_t current_block_group = (inode - 1) / super_block->inode_count_per_group;
+    uint64_t current_block_group = (inode - 1) / super_block.inode_count_per_group;
     uint64_t block_group_start = block_group_descriptor_table * block_size;
-
-    ext2fs_block_group_descriptor *group = (ext2fs_block_group_descriptor *)malloc(sizeof(ext2fs_block_group_descriptor));
+    auto group = utils::make_unique<ext2fs_block_group_descriptor>();
     uint64_t group_offset = block_group_start + ((sizeof(ext2fs_block_group_descriptor) * current_block_group));
-    get_io_device(0)->read_unaligned((uint8_t *)(group), sizeof(ext2fs_block_group_descriptor), offset + group_offset);
-    ext2fs_block_group_descriptor rgroup = *group;
-    free(group);
+    get_io_device(0)->read_unaligned((uint8_t *)(group.get_raw()), sizeof(ext2fs_block_group_descriptor), offset + group_offset);
+    ext2fs_block_group_descriptor rgroup = group.get();
     return rgroup;
 }
 
 void ext2fs::write_group_from_inode(uint64_t inode, ext2fs_block_group_descriptor group)
 {
-    uint64_t current_block_group = (inode - 1) / super_block->inode_count_per_group;
+    uint64_t current_block_group = (inode - 1) / super_block.inode_count_per_group;
     uint64_t block_group_start = block_group_descriptor_table * block_size;
 
     uint64_t group_offset = block_group_start + ((sizeof(ext2fs_block_group_descriptor) * current_block_group));
@@ -64,11 +63,10 @@ ext2fs_block_group_descriptor ext2fs::read_group_from_group_id(uint64_t gid)
     uint64_t current_block_group = gid;
     uint64_t block_group_start = block_group_descriptor_table * block_size;
 
-    ext2fs_block_group_descriptor *group = (ext2fs_block_group_descriptor *)malloc(sizeof(ext2fs_block_group_descriptor));
+    auto group = utils::make_unique<ext2fs_block_group_descriptor>();
     uint64_t group_offset = block_group_start + ((sizeof(ext2fs_block_group_descriptor) * current_block_group));
-    get_io_device(0)->read_unaligned((uint8_t *)(group), sizeof(ext2fs_block_group_descriptor), offset + group_offset);
-    ext2fs_block_group_descriptor rgroup = *group;
-    free(group);
+    get_io_device(0)->read_unaligned((uint8_t *)(group.get_raw()), sizeof(ext2fs_block_group_descriptor), offset + group_offset);
+    ext2fs_block_group_descriptor rgroup = group.get();
     return rgroup;
 }
 void ext2fs::write_group_from_group_id(uint64_t gid, ext2fs_block_group_descriptor group)
@@ -96,12 +94,11 @@ bool ext2fs::inode_read(void *buffer, uint64_t cursor, uint64_t count, ext2fs_in
 
         block_offset = (cursor + readed) % block_size;
         if (chunk_size_to_read > block_size - block_offset)
-        { // if the block is too big
+        {
             chunk_size_to_read = block_size - block_offset;
         }
         auto block = get_inode_block_map(parent, current_block);
 
-        //  log("ext2fs", LOG_INFO) << "reading inode " << chunk_size_to_read << "offset" << block << "with block" << current_block << "readed" << readed << "count" << count;
         get_io_device(0)->read_unaligned((uint8_t *)buffer + readed, chunk_size_to_read, (offset + (block * block_size)) + block_offset);
         readed += chunk_size_to_read;
     }
@@ -301,54 +298,52 @@ uint32_t *ext2fs::create_inode_block_map(ext2fs_inode inode_struct)
 ext2fs_inode ext2fs::get_inode(uint64_t inode)
 {
     ext2fs_inode rret;
-    ext2fs_inode_structure *ret = (ext2fs_inode_structure *)malloc(sizeof(ext2fs_inode_structure));
-    uint64_t current_block_group = (inode - 1) / super_block->inode_count_per_group;
-    uint64_t inside_block_group = (inode - 1) % super_block->inode_count_per_group;
+    auto ret = utils::make_unique<ext2fs_inode_structure>();
+    uint64_t current_block_group = (inode - 1) / super_block.inode_count_per_group;
+    uint64_t inside_block_group = (inode - 1) % super_block.inode_count_per_group;
     uint64_t block_group_start = block_group_descriptor_table * block_size;
 
-    uint64_t inode_size = super_block->inode_size;
+    uint64_t inode_size = super_block.inode_size;
 
-    ext2fs_block_group_descriptor *group = (ext2fs_block_group_descriptor *)malloc(sizeof(ext2fs_block_group_descriptor));
+    auto group = utils::make_unique<ext2fs_block_group_descriptor>();
     uint64_t group_offset = block_group_start + ((sizeof(ext2fs_block_group_descriptor) * current_block_group));
-    get_io_device(0)->read_unaligned((uint8_t *)(group), sizeof(ext2fs_block_group_descriptor), offset + group_offset);
+    get_io_device(0)->read_unaligned((uint8_t *)(group.get_raw()), sizeof(ext2fs_block_group_descriptor), offset + group_offset);
 
     uint64_t inode_offset = (group->inode_table * block_size) + (inode_size * inside_block_group);
-    get_io_device(0)->read_unaligned((uint8_t *)(ret), sizeof(ext2fs_inode_structure), offset + inode_offset);
-    free(group);
-    rret.strct = *ret;
-    free(ret);
+    get_io_device(0)->read_unaligned((uint8_t *)(ret.get_raw()), sizeof(ext2fs_inode_structure), offset + inode_offset);
+
+    rret.strct = ret.get();
     rret.id = inode;
     return rret;
 }
 bool ext2fs::write_inode(ext2fs_inode inode)
 {
-    uint64_t current_block_group = (inode.id - 1) / super_block->inode_count_per_group;
-    uint64_t inside_block_group = (inode.id - 1) % super_block->inode_count_per_group;
+    uint64_t current_block_group = (inode.id - 1) / super_block.inode_count_per_group;
+    uint64_t inside_block_group = (inode.id - 1) % super_block.inode_count_per_group;
     uint64_t block_group_start = block_group_descriptor_table * block_size;
 
-    uint64_t inode_size = super_block->inode_size;
+    uint64_t inode_size = super_block.inode_size;
 
-    ext2fs_block_group_descriptor *group = (ext2fs_block_group_descriptor *)malloc(sizeof(ext2fs_block_group_descriptor));
+    auto group = utils::make_unique<ext2fs_block_group_descriptor>();
     uint64_t group_offset = block_group_start + ((sizeof(ext2fs_block_group_descriptor) * current_block_group));
-    get_io_device(0)->read_unaligned((uint8_t *)(group), sizeof(ext2fs_block_group_descriptor), offset + group_offset);
+    get_io_device(0)->read_unaligned((uint8_t *)(group.get_raw()), sizeof(ext2fs_block_group_descriptor), offset + group_offset);
 
     uint64_t inode_offset = (group->inode_table * block_size) + (inode_size * inside_block_group);
     get_io_device(0)->write_unaligned((uint8_t *)(&inode.strct), sizeof(ext2fs_inode_structure), offset + inode_offset);
-    free(group);
     return true;
 }
 bool ext2fs::is_valid_ext2fs_entry(uint64_t start_sector)
 {
 
-    uint8_t *temp_buffer = (uint8_t *)malloc(1024);
-    get_io_device(0)->read(temp_buffer, 2, (start_sector + 1024) / 512);
-    ext2fs_superblock hdr = *reinterpret_cast<ext2fs_superblock *>(temp_buffer);
+    auto temp_buffer = utils::unique_ptr<uint8_t>(new uint8_t[1024]);
+
+    get_io_device(0)->read(temp_buffer.get_raw(), 2, (start_sector + 1024) / 512);
+
+    ext2fs_superblock hdr = *temp_buffer.template as<ext2fs_superblock *>();
     if (hdr.signature != EXT2FS_SIGNATURE)
     {
-        free(temp_buffer);
         return false;
     }
-    free(temp_buffer);
     return true;
 }
 // oof that's so bad code :^(
@@ -357,77 +352,77 @@ void ext2fs::print_ext2_feature()
 
     // OPTIONAL FEATURE
 
-    log("ext2", LOG_INFO, "ext2fs optional features: {}", super_block->optional_features);
+    log("ext2", LOG_INFO, "ext2fs optional features: {}", super_block.optional_features);
 
-    if (super_block->optional_features & PREALOC_BLOCK)
+    if (super_block.optional_features & PREALOC_BLOCK)
     {
         log("ext2", LOG_INFO, " - optional feature : PREALOC_BLOCK");
     }
-    if (super_block->optional_features & AFS_INODE)
+    if (super_block.optional_features & AFS_INODE)
     {
         log("ext2", LOG_INFO, " - optional feature : AFS_INODE ");
     }
-    if (super_block->optional_features & JOURNAL_SUPPORT)
+    if (super_block.optional_features & JOURNAL_SUPPORT)
     {
         log("ext2", LOG_INFO, " - optional feature : JOURNAL_SUPPORT ");
     }
-    if (super_block->optional_features & EXTENDED_INODE_ATTRIB)
+    if (super_block.optional_features & EXTENDED_INODE_ATTRIB)
     {
         log("ext2", LOG_INFO, " - optional feature : EXTENDED_INODE_ATTRIB ");
     }
-    if (super_block->optional_features & RESIZABLE_FS)
+    if (super_block.optional_features & RESIZABLE_FS)
     {
         log("ext2", LOG_INFO, " - optional feature : RESIZABLE_FS ");
     }
-    if (super_block->optional_features & INDEXED_DIRECTORY)
+    if (super_block.optional_features & INDEXED_DIRECTORY)
     {
         log("ext2", LOG_INFO, " - optional feature : INDEXED_DIRECTORY ");
     }
 
     // READ ONLY FEATURES
-    log("ext2", LOG_INFO, "ext2fs read only features: {}", super_block->read_only_features);
+    log("ext2", LOG_INFO, "ext2fs read only features: {}", super_block.read_only_features);
 
-    if (super_block->read_only_features & SPARSE_DESC_TABLE)
+    if (super_block.read_only_features & SPARSE_DESC_TABLE)
     {
         log("ext2", LOG_INFO, " - read only feature : SPARSE_DESC_TABLE ");
     }
-    if (super_block->read_only_features & LONG_MODE_FILE_SIZE)
+    if (super_block.read_only_features & LONG_MODE_FILE_SIZE)
     {
         log("ext2", LOG_INFO, " - read only feature : LONG_MODE_FILE_SIZE ");
     }
-    if (super_block->read_only_features & BINARY_TREE_DIRECTORY_CONTENT)
+    if (super_block.read_only_features & BINARY_TREE_DIRECTORY_CONTENT)
     {
         log("ext2", LOG_INFO, " - read only feature : BINARY_TREE_DIRECTORY_CONTENT ");
     }
 
     // NEEDED FEATURES
-    log("ext2", LOG_INFO, "ext2fs needed features: {}", super_block->required_features);
+    log("ext2", LOG_INFO, "ext2fs needed features: {}", super_block.required_features);
 
-    if (super_block->required_features & COMPRESSION)
+    if (super_block.required_features & COMPRESSION)
     {
         log("ext2", LOG_INFO, " - needed feature : COMPRESSION ");
     }
-    if (super_block->required_features & DIRECTORY_TYPE_FIELD)
+    if (super_block.required_features & DIRECTORY_TYPE_FIELD)
     {
         log("ext2", LOG_INFO, " - needed feature : DIRECTORY_TYPE_FIELD ");
     }
-    if (super_block->required_features & JOURNAL_REPLAY_NEEDED)
+    if (super_block.required_features & JOURNAL_REPLAY_NEEDED)
     {
         log("ext2", LOG_INFO, " - needed feature : JOURNAL_REPLAY_NEEDED ");
     }
-    if (super_block->required_features & JOURNAL_DEVICE_NEEDED)
+    if (super_block.required_features & JOURNAL_DEVICE_NEEDED)
     {
         log("ext2", LOG_INFO, " - needed feature : JOURNAL_DEVICE_NEEDED ");
     }
 }
 void ext2fs::list_sub_directory(ext2fs_inode inode, int offset)
 {
-    ext2fs_directory *dir = (ext2fs_directory *)malloc(sizeof(ext2fs_directory));
+    auto dir = utils::make_unique<ext2fs_directory>();
     int v = 0;
     for (uint32_t i = 0; i < inode.strct.lower_size;)
     {
 
-        inode_read(dir, i, sizeof(ext2fs_directory), inode);
+        inode_read(dir.get_raw(), i, sizeof(ext2fs_directory), inode);
         for (int i = 0; i < offset; i++)
         {
             printf("\t");
@@ -441,24 +436,21 @@ void ext2fs::list_sub_directory(ext2fs_inode inode, int offset)
         i += dir->directory_size;
         v++;
     }
-    free(dir);
 }
 ext2fs_inode ext2fs::find_subdir(ext2fs_inode inode_struct, const char *name)
 {
+    auto dir = utils::make_unique<ext2fs_directory>();
 
-    ext2fs_directory *dir = (ext2fs_directory *)malloc(sizeof(ext2fs_directory));
     for (uint32_t i = 0; i < inode_struct.strct.lower_size;)
     {
-        inode_read(dir, i, sizeof(ext2fs_directory), inode_struct);
+        inode_read(dir.get_raw(), i, sizeof(ext2fs_directory), inode_struct);
         if (strncmp(dir->name, name, dir->directory_name_length) == 0)
         {
             auto vi = get_inode(dir->inode_dir);
-            free(dir);
             return vi;
         }
         i += dir->directory_size;
     }
-    free(dir);
     return ext2fs_inode(); // not founded
 }
 ext2fs_inode ext2fs::get_file(const char *path)
@@ -468,7 +460,7 @@ ext2fs_inode ext2fs::get_file(const char *path)
     uint32_t searching_file_cur = 0;
     bool end_of_search = false;
 
-    char *searching_file = (char *)malloc(255); // max
+    auto searching_file = utils::unique_ptr<char>(new char[255]);
     while (true)
     {
         searching_file_cur = 0;
@@ -482,12 +474,11 @@ ext2fs_inode ext2fs::get_file(const char *path)
         {
             end_of_search = true;
         }
-        ext2fs_inode v = find_subdir(f, searching_file);
+        ext2fs_inode v = find_subdir(f, searching_file.get_raw());
 
         if (!v.is_valid())
         {
 
-            free(searching_file);
             return ext2fs_inode();
         }
         else
@@ -495,7 +486,6 @@ ext2fs_inode ext2fs::get_file(const char *path)
             f = v;
             if (end_of_search)
             {
-                free(searching_file);
                 return v;
             }
         }
@@ -512,12 +502,12 @@ uint8_t *ext2fs::ext_read_file(const char *path)
         ext_lock.unlock();
         return 0;
     }
-    uint8_t *dat = (uint8_t *)malloc(f.strct.lower_size);
+    auto dat = utils::unique_ptr<uint8_t>(new uint8_t[f.strct.lower_size]);
 
-    inode_read(dat, 0, f.strct.lower_size, f);
+    inode_read(dat.get_raw(), 0, f.strct.lower_size, f);
 
     ext_lock.unlock();
-    return dat;
+    return dat.release();
 }
 bool ext2fs::exist(const char *path)
 {
@@ -547,10 +537,10 @@ void ext2fs::init(uint64_t start_sector, uint64_t sector_count)
     offset = start_sector;
     log("ext2", LOG_DEBUG, "loading ext2fs at {}", start_sector);
 
-    uint8_t *temp_buffer = (uint8_t *)malloc(1024);
-    get_io_device(0)->read_unaligned(temp_buffer, 1024, (start_sector + 1024));
-    super_block = reinterpret_cast<ext2fs_superblock *>(temp_buffer);
-    block_size = ((uint64_t)(1024) << super_block->sblock_size);
+    auto temp_buffer = utils::unique_ptr<uint8_t>(new uint8_t[1024]);
+    get_io_device(0)->read_unaligned(temp_buffer.get_raw(), 1024, (start_sector + 1024));
+    super_block = *temp_buffer.template as<ext2fs_superblock *>();
+    block_size = ((uint64_t)(1024) << super_block.sblock_size);
     if (block_size == 1024)
     {
         block_group_descriptor_table = 2;
@@ -559,15 +549,15 @@ void ext2fs::init(uint64_t start_sector, uint64_t sector_count)
     {
         block_group_descriptor_table = 1;
     }
-    log("ext2", LOG_INFO, "ext2fs major version: {}", super_block->version);
-    log("ext2", LOG_INFO, "ext2fs minor version: {}", super_block->minor_version);
+    log("ext2", LOG_INFO, "ext2fs major version: {}", super_block.version);
+    log("ext2", LOG_INFO, "ext2fs minor version: {}", super_block.minor_version);
     log("ext2", LOG_INFO, "ext2fs block size: {}", block_size);
-    log("ext2", LOG_INFO, "ext2fs inode per group: {}", super_block->inode_count_per_group);
-    log("ext2", LOG_INFO, "ext2fs inode size: {}", super_block->inode_size);
+    log("ext2", LOG_INFO, "ext2fs inode per group: {}", super_block.inode_count_per_group);
+    log("ext2", LOG_INFO, "ext2fs inode size: {}", super_block.inode_size);
     print_ext2_feature();
     root_inode = get_inode(2);
-    ext2fs_directory *dir = (ext2fs_directory *)malloc(sizeof(ext2fs_directory));
-    inode_read(dir, 0, sizeof(ext2fs_directory), root_inode);
+    auto dir = utils::make_unique<ext2fs_directory>();
+    inode_read(dir.get_raw(), 0, sizeof(ext2fs_directory), root_inode);
     log("ext2", LOG_INFO, "root inode dir: {}", dir->name);
     log("ext2", LOG_INFO, "root inode name length: {}", dir->directory_name_length);
     log("ext2", LOG_INFO, "root inode block subdir: {}", dir->inode_dir);
@@ -600,11 +590,10 @@ uint64_t ext2fs::read_file(const char *path, uint64_t at, uint64_t size, uint8_t
     {
         readed_size = f.strct.lower_size - at;
     }
-    uint8_t *buffer_copy = (uint8_t *)malloc(readed_size + 12);
+    auto buffer_copy = utils::unique_ptr<uint8_t>(new uint8_t[readed_size + 12]);
 
-    inode_read(buffer_copy, at, readed_size, f);
-    memcpy(buffer, buffer_copy, size);
-    free(buffer_copy);
+    inode_read(buffer_copy.get_raw(), at, readed_size, f);
+    memcpy(buffer, buffer_copy.get_raw(), size);
     ext_lock.unlock();
     return readed_size;
 }
@@ -635,7 +624,6 @@ uint64_t ext2fs::write_file(const char *path, uint64_t at, uint64_t size, const 
     }
     write_inode(f);
     inode_write(buffer, at, size, f);
-    // uint8_t *buffer_copy = (uint8_t *)malloc(write_size + 12);
 
     ext_lock.unlock();
     return size;
@@ -653,7 +641,7 @@ uint64_t ext2fs::alloc_block_for_inode(ext2fs_inode &inode)
             gid++;
         }
     }
-    log("ext2fs", LOG_INFO, "block group size: {}", super_block->block_count_per_group * block_size);
+    log("ext2fs", LOG_INFO, "block group size: {}", super_block.block_count_per_group * block_size);
 
     uint8_t *bitmap = (uint8_t *)malloc(block_size);
     memzero(bitmap, block_size);
@@ -681,7 +669,7 @@ uint64_t ext2fs::alloc_block_for_inode(ext2fs_inode &inode)
     write_group_from_group_id(gid, group);
 
     get_io_device(0)->write_unaligned(bitmap, block_size, group.block_bitmap * block_size + offset);
-    uint64_t block_offset = (super_block->block_count_per_group * gid) + (start_block);
+    uint64_t block_offset = (super_block.block_count_per_group * gid) + (start_block);
     free(bitmap);
     clear_block(block_offset);
 
@@ -711,9 +699,9 @@ void ext2fs::resize_file(ext2fs_inode &inode, uint64_t new_size)
 }
 constexpr uint64_t ext2fs::get_group_from_inode(uint64_t inode)
 {
-    return (inode - 1) / super_block->inode_count_per_group;
+    return (inode - 1) / super_block.inode_count_per_group;
 }
 constexpr uint64_t ext2fs::get_local_group_inode_from_inode(uint64_t inode)
 {
-    return (inode - 1) % super_block->inode_count_per_group;
+    return (inode - 1) % super_block.inode_count_per_group;
 }

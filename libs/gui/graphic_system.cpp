@@ -200,12 +200,12 @@ namespace gui
         {
             x_max = radius;
         }
-        for (int y = y_start; y <= y_max; y++)
+        for (int y = y_start; y < y_max; y++)
         {
 
             const int y_to_check = y * y;
             const int y_end_pos = (origin.y + y) * context_width;
-            for (int x = x_start; x <= x_max; x++)
+            for (int x = x_start; x < x_max; x++)
             {
 
                 const int x_to_check = x * x;

@@ -78,4 +78,8 @@ namespace plug
         printf("read plug \n");
         return syscall(SYS_read, fd, buffer, count);
     }
+    void exit(int)
+    {
+        printf("exit plug \n");
+    }
 } // namespace plug

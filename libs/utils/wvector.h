@@ -77,6 +77,7 @@ namespace utils
             {
 
                 free(buffer);
+                buffer = nullptr;
             }
             allocated_size = 0;
             sz = 0;

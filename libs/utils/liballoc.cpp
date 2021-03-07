@@ -69,7 +69,7 @@ namespace utils
         unsigned int size;            ///< The number of pages in the block.
         unsigned int usage;           ///< The number of bytes used in the block.
         struct liballoc_minor *first; ///< A pointer to the first allocated memory in the block.
-    };
+    } __attribute__((packed));
 
     /** This is a structure found at the beginning of all
      * sections in a major block which were allocated by a
@@ -83,7 +83,7 @@ namespace utils
         unsigned int magic;           ///< A magic number to idenfity correctness.
         unsigned int size;            ///< The size of the memory allocated. Could be 1 byte or more.
         unsigned int req_size;        ///< The size of memory requested.
-    };
+    } __attribute__((packed));
 
     static struct liballoc_major *l_memRoot = NULL; ///< The root memory block acquired from the system.
     static struct liballoc_major *l_bestBet = NULL; ///< The major with the most free memory.

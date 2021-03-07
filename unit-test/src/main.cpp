@@ -1,5 +1,4 @@
 
-#include <utils/memory.h>
 #include "unit_test.h"
 #include "string_check.h"
 #include <plug/system_plug.h>

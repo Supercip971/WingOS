@@ -53,6 +53,8 @@ CHARDFLAGS := $(CFLAGS)               \
         -fno-pic                       \
         -no-pie \
         -m64 \
+		-msse \
+		-mavx \
 	    -Wall \
 	    -MD \
 	    -MMD \
@@ -85,6 +87,7 @@ CXXHARDFLAGS := $(CFLAGS)               \
 	    -Wall \
 	    -MD \
 			-msse \
+			-mavx \
 	    -MMD \
 	    -Werror \
         -O3 \

@@ -24,8 +24,7 @@ CXXHARDFLAGS := $(CFLAGS)               \
         -O3 \
         -Werror \
         -msse \
-        -mno-avx \
-        -mno-avx2 \
+        -mmmx \
         -mno-avx512f \
         -mno-80387                     \
         -mno-red-zone                  \
@@ -47,8 +46,7 @@ CHARDFLAGS := $(CFLAGS)               \
         -O3 \
         -Werror \
         -msse \
-        -mno-avx \
-        -mno-avx2 \
+        -mmmx \
         -mno-avx512f \
         -mno-80387                     \
         -mno-red-zone                  \

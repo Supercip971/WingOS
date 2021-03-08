@@ -29,12 +29,11 @@ void init_cursor()
     mouse_on_window = (uint64_t *)sys::sys$get_current_process_global_data(0, 8);
     *mouse_on_window = 0;
 }
-bool is_mouse_in_window(uint64_t wid)
+bool is_mouse_in_window(raw_window_data *window)
 {
-    raw_window_data *window_list = get_window_list();
-    if (window_list[wid].px <= m_x && window_list[wid].width + window_list[wid].px >= m_x)
+    if (window->px <= m_x && window->width + window->px >= m_x)
     {
-        if (window_list[wid].py <= m_y && window_list[wid].height + window_list[wid].py >= m_y)
+        if (window->py <= m_y && window->height + window->py >= m_y)
         {
             return true;
         }
@@ -51,7 +50,7 @@ void update_mouse()
     draw_mouse(m_x, m_y);
 }
 
-void set_mouse_on_window(uint64_t wid)
+void set_mouse_on_window(raw_window_data *window)
 {
-    *mouse_on_window = wid;
+    *mouse_on_window = window->wid;
 }

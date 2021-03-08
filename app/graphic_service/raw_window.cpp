@@ -5,8 +5,7 @@
 #include <kern/process_message.h>
 #include <stdio.h>
 #include <stdlib.h>
-uint64_t window_count = 0;
-raw_window_data *window_list;
+utils::vector<raw_window_data> window_list;
 
 uint64_t last_window_x = 10;
 uint64_t last_window_y = 10;
@@ -15,50 +14,46 @@ void init_raw_windows()
 {
 
     printf("init window \n");
-    window_count = 0;
-    window_list = new raw_window_data[MAX_WINDOW + 3];
-
-    for (int i = 0; i < MAX_WINDOW; i++)
-    {
-        window_list[i].used = false;
-    }
 }
-raw_window_data *get_window_list()
+utils::vector<raw_window_data> get_window_list()
 {
     return window_list;
 }
 uint64_t get_window_list_count()
 {
-    return window_count;
+    return window_list.size();
 }
-uint64_t can_use_window(uint64_t target_wid, uint64_t pid)
+raw_window_data *get_window(uint64_t target_wid)
 {
-    if (target_wid > MAX_WINDOW)
+    for (size_t i = 0; i < window_list.size(); i++)
     {
-        return -2;
+        if (window_list[i].wid == target_wid)
+        {
+            return &window_list[i];
+        }
     }
-    else if (window_list[target_wid].used == false)
+    return nullptr;
+}
+size_t get_window_id(uint64_t target_wid)
+{
+    for (size_t i = 0; i < window_list.size(); i++)
     {
-        return -1;
+        if (window_list[i].wid == target_wid)
+        {
+            return i;
+        }
     }
-    else if (window_list[target_wid].pid != pid)
-    {
-        return 0;
-    }
-    return 1;
+    return -1;
 }
 
 bool valid_window(uint64_t target_wid, uint64_t pid)
 {
-    if (target_wid > MAX_WINDOW)
+    auto raw = get_window(target_wid);
+    if (raw == nullptr)
     {
         return false;
     }
-    else if (window_list[target_wid].used == false)
-    {
-        return false;
-    }
-    else if (window_list[target_wid].pid != pid)
+    else if (raw->pid != pid)
     {
         return false;
     }
@@ -66,123 +61,55 @@ bool valid_window(uint64_t target_wid, uint64_t pid)
 }
 void set_window_on_top(uint64_t wid)
 {
-    uint64_t prev_depth = window_list[wid].depth;
-    for (int i = 0; i < window_count; i++)
-    {
-        if (window_list[i].used == false)
-        {
-            continue;
-        }
-        if (window_list[i].wid == wid)
-        {
-            window_list[i].depth = 0;
-        }
-        else
-        {
-            if (window_list[i].depth <= prev_depth)
-            {
-
-                window_list[i].depth++;
-            }
-        }
-    }
+    auto raw = get_window(wid);
+    size_t idx = get_window_id(wid);
+    raw_window_data raw_stack = *raw;
+    window_list.remove(idx);
+    window_list.push_back(raw_stack);
 }
 void set_window_background(uint64_t wid)
 {
-    uint64_t max_depth = 0;
-    uint64_t widt = 0;
-    for (int i = 0; i < window_count; i++)
-    {
-        if (window_list[i].used == false)
-        {
-            continue;
-        }
-        if (window_list[i].wid == wid)
-        {
-            widt = i;
-        }
-        else
-        {
-            if (window_list[i].depth > max_depth)
-            {
-                max_depth = window_list[i].depth;
-            }
-        }
-    }
-
-    window_list[widt].background = true;
-    for (int i = 0; i < window_count; i++)
-    {
-        if (window_list[i].used == false)
-        {
-            continue;
-        }
-        if (window_list[widt].depth < window_list[i].depth)
-        {
-            window_list[i].depth--;
-        }
-    }
-    window_list[widt].depth = max_depth;
+    auto raw = get_window(wid);
+    raw_window_data raw_stack = *raw;
+    size_t idx = get_window_id(wid);
+    window_list.remove(idx);
+    window_list.push_front(raw_stack);
 }
 void set_window_top_background(uint64_t wid)
 {
-    uint64_t max_depth = 0;
-    uint64_t widt = 0;
-
-    for (int i = 0; i < window_count; i++)
-    {
-        if (window_list[i].used == false)
-        {
-            continue;
-        }
-        if (window_list[i].wid == wid)
-        {
-            widt = i;
-        }
-        else
-        {
-            if (window_list[i].depth > max_depth && !window_list[i].background)
-            {
-                max_depth = window_list[i].depth;
-            }
-        }
-    }
-    window_list[widt].depth = max_depth;
+    auto raw = get_window(wid);
+    raw_window_data raw_stack = *raw;
+    size_t idx = get_window_id(wid);
+    window_list.remove(idx);
+    window_list.insert(1, raw_stack);
 }
+uint32_t next_wid = 10;
 
 uint64_t create_window(gui::graphic_system_service_protocol *request, uint64_t pid)
 {
-    for (int i = 0; i < MAX_WINDOW; i++)
+    raw_window_data targ = {0};
+
+    targ.pid = pid;
+    targ.width = request->create_window_info.width;
+    targ.height = request->create_window_info.height;
+    targ.px = last_window_x;
+    last_window_x += 10;
+    if (last_window_x > 100)
     {
-        if (window_list[i].used == false)
-        {
-            window_list[i].used = true;
-            window_count++;
-            window_list[i].pid = pid;
-            window_list[i].width = request->create_window_info.width;
-            window_list[i].height = request->create_window_info.height;
-            window_list[i].px = last_window_x;
-            last_window_x += 10;
-            if (last_window_x > 100)
-            {
-                last_window_y += 10;
-                last_window_x = 10;
-            }
-            last_window_y += 10;
-            window_list[i].should_redraw = true;
-            window_list[i].py = last_window_y;
-            window_list[i].window_name = request->create_window_info.name;
-            window_list[i].wid = i;
-            window_list[i].window_front_buffer = (gui::color *)sys::pmm_malloc_shared(request->create_window_info.width * request->create_window_info.height * sizeof(gui::color));
-            window_list[i].window_back_buffer = (gui::color *)sys::pmm_malloc_shared(request->create_window_info.width * request->create_window_info.height * sizeof(gui::color));
-            window_list[i].depth = 100;
-            set_window_on_top(window_list[i].wid);
-
-            return i;
-        }
+        last_window_y += 10;
+        last_window_x = 10;
     }
+    last_window_y += 10;
+    targ.should_redraw = true;
+    targ.py = last_window_y;
+    targ.window_name = request->create_window_info.name;
+    targ.wid = next_wid++;
+    targ.window_front_buffer = (gui::color *)sys::pmm_malloc_shared(request->create_window_info.width * request->create_window_info.height * sizeof(gui::color));
+    targ.window_back_buffer = (gui::color *)sys::pmm_malloc_shared(request->create_window_info.width * request->create_window_info.height * sizeof(gui::color));
+    window_list.push_back(targ);
+    set_window_on_top(targ.wid);
 
-    return -1;
+    return targ.wid;
 }
 
 uint64_t get_window_back_buffer(gui::graphic_system_service_protocol *request, uint64_t pid)
@@ -191,7 +118,8 @@ uint64_t get_window_back_buffer(gui::graphic_system_service_protocol *request, u
     {
         return -2;
     }
-    return (uint64_t)window_list[request->get_request.window_handler_code].window_back_buffer;
+    auto raw = get_window(request->get_request.window_handler_code);
+    return (uint64_t)raw->window_back_buffer;
 }
 
 uint64_t window_swap_buffer(gui::graphic_system_service_protocol *request, uint64_t pid)
@@ -200,8 +128,9 @@ uint64_t window_swap_buffer(gui::graphic_system_service_protocol *request, uint6
     {
         return -2;
     }
-    raw_window_data &target = window_list[request->get_request.window_handler_code];
-    swap_buffer(target.window_front_buffer, target.window_back_buffer, target.width * target.height);
+
+    auto raw = get_window(request->get_request.window_handler_code);
+    swap_buffer(raw->window_front_buffer, raw->window_back_buffer, raw->width * raw->height);
     return 1;
 }
 uint64_t get_window_position(gui::graphic_system_service_protocol *request, uint64_t pid)
@@ -210,11 +139,11 @@ uint64_t get_window_position(gui::graphic_system_service_protocol *request, uint
     {
         return -2;
     }
-    raw_window_data &target = window_list[request->get_request.window_handler_code];
+    auto raw = get_window(request->get_request.window_handler_code);
     sys::raw_pos pos = {0};
 
-    pos.rpos.x = target.px;
-    pos.rpos.y = target.py;
+    pos.rpos.x = raw->px;
+    pos.rpos.y = raw->py;
 
     return (uint64_t)pos.pos;
 }
@@ -224,17 +153,17 @@ uint64_t set_window_position(gui::graphic_system_service_protocol *request, uint
     {
         return -2;
     }
-    raw_window_data &target = window_list[request->get_request.window_handler_code];
+    auto raw = get_window(request->set_pos.window_handler_code);
 
-    target.px = request->set_pos.position.rpos.x;
-    target.py = request->set_pos.position.rpos.y;
-    if ((target.px + target.width) > get_scr_width())
+    raw->px = request->set_pos.position.rpos.x;
+    raw->py = request->set_pos.position.rpos.y;
+    if ((raw->px + raw->width) > get_scr_width())
     {
-        target.px = get_scr_width() - target.width;
+        raw->px = get_scr_width() - raw->width;
     }
-    if ((target.py + target.height) > get_scr_height())
+    if ((raw->py + raw->height) > get_scr_height())
     {
-        target.py = get_scr_height() - target.height;
+        raw->py = get_scr_height() - raw->height;
     }
     return 1;
 }
@@ -270,51 +199,34 @@ uint64_t window_depth_action(gui::graphic_system_service_protocol *request, uint
     }
     else
     {
-        return window_list[request->depth_request.window_handler_code].depth;
+
+        if (!valid_window(request->depth_request.window_handler_code, pid))
+        {
+            return -2;
+        }
+
+        auto raw = get_window_id(request->depth_request.window_handler_code);
+        return window_list.size() - raw - 1;
     }
 }
 
 void draw_all_window()
 {
-    if (window_count == 0)
+    for (int i = 0; i < window_list.size(); i++)
     {
 
-        return;
-    }
-    int current_window = window_count + 2;
-    while (current_window >= 0)
-    {
-        for (int i = 0; i < window_count; i++)
-        {
-
-            if (window_list[i].used == true && window_list[i].depth == current_window)
-            {
-
-                draw_window(window_list[i]);
-                break;
-            }
-        }
-        current_window--;
+        draw_window(window_list[i]);
     }
 }
 void update_mouse_in_window()
 {
-    int least_depth = 10000;
-    for (int i = 0; i < window_count; i++)
+    for (int i = window_list.size(); i > 0; i--)
     {
-        if (window_list[i].depth < least_depth)
+        if (is_mouse_in_window(&window_list[i]))
         {
-            bool is_in_window = is_mouse_in_window(window_list[i].wid);
-            if (is_in_window)
-            {
-                set_mouse_on_window(window_list[i].wid);
-                least_depth = window_list[i].depth;
-                if (least_depth == 0)
-                {
 
-                    break;
-                }
-            }
+            set_mouse_on_window(&window_list[i]);
+            break;
         }
     }
 }

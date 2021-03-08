@@ -3,6 +3,7 @@
 #include <gui/graphic_system.h>
 #include <gui/raw_graphic.h>
 #include <stdint.h>
+#include <utils/wvector.h>
 
 #define MAX_WINDOW 255
 
@@ -24,7 +25,7 @@ struct raw_window_data
     uint64_t depth;
 };
 void init_raw_windows();
-raw_window_data *get_window_list();
+utils::vector<raw_window_data> get_window_list();
 uint64_t get_window_list_count();
 
 void set_window_on_top(uint64_t wid);

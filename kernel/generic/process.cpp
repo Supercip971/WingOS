@@ -86,8 +86,8 @@ void utility_process()
                 dying_process_count--;
                 process_creator_lock.unlock();
             }
-                unlock_process();
-            }
+            unlock_process();
+        }
         sleep(100);
     }
 }

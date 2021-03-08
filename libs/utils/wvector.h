@@ -71,6 +71,16 @@ namespace utils
             buffer[last] = data;
         }
 
+        void push_front(vtype data)
+        {
+            const size_t last = sz;
+            increase();
+            for (size_t i = sz; i > 0; i--)
+            {
+                buffer[i] = buffer[i - 1];
+            }
+            buffer[0] = data;
+        }
         void clear()
         {
             if (buffer != nullptr)

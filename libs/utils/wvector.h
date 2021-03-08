@@ -81,6 +81,17 @@ namespace utils
             }
             buffer[0] = data;
         }
+        void insert(size_t idx, vtype data)
+        {
+            const size_t last = sz;
+            increase();
+            for (size_t i = sz; i > idx; i--)
+            {
+                buffer[i] = buffer[i - 1];
+            }
+            buffer[idx] = data;
+        }
+
         void clear()
         {
             if (buffer != nullptr)

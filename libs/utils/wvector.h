@@ -133,6 +133,7 @@ namespace utils
             }
             return buffer[idx];
         };
+
         const vtype get(size_t idx) const override
         {
             if (idx > sz)
@@ -170,6 +171,11 @@ namespace utils
         size_t size() const override
         {
             return sz;
+        }
+
+        size_t capacity() const
+        {
+            return allocated_size;
         }
     };
 } // namespace utils

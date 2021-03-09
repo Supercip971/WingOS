@@ -17,9 +17,30 @@ int wvector_create_check()
     }
     return 0;
 }
-int wvector_push_back_check(){
+int wvector_capacity_check()
+{
 
     utils::vector<uint8_t> vec = utils::vector<uint8_t>();
+    if (vec.capacity() != 0)
+    {
+        return -1; // not created vector must not take place in memory
+    }
+
+    vec.reserve(10);
+
+    if (vec.capacity() != 10)
+    {
+        return -2; // not created vector must not take place in memory
+    }
+
+    vec.clear();
+
+    if (vec.capacity() != 0)
+    {
+        return -3;
+    }
+    return 0;
+}
 int wvector_push_back_check()
 {
 

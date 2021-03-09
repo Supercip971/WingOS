@@ -28,6 +28,7 @@ unit_test v[] = {
     {"(utils) math.h", "max", "check for good return", max_check_utils},
     {"(utils) math.h", "min", "check for good return", min_check_utils},
     {"(utils) wvector.h", "vector", "creation test", wvector_create_check},
+    {"(utils) wvector.h", "vector", "capacity test", wvector_capacity_check},
     {"(utils) wvector.h", "vector", "push back test", wvector_push_back_check},
     {"(utils) wvector.h", "vector", "get test", wvector_get_check},
     {"(utils) wvector.h", "vector", "remove test", wvector_remove_check},

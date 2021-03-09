@@ -148,6 +148,20 @@ namespace utils
             return buffer;
         }
 
+        void reserve(size_t count)
+        {
+            if (buffer == nullptr)
+            {
+                create();
+            }
+            if (count > allocated_size)
+            {
+
+                allocated_size = sizeof(vtype) * count;
+                buffer = (vtype *)realloc((void *)buffer, allocated_size);
+            }
+        };
+
         ~vector()
         {
             clear();

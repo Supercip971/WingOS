@@ -113,6 +113,34 @@ int vsn_printf(bool just_print, char *buffer /* nullptr say no buffer just print
         else if (*format == 'i')
         {
             format++;
+            int d = va_arg(argument, int);
+            if (d == 0)
+            {
+                char c = '0';
+                vsn_printf_out(just_print, buffer, sizeof(c), &c);
+                written += 1;
+            }
+            else
+            {
+                for (int i = 0; i < 64; i++)
+                {
+                    temp_buf[i] = 0;
+                }
+                utils::int_to_string<int>(temp_buf, 'd', d);
+                size_t len = strlen(temp_buf);
+                if (maxrem < len)
+                {
+                    // TODO: Set errno to EOVERFLOW.
+                    return -1;
+                }
+                if (!vsn_printf_out(just_print, buffer, len, temp_buf))
+                    return -1;
+                written += len;
+            }
+        }
+        else if (*format == 'l')
+        {
+            format++;
             long d = va_arg(argument, long);
             if (d == 0)
             {

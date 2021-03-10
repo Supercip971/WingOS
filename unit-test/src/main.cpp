@@ -1,4 +1,5 @@
 
+#include "array_check.h"
 #include "math_check.h"
 #include "stdlib_check.h"
 #include "string_check.h"
@@ -27,12 +28,16 @@ unit_test v[] = {
     {"(libc) stdlib.h", "abs", "check for good return", abs_check},
     {"(utils) math.h", "max", "check for good return", max_check_utils},
     {"(utils) math.h", "min", "check for good return", min_check_utils},
+    {"(utils) warray.h", "array", "creation test", array_creation_check},
+    {"(utils) warray.h", "array", "access test", array_access_check},
+    {"(utils) warray.h", "array", "fill test", array_fill_check},
     {"(utils) wvector.h", "vector", "creation test", wvector_create_check},
     {"(utils) wvector.h", "vector", "capacity test", wvector_capacity_check},
     {"(utils) wvector.h", "vector", "push back test", wvector_push_back_check},
     {"(utils) wvector.h", "vector", "get test", wvector_get_check},
     {"(utils) wvector.h", "vector", "remove test", wvector_remove_check},
     {"(utils) wvector.h", "vector", "clear test", wvector_clear_check},
+
 };
 int main(int argc, char **argv)
 {

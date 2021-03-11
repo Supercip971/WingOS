@@ -4,6 +4,7 @@
 #include "stdlib_check.h"
 #include "string_check.h"
 #include "unit_test.h"
+#include "alloc_array_check.h"
 #include "vector_check.h"
 #include <plug/system_plug.h>
 #include <stdio.h>
@@ -37,6 +38,11 @@ unit_test v[] = {
     {"(utils) warray.h", "array", "creation test", array_creation_check},
     {"(utils) warray.h", "array", "access test", array_access_check},
     {"(utils) warray.h", "array", "fill test", array_fill_check},
+
+    {"(utils) alloc_array.h", "alloc_array", "creation test", alloc_array_creation_test },
+    {"(utils) alloc_array.h", "alloc_array", "alloc test", alloc_array_alloc_test },
+    {"(utils) alloc_array.h", "alloc_array", "free test", alloc_array_free_test },
+    {"(utils) alloc_array.h", "alloc_array", "foreach test", alloc_array_foreachentry_test },
 
     {"(utils) wvector.h", "vector", "creation test", wvector_create_check},
     {"(utils) wvector.h", "vector", "capacity test", wvector_capacity_check},

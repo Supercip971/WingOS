@@ -114,7 +114,7 @@ namespace utils
             }
             return buffer[idx];
         }
-        const vtype operator[](size_t idx) const
+        const vtype &operator[](size_t idx) const
         {
             if (idx > sz)
             {
@@ -134,7 +134,7 @@ namespace utils
             return buffer[idx];
         };
 
-        const vtype get(size_t idx) const override
+        const vtype &get(size_t idx) const override
         {
             if (idx > sz)
             {

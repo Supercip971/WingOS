@@ -2,7 +2,7 @@
 
 namespace utils
 {
-
+    // todo rewrite this 'thing'
     template <class T>
     inline void int_to_string(char *buf, int base, T d)
     {

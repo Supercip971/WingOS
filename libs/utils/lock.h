@@ -15,13 +15,14 @@ namespace utils
         bool raw;
 
     public:
-        lock_type() : raw(LOCK_FREE){
+        lock_type() : raw(LOCK_FREE){}; // by default the lock is free
 
-                      }; // by default the lock is free
         bool is_locked() const
         {
             bool res;
+
             __atomic_load(&raw, &res, __ATOMIC_SEQ_CST);
+
             return res;
         }
 
@@ -31,13 +32,14 @@ namespace utils
             {
                 asm volatile("pause"); // try to not burn the cpu
             }
+
             __sync_synchronize();
         };
         void unlock()
         {
             __sync_synchronize();
-
             __atomic_store_n(&raw, LOCK_FREE, __ATOMIC_SEQ_CST);
+
             raw = LOCK_FREE;
         };
     };

@@ -1,6 +1,7 @@
 #include "bitmap.h"
 #include <device/local_data.h>
 #include <logging.h>
+
 bitmap::bitmap(uint8_t *data, size_t size) : bitmap_size(size)
 {
     log("bitmap", LOG_INFO) << "creating bitmap " << (uint64_t)data << " of size " << size << "bit and " << size / 8 << "bytes";
@@ -8,6 +9,7 @@ bitmap::bitmap(uint8_t *data, size_t size) : bitmap_size(size)
     buffer = data;
     last_free = 0;
 }
+
 void bitmap::set(size_t idx, bool value)
 {
     if (idx > bitmap_size)
@@ -29,6 +31,7 @@ void bitmap::set(size_t idx, bool value)
         buffer[byte] &= ~(1 << (bit));
     }
 }
+
 bool bitmap::get(size_t idx) const
 {
     if (idx > bitmap_size)
@@ -44,16 +47,19 @@ bool bitmap::get(size_t idx) const
     size_t byte = idx / 8;
     return (buffer[byte] & (1 << (bit)));
 }
+
 size_t bitmap::find_free(size_t length)
 {
     size_t current_founded_length = 0;
     size_t current_founded_idx = 0;
+
     for (size_t i = last_free; i < bitmap_size; i++)
     {
         if (i == 0)
         {
             continue;
         }
+
         if (!get(i))
         {
             if (current_founded_length == 0)
@@ -67,12 +73,14 @@ size_t bitmap::find_free(size_t length)
             current_founded_length = 0;
             current_founded_idx = 0;
         }
+
         if (current_founded_length == length)
         {
             last_free = current_founded_idx + current_founded_length;
             return current_founded_idx;
         }
     }
+
     if (last_free == 0)
     {
         log("bitmap", LOG_WARNING) << "no free entry founded for the bitmap";
@@ -91,9 +99,9 @@ size_t bitmap::alloc(size_t length)
     if (v == 0)
     {
         log("bitmap", LOG_WARNING) << " can't allocate block count " << length;
-
         return 0;
     }
+
     if (set_used(v, length) == 0)
     {
         log("bitmap", LOG_WARNING) << " can't set used block count " << length;
@@ -102,6 +110,7 @@ size_t bitmap::alloc(size_t length)
 
     return v;
 }
+
 size_t bitmap::set_free(size_t idx, size_t length)
 {
     for (size_t i = 0; i < length; i++)
@@ -111,6 +120,7 @@ size_t bitmap::set_free(size_t idx, size_t length)
     last_free = idx;
     return 1;
 }
+
 size_t bitmap::set_used(size_t idx, size_t length)
 {
     for (size_t i = 0; i < length; i++)

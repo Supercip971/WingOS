@@ -6,6 +6,7 @@
 #include <utils/liballoc.h>
 #include <utils/string_util.h>
 
+unsigned long int cseed = 1;
 // not used and not tested
 int abs(int j)
 {
@@ -50,6 +51,7 @@ long atoi(const char *S)
 
     return num;
 }
+
 #ifdef __SSE__
 double atof(const char *s)
 {
@@ -108,6 +110,7 @@ double strtod(const char *nptr, char **endptr)
     return res;
 }
 #endif
+
 long long strtoll(const char *nptr, char **endptr, int base)
 {
 
@@ -173,6 +176,7 @@ long long strtoll(const char *nptr, char **endptr, int base)
     }
     return ret_value;
 }
+
 long strtol(const char *nptr, char **endptr, int base)
 {
 
@@ -243,8 +247,6 @@ extern "C" void __cxa_pure_virtual()
 {
     printf("error __cxa_pure_virtual() called");
 }
-
-unsigned long int cseed = 1;
 
 int rand()
 {

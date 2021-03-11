@@ -16,6 +16,7 @@ namespace utils
         error_type(const char *msg, error_class type, int subtype = 0);
 
         operator bool() const { return value == error_class::SUCCESS; };
+
         operator const char *() const { return msg; };
 
         const char *get_error_message()

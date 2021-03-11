@@ -3,6 +3,8 @@
 #include <stdint.h>
 
 #define MOUSE_FILE_BUFFER "/dev/mouse"
+#define KEYBOARD_FILE_BUFFER "/dev/keyboard"
+
 struct mouse_buff_info
 {
     int32_t mouse_x;
@@ -11,8 +13,6 @@ struct mouse_buff_info
     bool right;
     bool middle;
 } __attribute__((packed));
-
-#define KEYBOARD_FILE_BUFFER "/dev/keyboard"
 
 struct keyboard_buff_info
 {

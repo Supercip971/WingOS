@@ -15,7 +15,17 @@
     pour le moment tout ce qui est ici est un test
     for the moment everything here is for test
 */
+void show_art()
+{
 
+    log("kernel", LOG_INFO, ":::       ::: ::::::::::: ::::    :::  ::::::::         ::::::::   ::::::::");
+    log("kernel", LOG_INFO, ":+:       :+:     :+:     :+:+:   :+: :+:    :+:       :+:    :+: :+:    :+:");
+    log("kernel", LOG_INFO, "+:+       +:+     +:+     :+:+:+  +:+ +:+              +:+    +:+ +:+        ");
+    log("kernel", LOG_INFO, "+#+  +:+  +#+     +#+     +#+ +:+ +#+ :#:              +#+    +:+ +#++:++#++ ");
+    log("kernel", LOG_INFO, "+#+ +#+#+ +#+     +#+     +#+  +#+#+# +#+   +#+#       +#+    +#+        +#+ ");
+    log("kernel", LOG_INFO, " #+#+# #+#+#      #+#     #+#   #+#+# #+#    #+#       #+#    #+# #+#    #+# ");
+    log("kernel", LOG_INFO, "  ###   ###   ########### ###    ####  ########         ########   ########  ");
+}
 void test()
 {
     while (true)
@@ -37,15 +47,10 @@ void _start(stivale_struct *bootloader_data)
     launch_programm("initfs/test.exe", main_fs_system::the()->main_fs(), 0, nullptr);
     const char *argv[] = {"hello", "world"};
     launch_programm("initfs/test.exe", main_fs_system::the()->main_fs(), 2, argv);
+
     log("kernel", LOG_INFO, "==== KERNEL STARTED ====");
 
-    log("kernel", LOG_INFO, ":::       ::: ::::::::::: ::::    :::  ::::::::         ::::::::   ::::::::");
-    log("kernel", LOG_INFO, ":+:       :+:     :+:     :+:+:   :+: :+:    :+:       :+:    :+: :+:    :+:");
-    log("kernel", LOG_INFO, "+:+       +:+     +:+     :+:+:+  +:+ +:+              +:+    +:+ +:+        ");
-    log("kernel", LOG_INFO, "+#+  +:+  +#+     +#+     +#+ +:+ +#+ :#:              +#+    +:+ +#++:++#++ ");
-    log("kernel", LOG_INFO, "+#+ +#+#+ +#+     +#+     +#+  +#+#+# +#+   +#+#       +#+    +#+        +#+ ");
-    log("kernel", LOG_INFO, " #+#+# #+#+#      #+#     #+#   #+#+# #+#    #+#       #+#    #+# #+#    #+# ");
-    log("kernel", LOG_INFO, "  ###   ###   ########### ###    ####  ########         ########   ########  ");
+    show_art();
 
     log("kernel", LOG_INFO, "kernel started with: {} memory available ", get_total_memory() * PAGE_SIZE);
     log("kernel", LOG_INFO, "memory used: {}", get_used_memory() * PAGE_SIZE);

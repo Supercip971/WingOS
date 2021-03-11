@@ -15,6 +15,7 @@ namespace utils
             return b;
         }
     }
+
     template <class A>
     constexpr A min(const A a, const A b)
     {

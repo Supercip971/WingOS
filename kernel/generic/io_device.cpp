@@ -7,6 +7,7 @@ generic_io_device *get_io_device(uint64_t id)
 {
     return io_list[id];
 }
+
 void add_io_device(generic_io_device *dev)
 {
     add_device(dev);

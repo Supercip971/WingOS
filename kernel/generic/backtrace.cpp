@@ -1,8 +1,10 @@
 #include "backtrace.h"
 #include <logging.h>
+
 backtrace::backtrace()
 {
 }
+
 void backtrace::add_entry(const backtrace_entry_type added_entry)
 {
     if (entry[backtrace_max_entry_count - 1] != added_entry)
@@ -14,6 +16,7 @@ void backtrace::add_entry(const backtrace_entry_type added_entry)
         entry[backtrace_max_entry_count - 1] = added_entry;
     }
 }
+
 void backtrace::dump_backtrace()
 {
     for (int i = backtrace_max_entry_count - 1; i >= 0; i--)

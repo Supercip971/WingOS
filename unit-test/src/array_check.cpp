@@ -32,7 +32,7 @@ int array_access_check()
     {
         if (test[i] != i)
         {
-            return i - 4096;
+            return i + 4096;
         };
     }
 
@@ -47,7 +47,7 @@ int array_fill_check()
     {
         if (test[i] != 16)
         {
-            return i - 4096;
+            return i + 4096;
         };
     }
     return 0;

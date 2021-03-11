@@ -1,6 +1,8 @@
 #include "json_parser.h"
 #include <stdio.h>
 #include <string.h>
+
+// todo rewrite this shit
 namespace utils
 {
 
@@ -10,11 +12,9 @@ namespace utils
         if (type == JSON_INT)
         {
             return 0;
-            //   return stoi(vdata, nullptr);
         }
         else
         {
-            //     context.generate_error("error, trying to get a invalid json value type");
             return -1;
         }
     };
@@ -41,7 +41,6 @@ namespace utils
         if (type == JSON_FLOAT)
         {
             return 0;
-            //     return stof(vdata, nullptr);
         }
         else
         {
@@ -62,7 +61,6 @@ namespace utils
         }
         else
         {
-            //        context.generate_error("error, trying to get a invalid json value type");
             return false;
         }
     };
@@ -138,16 +136,13 @@ namespace utils
         {
             if (sub_storage[i]->storage_name != nullptr)
             {
-                //          context.log("%s", sub_storage[i]->storage_name);
                 if (strcmp(sub_storage[i]->storage_name, name) == 0)
                 {
                     return *sub_storage[i];
                 }
             }
         }
-        //context.generate_error("storage %s not founded", name);
-        while (true)
-            ;
+        return *sub_storage[0];
     }
 
     json_value json_storage::get_value()
@@ -227,7 +222,6 @@ namespace utils
                 {
 
                     printf("%s : %s = %s \n", "main", current_var_name, current_var_value);
-                    //   context.log("%s : %s = %s ", "main", current_var_name, current_var_value);
                 }
                 else
                 {

@@ -27,6 +27,7 @@ namespace utils
         array()
         {
         }
+
         array(const vtype new_value)
         {
             for (size_t i = 0; i < array_count; i++)
@@ -34,6 +35,7 @@ namespace utils
                 buffer[i] = new_value;
             }
         }
+
         array(const vtype &new_value)
         {
             for (size_t i = 0; i < array_count; i++)
@@ -41,6 +43,7 @@ namespace utils
                 buffer[i] = new_value;
             }
         }
+
         void fill(const vtype &value)
         {
             for (size_t i = 0; i < array_count; i++)
@@ -48,6 +51,7 @@ namespace utils
                 buffer[i] = value;
             }
         }
+
         vtype &operator[](size_t idx)
         {
 

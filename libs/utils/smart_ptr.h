@@ -4,7 +4,6 @@
 namespace utils
 {
     template <typename type>
-
     class unique_ptr
     {
         type *raw;
@@ -17,45 +16,52 @@ namespace utils
         {
             return *raw;
         }
+
         type get() const
         {
             return *raw;
         }
+
         const type *get_raw() const
         {
             return raw;
         }
+
         type *get_raw()
         {
             return raw;
         }
+
         template <typename ret_t>
         ret_t as()
         {
             return reinterpret_cast<ret_t>(raw);
         }
+
         type *operator->()
         {
             return raw;
         }
+
         const type *operator->() const
         {
             return raw;
         }
+
         unique_ptr &operator=(unique_ptr &&val)
         {
             raw = val.release();
             return *this;
         }
 
-        operator bool()
-        {
-            return raw;
-        }
-
         type &operator[](size_t idx)
         {
             return *(raw + idx);
+        }
+
+        operator bool()
+        {
+            return raw != nullptr;
         }
 
         type *release()
@@ -74,6 +80,7 @@ namespace utils
                 delete old;
             }
         }
+
         ~unique_ptr()
         {
             if (raw)

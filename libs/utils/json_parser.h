@@ -4,6 +4,7 @@
 #include <stdint.h>
 namespace utils
 {
+
     enum json_type
     {
         JSON_INT = 1,
@@ -12,11 +13,13 @@ namespace utils
         JSON_STRING,
         JSON_NULL
     };
+
     class json_value
     {
         bool is_loaded = false;
         json_type type;
         const char *vdata;
+
         void detect_type();
 
     public:
@@ -29,10 +32,13 @@ namespace utils
 
         template <typename T>
         T get_as();
+
         template <bool>
         bool get_as();
+
         template <const char *>
         const char *get_as();
+
         bool is_array();
 
         json_type get_type()
@@ -40,6 +46,7 @@ namespace utils
             return type;
         }
     };
+
     class json_storage
     {
         json_value val;
@@ -47,9 +54,12 @@ namespace utils
     public:
         const char *storage_name;
         const char *storage_value;
-        bool is_an_array;
-        json_storage *parent;
         vector<json_storage *> sub_storage;
+
+        bool is_an_array;
+
+        json_storage *parent;
+
         json_value get_value();
         json_storage &operator[](const char *name);
     };

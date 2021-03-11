@@ -10,7 +10,7 @@ int run_test(unit_test *test)
 {
     if (strcmp(test->lib_target, last_lib_target) != 0)
     {
-        printf("\033[94m * === lib %s === *\033[0m \n", test->lib_target);
+        printf("\n\n \033[94m * === lib %s === *\033[0m \n", test->lib_target);
         last_lib_target = test->lib_target;
     }
     if (strcmp(test->target, last_target) != 0)

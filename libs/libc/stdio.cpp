@@ -6,11 +6,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <utils/string_util.h>
+
 char temp_buf[64];
 
 FILE *stdin;
 FILE *stdout;
 FILE *stderr;
+
 int vsn_printf_out(bool just_print, char *buffer, uint64_t count, const char *data)
 {
     if (just_print == true)
@@ -225,6 +227,7 @@ int fseek(FILE *stream, long offset, int whence)
 {
     return plug::lseek(stream->file_element, offset, whence);
 }
+
 long ftell(FILE *stream)
 {
     return fseek(stream, 0, SEEK_CUR);

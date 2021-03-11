@@ -8,6 +8,7 @@ extern "C"
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
+
     int printf(const char *format, ...);
     int vsprintf(char *buffer, const char *format, va_list vlist);
     int sprintf(char *buffer, const char *format, ...);
@@ -23,11 +24,13 @@ extern "C"
     {
         int file_element;
     };
+
     typedef struct FILE FILE;
 
     extern FILE *stdin;
     extern FILE *stdout;
     extern FILE *stderr;
+
     FILE *fopen(const char *pathname, const char *mode);
     int fclose(FILE *stream);
 

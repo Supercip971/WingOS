@@ -1,4 +1,5 @@
-#pragma once
+#ifndef STDDEF_H
+#define STDDEF_H
 #include <stdint.h>
 #define NULL 0
 typedef uint64_t size_t;
@@ -7,4 +8,5 @@ typedef uint64_t size_t;
 #define wfinline __attribute__((unused))
 #else
 #define wfinline __attribute__((always_inline))
+#endif
 #endif

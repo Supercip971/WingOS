@@ -13,10 +13,12 @@ const char *device_type_to_str[] = {
     "clock",
     "debug",
 };
+
 const char *general_device::get_name() const
 {
     return "null device";
 }
+
 device_type general_device::get_type() const
 {
     return device_type::NULL_DEVICE;
@@ -39,6 +41,7 @@ uint32_t get_device_count()
 {
     return current_array_count;
 }
+
 template <class end_type>
 auto find_device() -> end_type *
 {
@@ -52,6 +55,7 @@ auto find_device() -> end_type *
     log("device", LOG_WARNING) << "no device with type " << (int)end_type::get_stype() << "founded";
     return static_cast<end_type *>(nullptr);
 }
+
 template general_keyboard *find_device();
 template interrupt_timer *find_device();
 template general_mouse *find_device();
@@ -77,6 +81,7 @@ generic_io_device::io_rw_output generic_io_device::read_unaligned(uint8_t *data,
     free(raw);
     return r;
 }
+
 generic_io_device::io_rw_output generic_io_device::write_unaligned(uint8_t *data, uint64_t count, uint64_t cursor)
 {
     uint64_t max_block_count = (((cursor % 512) + (count)) / 512) + 1;
@@ -115,11 +120,14 @@ size_t general_mouse::
         rlength = sizeof(mouse_buff_info) - buffer_idx;
     }
     mouse_buff_info info;
+
     info.mouse_x = get_mouse_x();
     info.mouse_y = get_mouse_y();
+
     info.left = get_mouse_button(0);
     info.right = get_mouse_button(1);
     info.middle = get_mouse_button(2);
+
     memcpy((uint8_t *)addr, (uint8_t *)&info + buffer_idx, rlength);
     return rlength;
 }

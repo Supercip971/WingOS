@@ -37,51 +37,61 @@ void log_print_element<>(void *element)
 {
     printf("0x%x", element);
 }
+
 template <>
 void log_print_element<>(const char *element)
 {
     printf(element);
 }
+
 template <>
 void log_print_element<>(char *element)
 {
     printf(element);
 }
+
 template <>
 void log_print_element<>(char element)
 {
     printf("%c", element);
 }
+
 template <>
 void log_print_element<>(range_str element)
 {
     find_device<debug_device>()->echo_out(element.rdata, element.rlength);
 }
+
 template <>
 void log_print_element<>(uint64_t element)
 {
     printf("0x%x", element);
 }
+
 template <>
 void log_print_element<>(uint32_t element)
 {
     printf("0x%x", element);
 }
+
 template <>
 void log_print_element<>(uint16_t element)
 {
     printf("0x%x", element);
 }
+
 template <>
 void log_print_element<>(uint8_t element)
 {
     printf("0x%x", element);
 }
+
 template <>
 void log_print_element<>(int element)
 {
     printf("%i", element);
 }
+
 template <>
 void log_print_element<>(long element)
 {
@@ -94,11 +104,13 @@ void slog(const char *msg)
     debug_device *dev = find_device<debug_device>();
     dev->echo_out(msg, strlen(msg));
 }
+
 void start_log()
 {
     log_locker.lock();
     lock_process();
 }
+
 void end_log()
 {
     unlock_process();
@@ -109,24 +121,31 @@ void logging::set_log_type(const char *data, log_state log_state)
 {
 
     const char *name = "kernel";
+
     if (process::current() != nullptr)
     {
         name = process::current()->get_name();
     }
+
     if (log_state > 4 || log_state == 3)
     {
         printf(log_type_table[LOG_FATAL], name, data);
         return;
     }
+
     printf(log_type_table[log_state], name, data);
 }
+
 logging::logging()
 {
 }
+
 logging::~logging()
 {
 }
+
 logging main_logging_system;
+
 logging log(const char *data, log_state color_mode)
 {
     logging log = logging();
@@ -141,12 +160,14 @@ logging logging::operator<<(void *data)
     printf(" %x ", data);
     return *this;
 }
+
 template <>
 logging logging::operator<<(char *data)
 {
     printf(data);
     return *this;
 }
+
 template <>
 logging logging::operator<<(const char *data)
 {
@@ -196,12 +217,14 @@ logging logging::operator<<<char>(char data)
     printf(" %c ", data);
     return *this;
 }
+
 template <>
 logging logging::operator<<<unsigned char>(unsigned char data)
 {
     printf(" %x ", data);
     return *this;
 }
+
 template <>
 logging logging::operator<<<range_str>(range_str data)
 {

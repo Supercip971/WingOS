@@ -102,7 +102,7 @@ int memcmp(const void *s1, const void *s2, size_t n)
     }
     return true;
 }
-void *memset(void *data, uint8_t value, size_t lenght)
+void *memset(void *data, int value, size_t lenght)
 {
     uint8_t *d = (uint8_t *)data;
     for (size_t i = 0; i < lenght; i++)

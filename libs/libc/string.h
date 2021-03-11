@@ -13,7 +13,7 @@ char *strncpy(char *dest, const char *src, size_t n);
 int memcmp(const void *s1, const void *s2, size_t n);
 void *memcpy(void *dest, const void *src, size_t length);
 void *memmove(void *dest, const void *src, size_t n);
-void *memset(void *data, uint8_t value, size_t lenght);
+void *memset(void *data, int value, size_t lenght);
 void *memchr(const void *s, int c, size_t n);
 
 #endif

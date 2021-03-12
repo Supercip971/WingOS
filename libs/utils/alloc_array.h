@@ -163,7 +163,7 @@ namespace utils
             if (!is_bounded(idx))
             {
                 printf("out of bound error\n");
-                return buffer[0].raw;
+                return false;
             }
             if (!buffer[idx].status)
             {

@@ -50,7 +50,6 @@ namespace utils
 
         alloc_array(const vtype new_value)
         {
-  	    auto new_value_tmp = move(new_value);
             for (size_t i = 0; i < array_count; i++)
             {
                 buffer[i].raw = new_value_tmp;

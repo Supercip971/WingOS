@@ -28,7 +28,7 @@ namespace utils
   template<typename t> constexpr
   decltype(auto) move(t&& val)
   {
-    return static_cast<remove_reference_t<t>>(val);
+    return static_cast<remove_reference_t<t>&&>(val);
   }
   
 }

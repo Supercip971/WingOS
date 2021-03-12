@@ -25,6 +25,10 @@ qemu-system-x86_64 -m [MEMORY] -s -device pvpanic -smp [CPU_CORES] -serial stdio
 ## Building:
 for building you can take a look at the [Build guide](./Build_guide.md)
 
+## Contributing to the libutils or libc without building the kernel
+if you want to contribute to the libc/libutils without having to build the kernel you can just edit the library and test it in the unit-test directory 
+this is for testing the library in a linux environment 
+
 ## Support: 
 
 - PCI

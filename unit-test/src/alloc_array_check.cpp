@@ -19,6 +19,25 @@ int alloc_array_creation_test(){
     }
     return 0;
 }
+
+int alloc_array_creation_fill_test() {
+    utils::alloc_array<int, 64> array(0);
+    if(array.size() != 64){
+        return -1;
+    }
+
+    if(array.allocated_element_count() != 0){
+        return -2;
+    }
+
+    for(int i= 0; i < 64;i++){
+        if(array.status(i) != false){
+            return i+1024;
+        }
+    }
+    return 0;  
+}
+
 int alloc_array_alloc_test(){
 
     utils::alloc_array<int, 1024> array;

@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <utils/container.h>
+#include <utils/type_traits.h>
 namespace utils
 {
 
@@ -49,24 +50,14 @@ namespace utils
 
         alloc_array(const vtype new_value)
         {
+  	    auto new_value_tmp = move(new_value);
             for (size_t i = 0; i < array_count; i++)
             {
-                buffer[i].raw = new_value;
+                buffer[i].raw = new_value_tmp;
                 buffer[i].status = false;
             }
             element_count = 0;
         }
-
-        alloc_array(const vtype &new_value)
-        {
-            for (size_t i = 0; i < array_count; i++)
-            {
-                buffer[i].raw = new_value;
-                buffer[i].status = false;
-            }
-            element_count = 0;
-        }
-
 
         vtype &operator[](size_t idx)
         {

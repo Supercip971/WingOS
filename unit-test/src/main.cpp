@@ -40,6 +40,7 @@ unit_test v[] = {
     {"(utils) warray.h", "array", "fill test", array_fill_check},
 
     {"(utils) alloc_array.h", "alloc_array", "creation test", alloc_array_creation_test },
+    {"(utils) alloc_array.h", "alloc_array", "creation fill test", alloc_array_creation_fill_test},
     {"(utils) alloc_array.h", "alloc_array", "alloc test", alloc_array_alloc_test },
     {"(utils) alloc_array.h", "alloc_array", "free test", alloc_array_free_test },
     {"(utils) alloc_array.h", "alloc_array", "foreach test", alloc_array_foreachentry_test },

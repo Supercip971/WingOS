@@ -14,20 +14,15 @@ namespace utils
     // it may be used instead of a vector for passing element by pointer without reallocating the buffer, it is important with smp, as a cpu can realloc a buffer when the second use it
     // we can use lock but i don't want to lock everything every time we just want to look something
 
-    template <typename T>
-    struct alloc_array_member
-    {
-        T raw;
-        bool status;
-    };
 
     template <typename vtype, size_t array_count>
     class alloc_array : public container<vtype>
     {
 
-        alloc_array_member<vtype> buffer[array_count];
-        size_t element_count;
-        size_t last_free;
+        vtype _buffer[array_count];
+        bool _status[array_count]; // maybe use a bitmap ? but if I use a bitmap the array_count must be a multiple of 8
+        size_t _element_count;
+        size_t _last_free;
         inline bool is_bounded(size_t val) const
         {
 
@@ -43,19 +38,19 @@ namespace utils
         {
             for (size_t i = 0; i < array_count; i++)
             {
-                buffer[i].status = false;
+                _status[i] = false;
             }
-            element_count = 0;
+            _element_count = 0;
         }
 
         alloc_array(const vtype new_value)
         {
             for (size_t i = 0; i < array_count; i++)
             {
-                buffer[i].raw = new_value;
-                buffer[i].status = false;
+                _buffer[i] = new_value;
+                _status[i] = false;
             }
-            element_count = 0;
+            _element_count = 0;
         }
 
         vtype &operator[](size_t idx)
@@ -64,14 +59,14 @@ namespace utils
             if (!is_bounded(idx))
             {
                 printf("out of bound error\n");
-                return buffer[0].raw;
+                return _buffer[0];
             }
-            if (buffer[idx].status)
+            if (_status[idx])
             {
-                return buffer[idx].raw;
+                return _buffer[idx];
             }
             printf("free idx error\n");
-            return buffer[0].raw;
+            return _buffer[0];
         }
 
         const vtype &operator[](size_t idx) const
@@ -79,14 +74,14 @@ namespace utils
             if (!is_bounded(idx))
             {
                 printf("out of bound error\n");
-                return buffer[0].raw;
+                return _buffer[0];
             }
-            if (buffer[idx].status)
+            if (_status[idx])
             {
-                return buffer[idx].raw;
+                return _buffer[idx];
             }
             printf("free idx error\n");
-            return buffer[0].raw;
+            return _buffer[0];
         }
 
         vtype &get(size_t idx) override
@@ -94,14 +89,14 @@ namespace utils
             if (!is_bounded(idx))
             {
                 printf("out of bound error\n");
-                return buffer[0].raw;
+                return _buffer[0];
             }
-            if (buffer[idx].status)
+            if (_status[idx])
             {
-                return buffer[idx].raw;
+                return _buffer[idx];
             }
             printf("free idx error\n");
-            return buffer[0].raw;
+            return _buffer[0];
         };
 
         const vtype &get(size_t idx) const override
@@ -109,9 +104,14 @@ namespace utils
             if (!is_bounded(idx))
             {
                 printf("out of bound error\n");
-                return buffer[0].raw;
+                return _buffer[0];
             }
-            return buffer[idx].raw;
+            if (_status[idx])
+            {
+                return _buffer[idx];
+            }
+            printf("free idx error\n");
+            return _buffer[0];
         };
 
         bool status(size_t idx)
@@ -122,12 +122,12 @@ namespace utils
                 printf("out of bound error\n");
                 return false;
             }
-            return buffer[idx].status;
+            return _status[idx];
         }
 
         vtype *raw()
         { // really not recommanded
-            return buffer;
+            return _buffer;
         }
 
         constexpr size_t size() const override
@@ -139,17 +139,17 @@ namespace utils
         {
             return array_count * sizeof(vtype);
         }
-        size_t allocated_element_count() const { return element_count; };
+        size_t allocated_element_count() const { return _element_count; };
 
         size_t alloc()
         {
 
             for (size_t i = 0; i < array_count; i++)
             {
-                if (buffer[i].status == false)
+                if (_status[i] == false)
                 {
-                    buffer[i].status = true;
-                    element_count++;
+                    _status[i] = true;
+                    _element_count++;
                     return i;
                 };
             }
@@ -165,13 +165,13 @@ namespace utils
                 printf("out of bound error\n");
                 return false;
             }
-            if (!buffer[idx].status)
+            if (!_status[idx])
             {
                 printf("error: trying to free an already free array element\n");
                 return false;
             }
-            element_count--;
-            buffer[idx].status = false;
+            _element_count--;
+            _status[idx] = false;
             return true;
         }
 
@@ -180,9 +180,9 @@ namespace utils
         {
             for (size_t i = 0; i < array_count; i++)
             {
-                if (buffer[i].status == true)
+                if (_status[i] == true)
                 {
-                    call(buffer[i].raw);
+                    call(_buffer[i]);
                 };
             }
             return true;

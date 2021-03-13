@@ -16,9 +16,9 @@ if you just want to try the os **without building** it, you can just install Qem
 
 configuration for running qemu: 
 
-[MEMORY] : recommanded memory: 4G | minimum: 2G
+[MEMORY] : recommended memory: 4G | minimum: 2G
 
-[CPU_CORES] : recommanded : 6 | minimum : 1 (warning: 1 cpu core is really slow)
+[CPU_CORES] : recommended : 6 | minimum : 1 (warning: 1 cpu core is really slow)
 ```
 qemu-system-x86_64 -m [MEMORY] -s -device pvpanic -smp [CPU_CORES] -serial stdio -enable-kvm -d cpu_reset -d guest_errors -hda [DISK_PATH] -nic user,model=e1000 -M q35 -cpu host 
 ```

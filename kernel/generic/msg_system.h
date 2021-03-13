@@ -5,10 +5,10 @@
 #include <string.h>
 #include <utils/alloc_array.h>
 #include <utils/config.h>
+#include <utils/raw_msg_system.h>
 #include <utils/smart_ptr.h>
 #include <utils/warray.h>
 #include <utils/wvector.h>
-#include <utils/raw_msg_system.h>
 union raw_msg_connection
 {
     uint32_t raw;
@@ -167,6 +167,5 @@ int deconnect(uint32_t id);
 
 size_t send(uint32_t id, const raw_msg_request *request, int flags);
 size_t receive(uint32_t id, raw_msg_request *request, int flags);
-
 
 #endif // MSG_SYSTEM_H

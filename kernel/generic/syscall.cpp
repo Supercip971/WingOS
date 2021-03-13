@@ -149,31 +149,39 @@ size_t sys$exit(int code)
     return 0;
 }
 
-int sys$ipc_server_exist(const char* path){
+int sys$ipc_server_exist(const char *path)
+{
     return service_exist(path);
 }
-int sys$create_server(const char* path){
+int sys$create_server(const char *path)
+{
     return create_msg_system(path, process::current()->get_pid());
 }
-uint32_t sys$connect_to_server(const char* path){
+uint32_t sys$connect_to_server(const char *path)
+{
     return connect(path, process::current()->get_pid());
 }
-uint32_t sys$accept_connection(int server_id){
+uint32_t sys$accept_connection(int server_id)
+{
     return accept_connection(server_id);
 }
 
-int sys$is_connection_accepted(uint32_t id){
+int sys$is_connection_accepted(uint32_t id)
+{
     return connection_accepted(id);
 }
 
-int sys$deconnect(uint32_t id){
+int sys$deconnect(uint32_t id)
+{
     return deconnect(id);
 }
 
-size_t sys$send(uint32_t id, const raw_msg_request *request, int flags){
+size_t sys$send(uint32_t id, const raw_msg_request *request, int flags)
+{
     return send(id, request, flags);
 }
-size_t sys$receive(uint32_t id, raw_msg_request *request, int flags){
+size_t sys$receive(uint32_t id, raw_msg_request *request, int flags)
+{
     return receive(id, request, flags);
 }
 static void *syscalls[] = {

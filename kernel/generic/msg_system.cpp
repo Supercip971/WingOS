@@ -296,7 +296,8 @@ int msg_system::receive(int connection_id, raw_msg_request request, int flags, s
             log("msg system", LOG_ERROR, "invalid connection receive {}", connection_id);
             return 0;
         }
-        if(connection->out_queue().get().size() == 0){
+        if (connection->out_queue().get().size() == 0)
+        {
             return 0;
         }
         auto last_msg = connection->out_queue().get_last_msg();
@@ -324,7 +325,8 @@ int msg_system::receive(int connection_id, raw_msg_request request, int flags, s
             log("msg system", LOG_ERROR, "invalid connection receive {}", connection_id);
             return 0;
         }
-        if(connection->in_queue().get().size() == 0){
+        if (connection->in_queue().get().size() == 0)
+        {
             return 0;
         }
         auto last_msg = connection->in_queue().get_last_msg();

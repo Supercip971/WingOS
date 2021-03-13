@@ -14,7 +14,6 @@ namespace utils
     // it may be used instead of a vector for passing element by pointer without reallocating the buffer, it is important with smp, as a cpu can realloc a buffer when the second use it
     // we can use lock but i don't want to lock everything every time we just want to look something
 
-
     template <typename vtype, size_t array_count>
     class alloc_array : public container<vtype>
     {

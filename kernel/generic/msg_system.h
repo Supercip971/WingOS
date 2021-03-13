@@ -8,12 +8,7 @@
 #include <utils/smart_ptr.h>
 #include <utils/warray.h>
 #include <utils/wvector.h>
-struct raw_msg_request
-{
-    bool valid;
-    size_t size;
-    uint8_t *data;
-};
+#include <utils/raw_msg_system.h>
 union raw_msg_connection
 {
     uint32_t raw;
@@ -172,5 +167,6 @@ int deconnect(uint32_t id);
 
 size_t send(uint32_t id, const raw_msg_request *request, int flags);
 size_t receive(uint32_t id, raw_msg_request *request, int flags);
+
 
 #endif // MSG_SYSTEM_H

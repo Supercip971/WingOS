@@ -1,6 +1,7 @@
 #include <device/local_data.h>
 #include <filesystem/file_system.h>
 #include <logging.h>
+#include <msg_system.h>
 #include <process.h>
 #include <programm_launcher.h>
 #include <syscall.h>
@@ -148,6 +149,33 @@ size_t sys$exit(int code)
     return 0;
 }
 
+int sys$ipc_server_exist(const char* path){
+    return service_exist(path);
+}
+int sys$create_server(const char* path){
+    return create_msg_system(path, process::current()->get_pid());
+}
+uint32_t sys$connect_to_server(const char* path){
+    return connect(path, process::current()->get_pid());
+}
+uint32_t sys$accept_connection(int server_id){
+    return accept_connection(server_id);
+}
+
+int sys$is_connection_accepted(uint32_t id){
+    return connection_accepted(id);
+}
+
+int sys$deconnect(uint32_t id){
+    return deconnect(id);
+}
+
+size_t sys$send(uint32_t id, const raw_msg_request *request, int flags){
+    return send(id, request, flags);
+}
+size_t sys$receive(uint32_t id, raw_msg_request *request, int flags){
+    return receive(id, request, flags);
+}
 static void *syscalls[] = {
     (void *)sys$null,
     (void *)sys$send_message,
@@ -166,6 +194,14 @@ static void *syscalls[] = {
     (void *)sys$getpid,
     (void *)sys$exec,
     (void *)sys$exit,
+    (void *)sys$ipc_server_exist,
+    (void *)sys$create_server,
+    (void *)sys$connect_to_server,
+    (void *)sys$accept_connection,
+    (void *)sys$is_connection_accepted,
+    (void *)sys$deconnect,
+    (void *)sys$send,
+    (void *)sys$receive,
 };
 
 uint64_t syscalls_length = sizeof(syscalls) / sizeof(void *);

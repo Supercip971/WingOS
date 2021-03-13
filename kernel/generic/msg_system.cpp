@@ -291,6 +291,14 @@ int msg_system::receive(int connection_id, raw_msg_request request, int flags, s
     if (by_pid == by_server_pid)
     {
         auto connection = get_connection(connection_id);
+        if (connection == nullptr)
+        {
+            log("msg system", LOG_ERROR, "invalid connection receive {}", connection_id);
+            return 0;
+        }
+        if(connection->out_queue().get().size() == 0){
+            return 0;
+        }
         auto last_msg = connection->out_queue().get_last_msg();
         size_t readed_length = utils::min(last_msg.size, request.size);
 
@@ -314,6 +322,9 @@ int msg_system::receive(int connection_id, raw_msg_request request, int flags, s
         if (connection == nullptr)
         {
             log("msg system", LOG_ERROR, "invalid connection receive {}", connection_id);
+            return 0;
+        }
+        if(connection->in_queue().get().size() == 0){
             return 0;
         }
         auto last_msg = connection->in_queue().get_last_msg();

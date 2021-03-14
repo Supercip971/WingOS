@@ -2,6 +2,7 @@
 #include "alloc_array_check.h"
 #include "array_check.h"
 #include "math_check.h"
+#include "smart_ptr_check.h"
 #include "stdlib_check.h"
 #include "string_check.h"
 #include "unit_test.h"
@@ -34,6 +35,13 @@ unit_test v[] = {
 
     {"(utils) math.h", "max", "check for good return", max_check_utils},
     {"(utils) math.h", "min", "check for good return", min_check_utils},
+
+    {"(utils) smart_ptr.h", "unique_ptr", "create/destroy test", unique_ptr_create_destroy_check},
+    {"(utils) smart_ptr.h", "unique_ptr", "raw() test", unique_ptr_raw_check},
+    {"(utils) smart_ptr.h", "unique_ptr", "operator test", unique_ptr_operator_check},
+    {"(utils) smart_ptr.h", "unique_ptr", "reset test", unique_ptr_reset_check},
+    {"(utils) smart_ptr.h", "unique_ptr", "release test", unique_ptr_release_check},
+    {"(utils) smart_ptr.h", "make unique", "make unique test", make_unique_check},
 
     {"(utils) warray.h", "array", "creation test", array_creation_check},
     {"(utils) warray.h", "array", "access test", array_access_check},

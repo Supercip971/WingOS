@@ -87,6 +87,7 @@ namespace utils
             if (raw)
             {
                 delete raw;
+                raw = nullptr;
             }
         }
     };

@@ -33,7 +33,8 @@ unit_test v[] = {
     {"(libc) string.h", "memset", "check for good memset", memset_check_0},
 
     {"(libc) stdlib.h", "abs", "check for good return", abs_check},
-
+    {"(libc) stdlib.h", "atoi", "check for good return", atoi_check },
+    
     {"(utils) math.h", "max", "check for good return", max_check_utils},
     {"(utils) math.h", "min", "check for good return", min_check_utils},
 

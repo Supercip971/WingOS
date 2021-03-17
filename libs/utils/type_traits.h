@@ -30,7 +30,7 @@ namespace utils
     {
         typedef T type;
     };
-    
+
     template <class T>
     struct remove_const<const T>
     {
@@ -42,7 +42,7 @@ namespace utils
     {
         typedef T type;
     };
-    
+
     template <class T>
     struct remove_volatile<volatile T>
     {

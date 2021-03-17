@@ -14,5 +14,5 @@ namespace utils
     {
     };
 
-} // namespace fth
+} // namespace utils
 #endif // IS_SAME_H

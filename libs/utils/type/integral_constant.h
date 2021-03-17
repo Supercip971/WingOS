@@ -18,6 +18,6 @@ namespace utils
     using true_type = integral_constant<bool, true>;
     using false_type = integral_constant<bool, false>;
 
-} // namespace fth
+} // namespace utils
 
 #endif // INTEGRAL_CONSTANT_H

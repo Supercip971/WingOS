@@ -11,7 +11,7 @@ namespace utils
     public:
         unique_ptr() : raw(nullptr){};
         unique_ptr(type *d) : raw(d){};
-        unique_ptr(unique_ptr&& move) : raw(move.release()){};
+        unique_ptr(unique_ptr &&move) : raw(move.release()){};
 
         type &get()
         {

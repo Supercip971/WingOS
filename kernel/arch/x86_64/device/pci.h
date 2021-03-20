@@ -1,4 +1,5 @@
 #pragma once
+#include <device/pci_device_code.h>
 #include <stdint.h>
 enum pci_bar_type
 {

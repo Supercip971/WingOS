@@ -122,8 +122,7 @@ setup_toolchain:
 
 .PHONY:setup_limine
 setup_limine:
-	-rm ./limine/limine-install
-	@make -C limine/ limine-install -j$(nproc)
+	
 
 .PHONY:first_setup
 first_setup: 
@@ -210,7 +209,6 @@ $(KERNEL_HDD): $(KERNEL_ELF)
 	-rm -rf $(KERNEL_HDD)
 	-mkdir build
 	bash ./make_disk.sh
-	limine/limine-install limine/limine.bin $(KERNEL_HDD)
 
 .PHONY:clean
 clean:

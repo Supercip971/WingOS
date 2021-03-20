@@ -26,6 +26,7 @@ sudo mount $LOOP_DISK_PARTIITION /mnt
 mkdir /mnt/initfs
 cp -r ./initfs/* /mnt/initfs/
 cp ./limine.cfg /mnt/limine.cfg
+cp ./limine/limine.sys /mnt/limine.sys
 cp ./kernel.elf /mnt/kernel.elf
 ls -la /mnt
 ls -la /mnt/initfs
@@ -36,4 +37,4 @@ sync
 
 fdisk -l $DISK
 
-limine/limine-install limine/limine.bin $DISK
+limine/limine-install-linux-x86_64 $DISK

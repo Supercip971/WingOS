@@ -1,6 +1,7 @@
 #include <device/local_data.h>
 #include <logging.h>
 #include <sse.h>
+#include <utils/config.h>
 #include <utils/lock.h>
 ASM_FUNCTION void sse_init(void);
 ASM_FUNCTION void avx_init(void);
@@ -42,9 +43,11 @@ uint32_t get_xsave_size()
                  : "a"(0xd), "c"(0));
     return ecx;
 }
+
 SSE_LOW_LEVEL_FUNC void init_xsave()
 {
 
+#ifdef USE_AVX
     if (has_xsave())
     {
 
@@ -58,6 +61,9 @@ SSE_LOW_LEVEL_FUNC void init_xsave()
         xsave_size = get_xsave_size();
         use_xsave = true;
     }
+#else
+    use_xsave = false;
+#endif
 }
 
 SSE_LOW_LEVEL_FUNC void init_sse()
@@ -68,7 +74,9 @@ SSE_LOW_LEVEL_FUNC void init_sse()
     sse_init();
     log("sse", LOG_INFO, "ss2");
 
+#ifdef USE_AVX
     init_xsave();
+#endif
     log("sse", LOG_INFO, "ss3");
     asm("fninit");
     sse_lock.unlock();

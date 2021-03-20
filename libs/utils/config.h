@@ -1,5 +1,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
+
+#define USE_AVX
+
 #define SERVER_MAX_CONNECTION 64
 #define MAX_SERVER_COUNT 64
 

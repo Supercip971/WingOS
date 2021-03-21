@@ -35,6 +35,17 @@ jobs:
           
           make first_setup
           make clean -j$(nproc)
+
+      - name: unit-test
+      - run: |
+          make -C ./unit-test/ run
+
+      - name: app 
+        run: |
+          make app -j$(nproc)
+
+      - name: disk 
+        run: |
           make disk -j$(nproc)
       
       - uses: actions/upload-artifact@v2

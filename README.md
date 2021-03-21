@@ -4,7 +4,6 @@
 ## WingOS:
 WingOS is a small hobbyist 64 bit kernel made with <3 in C++ 
 
-*oh and i'm 14 years old so sorry if the code is not the best code in the world.*
 ## Contact: 
 
 Email: supercyp@protonmail.com

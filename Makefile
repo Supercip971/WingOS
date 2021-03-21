@@ -208,7 +208,7 @@ $(KERNEL_ELF): $(COBJFILES) $(CXXOBJFILES) $(ASMOBJFILES) $(LINK_PATH)
 $(KERNEL_HDD): $(KERNEL_ELF) 
 	-rm -rf $(KERNEL_HDD)
 	-mkdir build
-	bash ./make_disk.sh
+	sudo bash ./make_disk.sh
 
 .PHONY:clean
 clean:

@@ -37,7 +37,7 @@ jobs:
           make clean -j$(nproc)
 
       - name: unit-test
-      - run: |
+        run: |
           make -C ./unit-test/ run
 
       - name: app 

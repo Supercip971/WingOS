@@ -3,11 +3,13 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <utils/container.h>
 #include <stdlib.h>
 #include <string.h>
 #include <utils/math.h>
 namespace utils
 {
+
     class buffer
     {
     public:
@@ -25,7 +27,9 @@ namespace utils
 
         virtual void destroy(){};
 
-        virtual bool is_seekable() const { return false; };
+        bool is_seekable() const { return false; }; // a buffer must not be seekable when it is const
+        virtual bool is_seekable() { return false; };
+
         virtual size_t cur() const = 0;
         virtual size_t seek(int target_index, int whence) = 0;
 
@@ -125,6 +129,7 @@ namespace utils
             data = (T *)malloc(size);
             current_data_size = size * sizeof(T);
             allocated_size = size * sizeof(T);
+            cursor = 0;
         }
         memory_buffer(const T *from_data, size_t size)
         {
@@ -132,14 +137,19 @@ namespace utils
             current_data_size = size;
             allocated_size = size;
             memcpy(data, from_data, size);
+            cursor = 0;
         }
 
         virtual void destroy() override
         {
-            free(data);
+            if (data)
+            {
+                free(data);
+                data = nullptr;
+            }
         }
 
-        virtual bool is_seekable() const override { return true; };
+        virtual bool is_seekable() override { return true; };
         virtual size_t cur() const override { return cursor; };
         virtual size_t seek(int target_index, int whence = SEEK_SET) override
         {

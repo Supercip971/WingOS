@@ -56,6 +56,11 @@ namespace utils
         {
             return buffer;
         }
+        const vtype *raw() const
+        {
+            return buffer;
+        }
+
         ~vector()
         {
             clear();

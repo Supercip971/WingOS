@@ -9,4 +9,5 @@ typedef uint64_t size_t;
 #else
 #define wfinline __attribute__((always_inline))
 #endif
+typedef decltype(nullptr) nullptr_t;
 #endif

@@ -1,5 +1,6 @@
 sysroot/
 build/
+mnt/
 cross_compiler/
 vscode/
 .vscode/

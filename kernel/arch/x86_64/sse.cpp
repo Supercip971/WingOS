@@ -70,19 +70,14 @@ SSE_LOW_LEVEL_FUNC void init_sse()
 {
     sse_lock.lock();
 
-    log("sse", LOG_INFO, "ss1");
     sse_init();
-    log("sse", LOG_INFO, "ss2");
 
 #ifdef USE_AVX
     init_xsave();
 #endif
-    log("sse", LOG_INFO, "ss3");
     asm("fninit");
     sse_lock.unlock();
-    log("sse", LOG_INFO, "ss4");
     asm_avx_save((uintptr_t)(fpu_data));
-    log("sse", LOG_INFO, "ss5");
 }
 
 SSE_LOW_LEVEL_FUNC void save_sse_context(uint64_t *context)

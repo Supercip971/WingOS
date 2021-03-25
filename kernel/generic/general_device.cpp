@@ -14,22 +14,12 @@ const char *device_type_to_str[] = {
     "debug",
 };
 
-const char *general_device::get_name() const
-{
-    return "null device";
-}
-
-device_type general_device::get_type() const
-{
-    return device_type::NULL_DEVICE;
-}
-
 void add_device(general_device *dev)
 {
     device_array[current_array_count] = dev;
     dev->device_id = current_array_count;
     current_array_count++;
-    log("device", LOG_INFO) << "added device " << current_array_count - 1 << " ' " << dev->get_name() << " ' type : " << device_type_to_str[dev->get_type()];
+    log("device", LOG_INFO, "added device {}: '{}', type: {}", current_array_count - 1, dev->get_name(), device_type_to_str[dev->get_type()]);
 }
 
 general_device *get_device(uint32_t id)

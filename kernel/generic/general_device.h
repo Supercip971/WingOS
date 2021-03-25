@@ -32,9 +32,9 @@ extern auto find_device() -> end_type *;
 class general_device
 {
 public:
-    virtual const char *get_name() const;
-    virtual device_type get_type() const;
-    virtual ~general_device(){};
+    virtual const char *get_name() const { return "null device"; };
+    virtual device_type get_type() const { return device_type::NULL_DEVICE; };
+    virtual ~general_device() = default;
     uint32_t device_id;
 };
 

@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 
 int integral_constant_check();
 int integral_constant_false_check();

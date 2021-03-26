@@ -19,9 +19,9 @@ GCC_FLAGS := \
 	-O0 \
 	-m64 \
 	-Wall \
-        -fno-rtti \
+	-fno-rtti \
 	-Werror \
-  	-pthread \
+  -pthread \
 	-I./src/ \
 	-I../libs/ \
 	-std=c++14 \

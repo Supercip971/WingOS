@@ -1,16 +1,18 @@
 
 #include "alloc_array_check.h"
 #include "array_check.h"
+#include "bit_check.h"
 #include "math_check.h"
 #include "smart_ptr_check.h"
 #include "stdlib_check.h"
 #include "string_check.h"
+#include "type_trait_check.h"
 #include "unit_test.h"
 #include "vector_check.h"
-#include "type_trait_check.h"
 #include <plug/system_plug.h>
 #include <stdio.h>
 #include <string.h>
+bool try_to_exit = false;
 int test()
 {
     return 1;
@@ -33,22 +35,25 @@ unit_test v[] = {
     {"(libc) string.h", "memset", "check for good memset", memset_check_0},
 
     {"(libc) stdlib.h", "abs", "check for good return", abs_check},
-    {"(libc) stdlib.h", "atoi", "check for good return", atoi_check },
-    
+    {"(libc) stdlib.h", "atoi", "check for good return", atoi_check},
+
+    {"(utils) bit.h", "get_bit", "check for get_bit()", get_bit_check},
+    {"(utils) bit.h", "set_bit", "check for set_bit()", set_bit_check},
+
     {"(utils) math.h", "max", "check for good return", max_check_utils},
     {"(utils) math.h", "min", "check for good return", min_check_utils},
 
-    {"(utils) integral_constant.h", "integral_constant", "check for valid class value", integral_constant_check },
-    {"(utils) integral_constant.h", "true_type", "check for valid true constant value", integral_constant_false_check },
-    {"(utils) integral_constant.h", "false_type", "check for valid false constant value", integral_constant_true_check },
-    
+    {"(utils) integral_constant.h", "integral_constant", "check for valid class value", integral_constant_check},
+    {"(utils) integral_constant.h", "true_type", "check for valid true constant value", integral_constant_false_check},
+    {"(utils) integral_constant.h", "false_type", "check for valid false constant value", integral_constant_true_check},
+
     {"(utils) type/is_same.h", "is_same", "check for true return", is_same_check_true},
     {"(utils) type/is_same.h", "is_same", "check for false return", is_same_check_false},
-    
-    {"(utils) type_traits.h", "remove_reference", "check for good return", remove_reference_check },
-    {"(utils) type_traits.h", "remove_const", "check for good return", remove_const_check },
-    {"(utils) type_traits.h", "remove_volatile", "check for good return", remove_volatile_check },
-    {"(utils) type_traits.h", "remove_pointer", "check for good return", remove_pointer_check },
+
+    {"(utils) type_traits.h", "remove_reference", "check for good return", remove_reference_check},
+    {"(utils) type_traits.h", "remove_const", "check for good return", remove_const_check},
+    {"(utils) type_traits.h", "remove_volatile", "check for good return", remove_volatile_check},
+    {"(utils) type_traits.h", "remove_pointer", "check for good return", remove_pointer_check},
 
     {"(utils) smart_ptr.h", "unique_ptr", "create/destroy test", unique_ptr_create_destroy_check},
     {"(utils) smart_ptr.h", "unique_ptr", "raw() test", unique_ptr_raw_check},
@@ -79,11 +84,12 @@ int main(int argc, char **argv)
 {
     int error_count = 0;
     int test_count = 0;
-    plug::init();
+    plug_init();
     for (size_t i = 0; i < sizeof(v) / sizeof(v[0]); i++)
     {
-        if (run_test(&v[i]) != 0)
+        if (run_test(&v[i]) != 0 || try_to_exit)
         {
+            try_to_exit = false;
             error_count++;
             return error_count;
         }

@@ -43,7 +43,7 @@ extern bool try_to_exit;
 
         return (uintptr_t)p2;
     }
-    bool plug_free_page(uintptr_t addr, size_t count)
+    int plug_free_page(uintptr_t addr, size_t count)
     {
          munmap( (void*)addr, count * page_size );
         return true;

@@ -9,7 +9,7 @@
 #include <smp.h>
 #include <stdint.h>
 #include <virtual.h>
-
+class page_table;
 class cpu
 {
 public:
@@ -29,7 +29,7 @@ public:
     uint8_t syscall_stack[stack_size] PAGE_ALIGN;
 
     uint64_t lapic_id;
-    main_page_table *page_table;
+    page_table *cpu_page_table;
 
     uint64_t fpu_data[128] __attribute__((aligned(16)));
 

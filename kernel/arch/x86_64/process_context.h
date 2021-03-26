@@ -4,7 +4,7 @@
 #include <device/local_data.h>
 #include <process.h>
 #include <stdint.h>
-struct process;
+class process;
 void send_switch_process_to_all_cpu();
 
 uintptr_t switch_context(InterruptStackFrame *current_Isf, process *next);

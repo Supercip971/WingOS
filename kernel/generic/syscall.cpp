@@ -83,7 +83,7 @@ void *sys$alloc(uint64_t count, uint8_t flag)
 
         for (uint64_t i = 0; i < count; i++)
         {
-            map_page((uintptr_t)res + i * PAGE_SIZE, get_usr_addr(res) + i * PAGE_SIZE, PAGE_TABLE_FLAGS);
+            map_page((uintptr_t)res + i * PAGE_SIZE, get_usr_addr(res) + i * PAGE_SIZE, true, true);
         }
         update_paging();
         return (void *)get_usr_addr(res);

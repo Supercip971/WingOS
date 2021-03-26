@@ -29,14 +29,14 @@ void add_thread_map(process *p, uintptr_t from, uintptr_t to, uint64_t length)
 {
     for (uint64_t i = 0; i < length; i++)
     {
-        map_page((uint64_t *)p->get_arch_info()->page_directory, from + i * PAGE_SIZE, to + i * PAGE_SIZE, PAGE_TABLE_FLAGS);
+        map_page(p->get_arch_info()->page_directory, from + i * PAGE_SIZE, to + i * PAGE_SIZE, true, true);
     }
 }
 void task_update_switch(process *next)
 {
     tss_set_rsp0((uint64_t)next->get_arch_info()->stack + PROCESS_STACK_SIZE);
 
-    get_current_cpu()->page_table = (uint64_t *)next->get_arch_info()->page_directory;
+    get_current_cpu()->cpu_page_table = next->get_arch_info()->page_directory;
     update_paging();
 }
 
@@ -123,11 +123,11 @@ void init_process_paging(process *pro, bool is_user)
 {
     if (is_user)
     {
-        pro->get_arch_info()->page_directory = (uint64_t)new_vmm_page_dir();
+        pro->get_arch_info()->page_directory = new_vmm_page_dir();
     }
     else
     {
-        pro->get_arch_info()->page_directory = (uint64_t)get_current_cpu()->page_table;
+        pro->get_arch_info()->page_directory = get_current_cpu()->cpu_page_table;
     }
 }
 

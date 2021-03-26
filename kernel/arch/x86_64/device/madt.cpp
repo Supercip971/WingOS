@@ -96,8 +96,8 @@ void madt::init()
     uintptr_t lbase_addr = lapic_base;
     lbase_addr = ALIGN_UP(lbase_addr, PAGE_SIZE);
 
-    map_page(lbase_addr, lbase_addr, 0x03);
-    map_page(lbase_addr + PAGE_SIZE, lbase_addr + PAGE_SIZE, 0x03);
+    map_page(lbase_addr, lbase_addr, true, false);
+    map_page(lbase_addr + PAGE_SIZE, lbase_addr + PAGE_SIZE, true, false);
 
     log_all();
 }

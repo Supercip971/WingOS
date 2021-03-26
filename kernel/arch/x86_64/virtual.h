@@ -100,11 +100,7 @@ void update_paging();
 int map_page(page_table *table, uint64_t phys_addr, uint64_t virt_addr, bool is_writable, bool is_user);
 
 int map_page(uint64_t phys_addr, uint64_t virt_addr, bool is_writable, bool is_user);
-uint64_t alloc_map_page(page_table *table, uint64_t phys_addr, uint64_t flags);
-uint64_t alloc_map_region(page_table *table, uint64_t phys_addr, uint64_t count, uint64_t flags);
 
 uint64_t get_physical_addr(uint64_t virt);
 page_table *new_vmm_page_dir();
 void init_vmm(stivale_struct *bootdata);
-
-uintptr_t alloc_vmm_page(size_t length);

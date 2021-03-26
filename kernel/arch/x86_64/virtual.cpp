@@ -31,10 +31,6 @@ page_table *page_table::get_entry(page_table *table, uint64_t entry)
 
 page_table *page_table::create_entry(page_table *table, uint64_t entry, bool is_writable, bool is_user)
 {
-    if (table[entry].is_present())
-    {
-        return nullptr;
-    }
 
     page_table *ret = get_mem_addr<page_table *>(pmm_alloc_zero(1));
     table[entry] = page_table::create(get_rmem_addr(ret), is_writable, is_user);

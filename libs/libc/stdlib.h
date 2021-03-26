@@ -3,6 +3,28 @@
 #include <stddef.h>
 #include <stdint.h>
 
+typedef struct
+{
+    int quot;
+    int rem;
+} div_t;
+
+typedef struct
+{
+    long quot;
+    long rem;
+} ldiv_t;
+
+typedef struct
+{
+    long long quot;
+    long long rem;
+} lldiv_t;
+
+div_t div(int numerator, int denominator);
+ldiv_t ldiv(long numerator, long denominator);
+lldiv_t lldiv(long long numerator, long long denominator);
+
 int abs(int j);
 long labs(long j);
 long long llabs(long long j);

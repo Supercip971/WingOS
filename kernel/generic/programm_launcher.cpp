@@ -112,20 +112,19 @@ void read_elf_section_header(uint8_t *data)
     Elf64_Shdr *p_entry = reinterpret_cast<Elf64_Shdr *>((uintptr_t)data + programm_header->e_shoff);
     for (int table_entry = 0; table_entry < programm_header->e_shnum; table_entry++)
     {
-        log("prog launcher", LOG_INFO) << "detected sh entry : " << p_entry[table_entry].sh_type;
+        log("prog launcher", LOG_INFO, "detected sh entry: {}", p_entry[table_entry].sh_type);
         if (p_entry[table_entry].sh_type == SHT_SYMTAB)
         {
             Elf64_Sym *entry = reinterpret_cast<Elf64_Sym *>(data + p_entry[table_entry].sh_offset);
 
             for (uint64_t sym_entry_idx = 0; sym_entry_idx < p_entry[table_entry].sh_size / sizeof(Elf64_Sym); sym_entry_idx++)
             {
-                log("prog launcher", LOG_INFO) << "[sht symtab]" << sym_entry_idx
-                                               << " name : " << entry[sym_entry_idx].st_name;
+                log("prog launcher", LOG_INFO, "[sht symtab] {} name: {}", sym_entry_idx, entry[sym_entry_idx].st_name);
 
                 if (entry[sym_entry_idx].st_name != 0)
                 {
                     char *res = elf_to_readable_string((read_elf_string_entry(data, entry[sym_entry_idx].st_name)));
-                    log("prog launcher", LOG_INFO) << "final name : " << res;
+                    log("prog launcher", LOG_INFO, "final name: {}", res);
                     free(res);
                 }
             }
@@ -172,7 +171,7 @@ void elf64_load_entry(Elf64_Phdr *entry, uint8_t *programm_code, process *target
     else
     {
 
-        log("prog launcher", LOG_ERROR) << "not supported entry type : " << entry->p_type;
+        log("prog launcher", LOG_ERROR, "not supported entry type: {}", entry->p_type);
     }
 }
 
@@ -180,7 +179,7 @@ uint64_t launch_programm(const char *path, file_system *file_sys, int argc, cons
 {
     file_sys->fs_lock.lock(); // make sure that the fs lock is locked
     lock_process();
-    log("prog launcher", LOG_DEBUG) << "launching programm : " << path;
+    log("prog launcher", LOG_DEBUG, "launching programm: {}", path);
     uint8_t *programm_code = file_sys->read_file(path);
 
     if (programm_code == nullptr)
@@ -191,7 +190,7 @@ uint64_t launch_programm(const char *path, file_system *file_sys, int argc, cons
     Elf64_Ehdr *programm_header = reinterpret_cast<Elf64_Ehdr *>(programm_code);
     if (!valid_elf_entry(programm_header))
     {
-        log("prog launcher", LOG_ERROR) << "not valid elf64 entry";
+        log("prog launcher", LOG_ERROR, "not valid elf64 entry");
         return -1;
     }
     char **end_argv = (char **)malloc(sizeof(char *) * argc + 1);
@@ -231,7 +230,7 @@ size_t launch_programm_usr(programm_exec_info *info)
     Elf64_Ehdr *programm_header = reinterpret_cast<Elf64_Ehdr *>(programm_code);
     if (!valid_elf_entry(programm_header))
     {
-        log("prog launcher", LOG_ERROR) << "not valid elf64 entry";
+        log("prog launcher", LOG_ERROR, "not valid elf64 entry");
         return -1;
     }
     char **end_argv = (char **)malloc(sizeof(char *) * info->argc + 1);

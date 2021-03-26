@@ -36,7 +36,7 @@ void setup_gdt_descriptors(gdt_descriptor_array<GDT_DESCRIPTORS> *target, uintpt
 
 void __attribute__((optimize("O0"))) setup_gdt()
 {
-    log("gdt", LOG_DEBUG) << "loading gdt";
+    log("gdt", LOG_DEBUG, "loading gdt");
 
     uintptr_t tss_base = (uintptr_t)&get_current_cpu()->ctss;
     uintptr_t tss_limit = tss_base + sizeof(get_current_cpu()->ctss);
@@ -63,12 +63,12 @@ void tss_init(uint64_t i)
 void gdt_ap_init()
 {
 
-    log("gdt ap", LOG_DEBUG) << "loading gdt for ap";
+    log("gdt ap", LOG_DEBUG, "loading gdt for ap");
 
     uintptr_t tss_base = (uintptr_t)&get_current_cpu()->ctss;
     uintptr_t tss_limit = tss_base + sizeof(get_current_cpu()->ctss);
 
-    log("gdt ap", LOG_INFO) << "resetting gdt";
+    log("gdt ap", LOG_INFO, "resetting gdt");
 
     setup_gdt_descriptors(&gdt_descriptors[get_current_cpu_id()], tss_base, tss_limit);
 

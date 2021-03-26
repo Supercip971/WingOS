@@ -25,7 +25,7 @@ file_system *main_fs_system::main_fs()
     file_system *fs = from_partition(0);
     if (fs == nullptr)
     {
-        log("main fs", LOG_INFO) << "ow ow";
+        log("main fs", LOG_INFO, "no valid partition founded");
     }
     return fs;
 }
@@ -37,23 +37,23 @@ void main_fs_system::init_file_system()
     {
         file_systems[i] = nullptr;
     }
-    log("main fs", LOG_DEBUG) << "loading main fs";
+    log("main fs", LOG_DEBUG, "loading main fs");
     MBR_partition *mbr = new MBR_partition();
     mbr->init();
     partition_system = (base_partition *)mbr;
     for (int i = 0; i <= mbr->get_parition_count(); i++)
     {
-        log("main fs", LOG_INFO) << "checking partition entry" << i;
+        log("main fs", LOG_INFO, "checking partition entry: {}", i);
         if (echfs::is_valid_echfs_entry(mbr->get_partition_start(i)))
         {
-            log("main fs", LOG_INFO) << "entry " << i << "is an echfs entry";
+            log("main fs", LOG_INFO, "entry: {} is an echfs entry", i);
             echfs *ech_file_sys = new echfs();
             file_systems[i] = dynamic_cast<file_system *>(ech_file_sys);
             file_systems[i]->init(mbr->get_partition_start(i), mbr->get_partition_length(i));
         }
         else if (ext2fs::is_valid_ext2fs_entry(mbr->get_partition_start(i)))
         {
-            log("main fs", LOG_INFO) << "entry " << i << "is an ext2fs entry";
+            log("main fs", LOG_INFO, "entry: {} is an ext2fs entry", i);
             ext2fs *ext_file_sys = new ext2fs();
             file_systems[i] = dynamic_cast<file_system *>(ext_file_sys);
             file_systems[i]->init(mbr->get_partition_start(i), mbr->get_partition_length(i));
@@ -61,7 +61,7 @@ void main_fs_system::init_file_system()
         else
         {
 
-            log("main fs", LOG_WARNING) << "entry " << i << "is not a valid entry";
+            log("main fs", LOG_INFO, "entry: {} is not a usable entry", i);
         }
     }
 }

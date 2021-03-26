@@ -4,7 +4,7 @@
 
 bitmap::bitmap(uint8_t *data, size_t size) : bitmap_size(size)
 {
-    log("bitmap", LOG_INFO) << "creating bitmap " << (uint64_t)data << " of size " << size << "bit and " << size / 8 << "bytes";
+    log("bitmap", LOG_INFO, "creating bitmap: {} of size: {} bit and {} bytes", (uint64_t)data, size, size / 8);
     memset(data, 0xff, size / 8);
     buffer = data;
     last_free = 0;
@@ -14,7 +14,7 @@ void bitmap::set(size_t idx, bool value)
 {
     if (idx > bitmap_size)
     {
-        log("bitmap", LOG_ERROR) << "trying to set out of bound of the bitmap" << idx << " > " << bitmap_size;
+        log("bitmap", LOG_ERROR, "trying to set out of bound of the bitmap: {} > {}", idx, bitmap_size);
 
         log("bitmap", LOG_INFO, "call stack: for {}", process::current()->get_name());
         process::current()->get_backtrace().dump_backtrace();
@@ -36,7 +36,7 @@ bool bitmap::get(size_t idx) const
 {
     if (idx > bitmap_size)
     {
-        log("bitmap", LOG_ERROR) << "trying to read out of bound of the bitmap" << idx << " > " << bitmap_size;
+        log("bitmap", LOG_ERROR, "trying to read out of bound of the bitmap: {} > {}", idx, bitmap_size);
 
         log("bitmap", LOG_INFO, "call stack: for {}", process::current()->get_name());
         process::current()->get_backtrace().dump_backtrace();
@@ -83,7 +83,7 @@ size_t bitmap::find_free(size_t length)
 
     if (last_free == 0)
     {
-        log("bitmap", LOG_WARNING) << "no free entry founded for the bitmap";
+        log("bitmap", LOG_WARNING, "no free entry founded for the bitmap");
         return 0;
     }
     else
@@ -98,13 +98,13 @@ size_t bitmap::alloc(size_t length)
     size_t v = find_free(length);
     if (v == 0)
     {
-        log("bitmap", LOG_WARNING) << " can't allocate block count " << length;
+        log("bitmap", LOG_WARNING, "can't allocate block count: {}", length);
         return 0;
     }
 
     if (set_used(v, length) == 0)
     {
-        log("bitmap", LOG_WARNING) << " can't set used block count " << length;
+        log("bitmap", LOG_WARNING, "can't set used block count: {} ", length);
         return 0;
     }
 

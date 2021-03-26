@@ -83,13 +83,13 @@ void ps_mouse::init()
     mouse_x_offset = 0;
     mouse_y = 0;
     mouse_y_offset = 0;
-    log("ps2 mouse", LOG_DEBUG) << "loading ps2 mouse";
+    log("ps2 mouse", LOG_DEBUG, "loading ps2 mouse");
 
-    log("ps2 mouse", LOG_INFO) << "turning on mouse";
+    log("ps2 mouse", LOG_INFO, "turning on mouse");
     wait(true);
     outb(0x64, 0xA8);
 
-    log("ps2 mouse", LOG_INFO) << "turning on mouse interrupt";
+    log("ps2 mouse", LOG_INFO, "turning on mouse interrupt");
 
     wait(true);
     outb(0x64, 0x20);
@@ -103,13 +103,13 @@ void ps_mouse::init()
     wait(true);
     outb(0x60, current_setting);
 
-    log("ps2 mouse", LOG_INFO) << "reset mouse settings ";
+    log("ps2 mouse", LOG_INFO, "reset mouse settings");
 
     // reset mouse to default
     write(0xF6);
     read();
 
-    log("ps2 mouse", LOG_INFO) << "enable mouse data receiving";
+    log("ps2 mouse", LOG_INFO, "enable mouse data receiving");
     // enable data receiving
     write(0xF4);
     read();

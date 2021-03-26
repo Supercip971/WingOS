@@ -86,7 +86,7 @@ void add_irq_handler(irq_handler_func func, uint8_t irq_target)
             return;
         }
     }
-    log("int", LOG_ERROR) << "can't add irq id " << irq_target;
+    log("int", LOG_ERROR, "can't add irq id: {}", irq_target);
 }
 
 void call_irq_handlers(unsigned int irq, InterruptStackFrame *isf)
@@ -113,7 +113,7 @@ void init_irq_handlers()
 void init_idt()
 {
 
-    log("idt", LOG_INFO) << "loading idt table";
+    log("idt", LOG_INFO, "loading idt table...");
     for (int i = 0; i < 32 + 48; i++)
     {
         idt[i] = idt_entry((void *)__interrupt_vector[i], 0, INTGATE);
@@ -121,7 +121,7 @@ void init_idt()
     idt[127] = idt_entry((void *)__interrupt_vector[48], 0, INTGATE | INT_USER);
     idt[100] = idt_entry((void *)__interrupt_vector[49], 0, INTGATE | INT_USER);
 
-    log("idt", LOG_DEBUG) << "flushing idt";
+    log("idt", LOG_DEBUG, "flushing idt...");
     init_irq_handlers();
     idt_flush((uint64_t)&idt_descriptor);
 };
@@ -163,15 +163,15 @@ void interrupt_error_handle(InterruptStackFrame *stackframe)
 
     printf("\n");
 
-    log("pic", LOG_ERROR) << "current process backtrace : ";
+    log("pic", LOG_ERROR, "current process backtrace:");
     process::current()->get_backtrace().dump_backtrace();
-    log("pic", LOG_ERROR) << "current cpu backtrace :";
+    log("pic", LOG_ERROR, "current cpu backtrace :");
     get_current_cpu()->local_backtrace.dump_backtrace();
 
     if (process::current() != nullptr)
     {
-        log("pic", LOG_INFO) << "in process: " << process::current()->get_name();
-        log("pic", LOG_INFO) << "in processor : " << process::current()->get_cpu();
+        log("pic", LOG_INFO, "in process: {}", process::current()->get_name());
+        log("pic", LOG_INFO, "in processor: {}", process::current()->get_cpu());
         dump_process();
     }
     while (true)
@@ -214,7 +214,7 @@ ASM_FUNCTION uintptr_t interrupts_handler(InterruptStackFrame *stackframe)
     }
     else if (stackframe->int_no == 0xf0)
     {
-        printf("apic : Nmi : possible hardware error :( \n");
+        log("apic", LOG_ERROR, "non maskable interrupt from apic: possible hardware error");
     }
 
     apic::the()->EOI();

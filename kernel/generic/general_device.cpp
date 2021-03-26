@@ -42,7 +42,7 @@ auto find_device() -> end_type *
             return static_cast<end_type *>(device_array[i]);
         }
     }
-    log("device", LOG_WARNING) << "no device with type " << (int)end_type::get_stype() << "founded";
+    log("device", LOG_WARNING, "no device with type: {} founded ", (int)end_type::get_stype());
     return static_cast<end_type *>(nullptr);
 }
 

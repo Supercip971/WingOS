@@ -216,7 +216,7 @@ uint64_t syscalls_length = sizeof(syscalls) / sizeof(void *);
 
 void init_syscall()
 {
-    log("syscall", LOG_DEBUG) << "loading syscall";
+    log("syscall", LOG_DEBUG, "loading syscall");
     // for later
 }
 
@@ -224,7 +224,7 @@ uint64_t syscall(uint64_t syscall_id, uint64_t arg1, uint64_t arg2, uint64_t arg
 {
     if (syscall_id > syscalls_length)
     {
-        log("syscall", LOG_ERROR) << "called invalid syscall" << syscall_id;
+        log("syscall", LOG_ERROR, "called invalid syscall: {}", syscall_id);
         return 0;
     }
     else

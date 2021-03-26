@@ -63,7 +63,7 @@ namespace utils
         inline void *liballoc_alloc(size_t s)
         {
 
-            return (void *)(plug::allocate_page(s));
+            return (void *)(plug_allocate_page(s));
         }
 
         /** This frees previously allocated memory. The void* parameter passed
@@ -76,7 +76,7 @@ namespace utils
  */
         inline int liballoc_free(void *s, size_t d)
         {
-            plug::free_page(reinterpret_cast<uintptr_t>(s), d);
+            plug_free_page(reinterpret_cast<uintptr_t>(s), d);
             return 0; // free everytime
         }
 

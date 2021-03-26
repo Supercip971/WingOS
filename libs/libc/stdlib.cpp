@@ -276,5 +276,5 @@ void *realloc(void *ptr, size_t size)
 
 void exit(int status)
 {
-    plug::exit(status);
+    plug_exit(status);
 }

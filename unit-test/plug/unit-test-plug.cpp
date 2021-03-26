@@ -14,20 +14,20 @@ static int page_size = -1;
     #include <sys/mman.h>
     #include <stdlib.h>
     #include <unistd.h>
-namespace plug
-{
+extern bool try_to_exit;
 
-    void init(){
+
+    void plug_init(){
         stdin = fopen("/dev/stdin", "r+");
         stdout = fopen("/dev/stdout", "r+");
         stderr = fopen("/dev/stderr", "r+");
     };
-    void end(){
+    void plug_end(){
         fclose(stdin);
         fclose(stdout);
         fclose(stderr);
     };
-    uintptr_t allocate_page(size_t count)
+    uintptr_t plug_allocate_page(size_t count)
     {
         if ( page_size < 0 ) page_size = 4096;
         size_t size = count * page_size;
@@ -43,12 +43,12 @@ namespace plug
 
         return (uintptr_t)p2;
     }
-    bool free_page(uintptr_t addr, size_t count)
+    bool plug_free_page(uintptr_t addr, size_t count)
     {
          munmap( (void*)addr, count * page_size );
         return true;
     }
-    void debug_out(const char *str, size_t length)
+    void plug_debug_out(const char *str, size_t length)
     {
         char* str2 = (char*)malloc(length+2);
         memcpy(str2,str, length+1);
@@ -57,29 +57,29 @@ namespace plug
         free(str2);
     }
 
-    int open(const char *path_name, int flags, int mode)
+    int plug_open(const char *path_name, int flags, int mode)
     {
         printf("open plug \n");
         return syscall(SYS_open, path_name, flags, mode);
     }
-    int close(int fd)
+    int plug_close(int fd)
     {
         
         printf("close plug \n");
         return syscall(SYS_close, fd);
     }
-    size_t lseek(int fd, size_t offset, int whence)
+    size_t plug_lseek(int fd, size_t offset, int whence)
     {
         printf("seek plug \n");
         return syscall(SYS_lseek, fd, offset, whence);
     }
-    size_t read(int fd, void *buffer, size_t count)
+    size_t plug_read(int fd, void *buffer, size_t count)
     {
         printf("read plug \n");
         return syscall(SYS_read, fd, buffer, count);
     }
-    void exit(int)
+    void plug_exit(int)
     {
+        try_to_exit = true;
         printf("exit plug \n");
     }
-} // namespace plug

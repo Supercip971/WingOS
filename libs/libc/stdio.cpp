@@ -17,7 +17,7 @@ int vsn_printf_out(bool just_print, char *buffer, uint64_t count, const char *da
 {
     if (just_print == true)
     {
-        plug::debug_out(data, count);
+        plug_debug_out(data, count);
         return 1;
     }
     else if (buffer != nullptr)
@@ -213,19 +213,19 @@ int vsprintf(char *buffer, const char *format, va_list vlist)
 FILE *fopen(const char *pathname, const char *mode)
 {
     FILE *f = (FILE *)malloc(sizeof(FILE));
-    f->file_element = plug::open(pathname, 0, 0);
+    f->file_element = plug_open(pathname, 0, 0);
     return f;
 }
 int fclose(FILE *stream)
 {
-    plug::close(stream->file_element);
+    plug_close(stream->file_element);
     free(stream);
     return 0;
 }
 
 int fseek(FILE *stream, long offset, int whence)
 {
-    return plug::lseek(stream->file_element, offset, whence);
+    return plug_lseek(stream->file_element, offset, whence);
 }
 
 long ftell(FILE *stream)
@@ -235,7 +235,7 @@ long ftell(FILE *stream)
 
 size_t fread(void *ptr, size_t size, size_t count, FILE *stream)
 {
-    return plug::read(stream->file_element, ptr, size * count);
+    return plug_read(stream->file_element, ptr, size * count);
 }
 
 int fgetc(FILE *stream)

@@ -86,6 +86,11 @@ public:
         v.set_writable(is_writable);
         return v;
     }
+
+    static page_table *get_entry(page_table *table, uint64_t entry);
+    static page_table *create_entry(page_table *table, uint64_t entry, bool is_writable, bool is_user);
+
+    static page_table *get_or_create_entry(page_table *table, uint64_t entry, bool is_writable, bool is_user);
 };
 
 static_assert(sizeof(page_table) == sizeof(uint64_t), "page table must have the same size as a uint64_t");

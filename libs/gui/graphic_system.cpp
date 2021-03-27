@@ -3,15 +3,18 @@
 #include <gui/graphic_system.h>
 #include <kern/kernel_util.h>
 #include <kern/mem_util.h>
-#include <kern/process_message.h>
 #include <kern/syscall.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 namespace gui
 {
-    graphic_context::graphic_context(uint64_t width, uint64_t height, const char *name)
+    graphic_context::graphic_context(uint64_t width, uint64_t height, const char *name):
+        connection("graphic_service.ipc")
     {
+
+        connection.wait_accepted();
+
         context_height = height;
         context_width = width;
         size_t name_length = strlen(name) + 1;
@@ -26,11 +29,16 @@ namespace gui
         tolaunch.create_window_info.height = height;
         tolaunch.create_window_info.width = width;
 
-        wid = sys::service_message("initfs/graphic_service.exe", (uint64_t)&tolaunch, sizeof(gui::graphic_system_service_protocol)).read();
+        connection.send(&tolaunch, sizeof(gui::graphic_system_service_protocol));
+        connection.wait_receive(&wid, sizeof (uint64_t));
         gui::graphic_system_service_protocol get_bbuffer = {0};
         get_bbuffer.request_type = gui::GRAPHIC_SYSTEM_REQUEST::GET_WINDOW_BACK_BUFFER;
         get_bbuffer.get_request.window_handler_code = wid;
-        back_buffer = (gui::color *)sys::service_message("initfs/graphic_service.exe", (uint64_t)&get_bbuffer, sizeof(gui::graphic_system_service_protocol)).read();
+
+        connection.send(&get_bbuffer, sizeof(gui::graphic_system_service_protocol));
+        uint64_t res = 0;
+        connection.wait_receive(&res, sizeof (uint64_t));
+        back_buffer = (gui::color *)res;
     }
 
     void graphic_context::clear_buffer(const color color)
@@ -55,7 +63,10 @@ namespace gui
         gui::graphic_system_service_protocol swap_request = {0};
         swap_request.request_type = gui::GRAPHIC_SYSTEM_REQUEST::SWAP_WINDOW_BUFFER;
         swap_request.get_request.window_handler_code = wid;
-        uint64_t result = sys::service_message("initfs/graphic_service.exe", (uint64_t)&swap_request, sizeof(gui::graphic_system_service_protocol)).read();
+        connection.send(&swap_request, sizeof(gui::graphic_system_service_protocol));
+        uint64_t res;
+        connection.wait_receive(&res, sizeof (uint64_t)); // we want to wait for the graphic system to say: ok now you can reuse the back buffer
+
     }
 
     void raw_clear_buffer(gui::color *buffer, uint64_t size, gui::color value)
@@ -133,7 +144,9 @@ namespace gui
         gui::graphic_system_service_protocol request = {0};
         request.request_type = gui::GRAPHIC_SYSTEM_REQUEST::GET_WINDOW_POSITION;
         request.get_request.window_handler_code = wid;
-        uint64_t result = sys::service_message("initfs/graphic_service.exe", (uint64_t)&request, sizeof(gui::graphic_system_service_protocol)).read();
+        connection.send(&request, sizeof (gui::graphic_system_service_protocol));
+        uint64_t result;
+        connection.wait_receive(&result, sizeof (uint64_t));
         sys::raw_pos p;
         p.pos = result;
         return p;
@@ -145,7 +158,7 @@ namespace gui
         request.request_type = gui::GRAPHIC_SYSTEM_REQUEST::SET_WINDOW_POSITION;
         request.set_pos.window_handler_code = wid;
         request.set_pos.position = position;
-        sys::service_message("initfs/graphic_service.exe", (uint64_t)&request, sizeof(gui::graphic_system_service_protocol)).read();
+        connection.send(&request, sizeof (gui::graphic_system_service_protocol));
     }
     uint64_t get_basic_font_width_text(const char *text)
     {
@@ -291,7 +304,8 @@ namespace gui
         request.depth_request.window_handler_code = wid;
         request.depth_request.set = true;
         request.depth_request.type = gui::ON_TOP;
-        uint64_t result = sys::service_message("initfs/graphic_service.exe", (uint64_t)&request, sizeof(graphic_system_service_protocol)).read();
+
+        connection.send(&request, sizeof (gui::graphic_system_service_protocol));
     }
     void graphic_context::set_as_background()
     {
@@ -300,7 +314,7 @@ namespace gui
         request.depth_request.window_handler_code = wid;
         request.depth_request.set = true;
         request.depth_request.type = gui::BACKGROUND;
-        uint64_t result = sys::service_message("initfs/graphic_service.exe", (uint64_t)&request, sizeof(graphic_system_service_protocol)).read();
+        connection.send(&request, sizeof (gui::graphic_system_service_protocol));
     }
     void graphic_context::set_on_top_of_background()
     {
@@ -309,15 +323,17 @@ namespace gui
         request.depth_request.window_handler_code = wid;
         request.depth_request.set = true;
         request.depth_request.type = TOP_BACKGROUND;
-        uint64_t result = sys::service_message("initfs/graphic_service.exe", (uint64_t)&request, sizeof(graphic_system_service_protocol)).read();
+        connection.send(&request, sizeof (gui::graphic_system_service_protocol));
     }
     bool graphic_context::is_on_top()
     {
+        uint64_t result;
         graphic_system_service_protocol request = {0};
         request.request_type = GRAPHIC_SYSTEM_REQUEST::WINDOW_DEPTH_ACTION;
         request.depth_request.window_handler_code = wid;
         request.depth_request.set = false;
-        uint64_t result = sys::service_message("initfs/graphic_service.exe", (uint64_t)&request, sizeof(graphic_system_service_protocol)).read();
+        connection.send(&request, sizeof (gui::graphic_system_service_protocol));
+        connection.wait_receive(&result, sizeof (uint64_t));
         return result == 0;
     }
     bool graphic_context::is_mouse_inside()

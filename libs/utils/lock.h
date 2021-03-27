@@ -43,6 +43,22 @@ namespace utils
             raw = LOCK_FREE;
         };
     };
+
+    class context_lock
+    {
+        lock_type &raw;
+
+    public:
+        context_lock(lock_type &val) : raw(val)
+        {
+            raw.lock();
+        }
+
+        ~context_lock()
+        {
+            raw.unlock();
+        }
+    };
 } // namespace utils
 
 #endif // LOCK_H

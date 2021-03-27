@@ -6,7 +6,7 @@
 namespace utils
 {
     template <typename vtype>
-    class vector : container<vtype>
+    class vector : public container<vtype>
     {
         vtype *buffer = nullptr; // to do : do a direct buffer type
         size_t sz;
@@ -41,7 +41,11 @@ namespace utils
             buffer = nullptr;
         }
 
-        size_t size() const override
+        size_t size() const final
+        {
+            return sz;
+        }
+        size_t size()
         {
             return sz;
         }

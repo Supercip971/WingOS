@@ -87,11 +87,12 @@ server::server(const char* path) : connection_list(){
     if(sys$ipc_server_exist(path)){
         printf("can't create server %s that already exist \n");
     }
+    connection_list.clear();
     server_id = sys$create_server(path);
 }
 
 int server::accept_new_connection(){
-   int v = sys$accept_connection(server_id);
+   uint32_t v = sys$accept_connection(server_id);
    if(v != 0){
        connection_list.push_back(v);
    }

@@ -3,9 +3,9 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <utils/container.h>
 #include <stdlib.h>
 #include <string.h>
+#include <utils/container.h>
 #include <utils/math.h>
 namespace utils
 {

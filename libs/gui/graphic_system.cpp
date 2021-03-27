@@ -39,7 +39,7 @@ namespace gui
         raw_clear_buffer(back_buffer, context_length, color);
     }
 
-    void swap_buffer(gui::color *buffer1, const gui::color *buffer2, uint64_t buffer_length)
+    void swap_buffers(gui::color *buffer1, const gui::color *buffer2, uint64_t buffer_length)
     {
         uint64_t buffer_length_r64 = buffer_length / 2;
         uint64_t *to = (uint64_t *)buffer1;

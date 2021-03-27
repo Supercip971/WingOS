@@ -1,8 +1,12 @@
 
 #!/bin/bash
 set -e
+
 # using : https://wiki.osdev.org/Cross-Compiler_Successful_Builds
 echo "creating wingOS_cross Compiler"
+
+bash ./make_sysroot.sh
+
 
 SYSROOT="$PWD/sysroot/"
 mkdir -p $SYSROOT

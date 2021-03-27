@@ -105,7 +105,7 @@ uint64_t create_window(gui::graphic_system_service_protocol *request, uint64_t p
     targ.window_name = request->create_window_info.name;
     targ.wid = next_wid++;
     targ.window_front_buffer = (gui::color *)sys::pmm_malloc_shared(request->create_window_info.width * request->create_window_info.height * sizeof(gui::color));
-    targ.window_back_buffer = (gui::color *)sys::pmm_malloc_shared(request->create_window_info.width * request->create_window_info.height * sizeof(gui::color));
+    targ.window_back_buffer = (gui::color *)sys::pmm_malloc_shared((request->create_window_info.width + 64) * (request->create_window_info.height + 64) * sizeof(gui::color));
     window_list.push_back(targ);
     set_window_on_top(targ.wid);
 
@@ -116,6 +116,7 @@ uint64_t get_window_back_buffer(gui::graphic_system_service_protocol *request, u
 {
     if (!valid_window(request->get_request.window_handler_code, pid))
     {
+        printf("invalid get window back buffer call \n");
         return -2;
     }
     auto raw = get_window(request->get_request.window_handler_code);
@@ -126,17 +127,19 @@ uint64_t window_swap_buffer(gui::graphic_system_service_protocol *request, uint6
 {
     if (!valid_window(request->get_request.window_handler_code, pid))
     {
+        printf("invalid window swap buffer buffer call \n");
         return -2;
     }
 
     auto raw = get_window(request->get_request.window_handler_code);
-    swap_buffer(raw->window_front_buffer, raw->window_back_buffer, raw->width * raw->height);
+    swap_buffers(raw->window_front_buffer, raw->window_back_buffer, raw->width * raw->height);
     return 1;
 }
 uint64_t get_window_position(gui::graphic_system_service_protocol *request, uint64_t pid)
 {
     if (!valid_window(request->get_request.window_handler_code, pid))
     {
+        printf("invalid get window position call \n");
         return -2;
     }
     auto raw = get_window(request->get_request.window_handler_code);
@@ -151,6 +154,7 @@ uint64_t set_window_position(gui::graphic_system_service_protocol *request, uint
 {
     if (!valid_window(request->set_pos.window_handler_code, pid))
     {
+        printf("invalid set window position call \n");
         return -2;
     }
     auto raw = get_window(request->set_pos.window_handler_code);
@@ -229,10 +233,4 @@ void update_mouse_in_window()
             break;
         }
     }
-}
-
-void window_key_update(char keycode)
-{
-
-    sys::process_message target_info = sys::process_message(get_window_list()[0].pid, 0, 0);
 }

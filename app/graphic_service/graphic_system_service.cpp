@@ -11,50 +11,60 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-// [!] BEFORE READING THIS CODE
-// [!] EVERYTHING HERE WILL BE DIVIDED IN MULTIPLE FILE FOR THE MOMENT IT IS LIKE THAT
-// [!] I WILL CLEAN UP EVERYTHING WHEN I WILL BE ABLE JUST TO CLEAR A WINDOW FROM AN APPLICATION
+
 void loop();
+
+sys::server graphic_service_server;
 int main(int argc, char **argv)
 {
+    graphic_service_server = sys::server("graphic_service.ipc");
     printf("started graphics \n");
+
     loop();
     return 1;
 }
 
-uint64_t interpret(gui::graphic_system_service_protocol *request, uint64_t pid)
+graphic_request_return interpret(gui::graphic_system_service_protocol *request, uint64_t pid)
 {
     if (request->request_type == 0)
     {
         printf("graphic error : request null type");
-        return -2;
+        return {false, 0};
     }
     else if (request->request_type == gui::GRAPHIC_SYSTEM_REQUEST::CREATE_WINDOW)
     {
-        return create_window(request, pid);
+        return {true, create_window(request, pid)};
     }
     else if (request->request_type == gui::GRAPHIC_SYSTEM_REQUEST::GET_WINDOW_BACK_BUFFER)
     {
-        return get_window_back_buffer(request, pid);
+        return {true, get_window_back_buffer(request, pid)};
     }
     else if (request->request_type == gui::GRAPHIC_SYSTEM_REQUEST::SWAP_WINDOW_BUFFER)
     {
-        return window_swap_buffer(request, pid);
+        return {true, window_swap_buffer(request, pid)};
     }
     else if (request->request_type == gui::GRAPHIC_SYSTEM_REQUEST::GET_WINDOW_POSITION)
     {
-        return get_window_position(request, pid);
+        return {true, get_window_position(request, pid)};
     }
     else if (request->request_type == gui::GRAPHIC_SYSTEM_REQUEST::SET_WINDOW_POSITION)
     {
-        return set_window_position(request, pid);
+        return {false, set_window_position(request, pid)};
     }
     else if (request->request_type == gui::GRAPHIC_SYSTEM_REQUEST::WINDOW_DEPTH_ACTION)
     {
-        return window_depth_action(request, pid);
+        if (request->depth_request.set)
+        {
+            return {false, window_depth_action(request, pid)};
+        }
+        else
+        {
+
+            return {true, window_depth_action(request, pid)};
+        }
     }
     printf("graphic error : request non implemented type");
-    return -2;
+    return {false, 0};
 }
 
 void loop()
@@ -66,20 +76,21 @@ void loop()
     while (true)
     {
         // read all message
-        while (true)
+        uint32_t ret = graphic_service_server.accept_new_connection();
+        if (ret != 0)
         {
-            sys::raw_process_message *msg = sys::service_read_current_queue();
-            if (msg != 0x0)
+        }
+        for (size_t i = 0; i < graphic_service_server.get_connection_list().size(); i++)
+        {
+            gui::graphic_system_service_protocol val;
+            if (graphic_service_server.receive(graphic_service_server.get_connection_list()[i], &val, sizeof(gui::graphic_system_service_protocol)) == sizeof(gui::graphic_system_service_protocol))
             {
-                gui::graphic_system_service_protocol *pr = (gui::graphic_system_service_protocol *)msg->content_address;
+                graphic_request_return ret = interpret(&val, graphic_service_server.get_connection_list()[i]);
+                if (ret.should_return)
+                {
 
-                msg->response = interpret(pr, msg->from_pid);
-                msg->has_been_readed = true;
-            }
-            else
-            {
-
-                break;
+                    graphic_service_server.send(graphic_service_server.get_connection_list()[i], &ret.raw_val, sizeof(uint64_t));
+                }
             }
         }
         graphic_system_update();

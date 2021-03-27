@@ -2,6 +2,13 @@
 #define RAW_GRAPHIC_SYSTEM_H
 #include "raw_window.h"
 #include <stdint.h>
+
+struct graphic_request_return
+{
+    bool should_return;
+    uint64_t raw_val;
+};
+
 void init_raw_graphic_system();
 uint64_t get_scr_width();
 uint64_t get_scr_height();

@@ -1,19 +1,16 @@
 #pragma once
 #include <gui/raw_graphic.h>
 #include <stdint.h>
+#include <kern/process_message.h>
 namespace gui
 {
     // FOR GRAPHIC MESSAGE :
-    struct graphic_raw_request
-    {
-        uint8_t request_raw_data[256]; // 256 o = 32 uint64_t i think we have a lot
-    } __attribute__((packed));
     struct create_graphic_window
     {
         char *name;
         uint64_t width;
         uint64_t height;
-        bool resizable = false; // will not be used
+        bool resizable; // will not be used
     } __attribute__((packed));
     struct individual_request
     {
@@ -61,7 +58,6 @@ namespace gui
 
         union
         {
-            graphic_raw_request raw_information; // used for later, size : 256o (2048 byte)
             create_graphic_window create_window_info;
             individual_request get_request;
             set_window_pos_request set_pos;
@@ -127,6 +123,7 @@ namespace gui
 
     class graphic_context
     {
+        sys::client_connection connection;
         uint64_t context_width;
         uint64_t context_height;
         uint64_t wid = 0;
@@ -179,7 +176,7 @@ namespace gui
     };
     uint64_t get_basic_font_width_text(const char *text);
 
-    void swap_buffer(color *buffer1, const color *buffer2, uint64_t buffer_length);
+    void swap_buffers(color *buffer1, const color *buffer2, uint64_t buffer_length);
 
     void raw_clear_buffer(color *buffer, uint64_t size, color value = {0, 0, 0, 255});
 } // namespace gui

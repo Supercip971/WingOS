@@ -82,10 +82,26 @@ void *findFACP(void *RootSDT)
 
 void acpi::init(uint64_t rsdp)
 {
-    log("acpi", LOG_DEBUG) << "loading acpi";
+    log("acpi", LOG_DEBUG, "loading acpi");
 
     descriptor = (RSDPDescriptor20 *)get_rsdp();
     rsdt_table = get_mem_addr<RSDT *>(descriptor->firstPart.RSDT_address);
+
+    log("rsdt", LOG_DEBUG, "logging rsdt");
+    RSDT *rsdt = get_mem_addr<RSDT *>((descriptor->firstPart.RSDT_address));
+    int entries = (rsdt->h.Length - sizeof(rsdt->h)) / 4;
+
+    for (int i = 0; i < entries; i++)
+    {
+
+        if (rsdt->PointerToOtherSDT[i] == 0)
+        {
+            continue;
+        }
+
+        RSDTHeader *h = get_mem_addr<RSDTHeader *>((rsdt->PointerToOtherSDT[i]));
+        log("rsdt", LOG_INFO, "entry: {}, signature: {}, EOM: {} ", i, range_str(h->Signature, 4), range_str(h->OEMID, 6));
+    }
 }
 
 void acpi::init_in_paging()

@@ -39,15 +39,6 @@ void _start(stivale_struct *bootloader_data)
     main_fs_system::the()->init_file_system();
     load_kernel_service();
 
-    launch_programm("initfs/wstart.exe", main_fs_system::the()->main_fs(), 0, nullptr);
-    launch_programm("initfs/graphic_service.exe", main_fs_system::the()->main_fs(), 0, nullptr);
-    launch_programm("initfs/background.exe", main_fs_system::the()->main_fs(), 0, nullptr);
-    launch_programm("initfs/test2.exe", main_fs_system::the()->main_fs(), 0, nullptr);
-    launch_programm("initfs/test.exe", main_fs_system::the()->main_fs(), 0, nullptr);
-    launch_programm("initfs/test.exe", main_fs_system::the()->main_fs(), 0, nullptr);
-    const char *argv[] = {"hello", "world"};
-    launch_programm("initfs/test.exe", main_fs_system::the()->main_fs(), 2, argv);
-
     log("kernel", LOG_INFO, "==== KERNEL STARTED ====");
 
     show_art();
@@ -55,8 +46,17 @@ void _start(stivale_struct *bootloader_data)
     log("kernel", LOG_INFO, "kernel started with: {} memory available ", get_total_memory() * PAGE_SIZE);
     log("kernel", LOG_INFO, "memory used: {}", get_used_memory() * PAGE_SIZE);
     //  dump_process();
+    launch_programm("initfs/graphic_service.exe", main_fs_system::the()->main_fs(), 0, nullptr);
+    launch_programm("initfs/background.exe", main_fs_system::the()->main_fs(), 0, nullptr);
+    launch_programm("initfs/test2.exe", main_fs_system::the()->main_fs(), 0, nullptr);
 
+    launch_programm("initfs/test.exe", main_fs_system::the()->main_fs(), 0, nullptr);
+    launch_programm("initfs/test.exe", main_fs_system::the()->main_fs(), 0, nullptr);
+    const char *argv[] = {"hello", "world"};
+    launch_programm("initfs/test.exe", main_fs_system::the()->main_fs(), 2, argv);
     while (true)
     {
+        sleep(1000);
+        log("kernel", LOG_INFO, "memory used: {}", get_used_memory() * PAGE_SIZE);
     }
 }

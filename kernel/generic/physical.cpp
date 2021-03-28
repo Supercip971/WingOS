@@ -116,12 +116,9 @@ void init_physical_memory(stivale_struct *bootdata)
 
     for (uint64_t i = 0; i < bootdata->memory_map_entries; i++)
     {
+        log("pmm", LOG_INFO, "entry: {} -- from: {} to: {} -- status: {}", i, mementry[i].base, mementry[i].base + mementry[i].length, mementry[i].type);
 
-        if (mementry[i].type != MEMMAP_USABLE)
-        {
-            pmm_bitmap.set_used(mementry[i].base / PAGE_SIZE, mementry[i].length / PAGE_SIZE);
-        }
-        else
+        if (mementry[i].type == MEMMAP_USABLE)
         {
             pmm_bitmap.set_free(mementry[i].base / PAGE_SIZE, mementry[i].length / PAGE_SIZE);
             available_memory += mementry[i].length / PAGE_SIZE;

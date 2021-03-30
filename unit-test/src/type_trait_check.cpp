@@ -129,3 +129,75 @@ int remove_pointer_check()
     }
     return 0;
 }
+
+namespace is_type_check
+{
+    union a_union
+    {
+        int v;
+        int v2;
+    };
+
+    class a_class
+    {
+    public:
+        int va;
+        int vb;
+    };
+
+    enum a_enum
+    {
+        ENUM1,
+        ENUM2
+    };
+} // namespace is_type_check
+int is_class_check()
+{
+    if (!utils::is_class<is_type_check::a_class>())
+    {
+        return -1;
+    }
+    if (utils::is_class<is_type_check::a_enum>())
+    {
+        return -2;
+    }
+    if (utils::is_class<is_type_check::a_union>())
+    {
+        return -3;
+    }
+    return 0;
+}
+int is_enum_check()
+{
+
+    if (utils::is_enum<is_type_check::a_class>())
+    {
+        return -1;
+    }
+    if (!utils::is_enum<is_type_check::a_enum>())
+    {
+        return -2;
+    }
+    if (utils::is_enum<is_type_check::a_union>())
+    {
+        return -3;
+    }
+    return 0;
+}
+int is_union_check()
+{
+
+    if (utils::is_union<is_type_check::a_class>())
+    {
+        return -1;
+    }
+    if (utils::is_union<is_type_check::a_enum>())
+    {
+        return -2;
+    }
+    if (!utils::is_union<is_type_check::a_union>())
+    {
+        return -3;
+    }
+    return 0;
+}

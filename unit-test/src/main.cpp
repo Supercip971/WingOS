@@ -55,6 +55,10 @@ unit_test v[] = {
     {"(utils) type_traits.h", "remove_volatile", "check for good return", remove_volatile_check},
     {"(utils) type_traits.h", "remove_pointer", "check for good return", remove_pointer_check},
 
+    {"(utils) type_traits.h", "is_class", "check for good return", is_class_check},
+    {"(utils) type_traits.h", "is_enum", "check for good return", is_enum_check},
+    {"(utils) type_traits.h", "is_union", "check for good return", is_union_check},
+
     {"(utils) smart_ptr.h", "unique_ptr", "create/destroy test", unique_ptr_create_destroy_check},
     {"(utils) smart_ptr.h", "unique_ptr", "raw() test", unique_ptr_raw_check},
     {"(utils) smart_ptr.h", "unique_ptr", "operator test", unique_ptr_operator_check},

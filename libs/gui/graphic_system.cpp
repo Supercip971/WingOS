@@ -213,6 +213,12 @@ namespace gui
         {
             x_max = radius;
         }
+        if(origin.x + x_start < 0){
+            x_start =origin.x - x_start;
+        }
+        if(origin.y + y_start < 0){
+            y_start =origin.y - y_start;
+        }
         for (int y = y_start; y < y_max; y++)
         {
 

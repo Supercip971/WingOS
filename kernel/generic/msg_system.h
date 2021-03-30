@@ -5,6 +5,7 @@
 #include <string.h>
 #include <utils/alloc_array.h>
 #include <utils/config.h>
+#include <utils/lock.h>
 #include <utils/raw_msg_system.h>
 #include <utils/smart_ptr.h>
 #include <utils/warray.h>
@@ -105,6 +106,7 @@ public:
 
 class msg_system
 {
+    utils::lock_type msg_system_lock;
     int next_connection_uid = 10;
     static constexpr int max_connection = SERVER_MAX_CONNECTION;
     utils::alloc_array<msg_connection, max_connection> connection_list;
@@ -117,6 +119,7 @@ class msg_system
 public:
     msg_system()
     {
+        msg_system_lock.unlock();
         msg_system_id = -1;
         by_server_pid = -1;
         name = utils::unique_ptr<char>(nullptr);
@@ -124,6 +127,7 @@ public:
 
     void set(const char *path, int id, size_t pid_server)
     {
+        msg_system_lock.unlock();
         next_connection_uid = 10;
         name = new char[strlen(path) + 1];
         msg_system_id = id;
@@ -132,18 +136,24 @@ public:
     }
     void rename(const char *new_name)
     {
+        msg_system_lock.lock();
         name.reset(new char[strlen(new_name) + 1]);
         memcpy(name.get_raw(), new_name, strlen(new_name) + 1);
+
+        msg_system_lock.unlock();
     };
 
     const char *msg_name() const { return name.get_raw(); };
 
-    bool is_name(const char *comp) const
+    bool is_name(const char *comp)
     {
+        msg_system_lock.lock();
         if (strcmp(name.get_raw(), comp) == 0)
         {
+            msg_system_lock.unlock();
             return true;
         }
+        msg_system_lock.unlock();
         return false;
     };
 

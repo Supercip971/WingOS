@@ -1,6 +1,6 @@
 #ifndef TYPE_TRAITS_H
 #define TYPE_TRAITS_H
-
+#include <utils/type/integral_constant.h>
 namespace utils
 {
 
@@ -60,6 +60,17 @@ namespace utils
     {
         typedef T type;
     };
+
+
+    template<typename T>
+    struct is_enum : public integral_constant<bool, __is_enum(T)>{};
+
+    template<typename T>
+    struct is_union : public integral_constant<bool, __is_union(T)>{};
+
+    template<typename T>
+    struct is_class : public integral_constant<bool, __is_class(T)>{};
+
 
     template <typename t>
     constexpr decltype(auto) move(t &&val)

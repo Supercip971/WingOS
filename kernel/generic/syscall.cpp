@@ -92,7 +92,15 @@ void *sys$alloc(uint64_t count, uint8_t flag)
 
 int sys$free(uintptr_t target, uint64_t count)
 {
-    pmm_free((void *)get_rusr_addr(target), count);
+    if (target > MEM_ADDR)
+    {
+
+        pmm_free((void *)get_rmem_addr(target), count);
+    }
+    else
+    {
+        pmm_free((void *)get_rusr_addr(target), count);
+    }
     return 1;
 }
 

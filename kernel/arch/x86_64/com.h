@@ -9,7 +9,6 @@ enum COM_PORT
     COM3 = 0x3E8,
     COM4 = 0x2E8,
 };
-///FIXME: should not exist
 
 class com_device : public debug_device
 {

@@ -8,7 +8,6 @@
 void kernel_process_service()
 {
 
-    log("kernel_process_service", LOG_INFO) << "loaded kernel_process_service service";
     while (true)
     {
         process_message *msg = read_message();
@@ -16,8 +15,7 @@ void kernel_process_service()
         if (msg != 0)
         {
             process_request *prot = (process_request *)msg->content_address;
-            // don't like switch >:(
-            // they have some "optimization" but in this case meh
+            // TODO: use a switch
             if (prot->type == SET_CURRENT_PROCESS_AS_SERVICE)
             {
                 log("kernel_process_service", LOG_INFO) << "SET_CURRENT_PROCESS_AS_SERVICE";

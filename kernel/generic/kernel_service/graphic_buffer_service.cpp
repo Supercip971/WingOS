@@ -8,7 +8,6 @@
 void graphic_buffer_service()
 {
     stivale_struct *hdr = &boot_loader_data_copy;
-    log("graphic_buffer", LOG_INFO) << "loaded graphic buffer service";
     set_on_request_service(true);
 
     while (true)

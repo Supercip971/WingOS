@@ -31,6 +31,7 @@
 #include <smp.h>
 #include <sse.h>
 #include <stddef.h>
+#include <utils/config.h>
 
 static char stack[STACK_SIZE] = {0};
 static uintptr_t bootdat = 0;
@@ -43,7 +44,6 @@ stivale_header header = {.stack = (uintptr_t)stack + (sizeof(char) * STACK_SIZE)
                          .entry_point = 0};
 
 stivale_struct boot_loader_data_copy;
-
 void start_process();
 
 /* ____    __    ____  __  .__   __.   _______      ______        _______.
@@ -74,6 +74,7 @@ ASM_FUNCTION void kernel_start(stivale_struct *bootloader_data)
     com.init(COM_PORT::COM1);
 
     init_sse();
+
     setup_gdt();
     init_idt();
     if (has_xsave())
@@ -85,7 +86,6 @@ ASM_FUNCTION void kernel_start(stivale_struct *bootloader_data)
         log("avx", LOG_INFO, "cpu has support for avx");
     }
     memcpy(&boot_loader_data_copy, bootloader_data, sizeof(stivale_struct));
-    //   PIT::the()->init_PIT();
 
     tss_init((uintptr_t)stack + sizeof(char) * STACK_SIZE);
 
@@ -105,6 +105,7 @@ ASM_FUNCTION void kernel_start(stivale_struct *bootloader_data)
 
     apic_timer *timer = new apic_timer();
     timer->init();
+
     for (int i = 0; i < 16; i++)
     {
         apic::the()->set_redirect_irq(0, i, 1);

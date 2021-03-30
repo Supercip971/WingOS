@@ -9,9 +9,8 @@ namespace sys
         tsr.get = true;
         tsr.index = sys::get_current_stime;
         tsr.value = -1;
-        sys::service_message msg = sys::service_message("time_service", (uint64_t)&tsr, sizeof(tsr));
-        uint64_t result = msg.read();
-        return result;
+
+        return {0};
     }
 
 } // namespace sys

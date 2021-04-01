@@ -3,6 +3,7 @@
 #include "array_check.h"
 #include "bit_check.h"
 #include "math_check.h"
+#include "memory_check.h"
 #include "smart_ptr_check.h"
 #include "stdlib_check.h"
 #include "string_check.h"
@@ -10,6 +11,7 @@
 #include "unit_test.h"
 #include "vector_check.h"
 #include <plug/system_plug.h>
+
 #include <stdio.h>
 #include <string.h>
 bool try_to_exit = false;
@@ -65,6 +67,14 @@ unit_test v[] = {
     {"(utils) smart_ptr.h", "unique_ptr", "reset test", unique_ptr_reset_check},
     {"(utils) smart_ptr.h", "unique_ptr", "release test", unique_ptr_release_check},
     {"(utils) smart_ptr.h", "make unique", "make unique test", make_unique_check},
+
+    {"(utils) memory.h", "memory", "creation test", memory_creation_test},
+    {"(utils) memory.h", "memory", "destroy test", memory_destroy_check},
+    {"(utils) memory.h", "memory", "owner test", memory_owner_check},
+    {"(utils) memory.h", "memory", "compare test", memory_compare_check},
+    {"(utils) memory.h", "memory", "set test", memory_set_check},
+    {"(utils) memory.h", "memory", "move test", memory_move_check},
+    {"(utils) memory.h", "memory", "copy test", memory_copy_check},
 
     {"(utils) warray.h", "array", "creation test", array_creation_check},
     {"(utils) warray.h", "array", "access test", array_access_check},

@@ -24,7 +24,7 @@ GCC_FLAGS := \
   -pthread \
 	-I./src/ \
 	-I../libs/ \
-	-std=c++14 \
+	-std=c++20 \
 	-DUNIT_TEST \
 	-DCUSTOM_PLUG \
 	--freestanding \

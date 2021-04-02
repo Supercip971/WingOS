@@ -15,20 +15,20 @@ LIB :=
 
 
 GCC_FLAGS := \
-	-g \
-	-O0 \
-	-m64 \
-	-Wall \
-	-fno-rtti \
-	-Werror \
-  -pthread \
-	-I./src/ \
-	-I../libs/ \
-	-std=c++20 \
-	-DUNIT_TEST \
-	-DCUSTOM_PLUG \
-	--freestanding \
-	-I../libs/libc \
+	-g 				\
+	-O0 			\
+	-m64 			\
+	-Wall 			\
+	-fno-rtti 		\
+	-Werror 		\
+  	-pthread 		\
+	-I./src/ 		\
+	-I../libs/ 		\
+	-std=c++2a 		\
+	-DUNIT_TEST		\
+	-DCUSTOM_PLUG 	\
+	--freestanding 	\
+	-I../libs/libc 	\
 
 %.to: %.cpp $(CFILES) $(HFILES)
 	@$(DIR_GUARD)

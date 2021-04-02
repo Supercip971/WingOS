@@ -131,7 +131,8 @@ void start_process()
         me->init();
         add_io_device(me);
     }
-    pci_system::the()->init();
+    pci_system *pci = new pci_system();
+    pci->init();
 
     //   launch_programm("initfs/memory_service.exe", main_fs_system::the()->main_fs());
 

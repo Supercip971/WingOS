@@ -76,6 +76,11 @@ namespace utils
     {
     };
 
+    template <typename base, typename derived>
+    struct is_base_of : public integral_constant<bool, __is_base_of(base, derived)>
+    {
+    };
+
     template <typename t>
     constexpr decltype(auto) move(t &&val)
     {

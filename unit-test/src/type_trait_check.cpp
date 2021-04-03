@@ -3,6 +3,7 @@
 #include <utils/type/integral_constant.h>
 #include <utils/type/is_same.h>
 #include <utils/type_traits.h>
+
 int integral_constant_check()
 {
     utils::integral_constant<int, 0> test1;
@@ -31,6 +32,7 @@ int integral_constant_check()
     }
     return 0;
 }
+
 int integral_constant_false_check()
 {
     if (utils::false_type())
@@ -39,6 +41,7 @@ int integral_constant_false_check()
     }
     return 0;
 }
+
 int integral_constant_true_check()
 {
     if (!utils::true_type())
@@ -64,6 +67,7 @@ int is_same_check_true()
     }
     return 0;
 }
+
 int is_same_check_false()
 {
     if (utils::is_same<int, char>())
@@ -93,6 +97,7 @@ int remove_reference_check()
     }
     return 0;
 }
+
 int remove_const_check()
 {
     if (!utils::is_same<char, utils::remove_const<const char>::type>())
@@ -105,6 +110,7 @@ int remove_const_check()
     }
     return 0;
 }
+
 int remove_volatile_check()
 {
     if (!utils::is_same<char, utils::remove_volatile<volatile char>::type>())
@@ -117,6 +123,7 @@ int remove_volatile_check()
     }
     return 0;
 }
+
 int remove_pointer_check()
 {
     if (!utils::is_same<char, utils::remove_pointer<char *>::type>())
@@ -151,6 +158,7 @@ namespace is_type_check
         ENUM2
     };
 } // namespace is_type_check
+
 int is_class_check()
 {
     if (!utils::is_class<is_type_check::a_class>())
@@ -167,6 +175,7 @@ int is_class_check()
     }
     return 0;
 }
+
 int is_enum_check()
 {
 
@@ -184,6 +193,7 @@ int is_enum_check()
     }
     return 0;
 }
+
 int is_union_check()
 {
 
@@ -198,6 +208,71 @@ int is_union_check()
     if (!utils::is_union<is_type_check::a_union>())
     {
         return -3;
+    }
+    return 0;
+}
+
+int is_base_of_check()
+{
+    class base1
+    {
+    public:
+        int v;
+    };
+
+    class base2
+    {
+    public:
+        int v2;
+    };
+
+    class derived1 : public base1
+    {
+    };
+
+    class derived2and1 : public base2, public base1
+    {
+    };
+
+    class no_derived
+    {
+    };
+
+    // base1 : base1 => true
+    if (!utils::is_base_of<base1, base1>::value)
+    {
+        return 1;
+    }
+
+    // base1 : base2 => false
+    if (utils::is_base_of<base1, base2>::value)
+    {
+        return 2;
+    }
+    // derived1 : base1 => true
+    if (!utils::is_base_of<base1, derived1>::value)
+    {
+        return 3;
+    }
+    // base1 : derived => false
+    if (utils::is_base_of<derived1, base1>::value)
+    {
+        return 4;
+    }
+    // derived2and1 : base 1,  base 2 => true
+    if (!(utils::is_base_of<base1, derived2and1>::value && utils::is_base_of<base2, derived2and1>::value))
+    {
+        return 5;
+    }
+    // no_derived : base 1, (or) base 2 => false
+    if ((utils::is_base_of<base1, no_derived>::value || utils::is_base_of<base2, no_derived>::value))
+    {
+        return 6;
+    }
+    // derived1* : base1 => false
+    if (utils::is_base_of<base1, derived1 *>::value)
+    {
+        return 7;
     }
     return 0;
 }

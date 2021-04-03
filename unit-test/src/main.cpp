@@ -61,6 +61,8 @@ unit_test v[] = {
     {"(utils) type_traits.h", "is_enum", "check for good return", is_enum_check},
     {"(utils) type_traits.h", "is_union", "check for good return", is_union_check},
 
+    {"(utils) type_traits.h", "is_base_of_check", "check for good return", is_base_of_check},
+
     {"(utils) smart_ptr.h", "unique_ptr", "create/destroy test", unique_ptr_create_destroy_check},
     {"(utils) smart_ptr.h", "unique_ptr", "raw() test", unique_ptr_raw_check},
     {"(utils) smart_ptr.h", "unique_ptr", "operator test", unique_ptr_operator_check},

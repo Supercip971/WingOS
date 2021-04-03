@@ -15,3 +15,5 @@ int remove_pointer_check();
 int is_class_check();
 int is_enum_check();
 int is_union_check();
+
+int is_base_of_check();

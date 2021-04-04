@@ -93,6 +93,7 @@ void init_process_stackframe(process *pro, func entry_point, int argc, char **ar
     ISF->cs = gdt_selector::KERNEL_CODE;
     ISF->rflags = 0x286;
     ISF->rsp = (uint64_t)ISF;
+    ISF->rbp = 0;
     ISF->rdi = argc;
     ISF->rsi = (uint64_t)argv;
     pro->get_arch_info()->rsp = (uint64_t)ISF;

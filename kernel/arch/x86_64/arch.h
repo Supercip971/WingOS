@@ -55,3 +55,5 @@ inline constexpr T get_rkern_addr(F addr) { return reinterpret_cast<T>((uintptr_
 
 size_t get_cpu_count();
 size_t get_current_cpu_id();
+
+void dump_stackframe(void *rbp);

@@ -163,6 +163,8 @@ void interrupt_error_handle(InterruptStackFrame *stackframe)
 
     printf("\n");
 
+    log("pic", LOG_ERROR, "current process stackframe:");
+    dump_stackframe((void *)stackframe->rbp);
     log("pic", LOG_ERROR, "current process backtrace:");
     process::current()->get_backtrace().dump_backtrace();
     log("pic", LOG_ERROR, "current cpu backtrace :");

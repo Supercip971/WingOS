@@ -33,6 +33,24 @@
 #include <stddef.h>
 #include <utils/config.h>
 
+struct stackframe
+{
+    stackframe *rbp;
+    uint64_t rip;
+} __attribute__((packed));
+
+void dump_stackframe(void *rbp)
+{
+
+    stackframe *frame = reinterpret_cast<stackframe *>(rbp);
+
+    while (frame)
+    {
+        log("stackframe", LOG_INFO, "{}", frame->rip);
+        frame = frame->rbp;
+    }
+}
+
 static char stack[STACK_SIZE] = {0};
 static uintptr_t bootdat = 0;
 __attribute__((section(".stivalehdr"), used))
@@ -46,13 +64,13 @@ stivale_header header = {.stack = (uintptr_t)stack + (sizeof(char) * STACK_SIZE)
 stivale_struct boot_loader_data_copy;
 void start_process();
 
-/* ____    __    ____  __  .__   __.   _______      ______        _______.
+/*
+//  ____    __    ____  __  .__   __.   _______      ______        _______.
 //  \   \  /  \  /   / |  | |  \ |  |  /  _____|    /  __  \      /       |
 //   \   \/    \/   /  |  | |   \|  | |  |  __     |  |  |  |    |   (----`
 //    \            /   |  | |  . `  | |  | |_ |    |  |  |  |     \   \
 //     \    /\    /    |  | |  |\   | |  |__| |    |  `--'  | .----)   |
 //      \__/  \__/     |__| |__| \__|  \______|     \______/  |_______/
-//
 */
 
 size_t get_cpu_count()

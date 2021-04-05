@@ -22,6 +22,7 @@ GCC_FLAGS := \
 	-fno-rtti 		\
 	-Werror 		\
   	-pthread 		\
+	-fconcepts      \
 	-I./src/ 		\
 	-I../libs/ 		\
 	-std=c++2a 		\

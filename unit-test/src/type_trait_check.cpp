@@ -276,3 +276,59 @@ int is_base_of_check()
     }
     return 0;
 }
+
+
+int is_const_check(){
+    // positive result check
+    if(!utils::is_const<const int>()){
+        return -1;
+    }
+    if(!utils::is_const<volatile const int>()){
+        return -2;
+    }
+    if(!utils::is_const<int* const>()){
+        return -3;
+    }
+
+    // negative result check
+
+    if(utils::is_const<int>()){
+        return -5;
+    }
+    if(utils::is_const<int&>()){
+        return -6;
+    }
+    if(utils::is_const<const int&>()){
+        return -7;
+    }
+    if(utils::is_const<volatile int&>()){
+        return -8;
+    }
+    if(utils::is_const<int*>()){
+        return -9;
+    }
+
+    return 0;
+
+
+}
+int is_function_check(){
+    // positive result check
+    if(!utils::is_function<int(int)>()){
+        return -1;
+    }
+    if(!utils::is_function<decltype (is_function_check)>()){
+        return -3;
+    }
+    // negative result check
+    if(utils::is_function<int>()){
+        return -4;
+    }
+    if(utils::is_function<void*>()){
+        return -5;
+    }
+    if(utils::is_function<bool>()){
+        return -6;
+    }
+    return 0;
+}

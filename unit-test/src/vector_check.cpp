@@ -1,156 +1,137 @@
 #include "vector_check.h"
-
+#include "unit_test.h"
 #include <stdio.h>
 
 #include <utils/wvector.h>
 
-int wvector_create_check()
-{
-    utils::vector<uint8_t> vec = utils::vector<uint8_t>();
-    if (vec)
-    {
-        return 1;
-    }
-    else if (vec.size() != 0)
-    {
-        return 2;
-    }
-    return 0;
-}
-int wvector_capacity_check()
+LIB(wvector)
 {
 
-    utils::vector<uint8_t> vec = utils::vector<uint8_t>();
-    if (vec.capacity() != 0)
+    SECTION("vector creation")
     {
-        return -1; // not created vector must not take place in memory
-    }
 
-    vec.reserve(10);
-
-    if (vec.capacity() != 10)
-    {
-        return -2; // not created vector must not take place in memory
-    }
-
-    vec.clear();
-
-    if (vec.capacity() != 0)
-    {
-        return -3;
-    }
-    return 0;
-}
-int wvector_push_back_check()
-{
-
-    utils::vector<uint8_t> vec = utils::vector<uint8_t>();
-    for (int i = 0; i < 2048; i++)
-    {
-        vec.push_back(0);
-    }
-    if (!vec)
-    {
-        return -1;
-    }
-    if (vec.size() != 2048)
-    {
-        return vec.size();
-    }
-    return 0;
-}
-int wvector_get_check()
-{
-    utils::vector<int> vec = utils::vector<int>();
-    for (int i = 0; i < 2048; i++)
-    {
-        vec.push_back(i);
-    }
-    if (!vec)
-    {
-        return -1;
-    }
-    if (vec.size() != 2048)
-    {
-        return vec.size();
-    }
-    for (int i = 0; i < 2048; i++)
-    {
-        if (vec.get(i) != vec[i])
+        CHECK("vector creation test")
         {
-            return i + 20000;
-        }
-        if (vec.get(i) != i)
-        {
-            printf("invalid i %i = %i \n", i, vec[i]);
-            return i + 10000;
+            utils::vector<uint8_t> vec = utils::vector<uint8_t>();
+            REQUIRE_EQUAL(vec.raw(), nullptr);
+            REQUIRE_EQUAL(vec.size(), 0);
+            REQUIRE_EQUAL(vec.capacity(), 0);
+            REQUIRE_EQUAL(vec.size(), 0);
         }
     }
 
-    return 0;
-}
-int wvector_remove_check()
-{
-    utils::vector<int> vec = utils::vector<int>();
-    for (int i = 0; i < 4096; i++)
+    MEMBER("vector.reserve/capacity")
     {
-        vec.push_back(i);
-    }
-    if (!vec)
-    {
-        return -1;
-    }
-    int off = 0;
-    for (int i = 0; i < 4096; i++)
-    {
-        if ((i % 2) != 0)
-        {
-            vec.remove(i + off);
-            off -= 1;
-        }
-    }
-    if (!vec)
-    {
-        return -2;
-    }
-    if (vec.size() != 2048)
-    {
-        return vec.size();
-    }
-    for (int i = 0; i < 2048; i++)
-    {
-        if (vec.get(i) != vec[i])
-        {
-            return i + 20000;
-        }
-        if (vec.get(i) != i * 2)
-        {
-            printf("invalid i %i = %i \n", i, vec[i]);
-            return i + 10000;
-        }
-    }
-    return 0;
-}
-int wvector_clear_check()
-{
-    utils::vector<int> vec = utils::vector<int>();
-    for (int i = 0; i < 4096; i++)
-    {
-        vec.push_back(i);
-    }
-    if (!vec)
-    {
-        return -1;
-    }
-    vec.clear();
 
-    if (vec)
-    {
-        return -2;
+        CHECK("vector reserve test")
+        {
+
+            utils::vector<uint8_t> vec = utils::vector<uint8_t>();
+            vec.reserve(10);
+
+            REQUIRE(vec.raw() != nullptr);
+            REQUIRE(vec.capacity() != 0);
+            REQUIRE_EQUAL(vec.size(), 0);
+        }
+
+        CHECK("vector capacity test")
+        {
+
+            utils::vector<uint8_t> vec = utils::vector<uint8_t>();
+            vec.reserve(10);
+
+            REQUIRE_EQUAL(vec.capacity(), 10);
+            vec.reserve(7);
+            REQUIRE_EQUAL(vec.capacity(), 10);
+            vec.reserve(30);
+            REQUIRE_EQUAL(vec.capacity(), 30);
+            REQUIRE_EQUAL(vec.size(), 0);
+        }
+
     }
-    if (vec.size() != 0)
+
+
+    MEMBER("vector.push_back")
     {
-        return vec.size();
+
+        utils::vector<uint8_t> vec = utils::vector<uint8_t>();
+        CHECK("vector push_back() test")
+        {
+            for (int i = 0; i < 2048; i++)
+            {
+                vec.push_back(i);
+            }
+            REQUIRE_EQUAL(vec.size(), 2048);
+        }
     }
-    return 0;
+    MEMBER("vector.get")
+    {
+        constexpr int size_to_check = 2048;
+        utils::vector<int> vec = utils::vector<int>();
+
+        CHECK("vector get() test")
+        {
+            for (int i = 0; i < size_to_check; i++)
+            {
+                vec.push_back(i);
+            }
+
+            for(int i = 0; i < size_to_check; i++){
+                REQUIRE_EQUAL(vec.get(i), vec[i]);
+                REQUIRE_EQUAL(i, vec[i]);
+            }
+        }
+    }
+    MEMBER("vector.remove")
+    {
+
+        constexpr int size_to_check = 2048;
+        utils::vector<int> vec = utils::vector<int>();
+
+        CHECK("vector remove() test")
+        {
+
+            for (int i = 0; i < size_to_check; i++)
+            {
+                vec.push_back(i);
+            }
+
+            int off = 0;
+            for (int i = 0; i < size_to_check; i++)
+            {
+                if ((i % 2) != 0)
+                {
+                    vec.remove(i + off); // use offset because every time we delete an entry everything is moved by one entry
+                    off -= 1;
+                }
+            }
+            REQUIRE_EQUAL(vec.size(), size_to_check/2);
+            for (int i = 0; i < size_to_check/2; i++)
+            {
+                REQUIRE_EQUAL(i*2,vec.get(i));
+            }
+
+        }
+    }
+
+    MEMBER("vector.clear")
+    {
+
+        constexpr int size_to_check = 2048;
+        CHECK("vector clear() test")
+        {
+
+            utils::vector<int> vec = utils::vector<int>();
+            for (int i = 0; i < size_to_check; i++)
+            {
+                vec.push_back(i);
+            }
+            vec.clear();
+            REQUIRE(!(bool)vec);
+            REQUIRE_EQUAL(vec.size(), 0);
+            REQUIRE_EQUAL(vec.capacity(), 0);
+
+        }
+    }
 }
+END_LIB(wvector)

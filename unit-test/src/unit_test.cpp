@@ -1,11 +1,14 @@
 #include "unit_test.h"
 #include <stdio.h>
 #include <string.h>
-
+#include <utils/wvector.h>
 const char *last_lib_target = "null";
 const char *last_target = "null";
 const char *last_test = "null";
 
+utils::vector<unit_test_func> *test_list = nullptr;
+
+/*
 int run_test(unit_test *test)
 {
     if (strcmp(test->lib_target, last_lib_target) != 0)
@@ -32,3 +35,63 @@ int run_test(unit_test *test)
         return 0;
     }
 }
+*/
+int add_test(unit_test_func func)
+{
+    if (test_list == nullptr)
+    {
+        test_list = new utils::vector<unit_test_func>();
+    }
+    test_list->push_back(func);
+    return 0;
+}
+
+int run_all_test()
+{
+    int error_count = 0;
+    int test_count = 0;
+
+    for (size_t i = 0; i < test_list->size(); i++)
+    {
+        int res = test_list->get(i)();
+        if (res != 0)
+        {
+
+            error_count++;
+        }
+        test_count++;
+    }
+    printf("runned %i/%i test \n", test_count - error_count, test_count);
+    return (error_count);
+}
+// this is just for testing unit test (yes this is weird but it work)
+
+LIB(unit_test)
+{
+
+    SECTION("test_for_unit_test")
+    {
+        int value = 0;
+
+        CHECK("true condition test")
+        {
+            value++;
+            REQUIRE_EQUAL(value, 1);
+        }
+
+        MEMBER("operator ++")
+        {
+            CHECK("positive result")
+            {
+                value = 1;
+                REQUIRE_EQUAL(value, 1);
+            }
+            CHECK("negative result")
+            {
+
+                REQUIRE_EQUAL(value - 1, 0);
+            }
+        }
+    }
+}
+END_LIB(unit_test)

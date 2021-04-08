@@ -1,36 +1,31 @@
+#include "unit_test.h"
 #include <stdio.h>
 #include <stdlib.h>
-int abs_check()
+LIB(libc_stdlib)
 {
-    if (abs(-32) != 32)
+
+    SECTION("abs() verification")
     {
-        return -1;
+
+        CHECK("abs test")
+        {
+            REQUIRE_EQUAL(abs(-32), 32);
+            REQUIRE_EQUAL(abs(39327), 39327);
+            REQUIRE_EQUAL(abs(-0), 0);
+        }
     }
-    if (abs(39327) != 39327)
+
+    SECTION("atoi() verification")
     {
-        return -2;
+
+        CHECK("atoi test")
+        {
+
+            REQUIRE_EQUAL(atoi("16"), 16);
+            REQUIRE_EQUAL(atoi("32eeee"), 32);
+            REQUIRE_EQUAL(atoi("1234567890eeee"), 1234567890);
+        }
     }
-    return 0;
 }
+END_LIB(libc_stdlib)
 
-int atoi_check()
-{
-    int val = atoi("16");
-
-    if (val != 16)
-    {
-        return 16;
-    }
-    val = atoi("32eeee");
-
-    if (val != 32)
-    {
-        return 32;
-    }
-    val = atoi("1234567890eeee");
-    if (val != 1234567890)
-    {
-        return 12;
-    }
-    return 0;
-}

@@ -1,155 +1,102 @@
 #include "alloc_array_check.h"
+#include "unit_test.h"
 #include <utils/alloc_array.h>
 
-int alloc_array_creation_test()
-{
-    utils::alloc_array<int, 64> array;
-    if (array.size() != 64)
-    {
-        return -1;
-    }
-
-    if (array.allocated_element_count() != 0)
-    {
-        return -2;
-    }
-
-    for (int i = 0; i < 64; i++)
-    {
-        if (array.status(i) != false)
-        {
-            return i + 1024;
-        }
-    }
-    return 0;
-}
-
-int alloc_array_creation_fill_test()
-{
-    utils::alloc_array<int, 64> array(0);
-    if (array.size() != 64)
-    {
-        return -1;
-    }
-
-    if (array.allocated_element_count() != 0)
-    {
-        return -2;
-    }
-
-    for (int i = 0; i < 64; i++)
-    {
-        if (array.status(i) != false)
-        {
-            return i + 1024;
-        }
-    }
-    return 0;
-}
-
-int alloc_array_alloc_test()
+LIB(alloc_array)
 {
 
-    utils::alloc_array<int, 1024> array;
-    for (int i = 0; i < 512; i++)
+    SECTION("alloc_array creation")
     {
-        size_t targ = array.alloc();
-        if (!array.status(targ))
-        {
-            return i + 2048;
-        }
-        array[targ] = targ;
-    }
-    if (array.allocated_element_count() != 512)
-    {
-        return -2;
-    }
 
-    size_t detected_allocated_element = 0;
-
-    for (int i = 0; i < 1024; i++)
-    {
-        if (array.status(i))
+        CHECK("creation test")
         {
-            detected_allocated_element++;
-            if (array[i] != i)
+
+            utils::alloc_array<int, 64> array;
+            REQUIRE_EQUAL(array.size(), 64);
+            REQUIRE_EQUAL(array.allocated_element_count(), 0);
+
+            for (size_t i = 0; i < 64; i++)
             {
-                return i + 1024;
+                REQUIRE_EQUAL(array.status(i), 0);
+            }
+        }
+        CHECK("fill constructor test")
+        {
+
+            utils::alloc_array<int, 64> array(1);
+            REQUIRE_EQUAL(array.size(), 64);
+            REQUIRE_EQUAL(array.allocated_element_count(), 0);
+
+            for (size_t i = 0; i < 64; i++)
+            {
+                REQUIRE_EQUAL(array.status(i), 0);
             }
         }
     }
-    if (detected_allocated_element != 512)
+
+    SECTION("alloc_array allocation & freeing")
     {
-        return -1;
-    }
-    return 0;
-}
-int alloc_array_free_test()
-{
-    utils::alloc_array<int, 1024> array;
-    for (int i = 0; i < 1024; i++)
-    {
-        size_t targ = array.alloc();
-        if (!array.status(targ))
+        utils::alloc_array<int, 1024> array;
+        CHECK("allocation")
         {
-            return i + 2048;
-        }
-        if ((i % 2) == 0)
-        {
-            if (!array.free(targ))
+
+            for (size_t i = 0; i < 512; i++)
             {
-                return i + 4096;
+                long targ = array.alloc();
+                REQUIRE(targ != -1);
+                REQUIRE_EQUAL(array.status(targ), 1);
+                array[targ] = targ;
             }
+
+            REQUIRE_EQUAL(array.allocated_element_count(), 512);
         }
-        else
+
+        CHECK("allocation id test")
         {
 
-            array[targ] = targ;
+            size_t detected_allocated_element = 0;
+
+            for (size_t i = 0; i < array.size(); i++)
+            {
+                if (array.status(i))
+                {
+                    detected_allocated_element++;
+                    REQUIRE_EQUAL(array[i], (int)i);
+                }
+            }
+            REQUIRE_EQUAL(array.allocated_element_count(), detected_allocated_element);
         }
-    }
-    if (array.allocated_element_count() != 512)
-    {
-        return -2;
-    }
 
-    size_t freed_element_count = 0;
-
-    for (int i = 0; i < 512; i++)
-    {
-        if (array.status(i))
+        CHECK("freeing element")
         {
-            freed_element_count++;
+            for (size_t i = 0; i < array.size(); i++)
+            {
+                if (array.status(i))
+                {
+                    array.free(i);
+                }
+            }
 
-            if (array[i] != i)
-            {
-                return i + 1024;
-            }
-            if (!array.free(i))
-            {
-                return i + 8192;
-            }
+            REQUIRE_EQUAL(array.allocated_element_count(), 0);
         }
     }
-    if (freed_element_count != 512)
+
+    MEMBER("alloc_array.foreach")
     {
-        return -1;
+        utils::alloc_array<int, 1024> array;
+        CHECK("foreach allocated element test")
+        {
+            for (int i = 0; i < 512; i++)
+            {
+                array.alloc();
+            }
+            size_t detected_entry_count = 0;
+
+            array.foreach_entry([&](int &value) {
+                detected_entry_count++;
+            });
+            REQUIRE_EQUAL(detected_entry_count, 512);
+        }
     }
-    return 0;
 }
-int alloc_array_foreachentry_test()
-{
-    utils::alloc_array<int, 1024> array;
-    for (int i = 0; i < 512; i++)
-    {
-        array.alloc();
-    }
-    size_t detected_entry_count = 0;
-    array.foreach_entry([&](int &value) {
-        detected_entry_count++;
-    });
-    if (detected_entry_count != 512)
-    {
-        return detected_entry_count + 1024;
-    }
-    return 0;
-}
+END_LIB(alloc_array)

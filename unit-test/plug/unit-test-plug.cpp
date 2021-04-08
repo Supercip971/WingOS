@@ -6,7 +6,7 @@ static int page_size = -1;
 
     #include <string.h>
     #include <pthread.h>
-
+    #include <type_traits>
     #include <unistd.h>
 
     #include <sys/syscall.h>
@@ -40,7 +40,7 @@ extern bool try_to_exit;
             munmap(p2, size);
             return 0;
         }
-
+        bool v = std::is_function<int>::value;
         return (uintptr_t)p2;
     }
     int plug_free_page(uintptr_t addr, size_t count)

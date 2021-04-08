@@ -1,60 +1,58 @@
 #include "bit_check.h"
+#include "unit_test.h"
+#include <stdint.h>
 #include <utils/bit.h>
-int get_bit_check()
-{
-    uint8_t val1 = 0b01010101;
-
-    for (int i = 0; i < 8; i++)
-    {
-        if (utils::get_bit(val1, i))
-        {
-            if ((i % 2))
-            {
-                return i + 1;
-            }
-        }
-        else
-        {
-            if (!(i % 2))
-            {
-                return -i - 1;
-            }
-        }
-    }
-    return 0;
-}
-int set_bit_check()
+LIB(bit)
 {
 
     uint8_t val1 = 0b01010101;
+    SECTION("get bit")
+    {
+        CHECK("positive return test")
+        {
+            for (int i = 0; i < 8; i += 2)
+            {
+                REQUIRE_EQUAL(utils::get_bit(val1, i), 1);
+            }
+        }
+        CHECK("negative return test")
+        {
+            for (int i = 1; i < 8; i += 2)
+            {
+                REQUIRE_EQUAL(utils::get_bit(val1, i), 0);
+            }
+        }
+    }
 
-    for (int i = 0; i < 8; i++)
+    SECTION("set bit")
     {
-        if (utils::get_bit(val1, i))
+
+        for (int i = 0; i < 8; i++)
         {
-            utils::set_bit(val1, i, 0);
-        }
-        else
-        {
-            utils::set_bit(val1, i, 1);
-        }
-    }
-    for (int i = 0; i < 8; i++)
-    {
-        if (!utils::get_bit(val1, i))
-        {
-            if ((i % 2))
+            if (utils::get_bit(val1, i))
             {
-                return i + 1;
+                utils::set_bit(val1, i, 0);
+            }
+            else
+            {
+                utils::set_bit(val1, i, 1);
             }
         }
-        else
+
+        CHECK("positive set test")
         {
-            if (!(i % 2))
+            for (int i = 1; i < 8; i += 2)
             {
-                return -i - 1;
+                REQUIRE_EQUAL(utils::get_bit(val1, i), 1);
+            }
+        }
+        CHECK("negative set test")
+        {
+            for (int i = 0; i < 8; i += 2)
+            {
+                REQUIRE_EQUAL(utils::get_bit(val1, i), 0);
             }
         }
     }
-    return 0;
 }
+END_LIB(bit)

@@ -2,159 +2,104 @@
 #include <utils/smart_ptr.h>
 #include <utils/type_traits.h>
 
-int unique_ptr_create_destroy_check()
+#include "unit_test.h"
+#include <stdio.h>
+LIB(smart_ptr)
 {
 
+    SECTION("unique_ptr: object creation")
     {
 
-        utils::unique_ptr<int> null_unique(nullptr);
-        if (null_unique)
+        CHECK("unique_ptr creation from nullptr test")
         {
-            return -1;
+            utils::unique_ptr<int> null_unique(nullptr);
+            REQUIRE_EQUAL((bool)null_unique, false);
+            REQUIRE_EQUAL(null_unique.get_raw(), nullptr);
         }
-        null_unique.~unique_ptr();
-        if (null_unique)
+
+        CHECK("unique_ptr creation/destruction from allocated data test")
         {
-            return -2;
+
+            utils::unique_ptr<int> nonnull_unique(new int[2]);
+
+            REQUIRE_EQUAL((bool)nonnull_unique, true);
+            nonnull_unique.~unique_ptr();
+            REQUIRE_EQUAL((bool)nonnull_unique, false);
+            REQUIRE_EQUAL(nonnull_unique.get_raw(), nullptr);
+        }
+
+        CHECK("make_unique check")
+        {
+
+            auto nonnull_unique = (utils::make_unique<int>(10));
+            REQUIRE_EQUAL((bool)nonnull_unique, true);
+            REQUIRE_EQUAL(nonnull_unique.get(), 10);
         }
     }
-
+    MEMBER("unique_ptr.get_raw()")
     {
-        utils::unique_ptr<int> nonnull_unique(new int[2]);
-
-        if (!nonnull_unique)
+        int *data = new int[10];
+        utils::unique_ptr<int> nonnull_unique(data); // give ownership of data
+        CHECK("get_raw() verification")
         {
-            return -3;
-        }
-        nonnull_unique.~unique_ptr();
-
-        if (nonnull_unique)
-        {
-            return -4;
-        }
-    }
-    return 0;
-}
-int unique_ptr_raw_check()
-{
-
-    int *data = new int[10];
-    utils::unique_ptr<int> nonnull_unique(data);
-    if (!nonnull_unique)
-    {
-        return -1;
-    }
-    if (nonnull_unique.get_raw() != data)
-    {
-        return -2;
-    }
-
-    return 0;
-}
-
-int unique_ptr_operator_check()
-{
-    int *data = new int[10];
-
-    for (int i = 0; i < 10; i++)
-    {
-        data[i] = i;
-    }
-    utils::unique_ptr<int> nonnull_unique(data);
-
-    if (!nonnull_unique)
-    {
-        return -1;
-    }
-
-    if (nonnull_unique.get() != 0)
-    {
-        return -2;
-    }
-
-    for (int i = 0; i < 10; i++)
-    {
-        if (nonnull_unique[i] != i)
-        {
-            return 1024 + i;
+            REQUIRE_EQUAL((bool)nonnull_unique, true);
+            REQUIRE_EQUAL(nonnull_unique.get_raw(), data);
         }
     }
 
-    return 0;
+    MEMBER("unique_ptr.operator[]")
+    {
+        CHECK("operator[] verification")
+        {
+            constexpr int size_for_check = 120;
+            int *data = new int[size_for_check];
+
+            for (int i = 0; i < size_for_check; i++)
+            {
+                data[i] = i;
+            }
+            utils::unique_ptr<int> nonnull_unique(data);
+
+            for (int i = 0; i < size_for_check; i++)
+            {
+                REQUIRE_EQUAL(nonnull_unique[i], i);
+            }
+        }
+    }
+
+    SECTION("unique_ptr: reset/release")
+    {
+
+        CHECK("reset verification")
+        {
+            constexpr size_t size_for_check = 120;
+            int *data = new int[size_for_check];
+            int *data2 = new int[size_for_check];
+
+            data[5] = 5;
+            data2[5] = 10;
+
+            utils::unique_ptr<int> nonnull_unique(data);
+            nonnull_unique.reset(data2);
+
+            REQUIRE_EQUAL((bool)nonnull_unique, true);
+            REQUIRE_EQUAL(nonnull_unique[5], data2[5]);
+            REQUIRE_EQUAL(nonnull_unique.get_raw(), data2);
+        }
+
+        CHECK("release verification")
+        {
+
+            int *data = new int[10];
+            utils::unique_ptr<int> nonnull_unique(data);
+
+            int *res = nonnull_unique.release();
+
+            REQUIRE_EQUAL((bool)nonnull_unique, false);
+            REQUIRE_EQUAL(res, data);
+
+            delete[] res;
+        }
+    }
 }
-int unique_ptr_reset_check()
-{
-
-    int *data = new int[10];
-    int *data2 = new int[10];
-
-    data[5] = 0;
-    data2[5] = 10;
-
-    utils::unique_ptr<int> nonnull_unique(data);
-
-    if (nonnull_unique.get_raw() != data)
-    {
-        return -1;
-    }
-
-    nonnull_unique.reset(data2);
-
-    if (nonnull_unique[5] == 0)
-    {
-        return -2;
-    }
-    if (nonnull_unique.get_raw() != data2)
-    {
-        return -3;
-    }
-
-    if (!nonnull_unique)
-    {
-        return -4;
-    }
-
-    return 0;
-}
-int unique_ptr_release_check()
-{
-
-    int *data = new int[10];
-    utils::unique_ptr<int> nonnull_unique(data);
-    if (nonnull_unique.get_raw() != data)
-    {
-        return -1;
-    }
-
-    int *res = nonnull_unique.release();
-
-    if (nonnull_unique)
-    {
-        return -2;
-    }
-
-    if (res != data)
-    {
-        return -3;
-    }
-
-    delete[] res;
-
-    return 0;
-}
-
-int make_unique_check()
-{
-
-    auto nonnull_unique = (utils::make_unique<int>(10));
-    if (!nonnull_unique)
-    {
-        return -1;
-    }
-    if (nonnull_unique.get() != 10)
-    {
-        return -2;
-    }
-
-    return 0;
-}
+END_LIB(smart_ptr)

@@ -28,14 +28,6 @@ namespace utils
         {
         }
 
-        array(const vtype new_value)
-        {
-            for (size_t i = 0; i < array_count; i++)
-            {
-                buffer[i] = new_value;
-            }
-        }
-
         array(const vtype &new_value)
         {
             for (size_t i = 0; i < array_count; i++)

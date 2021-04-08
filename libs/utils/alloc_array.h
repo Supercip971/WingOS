@@ -140,7 +140,7 @@ namespace utils
         }
         size_t allocated_element_count() const { return _element_count; };
 
-        size_t alloc()
+        long alloc()
         {
 
             for (size_t i = 0; i < array_count; i++)
@@ -149,7 +149,7 @@ namespace utils
                 {
                     _status[i] = true;
                     _element_count++;
-                    return i;
+                    return (long)i;
                 };
             }
             printf("can't allocate a new entry in alloc_array\n");

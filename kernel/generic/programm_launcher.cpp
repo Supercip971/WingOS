@@ -233,7 +233,7 @@ size_t launch_programm_usr(programm_exec_info *info)
         log("prog launcher", LOG_ERROR, "not valid elf64 entry");
         return -1;
     }
-    char **end_argv = (char **)malloc(sizeof(char *) * info->argc + 1);
+    char **end_argv = (char **)malloc(sizeof(char *) * (info->argc + 1));
     end_argv[0] = (char *)malloc(strlen(info->path) + 1);
     memcpy(end_argv[0], info->path, strlen(info->path) + 1);
     for (int i = 0; i < info->argc; i++)

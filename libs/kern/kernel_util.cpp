@@ -56,10 +56,12 @@ namespace sys
 
     uint64_t start_programm(const char *path)
     {
-
-        process_request pr = {0};
-        pr.type = LAUNCH_PROGRAMM;
-        memcpy(pr.lnp.path, path, strlen(path) + 1);
-        return sys::service_message("kernel_process_service", (uint64_t)&pr, sizeof(pr)).read();
+        programm_exec_info info;
+        info.argc = 0;
+        info.argv = nullptr;
+        info.env = nullptr;
+        info.name = path;
+        info.path = path;
+        return sys::sys$exec(&info);
     }
 } // namespace sys

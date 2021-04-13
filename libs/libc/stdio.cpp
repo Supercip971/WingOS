@@ -116,13 +116,6 @@ int vsn_printf(bool just_print, char *buffer /* nullptr say no buffer just print
         {
             format++;
             int d = va_arg(argument, int);
-            if (d == 0)
-            {
-                char c = '0';
-                vsn_printf_out(just_print, buffer, sizeof(c), &c);
-                written += 1;
-            }
-            else
             {
                 for (int i = 0; i < 64; i++)
                 {

@@ -72,59 +72,69 @@ void pmm_free(void *where, uint64_t lenght)
     pmm_lock.unlock();
 }
 
-void init_physical_memory(stivale_struct *bootdata)
+size_t get_available_memory(e820_entry_t *mem_entry, size_t length)
 {
-    log("pmm", LOG_DEBUG, "loading pmm");
-    e820_entry_t *mementry = reinterpret_cast<e820_entry_t *>(bootdata->memory_map_addr);
-    uint64_t total_memory_lenght = 0;
+    return mem_entry[length - 1].length + mem_entry[length - 1].base;
+}
 
-    available_memory = 0;
-
-    bitmap_base = ALIGN_UP(kernel_end + 0x1000, PAGE_SIZE); // if we doesn't found a free entry we try to put it into the top of the kernel (even if it is a bad idea)
-
-    // align everything
-    if (reinterpret_cast<uint64_t>(bootdata) > bitmap_base)
+void init_bitmap_base(e820_entry_t *mem_entry, size_t entry_count, size_t targetted_length)
+{
+    for (uint64_t i = 0; i < entry_count; i++)
     {
-        bitmap_base = reinterpret_cast<uint64_t>(bootdata) + sizeof(stivale_struct);
-    }
-
-    total_memory_lenght = mementry[bootdata->memory_map_entries - 1].length + mementry[bootdata->memory_map_entries - 1].base;
-
-    log("pmm", LOG_INFO, "finding physical memory mem map entry");
-    // find a free mementry, and then put the bitmap here :O
-    for (uint64_t i = 0; i < bootdata->memory_map_entries; i++)
-    {
-        if (mementry[i].type == 1)
+        if (mem_entry[i].type == MEMMAP_USABLE)
         {
-            if (mementry[i].length > (total_memory_lenght / PAGE_SIZE) / 8)
+            if (mem_entry[i].length > (targetted_length) / 8)
             {
 
                 log("pmm", LOG_INFO, "memory entry used: {}", i);
-                log("pmm", LOG_INFO, "total bitmap length: {}", (total_memory_lenght / PAGE_SIZE) / 8);
+                log("pmm", LOG_INFO, "total bitmap length: {}", (targetted_length) / 8);
+                bitmap_base = mem_entry[i].base + PAGE_SIZE;
 
-                bitmap_base = mementry[i].base + PAGE_SIZE;
                 log("pmm", LOG_INFO, "bitmap addr: {}", bitmap_base);
-                pmm_length = ((total_memory_lenght / PAGE_SIZE));
-                mementry[i].base += ((total_memory_lenght / PAGE_SIZE) / 8) + PAGE_SIZE + PAGE_SIZE;
-                break;
+
+                pmm_length = (targetted_length);
+                mem_entry[i].base += ((targetted_length) / 8) + PAGE_SIZE + PAGE_SIZE;
+                return;
             }
         }
     }
+}
+
+void init_bitmap_memory_map(e820_entry_t *mem_entry, size_t entry_count, bitmap &target)
+{
+
+    for (uint64_t i = 0; i < entry_count; i++)
+    {
+        log("pmm", LOG_INFO, "entry: {} -- from: {} to: {} -- status: {}", i, mem_entry[i].base, mem_entry[i].base + mem_entry[i].length, mem_entry[i].type);
+
+        if (mem_entry[i].type == MEMMAP_USABLE)
+        {
+            target.set_free(mem_entry[i].base / PAGE_SIZE, mem_entry[i].length / PAGE_SIZE);
+            available_memory += mem_entry[i].length / PAGE_SIZE;
+        }
+        pmm_page_entry_count += mem_entry[i].length / PAGE_SIZE;
+    }
+}
+
+void init_physical_memory(stivale_struct *bootdata)
+{
+    available_memory = 0;
+
+    log("pmm", LOG_DEBUG, "loading pmm");
+
+    e820_entry_t *mementry = reinterpret_cast<e820_entry_t *>(bootdata->memory_map_addr);
+    uint64_t total_memory_lenght = get_available_memory(mementry, bootdata->memory_map_entries);
+
+    bitmap_base = reinterpret_cast<uintptr_t>(bootdata) + sizeof(stivale_struct);
+
+    log("pmm", LOG_INFO, "finding physical memory mem map entry");
+    init_bitmap_base(mementry, bootdata->memory_map_entries, total_memory_lenght / PAGE_SIZE);
+
     pmm_bitmap = bitmap(reinterpret_cast<uint8_t *>(bitmap_base), pmm_length);
 
     log("pmm", LOG_DEBUG, "loading pmm memory map");
 
-    for (uint64_t i = 0; i < bootdata->memory_map_entries; i++)
-    {
-        log("pmm", LOG_INFO, "entry: {} -- from: {} to: {} -- status: {}", i, mementry[i].base, mementry[i].base + mementry[i].length, mementry[i].type);
-
-        if (mementry[i].type == MEMMAP_USABLE)
-        {
-            pmm_bitmap.set_free(mementry[i].base / PAGE_SIZE, mementry[i].length / PAGE_SIZE);
-            available_memory += mementry[i].length / PAGE_SIZE;
-        }
-        pmm_page_entry_count += mementry[i].length / PAGE_SIZE;
-    }
+    init_bitmap_memory_map(mementry, bootdata->memory_map_entries, pmm_bitmap);
     pmm_bitmap.reset_last_free();
     log("pmm", LOG_INFO, "free memory: {}", available_memory);
 }

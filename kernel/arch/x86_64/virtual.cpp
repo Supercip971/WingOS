@@ -41,10 +41,10 @@ uint64_t entry_to_address(uint64_t pml4, uint64_t pdpt, uint64_t pd, uint64_t pt
 {
     uint64_t result = 0;
 
-    result |= pml4 << 39;
-    result |= pdpt << 30;
-    result |= pd << 21;
-    result |= pt << 12;
+    result |= (pml4 & 0x1ff) << 39;
+    result |= (pdpt & 0x1ff) << 30;
+    result |= (pd & 0x1ff) << 21;
+    result |= (pt & 0x1ff) << 12;
 
     return result;
 }
@@ -168,4 +168,50 @@ void init_vmm(stivale_struct *bootdata)
 void update_paging()
 {
     set_paging_dir(get_rmem_addr(get_current_cpu()->cpu_page_table));
+}
+
+void map_page_recursive(size_t page_idx, page_table *table, const page_table *from, size_t *pml_idx)
+{
+    size_t entry_count = 512;
+
+    if (page_idx == 4)
+    {
+        entry_count = 255;
+    }
+
+    for (size_t i = 0; i < entry_count; i++)
+    {
+        if (from[i].is_present())
+        {
+
+            pml_idx[page_idx - 1] = i;
+            if (page_idx == 1)
+            {
+                uintptr_t physical = entry_to_address(pml_idx[3], pml_idx[2], pml_idx[1], pml_idx[0]);
+                uintptr_t virtual_ = from[pml_idx[0]].get_addr();
+
+                map_page(table, physical, virtual_, from[pml_idx[0]].is_writable(), from[pml_idx[0]].is_user());
+            }
+            else
+            {
+                map_page_recursive(page_idx - 1, page_table::get_entry(table, i), from, pml_idx);
+            }
+        }
+    }
+}
+
+page_table *clone_directory(page_table *from)
+{
+
+    page_table *ret_pml4 = get_mem_addr<page_table *>(pmm_alloc_zero(1));
+
+    for (int i = 255; i < 512; i++)
+    {
+        ret_pml4[i] = get_current_cpu()->cpu_page_table[i];
+    }
+
+    size_t pml_idx[5];
+    map_page_recursive(4, ret_pml4, from, pml_idx);
+
+    return ret_pml4;
 }

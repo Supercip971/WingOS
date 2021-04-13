@@ -109,3 +109,5 @@ int map_page(uint64_t phys_addr, uint64_t virt_addr, bool is_writable, bool is_u
 uint64_t get_physical_addr(uint64_t virt);
 page_table *new_vmm_page_dir();
 void init_vmm(stivale_struct *bootdata);
+
+page_table *clone_directory(page_table *from);

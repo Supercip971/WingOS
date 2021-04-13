@@ -71,7 +71,7 @@ size_t accept_connection(int service_id)
         log("msg system", LOG_ERROR, "trying to connect to accept system {} that does not exist", service_id);
         return 0;
     }
-    if (v->get_server_pid() != process::current()->get_pid())
+    if (v->get_server_pid() != process::current()->get_parent_pid())
     {
         log("msg system", LOG_ERROR, "process trying ot accept connection from a reserved service by another process");
         return 0;
@@ -141,7 +141,7 @@ int deconnect(uint32_t id)
         return 1;
     }
 
-    if (v->deconnect(msg_connection.element.connection_id, process::current()->get_pid()))
+    if (v->deconnect(msg_connection.element.connection_id, process::current()->get_parent_pid()))
     {
         return 0;
     }
@@ -162,7 +162,7 @@ size_t send(uint32_t id, const raw_msg_request *request, int flags)
         log("msg system", LOG_ERROR, "trying to send to message system {}/{} that does not exist", msg_connection.element.server_id, msg_connection.element.connection_id);
         return 0;
     }
-    return (size_t)v->send(msg_connection.element.connection_id, *request, flags, process::current()->get_pid());
+    return (size_t)v->send(msg_connection.element.connection_id, *request, flags, process::current()->get_parent_pid());
 }
 size_t receive(uint32_t id, raw_msg_request *request, int flags)
 {
@@ -175,7 +175,7 @@ size_t receive(uint32_t id, raw_msg_request *request, int flags)
         log("msg system", LOG_ERROR, "trying to receive from message system {}/{} that does not exist", msg_connection.element.server_id, msg_connection.element.connection_id);
         return 0;
     }
-    return (size_t)v->receive(msg_connection.element.connection_id, *request, flags, process::current()->get_pid());
+    return (size_t)v->receive(msg_connection.element.connection_id, *request, flags, process::current()->get_parent_pid());
 }
 void init_msg_system()
 {

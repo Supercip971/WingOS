@@ -203,6 +203,8 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
     {
         process::set_current(process_to_add);
     }
+    process_to_add->set_parent(process_to_add->get_pid());
+
     if (start_direct == true)
     {
         process_to_add->set_state(process_state::PROCESS_WAITING);

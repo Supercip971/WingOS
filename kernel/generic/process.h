@@ -71,6 +71,7 @@ class process
     per_process_userspace_fs ufs;
 
     process_message *msg_list;
+    uint64_t parrent_pid = 0x0;
 
 public:
     process(size_t kernel_pid) : current_process_state(PROCESS_AVAILABLE), upid(-1), kpid(kernel_pid){
@@ -108,7 +109,15 @@ public:
     {
         return kpid != 0;
     }
+    void set_parent(uint64_t pid)
+    {
+        parrent_pid = pid;
+    }
 
+    uint64_t get_parent_pid() const
+    {
+        return parrent_pid;
+    }
     bool is_used() const
     {
         return (current_process_state != process_state::PROCESS_AVAILABLE && current_process_state != process_state::PROCESS_CRASH && current_process_state != process_state::PROCESS_SHOULD_BE_DEAD) && is_valid();

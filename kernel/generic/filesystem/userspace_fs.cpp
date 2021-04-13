@@ -180,7 +180,7 @@ filesystem_file_t *get_if_valid_handle(int fd, bool check_free = true)
 
         return nullptr;
     }
-    else if (fs_handle_table[fd].rpid != process::current()->get_pid() && check_free)
+    else if (fs_handle_table[fd].rpid != process::current()->get_parent_pid() && check_free)
     {
         log("fs", LOG_WARNING, "process: {} trying to use a file descriptor used by another process", process::current()->get_name());
 
@@ -316,7 +316,7 @@ int fs_open(const char *path_name, int flags, int mode)
         return 0;
     }
     set_used_handle(fd);
-    fs_handle_table[fd].rpid = process::current()->get_pid();
+    fs_handle_table[fd].rpid = process::current()->get_parent_pid();
 
     fs_handle_table[fd].path = new char[strlen(path_name) + 1];
     memcpy(fs_handle_table[fd].path, path_name, strlen(path_name) + 1);

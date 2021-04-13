@@ -164,11 +164,11 @@ int sys$ipc_server_exist(const char *path)
 }
 int sys$create_server(const char *path)
 {
-    return create_msg_system(path, process::current()->get_pid());
+    return create_msg_system(path, process::current()->get_parent_pid());
 }
 uint32_t sys$connect_to_server(const char *path)
 {
-    return connect(path, process::current()->get_pid());
+    return connect(path, process::current()->get_parent_pid());
 }
 uint32_t sys$accept_connection(int server_id)
 {

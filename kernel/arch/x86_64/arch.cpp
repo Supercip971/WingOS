@@ -10,6 +10,7 @@
 #include <device/apic.h>
 #include <device/apic_timer.h>
 #include <device/ata_driver.h>
+#include <device/graphic.h>
 #include <device/hpet.h>
 #include <device/local_data.h>
 #include <device/madt.h>
@@ -143,6 +144,8 @@ void start_process()
     psmouse->init();
     ps_keyboard *keyboard = new ps_keyboard;
     keyboard->init();
+    basic_framebuffer_graphic_device *framebuff = new basic_framebuffer_graphic_device(boot_loader_data_copy.framebuffer_width, boot_loader_data_copy.framebuffer_height, boot_loader_data_copy.framebuffer_addr);
+    add_device(framebuff);
     if (ata_driver::has_ata_device())
     {
         ata_driver *me = new ata_driver();

@@ -2,6 +2,7 @@
 #include "cursor.h"
 #include <gui/graphic_system.h>
 #include <gui/raw_graphic.h>
+#include <kern/framebuffer.h>
 #include <kern/kernel_util.h>
 #include <kern/mem_util.h>
 #include <kern/mouse_keyboard.h>
@@ -98,11 +99,11 @@ void init_raw_graphic_system()
 {
 
     printf("init raw graphic system \n");
-    real_gbuffer_addr = sys::get_graphic_buffer_addr();
+    real_gbuffer_addr = sys::get_framebuffer_addr();
     front_buffer = (gui::color *)real_gbuffer_addr;
-    screen_width = sys::get_screen_width();
+    screen_width = sys::get_framebuffer_width();
     printf("screen width = %x \n", screen_width);
-    screen_height = sys::get_screen_height();
+    screen_height = sys::get_framebuffer_height();
     printf("screen width = %x \n", screen_height);
     printf("init raw graphic system %x x %x \n", screen_width, screen_height);
     back_buffer = new gui::color[(screen_width + 2) * (screen_height + 2) + 32];

@@ -9,12 +9,13 @@
 #include <gui/raw_graphic.h>
 #include <gui/widget/button.h>
 #include <gui/widget/rectangle.h>
+#include <kern/framebuffer.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 int main(int argc, char **argv)
 {
-    gui::graphic_context gc(sys::get_screen_width(), sys::get_screen_height(), "background");
+    gui::graphic_context gc(sys::get_framebuffer_width(), sys::get_framebuffer_height(), "background");
     int texWidth, texHeight, texChannels;
     //   uint8_t *data = stbi_load("initfs/boot_pic.bmp", &texWidth, &texHeight, &texChannels, STBI_rgb);
     gui::img_bmp bmp = gui::img_bmp("initfs/background_pic.bmp");

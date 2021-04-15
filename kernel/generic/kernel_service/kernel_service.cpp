@@ -21,7 +21,7 @@ void load_kernel_service()
 
     // add_kernel_service(kernel_process_service, "kernel_process_service");
     //add_kernel_service(print_service, "console_out");
-    add_kernel_service(graphic_buffer_service, "graphic_buffer_service");
+    //  add_kernel_service(graphic_buffer_service, "graphic_buffer_service");
     //add_kernel_service(time_service, "time_service");
     //  add_kernel_service(ps2_device_service, "ps2_device_service");
     // add_kernel_service(file_system_service, "file_system_service");

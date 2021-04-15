@@ -15,6 +15,7 @@ enum device_type : uint32_t
     KEYBOARD_DEVICE = 4,
     CLOCK_DEVICE = 5,
     DEBUG_DEVICE = 6,
+    FRAMEBUFFER_DEVICE = 7,
     NULL_DEVICE = 0xfffff,
 };
 extern const char *device_type_to_str[];
@@ -124,6 +125,37 @@ public:
     device_type get_type() const final { return get_stype(); };
     virtual bool echo_out(const char *data, uint64_t data_length) = 0;
     virtual bool echo_out(const char *data) = 0;
+};
+
+class generic_framebuffer : public general_device
+{
+public:
+    static device_type get_stype() { return device_type::FRAMEBUFFER_DEVICE; };
+    device_type get_type() const final { return get_stype(); };
+    virtual uintptr_t get_addr() = 0;
+    virtual size_t width() = 0;
+    virtual size_t height() = 0;
+
+    size_t read_buffer(void *addr, size_t length)
+    {
+
+        size_t rlength = length;
+        if (length > get_buffer_size())
+        {
+            rlength = sizeof(framebuffer_buff_info);
+        }
+        framebuffer_buff_info info{0};
+        info.width = width();
+        info.height = height();
+        info.addr = get_addr();
+        memcpy((uint8_t *)addr, ((uint8_t *)&info), rlength);
+        return rlength;
+    }
+
+    size_t get_buffer_size()
+    {
+        return sizeof(framebuffer_buff_info);
+    }
 };
 
 #endif // TIMER_DEVICE_H

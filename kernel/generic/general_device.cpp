@@ -51,6 +51,7 @@ template interrupt_timer *find_device();
 template general_mouse *find_device();
 template generic_io_device *find_device();
 template debug_device *find_device();
+template generic_framebuffer *find_device();
 
 generic_io_device::io_rw_output generic_io_device::read_unaligned(uint8_t *data, uint64_t count, uint64_t cursor)
 {

@@ -57,6 +57,18 @@ public:
     virtual size_t get_size() const { return sizeof(mouse_buff_info); };
 };
 
+class dev_framebuffer_file : public ram_file
+{
+public:
+    virtual const char *get_npath() { return "/dev/framebuffer"; };
+
+    virtual size_t read(void *dbuffer, size_t offset, size_t count)
+    {
+        return find_device<generic_framebuffer>()->read_buffer(dbuffer, count);
+    }
+    virtual size_t get_size() const { return sizeof(mouse_buff_info); };
+};
+
 class std_zero_file : public ram_file
 {
 public:

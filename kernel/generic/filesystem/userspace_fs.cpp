@@ -164,6 +164,7 @@ void init_userspace_fs()
     }
     add_ram_file(new dev_keyboard_file);
     add_ram_file(new dev_mouse_file);
+    add_ram_file(new dev_framebuffer_file);
 }
 
 filesystem_file_t *get_if_valid_handle(int fd, bool check_free = true)

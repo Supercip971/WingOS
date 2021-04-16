@@ -3,7 +3,6 @@
 #include <device/rtc.h>
 #include <filesystem/file_system.h>
 #include <kernel.h>
-#include <kernel_service/kernel_service.h>
 #include <logging.h>
 #include <physical.h>
 #include <process.h>
@@ -37,7 +36,6 @@ void test()
 void _start(stivale_struct *bootloader_data)
 {
     main_fs_system::the()->init_file_system();
-    load_kernel_service();
 
     log("kernel", LOG_INFO, "==== KERNEL STARTED ====");
 
@@ -47,6 +45,7 @@ void _start(stivale_struct *bootloader_data)
     log("kernel", LOG_INFO, "memory used: {}", get_used_memory() * PAGE_SIZE);
     //  dump_process();
     launch_programm("initfs/graphic_service.exe", main_fs_system::the()->main_fs(), 0, nullptr);
+    sleep(1);
     launch_programm("initfs/background.exe", main_fs_system::the()->main_fs(), 0, nullptr);
     launch_programm("initfs/test2.exe", main_fs_system::the()->main_fs(), 0, nullptr);
 

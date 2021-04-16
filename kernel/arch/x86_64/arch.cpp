@@ -24,7 +24,6 @@
 #include <filesystem/file_system.h>
 #include <filesystem/partition/base_partition.h>
 #include <kernel.h>
-#include <kernel_service/kernel_service.h>
 #include <logging.h>
 #include <pic.h>
 #include <process.h>

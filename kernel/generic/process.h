@@ -37,18 +37,7 @@ struct process_buffer
     int type;
 } __attribute__((packed));
 bool add_process_buffer(process_buffer *buf, uint64_t data_length, uint8_t *raw);
-struct process_message
-{
-    uint8_t message_id;
-    uint64_t from_pid;
-    uint64_t to_pid;
-    uint64_t content_address; // NOTE IT COPY THE CONTENT
-    uint64_t content_length;
-    uint64_t response;
-    bool has_been_readed;
-    bool entry_free_to_use;
-} __attribute__((packed));
-#define MAX_PROCESS_MESSAGE_QUEUE 128
+
 class process
 {
     arch_process_data arch_info;
@@ -70,7 +59,6 @@ class process
     backtrace process_backtrace;
     per_process_userspace_fs ufs;
 
-    process_message *msg_list;
     uint64_t parrent_pid = 0x0;
 
 public:
@@ -103,8 +91,6 @@ public:
     arch_process_data *get_arch_info() { return &arch_info; };
 
     void init_global_memory();
-    void init_message_system();
-
     bool is_valid() const
     {
         return kpid != 0;
@@ -167,12 +153,8 @@ public:
     void set_active(bool state) { should_be_active = state; };
 
     void create_message_list();
-    process_message *read_msg();
-    process_message *alloc_message();
-    process_message *get_message(uint8_t msg_id) { return &msg_list[msg_id]; };
 
     bool is_on_request() const { return is_ORS; };
-    process_message *create_message(uintptr_t data_addr, uint64_t data_length, uint64_t to_pid);
     static process *from_name(const char *name);
     static process *from_pid(size_t pid);
     static process *current();
@@ -203,10 +185,6 @@ void lock_process();
 
 void task_update_switch(process *next);
 uintptr_t process_switch_handler(arch_stackframe *isf, bool switch_all);
-process_message *send_message(uintptr_t data_addr, uint64_t data_length, const char *to_process);
-process_message *send_message_pid(uintptr_t data_addr, uint64_t data_length, uint64_t target_pid);
-process_message *read_message();
-uint64_t message_response(process_message *indentifier);
 
 // todo : add ORS to user service, for the moment it is only for kernel
 void set_on_request_service(bool is_ORS);

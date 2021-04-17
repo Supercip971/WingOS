@@ -20,21 +20,6 @@ namespace sys
             : "memory"); // for debugging
         return kernel_return;
     };
-    static inline raw_process_message *sys$send_message(uintptr_t data_addr, uintptr_t data_length, const char *target)
-    {
-        return (raw_process_message *)syscall((uint64_t)syscall_codes::SEND_SERVICE_SYSCALL, data_addr, data_length, (uint64_t)target, 0, 0);
-    }
-
-    static inline raw_process_message *sys$read_message()
-    {
-        return (raw_process_message *)syscall((uint64_t)syscall_codes::READ_SERVICE_SYSCALL, 0, 0, 0, 0, 0);
-    }
-
-    static inline uintptr_t sys$message_response(raw_process_message *identifier)
-    {
-        return syscall((uint64_t)syscall_codes::GET_RESPONSE_SERVICE_SYSCALL, (uint64_t)identifier, 0, 0, 0, 0);
-    }
-
 
     static inline uintptr_t sys$get_process_global_data(uint64_t offset, const char *target)
     {
@@ -45,10 +30,7 @@ namespace sys
     {
         return (void *)syscall((uintptr_t)syscall_codes::GET_PROCESS_GLOBAL_DATA, 0, offset, length, 0, 0);
     }
-    static inline raw_process_message *sys$send_message_pid(uint64_t data_addr, uint64_t data_length, uint64_t pid)
-    {
-        return (raw_process_message *)syscall((uintptr_t)syscall_codes::SEND_PROCESS_SYSCALL_PID, data_addr, data_length, pid, 0, 0);
-    }
+
     static inline void *sys$alloc(uintptr_t count, uint8_t flag)
     {
         return (void *)syscall((uintptr_t)syscall_codes::MEMORY_ALLOC, count, flag, 0, 0, 0);

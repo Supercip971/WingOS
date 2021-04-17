@@ -161,17 +161,6 @@ void process::init_global_memory()
     global_process_memory_length = 4096;
     memzero(global_process_memory, global_process_memory_length);
 }
-void process::init_message_system()
-{
-
-    last_message_used = 0;
-    msg_list = new process_message[MAX_PROCESS_MESSAGE_QUEUE + 1];
-    for (uint64_t j = 0; j < MAX_PROCESS_MESSAGE_QUEUE; j++)
-    {
-        msg_list[j].entry_free_to_use = true;
-        msg_list[j].message_id = j;
-    }
-}
 process *init_process(func entry_point, bool start_direct, const char *name, bool user, uint64_t cpu_target, int argc, char **argv)
 {
     process_creator_lock.lock();
@@ -190,7 +179,6 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
     process_to_add->set_state(process_state::PROCESS_NOT_STARTED);
     log("process", LOG_INFO, "adding process: {} entry: {} name: {}", process_to_add->get_pid(), reinterpret_cast<uintptr_t>(entry_point), process_to_add->get_name());
     process_to_add->init_global_memory();
-    process_to_add->init_message_system();
     init_process_stackframe(process_to_add, entry_point, argc, argv);
     init_process_userspace_fs(process_to_add->get_ufs());
 
@@ -315,148 +303,6 @@ process *process::from_pid(size_t pid)
     }
     return nullptr;
 }
-process_message *process::alloc_message()
-{
-
-    for (int j = last_message_used; j < MAX_PROCESS_MESSAGE_QUEUE; j++)
-    {
-        if (msg_list[j].entry_free_to_use == true)
-        {
-            process_message *msg = &msg_list[j];
-            msg->entry_free_to_use = false;
-            msg->has_been_readed = false;
-            msg->response = -1;
-            last_message_used = j;
-            return msg;
-        }
-    }
-
-    // if no free entry founded reloop
-    if (last_message_used != 0)
-    {
-        last_message_used = 0;
-        return alloc_message();
-    }
-    log(get_name(), LOG_WARNING, "no free message founded with last used");
-    return nullptr;
-}
-process_message *process::create_message(uintptr_t data_addr, uint64_t data_length, uint64_t to_pid)
-{
-
-    process_message *todo = alloc_message();
-    if (todo == nullptr)
-    {
-        log("process", LOG_ERROR, "can't create a message for process {}", get_name());
-        dump_process();
-        return nullptr;
-    }
-    todo->content_length = data_length;
-
-    uint64_t memory_kernel_copy = (uint64_t)malloc(data_length);
-    memcpy((void *)memory_kernel_copy, (void *)data_addr, data_length);
-    todo->content_address = memory_kernel_copy;
-
-    todo->from_pid = to_pid;
-    todo->to_pid = get_pid();
-
-    process_message *copy = (process_message *)malloc(sizeof(process_message));
-    memcpy((void *)copy, (void *)todo, sizeof(process_message));
-    copy->content_address = -1;
-    return copy;
-}
-process_message *send_message(uintptr_t data_addr, uint64_t data_length, const char *to_process)
-{
-
-    auto target = process::from_name(to_process);
-    if (target == nullptr)
-    {
-        log("process", LOG_ERROR, "trying to send a message to not founded process: {}", to_process);
-        return nullptr;
-    }
-
-    target->set_active(true);
-    return target->create_message(data_addr, data_length, process::current()->get_pid());
-}
-
-process_message *send_message_pid(uintptr_t data_addr, uint64_t data_length, uint64_t target_pid)
-{
-    auto target = process::from_pid(target_pid);
-    if (target == nullptr)
-    {
-        log("process", LOG_ERROR, "trying to send a message to not founded process: {}", target_pid);
-        return nullptr;
-    }
-
-    target->set_active(true);
-    return target->create_message(data_addr, data_length, target->get_pid());
-}
-process_message *process::read_msg()
-{
-
-    for (uint64_t i = 0; i < MAX_PROCESS_MESSAGE_QUEUE; i++)
-    {
-        if (msg_list[i].entry_free_to_use == false)
-        {
-            if (msg_list[i].has_been_readed == false)
-            {
-                return &msg_list[i];
-            }
-        }
-    }
-    return nullptr;
-}
-process_message *read_message()
-{
-    auto msg = process::current()->read_msg();
-    if (msg != nullptr)
-    {
-        return msg;
-    }
-    if (process::current()->is_on_request())
-    {
-        process::current()->set_active(false);
-    }
-
-    return 0x0;
-}
-
-uint64_t message_response(process_message *message_id)
-{
-
-    if (message_id->from_pid != process::current()->get_pid())
-    {
-        log("process", LOG_ERROR, "not valid process from: {}", message_id->from_pid);
-        return -1;
-    }
-
-    auto target = process::from_pid(message_id->to_pid);
-    if (target == nullptr)
-    {
-        return 0;
-    }
-
-    process_message *msg = target->get_message(message_id->message_id);
-
-    if (msg->has_been_readed == false)
-    {
-        return -2; // return -2 = wait again
-    }
-    else if (msg->entry_free_to_use == true)
-    {
-        log("process", LOG_ERROR, "message has already been readed");
-        return -3;
-    }
-    else
-    {
-        msg->entry_free_to_use = true;
-
-        free(message_id);
-        free((void *)msg->content_address);
-        return msg->response;
-    }
-    return -1;
-}
-
 void set_on_request_service(bool is_ORS)
 {
     process::current()->set_on_request(is_ORS);

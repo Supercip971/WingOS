@@ -11,36 +11,9 @@ utils::lock_type msg_lock;
 
 uint64_t sys$null(const char *arg1)
 {
-    log(process::current()->get_name(), LOG_INFO) << arg1;
+    log("syscall", LOG_ERROR, "null syscall called");
 
     return 32;
-}
-
-process_message *sys$send_message(uintptr_t data_addr, uint64_t data_length, const char *to_process)
-{
-    msg_lock.lock();
-    auto res = send_message(data_addr, data_length, to_process);
-
-    msg_lock.unlock();
-    return res;
-}
-
-process_message *sys$read_message()
-{
-    msg_lock.lock();
-    auto v = read_message();
-
-    msg_lock.unlock();
-    return v;
-}
-
-uint64_t sys$message_response(process_message *identifier)
-{
-    msg_lock.lock();
-    auto v = message_response(identifier);
-
-    msg_lock.unlock();
-    return v;
 }
 
 uint64_t sys$get_process_global_data(const char *target, uint64_t offset, uint64_t length)
@@ -59,15 +32,6 @@ uint64_t sys$get_process_global_data(const char *target, uint64_t offset, uint64
 
     msg_lock.unlock();
     return v;
-}
-
-process_message *sys$send_message_pid(uintptr_t data_addr, uint64_t data_length, uint64_t to_process)
-{
-    msg_lock.lock();
-    auto res = send_message_pid(data_addr, data_length, to_process);
-
-    msg_lock.unlock();
-    return res;
 }
 
 void *sys$alloc(uint64_t count, uint8_t flag)
@@ -195,11 +159,11 @@ size_t sys$receive(uint32_t id, raw_msg_request *request, int flags)
 }
 static void *syscalls[] = {
     (void *)sys$null,
-    (void *)sys$send_message,
-    (void *)sys$read_message,
-    (void *)sys$message_response,
+    (void *)sys$null,
+    (void *)sys$null,
+    (void *)sys$null,
     (void *)sys$get_process_global_data,
-    (void *)sys$send_message_pid,
+    (void *)sys$null,
     (void *)sys$alloc,
     (void *)sys$free,
     (void *)sys$open,

@@ -11,8 +11,8 @@ namespace utils
         static constexpr T value = val;
         using val_type = T;
         using this_type = integral_constant;
-        constexpr operator val_type() const noexcept { return value; };
-        constexpr val_type operator()() const noexcept { return value; };
+        constexpr operator val_type() const { return value; };
+        constexpr val_type operator()() const { return value; };
     };
 
     using true_type = integral_constant<bool, true>;

@@ -1,5 +1,4 @@
 #pragma once
-#include <logging.h>
 #include <stdint.h>
 #include <stivale_struct.h>
 

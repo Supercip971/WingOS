@@ -5,6 +5,7 @@
 #include <device/acpi.h>
 #include <device/local_data.h>
 #include <kernel.h>
+#include <logging.h>
 #include <physical.h>
 #include <stivale_struct.h>
 #include <utility.h>

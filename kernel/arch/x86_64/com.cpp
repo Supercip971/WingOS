@@ -32,13 +32,14 @@ bool com_device::echo_out(const char *data)
 void com_device::init(COM_PORT this_port)
 {
     port = this_port;
-    write(COM_REGISTER::COM_INTERRUPT_IDENTIFICATOR, 0);
-    write(COM_REGISTER::COM_LINE_CONTROL, 1 << 7);
-    write(COM_REGISTER::COM_DATA, 3);
-    write(COM_REGISTER::COM_INTERRUPT, 0);
-    write(COM_REGISTER::COM_LINE_CONTROL, 0x03);
-    write(COM_REGISTER::COM_INTERRUPT_IDENTIFICATOR, 0xC7);
-    write(COM_REGISTER::COM_MODEM_CONTROL, 0x0B);
+
+    zero_interrupt_identificator();
+    turn_on_dlab();
+    set_baud(3);
+    set_data_size(COM_LINE_CONTROL_BIT::COM_DATA_SIZE_8); // 8 bit
+    fill_interrupt_identificator();
+    write_modem(COM_MODEM_DTR | COM_MODEM_RTS | COM_MODEM_OUT2);
+
     add_device(this);
 }
 void com_device::wait() const

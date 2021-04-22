@@ -464,3 +464,43 @@ void kill_current()
         yield();
     }
 }
+
+uintptr_t process::allocate_virtual_addr(size_t count)
+{
+    auto ret = virtual_addr.alloc(count);
+
+    log("process", LOG_INFO, "allocating {} returning {}", count, ret);
+    return ret;
+}
+
+uintptr_t process::free_virtual_addr(uintptr_t addr, size_t count)
+{
+    if (has_virtual_addr(addr, count))
+    {
+        virtual_addr.set_free(addr, count);
+        return count;
+    }
+    else
+    {
+        log("process", LOG_ERROR, "can't free virtual addr: {} count: {}", addr * PAGE_SIZE, count);
+        return 0;
+    }
+}
+
+bool process::has_virtual_addr(uintptr_t addr, size_t count)
+{
+    if (((addr + count) * PAGE_SIZE) > (USR_VIRT_ADDR_SIZE))
+    {
+        return false;
+    }
+
+    for (size_t i = addr; i < addr + count; i++)
+    {
+        if (virtual_addr.get(i) != true)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+

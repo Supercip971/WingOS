@@ -60,6 +60,7 @@ class process
     per_process_userspace_fs ufs;
 
     uint64_t parrent_pid = 0x0;
+    bitmap virtual_addr;
 
 public:
     process(size_t kernel_pid) : current_process_state(PROCESS_AVAILABLE), upid(-1), kpid(kernel_pid){
@@ -76,6 +77,9 @@ public:
                                                                                                                        sleeping(0)
     {
         memcpy(process_name, name, strlen(name) + 1);
+        virtual_addr = bitmap(new uint8_t[USR_VIRT_ADDR_SIZE / PAGE_SIZE / 8], USR_VIRT_ADDR_SIZE / PAGE_SIZE);
+        virtual_addr.set_free(0, virtual_addr.get_size());
+        virtual_addr.reset_last_free();
     }
 
     process(const process &move)
@@ -167,6 +171,11 @@ public:
 
         memcpy(process_name, new_name, utils::max(strlen(process_name), strlen(new_name)));
     }
+
+    uintptr_t allocate_virtual_addr(size_t count);
+    uintptr_t free_virtual_addr(uintptr_t addr, size_t count);
+
+    bool has_virtual_addr(uintptr_t addr, size_t count);
 };
 
 struct message_identifier

@@ -469,7 +469,6 @@ uintptr_t process::allocate_virtual_addr(size_t count)
 {
     auto ret = virtual_addr.alloc(count);
 
-    log("process", LOG_INFO, "allocating {} returning {}", count, ret);
     return ret;
 }
 

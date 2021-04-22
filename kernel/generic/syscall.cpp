@@ -50,7 +50,6 @@ void *sys$alloc(uint64_t count, uint8_t flag)
             map_page((uintptr_t)res + i * PAGE_SIZE, get_usr_addr(addr) + i * PAGE_SIZE, true, true);
         }
         update_paging();
-        log("sys$alloc", LOG_INFO, "allocated: {} count: {}", get_usr_addr(addr), count);
         return (void *)get_usr_addr(addr);
     }
 }
@@ -64,7 +63,6 @@ int sys$free(uintptr_t target, uint64_t count)
     }
     else
     {
-        log("sys$free", LOG_INFO, "freeing: {} (page: {}) count: {}", target, get_rusr_addr(target) / PAGE_SIZE, count);
 
         process::current()->free_virtual_addr(get_rusr_addr(target) / PAGE_SIZE, count);
 

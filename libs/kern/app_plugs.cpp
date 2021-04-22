@@ -6,12 +6,11 @@
 
     uintptr_t plug_allocate_page(size_t count)
     {
-        return reinterpret_cast<uintptr_t>(sys::pmm_malloc(count));
+        return reinterpret_cast<uintptr_t>(sys::sys$alloc( count, 0));
     }
     int plug_free_page(uintptr_t addr, size_t count)
     {
-        sys::pmm_free(reinterpret_cast<void *>(addr), count);
-        return true;
+        return sys::sys$free(addr, count);
     }
     void plug_debug_out(const char *str, size_t length)
     {

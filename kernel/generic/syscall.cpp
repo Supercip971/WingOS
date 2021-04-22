@@ -44,26 +44,32 @@ void *sys$alloc(uint64_t count, uint8_t flag)
     }
     else
     {
-
+        uintptr_t addr = process::current()->allocate_virtual_addr(count) * PAGE_SIZE;
         for (uint64_t i = 0; i < count; i++)
         {
-            map_page((uintptr_t)res + i * PAGE_SIZE, get_usr_addr(res) + i * PAGE_SIZE, true, true);
+            map_page((uintptr_t)res + i * PAGE_SIZE, get_usr_addr(addr) + i * PAGE_SIZE, true, true);
         }
         update_paging();
-        return (void *)get_usr_addr(res);
+        log("sys$alloc", LOG_INFO, "allocated: {} count: {}", get_usr_addr(addr), count);
+        return (void *)get_usr_addr(addr);
     }
 }
 
 int sys$free(uintptr_t target, uint64_t count)
 {
-    if (target > MEM_ADDR)
+    if (target >= MEM_ADDR)
     {
 
         pmm_free((void *)get_rmem_addr(target), count);
     }
     else
     {
-        pmm_free((void *)get_rusr_addr(target), count);
+        log("sys$free", LOG_INFO, "freeing: {} (page: {}) count: {}", target, get_rusr_addr(target) / PAGE_SIZE, count);
+
+        process::current()->free_virtual_addr(get_rusr_addr(target) / PAGE_SIZE, count);
+
+        pmm_free((void *)get_physical_addr(target), count);
+        unmap_page(process::current()->get_arch_info()->page_directory, target);
     }
     return 1;
 }

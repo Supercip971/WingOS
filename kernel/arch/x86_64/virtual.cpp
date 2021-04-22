@@ -170,7 +170,7 @@ void update_paging()
 {
     set_paging_dir(get_rmem_addr(get_current_cpu()->cpu_page_table));
 }
-
+// todo: fix this function, use page_table::get_entry()
 void map_page_recursive(size_t page_idx, page_table *table, const page_table *from, size_t *pml_idx)
 {
     size_t entry_count = 512;
@@ -215,4 +215,70 @@ page_table *clone_directory(page_table *from)
     map_page_recursive(4, ret_pml4, from, pml_idx);
 
     return ret_pml4;
+}
+
+// return true if every page of the table were free
+bool is_table_free(page_table *table)
+{
+    for (int i = 0; i < 512; i++)
+    {
+        if (page_table::get_entry(table, i) != nullptr)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+int free_if_necessary_table(page_table *table, page_table *parent, uint64_t parent_idx)
+{
+
+    if (is_table_free(table))
+    {
+        pmm_free((void *)page_table::get_entry(parent, parent_idx)->get_addr(), 1);
+        page_table::get_entry(parent, parent_idx)->set_present(false);
+        return 1;
+    }
+
+    return 0;
+}
+
+int free_if_necessary_tables(page_table *table, uint64_t updated_addr)
+{
+
+    uint64_t pml4_entry = PML4_GET_INDEX(updated_addr);
+    uint64_t pdpt_entry = PDPT_GET_INDEX(updated_addr);
+    uint64_t pd_entry = PAGE_DIR_GET_INDEX(updated_addr);
+
+    page_table *pdpt, *pd, *pt;
+    pdpt = page_table::get_entry(table, pml4_entry);
+    pd = page_table::get_entry(pdpt, pdpt_entry);
+    pt = page_table::get_entry(pd, pd_entry);
+
+    free_if_necessary_table(pt, pd, pd_entry);
+    free_if_necessary_table(pd, pdpt, pdpt_entry);
+    free_if_necessary_table(pdpt, table, pml4_entry);
+    return 1;
+}
+int unmap_page(page_table *table, uint64_t virt_addr)
+{
+
+    uint64_t pml4_entry = PML4_GET_INDEX(virt_addr);
+    uint64_t pdpt_entry = PDPT_GET_INDEX(virt_addr);
+    uint64_t pd_entry = PAGE_DIR_GET_INDEX(virt_addr);
+    uint64_t pt_entry = PAGE_TABLE_GET_INDEX(virt_addr);
+
+    page_table *pdpt, *pd, *pt;
+    pdpt = page_table::get_entry(get_current_cpu()->cpu_page_table, pml4_entry);
+    pd = page_table::get_entry(pdpt, pdpt_entry);
+    pt = page_table::get_entry(pd, pd_entry);
+    page_table *page = page_table::get_entry(pt, pt_entry);
+    if (page == nullptr)
+    {
+        return -1;
+    }
+    page->set_present(false);
+    free_if_necessary_tables(table, virt_addr);
+    update_paging();
+    return 0;
 }

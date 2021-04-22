@@ -102,6 +102,7 @@ inline void set_paging_dir(uint64_t pd)
 void update_paging();
 
 int map_page(page_table *table, uint64_t phys_addr, uint64_t virt_addr, bool is_writable, bool is_user);
+int unmap_page(page_table *table, uint64_t virt_addr);
 
 int map_page(uint64_t phys_addr, uint64_t virt_addr, bool is_writable, bool is_user);
 

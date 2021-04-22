@@ -10,7 +10,7 @@
     }
     int plug_free_page(uintptr_t addr, size_t count)
     {
-        sys::pmm_free(reinterpret_cast<void *>(count), count);
+        sys::pmm_free(reinterpret_cast<void *>(addr), count);
         return true;
     }
     void plug_debug_out(const char *str, size_t length)

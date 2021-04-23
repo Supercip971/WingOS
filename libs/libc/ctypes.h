@@ -1,4 +1,5 @@
-
+#ifndef CTYPES_H
+#define CTYPES_H
 
 inline int isspace(int c)
 {
@@ -11,6 +12,7 @@ inline int isspace(int c)
         return 0;
     }
 }
+
 inline int isalnum(int c)
 {
     if (c <= 'z' && c >= 'a')
@@ -27,6 +29,7 @@ inline int isalnum(int c)
     }
     return 0;
 }
+
 inline int isdigit(int c)
 {
     if (c <= '9' && c >= '0')
@@ -35,6 +38,7 @@ inline int isdigit(int c)
     }
     return 0;
 }
+
 inline int isalpha(int c)
 {
     if (c <= 'z' && c >= 'a')
@@ -47,6 +51,7 @@ inline int isalpha(int c)
     }
     return 0;
 }
+
 inline int to_lower(int c)
 {
     if (c >= 'A' && c <= 'Z')
@@ -66,3 +71,5 @@ inline int to_upper(int c)
     }
     return c;
 }
+
+#endif // CTYPES_H

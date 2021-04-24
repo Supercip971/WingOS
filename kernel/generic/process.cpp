@@ -161,42 +161,49 @@ void process::init_global_memory()
     global_process_memory_length = 4096;
     memzero(global_process_memory, global_process_memory_length);
 }
-process *init_process(func entry_point, bool start_direct, const char *name, bool user, uint64_t cpu_target, int argc, char **argv)
+
+process *alloc_process(const char *end_name, func entry_point, bool is_user)
 {
-    process_creator_lock.lock();
     int64_t process_to_add_kpid = find_free_process();
     if (process_to_add_kpid == -1)
     {
         log("process", LOG_ERROR, "no free process founded");
         return nullptr;
     }
-
-    //    bool added_pid = false;
-
     next_upid++;
     auto process_to_add = &process_array[process_to_add_kpid];
-    *process_to_add = process(name, process_to_add_kpid, next_upid, reinterpret_cast<uintptr_t>(entry_point), user);
+    *process_to_add = process(end_name, process_to_add_kpid, next_upid, reinterpret_cast<uintptr_t>(entry_point), is_user);
     process_to_add->set_state(process_state::PROCESS_NOT_STARTED);
+    return process_to_add;
+}
+
+void init_process_entry(process *target, const char *name, bool is_user, char **argv, int argc, func entry_point)
+{
+    target->init_global_memory();
+    init_process_stackframe(target, entry_point, argc, argv);
+    init_process_userspace_fs(target->get_ufs());
+    init_process_paging(target, is_user);
+    init_process_arch_ext(target);
+}
+process *init_process(func entry_point, bool start_direct, const char *name, bool user, uint64_t cpu_target, int argc, char **argv)
+{
+    process_creator_lock.lock();
+
+    auto process_to_add = alloc_process(name, entry_point, user);
+
     log("process", LOG_INFO, "adding process: {} entry: {} name: {}", process_to_add->get_pid(), reinterpret_cast<uintptr_t>(entry_point), process_to_add->get_name());
-    process_to_add->init_global_memory();
-    init_process_stackframe(process_to_add, entry_point, argc, argv);
-    init_process_userspace_fs(process_to_add->get_ufs());
 
     process_to_add->set_cpu(interpret_cpu_request(cpu_target));
+    init_process_entry(process_to_add, name, user, argv, argc, entry_point);
 
-    init_process_paging(process_to_add, user);
-
-    init_process_arch_ext(process_to_add);
-    if (process::current() == nullptr)
-    {
-        process::set_current(process_to_add);
-    }
     process_to_add->set_parent(process_to_add->get_pid());
 
-    if (start_direct == true)
+    if (start_direct || process::current() == nullptr)
     {
         process_to_add->set_state(process_state::PROCESS_WAITING);
+        process::set_current(process_to_add);
     }
+
     process_creator_lock.unlock();
 
     return process_to_add;

@@ -4,7 +4,7 @@
 
 DISK="./build/disk.hdd"
 MNT_PATH="./mnt"
-dd if=/dev/zero of=$DISK bs=64M count=1
+dd if=/dev/zero of=$DISK bs=250M count=1
 
 fdisk $DISK << EOF
 n

@@ -1,10 +1,9 @@
 #pragma once
-#define ASM_FUNCTION extern "C"
 #include <64bit.h>
 #include <stddef.h>
 #include <utils/config.h>
 #include <utils/lock.h>
-
+#include <utils/attribute.h>
 #include <virtual.h>
 typedef page_table arch_page_table;
 typedef uint64_t backtrace_entry_type;

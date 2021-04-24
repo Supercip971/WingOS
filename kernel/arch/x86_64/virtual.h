@@ -3,6 +3,7 @@
 
 #include <stivale_struct.h>
 
+#include <utils/attribute.h>
 #include <utils/bit.h>
 #include <utils/wvector.h>
 #define KERNEL_PHYS_OFFSET ((uint64_t)0xffffffff80000000)

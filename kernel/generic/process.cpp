@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <syscall.h>
 #include <utility.h>
+#include <utils/attribute.h>
 #include <utils/liballoc.h>
 #include <utils/lock.h>
 
@@ -41,7 +42,7 @@ void unlock_process()
     process_locked--;
 }
 
-void null_process()
+NO_RETURN void null_process()
 {
     turn_on_interrupt();
 
@@ -59,7 +60,7 @@ bool process::destroy()
     free(global_process_memory);
     return true;
 }
-void utility_process()
+NO_RETURN void utility_process()
 {
     turn_on_interrupt();
 
@@ -91,7 +92,7 @@ void utility_process()
         sleep(100);
     }
 }
-void init_multi_process(func start)
+NO_RETURN void init_multi_process(func start)
 {
     log("proc", LOG_DEBUG, "loading multi processing");
 
@@ -187,9 +188,15 @@ void init_process_entry(process *target, const char *name, bool is_user, char **
 }
 process *init_process(func entry_point, bool start_direct, const char *name, bool user, uint64_t cpu_target, int argc, char **argv)
 {
-    process_creator_lock.lock();
+    utils::context_lock locker(process_creator_lock);
 
     auto process_to_add = alloc_process(name, entry_point, user);
+
+    if (process_to_add == nullptr)
+    {
+        log("process", LOG_ERROR, "can't allocate process");
+        return nullptr;
+    }
 
     log("process", LOG_INFO, "adding process: {} entry: {} name: {}", process_to_add->get_pid(), reinterpret_cast<uintptr_t>(entry_point), process_to_add->get_name());
 
@@ -203,8 +210,6 @@ process *init_process(func entry_point, bool start_direct, const char *name, boo
         process_to_add->set_state(process_state::PROCESS_WAITING);
         process::set_current(process_to_add);
     }
-
-    process_creator_lock.unlock();
 
     return process_to_add;
 }
@@ -454,7 +459,7 @@ void kill(uint64_t pid)
     unlock_process();
 }
 
-void kill_current()
+NO_RETURN void kill_current()
 {
     lock_process();
 

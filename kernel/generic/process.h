@@ -187,7 +187,7 @@ struct message_identifier
 extern process *process_array;
 
 process *init_process(func entry_point, bool start_direct, const char *name, bool user, uint64_t cpu_target = CURRENT_CPU, int argc = 0, char **argv = nullptr);
-void init_multi_process(func start);
+NO_RETURN void init_multi_process(func start);
 void dump_process();
 void unlock_process();
 void lock_process();
@@ -209,4 +209,5 @@ void sleep(uint64_t count);
 void sleep(uint64_t count, uint64_t pid);
 
 void kill(uint64_t pid);
-void kill_current();
+NO_RETURN void kill_current();
+

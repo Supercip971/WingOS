@@ -28,15 +28,15 @@ namespace utils
             return b;
         }
     }
-    
+
     template <class A>
     constexpr A abs(const A a)
     {
-        if(a < 0)
+        if (a < 0)
         {
             return -a;
         }
-        
+
         return a;
     }
 

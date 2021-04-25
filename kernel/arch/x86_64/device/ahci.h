@@ -268,6 +268,7 @@ __attribute__((packed));
 
 class ahci : public pci_device_driver
 {
+    void init_ports();
     hba_memory *hba_mem;
 
     pci_bar_data ahci_bar;
@@ -291,6 +292,11 @@ class ahci_ata_device : public generic_io_device
 
     void start_command();
     void end_command();
+
+    void init_command_header(volatile hba_cmd_header *command_header, bool write);
+    void init_command_table(volatile hba_command_table *command_table, volatile hba_cmd_header *command_header, uintptr_t data_phys_address, size_t count);
+    void init_fis_reg_command(volatile fis_reg_host2device *command, bool write, uintptr_t cursor, size_t count);
+    bool wait_ata_busy_drq();
 
 public:
     ahci_ata_device() = default;

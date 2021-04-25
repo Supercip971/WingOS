@@ -31,5 +31,5 @@ public:
     // we need to do the APIC
     static smp *the();
 
-    MADT_table_LAPIC *mt_lapic[max_cpu];
+    MADT_table_LAPIC *cpu_lapic_entry[max_cpu];
 };

@@ -33,7 +33,8 @@ char *next_command()
             if (target == '\n')
             {
                 temp_buffer[buffer_idx] = 0;
-                stdin_length++;
+                stdin_length = sys::stdin.get_file_length();
+                sys::stdin.seek(sys::stdin.get_file_length());
                 return temp_buffer;
             }
             else
@@ -57,10 +58,11 @@ int main(int argc, char **argv)
     printf("hello + world = %s\n", v.c_str());
     printf(">");
     int i = 0;
-    temp_buffer = (char *)malloc(2048);
     buffer_length = 2048;
+    temp_buffer = (char *)malloc(buffer_length);
     while (true)
     {
+        memset(temp_buffer, 0, buffer_length);
         next_command();
         printf("%s \n", temp_buffer);
         int res = interpret_command(temp_buffer);

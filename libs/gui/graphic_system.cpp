@@ -80,7 +80,7 @@ namespace gui
         }
     }
 
-    void graphic_context::draw_rectangle(const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const color color)
+    void graphic_context::draw_rectangle(const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const color col)
     {
         const uint64_t this_width = this->context_width;
         const uint64_t limit = context_height * context_width;
@@ -89,25 +89,25 @@ namespace gui
             for (size_t ry = 0; ry < height; ry++)
             {
                 const uint64_t pos_f = (x + rx) + (y + ry) * this_width;
-                if (pos_f > limit)
+                if (pos_f >= limit)
                 {
                     return;
                 }
-                if (color.a != 255)
+                if (col.a != 255)
                 {
 
-                    back_buffer[pos_f].blend(color);
+                    back_buffer[pos_f].blend(col);
                 }
                 else
                 {
 
-                    back_buffer[pos_f] = color;
+                    back_buffer[pos_f] = col;
                 }
             }
         }
     }
 
-    void graphic_context::draw_basic_char(const uint64_t x, const uint64_t y, const char chr, const color color)
+    void graphic_context::draw_basic_char(const uint64_t x, const uint64_t y, const uint8_t chr, const color color)
     {
         for (size_t cx = 0; cx < 8; cx++)
         {
@@ -273,7 +273,7 @@ namespace gui
         }
     }
 
-    void graphic_context::draw_rounded_rectangle(int radius, const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const color color)
+    void graphic_context::draw_rounded_rectangle(size_t radius, const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const color color)
     {
         if (radius > height / 2)
         {
@@ -295,7 +295,7 @@ namespace gui
         draw_filled_circle_part(pos(left_x, bottom_y), radius, color, BOTTOM_LEFT);   // bottom left
         draw_filled_circle_part(pos(right_x, bottom_y), radius, color, BOTTOM_RIGHT); // bottom right
     }
-    void graphic_context::draw_rounded_rectangle_b(int radius, const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const color color)
+    void graphic_context::draw_rounded_rectangle_b(size_t radius, const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const color color)
     {
 
         draw_rectangle(x, y, width, height, gui::color(0, 0, 0, 100));

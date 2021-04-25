@@ -159,10 +159,10 @@ namespace gui
         }
         void apply_blur(uint64_t fromx, uint64_t fromy, uint64_t width, uint64_t height);
         void draw_filled_circle_part(const pos origin, const int radius, const color color, const filled_circle_part part);
-        void draw_rounded_rectangle(int radius, const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const color color);
-        void draw_rounded_rectangle_b(int radius, const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const color color);
+        void draw_rounded_rectangle(size_t radius, const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const color color);
+        void draw_rounded_rectangle_b(size_t radius, const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const color color);
         void draw_rectangle(const uint64_t x, const uint64_t y, const uint64_t width, const uint64_t height, const color color);
-        void draw_basic_char(const uint64_t x, const uint64_t y, const char chr, const color color);
+        void draw_basic_char(const uint64_t x, const uint64_t y, const uint8_t chr, const color color);
         void draw_basic_string(const uint64_t x, const uint64_t y, const char *str, const color color);
         void clear_buffer(const color color);
         void swap_buffer();

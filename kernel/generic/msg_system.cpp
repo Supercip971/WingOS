@@ -316,14 +316,25 @@ int msg_system::receive(int connection_id, raw_msg_request request, int flags, s
         msg_system_lock.lock();
         auto last_msg = connection->out_queue().get_last_msg();
         size_t readed_length = utils::min(last_msg.size, request.size);
+
         if (readed_length != last_msg.size)
         {
-            memcpy(request.data, last_msg.data, readed_length);
+            if (request.data != nullptr)
+            {
+                memcpy(request.data, last_msg.data, readed_length);
+            }
         }
         else
         {
-            memcpy(request.data,
-                   connection->out_queue().consume_msg().data, readed_length);
+            if (request.data != nullptr)
+            {
+                memcpy(request.data,
+                       connection->out_queue().consume_msg().data, readed_length);
+            }
+            else
+            {
+                connection->out_queue().consume_msg();
+            }
             free(last_msg.data);
         }
         msg_system_lock.unlock();
@@ -355,12 +366,24 @@ int msg_system::receive(int connection_id, raw_msg_request request, int flags, s
         }
         if (readed_length != last_msg.size)
         {
-            memcpy(request.data, last_msg.data, readed_length);
+            if (request.data != nullptr)
+            {
+
+                memcpy(request.data, last_msg.data, readed_length);
+            }
         }
         else
         {
-            memcpy(request.data,
-                   connection->in_queue().consume_msg().data, readed_length);
+            if (request.data != nullptr)
+            {
+
+                memcpy(request.data,
+                       connection->in_queue().consume_msg().data, readed_length);
+            }
+            else
+            {
+                connection->in_queue().consume_msg();
+            }
             free(last_msg.data);
         }
         msg_system_lock.unlock();

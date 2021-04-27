@@ -2,6 +2,7 @@
 #include "cursor.h"
 #include "raw_graphic_system.h"
 #include <kern/mem_util.h>
+#include <kern/mouse_keyboard.h>
 #include <kern/process_message.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,10 +10,16 @@ utils::vector<raw_window_data> window_list;
 
 uint64_t last_window_x = 10;
 uint64_t last_window_y = 10;
-
+raw_window_data *get_top_window()
+{
+    if (window_list.size() < 1)
+    {
+        return nullptr;
+    }
+    return &window_list[window_list.size() - 1];
+}
 void init_raw_windows()
 {
-
     printf("init window \n");
 }
 utils::vector<raw_window_data> get_window_list()

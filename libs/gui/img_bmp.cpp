@@ -20,11 +20,12 @@ namespace gui
         }
         printf("for %s \n with size %x \n width = %x \n height = %x \n", path, f.get_file_length(), header->width, header->height);
 
-        int paddedRowSize = (int)(4 * ((header->width / 4) + 1)) * (header->bpp);
+        /* int paddedRowSize = (int)(4 * ((header->width / 4) + 1)) * (header->bpp);
         if (header->width % 4 == 0)
         {
             paddedRowSize = (int)(((header->width))) * (header->bpp);
         }
+        */
         int unpaddedRowSize = (header->width) * (header->bpp);
         uint64_t total_size = unpaddedRowSize * header->height;
         pix_data = new uint8_t[total_size + 2];

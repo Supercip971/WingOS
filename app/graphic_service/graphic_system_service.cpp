@@ -14,6 +14,7 @@
 
 void loop();
 
+size_t last_key_press;
 sys::server graphic_service_server;
 int main(int argc, char **argv)
 {
@@ -59,7 +60,6 @@ graphic_request_return interpret(gui::graphic_system_service_protocol *request, 
         }
         else
         {
-
             return {true, window_depth_action(request, pid)};
         }
     }
@@ -67,29 +67,51 @@ graphic_request_return interpret(gui::graphic_system_service_protocol *request, 
     return {false, 0};
 }
 
+void update_windows()
+{
+    raw_window_data *d = get_top_window();
+
+    while (sys::get_current_keyboard_offset() > last_key_press)
+    {
+        auto press = sys::get_key_press(last_key_press);
+        if (press.state)
+        {
+            gui::graphic_system_update_info info;
+            info.info_type = gui::GRAPHIC_SYSTEM_INFO_SEND::KEY_INPUT;
+            info.info_window_key_input.key_char = press.button;
+            graphic_service_server.send(d->pid, &info, sizeof(gui::graphic_system_update_info));
+        }
+
+        last_key_press++;
+    }
+}
+
 void loop()
 {
+    last_key_press = sys::get_current_keyboard_offset();
 
     init_cursor();
     init_raw_windows();
     init_raw_graphic_system();
     while (true)
     {
+        graphic_service_server.accept_new_connection();
+        update_windows();
+
         // read all message
-        uint32_t ret = graphic_service_server.accept_new_connection();
-        if (ret != 0)
-        {
-        }
         for (size_t i = 0; i < graphic_service_server.get_connection_list().size(); i++)
         {
             gui::graphic_system_service_protocol val;
             if (graphic_service_server.receive(graphic_service_server.get_connection_list()[i], &val, sizeof(gui::graphic_system_service_protocol)) == sizeof(gui::graphic_system_service_protocol))
             {
                 graphic_request_return ret = interpret(&val, graphic_service_server.get_connection_list()[i]);
+
                 if (ret.should_return)
                 {
-
-                    graphic_service_server.send(graphic_service_server.get_connection_list()[i], &ret.raw_val, sizeof(uint64_t));
+                    gui::graphic_system_return_info res;
+                    res.checksum = gui::GRAPHIC_SYSTEM_INFO_SEND::RETURN_RESULT;
+                    res.return_val = ret.raw_val;
+                    graphic_service_server.send(graphic_service_server.get_connection_list()[i], &res, sizeof(gui::graphic_system_return_info));
                 }
             }
         }

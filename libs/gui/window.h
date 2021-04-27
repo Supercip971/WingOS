@@ -20,7 +20,7 @@ namespace gui
         bool has_at_least_one_redraw = true;
         uint64_t current_tick;
         widget *header_widget_movable;
-        // widget* widget_list; for later ;)
+        void update_input();
     public:
         // create a simple window
         // if you don't want a update_function give just a nullptr,

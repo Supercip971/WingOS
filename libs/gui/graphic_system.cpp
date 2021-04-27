@@ -9,10 +9,72 @@
 #include <string.h>
 namespace gui
 {
-    graphic_context::graphic_context(uint64_t width, uint64_t height, const char *name):
-        connection("graphic_service.ipc")
+
+    void graphic_context::send_data(gui::graphic_system_service_protocol *protocol)
+    {
+        connection.send(protocol, sizeof(gui::graphic_system_service_protocol));
+    }
+    uint64_t graphic_context::send_data_with_result(gui::graphic_system_service_protocol *protocol)
     {
 
+        connection.send(protocol, sizeof(gui::graphic_system_service_protocol));
+        while (true)
+        {
+            graphic_system_return_info ret;
+            size_t readed = connection.wait_receive(&ret, sizeof(graphic_system_return_info));
+            if (ret.checksum != gui::GRAPHIC_SYSTEM_INFO_SEND::RETURN_RESULT)
+            { // if it is not a return result, use a update_input,
+                cache_input_info();
+            }
+            else
+            {
+                return ret.return_val;
+            }
+        }
+    }
+    bool graphic_context::cache_input_info(){
+        graphic_system_update_info info;
+        size_t readed = connection.receive(&info, sizeof(graphic_system_update_info));
+        if (readed == sizeof(graphic_system_update_info))
+        {
+
+            cached_received_data.push_front(info);
+            return true;
+        }
+        return false;
+    }
+    graphic_system_update_info graphic_context::update_input_info()
+    {
+        if(cached_received_data.size() != 0){ // the cached table contain something
+            graphic_system_update_info info = cached_received_data[0];
+            cached_received_data.remove(0);
+            return info;
+        }else{
+            // if the cached table was clear but when we try to find a new one it is not, then we retry
+            if(cache_input_info() != false){
+                return update_input_info();
+            }
+            else{
+                graphic_system_update_info info = {0};
+                return info;
+
+            }
+        }
+        graphic_system_update_info info;
+
+        size_t readed = connection.receive(&info, sizeof(graphic_system_update_info));
+        if (readed != sizeof(graphic_system_update_info))
+        {
+            info.info_type = 0;
+            return info;
+        }
+        else
+        {
+            return info;
+        }
+    }
+    graphic_context::graphic_context(uint64_t width, uint64_t height, const char *name) : connection("graphic_service.ipc")
+    {
         connection.wait_accepted();
 
         context_height = height;
@@ -28,17 +90,14 @@ namespace gui
         tolaunch.request_type = gui::GRAPHIC_SYSTEM_REQUEST::CREATE_WINDOW;
         tolaunch.create_window_info.height = height;
         tolaunch.create_window_info.width = width;
+        wid = send_data_with_result(&tolaunch);
 
-        connection.send(&tolaunch, sizeof(gui::graphic_system_service_protocol));
-        connection.wait_receive(&wid, sizeof (uint64_t));
         gui::graphic_system_service_protocol get_bbuffer = {0};
         get_bbuffer.request_type = gui::GRAPHIC_SYSTEM_REQUEST::GET_WINDOW_BACK_BUFFER;
         get_bbuffer.get_request.window_handler_code = wid;
 
-        connection.send(&get_bbuffer, sizeof(gui::graphic_system_service_protocol));
-        uint64_t res = 0;
-        connection.wait_receive(&res, sizeof (uint64_t));
-        back_buffer = (gui::color *)res;
+        back_buffer = (gui::color *)send_data_with_result(&get_bbuffer);
+        ;
     }
 
     void graphic_context::clear_buffer(const color color)
@@ -63,10 +122,7 @@ namespace gui
         gui::graphic_system_service_protocol swap_request = {0};
         swap_request.request_type = gui::GRAPHIC_SYSTEM_REQUEST::SWAP_WINDOW_BUFFER;
         swap_request.get_request.window_handler_code = wid;
-        connection.send(&swap_request, sizeof(gui::graphic_system_service_protocol));
-        uint64_t res;
-        connection.wait_receive(&res, sizeof (uint64_t)); // we want to wait for the graphic system to say: ok now you can reuse the back buffer
-
+        send_data_with_result(&swap_request);
     }
 
     void raw_clear_buffer(gui::color *buffer, uint64_t size, gui::color value)
@@ -144,11 +200,9 @@ namespace gui
         gui::graphic_system_service_protocol request = {0};
         request.request_type = gui::GRAPHIC_SYSTEM_REQUEST::GET_WINDOW_POSITION;
         request.get_request.window_handler_code = wid;
-        connection.send(&request, sizeof (gui::graphic_system_service_protocol));
-        uint64_t result;
-        connection.wait_receive(&result, sizeof (uint64_t));
+        uint64_t v = send_data_with_result(&request);
         sys::raw_pos p;
-        p.pos = result;
+        p.pos = v;
         return p;
     }
 
@@ -158,7 +212,7 @@ namespace gui
         request.request_type = gui::GRAPHIC_SYSTEM_REQUEST::SET_WINDOW_POSITION;
         request.set_pos.window_handler_code = wid;
         request.set_pos.position = position;
-        connection.send(&request, sizeof (gui::graphic_system_service_protocol));
+        send_data(&request);
     }
     uint64_t get_basic_font_width_text(const char *text)
     {
@@ -213,11 +267,13 @@ namespace gui
         {
             x_max = radius;
         }
-        if(origin.x + x_start < 0){
-            x_start =origin.x - x_start;
+        if (origin.x + x_start < 0)
+        {
+            x_start = origin.x - x_start;
         }
-        if(origin.y + y_start < 0){
-            y_start =origin.y - y_start;
+        if (origin.y + y_start < 0)
+        {
+            y_start = origin.y - y_start;
         }
         for (int y = y_start; y < y_max; y++)
         {
@@ -311,7 +367,8 @@ namespace gui
         request.depth_request.set = true;
         request.depth_request.type = gui::ON_TOP;
 
-        connection.send(&request, sizeof (gui::graphic_system_service_protocol));
+        send_data(&request);
+        connection.send(&request, sizeof(gui::graphic_system_service_protocol));
     }
     void graphic_context::set_as_background()
     {
@@ -320,7 +377,7 @@ namespace gui
         request.depth_request.window_handler_code = wid;
         request.depth_request.set = true;
         request.depth_request.type = gui::BACKGROUND;
-        connection.send(&request, sizeof (gui::graphic_system_service_protocol));
+        send_data(&request);
     }
     void graphic_context::set_on_top_of_background()
     {
@@ -329,7 +386,7 @@ namespace gui
         request.depth_request.window_handler_code = wid;
         request.depth_request.set = true;
         request.depth_request.type = TOP_BACKGROUND;
-        connection.send(&request, sizeof (gui::graphic_system_service_protocol));
+        send_data(&request);
     }
     bool graphic_context::is_on_top()
     {
@@ -338,9 +395,7 @@ namespace gui
         request.request_type = GRAPHIC_SYSTEM_REQUEST::WINDOW_DEPTH_ACTION;
         request.depth_request.window_handler_code = wid;
         request.depth_request.set = false;
-        connection.send(&request, sizeof (gui::graphic_system_service_protocol));
-        connection.wait_receive(&result, sizeof (uint64_t));
-        return result == 0;
+        return send_data_with_result(&request) == 0;
     }
     bool graphic_context::is_mouse_inside()
     {

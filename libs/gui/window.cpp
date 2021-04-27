@@ -22,8 +22,26 @@ namespace gui
         has_at_least_one_redraw = true;
         add_widget(header_widget_movable);
     };
+
+    void window::update_input()
+    {
+        while (true)
+        {
+            auto v = window_graphic_context.update_input_info();
+            if (v.info_type == 0)
+            {
+                break;
+            }
+            else
+            {
+                lst.callback_update(v);
+            }
+        }
+    }
+
     uint64_t window::start()
     {
+
         window_graphic_context.clear_buffer({100, 100, 100, 0});
         window_graphic_context.draw_rounded_rectangle(4, 0, 0, width, height, back_window_color);
         window_graphic_context.draw_rounded_rectangle(4, 0, 0, width, 20, window_front_color);
@@ -33,6 +51,7 @@ namespace gui
         bool start_click = false;
         while (true)
         {
+
             if (sys::get_mouse_button(sys::GET_MOUSE_LEFT_CLICK) && start_click)
             {
 
@@ -59,7 +78,13 @@ namespace gui
                 window_graphic_context.draw_rounded_rectangle(4, 0, 0, width, 20, window_front_color);
                 window_graphic_context.draw_basic_string((width / 2) - (get_basic_font_width_text(window_name) / 2), 20 / 2 - (8 / 2), window_name, color(255, 255, 255));
                 lst.draw_all(window_graphic_context);
+                update_input(); // we need to do that JUST before the swap buffer
                 window_graphic_context.swap_buffer();
+            }
+            else
+            {
+                update_input();
+
             }
 
             sys::switch_process();

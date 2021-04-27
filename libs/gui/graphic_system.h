@@ -64,6 +64,56 @@ namespace gui
             window_depth_request depth_request;
         };
     } __attribute__((packed));
+    enum GRAPHIC_SYSTEM_INFO_SEND
+    {
+        NULL_INFO = 0,
+        WINDOW_ATTRIBUTE_CHANGED = 1, // size, position, focus
+        WINDOW_CLOSED = 2,
+        KEY_INPUT = 3,
+        MOUSE_INPUT = 4,
+        MOUSE_MOVED = 5,
+
+
+        RETURN_RESULT = 6,
+
+    };
+    struct window_attribute_changed_info {
+        uint16_t  new_x;
+        uint16_t  new_y;
+        uint16_t  new_width;
+        uint16_t  new_height;
+        bool focused;
+    }__attribute__((packed));
+    struct window_key_input {
+        uint8_t  key_char;
+        uint8_t  modifier;
+    }__attribute__((packed));
+    struct mouse_input {
+        uint8_t  mouse_key;
+    }__attribute__((packed));
+    struct mouse_moved { // position relative to window
+        size_t new_x;
+        size_t new_y;
+    }__attribute__((packed));
+    struct graphic_system_update_info
+    {
+        uint8_t  info_type;
+        union
+        {
+            window_attribute_changed_info info_window_attribute_changed_info;
+            window_key_input info_window_key_input;
+            mouse_input info_mouse_input;
+            mouse_moved info_mouse_moved;
+            uint8_t raw_dat[64];
+        };
+    }__attribute__((packed));
+
+
+    struct graphic_system_return_info
+    {
+        uint8_t  checksum;
+        uint64_t  return_val;
+    }__attribute__((packed));
     // FOR OTHER THING
     struct color
     {
@@ -124,8 +174,12 @@ namespace gui
     class graphic_context
     {
         sys::client_connection connection;
+        // when we do a send_data_with_result we can receive an/multiple update from the graphic system
+        // in that case we store them in this vector and then we read the result from the sended command by "send_data_with_result"
+        utils::vector<graphic_system_update_info> cached_received_data;
         uint64_t context_width;
         uint64_t context_height;
+
         uint64_t wid = 0;
         color *back_buffer;
         char *context_name;
@@ -137,9 +191,13 @@ namespace gui
             1, 2, 1,
             2, 4, 2,
             1, 2, 1};
-
+        void send_data(gui::graphic_system_service_protocol *protocol);
+        uint64_t send_data_with_result(gui::graphic_system_service_protocol* protocol);
+        bool cache_input_info();
     public:
+        graphic_system_update_info update_input_info();
         graphic_context(uint64_t width, uint64_t height, const char *name) __attribute__((__target__("no-sse")));
+
         void draw_filled_circle(const pos origin, const int radius, const color color);
         constexpr uint64_t get_window_id() const
         {

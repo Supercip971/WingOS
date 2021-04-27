@@ -28,4 +28,3 @@ LIB(libc_stdlib)
     }
 }
 END_LIB(libc_stdlib)
-

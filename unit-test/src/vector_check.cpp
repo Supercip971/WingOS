@@ -47,9 +47,7 @@ LIB(wvector)
             REQUIRE_EQUAL(vec.capacity(), 30);
             REQUIRE_EQUAL(vec.size(), 0);
         }
-
     }
-
 
     MEMBER("vector.push_back")
     {
@@ -76,7 +74,8 @@ LIB(wvector)
                 vec.push_back(i);
             }
 
-            for(int i = 0; i < size_to_check; i++){
+            for (int i = 0; i < size_to_check; i++)
+            {
                 REQUIRE_EQUAL(vec.get(i), vec[i]);
                 REQUIRE_EQUAL(i, vec[i]);
             }
@@ -105,12 +104,11 @@ LIB(wvector)
                     off -= 1;
                 }
             }
-            REQUIRE_EQUAL(vec.size(), size_to_check/2);
-            for (int i = 0; i < size_to_check/2; i++)
+            REQUIRE_EQUAL(vec.size(), size_to_check / 2);
+            for (int i = 0; i < size_to_check / 2; i++)
             {
-                REQUIRE_EQUAL(i*2,vec.get(i));
+                REQUIRE_EQUAL(i * 2, vec.get(i));
             }
-
         }
     }
 
@@ -130,7 +128,6 @@ LIB(wvector)
             REQUIRE(!(bool)vec);
             REQUIRE_EQUAL(vec.size(), 0);
             REQUIRE_EQUAL(vec.capacity(), 0);
-
         }
     }
 }

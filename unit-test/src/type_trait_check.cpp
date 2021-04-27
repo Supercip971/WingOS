@@ -1,9 +1,9 @@
 
 #include "type_trait_check.h"
 #include "unit_test.h"
+#include <string.h>
 #include <utils/type/integral_constant.h>
 #include <utils/type/is_same.h>
-#include <string.h>
 #include <utils/type_traits.h>
 namespace is_type_check
 {
@@ -63,13 +63,13 @@ LIB(type_trait)
         CHECK("is_same positive result")
         {
             REQUIRE((utils::is_same<int, int>()));
-            REQUIRE((utils::is_same<const char&, const char&>()));
+            REQUIRE((utils::is_same<const char &, const char &>()));
             REQUIRE((utils::is_same<bool, bool>()));
         }
         CHECK("is_same negative result")
         {
             REQUIRE(!(utils::is_same<int, char>()));
-            REQUIRE(!(utils::is_same<const char, const char&>()));
+            REQUIRE(!(utils::is_same<const char, const char &>()));
             REQUIRE(!(utils::is_same<bool, const bool>()));
         }
     }
@@ -96,10 +96,9 @@ LIB(type_trait)
         CHECK("remove_pointer test")
         {
 
-            REQUIRE((utils::is_same<char, utils::remove_pointer<char*>::type>()));
+            REQUIRE((utils::is_same<char, utils::remove_pointer<char *>::type>()));
             REQUIRE((utils::is_same<char, utils::remove_pointer<char>::type>()));
         }
-
     }
 
     SECTION("is_class")
@@ -126,7 +125,7 @@ LIB(type_trait)
             REQUIRE(!(utils::is_enum<is_type_check::a_class>()));
             REQUIRE(!(utils::is_enum<is_type_check::a_union>()));
         }
-     }
+    }
 
     SECTION("is_union")
     {
@@ -153,10 +152,10 @@ LIB(type_trait)
         CHECK("is_const negative result")
         {
             REQUIRE(!(utils::is_const<int>()));
-            REQUIRE(!(utils::is_const<int&>()));
-            REQUIRE(!(utils::is_const<const int&>()));
-            REQUIRE(!(utils::is_const<volatile int&>()));
-            REQUIRE(!(utils::is_const<int* >()));
+            REQUIRE(!(utils::is_const<int &>()));
+            REQUIRE(!(utils::is_const<const int &>()));
+            REQUIRE(!(utils::is_const<volatile int &>()));
+            REQUIRE(!(utils::is_const<int *>()));
         }
     }
     SECTION("is_function")
@@ -179,28 +178,37 @@ LIB(type_trait)
     SECTION("is_base_of")
     {
 
-        class base1 {};
+        class base1
+        {
+        };
 
-        class base2 {};
+        class base2
+        {
+        };
 
-        class derived1 : public base1{};
+        class derived1 : public base1
+        {
+        };
 
-        class derived2and1 : public base2, public base1{};
-        class no_derived{};
+        class derived2and1 : public base2, public base1
+        {
+        };
+        class no_derived
+        {
+        };
 
         CHECK("is_base_of positive result")
         {
-            REQUIRE((utils::is_base_of<base1, base1>::value));             // base1 : base1 => true
-            REQUIRE((utils::is_base_of<base1, derived1>::value));            // derived1 : base1 => true
-            REQUIRE((utils::is_base_of<base1, derived2and1>::value));         // derived2and1 : base 1,  base 2 => true
+            REQUIRE((utils::is_base_of<base1, base1>::value));        // base1 : base1 => true
+            REQUIRE((utils::is_base_of<base1, derived1>::value));     // derived1 : base1 => true
+            REQUIRE((utils::is_base_of<base1, derived2and1>::value)); // derived2and1 : base 1,  base 2 => true
             REQUIRE((utils::is_base_of<base2, derived2and1>::value));
         }
         CHECK("is_base_of negative result")
         {
-            REQUIRE(!(utils::is_base_of<base1, no_derived>::value ));            // no_derived : base 1, (or) base 2 => false
+            REQUIRE(!(utils::is_base_of<base1, no_derived>::value)); // no_derived : base 1, (or) base 2 => false
             REQUIRE(!(utils::is_base_of<base2, no_derived>::value));
-            REQUIRE(!(utils::is_base_of<derived1, base1>::value));            // base1 : derived => false
-
+            REQUIRE(!(utils::is_base_of<derived1, base1>::value)); // base1 : derived => false
         }
     }
 }

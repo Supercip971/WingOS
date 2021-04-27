@@ -121,7 +121,7 @@ LIB(libc_string)
             memset(buffer, 64, size_to_check / 2);
             for (int i = 0; i < size_to_check; i++)
             {
-                if (i < size_to_check/2)
+                if (i < size_to_check / 2)
                 {
                     REQUIRE_EQUAL(buffer[i], 64);
                 }

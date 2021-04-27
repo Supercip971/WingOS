@@ -99,10 +99,44 @@ namespace gui
             }
         }
     }
+    void terminal_widget::callback(graphic_system_update_info &info)
+    {
+        if (info.info_type == gui::GRAPHIC_SYSTEM_INFO_SEND::KEY_INPUT)
+        {
+            printf("input off: %s \n", __FILE__);
+            if (info.info_window_key_input.key_char == 0xe) // back key
+            {
+
+                if (input_buffer_length > 0)
+                {
+                    input_buffer_length--;
+                    widget_should_draw = true;
+                }
+            }
+            else if (info.info_window_key_input.key_char != 0)
+            {
+                input_buffer_length++;
+                if (input_buffer_length_allocated == 0)
+                {
+                    input_buffer = (char *)malloc(1);
+                    input_buffer_length_allocated++;
+                }
+                else if (input_buffer_length_allocated < input_buffer_length)
+                {
+                    input_buffer = (char *)realloc(input_buffer, input_buffer_length_allocated + 1);
+                    input_buffer_length_allocated++;
+                }
+                input_buffer[input_buffer_length - 1] = sys::asciiDefault[info.info_window_key_input.key_char];
+                if (sys::asciiDefault[info.info_window_key_input.key_char] == '\n')
+                {
+                    apply_command();
+                }
+                widget_should_draw = true;
+            }
+        }
+    }
     void terminal_widget::draw_term_text(graphic_context &context)
     {
-        int x = 0;
-        int y = 0;
         color current_col = color(255, 255, 255);
         size_t line_renderer = render_line_count();
         size_t line_offset = 0;
@@ -178,40 +212,6 @@ namespace gui
             increase(nlength);
             outbuffer.read((uint8_t *)buffer + last_length, nlength - last_length);
             widget_should_draw = true;
-        }
-        while (sys::get_current_keyboard_offset() > last_key_press)
-        {
-            auto press = sys::get_key_press(last_key_press);
-            if (press.state && press.button == 0xe) // back key
-            {
-
-                if (input_buffer_length > 0)
-                {
-                    input_buffer_length--;
-                    widget_should_draw = true;
-                }
-            }
-            else if (press.state && press.button != 0)
-            {
-                input_buffer_length++;
-                if (input_buffer_length_allocated == 0)
-                {
-                    input_buffer = (char *)malloc(1);
-                    input_buffer_length_allocated++;
-                }
-                else if (input_buffer_length_allocated < input_buffer_length)
-                {
-                    input_buffer = (char *)realloc(input_buffer, input_buffer_length_allocated + 1);
-                    input_buffer_length_allocated++;
-                }
-                input_buffer[input_buffer_length - 1] = sys::asciiDefault[press.button];
-                if (sys::asciiDefault[press.button] == '\n')
-                {
-                    apply_command();
-                }
-                widget_should_draw = true;
-            }
-            last_key_press++;
         }
     };
     void terminal_widget::apply_command()

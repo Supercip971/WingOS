@@ -43,7 +43,7 @@ APP_FILE_CHANGE 		= $(shell find $(APP_FS_CHANGE) -type f -name '*.cpp') $(shell
 KERNEL_HDD = ./build/disk.hdd
 KERNEL_ELF = kernel.elf
 
-QEMUFLAGS :=  -m 4G -device pvpanic -smp 6 -serial stdio -enable-kvm -d cpu_reset -d guest_errors -hda $(KERNEL_HDD) \
+QEMUFLAGS :=  -m 4G -device pvpanic -smp 6 -serial stdio -enable-kvm -d cpu_reset -hda $(KERNEL_HDD) \
 		-nic user,model=e1000 -M q35 -cpu host 
 
 .DEFAULT_GOAL =$(KERNEL_ELF)

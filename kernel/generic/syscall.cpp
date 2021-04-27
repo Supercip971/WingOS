@@ -36,7 +36,7 @@ uint64_t sys$get_process_global_data(const char *target, uint64_t offset, uint64
 
 void *sys$alloc(uint64_t count, uint8_t flag)
 {
-    auto res = (pmm_alloc(count));
+    auto res = (pmm_alloc_zero(count));
     if (flag & SYS_ALLOC_SHARED)
     {
 
@@ -59,7 +59,7 @@ int sys$free(uintptr_t target, uint64_t count)
     if (target >= MEM_ADDR)
     {
 
-        pmm_free((void *)get_rmem_addr(target), count);
+        pmm_free((void *)get_physical_addr(target), count);
     }
     else
     {

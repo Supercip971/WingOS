@@ -27,6 +27,12 @@ void init_cursor()
     mouse_on_window = (uint64_t *)sys::sys$get_current_process_global_data(0, 8);
     *mouse_on_window = 0;
 }
+
+uint64_t get_mouse_on_window_wid()
+{
+    return *mouse_on_window;
+}
+
 bool is_mouse_in_window(raw_window_data *window)
 {
     if (window->px <= m_x && window->width + window->px >= m_x)

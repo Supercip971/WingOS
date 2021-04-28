@@ -1,5 +1,6 @@
 #include "raw_window.h"
 #include "cursor.h"
+#include "graphic_system_service.h"
 #include "raw_graphic_system.h"
 #include <kern/mem_util.h>
 #include <kern/mouse_keyboard.h>
@@ -229,6 +230,8 @@ void draw_all_window()
         draw_window(window_list[i]);
     }
 }
+
+bool start_click = false;
 void update_mouse_in_window()
 {
     for (int i = window_list.size(); i > 0; i--)
@@ -239,5 +242,26 @@ void update_mouse_in_window()
             set_mouse_on_window(&window_list[i]);
             break;
         }
+    }
+    if (sys::get_mouse_button(sys::mouse_button_type::GET_MOUSE_LEFT_CLICK) && window_list.size() >= 2)
+    {
+        if (!start_click)
+        {
+
+            start_click = true;
+            auto window = get_window(get_mouse_on_window_wid());
+            // FIXME: add a get_top_window()
+            if (!window->background && window->wid != window_list[window_list.size() - 1].wid)
+            {
+                uint32_t previous = window_list[window_list.size() - 1].wid;
+                uint32_t next = window->wid;
+                set_window_on_top(next);
+                update_window_focus(previous, next);
+            }
+        }
+    }
+    else
+    {
+        start_click = false;
     }
 }

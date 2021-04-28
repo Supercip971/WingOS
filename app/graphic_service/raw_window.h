@@ -36,6 +36,7 @@ uint64_t create_window(gui::graphic_system_service_protocol *request, uint64_t p
 
 raw_window_data *get_top_window();
 bool valid_window(uint64_t target_wid, uint64_t pid);
+raw_window_data *get_window(uint64_t target_wid);
 
 uint64_t get_window_back_buffer(gui::graphic_system_service_protocol *request, uint64_t pid);
 uint64_t window_swap_buffer(gui::graphic_system_service_protocol *request, uint64_t pid);

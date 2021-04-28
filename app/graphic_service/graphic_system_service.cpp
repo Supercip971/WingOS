@@ -86,6 +86,26 @@ void update_windows()
     }
 }
 
+void send_focus_changed(raw_window_data *dat, bool focus_state)
+{
+
+    gui::graphic_system_update_info info;
+    info.info_type = gui::GRAPHIC_SYSTEM_INFO_SEND::WINDOW_ATTRIBUTE_CHANGED;
+    info.info_window_attribute_changed_info.focused = focus_state;
+    info.info_window_attribute_changed_info.new_width = dat->width;
+    info.info_window_attribute_changed_info.new_height = dat->height;
+    info.info_window_attribute_changed_info.new_x = dat->px;
+    info.info_window_attribute_changed_info.new_y = dat->py;
+
+    graphic_service_server.send(dat->pid, &info, sizeof(gui::graphic_system_update_info));
+}
+
+void update_window_focus(uint32_t from, uint32_t to)
+{
+    send_focus_changed(get_window(from), false);
+    send_focus_changed(get_window(to), true);
+}
+
 void loop()
 {
     last_key_press = sys::get_current_keyboard_offset();

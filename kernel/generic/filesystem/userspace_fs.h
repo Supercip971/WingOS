@@ -5,8 +5,8 @@
 #include <stdint.h>
 #include <utils/wvector.h>
 
-class ram_file
-{ // ram_file are file that are stored in the ram such as stdout stdin ...
+class vfile
+{ // vfile are file that are stored in the ram such as stdout stdin ...
 protected:
     size_t size = 0;
 
@@ -17,7 +17,8 @@ public:
     virtual size_t read(void *dbuffer, size_t offset, size_t count);
     virtual size_t write(const void *dbuffer, size_t offset, size_t count);
 };
-void add_ram_file(ram_file *file);
+void add_ram_file(vfile *file);
+
 struct filesystem_file_t
 {
 
@@ -26,10 +27,19 @@ struct filesystem_file_t
     size_t cur;
     uint64_t rpid;
     int state;
-    bool ram_file;
-    class ram_file *file;
+    bool can_free_handle;
+    class vfile *file;
 };
-class dev_keyboard_file : public ram_file
+
+enum file_system_file_state
+{
+    FS_STATE_ERROR = 0,
+    FS_STATE_FREE = 1,
+    FS_STATE_USED = 2,
+    FS_STATE_RESERVED = 3, // may be used later
+};
+
+class dev_keyboard_file : public vfile
 {
 public:
     virtual const char *get_npath() { return "/dev/keyboard"; };
@@ -44,7 +54,7 @@ public:
         return find_device<general_keyboard>()->get_key_buffer_size();
     };
 };
-class dev_mouse_file : public ram_file
+class dev_mouse_file : public vfile
 {
 public:
     virtual const char *get_npath() { return "/dev/mouse"; };
@@ -57,7 +67,7 @@ public:
     virtual size_t get_size() const { return sizeof(mouse_buff_info); };
 };
 
-class dev_framebuffer_file : public ram_file
+class dev_framebuffer_file : public vfile
 {
 public:
     virtual const char *get_npath() { return "/dev/framebuffer"; };
@@ -69,15 +79,15 @@ public:
     virtual size_t get_size() const { return sizeof(mouse_buff_info); };
 };
 
-class std_zero_file : public ram_file
+class std_zero_file : public vfile
 {
 public:
     virtual const char *get_npath() { return "/dev/zero"; };
     virtual size_t read(void *dbuffer, size_t offset, size_t count);
-    virtual size_t write(const void *dbuffer, size_t offset, size_t count);
+    virtual size_t write(const void *dbuffer, size_t offset, size_t count) { return 0; };
 };
 
-class std_stdbuf_file : public ram_file
+class std_stdbuf_file : public vfile
 {
 protected:
     void realocate(size_t new_size);
@@ -105,28 +115,44 @@ public:
     virtual const char *get_npath() { return "/dev/stdout"; };
 };
 
+class disk_file : public vfile
+{
+    const char *_path;
+
+public:
+    disk_file(const char *path) : vfile()
+    {
+        _path = path;
+    }
+
+    virtual const char *get_npath() { return _path; };
+    virtual size_t read(void *dbuffer, size_t offset, size_t count);
+    virtual size_t write(const void *dbuffer, size_t offset, size_t count);
+    virtual size_t get_size() const;
+};
+
 class ram_dir
 {
 public:
     virtual const char *get_path() { return "invalid path"; };
-    virtual ram_file *get(const char *msg) { return nullptr; };
+    virtual vfile *get(const char *msg) { return nullptr; };
 };
 
 class process_ramdir : public ram_dir
 {
 public:
     virtual const char *get_path() { return "/proc/"; };
-    virtual ram_file *get(const char *msg);
+    virtual vfile *get(const char *msg);
 };
 
 struct per_process_userspace_fs
 {
     static const int ram_files_count = 16;
-    ram_file *ram_files[ram_files_count]; // in this we have stdio / stdin / stderr ...
+    vfile *ram_files[ram_files_count]; // in this we have stdio / stdin / stderr ...
 };
 
 bool is_ram_file(const char *path);
-ram_file *get_ram_file(const char *path);
+vfile *get_ram_file(const char *path);
 
 size_t fs_read(int fd, void *buffer, size_t count);
 size_t fs_write(int fd, const void *buffer, size_t count);

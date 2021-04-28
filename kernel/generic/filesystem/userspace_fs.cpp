@@ -8,30 +8,53 @@
 #include <utility.h>
 #include <utils/liballoc.h>
 #include <utils/lock.h>
-utils::lock_type handle_lock;
-utils::vector<ram_file *> ram_file_list;
 
-void add_ram_file(ram_file *file)
+utils::lock_type handle_lock;
+utils::vector<vfile *> ram_file_list;
+
+void add_ram_file(vfile *file)
 {
     log("ram_file", LOG_INFO, "added new general ram file {}", file->get_npath());
     ram_file_list.push_back(file);
 }
+void remove_ram_file(const char *path)
+{
+    for (size_t i = 0; i < ram_file_list.size(); i++)
+    {
+        if (ram_file_list[i]->get_npath() == path)
+        {
+            ram_file_list.remove(i);
+            return;
+        }
+    }
+}
 #define SEEK_SET 0
 #define SEEK_CUR 1
 #define SEEK_END 2
-enum file_system_file_state
-{
-    FS_STATE_ERROR = 0,
-    FS_STATE_FREE = 1,
-    FS_STATE_USED = 2,
-    FS_STATE_RESERVED = 3, // may be used later
 
-};
-ram_file rmf;
+size_t disk_file::read(void *dbuffer, size_t offset, size_t count)
+{
+    auto result = main_fs_system::the()->main_fs()->read_file(_path, offset, count, (uint8_t *)dbuffer);
+    return result;
+}
+
+size_t disk_file::write(const void *dbuffer, size_t offset, size_t count)
+{
+    auto result = main_fs_system::the()->main_fs()->write_file(_path, offset, count, (uint8_t *)dbuffer);
+    return result;
+}
+
+size_t disk_file::get_size() const
+{
+    auto result = main_fs_system::the()->main_fs()->get_file_length(_path);
+    return result;
+}
+
+vfile rmf;
 ram_dir *ram_directory[1];
 void init_process_userspace_fs(per_process_userspace_fs &target)
 {
-    handle_lock.lock();
+    utils::context_lock locker(handle_lock);
     for (int i = 0; i < per_process_userspace_fs::ram_files_count; i++)
     {
         target.ram_files[i] = &rmf;
@@ -41,10 +64,9 @@ void init_process_userspace_fs(per_process_userspace_fs &target)
     target.ram_files[1] = new std_stdout_file();
     target.ram_files[2] = new std_stderr_file();
     target.ram_files[3] = new std_stdin_file();
-    handle_lock.unlock();
 }
 
-ram_file *process_ramdir::get(const char *msg)
+vfile *process_ramdir::get(const char *msg)
 {
     msg += strlen("/proc/");
 
@@ -71,12 +93,12 @@ ram_file *process_ramdir::get(const char *msg)
     }
 }
 
-size_t ram_file::read(void *buffer, size_t offset, size_t count)
+size_t vfile::read(void *buffer, size_t offset, size_t count)
 {
     log("ram file", LOG_ERROR, "can't use: {} in file: {} in process: {}", __PRETTY_FUNCTION__, get_npath(), process::current()->get_name());
     return -1;
 }
-size_t ram_file::write(const void *buffer, size_t offset, size_t count)
+size_t vfile::write(const void *buffer, size_t offset, size_t count)
 {
     log("ram file", LOG_ERROR, "can't use: {} in file: {} in process: {}", __PRETTY_FUNCTION__, get_npath(), process::current()->get_name());
     return -1;
@@ -87,11 +109,7 @@ size_t std_zero_file::read(void *dbuffer, size_t offset, size_t count)
     memset(dbuffer, 0, count);
     return offset;
 }
-size_t std_zero_file::write(const void *dbuffer, size_t offset, size_t count)
-{
-    log("stdzero", LOG_WARNING, "trying to write to: {}", get_npath());
-    return 0;
-}
+
 size_t std_stdbuf_file::read(void *dbuffer, size_t offset, size_t count)
 {
     size_t final_count = count;
@@ -173,19 +191,16 @@ filesystem_file_t *get_if_valid_handle(int fd, bool check_free = true)
     if (fd > MAX_FILE_HANDLE)
     {
         log("fs", LOG_WARNING, "process: {} trying to use an invalid file descriptor", process::current()->get_name());
-
         return nullptr;
     }
     else if (fs_handle_table[fd].state != file_system_file_state::FS_STATE_USED && check_free)
     {
         log("fs", LOG_WARNING, "process: {} trying to use a file descriptor already free", process::current()->get_name());
-
         return nullptr;
     }
     else if (fs_handle_table[fd].rpid != process::current()->get_parent_pid() && check_free)
     {
         log("fs", LOG_WARNING, "process: {} trying to use a file descriptor used by another process", process::current()->get_name());
-
         return nullptr;
     }
     return &fs_handle_table[fd];
@@ -209,7 +224,6 @@ int set_free_handle(int fd)
     if (handle == nullptr)
     {
         log("fs", LOG_WARNING, "process: {} trying to free an invalid file descriptor", process::current()->get_name());
-
         return -1;
     }
     handle->state = file_system_file_state::FS_STATE_FREE;
@@ -223,7 +237,6 @@ int set_used_handle(int fd)
     if (handle == nullptr)
     {
         log("fs", LOG_WARNING, "process: {} trying to set used an invalid file descriptor", process::current()->get_name());
-
         return -1;
     }
     handle->state = file_system_file_state::FS_STATE_USED;
@@ -238,18 +251,9 @@ size_t fs_read(int fd, void *buffer, size_t count)
         log("fs", LOG_WARNING, "process: {} can't read file {}", process::current()->get_name(), fd);
         return 0;
     }
-    if (file->ram_file)
-    {
-        auto result = file->file->read(buffer, file->cur, count);
-        file->cur += result;
-        return result;
-    }
-    else
-    {
-        auto result = main_fs_system::the()->main_fs()->read_file(file->path, file->cur, count, (uint8_t *)buffer);
-        file->cur += result;
-        return result;
-    }
+    auto result = file->file->read(buffer, file->cur, count);
+    file->cur += result;
+    return result;
 }
 
 size_t fs_lseek(int fd, size_t offset, int whence)
@@ -271,15 +275,7 @@ size_t fs_lseek(int fd, size_t offset, int whence)
     }
     if (whence == SEEK_END)
     {
-        if (file->ram_file)
-        {
-            file->cur = file->file->get_size();
-        }
-        else
-        {
-            file->cur = main_fs_system::the()->main_fs()->get_file_length(file->path);
-        }
-        // unimplemented :^(
+        file->cur = file->file->get_size();
     }
     return file->cur;
 }
@@ -292,24 +288,47 @@ size_t fs_write(int fd, const void *buffer, size_t count)
         log("fs", LOG_WARNING, "process: {} can't read file with invalid fd {}", process::current()->get_name(), fd);
         return 0;
     }
-    if (file->ram_file)
+    auto result = file->file->write(buffer, file->cur, count);
+    file->cur += result;
+    return result;
+}
+
+int init_handle(int fd, const char *path, int mode)
+{
+    fs_handle_table[fd].rpid = process::current()->get_parent_pid();
+    fs_handle_table[fd].path = new char[strlen(path) + 1];
+    memcpy(fs_handle_table[fd].path, path, strlen(path) + 1);
+    fs_handle_table[fd].mode = mode;
+    fs_handle_table[fd].cur = 0;
+    fs_handle_table[fd].can_free_handle = false;
+    fs_handle_table[fd].file = nullptr;
+    return fd;
+}
+
+vfile *get_ram_directory_file(const char *path)
+{
+    ram_dir *target = nullptr;
+    for (size_t i = 0; i < sizeof(ram_directory) / sizeof(ram_directory[0]); i++)
     {
-        auto result = file->file->write(buffer, file->cur, count);
-        file->cur += result;
-        return result;
+        if (strncmp(ram_directory[i]->get_path(), path, strlen(ram_directory[i]->get_path())) == 0)
+        {
+            target = ram_directory[i];
+            break;
+        }
+    }
+    if (target == nullptr)
+    {
+        return nullptr;
     }
     else
     {
-
-        auto result = main_fs_system::the()->main_fs()->write_file(file->path, file->cur, count, (uint8_t *)buffer);
-        file->cur += result;
-        return result;
+        return target->get(path);
     }
 }
 
 int fs_open(const char *path_name, int flags, int mode)
 {
-    handle_lock.lock();
+    utils::context_lock locker(handle_lock);
     int fd = get_free_handle();
     if (fd == -1)
     {
@@ -318,61 +337,36 @@ int fs_open(const char *path_name, int flags, int mode)
         return 0;
     }
     set_used_handle(fd);
-    fs_handle_table[fd].rpid = process::current()->get_parent_pid();
 
-    fs_handle_table[fd].path = new char[strlen(path_name) + 1];
-    memcpy(fs_handle_table[fd].path, path_name, strlen(path_name) + 1);
-    fs_handle_table[fd].mode = mode;
-    fs_handle_table[fd].cur = 0;
-    fs_handle_table[fd].ram_file = false;
+    init_handle(fd, path_name, mode);
+
+    // ram file check
     if (is_ram_file(path_name))
     {
-
-        //  log("fs", LOG_INFO) << "process " << process::current()->get_name() << " open (ram file) " << path_name;
-        fs_handle_table[fd].ram_file = true;
         fs_handle_table[fd].file = get_ram_file(path_name);
-        handle_lock.unlock();
         return fd;
     }
+    // ram directory check
     else if (main_fs_system::the()->main_fs()->get_file_length(path_name) == (uint64_t)-1)
     {
-        ram_dir *target = nullptr;
-        for (size_t i = 0; i < sizeof(ram_directory) / sizeof(ram_directory[0]); i++)
+        auto v = get_ram_directory_file(path_name);
+        if (v == nullptr)
         {
-            if (strncmp(ram_directory[i]->get_path(), path_name, strlen(ram_directory[i]->get_path())) == 0)
-            {
-                target = ram_directory[i];
-                break;
-            }
-        }
-        if (target == nullptr)
-        {
-
-            log("fs", LOG_WARNING, "process {} trying to open file {} but it doesn't exist", process::current()->get_name(), path_name);
-
-            handle_lock.unlock();
+            log("fs", LOG_WARNING, "trying open file {} but it doesn't exist", process::current()->get_name(), path_name);
             return -1;
         }
         else
         {
-            fs_handle_table[fd].ram_file = true;
-            fs_handle_table[fd].file = target->get(path_name);
-            handle_lock.unlock();
+            fs_handle_table[fd].file = v;
             return fd;
         }
     }
+    // just disk file check
     else
     {
-
-        if (main_fs_system::the()->main_fs()->get_file_length(path_name) == (uint64_t)-1)
-        {
-            log("fs", LOG_WARNING, "process {} trying to open file {} but it doesn't exist", process::current()->get_name(), path_name);
-
-            return -1;
-        }
-        log("fs", LOG_INFO) << "process " << process::current()->get_name() << " open " << path_name;
-
-        handle_lock.unlock();
+        log("fs", LOG_INFO, "disk-openning: {}", path_name);
+        fs_handle_table[fd].file = new disk_file(fs_handle_table[fd].path);
+        fs_handle_table[fd].can_free_handle = true;
         return fd;
     }
 }
@@ -386,12 +380,15 @@ int fs_close(int fd)
 
         return 0;
     }
-    handle_lock.lock();
+    utils::context_lock locker(handle_lock);
 
     set_free_handle(fd);
-    //log("fs", LOG_INFO, "process {} closed {}", process::current()->get_name(), file->path);
     delete[] fs_handle_table[fd].path;
-    handle_lock.unlock();
+
+    if (fs_handle_table[fd].can_free_handle)
+    {
+        free(fs_handle_table[fd].file);
+    }
     return 1;
 }
 
@@ -415,7 +412,8 @@ bool is_ram_file(const char *path)
 
     return false;
 }
-ram_file *get_ram_file(const char *path)
+
+vfile *get_ram_file(const char *path)
 {
 
     for (size_t i = 0; i < ram_file_list.size(); i++)

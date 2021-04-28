@@ -26,7 +26,7 @@ namespace gui
     void button_widget::update_widget()
     {
         bool has_been_hovered = false;
-        if (parent != nullptr)
+        if (parent != nullptr && parent->is_window_front())
         {
             uint32_t x = parent->get_mouse_pos_relative_x();
             if (x > widget_x)
@@ -39,10 +39,7 @@ namespace gui
                     {
                         if (y <= widget_y + widget_height)
                         {
-                            if (parent->is_window_front())
-                            {
-                                has_been_hovered = true;
-                            }
+                            has_been_hovered = true;
                         }
                     }
                 }

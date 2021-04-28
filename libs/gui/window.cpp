@@ -55,13 +55,6 @@ namespace gui
             if (sys::get_mouse_button(sys::GET_MOUSE_LEFT_CLICK) && start_click)
             {
 
-                if (window_graphic_context.is_mouse_inside())
-                {
-                    if (is_mouse_on_window())
-                    {
-                        window_graphic_context.set_on_top();
-                    }
-                }
                 start_click = false;
             }
             else if (!sys::get_mouse_button(sys::GET_MOUSE_LEFT_CLICK))
@@ -84,7 +77,6 @@ namespace gui
             else
             {
                 update_input();
-
             }
 
             sys::switch_process();

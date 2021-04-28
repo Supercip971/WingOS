@@ -145,17 +145,18 @@ void std_stdbuf_file::realocate(size_t new_size)
     {
         if (new_size > size)
         {
-            buffer = (char *)realloc(buffer, new_size);
+            buffer = (char *)realloc(buffer, new_size + 1);
         }
         size = new_size;
     }
 }
 
 #define MAX_FILE_HANDLE 255
-filesystem_file_t fs_handle_table[MAX_FILE_HANDLE];
+filesystem_file_t *fs_handle_table;
 
 void init_userspace_fs()
 {
+    fs_handle_table = new filesystem_file_t[MAX_FILE_HANDLE];
     ram_directory[0] = new process_ramdir();
     for (int i = 0; i < MAX_FILE_HANDLE; i++)
     {

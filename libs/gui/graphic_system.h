@@ -173,6 +173,7 @@ namespace gui
 
     class graphic_context
     {
+        bool focused;
         sys::client_connection connection;
         // when we do a send_data_with_result we can receive an/multiple update from the graphic system
         // in that case we store them in this vector and then we read the result from the sended command by "send_data_with_result"
@@ -193,6 +194,7 @@ namespace gui
             1, 2, 1};
         void send_data(gui::graphic_system_service_protocol *protocol);
         uint64_t send_data_with_result(gui::graphic_system_service_protocol* protocol);
+        void update_info_from_input_info(graphic_system_update_info info);
         bool cache_input_info();
     public:
         graphic_system_update_info update_input_info();

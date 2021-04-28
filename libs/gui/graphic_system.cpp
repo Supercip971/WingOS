@@ -32,7 +32,26 @@ namespace gui
             }
         }
     }
-    bool graphic_context::cache_input_info(){
+    void graphic_context::update_info_from_input_info(graphic_system_update_info info)
+    {
+        switch (info.info_type)
+        {
+        case gui::GRAPHIC_SYSTEM_INFO_SEND::WINDOW_ATTRIBUTE_CHANGED:
+        {
+            this->focused = info.info_window_attribute_changed_info.focused;
+            printf("focused new state: %i \n", info.info_window_attribute_changed_info.focused);
+            this->context_width = info.info_window_attribute_changed_info.new_width;
+            this->context_height = info.info_window_attribute_changed_info.new_height;
+            break;
+        }
+        default:
+        {
+            break;
+        }
+        }
+    }
+    bool graphic_context::cache_input_info()
+    {
         graphic_system_update_info info;
         size_t readed = connection.receive(&info, sizeof(graphic_system_update_info));
         if (readed == sizeof(graphic_system_update_info))
@@ -45,38 +64,31 @@ namespace gui
     }
     graphic_system_update_info graphic_context::update_input_info()
     {
-        if(cached_received_data.size() != 0){ // the cached table contain something
+        if (cached_received_data.size() != 0)
+        { // the cached table contain something
             graphic_system_update_info info = cached_received_data[0];
             cached_received_data.remove(0);
-            return info;
-        }else{
-            // if the cached table was clear but when we try to find a new one it is not, then we retry
-            if(cache_input_info() != false){
-                return update_input_info();
-            }
-            else{
-                graphic_system_update_info info = {0};
-                return info;
-
-            }
-        }
-        graphic_system_update_info info;
-
-        size_t readed = connection.receive(&info, sizeof(graphic_system_update_info));
-        if (readed != sizeof(graphic_system_update_info))
-        {
-            info.info_type = 0;
+            update_info_from_input_info(info);
             return info;
         }
         else
         {
-            return info;
+            // if the cached table was clear but when we try to find a new one it is not, then we retry
+            if (cache_input_info() != false)
+            {
+                return update_input_info();
+            }
+            else
+            {
+                graphic_system_update_info info = {0};
+                return info;
+            }
         }
     }
     graphic_context::graphic_context(uint64_t width, uint64_t height, const char *name) : connection("graphic_service.ipc")
     {
         connection.wait_accepted();
-
+        focused = false;
         context_height = height;
         context_width = width;
         size_t name_length = strlen(name) + 1;
@@ -390,12 +402,7 @@ namespace gui
     }
     bool graphic_context::is_on_top()
     {
-        uint64_t result;
-        graphic_system_service_protocol request = {0};
-        request.request_type = GRAPHIC_SYSTEM_REQUEST::WINDOW_DEPTH_ACTION;
-        request.depth_request.window_handler_code = wid;
-        request.depth_request.set = false;
-        return send_data_with_result(&request) == 0;
+        return focused;
     }
     bool graphic_context::is_mouse_inside()
     {

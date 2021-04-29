@@ -184,6 +184,7 @@ uint64_t launch_programm(const char *path, file_system *file_sys, int argc, cons
 
     if (programm_code == nullptr)
     {
+        unlock_process();
         return -1;
     }
 
@@ -191,6 +192,7 @@ uint64_t launch_programm(const char *path, file_system *file_sys, int argc, cons
     if (!valid_elf_entry(programm_header))
     {
         log("prog launcher", LOG_ERROR, "not valid elf64 entry");
+        unlock_process();
         return -1;
     }
     char **end_argv = (char **)malloc(sizeof(char *) * argc + 1);

@@ -1,7 +1,7 @@
 DIRECTORY_GUARD=mkdir -p $(@D)
 
 ARCH := x86_64
-END_PATH := ./kernel/generic ./kernel/arch/$(ARCH) ./libs/libc ./libs/utils
+END_PATH := ./kernel/generic ./kernel/arch/$(ARCH) ./libs/libc ./libs/utils ./libs/module
 
 BUILD_OUT := ./build
 # kernel files

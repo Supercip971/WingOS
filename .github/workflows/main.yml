@@ -35,6 +35,18 @@ jobs:
           
           make first_setup
           make clean -j$(nproc)
+          
+      - name: cache-toolchain
+        uses: actions/cache@v2
+        env:
+          cache-name: cached-cross-compiler
+        with: 
+          path: |
+            **/cross_compiler/
+          key: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/make_cross_compiler.sh', '**/patch/gcc.patch', '**/patch/binutils.patch') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/make_cross_compiler.sh', '**/patch/gcc.patch', '**/patch/binutils.patch') }}
 
       - name: unit-test
         run: |

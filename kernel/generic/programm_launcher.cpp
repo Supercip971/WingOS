@@ -159,6 +159,72 @@ void elf64_load_programm_segment(Elf64_Phdr *entry, uint8_t *programm_code, proc
     load_segment(target, (uintptr_t)get_rmem_addr(temp_copy), entry->p_filesz, entry->p_vaddr, entry->p_memsz);
 }
 
+void elf64_load_module_segment(Elf64_Phdr *entry, uint8_t *programm_code, uint8_t *target)
+{
+    size_t max_size = utils::max(entry->p_memsz, entry->p_filesz);
+    memset(target + entry->p_vaddr, 0, max_size);
+    memcpy(target + entry->p_vaddr, programm_code + entry->p_offset, entry->p_filesz);
+}
+
+void elf64_load_module_dyn_info(Elf64_Phdr *entry, uint8_t *programm_code, uint8_t *target)
+{
+    Elf64_Dyn *targ = (Elf64_Dyn *)(programm_code + entry->p_offset);
+
+    for (size_t i = 0; i < (entry->p_filesz / sizeof(Elf64_Dyn)); i += 1)
+    {
+        // todo: implement dyn reading
+        log("prog launcher", LOG_INFO, "dyn type: {} value: {}", targ[i].d_tag, targ[i].d_un.d_val);
+        if (targ[i].d_tag == DT_NULL) // end of dyn section
+        {
+            return;
+        }
+    }
+}
+
+void elf64_reloc_relative(Elf64_Rela *table, uint8_t *target, uintptr_t &offset)
+{
+    offset = (uintptr_t)target;
+    offset += table->r_addend;
+    memcpy(target + table->r_offset, &offset, sizeof(uintptr_t));
+}
+void elf64_load_module_relocation_addens(Elf64_Shdr *section_header, uint8_t *code, uint8_t *target, uintptr_t &offset)
+{
+
+    Elf64_Rela *table = (Elf64_Rela *)(section_header->sh_addr + (uintptr_t)code);
+    while ((uintptr_t)table - (section_header->sh_addr + (uintptr_t)code) < section_header->sh_size)
+    {
+        uint32_t type = ELF64_R_TYPE(table->r_info);
+
+        // todo: add more relocation support
+        if (type == R_X86_64_RELATIVE)
+        {
+            elf64_reloc_relative(table, target, offset);
+        }
+        else
+        {
+            log("prog launcher", LOG_WARNING, "unknown reloc type: {}", type);
+        }
+        table++;
+    }
+}
+void elf64_load_module_relocation(Elf64_Ehdr *header, uint8_t *code, uint8_t *target)
+{
+
+    for (uintptr_t x = 0; x < header->e_shentsize * header->e_shnum; x += header->e_shentsize)
+    {
+        Elf64_Shdr *section_header = (Elf64_Shdr *)(code + header->e_shoff + x);
+
+        if (section_header->sh_type == SHT_RELA)
+        {
+            elf64_load_module_relocation_addens(section_header, code, target, x);
+        }
+        else if (section_header->sh_type != SHT_NULL)
+        {
+            log("prog launcher", LOG_WARNING, "section header not supported entry: {}", section_header->sh_type);
+        }
+    }
+}
+
 void elf64_load_entry(Elf64_Phdr *entry, uint8_t *programm_code, process *target)
 {
     if (entry->p_type == PT_LOAD)
@@ -175,9 +241,29 @@ void elf64_load_entry(Elf64_Phdr *entry, uint8_t *programm_code, process *target
     }
 }
 
+void elf64_load_module_entry(Elf64_Phdr *entry, uint8_t *programm_code, uint8_t *target)
+{
+    if (entry->p_type == PT_LOAD)
+    {
+        elf64_load_module_segment(entry, programm_code, target);
+    }
+    else if (entry->p_type == PT_DYNAMIC)
+    {
+        elf64_load_module_dyn_info(entry, programm_code, target);
+    }
+    else if (entry->p_type == PT_NULL || entry->p_type == PT_PHDR)
+    {
+    }
+    else
+    {
+
+        log("prog launcher (module)", LOG_ERROR, "not supported entry type: {}", entry->p_type);
+    }
+}
+// FIXME: the code of launch_programm launch_programm_usr & launch_module is ultra repetitive, make this code better and use function
 uint64_t launch_programm(const char *path, file_system *file_sys, int argc, const char **argv)
 {
-    file_sys->fs_lock.lock(); // make sure that the fs lock is locked
+    utils::context_lock locker(file_sys->fs_lock);
     lock_process();
     log("prog launcher", LOG_DEBUG, "launching programm: {}", path);
     uint8_t *programm_code = file_sys->read_file(path);
@@ -208,13 +294,14 @@ uint64_t launch_programm(const char *path, file_system *file_sys, int argc, cons
 
     Elf64_Phdr *p_entry = reinterpret_cast<Elf64_Phdr *>((uintptr_t)programm_code + programm_header->e_phoff);
 
-    for (int table_entry = 0; table_entry < programm_header->e_phnum; table_entry++, p_entry += programm_header->e_phentsize)
+    for (int table_entry = 0; table_entry < programm_header->e_phnum; table_entry++)
     {
         elf64_load_entry(p_entry, programm_code, to_launch);
+        p_entry = reinterpret_cast<Elf64_Phdr *>((uintptr_t)p_entry + programm_header->e_phentsize);
     }
 
     to_launch->set_state(process_state::PROCESS_WAITING);
-    file_sys->fs_lock.unlock();
+
     unlock_process();
     return to_launch->get_pid();
 }
@@ -226,6 +313,7 @@ size_t launch_programm_usr(programm_exec_info *info)
 
     if (programm_code == nullptr)
     {
+        unlock_process();
         return -1;
     }
 
@@ -233,6 +321,7 @@ size_t launch_programm_usr(programm_exec_info *info)
     if (!valid_elf_entry(programm_header))
     {
         log("prog launcher", LOG_ERROR, "not valid elf64 entry");
+        unlock_process();
         return -1;
     }
     char **end_argv = (char **)malloc(sizeof(char *) * (info->argc + 1));
@@ -257,6 +346,71 @@ size_t launch_programm_usr(programm_exec_info *info)
         to_launch->rename(info->name);
     }
     to_launch->set_state(process_state::PROCESS_WAITING);
+    unlock_process();
+    return to_launch->get_pid();
+}
+// find the end of the address space of a PIC
+size_t get_module_table_max_addr(Elf64_Phdr *p_entry, Elf64_Ehdr *programm_header)
+{
+    size_t current_max = 0;
+    for (int table_entry = 0; table_entry < programm_header->e_phnum; table_entry++)
+    {
+        size_t max_size = utils::max(p_entry->p_memsz, p_entry->p_filesz);
+        if (max_size + p_entry->p_vaddr > current_max)
+        {
+            current_max = max_size + p_entry->p_vaddr + 16;
+        }
+        p_entry = reinterpret_cast<Elf64_Phdr *>((uintptr_t)p_entry + programm_header->e_phentsize);
+    }
+    return current_max;
+}
+uint64_t launch_module(const char *path, file_system *file_sys, int argc, const char **argv)
+{
+    utils::context_lock locker(file_sys->fs_lock);
+    lock_process();
+    log("prog launcher", LOG_DEBUG, "launching module: {}", path);
+    uint8_t *programm_code = file_sys->read_file(path);
+
+    if (programm_code == nullptr)
+    {
+        unlock_process();
+        return -1;
+    }
+
+    Elf64_Ehdr *programm_header = reinterpret_cast<Elf64_Ehdr *>(programm_code);
+    if (!valid_elf_entry(programm_header))
+    {
+        log("prog launcher", LOG_ERROR, "not valid elf64 entry");
+        for (int i = 0; i < 5; i++)
+        {
+            log("prog launcher", LOG_WARNING, "elf byte: {} = {} && {}", i, programm_header->e_ident[i], programm_code[i]);
+        }
+        unlock_process();
+        return -1;
+    }
+    char **end_argv = (char **)malloc(sizeof(char *) * argc + 1);
+    end_argv[0] = (char *)malloc(strlen(path) + 1);
+    memcpy(end_argv[0], path, strlen(path) + 1);
+    for (int i = 0; i < argc; i++)
+    {
+
+        end_argv[i + 1] = (char *)malloc(strlen(argv[i]) + 1);
+        memcpy(end_argv[i + 1], argv[i], strlen(argv[i]) + 1);
+    }
+
+    Elf64_Phdr *p_entry = reinterpret_cast<Elf64_Phdr *>((uintptr_t)programm_code + programm_header->e_phoff);
+    uint8_t *target_end_code = (uint8_t *)malloc((get_module_table_max_addr(p_entry, programm_header) + 128));
+    process *to_launch = init_process((func)((uintptr_t)target_end_code + programm_header->e_entry), false, path, false, AUTO_SELECT_CPU, argc + 1, end_argv);
+
+    log("prog launcher", LOG_DEBUG, "launching module: {} offset: {}", path, (uintptr_t)(target_end_code));
+    for (int table_entry = 0; table_entry < programm_header->e_phnum; table_entry++)
+    {
+        elf64_load_module_entry(p_entry, programm_code, target_end_code);
+        p_entry = reinterpret_cast<Elf64_Phdr *>((uintptr_t)p_entry + programm_header->e_phentsize);
+    }
+    elf64_load_module_relocation(programm_header, programm_code, target_end_code);
+    to_launch->set_state(process_state::PROCESS_WAITING);
+
     unlock_process();
     return to_launch->get_pid();
 }

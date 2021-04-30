@@ -5,3 +5,5 @@
 #include <utils/programm_exec_info.h>
 uint64_t launch_programm(const char *path, file_system *file_sys, int argc, const char **argv);
 size_t launch_programm_usr(programm_exec_info *info);
+
+uint64_t launch_module(const char *path, file_system *file_sys, int argc, const char **argv);

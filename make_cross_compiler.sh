@@ -5,8 +5,12 @@ set -e
 # using : https://wiki.osdev.org/Cross-Compiler_Successful_Builds
 echo "creating wingOS_cross Compiler"
 
+OK_FILE="$PWD/cross_compiler/builded"
 bash ./make_sysroot.sh
-
+if [ -e $OK_FILE ]; then
+    echo "cross compiler already builded ! if you want to rebuild the cross compiler please remove the './cross_compiler/builded' file"
+    exit 0
+fi
 
 SYSROOT="$PWD/sysroot/"
 mkdir -p $SYSROOT
@@ -89,3 +93,5 @@ make install-gcc -j$(nproc)
 make install-target-libgcc -j$(nproc)
 
 cd ..
+
+touch $OK_FILE

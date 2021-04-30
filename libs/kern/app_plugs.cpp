@@ -6,7 +6,13 @@
 
 uintptr_t plug_allocate_page(size_t count)
 {
+#ifdef MODULE
+
+    return reinterpret_cast<uintptr_t>(sys::sys$alloc(count, SYS_ALLOC_SHARED));
+#else
     return reinterpret_cast<uintptr_t>(sys::sys$alloc(count, 0));
+
+#endif
 }
 int plug_free_page(uintptr_t addr, size_t count)
 {

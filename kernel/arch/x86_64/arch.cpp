@@ -139,8 +139,8 @@ ASM_FUNCTION void kernel_start(stivale_struct *bootloader_data)
 void start_process()
 {
 
-    ps_mouse *psmouse = new ps_mouse;
-    psmouse->init();
+    // ps_mouse *psmouse = new ps_mouse;
+    // psmouse->init();
     ps_keyboard *keyboard = new ps_keyboard;
     keyboard->init();
     basic_framebuffer_graphic_device *framebuff = new basic_framebuffer_graphic_device(boot_loader_data_copy.framebuffer_width, boot_loader_data_copy.framebuffer_height, boot_loader_data_copy.framebuffer_addr);

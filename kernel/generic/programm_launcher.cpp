@@ -401,7 +401,7 @@ uint64_t launch_module(const char *path, file_system *file_sys, int argc, const 
     Elf64_Phdr *p_entry = reinterpret_cast<Elf64_Phdr *>((uintptr_t)programm_code + programm_header->e_phoff);
     uint8_t *target_end_code = (uint8_t *)malloc((get_module_table_max_addr(p_entry, programm_header) + 128));
     process *to_launch = init_process((func)((uintptr_t)target_end_code + programm_header->e_entry), false, path, false, AUTO_SELECT_CPU, argc + 1, end_argv);
-
+    to_launch->set_module(true);
     log("prog launcher", LOG_DEBUG, "launching module: {} offset: {}", path, (uintptr_t)(target_end_code));
     for (int table_entry = 0; table_entry < programm_header->e_phnum; table_entry++)
     {

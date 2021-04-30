@@ -54,7 +54,7 @@ class process
     uint8_t *global_process_memory;
     uint64_t global_process_memory_length;
     uint64_t sleeping = 0; // 0 = running | 1[..]infinity = sleeping | SLEEP_ALWAYS = always sleep
-    bool is_on_interrupt_process = false;
+    bool module = false;
     uint8_t interrupt_handle_list[8]; // max 8 interrupt per process
     backtrace process_backtrace;
     per_process_userspace_fs ufs;
@@ -80,6 +80,7 @@ public:
         virtual_addr = bitmap(new uint8_t[USR_VIRT_ADDR_SIZE / PAGE_SIZE / 8], USR_VIRT_ADDR_SIZE / PAGE_SIZE);
         virtual_addr.set_free(0, virtual_addr.get_size());
         virtual_addr.reset_last_free();
+        module = false;
     }
 
     process(const process &move)
@@ -115,6 +116,18 @@ public:
     bool is_user() const
     {
         return user;
+    }
+    bool is_module() const
+    {
+        return module;
+    }
+    void set_module(bool status)
+    {
+        module = status;
+        if(module && user)
+        {
+            log("process", LOG_ERROR, "a process can't be a module and user at the same time!");
+        }
     }
     bool is_sleeping() const
     {
@@ -210,4 +223,3 @@ void sleep(uint64_t count, uint64_t pid);
 
 void kill(uint64_t pid);
 NO_RETURN void kill_current();
-

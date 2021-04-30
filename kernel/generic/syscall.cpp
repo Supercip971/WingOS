@@ -1,6 +1,8 @@
 #include <device/local_data.h>
 #include <filesystem/file_system.h>
 #include <logging.h>
+#include <module/module_calls.h>
+#include <module_calls.h>
 #include <msg_system.h>
 #include <process.h>
 #include <programm_launcher.h>
@@ -16,6 +18,16 @@ uint64_t sys$null(const char *arg1)
     return 32;
 }
 
+int sys$set_modules_calls(module_calls_list *target)
+{
+    if (!process::current()->is_module())
+    {
+        log("syscall", LOG_ERROR, "only a module can access the {} syscall", __PRETTY_FUNCTION__);
+        return 0;
+    }
+    set_modules_calls(target);
+    return 1;
+}
 uint64_t sys$get_process_global_data(const char *target, uint64_t offset, uint64_t length)
 {
 
@@ -37,7 +49,7 @@ uint64_t sys$get_process_global_data(const char *target, uint64_t offset, uint64
 void *sys$alloc(uint64_t count, uint8_t flag)
 {
     auto res = (pmm_alloc_zero(count));
-    if (flag & SYS_ALLOC_SHARED)
+    if (flag & SYS_ALLOC_SHARED || process::current()->is_module())
     {
 
         return (void *)get_mem_addr(res);
@@ -163,7 +175,7 @@ size_t sys$receive(uint32_t id, raw_msg_request *request, int flags)
 }
 static void *syscalls[] = {
     (void *)sys$null,
-    (void *)sys$null,
+    (void *)sys$set_modules_calls,
     (void *)sys$null,
     (void *)sys$null,
     (void *)sys$get_process_global_data,

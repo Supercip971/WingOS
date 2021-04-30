@@ -4,7 +4,9 @@ enum class syscall_codes
 {
     NULL_SYSCALL = 0, // don't use >:^(
 
-    // 1 2 & 3 are free for use rn
+    SET_MODULES_CALLS = 1, // each module has a call table, it's like syscall but directly link with the kernel, this syscall is reserved to modules, with the modules call table you can do specific low level operation, this syscall can be called 'only' 1 times
+
+    // 2 & 3 are free for use rn
 
     GET_PROCESS_GLOBAL_DATA = 4, // get process global data, if arg1 (target) is nullptr, return self global data, else return a process global data return -1 if there is an error
 

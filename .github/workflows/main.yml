@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v2
 
       # Runs a single command using the runners shell
-      - name: setup
+      - name: setup_1
         run: |
           sudo apt update
           git submodule update --init --recursive
@@ -32,9 +32,6 @@ jobs:
           sudo apt install -y mtools wget unzip fuse libfuse-dev
           sudo apt install -y uuid-dev
           sudo apt install -y gcc binutils parted
-          
-          make first_setup
-          make clean -j$(nproc)
           
       - name: cache-toolchain
         uses: actions/cache@v2
@@ -48,6 +45,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/make_cross_compiler.sh', '**/patch/gcc.patch', '**/patch/binutils.patch') }}
 
+      # Runs a single command using the runners shell
+      - name: setup_2
+        run: |
+          make first_setup
+          make clean -j$(nproc)
+          
       - name: unit-test
         run: |
           make -C ./unit-test/ run

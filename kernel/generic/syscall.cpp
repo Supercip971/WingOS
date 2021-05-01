@@ -7,6 +7,7 @@
 #include <process.h>
 #include <programm_launcher.h>
 #include <syscall.h>
+#include <utils/proc_info_flag.h>
 #include <utils/programm_exec_info.h>
 
 utils::lock_type msg_lock;
@@ -132,7 +133,7 @@ size_t sys$exit(int code)
     {
         log("proc", LOG_ERROR, "process exiting with code: {}", code);
     }
-    kill_current();
+    kill_current(code);
 
     return 0;
 }
@@ -173,6 +174,20 @@ size_t sys$receive(uint32_t id, raw_msg_request *request, int flags)
 {
     return receive(id, request, flags);
 }
+size_t sys$get_process_info(uint32_t pid, int flag, void *arg1, void *arg2)
+{
+    if (flag == PROC_INFO_STATUS)
+    {
+        get_process_status(pid, (int *)arg1, (int *)arg2);
+        return 1;
+    }
+    else
+    {
+        log("syscall", LOG_ERROR, "{} invalid flag: {}", __PRETTY_FUNCTION__, flag);
+        return 0;
+    }
+}
+
 static void *syscalls[] = {
     (void *)sys$null,
     (void *)sys$set_modules_calls,
@@ -199,7 +214,7 @@ static void *syscalls[] = {
     (void *)sys$deconnect,
     (void *)sys$send,
     (void *)sys$receive,
-};
+    (void *)sys$get_process_info};
 
 uint64_t syscalls_length = sizeof(syscalls) / sizeof(void *);
 

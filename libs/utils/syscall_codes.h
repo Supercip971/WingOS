@@ -35,6 +35,7 @@ enum class syscall_codes
     DECONNECT = 22,              // (client) deconnect from a server
     SEND = 23,                   // send data to a client/server
     RECEIVE = 24,                // receive data from a client/server
+    GET_PROC_INFO = 25,          // get process information
 };
 
 #define SYS_ALLOC_SHARED 0x2

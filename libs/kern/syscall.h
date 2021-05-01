@@ -109,5 +109,8 @@ namespace sys
     static inline size_t sys$receive(uint32_t id, raw_msg_request *request, int flags){
         return syscall((uintptr_t)syscall_codes::RECEIVE, (uintptr_t)id, (uintptr_t)request,(uintptr_t)flags,0,0);
     }
+    static inline size_t sys$get_process_info(uint32_t pid, int flag, void* arg1, void* arg2){
+        return syscall((uintptr_t)syscall_codes::GET_PROC_INFO, (uintptr_t)pid, (uintptr_t)flag,(uintptr_t)arg1,(uintptr_t)arg2,0);
+    }
 
 } // namespace sys

@@ -77,6 +77,27 @@ char *strncpy(char *dest, const char *src, size_t n)
     return dest;
 }
 
+char *strtok(char *s, const char delimeter) {
+    static char *buffer = s;
+    if (buffer == NULL) { return NULL; }
+    // This dynamically alocated array should probably be changed \
+    to a vector once their implementation in this OS is more mature.
+    char *token = new char[strlen(buffer) + 1];
+    int i = 0;
+    for(; buffer[i] != '\0'; i++) {
+        if (buffer[i] != delimeter) {
+            token[i] = buffer[i];
+        } else {
+            token[i] = '\0';
+            buffer = buffer + i + 1;
+            return token;
+        }
+    }
+    token[i] = '\0';
+    buffer = NULL;
+    return token;
+}
+
 #ifndef WOS_OPTIMIZATION
 void *memcpy(void *dest, const void *src, size_t length)
 {

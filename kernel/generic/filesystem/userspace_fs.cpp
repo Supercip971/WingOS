@@ -57,7 +57,7 @@ void init_process_userspace_fs(per_process_userspace_fs &target)
     utils::context_lock locker(handle_lock);
     for (int i = 0; i < per_process_userspace_fs::ram_files_count; i++)
     {
-        target.ram_files[i] = &rmf;
+        target.ram_files[i] = nullptr;
     }
 
     target.ram_files[0] = new std_zero_file();
@@ -404,6 +404,10 @@ bool is_ram_file(const char *path)
     }
     for (int i = 0; i < per_process_userspace_fs::ram_files_count; i++)
     {
+        if (process::current()->get_ufs().ram_files[i] == nullptr)
+        {
+            continue;
+        }
         if (strcmp(process::current()->get_ufs().ram_files[i]->get_npath(), path) == 0)
         {
             return true;
@@ -426,6 +430,10 @@ vfile *get_ram_file(const char *path)
     }
     for (int i = 0; i < per_process_userspace_fs::ram_files_count; i++)
     {
+        if (process::current()->get_ufs().ram_files[i] == nullptr)
+        {
+            continue;
+        }
         if (strcmp(process::current()->get_ufs().ram_files[i]->get_npath(), path) == 0)
         {
             return process::current()->get_ufs().ram_files[i];

@@ -4,11 +4,12 @@
 #include <kern/process_message.h>
 #include <kern/syscall.h>
 #include <stdio.h>
-#include <utils/device_file_info.h>
+#include <utils/sys/device_file_info.h>
 namespace sys
 {
     sys::file mouse_file = sys::file(MOUSE_FILE_BUFFER);
     sys::file keyboard_file = sys::file(KEYBOARD_FILE_BUFFER);
+
     inline void use_mouse_file()
     {
         if (!mouse_file.is_openned())
@@ -16,6 +17,7 @@ namespace sys
             mouse_file.open(MOUSE_FILE_BUFFER);
         }
     }
+
     inline void use_keyboard_file()
     {
         if (!keyboard_file.is_openned())
@@ -23,44 +25,40 @@ namespace sys
             keyboard_file.open(KEYBOARD_FILE_BUFFER);
         }
     }
-    int32_t get_mouse_x()
+
+    mouse_buff_info get_mouse_buff()
     {
+        mouse_buff_info buff;
+
         use_mouse_file();
         mouse_file.seek(0);
-        mouse_buff_info buff;
         mouse_file.read((uint8_t *)&buff, sizeof(mouse_buff_info));
+        return buff;
+    }
 
-        return buff.mouse_x;
+    int32_t get_mouse_x()
+    {
+        return get_mouse_buff().mouse_x;
     }
 
     int32_t get_mouse_y()
     {
-        use_mouse_file();
-        mouse_buff_info buff;
-        mouse_file.seek(0);
-        mouse_file.read((uint8_t *)&buff, sizeof(mouse_buff_info));
-
-        return buff.mouse_y;
+        return get_mouse_buff().mouse_y;
     }
 
     bool get_mouse_button(int button_id)
     {
-        use_mouse_file();
-        mouse_buff_info buff;
-        mouse_file.seek(0);
-        mouse_file.read((uint8_t *)&buff, sizeof(mouse_buff_info));
-
         if (button_id == mouse_button_type::GET_MOUSE_LEFT_CLICK)
         {
-            return buff.left;
+            return get_mouse_buff().left;
         }
         if (button_id == mouse_button_type::GET_MOUSE_RIGHT_CLICK)
         {
-            return buff.right;
+            return get_mouse_buff().right;
         }
         if (button_id == mouse_button_type::GET_MOUSE_MIDDLE_CLICK)
         {
-            return buff.middle;
+            return get_mouse_buff().middle;
         }
         return false;
     }
@@ -72,7 +70,7 @@ namespace sys
         keyboard_file.seek(id * sizeof(keyboard_buff_info));
         if (keyboard_file.read((uint8_t *)&target, sizeof(keyboard_buff_info)) == 0)
         {
-            printf("unable to read offset %x", id);
+            printf("unable to read keyboard press offset %x\n", id);
         }
         return target;
     }
@@ -95,7 +93,7 @@ namespace sys
         keyboard_file.seek(length * sizeof(keyboard_buff_info));
         if (keyboard_file.read((uint8_t *)&target, sizeof(keyboard_buff_info)) == 0)
         {
-            printf("unable to read offset %x", length);
+            printf("unable to read keyboard press offset %x \n", length);
         }
         if (target.state == 1)
         {

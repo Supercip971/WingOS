@@ -113,8 +113,13 @@ size_t bitmap::alloc(size_t length)
 
 size_t bitmap::set_free(size_t idx, size_t length)
 {
+
     for (size_t i = 0; i < length; i++)
     {
+        if (get(idx + i) == false)
+        {
+            log("bitmap", LOG_WARNING, "freeing already free block: {}", idx + i);
+        }
         set(idx + i, false);
     }
     last_free = idx;
@@ -125,6 +130,11 @@ size_t bitmap::set_used(size_t idx, size_t length)
 {
     for (size_t i = 0; i < length; i++)
     {
+
+        if (get(idx + i) == true)
+        {
+            log("bitmap", LOG_WARNING, "setting already set block: {}", idx + i);
+        }
         set(idx + i, true);
     }
     return 1;

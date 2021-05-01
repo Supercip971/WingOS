@@ -527,3 +527,23 @@ bool process::has_virtual_addr(uintptr_t addr, size_t count)
     return true;
 }
 
+void get_process_status(uint32_t pid, int *ret, int *status)
+{
+    for (size_t i = 0; i < dead_process_status.size(); i++)
+    {
+        if (dead_process_status[i].pid == pid)
+        {
+            *ret = dead_process_status[i].ret;
+            *status = -2;
+            return;
+        }
+    }
+
+    auto proc = process::from_pid(pid);
+    if (proc == nullptr)
+    {
+        log("process", LOG_ERROR, "invalid pid: {} for {}", pid, __FUNCTION__);
+    }
+    *status = proc->get_state() != PROCESS_RUNNING;
+    *ret = -250;
+}

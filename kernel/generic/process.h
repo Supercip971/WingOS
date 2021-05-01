@@ -124,7 +124,7 @@ public:
     void set_module(bool status)
     {
         module = status;
-        if(module && user)
+        if (module && user)
         {
             log("process", LOG_ERROR, "a process can't be a module and user at the same time!");
         }
@@ -224,3 +224,4 @@ void sleep(uint64_t count, uint64_t pid);
 void kill(uint64_t pid);
 NO_RETURN void kill_current(int code);
 
+void get_process_status(uint32_t pid, int *ret, int *status);

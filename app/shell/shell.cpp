@@ -4,6 +4,7 @@
 #include <kern/mem_util.h>
 #include <kern/process_message.h>
 #include <kern/syscall.h>
+#include <utils/proc_info_flag.h>
 #include <utils/wstring.h>
 //#include <feather_language_lib/feather.h>
 #include "interpret_command.h"
@@ -68,6 +69,11 @@ int main(int argc, char **argv)
         int res = interpret_command(temp_buffer);
         if (res == 0)
         {
+        }
+        else if (res == INTERPRET_QUIT)
+        {
+            free(temp_buffer);
+            return 0;
         }
         else
         {

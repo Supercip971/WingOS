@@ -1,8 +1,10 @@
 #include "interpret_command.h"
 #include <kern/file.h>
 #include <kern/kernel_util.h>
+#include <kern/syscall.h>
 #include <stdio.h>
 #include <string.h>
+#include <utils/proc_info_flag.h>
 #include <utils/wstring.h>
 static constexpr size_t temp_buffer_size = 32;
 size_t record_output()
@@ -41,7 +43,14 @@ size_t start_programm(const char *path)
     char *echo_buffer = new char[temp_buffer_size];
     while (true)
     {
-
+        int status = 0;
+        int ret = 0;
+        sys::sys$get_process_info(pid, PROC_INFO_STATUS, &ret, &status);
+        if (status == -2)
+        {
+            free(echo_buffer);
+            return ret;
+        }
         update_out_output(outbuffer, echo_buffer);
         update_in_input(inbuffer);
     }
@@ -50,7 +59,7 @@ size_t start_programm(const char *path)
 }
 int interpret_command(char *v)
 {
-    if (strcmp(v, "exit") == 1)
+    if (strcmp(v, "exit") == 0)
     {
         return INTERPRET_QUIT;
     }

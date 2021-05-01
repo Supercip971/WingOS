@@ -4,7 +4,7 @@
 #include <kern/syscall.h>
 #include <stdio.h>
 #include <string.h>
-#include <utils/proc_info_flag.h>
+#include <utils/sys/proc_info_flag.h>
 #include <utils/wstring.h>
 static constexpr size_t temp_buffer_size = 32;
 size_t record_output()

@@ -3,8 +3,8 @@
 #include <device/ata_driver.h>
 #include <interrupt.h>
 #include <logging.h>
-#include <utils/liballoc.h>
 #include <utils/lock.h>
+#include <utils/memory/liballoc.h>
 
 ata_driver main_driver;
 utils::lock_type ata_lock;

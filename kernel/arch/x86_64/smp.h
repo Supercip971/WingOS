@@ -1,7 +1,7 @@
 #pragma once
 #include <device/madt.h>
 #include <gdt.h>
-#include <utils/config.h>
+#include <utils/sys/config.h>
 
 enum smp_cpu_init_address
 {

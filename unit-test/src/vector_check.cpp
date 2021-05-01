@@ -2,7 +2,7 @@
 #include "unit_test.h"
 #include <stdio.h>
 
-#include <utils/wvector.h>
+#include <utils/container/wvector.h>
 
 LIB(wvector)
 {

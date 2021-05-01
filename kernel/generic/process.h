@@ -5,8 +5,8 @@
 #include <filesystem/userspace_fs.h>
 #include <process_context.h>
 #include <stdint.h>
-#include <utils/config.h>
 #include <utils/math.h>
+#include <utils/sys/config.h>
 #define SLEEP_ALWAYS ((uint64_t)-1)
 
 #define CURRENT_CPU ((uint64_t)-1)

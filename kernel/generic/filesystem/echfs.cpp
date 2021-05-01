@@ -7,8 +7,8 @@
 #include <logging.h>
 #include <physical.h>
 #include <utility.h>
-#include <utils/liballoc.h>
 #include <utils/lock.h>
+#include <utils/memory/liballoc.h>
 echfs::echfs() : file_system()
 {
 }

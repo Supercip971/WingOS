@@ -3,7 +3,7 @@
 #include <filesystem/partition/base_partition.h>
 #include <io_device.h>
 #include <logging.h>
-#include <utils/liballoc.h>
+#include <utils/memory/liballoc.h>
 base_partition::base_partition()
 {
 }

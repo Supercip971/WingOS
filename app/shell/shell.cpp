@@ -4,7 +4,7 @@
 #include <kern/mem_util.h>
 #include <kern/process_message.h>
 #include <kern/syscall.h>
-#include <utils/proc_info_flag.h>
+#include <utils/sys/proc_info_flag.h>
 #include <utils/wstring.h>
 //#include <feather_language_lib/feather.h>
 #include "interpret_command.h"

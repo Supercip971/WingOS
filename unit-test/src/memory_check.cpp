@@ -1,7 +1,7 @@
 #include "memory_check.h"
 #include "unit_test.h"
 #include <stdio.h>
-#include <utils/memory.h>
+#include <utils/memory/memory.h>
 #include <utils/type_traits.h>
 
 LIB(memory)

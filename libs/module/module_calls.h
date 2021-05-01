@@ -44,6 +44,15 @@ const general_device *get_device_driver(uint32_t id);
 int set_module_name(const char *name);
 int add_irq_handler(size_t irq, mfunc<void, uint32_t> func);
 
+// just equivalent of cli/sti
+static inline void enter_low_level_context()
+{
+    asm volatile("cli");
+}
+static inline void exit_low_level_context()
+{
+    asm volatile("sti");
+}
 inline void outb(uint16_t port, uint8_t value)
 {
     asm volatile("out  dx, al" ::"a"(value), "d"(port));

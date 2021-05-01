@@ -1,7 +1,7 @@
 #ifndef MEMORY_IO_H
 #define MEMORY_IO_H
 #include <utils/io/io.h>
-#include <utils/smart_ptr.h>
+#include <utils/memory/smart_ptr.h>
 namespace utils
 {
     class memory_io : public reader,

@@ -1,8 +1,8 @@
 #include <device/local_data.h>
 #include <logging.h>
 #include <sse.h>
-#include <utils/config.h>
 #include <utils/lock.h>
+#include <utils/sys/config.h>
 ASM_FUNCTION void sse_init(void);
 ASM_FUNCTION void avx_init(void);
 ASM_FUNCTION void enable_xsave(void);

@@ -7,8 +7,8 @@
 #include <process.h>
 #include <programm_launcher.h>
 #include <syscall.h>
-#include <utils/proc_info_flag.h>
-#include <utils/programm_exec_info.h>
+#include <utils/sys/proc_info_flag.h>
+#include <utils/sys/programm_exec_info.h>
 
 utils::lock_type msg_lock;
 

@@ -1,5 +1,5 @@
 #include "smart_ptr_check.h"
-#include <utils/smart_ptr.h>
+#include <utils/memory/smart_ptr.h>
 #include <utils/type_traits.h>
 
 #include "unit_test.h"

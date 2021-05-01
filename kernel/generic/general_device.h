@@ -4,8 +4,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <utils/device_file_info.h>
-#include <utils/wvector.h>
+#include <utils/container/wvector.h>
+#include <utils/sys/device_file_info.h>
 #define MAX_DEVICE 128
 extern const char *device_type_to_str[];
 

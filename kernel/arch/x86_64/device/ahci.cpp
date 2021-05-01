@@ -3,9 +3,9 @@
 #include <io_device.h>
 #include <logging.h>
 #include <utility.h>
-#include <utils/liballoc.h>
 #include <utils/lock.h>
-#include <utils/smart_ptr.h>
+#include <utils/memory/liballoc.h>
+#include <utils/memory/smart_ptr.h>
 utils::lock_type ahci_lock;
 
 void ahci::init_ports()

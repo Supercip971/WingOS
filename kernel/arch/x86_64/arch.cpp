@@ -28,8 +28,8 @@
 #include <sse.h>
 #include <stddef.h>
 #include <utility.h>
-#include <utils/config.h>
-#include <utils/liballoc.h>
+#include <utils/memory/liballoc.h>
+#include <utils/sys/config.h>
 #include <virtual.h>
 
 #include <utils/attribute.h>

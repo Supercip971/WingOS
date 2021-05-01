@@ -2,7 +2,7 @@
 #include <gui/widget.h>
 #include <kern/file.h>
 #include <kern/process_buffer.h>
-#include <utils/wvector.h>
+#include <utils/container/wvector.h>
 namespace gui
 {
 

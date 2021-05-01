@@ -3,13 +3,13 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-#include <utils/alloc_array.h>
-#include <utils/config.h>
+#include <utils/container/alloc_array.h>
+#include <utils/container/warray.h>
+#include <utils/container/wvector.h>
 #include <utils/lock.h>
-#include <utils/raw_msg_system.h>
-#include <utils/smart_ptr.h>
-#include <utils/warray.h>
-#include <utils/wvector.h>
+#include <utils/memory/smart_ptr.h>
+#include <utils/sys/config.h>
+#include <utils/sys/raw_msg_system.h>
 union raw_msg_connection
 {
     uint32_t raw;

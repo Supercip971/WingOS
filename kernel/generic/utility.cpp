@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <utility.h>
-#include <utils/liballoc.h>
+#include <utils/memory/liballoc.h>
 
 void kitoaT(char *buf, int base, size_t d)
 {

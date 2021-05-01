@@ -7,8 +7,8 @@
 #include <syscall.h>
 #include <utility.h>
 #include <utils/attribute.h>
-#include <utils/liballoc.h>
 #include <utils/lock.h>
+#include <utils/memory/liballoc.h>
 // when a process is dead but we still want to know some things we use this
 struct last_sign_of_process_status
 {

@@ -1,6 +1,6 @@
 #include "array_check.h"
 #include "unit_test.h"
-#include <utils/warray.h>
+#include <utils/container/warray.h>
 
 LIB(array)
 {

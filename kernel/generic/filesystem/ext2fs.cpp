@@ -8,9 +8,9 @@
 #include <logging.h>
 #include <physical.h>
 #include <utility.h>
-#include <utils/liballoc.h>
 #include <utils/lock.h>
-#include <utils/smart_ptr.h>
+#include <utils/memory/liballoc.h>
+#include <utils/memory/smart_ptr.h>
 
 ext2fs::ext2fs()
     : file_system()

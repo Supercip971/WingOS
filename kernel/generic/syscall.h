@@ -2,7 +2,7 @@
 #include <arch.h>
 #include <stdint.h>
 #include <utils/lock.h>
-#include <utils/syscall_codes.h>
+#include <utils/sys/syscall_codes.h>
 typedef long int time_t;
 struct timespec
 {

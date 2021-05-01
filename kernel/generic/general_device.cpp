@@ -1,7 +1,7 @@
 #include "general_device.h"
 #include <logging.h>
 #include <utility.h>
-#include <utils/liballoc.h>
+#include <utils/memory/liballoc.h>
 uint32_t current_array_count = 0;
 general_device *device_array[MAX_DEVICE];
 const char *device_type_to_str[] = {

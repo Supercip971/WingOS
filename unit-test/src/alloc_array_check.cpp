@@ -1,6 +1,6 @@
 #include "alloc_array_check.h"
 #include "unit_test.h"
-#include <utils/alloc_array.h>
+#include <utils/container/alloc_array.h>
 
 LIB(alloc_array)
 {

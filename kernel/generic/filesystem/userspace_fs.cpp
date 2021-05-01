@@ -6,8 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <utility.h>
-#include <utils/liballoc.h>
 #include <utils/lock.h>
+#include <utils/memory/liballoc.h>
 
 utils::lock_type handle_lock;
 utils::vector<vfile *> ram_file_list;

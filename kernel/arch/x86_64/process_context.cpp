@@ -5,8 +5,8 @@
 #include <smp.h>
 #include <sse.h>
 #include <utility.h>
-#include <utils/liballoc.h>
 #include <utils/lock.h>
+#include <utils/memory/liballoc.h>
 #include <virtual.h>
 extern int process_locked;
 extern bool cpu_wait;

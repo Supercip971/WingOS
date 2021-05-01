@@ -4,7 +4,7 @@
 #include <kernel.h>
 #include <logging.h>
 #include <utility.h>
-#include <utils/liballoc.h>
+#include <utils/memory/liballoc.h>
 
 gdt_descriptor_array<GDT_DESCRIPTORS> gdt_descriptors[smp::max_cpu];
 

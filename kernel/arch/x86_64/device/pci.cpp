@@ -5,7 +5,7 @@
 #include <device/network/rtl8139.h>
 #include <device/pci.h>
 #include <logging.h>
-#include <utils/liballoc.h>
+#include <utils/memory/liballoc.h>
 
 pci_device::pci_device(uint8_t bus, uint8_t device, uint8_t function)
 {

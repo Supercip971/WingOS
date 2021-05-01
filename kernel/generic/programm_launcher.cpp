@@ -10,9 +10,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <utility.h>
-#include <utils/liballoc.h>
 #include <utils/lock.h>
-#include <utils/programm_exec_info.h>
+#include <utils/memory/liballoc.h>
+#include <utils/sys/programm_exec_info.h>
 uint8_t last_selected_cpu = 0;
 utils::lock_type prg_launch;
 void load_segment(process *pro, uintptr_t source, uint64_t size, uintptr_t dest, uint64_t destsize)

@@ -4,7 +4,7 @@
 #include <kernel.h>
 #include <logging.h>
 #include <utility.h>
-#include <utils/liballoc.h>
+#include <utils/memory/liballoc.h>
 mboot_module main_boot_module_list;
 mboot_module::mboot_module()
 {

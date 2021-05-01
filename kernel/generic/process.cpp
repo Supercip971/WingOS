@@ -9,7 +9,14 @@
 #include <utils/attribute.h>
 #include <utils/liballoc.h>
 #include <utils/lock.h>
-
+// when a process is dead but we still want to know some things we use this
+struct last_sign_of_process_status
+{
+    uint32_t pid;
+    uint32_t status;
+    uint32_t ret;
+};
+utils::vector<last_sign_of_process_status> dead_process_status;
 bool cpu_wait = false;
 process *process_array = nullptr;
 int process_locked = 1;
@@ -459,13 +466,18 @@ void kill(uint64_t pid)
     unlock_process();
 }
 
-NO_RETURN void kill_current()
+NO_RETURN void kill_current(int code)
 {
     lock_process();
 
     asm volatile("cli");
 
     log("proc", LOG_INFO, "killing current process");
+    last_sign_of_process_status s;
+    s.pid = process::current()->get_pid();
+    s.ret = code;
+    s.status = 1;
+    dead_process_status.push_back(s);
     process::current()->kill();
     dying_process_count++;
     unlock_process();

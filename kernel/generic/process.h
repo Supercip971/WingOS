@@ -222,4 +222,5 @@ void sleep(uint64_t count);
 void sleep(uint64_t count, uint64_t pid);
 
 void kill(uint64_t pid);
-NO_RETURN void kill_current();
+NO_RETURN void kill_current(int code);
+

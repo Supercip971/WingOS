@@ -3,7 +3,7 @@
 #include <device/network/e1000.h>
 #include <interrupt.h>
 #include <logging.h>
-#include <utils/liballoc.h>
+#include <utils/memory/liballoc.h>
 #include <virtual.h>
 e1000 main_e1000;
 

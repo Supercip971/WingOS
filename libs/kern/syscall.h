@@ -3,9 +3,9 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <time.h>
-#include <utils/raw_msg_system.h>
-#include <utils/programm_exec_info.h>
-#include <utils/syscall_codes.h>
+#include <utils/sys/raw_msg_system.h>
+#include <utils/sys/programm_exec_info.h>
+#include <utils/sys/syscall_codes.h>
 namespace sys
 {
 

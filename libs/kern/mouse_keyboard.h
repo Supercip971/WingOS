@@ -1,7 +1,7 @@
 #pragma once
 #include <stddef.h>
 #include <stdint.h>
-#include <utils/device_file_info.h>
+#include <utils/sys/device_file_info.h>
 namespace sys
 {
     static const char asciiDefault[58] =

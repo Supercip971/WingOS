@@ -5,7 +5,7 @@
 #include <kern/process_message.h>
 #include <kern/syscall.h>
 #include <stdio.h>
-#include <utils/device_file_info.h>
+#include <utils/sys/device_file_info.h>
 namespace sys
 {
     size_t get_framebuffer_width();

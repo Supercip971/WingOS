@@ -3,7 +3,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <utils/liballoc.h>
+#include <utils/memory/liballoc.h>
 #include <utils/string_util.h>
 
 unsigned long int cseed = 1;

@@ -132,5 +132,21 @@ LIB(libc_string)
             }
         }
     }
+    SECTION("split string into tokens verification") {
+        CHECK("strtoken test") 
+        {
+            const char *t1 = "aaa";
+            const char *t2 = "aaa,111,ddd,ppp,333,111";
+            const int lenght = 23;
+            char *t3 = new char[lenght - 4];
+            REQUIRE_EQUAL(t1, strtok((char*)t2, ','))
+            for (int j; j < lenght; j++)
+                if (t2[j] != ',') {
+                    t3[j] = t2[j];
+            } else {
+                REQUIRE_EQUAL(strtok((char*)t2, ','), t3)
+            }
+        }
+    }
 }
 END_LIB(libc_string)

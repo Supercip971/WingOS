@@ -135,16 +135,14 @@ LIB(libc_string)
     SECTION("split string into tokens verification") {
         CHECK("strtoken test") 
         {
-            const char *t1 = "aaa";
-            const char *t2 = "aaa,111,ddd,ppp,333,111";
-            const int lenght = 23;
-            char *t3 = new char[lenght - 4];
-            REQUIRE_EQUAL(t1, strtok((char*)t2, ','))
-            for (int j; j < lenght; j++)
-                if (t2[j] != ',') {
-                    t3[j] = t2[j];
-            } else {
-                REQUIRE_EQUAL(strtok((char*)t2, ','), t3)
+            const char *s = "This is a cool test!";
+            char *e = strtok(const_cast<char*>(s), ' ');
+
+            for (int i = 0; s[i] != ' '; i++) {
+                REQUIRE(s[i] == *(e+i)) 
+            }
+            for (int i = 4; s[i] != ' '; i++) {
+                REQUIRE(s[i] == *(e+i)) 
             }
         }
     }

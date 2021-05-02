@@ -77,17 +77,26 @@ char *strncpy(char *dest, const char *src, size_t n)
     return dest;
 }
 
-char *strtok(char *s, const char delimeter) {
+char *strtok(char *s, const char delimeter)
+{
     static char *buffer = s;
-    if (buffer == NULL) { return NULL; }
-    // This dynamically alocated array should probably be changed \
+    if (buffer == NULL)
+    {
+        return NULL;
+    }
+    /* This dynamically alocated array should probably be changed
     to a vector once their implementation in this OS is more mature.
+    */
     char *token = new char[strlen(buffer) + 1];
     int i = 0;
-    for(; buffer[i] != '\0'; i++) {
-        if (buffer[i] != delimeter) {
+    for (; buffer[i] != '\0'; i++)
+    {
+        if (buffer[i] != delimeter)
+        {
             token[i] = buffer[i];
-        } else {
+        }
+        else
+        {
             token[i] = '\0';
             buffer = buffer + i + 1;
             return token;

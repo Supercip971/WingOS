@@ -61,7 +61,7 @@ int run_all_test()
         }
         test_count++;
     }
-    printf("runned %i/%i test \n", test_count - error_count, test_count);
+    printf("ran %i/%i test \n", test_count - error_count, test_count);
     return (error_count);
 }
 // this is just for testing unit test (yes this is weird but it work)

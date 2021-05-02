@@ -60,8 +60,8 @@ CHARDFLAGS := $(CFLAGS)               \
         -I$(LIBS_DIR) -I$(LIBS_DIR)/libc -I$(LIBS_DIR)/utils \
 
 all: $(CXXOBJ) $(COBJ)
-	@$(LD) -nostdlib -pie --entry=__entry_point -o $(PROJECT_NAME).module $(COBJ) $(CXXOBJ)
-	@$(LD) -nostdlib -pie --entry=__entry_point -o ../../initfs/$(PROJECT_NAME).module  $(CXXOBJ)
+	@$(LD) -nostdlib -pie --init=__entry_point -fini=__end_point -o $(PROJECT_NAME).module $(COBJ) $(CXXOBJ)
+	@$(LD) -nostdlib -pie --init=__entry_point -fini=__end_point -o ../../initfs/$(PROJECT_NAME).module  $(CXXOBJ)
 
 
 $(BUILD_DIR)/%.io : %.cpp ${CXXFILES} ${HFILES}

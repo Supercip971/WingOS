@@ -15,6 +15,13 @@
 #include <utils/sys/programm_exec_info.h>
 uint8_t last_selected_cpu = 0;
 utils::lock_type prg_launch;
+
+struct module_info
+{
+    uintptr_t init;
+    uintptr_t fini;
+};
+
 void load_segment(process *pro, uintptr_t source, uint64_t size, uintptr_t dest, uint64_t destsize)
 {
     uint64_t count = destsize / PAGE_SIZE;
@@ -166,7 +173,7 @@ void elf64_load_module_segment(Elf64_Phdr *entry, uint8_t *programm_code, uint8_
     memcpy(target + entry->p_vaddr, programm_code + entry->p_offset, entry->p_filesz);
 }
 
-void elf64_load_module_dyn_info(Elf64_Phdr *entry, uint8_t *programm_code, uint8_t *target)
+void elf64_load_module_dyn_info(Elf64_Phdr *entry, uint8_t *programm_code, uint8_t *target, module_info *info)
 {
     Elf64_Dyn *targ = (Elf64_Dyn *)(programm_code + entry->p_offset);
 
@@ -177,6 +184,14 @@ void elf64_load_module_dyn_info(Elf64_Phdr *entry, uint8_t *programm_code, uint8
         if (targ[i].d_tag == DT_NULL) // end of dyn section
         {
             return;
+        }
+        else if (targ[i].d_tag == DT_INIT)
+        {
+            info->init = targ[i].d_un.d_ptr;
+        }
+        else if (targ[i].d_tag == DT_FINI)
+        {
+            info->fini = targ[i].d_un.d_ptr;
         }
     }
 }
@@ -241,7 +256,7 @@ void elf64_load_entry(Elf64_Phdr *entry, uint8_t *programm_code, process *target
     }
 }
 
-void elf64_load_module_entry(Elf64_Phdr *entry, uint8_t *programm_code, uint8_t *target)
+void elf64_load_module_entry(Elf64_Phdr *entry, uint8_t *programm_code, uint8_t *target, module_info *info)
 {
     if (entry->p_type == PT_LOAD)
     {
@@ -249,7 +264,8 @@ void elf64_load_module_entry(Elf64_Phdr *entry, uint8_t *programm_code, uint8_t 
     }
     else if (entry->p_type == PT_DYNAMIC)
     {
-        elf64_load_module_dyn_info(entry, programm_code, target);
+
+        elf64_load_module_dyn_info(entry, programm_code, target, info);
     }
     else if (entry->p_type == PT_NULL || entry->p_type == PT_PHDR)
     {
@@ -397,17 +413,18 @@ uint64_t launch_module(const char *path, file_system *file_sys, int argc, const 
         end_argv[i + 1] = (char *)malloc(strlen(argv[i]) + 1);
         memcpy(end_argv[i + 1], argv[i], strlen(argv[i]) + 1);
     }
+    module_info info;
 
     Elf64_Phdr *p_entry = reinterpret_cast<Elf64_Phdr *>((uintptr_t)programm_code + programm_header->e_phoff);
     uint8_t *target_end_code = (uint8_t *)malloc((get_module_table_max_addr(p_entry, programm_header) + 128));
-    process *to_launch = init_process((func)((uintptr_t)target_end_code + programm_header->e_entry), false, path, false, AUTO_SELECT_CPU, argc + 1, end_argv);
-    to_launch->set_module(true);
     log("prog launcher", LOG_DEBUG, "launching module: {} offset: {}", path, (uintptr_t)(target_end_code));
     for (int table_entry = 0; table_entry < programm_header->e_phnum; table_entry++)
     {
-        elf64_load_module_entry(p_entry, programm_code, target_end_code);
+        elf64_load_module_entry(p_entry, programm_code, target_end_code, &info);
         p_entry = reinterpret_cast<Elf64_Phdr *>((uintptr_t)p_entry + programm_header->e_phentsize);
     }
+    process *to_launch = init_process((func)((uintptr_t)target_end_code + info.init), false, path, false, AUTO_SELECT_CPU, argc + 1, end_argv);
+    to_launch->set_module(true);
     elf64_load_module_relocation(programm_header, programm_code, target_end_code);
     to_launch->set_state(process_state::PROCESS_WAITING);
 

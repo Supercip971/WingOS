@@ -277,14 +277,14 @@ generic_io_device::io_rw_output ahci_ata_device::read(uint8_t *data, uint64_t co
 
         if (port->interrupt_status & TASK_FILE_ERROR)
         {
-            log("ahci", LOG_ERROR) << "ata device task file error while reading at" << cursor << " count " << count;
+            log("ahci", LOG_ERROR, "ata device task file error while reading at: {} count: {}", cursor, count);
             return io_rw_output::io_ERROR;
         }
     }
 
     if (port->interrupt_status & TASK_FILE_ERROR)
     {
-        log("ahci", LOG_ERROR) << "ata device task file error while reading at" << cursor << " count " << count;
+        log("ahci", LOG_ERROR, "ata device task file error while reading at: {} count: {}", cursor, count);
         return io_rw_output::io_ERROR;
     }
 
@@ -366,6 +366,6 @@ int ahci_ata_device::find_command_slot()
         ata_slots >>= 1;
     }
 
-    log("ahci", LOG_ERROR) << "can't find free command slot";
+    log("ahci", LOG_ERROR, "can't find free command slot");
     return -1;
 }

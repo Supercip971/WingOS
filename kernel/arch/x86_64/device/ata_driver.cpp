@@ -72,11 +72,11 @@ bool ata_driver::has_ata_device()
 void ata_driver::init()
 {
     waiting_for_irq = 0;
-    log("ata", LOG_DEBUG) << "loading ata";
+    log("ata", LOG_DEBUG, "loading ata");
     // get
     if (!has_ata_device())
     {
-        log("ata", LOG_WARNING) << "no ata device found for this system";
+        log("ata", LOG_WARNING, "no ata device found for this system");
         return;
     }
     current_selected_drive = ATA_PRIMARY_MASTER;
@@ -145,7 +145,7 @@ void ata_driver::read(uint64_t where, uint32_t count, uint8_t *buffer)
             wait(5);
 
             uint8_t error = ata_read(true, ATA_reg_error_feature);
-            log("ata", LOG_ERROR) << "ata error" << error;
+            log("ata", LOG_ERROR, "ata error: {}", error);
             ata_lock.unlock();
             return;
         }

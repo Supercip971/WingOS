@@ -18,28 +18,6 @@ enum log_state
     LOG_NULL = 5,
 };
 
-// ------------------------ SHOULD BE REMOVED START ------------------------
-
-class logging
-{
-private:
-    static constexpr const char *log_type_table[5] = {
-        "\n\033[36m[%s][%s] :\033[0m ",
-        "\n\n\033[1m\033[32m[%s][%s] :\033[0m ",
-        "\n\033[31;1m[%s][%s] :\033[0m ",
-        "\n\033[4m\033[1m\033[31m[%s][%s][ FATAL ]: \033[0m",
-        "\n\033[31m[%s][%s] :",
-    };
-
-public:
-    logging();
-    ~logging();
-    void set_log_type(const char *data, log_state log_state);
-    template <typename T>
-    logging operator<<(T data);
-};
-// ------------------------ SHOULD BE REMOVED END ------------------------
-
 class range_str
 {
 
@@ -156,23 +134,5 @@ constexpr void log(const char *d, log_state state, const char *msg, argument... 
 
     end_log();
 };
-
-template <>
-logging logging::operator<<(int64_t data);
-template <>
-logging logging::operator<<(uint64_t data);
-template <>
-logging logging::operator<<(const char *data);
-template <>
-logging logging::operator<<(void *data);
-template <>
-logging logging::operator<<(char *data);
-template <>
-logging logging::operator<<(char data);
-template <>
-logging logging::operator<<(unsigned char data);
-template <>
-logging logging::operator<<(range_str data);
-logging log(const char *data, log_state color_mode);
 
 #endif

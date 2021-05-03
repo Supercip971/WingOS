@@ -413,7 +413,7 @@ uint64_t launch_module(const char *path, file_system *file_sys, int argc, const 
         end_argv[i + 1] = (char *)malloc(strlen(argv[i]) + 1);
         memcpy(end_argv[i + 1], argv[i], strlen(argv[i]) + 1);
     }
-    module_info info;
+    module_info info = {0, 0};
 
     Elf64_Phdr *p_entry = reinterpret_cast<Elf64_Phdr *>((uintptr_t)programm_code + programm_header->e_phoff);
     uint8_t *target_end_code = (uint8_t *)malloc((get_module_table_max_addr(p_entry, programm_header) + 128));

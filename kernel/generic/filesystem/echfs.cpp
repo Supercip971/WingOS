@@ -44,7 +44,7 @@ echfs_file_header echfs::read_directory_entry(uint64_t entry)
             }
             if (cur_header->parent_id == 0)
             {
-                log("echfs", LOG_INFO) << "reached the end of me :(";
+                log("echfs", LOG_INFO, "reached the end of me :(");
                 free(another_buffer);
                 return {0};
             }
@@ -79,31 +79,31 @@ bool echfs::is_valid_echfs_entry(uint64_t start_sector)
 }
 void echfs::init(uint64_t start_sector, uint64_t sector_count)
 {
-    log("echfs", LOG_DEBUG) << "loading echfs";
-    log("echfs", LOG_INFO) << "echfs start :" << start_sector << " end :" << (start_sector + sector_count);
+    log("echfs", LOG_DEBUG, "loading echfs");
+    log("echfs", LOG_INFO, "echfs start: {} end: {}", start_sector, (start_sector + sector_count));
     uint8_t *temp_buffer = (uint8_t *)malloc(512);
     get_io_device(0)->read(temp_buffer, 1, start_sector / 512);
     start_sec = start_sector;
     header = *reinterpret_cast<block0_header *>(temp_buffer);
     if (strncmp(header.echfs_signature, "_ECH_FS_", 8) != 0)
     {
-        log("echfs", LOG_ERROR) << "not valid echfs partition";
+        log("echfs", LOG_ERROR, "not valid echfs partition");
         return;
     }
-    log("echfs", LOG_INFO) << " echfs file system info :";
-    log("echfs", LOG_INFO) << "echfs header          : " << header.echfs_signature;
-    log("echfs", LOG_INFO) << "echfs block count     : " << header.block_count;
-    log("echfs", LOG_INFO) << "echfs block length    : " << header.block_length;
-    log("echfs", LOG_INFO) << "echfs main dir length : " << header.main_directory_length;
-    log("echfs", LOG_INFO) << "dir size              : " << sizeof(echfs_file_header);
-    log("echfs", LOG_INFO) << "total dir count       : " << (header.main_directory_length * header.block_length) / sizeof(echfs_file_header);
+    log("echfs", LOG_INFO, " == echfs file system info == ");
+    log("echfs", LOG_INFO, "echfs header          : {}", header.echfs_signature);
+    log("echfs", LOG_INFO, "echfs block count     : {}", header.block_count);
+    log("echfs", LOG_INFO, "echfs block length    : {}", header.block_length);
+    log("echfs", LOG_INFO, "echfs main dir length : {}", header.main_directory_length);
+    log("echfs", LOG_INFO, "dir size              : {}", sizeof(echfs_file_header));
+    log("echfs", LOG_INFO, "total dir count       : {}", (header.main_directory_length * header.block_length) / sizeof(echfs_file_header));
 
     // uint64_t int64_per_sector = 512 / sizeof(uint64_t);
     // uint64_t echfs_alloc_table = 16;
 
     main_dir_start = ((header.block_count * sizeof(uint64_t) + header.block_length - 1) / header.block_length) + 16;
     uint64_t start_main_dir = ((header.block_count * sizeof(uint64_t) + header.block_length - 1) / header.block_length) + 16;
-    log("echfs", LOG_INFO) << "end of allocation bloc : " << start_main_dir;
+    log("echfs", LOG_INFO, "end of allocation bloc: {}", start_main_dir);
     // uint64_t entry = 0;
 
     uint64_t entry_t = 0;
@@ -118,30 +118,23 @@ void echfs::init(uint64_t start_sector, uint64_t sector_count)
         if (head.file_type == 1)
         {
 
-            log("echfs", LOG_DEBUG) << "folder : " << entry_t;
-            log("echfs", LOG_INFO) << head.file_name;
-            log("echfs", LOG_INFO) << "parent id    :" << head.parent_id;
-            log("echfs", LOG_INFO) << "directory id :" << head.starting_block;
+            log("echfs", LOG_DEBUG, "folder: {}", entry_t);
+            log("echfs", LOG_INFO, "{}", head.file_name);
+            log("echfs", LOG_INFO, "parent id: {}", head.parent_id);
+            log("echfs", LOG_INFO, "directory id: {}", head.starting_block);
         }
         else
         {
 
-            log("echfs", LOG_DEBUG) << "file : " << entry_t;
-            log("echfs", LOG_INFO) << head.file_name;
-            log("echfs", LOG_INFO) << "parent id      :" << head.parent_id;
-            log("echfs", LOG_INFO) << "size           :" << head.size;
-            log("echfs", LOG_INFO) << "starting block :" << head.starting_block;
+            log("echfs", LOG_DEBUG, "file: {}", entry_t);
+            log("echfs", LOG_INFO, "{}", head.file_name);
+            log("echfs", LOG_INFO, "parent id: {}", head.parent_id);
+            log("echfs", LOG_INFO, "size: {}", head.size);
+            log("echfs", LOG_INFO, "directory id: {}", head.starting_block);
         }
 
         entry_t++;
     }
-
-    log("echfs", LOG_INFO) << "found file : initfs/test_directory/test_another.txt" << find_file("initfs/test_directory/test_another.txt").parent_id;
-
-    log("echfs", LOG_INFO) << "reading file "
-                           << "initfs/test_directory/test_another.txt";
-    uint8_t *f = this->ech_read_file("initfs/background_pic.bmp");
-    log("echfs", LOG_INFO) << (char *)f;
 
     free(temp_buffer);
 }
@@ -265,7 +258,7 @@ echfs_file_header echfs::find_file(const char *path)
 
     if (strlen(path) > 200)
     {
-        log("echfs", LOG_ERROR) << "with echfs file path can't get larger than 200";
+        log("echfs", LOG_ERROR, "with echfs file path can't get larger than 200");
         return {0};
     }
     char *buffer_temp = (char *)malloc(256);
@@ -274,7 +267,6 @@ echfs_file_header echfs::find_file(const char *path)
     memzero(path_copy, 255);
 
     memcpy(path_copy, path, strlen(path));
-    log("echfs", LOG_INFO) << "searching for " << path_copy;
 
     memzero(buffer_temp, 255);
     bool is_end = false;
@@ -301,8 +293,6 @@ redo: // yes goto are bad but if someone has a solution i take it ;)
     last_buffer_temp_used_length++;
     path_copy++;
 
-    log("echfs", LOG_INFO) << "checking for " << buffer_temp;
-
     if (!is_end)
     {
         echfs_file_header current_header = get_directory_entry(buffer_temp, current_parent);
@@ -311,7 +301,6 @@ redo: // yes goto are bad but if someone has a solution i take it ;)
             if (current_header.file_type == 0)
             {
 
-                log("echfs", LOG_ERROR) << "entry use a file as a directory " << buffer_temp;
                 free(buffer_temp);
                 free(base_path_copy_addr);
                 return {0};
@@ -322,7 +311,7 @@ redo: // yes goto are bad but if someone has a solution i take it ;)
         else
         {
 
-            log("echfs", LOG_ERROR) << "entry not found" << buffer_temp;
+            log("echfs", LOG_ERROR, "entry not found: {}", buffer_temp);
             free(buffer_temp);
             free(base_path_copy_addr);
             return {0};
@@ -334,7 +323,6 @@ redo: // yes goto are bad but if someone has a solution i take it ;)
         echfs_file_header current_header = get_directory_entry(buffer_temp, current_parent);
         if (current_header.parent_id != 0)
         {
-            log("echfs", LOG_INFO) << "file found ! ";
             free(buffer_temp);
             free(base_path_copy_addr);
             return current_header;
@@ -342,7 +330,7 @@ redo: // yes goto are bad but if someone has a solution i take it ;)
         else
         {
 
-            log("echfs", LOG_ERROR) << "entry not found" << buffer_temp;
+            log("echfs", LOG_ERROR, "entry not found: {}", buffer_temp);
             free(buffer_temp);
             free(base_path_copy_addr);
             return {0};
@@ -365,27 +353,23 @@ uint64_t echfs::get_file_length(const char *path)
 uint8_t *echfs::ech_read_file(const char *path)
 {
     fs_lock.lock();
-    log("echfs", LOG_INFO) << "reading file " << path;
     echfs_file_header file_to_read_header = (find_file(path));
     if (file_to_read_header.file_type == 1)
     {
-        log("echfs", LOG_ERROR) << "trying to read a folder";
+        log("echfs", LOG_ERROR, "trying to read a folder");
         fs_lock.unlock();
         return nullptr;
     }
-    log("echfs", LOG_INFO) << "reading file 1 " << path;
     uint64_t size_to_read = file_to_read_header.size;
     size_to_read /= header.block_length;
     size_to_read++;
     size_to_read *= header.block_length;
     uint64_t block_count_to_read = size_to_read / header.block_length;
     uint8_t *data = (uint8_t *)malloc(size_to_read);
-    log("echfs", LOG_INFO) << "reading file size  " << size_to_read;
     const uint64_t block_to_read = file_to_read_header.starting_block;
 
     read_blocks(block_to_read, block_count_to_read, data);
 
-    log("echfs", LOG_INFO) << "readed file size  " << size_to_read;
     fs_lock.unlock();
     return data;
 }

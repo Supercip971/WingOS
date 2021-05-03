@@ -28,27 +28,27 @@ public:
     // return 0 when not found
     virtual uint8_t *read_file(const char *path)
     {
-        log("fs", LOG_ERROR) << "not implemented file system function" << __PRETTY_FUNCTION__;
+        log("fs", LOG_ERROR, "not implemented file system function: {}", __PRETTY_FUNCTION__);
         return nullptr;
     }
     virtual uint64_t read_file(const char *path, uint64_t at, uint64_t size, uint8_t *buffer)
     {
-        log("fs", LOG_ERROR) << "not implemented file system function" << __PRETTY_FUNCTION__;
+        log("fs", LOG_ERROR, "not implemented file system function: {}", __PRETTY_FUNCTION__);
         return 0;
     }
     virtual int write_file(const char *path, uint8_t *data)
     {
-        log("fs", LOG_ERROR) << "not implemented file system function" << __PRETTY_FUNCTION__;
+        log("fs", LOG_ERROR, "not implemented file system function: {}", __PRETTY_FUNCTION__);
         return -1;
     }
     virtual uint64_t write_file(const char *path, uint64_t at, uint64_t size, const uint8_t *buffer)
     {
-        log("fs", LOG_ERROR) << "not implemented file system function" << __PRETTY_FUNCTION__;
+        log("fs", LOG_ERROR, "not implemented file system function: {}", __PRETTY_FUNCTION__);
         return 0;
     }
     virtual bool exist(const char *path)
     {
-        log("fs", LOG_ERROR) << "not implemented file system function" << __PRETTY_FUNCTION__;
+        log("fs", LOG_ERROR, "not implemented file system function: {}", __PRETTY_FUNCTION__);
         return 0;
     }
 

@@ -30,7 +30,7 @@ void ps_mouse::wait(bool is_signal)
             }
             asm("pause");
         }
-        log("ps2 mouse", LOG_ERROR) << "ps2 mouse timed out";
+        log("ps2 mouse", LOG_ERROR, "ps2 mouse timed out");
         return;
     }
 
@@ -43,7 +43,7 @@ void ps_mouse::wait(bool is_signal)
 
         asm("pause");
     }
-    log("ps2 mouse", LOG_ERROR) << "ps2 mouse timed out";
+    log("ps2 mouse", LOG_ERROR, "ps2 mouse timed out");
 }
 
 void ps_mouse::set_sample_rate(uint32_t rate)

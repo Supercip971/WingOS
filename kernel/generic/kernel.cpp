@@ -30,7 +30,7 @@ void test()
     while (true)
     {
         sleep(2);
-        log("kernel", LOG_INFO) << "hey hey";
+        log("kernel", LOG_INFO, "hey hey");
     }
 }
 void _start(stivale_struct *bootloader_data)

@@ -8,7 +8,7 @@ ASM_FUNCTION uint32_t read_pit_counter();
 void PIT::init()
 {
     add_device(this);
-    log("pit", LOG_DEBUG) << "loading pit...";
+    log("pit", LOG_DEBUG, "loading pit...");
     uint16_t divisor = PIT_START_FREQUENCY /
                        PIT_TARGET_FREQUECY; // to do : make this more portable
 
@@ -20,7 +20,7 @@ void PIT::init()
     wait();
     uint8_t h = (uint8_t)((divisor >> 8) & 0xFF);
     outb(0x40, h);
-    log("pit", LOG_DEBUG) << "loaded pit";
+    log("pit", LOG_DEBUG, "loaded pit");
 }
 
 void PIT::Pwait(uint16_t ms)

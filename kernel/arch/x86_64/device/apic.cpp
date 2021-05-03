@@ -44,18 +44,18 @@ bool apic::isloaded()
 
 void apic::log_all()
 {
-    log("apic", LOG_INFO) << "apic address" << (uintptr_t)apic_addr;
-    log("apic", LOG_INFO) << "current processor id " << get_current_processor_id();
+    log("apic", LOG_INFO, "apic address: {}", (uintptr_t)apic_addr);
+    log("apic", LOG_INFO, "current processor id: {}", get_current_processor_id());
 
     table = madt::the()->get_madt_ioAPIC();
 
     for (int i = 0; table[i] != 0; i++)
     {
-        log("io apic", LOG_INFO) << "info for io apic" << i;
+        log("io apic", LOG_INFO, "info for io apic id: {}", i);
 
         uintptr_t addr = (table[i]->ioapic_addr);
 
-        log("io apic", LOG_INFO) << "io apic addr " << addr;
+        log("io apic", LOG_INFO, "io apic addr: {}", addr);
 
         map_page(addr, addr, true, false);
         update_paging();
@@ -65,40 +65,40 @@ void apic::log_all()
         io_apic_version_table *tables = (io_apic_version_table *)&raw_table;
         io_version_data = *tables;
 
-        log("io apic", LOG_INFO) << "version         : " << tables->version;
-        log("io apic", LOG_INFO) << "max redirection : " << tables->maximum_redirection;
-        log("io apic", LOG_INFO) << "gsi start       : " << table[i]->gsib;
-        log("io apic", LOG_INFO) << "gsi end         : " << table[i]->gsib + tables->maximum_redirection;
+        log("io apic", LOG_INFO, "version: {}", tables->version);
+        log("io apic", LOG_INFO, "max redirection: {}", tables->maximum_redirection);
+        log("io apic", LOG_INFO, "gsi start: {}", table[i]->gsib);
+        log("io apic", LOG_INFO, "gsi end: {}", table[i]->gsib + tables->maximum_redirection);
     }
     for (int i = 0; iso_table[i] != 0; i++)
     {
 
-        log("iso", LOG_INFO) << " info for iso" << i;
-        log("iso", LOG_INFO) << "iso source : " << iso_table[i]->irq;
-        log("iso", LOG_INFO) << "iso target : " << iso_table[i]->interrupt;
+        log("iso", LOG_INFO, " info for iso: {}", i);
+        log("iso", LOG_INFO, "iso source: {}", iso_table[i]->irq);
+        log("iso", LOG_INFO, "iso target: {}", iso_table[i]->interrupt);
 
         if (iso_table[i]->misc_flags & 0x4)
         {
-            log("iso", LOG_INFO) << "iso is active high";
+            log("iso", LOG_INFO, "iso is active high");
         }
         else
         {
-            log("iso", LOG_INFO) << "iso is active low";
+            log("iso", LOG_INFO, "iso is active low");
         }
 
         if (iso_table[i]->misc_flags & 0x100)
         {
-            log("iso", LOG_INFO) << "iso is edge triggered";
+            log("iso", LOG_INFO, "iso is edge triggered");
         }
         else
         {
-            log("iso", LOG_INFO) << "iso is level triggered";
+            log("iso", LOG_INFO, "iso is level triggered");
         }
     }
 }
 void apic::init()
 {
-    log("apic", LOG_DEBUG) << "loading apic";
+    log("apic", LOG_DEBUG, "loading apic");
 
     apic_addr = (void *)((uintptr_t)madt::the()->lapic_base);
     for (int i = 0; i < 3; i++)
@@ -107,7 +107,7 @@ void apic::init()
     }
     if (apic_addr == nullptr)
     {
-        log("apic", LOG_FATAL) << "can't find apic";
+        log("apic", LOG_FATAL, "can't find apic");
 
         while (true)
         {
@@ -124,11 +124,11 @@ void apic::init()
     pic_wait();
     outb(PIC2_DATA, 0xff);
 
-    log("io apic", LOG_DEBUG) << "loading io apic";
+    log("apic", LOG_DEBUG, "loading io apic");
 
     table = madt::the()->get_madt_ioAPIC();
 
-    log("iso", LOG_DEBUG) << "loading iso";
+    log("apic", LOG_DEBUG, "loading iso ");
 
     iso_table = madt::the()->get_madt_ISO();
 
@@ -203,7 +203,7 @@ void apic::set_raw_redirect(uint8_t vector, uint32_t target_gsi, uint16_t flags,
     if (io_apic_target == -1)
     {
 
-        log("io apic", LOG_ERROR) << "error while trying to setup raw redirect for io apic :( no iso table found ";
+        log("io apic", LOG_ERROR, "error while trying to setup raw redirect for io apic :( no iso table founded ");
         return;
     }
 
@@ -239,13 +239,13 @@ void apic::send_ipi(uint8_t cpu, uint32_t interrupt_num)
 
 void apic::set_redirect_irq(int cpu, uint8_t irq, int status)
 {
-    log("io apic", LOG_INFO) << "setting redirect irq for cpu : " << cpu << " irq : " << irq << " status : " << status;
+    log("io apic", LOG_INFO, "setting redirect irq for cpu: {} irq: {} status: {} ", cpu, irq, status);
 
     for (uint64_t i = 0; iso_table[i] != 0; i++)
     {
         if (iso_table[i]->irq == irq)
         {
-            log("io apic", LOG_INFO) << "iso matching : " << i << " mapping to source" << iso_table[i]->irq + 0x20 << " gsi : " << iso_table[i]->interrupt;
+            log("io apic", LOG_INFO, "iso matching: {} mapping to source: {} gsi: {}", i, iso_table[i]->irq + 0x20, iso_table[i]->interrupt);
 
             set_raw_redirect(iso_table[i]->irq + 0x20, iso_table[i]->interrupt, iso_table[i]->misc_flags, cpu, status);
             return;

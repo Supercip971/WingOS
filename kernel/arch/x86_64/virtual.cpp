@@ -115,12 +115,12 @@ page_table *new_vmm_page_dir()
 
 void init_vmm(stivale_struct *bootdata)
 {
-    log("vmm", LOG_DEBUG) << "loading vmm";
+    log("vmm", LOG_DEBUG, "loading vmm");
     get_current_cpu()->cpu_page_table = get_mem_addr<page_table *>(pmm_alloc_zero(1));
     page_table *table = get_current_cpu()->cpu_page_table;
     e820_entry_t *mementry = (e820_entry_t *)bootdata->memory_map_addr;
 
-    log("vmm", LOG_INFO) << "loading vmm 2M initial data";
+    log("vmm", LOG_INFO, "loading vmm 2M initial pages");
 
     for (uint64_t i = 0; i < (TWO_MEGS / PAGE_SIZE); i++)
     {
@@ -132,7 +132,7 @@ void init_vmm(stivale_struct *bootdata)
 
     set_paging_dir(get_rmem_addr(get_current_cpu()->cpu_page_table));
 
-    log("vmm", LOG_INFO) << "loading vmm 4G initial data";
+    log("vmm", LOG_INFO, "loading vmm 4G initial pages");
 
     for (uint64_t i = 0; i < (FOUR_GIGS / PAGE_SIZE); i++)
     {
@@ -140,7 +140,7 @@ void init_vmm(stivale_struct *bootdata)
         map_page(table, addr, get_mem_addr(addr), true, true);
     }
 
-    log("vmm", LOG_INFO) << "loading vmm with memory entries";
+    log("vmm", LOG_INFO, "loading vmm with memory entries");
 
     for (uint64_t i = 0; i < bootdata->memory_map_entries; i++)
     {
@@ -163,7 +163,7 @@ void init_vmm(stivale_struct *bootdata)
 
     set_paging_dir(get_rmem_addr(get_current_cpu()->cpu_page_table));
 
-    log("vmm", LOG_INFO) << "loading vmm done";
+    log("vmm", LOG_INFO, "loading vmm done");
 }
 
 void update_paging()

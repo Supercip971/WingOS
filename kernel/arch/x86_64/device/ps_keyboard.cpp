@@ -59,7 +59,7 @@ void ps_keyboard::interrupt_handler()
         set_key(key_state, scan_code);
         if (key_state)
         {
-            log("keyboard", LOG_INFO) << (uint64_t)asciiDefault[scan_code];
+            log("keyboard", LOG_INFO, "{}", (char)asciiDefault[scan_code]);
         }
         state = inb(0x64);
         keyboard_buff_info info;

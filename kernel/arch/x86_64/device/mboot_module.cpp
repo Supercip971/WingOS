@@ -13,8 +13,8 @@ mboot_module::mboot_module()
 void mboot_module::init(stivale_struct *main_struct)
 {
     stistruct = main_struct;
-    log("mboot", LOG_DEBUG) << "loading mboot mudules";
-    log("mboot", LOG_INFO) << "mboot module count" << main_struct->module_count;
+    log("mboot", LOG_DEBUG, "loading mboot mudules");
+    log("mboot", LOG_INFO, "mboot module count: {}", main_struct->module_count);
 
     for (uint64_t i = 0; i < main_struct->module_count + 2; i++)
     {
@@ -27,7 +27,7 @@ void mboot_module::init(stivale_struct *main_struct)
     {
         modules[i] = reinterpret_cast<stivale_module *>(at);
         at = modules[i]->next;
-        log("mboot", LOG_INFO) << "detected module" << modules[i]->string << "at" << modules[i]->begin << "end" << modules[i]->end;
+        log("mboot", LOG_INFO, "detected module: {} at: {} end: {}", modules[i]->string, modules[i]->begin, modules[i]->end);
     }
 }
 
@@ -37,13 +37,13 @@ stivale_module *mboot_module::get_fs_module()
     {
         if (strncmp("ramdisk", modules[i]->string, 7) == 0)
         {
-            log("mboot", LOG_INFO) << "detected ram disk module at" << modules[i]->begin;
+            log("mboot", LOG_INFO, "detected ram disk module at: {}", modules[i]->begin);
 
             return modules[i];
         }
     }
 
-    log("mboot", LOG_ERROR) << "no detected ram disk module";
+    log("mboot", LOG_ERROR, "no detected ram disk module");
     return nullptr;
 }
 

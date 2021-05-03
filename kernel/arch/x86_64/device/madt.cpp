@@ -24,69 +24,69 @@ void madt::log_all()
 
         if (table->ttype == MADT_type::MADT_LAPIC)
         {
-            log("madt", LOG_INFO) << " madt LAPIC table entry : ";
-            log("madt", LOG_INFO) << "type   : " << table->ttype;
-            log("madt", LOG_INFO) << "lenght : " << table->tlenght;
+            log("madt", LOG_INFO, " madt LAPIC table entry : ");
+            log("madt", LOG_INFO, "type   : {}", table->ttype);
+            log("madt", LOG_INFO, "lenght : {}", table->tlenght);
 
             auto local_apic = reinterpret_cast<MADT_table_LAPIC *>(table);
 
-            log("madt", LOG_INFO) << " madt table LAPIC info : ";
-            log("madt", LOG_INFO) << "apic id : " << local_apic->apic_id;
-            log("madt", LOG_INFO) << "proc id : " << local_apic->processor_id;
+            log("madt", LOG_INFO, " madt table LAPIC info : ");
+            log("madt", LOG_INFO, "apic id : {}", local_apic->apic_id);
+            log("madt", LOG_INFO, "proc id : {}", local_apic->processor_id);
         }
         else if (table->ttype == MADT_type::MADT_IOAPIC)
         {
 
-            log("madt", LOG_INFO) << " madt IOAPIC table entry : ";
-            log("madt", LOG_INFO) << "type   : " << table->ttype;
-            log("madt", LOG_INFO) << "lenght : " << table->tlenght;
+            log("madt", LOG_INFO, " madt IOAPIC table entry : ");
+            log("madt", LOG_INFO, "type   : {}", table->ttype);
+            log("madt", LOG_INFO, "lenght : {}", table->tlenght);
 
             auto ioapic = reinterpret_cast<MADT_table_IOAPIC *>(table);
 
-            log("madt", LOG_INFO) << " madt table IOAPIC info : ";
+            log("madt", LOG_INFO, " madt table IOAPIC info : ");
 
-            log("madt", LOG_INFO) << "id             : " << ioapic->IOAPIC_id;
-            log("madt", LOG_INFO) << "interrupt base : " << ioapic->gsib;
-            log("madt", LOG_INFO) << "io apic addr   : " << ioapic->ioapic_addr;
+            log("madt", LOG_INFO, "id             : {}", ioapic->IOAPIC_id);
+            log("madt", LOG_INFO, "interrupt base : {}", ioapic->gsib);
+            log("madt", LOG_INFO, "io apic addr   : {}", ioapic->ioapic_addr);
         }
         else if (table->ttype == MADT_type::MADT_LAPIC_OVERRIDE)
         {
-            log("madt", LOG_INFO) << " madt IOAPIC override table entry : ";
-            log("madt", LOG_INFO) << "type   : " << table->ttype;
-            log("madt", LOG_INFO) << "lenght : " << table->tlenght;
+            log("madt", LOG_INFO, " madt IOAPIC override table entry : ");
+            log("madt", LOG_INFO, "type   : {}", table->ttype);
+            log("madt", LOG_INFO, "lenght : {}", table->tlenght);
 
             auto ioapic = reinterpret_cast<MADT_table_LAPICO *>(table);
 
-            log("madt", LOG_INFO) << " madt table IOAPIC override info : ";
-            log("madt", LOG_INFO) << "new address : " << ioapic->apic_address;
+            log("madt", LOG_INFO, " madt table IOAPIC override info : ");
+            log("madt", LOG_INFO, "new address : {}", ioapic->apic_address);
         }
         else if (table->ttype == MADT_type::MADT_ISO)
         {
-            log("madt", LOG_INFO) << " madt ISO table entry : ";
-            log("madt", LOG_INFO) << "type   : " << table->ttype;
-            log("madt", LOG_INFO) << "lenght : " << table->tlenght;
+            log("madt", LOG_INFO, " madt ISO table entry : ");
+            log("madt", LOG_INFO, "type   : {}", table->ttype);
+            log("madt", LOG_INFO, "lenght : {}", table->tlenght);
 
             auto iso = reinterpret_cast<MADT_table_ISO *>(table);
 
-            log("madt", LOG_INFO) << " madt table iso info : ";
+            log("madt", LOG_INFO, " madt table iso info : ");
 
-            log("madt", LOG_INFO) << "gsi       : " << iso->interrupt;
-            log("madt", LOG_INFO) << "target    : " << iso->irq;
-            log("madt", LOG_INFO) << "attribute : " << iso->misc_flags;
+            log("madt", LOG_INFO, "gsi       : {}", iso->interrupt);
+            log("madt", LOG_INFO, "target    : {}", iso->irq);
+            log("madt", LOG_INFO, "attribute : {}", iso->misc_flags);
         }
         else
         {
 
-            log("madt", LOG_INFO) << " not detected madt table entry : ";
-            log("madt", LOG_INFO) << "type   : " << table->ttype;
-            log("madt", LOG_INFO) << "lenght : " << table->tlenght;
+            log("madt", LOG_INFO, " not detected madt table entry : ");
+            log("madt", LOG_INFO, "type   : {}", table->ttype);
+            log("madt", LOG_INFO, "lenght : {}", table->tlenght);
         }
     }
 }
 
 void madt::init()
 {
-    log("madt", LOG_DEBUG) << "loading madt";
+    log("madt", LOG_DEBUG, "loading madt");
     madt_address = acpi::the()->find_entry("APIC");
 
     madt_header = reinterpret_cast<MADT_head *>(madt_address);

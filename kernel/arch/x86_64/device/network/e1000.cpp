@@ -247,7 +247,7 @@ void e1000_int_handler(unsigned int v)
 void e1000::init(pci_device *dev)
 {
 
-    log("e1000", LOG_DEBUG) << "loading e1000";
+    log("e1000", LOG_DEBUG, "loading e1000");
     pci_bar_data d = dev->get_bar(0);
     add_irq_handler(e1000_int_handler, 11);
 
@@ -255,38 +255,38 @@ void e1000::init(pci_device *dev)
     {
         bar_t = 0;
         mm_address = get_mem_addr(d.base);
-        log("e1000", LOG_INFO) << "e1000 is mm" << mm_address;
-        log("e1000", LOG_INFO) << "e1000 is length" << d.size;
+        log("e1000", LOG_INFO, "e1000 is mm: {}", mm_address);
+        log("e1000", LOG_INFO, "e1000 is length: {}", d.size);
         update_paging();
     }
     else
     {
         bar_t = 1;
         io_base_addr = d.base;
-        log("e1000", LOG_INFO) << "e1000 is io" << io_base_addr;
+        log("e1000", LOG_INFO, "e1000 is io: {}", io_base_addr);
     }
-
-    log("e1000", LOG_INFO) << "mac address";
 
     if (eerp_rom_detection())
     {
-        log("e1000", LOG_INFO) << "e1000 has eeprom";
+        log("e1000", LOG_INFO, "e1000 has eeprom");
     }
+    log("e1000", LOG_INFO, " == mac address == ");
+
     mac_detection();
 
     for (int i = 0; i < 6; i++)
     {
-        log("e1000", LOG_INFO) << i << " = " << (uint32_t)get_mac_addr().mac[i];
+        log("e1000", LOG_INFO, "mac addr[{}] = {}", i, " = ", (uint32_t)get_mac_addr().mac[i]);
     }
 
     for (int i = 0; i < 0x80; i++)
         write(0x5200 + i * 4, 0);
-    log("e1000", LOG_INFO) << "setup rx";
+    log("e1000", LOG_INFO, "setup rx");
 
     setup_rx();
-    log("e1000", LOG_INFO) << "setup tx";
+    log("e1000", LOG_INFO, "setup tx");
     setup_tx();
 
-    log("e1000", LOG_INFO) << "turn on interrupt for E1000";
+    log("e1000", LOG_INFO, "turn on interrupt for E1000");
     turn_on_int();
 }

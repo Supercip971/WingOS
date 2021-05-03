@@ -30,7 +30,7 @@ void rtl8139::init(pci_device *device)
     mm_addr = device->get_bar(0).base;
 
     update_paging();
-    log("rtl8139", LOG_DEBUG) << "loadingt rtl8139 addr : " << mm_addr;
+    log("rtl8139", LOG_DEBUG, "loadingt rtl8139 addr: {}", mm_addr);
 
     write(CONFIG_1, 0x0);
 
@@ -65,6 +65,6 @@ void rtl8139::init(pci_device *device)
 
     for (int i = 0; i < 6; i++)
     {
-        log("rtl8139", LOG_INFO) << "mac " << i << " = " << mac_address[i];
+        log("rtl8139", LOG_INFO, "mac[{}] = {}", i, mac_address[i]);
     }
 }

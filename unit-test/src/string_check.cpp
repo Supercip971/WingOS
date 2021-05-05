@@ -133,9 +133,9 @@ LIB(libc_string)
         }
     }
     SECTION("split string into tokens verification") {
-        CHECK("strtoken test") 
+        CHECK("strtok test") 
         {
-            const char *s = "This is a cool test!";
+            const char s[21] = "This is a cool test!";
             char *e = strtok(const_cast<char*>(s), ' ');
 
             for (int i = 0; s[i] != ' '; i++) {
@@ -144,6 +144,7 @@ LIB(libc_string)
             for (int i = 4; s[i] != ' '; i++) {
                 REQUIRE(s[i] == *(e+i)) 
             }
+            delete[] e;
         }
     }
 }

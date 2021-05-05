@@ -1,9 +1,7 @@
 #ifndef BITMAP_H
 #define BITMAP_H
-#include <arch.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <utility.h>
 
 /*
  * the bitmap is a basic type

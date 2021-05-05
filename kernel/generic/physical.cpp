@@ -1,10 +1,10 @@
 #include <arch.h>
-#include <bitmap.h>
 #include <com.h>
 #include <kernel.h>
 #include <logging.h>
 #include <physical.h>
 #include <utility.h>
+#include <utils/bitmap.h>
 #include <utils/lock.h>
 bitmap pmm_bitmap;
 extern "C" uint64_t kernel_end;

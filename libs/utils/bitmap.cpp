@@ -1,10 +1,8 @@
 #include "bitmap.h"
-#include <device/local_data.h>
-#include <logging.h>
-
+#include <stdio.h>
+#include <string.h>
 bitmap::bitmap(uint8_t *data, size_t size) : bitmap_size(size)
 {
-    log("bitmap", LOG_INFO, "creating bitmap: {} of size: {} bit and {} bytes", (uint64_t)data, size, size / 8);
     memset(data, 0xff, size / 8);
     buffer = data;
     last_free = 0;
@@ -14,10 +12,7 @@ void bitmap::set(size_t idx, bool value)
 {
     if (idx > bitmap_size)
     {
-        log("bitmap", LOG_ERROR, "trying to set out of bound of the bitmap: {} > {}", idx, bitmap_size);
-
-        log("bitmap", LOG_INFO, "call stack: for {}", process::current()->get_name());
-        process::current()->get_backtrace().dump_backtrace();
+        printf("[error] bitmap: trying to set out of bound of the bitmap: %i> %i\n", idx, bitmap_size);
         return;
     }
     size_t bit = idx % 8;
@@ -36,10 +31,7 @@ bool bitmap::get(size_t idx) const
 {
     if (idx > bitmap_size)
     {
-        log("bitmap", LOG_ERROR, "trying to read out of bound of the bitmap: {} > {}", idx, bitmap_size);
-
-        log("bitmap", LOG_INFO, "call stack: for {}", process::current()->get_name());
-        process::current()->get_backtrace().dump_backtrace();
+        printf("[error] bitmap: trying to get out of bound of the bitmap: %i> %i\n", idx, bitmap_size);
 
         return false;
     }
@@ -83,7 +75,7 @@ size_t bitmap::find_free(size_t length)
 
     if (last_free == 0)
     {
-        log("bitmap", LOG_WARNING, "no free entry founded for the bitmap");
+        printf("[error] bitmap: no free bitmap entry\n");
         return 0;
     }
     else
@@ -98,13 +90,14 @@ size_t bitmap::alloc(size_t length)
     size_t v = find_free(length);
     if (v == 0)
     {
-        log("bitmap", LOG_WARNING, "can't allocate block count: {}", length);
+        printf("[error] bitmap: can't allocate block count %i\n", length);
         return 0;
     }
 
     if (set_used(v, length) == 0)
     {
-        log("bitmap", LOG_WARNING, "can't set used block count: {} ", length);
+
+        printf("[error] bitmap: can't allocate block count %i\n", length);
         return 0;
     }
 
@@ -118,7 +111,7 @@ size_t bitmap::set_free(size_t idx, size_t length)
     {
         if (get(idx + i) == false)
         {
-            log("bitmap", LOG_WARNING, "freeing already free block: {}", idx + i);
+            printf("freeing already free block: %i", idx + i);
         }
         set(idx + i, false);
     }
@@ -133,7 +126,7 @@ size_t bitmap::set_used(size_t idx, size_t length)
 
         if (get(idx + i) == true)
         {
-            log("bitmap", LOG_WARNING, "setting already set block: {}", idx + i);
+            printf("setting already set block: %i", idx + i);
         }
         set(idx + i, true);
     }

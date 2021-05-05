@@ -1,6 +1,7 @@
 
 
 #include <arch.h>
+#include <logging.h>
 #include <pic.h>
 #include <stdint.h>
 

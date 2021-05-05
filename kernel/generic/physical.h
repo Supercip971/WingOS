@@ -1,7 +1,7 @@
 #pragma once
 #include <arch.h>
-#include <bitmap.h>
 #include <stivale_struct.h>
+#include <utils/bitmap.h>
 extern uint64_t available_memory;
 void init_physical_memory(stivale_struct *bootdata);
 

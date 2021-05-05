@@ -1,10 +1,11 @@
 #pragma once
 #include <arch.h>
 #include <backtrace.h>
-#include <bitmap.h>
 #include <filesystem/userspace_fs.h>
+#include <logging.h>
 #include <process_context.h>
 #include <stdint.h>
+#include <utils/bitmap.h>
 #include <utils/math.h>
 #include <utils/sys/config.h>
 #define SLEEP_ALWAYS ((uint64_t)-1)

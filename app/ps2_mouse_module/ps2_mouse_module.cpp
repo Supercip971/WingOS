@@ -254,7 +254,6 @@ void irq_handle_mouse(unsigned int handler)
 
 int main(int argc, char **argv)
 {
-    call_init();
     echo_out("loading ps2 mouse module driver");
     // TODO: add a process_lock/unlock call to the kernel
     asm volatile("cli");
@@ -263,6 +262,12 @@ int main(int argc, char **argv)
 
     set_device_driver(device_type::MOUSE_DEVICE, pss_mouse);
     asm volatile("sti");
+    return 0;
+}
+
+extern int __end_point()
+{
+
     echo_out("finished ps2 mouse module driver");
     return 0;
 }

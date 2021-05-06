@@ -3,7 +3,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 extern "C" int main(int argc, char **argv);
+#ifdef MODULE
 
+#include <module/module_calls.h>
+extern "C" void __entry_point(int argc, char** argv, char **env)
+{
+
+    asm volatile("and rsp, -16");
+    call_init();
+    int res = main(argc, argv);
+    __cxa_finalize(nullptr);
+    exit(res);
+
+}
+#else
 extern "C" void __entry_point(int argc, char **argv, char **env)
 {
     asm volatile("and rsp, -16");
@@ -27,4 +40,6 @@ extern "C" void __entry_point(int argc, char **argv, char **env)
     free(stdout);
     free(stderr);
     exit(res);
+
 }
+#endif

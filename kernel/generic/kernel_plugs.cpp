@@ -2,6 +2,7 @@
 #include <physical.h>
 #include <plug/system_plug.h>
 #include <syscall.h>
+#include <logging.h>
 
 uintptr_t plug_allocate_page(size_t count)
 {

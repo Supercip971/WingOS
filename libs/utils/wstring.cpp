@@ -49,4 +49,21 @@ namespace utils
     {
         return to_str_from_int(value);
     }
+
+    bool string::operator==(const string &v) const
+    {
+        if (length() != v.length())
+        {
+            return false;
+        }
+        for (size_t i = 0; i < length(); i++)
+        {
+            if (get(i) != v.get(i))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 } // namespace utils

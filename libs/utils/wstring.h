@@ -14,7 +14,7 @@ namespace utils
     template <>
     string to_str<const char *>(const char *value);
 
-    class string : public memory_io
+    class string : protected memory_io
     {
 
     protected:
@@ -123,6 +123,7 @@ namespace utils
             append(v);
             return *this;
         }
+        bool operator==(const string &v) const;
     };
 
 } // namespace utils

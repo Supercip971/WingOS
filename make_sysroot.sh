@@ -11,3 +11,4 @@ cp -r ./libs/libc/** ./sysroot/libs/
 cp -r ./libs/kern ./sysroot/libs/
 cp -r ./libs/gui ./sysroot/libs/
 cp -r ./libs/utils ./sysroot/libs/
+cp -r ./libs/module ./sysroot/module/

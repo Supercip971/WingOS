@@ -124,6 +124,7 @@ namespace utils
             return *this;
         }
         bool operator==(const string &v) const;
+        bool operator!=(const string &v) const {return !(*this == v);};
     };
 
 } // namespace utils

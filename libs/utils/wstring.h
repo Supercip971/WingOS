@@ -118,13 +118,21 @@ namespace utils
 
             string_length += added_length;
         }
+
         string &operator+=(const string &v)
         {
             append(v);
             return *this;
         }
+
         bool operator==(const string &v) const;
-        bool operator!=(const string &v) const {return !(*this == v);};
+        bool operator!=(const string &v) const { return !(*this == v); };
+
+        bool empty() const
+        {
+            return string_length == 0;
+        }
+
     };
 
 } // namespace utils

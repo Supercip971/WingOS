@@ -35,8 +35,9 @@ make first_setup -j$(nproc)
 
 ### BUILD
 
-for building WingOS you can just do :
+for building WingOS and the applications you can just do :
 ```bash
+make app
 make disk
 ```
 

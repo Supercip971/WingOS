@@ -16,14 +16,16 @@ struct last_sign_of_process_status
     uint32_t ret;
 };
 utils::vector<last_sign_of_process_status> dead_process_status;
-bool cpu_wait = false;
 process *process_array = nullptr;
 int process_locked = 1;
 bool process_loaded = false;
 
 utils::lock_type process_creator_lock;
 uint64_t last_process = 0;
-process *current_cpu_process[255]; // FIXME: don't use 255 and use a #define
+process *current_cpu_process[MAX_CPU_COUNT];
+utils::lock_type task_lock;
+int dying_process_count = 0;
+uint64_t next_upid = 1;
 
 process *process::current()
 {
@@ -33,10 +35,6 @@ void process::set_current(process *target)
 {
     current_cpu_process[get_current_cpu_id()] = target;
 }
-
-utils::lock_type task_lock;
-int dying_process_count = 0;
-uint64_t next_upid = 1;
 
 void lock_process()
 {
@@ -57,15 +55,15 @@ NO_RETURN void null_process()
         yield();
     }
 }
+
 bool process::destroy()
 {
 
     set_active(false);
     set_state(PROCESS_AVAILABLE);
-
-    free(global_process_memory);
     return true;
 }
+
 NO_RETURN void utility_process()
 {
     turn_on_interrupt();
@@ -98,6 +96,7 @@ NO_RETURN void utility_process()
         sleep(100);
     }
 }
+
 NO_RETURN void init_multi_process(func start)
 {
     log("proc", LOG_DEBUG, "loading multi processing");
@@ -116,7 +115,7 @@ NO_RETURN void init_multi_process(func start)
 
     log("proc", LOG_INFO, "loading smp process for cpus: {}", get_cpu_count());
 
-    for (size_t i = 0; i <= get_cpu_count(); i++)
+    for (size_t i = 0; i <= get_cpu_count(); i++) // init 2
     {
         init_process(null_process, true, "smp1", false, i);
         init_process(null_process, true, "smp2", false, i);
@@ -161,14 +160,6 @@ int64_t find_free_process()
     }
 }
 
-void process::init_global_memory()
-{
-
-    global_process_memory = reinterpret_cast<uint8_t *>(malloc(4096));
-    global_process_memory_length = 4096;
-    memzero(global_process_memory, global_process_memory_length);
-}
-
 process *alloc_process(const char *end_name, func entry_point, bool is_user)
 {
     int64_t process_to_add_kpid = find_free_process();
@@ -186,12 +177,12 @@ process *alloc_process(const char *end_name, func entry_point, bool is_user)
 
 void init_process_entry(process *target, const char *name, bool is_user, char **argv, int argc, func entry_point)
 {
-    target->init_global_memory();
     init_process_stackframe(target, entry_point, argc, argv);
     init_process_userspace_fs(target->get_ufs());
     init_process_paging(target, is_user);
     init_process_arch_ext(target);
 }
+
 process *init_process(func entry_point, bool start_direct, const char *name, bool user, uint64_t cpu_target, int argc, char **argv)
 {
     utils::context_lock locker(process_creator_lock);
@@ -251,7 +242,7 @@ process *get_next_process(uint64_t current_id)
     while (true)
     {
     }
-    return process::current();
+    return nullptr;
 }
 
 uintptr_t process_switch_handler(arch_stackframe *isf, bool switch_all) // switch all is true only for pit/hpet/... interrupt
@@ -306,6 +297,7 @@ process *process::from_name(const char *name)
     }
     return nullptr;
 }
+
 process *process::from_pid(size_t pid)
 {
 
@@ -321,73 +313,6 @@ process *process::from_pid(size_t pid)
     }
     return nullptr;
 }
-void set_on_request_service(bool is_ORS)
-{
-    process::current()->set_on_request(is_ORS);
-    process::current()->set_active(true);
-}
-
-void set_on_request_service(bool is_ORS, uint64_t pid)
-{
-
-    auto proc = process::from_pid(pid);
-    if (proc == nullptr)
-    {
-        log("process", LOG_ERROR, "can't find process: {} for: {}", pid, __PRETTY_FUNCTION__);
-        return;
-    }
-    proc->set_on_request(is_ORS);
-    proc->set_active(true);
-}
-
-void on_request_service_update()
-{
-    process::current()->set_active(false);
-}
-
-uintptr_t process::get_global_data_copy(uint64_t offset)
-{
-    if (global_process_memory_length < offset + sizeof(uint64_t))
-    {
-        log("process", LOG_ERROR, "getting out of range process data {}", get_name());
-        return -1;
-    }
-    else
-    {
-        uint8_t *data_from = process_array[kpid].global_process_memory;
-
-        return *((uint64_t *)(data_from + offset));
-    }
-}
-uint64_t get_process_global_data_copy(uint64_t offset, const char *process_name)
-{
-
-    auto target = process::from_name(process_name);
-    if (target == nullptr)
-    {
-        log("process", LOG_ERROR, "get global data copy, trying to get a non existant process: {}", process_name);
-        return -1;
-    }
-    return target->get_global_data_copy(offset);
-}
-
-void *process::get_global_data(uint64_t offset)
-{
-    if (global_process_memory_length < offset + sizeof(uint64_t))
-    {
-        log("process", LOG_ERROR, "getting out of range process data for: {}", get_name());
-        return nullptr;
-    }
-    else
-    {
-
-        return global_process_memory + offset;
-    }
-}
-void *get_current_process_global_data(uint64_t offset, uint64_t length)
-{
-    return process::current()->get_global_data(offset);
-}
 
 void rename_process(const char *name, uint64_t pid)
 {
@@ -398,22 +323,6 @@ void rename_process(const char *name, uint64_t pid)
     lock_process();
     target->rename(name);
     unlock_process();
-}
-
-bool add_process_buffer(process_buffer *buf, uint64_t data_length, uint8_t *raw)
-{
-    if ((buf->length + data_length) > buf->allocated_length)
-    {
-        // never gonna cast you up
-        // never gonna cast you doooooown
-        buf->allocated_length += 512;
-        uint8_t *new_buffer = (uint8_t *)realloc((void *)((uint64_t)buf->data), buf->allocated_length);
-        buf->data = new_buffer;
-    }
-
-    memcpy(buf->data + buf->length, raw, data_length);
-    buf->length += data_length;
-    return true;
 }
 
 void sleep(uint64_t count)
@@ -465,6 +374,16 @@ void kill(uint64_t pid)
     unlock_process();
 }
 
+void add_current_process_as_dead(int code)
+{
+
+    last_sign_of_process_status s;
+    s.pid = process::current()->get_pid();
+    s.ret = code;
+    s.status = 1;
+    dead_process_status.push_back(s);
+}
+
 NO_RETURN void kill_current(int code)
 {
     lock_process();
@@ -472,11 +391,7 @@ NO_RETURN void kill_current(int code)
     asm volatile("cli");
 
     log("proc", LOG_INFO, "killing current process");
-    last_sign_of_process_status s;
-    s.pid = process::current()->get_pid();
-    s.ret = code;
-    s.status = 1;
-    dead_process_status.push_back(s);
+    add_current_process_as_dead(code);
     process::current()->kill();
     dying_process_count++;
     unlock_process();

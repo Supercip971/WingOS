@@ -9,7 +9,6 @@
 #include <utils/memory/liballoc.h>
 #include <virtual.h>
 extern int process_locked;
-extern bool cpu_wait;
 uint8_t proc_last_selected_cpu = 0;
 
 void send_switch_process_to_all_cpu()
@@ -50,10 +49,6 @@ uintptr_t switch_context(InterruptStackFrame *current_Isf, process *next)
 
     if (next == NULL)
     {
-        if (cpu_wait)
-        {
-            cpu_wait = false;
-        }
 
         return (uintptr_t)current_Isf; // early return
     }
@@ -73,10 +68,6 @@ uintptr_t switch_context(InterruptStackFrame *current_Isf, process *next)
     get_current_cpu()->load_sse(process::current()->get_arch_info()->sse_context);
     task_update_switch(next);
 
-    if (cpu_wait)
-    {
-        cpu_wait = false;
-    }
     return next->get_arch_info()->rsp;
 }
 void init_process_stackframe(process *pro, func entry_point, int argc, char **argv)

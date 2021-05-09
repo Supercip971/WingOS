@@ -424,8 +424,9 @@ uint64_t launch_module(const char *path, file_system *file_sys, int argc, const 
         p_entry = reinterpret_cast<Elf64_Phdr *>((uintptr_t)p_entry + programm_header->e_phentsize);
     }
     process *to_launch = init_process((func)((uintptr_t)target_end_code + info.init), false, path, false, AUTO_SELECT_CPU, argc + 1, end_argv);
-    to_launch->set_module(true);
+
     elf64_load_module_relocation(programm_header, programm_code, target_end_code);
+    to_launch->set_module(true);
     to_launch->set_state(process_state::PROCESS_WAITING);
 
     unlock_process();

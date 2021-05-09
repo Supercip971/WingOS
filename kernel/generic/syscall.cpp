@@ -29,23 +29,6 @@ int sys$set_modules_calls(module_calls_list *target)
     set_modules_calls(target);
     return 1;
 }
-uint64_t sys$get_process_global_data(const char *target, uint64_t offset, uint64_t length)
-{
-
-    msg_lock.lock();
-    uintptr_t v = 0;
-    if (target == nullptr)
-    {
-        v = (uintptr_t)get_current_process_global_data(offset, length);
-    }
-    else
-    {
-        v = (uintptr_t)get_process_global_data_copy(offset, target);
-    }
-
-    msg_lock.unlock();
-    return v;
-}
 
 void *sys$alloc(uint64_t count, uint8_t flag)
 {

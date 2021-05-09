@@ -8,8 +8,8 @@
 #include <utils/bitmap.h>
 #include <utils/math.h>
 #include <utils/sys/config.h>
-#define SLEEP_ALWAYS ((uint64_t)-1)
 
+#define SLEEP_ALWAYS ((uint64_t)-1)
 #define CURRENT_CPU ((uint64_t)-1)
 #define AUTO_SELECT_CPU ((uint64_t)-2)
 
@@ -37,7 +37,6 @@ struct process_buffer
     uint64_t allocated_length;
     int type;
 } __attribute__((packed));
-bool add_process_buffer(process_buffer *buf, uint64_t data_length, uint8_t *raw);
 
 class process
 {
@@ -48,15 +47,10 @@ class process
     char process_name[128];
     uint64_t entry_point = 0x0;
     uint8_t processor_target;
-    bool is_ORS = false;
-    uint64_t last_message_used;
     bool should_be_active = false; // used with ORS
     bool user;
-    uint8_t *global_process_memory;
-    uint64_t global_process_memory_length;
     uint64_t sleeping = 0; // 0 = running | 1[..]infinity = sleeping | SLEEP_ALWAYS = always sleep
     bool module = false;
-    uint8_t interrupt_handle_list[8]; // max 8 interrupt per process
     backtrace process_backtrace;
     per_process_userspace_fs ufs;
 
@@ -72,8 +66,6 @@ public:
     process(const char *name, uint64_t kernel_pid, uint64_t unique_pid, uintptr_t process_entry_point, bool is_user) : upid(unique_pid),
                                                                                                                        kpid(kernel_pid),
                                                                                                                        entry_point(process_entry_point),
-                                                                                                                       is_ORS(false),
-                                                                                                                       last_message_used(0),
                                                                                                                        user(is_user),
                                                                                                                        sleeping(0)
     {
@@ -96,7 +88,6 @@ public:
     }
     arch_process_data *get_arch_info() { return &arch_info; };
 
-    void init_global_memory();
     bool is_valid() const
     {
         return kpid != 0;
@@ -136,12 +127,7 @@ public:
     }
     bool is_runnable(const int cpu) const
     {
-        bool can_run_ors = true;
-        if (is_on_request() && !should_be_active)
-        {
-            can_run_ors = false;
-        }
-        return current_process_state == process_state::PROCESS_WAITING && processor_target == cpu && kpid != 0 && can_run_ors && !is_sleeping();
+        return current_process_state == process_state::PROCESS_WAITING && processor_target == cpu && kpid != 0 && !should_be_active && !is_sleeping();
     }
 
     void set_cpu(size_t cpuid)
@@ -165,20 +151,16 @@ public:
     size_t get_pid() const { return upid; };
     uint64_t get_kpid() { return kpid; };
 
-    void set_on_request(bool state) { is_ORS = state; };
     void set_state(process_state state) { current_process_state = state; };
     process_state get_state() const { return current_process_state; };
     void set_active(bool state) { should_be_active = state; };
 
     void create_message_list();
 
-    bool is_on_request() const { return is_ORS; };
     static process *from_name(const char *name);
     static process *from_pid(size_t pid);
     static process *current();
     static void set_current(process *target);
-    uintptr_t get_global_data_copy(uint64_t offset);
-    void *get_global_data(uint64_t offset);
     bool destroy();
     void rename(const char *new_name)
     {
@@ -209,14 +191,6 @@ void lock_process();
 void task_update_switch(process *next);
 uintptr_t process_switch_handler(arch_stackframe *isf, bool switch_all);
 
-// todo : add ORS to user service, for the moment it is only for kernel
-void set_on_request_service(bool is_ORS);
-void set_on_request_service(bool is_ORS, uint64_t pid);
-void on_request_service_update();
-
-void *get_current_process_global_data(uint64_t offset, uint64_t length);
-
-uint64_t get_process_global_data_copy(uint64_t offset, const char *process_name);
 void rename_process(const char *name, uint64_t pid);
 
 void sleep(uint64_t count);

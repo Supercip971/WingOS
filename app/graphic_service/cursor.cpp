@@ -20,17 +20,16 @@ sys::ps2_device_request mouse_requesty = {0};
 
 int32_t last_mx = 0;
 int32_t last_my = 0;
-uint64_t *mouse_on_window;
+uint64_t mouse_on_window;
 void init_cursor()
 {
     printf("init cursor \n");
-    mouse_on_window = (uint64_t *)sys::sys$get_current_process_global_data(0, 8);
-    *mouse_on_window = 0;
+    mouse_on_window = 0;
 }
 
 uint64_t get_mouse_on_window_wid()
 {
-    return *mouse_on_window;
+    return mouse_on_window;
 }
 
 bool is_mouse_in_window(raw_window_data *window)
@@ -56,5 +55,5 @@ void update_mouse()
 
 void set_mouse_on_window(raw_window_data *window)
 {
-    *mouse_on_window = window->wid;
+    mouse_on_window = window->wid;
 }

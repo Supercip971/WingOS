@@ -193,7 +193,7 @@ static void *syscalls[] = {
     (void *)sys$set_modules_calls,
     (void *)sys$null,
     (void *)sys$null,
-    (void *)sys$get_process_global_data,
+    (void *)sys$null,
     (void *)sys$null,
     (void *)sys$alloc,
     (void *)sys$free,

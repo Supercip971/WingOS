@@ -130,6 +130,7 @@ void ahci::reinit_port(hba_port *port)
         command_header[i].command_table_desc_base_addr_up = 0;
     }
 }
+
 void ahci::start_command(hba_port *port)
 {
     port->command_and_status &= ~COMMAND_ST;
@@ -141,6 +142,7 @@ void ahci::start_command(hba_port *port)
     port->command_and_status |= COMMAND_FRE;
     port->command_and_status |= COMMAND_ST;
 }
+
 void ahci::end_command(hba_port *port)
 {
     port->command_and_status &= ~COMMAND_ST;
@@ -151,6 +153,7 @@ void ahci::end_command(hba_port *port)
 
     port->command_and_status &= ~COMMAND_FRE;
 }
+
 void ahci_ata_device::start_command()
 {
     hba_port *nport = (hba_port *)port;
@@ -164,6 +167,7 @@ void ahci_ata_device::start_command()
     nport->command_and_status |= COMMAND_FRE;
     nport->command_and_status |= COMMAND_ST;
 }
+
 void ahci_ata_device::end_command()
 {
     hba_port *nport = (hba_port *)port;
@@ -218,6 +222,7 @@ void ahci_ata_device::init_fis_reg_command(volatile fis_reg_host2device *command
     command->count_low = count & 0xff;
     command->count_high = (count >> 8) & 0xff;
 }
+
 bool ahci_ata_device::wait_ata_busy_drq()
 {
     size_t spin_timeout = 0;
@@ -233,6 +238,7 @@ bool ahci_ata_device::wait_ata_busy_drq()
     }
     return true;
 }
+
 generic_io_device::io_rw_output ahci_ata_device::read(uint8_t *data, uint64_t count, uint64_t cursor)
 {
     utils::context_lock locker(ahci_lock);
@@ -292,6 +298,7 @@ generic_io_device::io_rw_output ahci_ata_device::read(uint8_t *data, uint64_t co
 
     return io_rw_output::io_OK;
 }
+
 generic_io_device::io_rw_output ahci_ata_device::write(uint8_t *data, uint64_t count, uint64_t cursor)
 {
 
@@ -352,6 +359,7 @@ generic_io_device::io_rw_output ahci_ata_device::write(uint8_t *data, uint64_t c
     end_command();
     return io_rw_output::io_OK;
 }
+
 int ahci_ata_device::find_command_slot()
 {
     uint32_t ata_slots = (port->sata_active | port->command_issue);

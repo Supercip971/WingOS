@@ -17,6 +17,7 @@ bool com_device::echo_out(const char *data, uint64_t data_length)
 
     return true;
 }
+
 bool com_device::echo_out(const char *data)
 {
 
@@ -42,6 +43,7 @@ void com_device::init(COM_PORT this_port)
 
     add_device(this);
 }
+
 void com_device::wait() const
 {
     int timeout = 0;
@@ -53,6 +55,7 @@ void com_device::wait() const
         }
     }
 }
+
 inline void com_device::write(char c) const
 {
     wait();

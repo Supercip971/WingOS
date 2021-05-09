@@ -103,7 +103,6 @@ size_t bitmap::alloc(size_t length)
 
     return v;
 }
-
 size_t bitmap::set_free(size_t idx, size_t length)
 {
 
@@ -111,7 +110,10 @@ size_t bitmap::set_free(size_t idx, size_t length)
     {
         if (get(idx + i) == false)
         {
-            printf("freeing already free block: %i", idx + i);
+            printf("freeing already free block: %i \n", idx + i);
+            while (true)
+            {
+            };
         }
         set(idx + i, false);
     }

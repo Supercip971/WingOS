@@ -120,20 +120,24 @@ size_t sys$exit(int code)
 
     return 0;
 }
+
 utils::lock_type temporary_lock;
 int sys$ipc_server_exist(const char *path)
 {
     utils::context_lock lock(temporary_lock);
     return service_exist(path);
 }
+
 int sys$create_server(const char *path)
 {
     return create_msg_system(path, process::current()->get_parent_pid());
 }
+
 uint32_t sys$connect_to_server(const char *path)
 {
     return connect(path, process::current()->get_parent_pid());
 }
+
 uint32_t sys$accept_connection(int server_id)
 {
     return accept_connection(server_id);
@@ -153,10 +157,12 @@ size_t sys$send(uint32_t id, const raw_msg_request *request, int flags)
 {
     return send(id, request, flags);
 }
+
 size_t sys$receive(uint32_t id, raw_msg_request *request, int flags)
 {
     return receive(id, request, flags);
 }
+
 size_t sys$get_process_info(uint32_t pid, int flag, void *arg1, void *arg2)
 {
     if (flag == PROC_INFO_STATUS)

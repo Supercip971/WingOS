@@ -96,6 +96,7 @@ void apic::log_all()
         }
     }
 }
+
 void apic::init()
 {
     log("apic", LOG_DEBUG, "loading apic");

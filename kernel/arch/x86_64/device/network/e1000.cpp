@@ -185,6 +185,7 @@ void e1000::start()
     uint32_t flags = read(0);
     write(0, flags | 0x40);
 }
+
 void e1000::handle_packet_reception()
 {
     uint16_t old_cursor;
@@ -216,6 +217,7 @@ int e1000::send_packet(uint8_t *data, uint16_t length)
         ;
     return 0;
 }
+
 void e1000::irq_handle()
 {
     write(E_IMASK, 0x1);
@@ -234,16 +236,19 @@ void e1000::irq_handle()
         handle_packet_reception();
     }
 }
+
 void e1000::turn_on_int()
 {
     write(E_IMASK, 0x1F6DC);
     write(E_IMASK, 0xff & ~4);
     read(0xc0);
 }
+
 void e1000_int_handler(unsigned int v)
 {
     e1000::the()->irq_handle();
 }
+
 void e1000::init(pci_device *dev)
 {
 

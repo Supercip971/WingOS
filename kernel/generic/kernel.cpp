@@ -14,6 +14,7 @@
     pour le moment tout ce qui est ici est un test
     for the moment everything here is for test
 */
+
 void show_art()
 {
 
@@ -25,6 +26,7 @@ void show_art()
     log("kernel", LOG_INFO, " #+#+# #+#+#      #+#     #+#   #+#+# #+#    #+#       #+#    #+# #+#    #+# ");
     log("kernel", LOG_INFO, "  ###   ###   ########### ###    ####  ########         ########   ########  ");
 }
+
 void test()
 {
     while (true)
@@ -33,13 +35,15 @@ void test()
         log("kernel", LOG_INFO, "hey hey");
     }
 }
+
 void _start(stivale_struct *bootloader_data)
 {
     main_fs_system::the()->init_file_system();
     launch_module("initfs/ps2_mouse_module.module", main_fs_system::the()->main_fs(), 0, nullptr);
-    sleep(100);
+    sleep(200);
+
     launch_module("initfs/ps2_keyboard_module.module", main_fs_system::the()->main_fs(), 0, nullptr);
-    sleep(100);
+    sleep(200);
     log("kernel", LOG_INFO, "==== KERNEL STARTED ====");
 
     show_art();

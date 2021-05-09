@@ -6,6 +6,7 @@
 int msg_system_id = 10;
 utils::alloc_array<msg_system, MAX_SERVER_COUNT> msg_system_list;
 utils::lock_type system_lock;
+
 msg_system *get_msg_system(uint32_t id)
 {
     utils::context_lock locker(system_lock);
@@ -18,6 +19,7 @@ msg_system *get_msg_system(uint32_t id)
     }
     return nullptr;
 }
+
 msg_system *get_msg_system(const char *val)
 {
     utils::context_lock locker(system_lock);
@@ -30,6 +32,7 @@ msg_system *get_msg_system(const char *val)
     }
     return nullptr;
 }
+
 bool is_valid_msg_system(size_t pid, int msg_id)
 {
     auto res = get_msg_system(msg_id);
@@ -43,6 +46,7 @@ bool is_valid_msg_system(size_t pid, int msg_id)
     }
     return true;
 }
+
 raw_msg_request copy_request(const raw_msg_request from)
 {
     raw_msg_request target;
@@ -87,6 +91,7 @@ size_t accept_connection(int service_id)
     connect.element.server_id = service_id;
     return connect.raw;
 }
+
 bool service_exist(const char *path)
 {
     auto v = get_msg_system(path);
@@ -110,6 +115,7 @@ bool connection_accepted(uint32_t id)
     }
     return v->get_connection(msg_connection.element.connection_id)->accepted();
 }
+
 uint32_t connect(const char *msg_system, size_t by_pid)
 {
     auto v = get_msg_system(msg_system);
@@ -151,6 +157,7 @@ int deconnect(uint32_t id)
         return 2;
     }
 }
+
 size_t send(uint32_t id, const raw_msg_request *request, int flags)
 {
 
@@ -164,6 +171,7 @@ size_t send(uint32_t id, const raw_msg_request *request, int flags)
     }
     return (size_t)v->send(msg_connection.element.connection_id, *request, flags, process::current()->get_parent_pid());
 }
+
 size_t receive(uint32_t id, raw_msg_request *request, int flags)
 {
 
@@ -177,6 +185,7 @@ size_t receive(uint32_t id, raw_msg_request *request, int flags)
     }
     return (size_t)v->receive(msg_connection.element.connection_id, *request, flags, process::current()->get_parent_pid());
 }
+
 void init_msg_system()
 {
 }
@@ -257,6 +266,7 @@ int msg_system::get_connection_table_id(uint32_t connection_id)
     }
     return -1;
 }
+
 bool msg_system::deconnect(int connection_id, int pid)
 {
     if (!valid_connection(connection_id, pid))
@@ -269,6 +279,7 @@ bool msg_system::deconnect(int connection_id, int pid)
     connection_list.free(val);
     return true;
 }
+
 int msg_system::send(int connection_id, const raw_msg_request request, int flags, size_t by_pid)
 {
     if (by_pid == by_server_pid)

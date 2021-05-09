@@ -30,10 +30,12 @@ inline void halt_interrupt()
 {
     asm volatile("hlt");
 }
+
 inline void turn_on_interrupt()
 {
     asm volatile("sti");
 }
+
 inline void turn_off_interrupt()
 {
     asm volatile("cli");
@@ -41,14 +43,19 @@ inline void turn_off_interrupt()
 
 template <class T = uintptr_t, class F>
 inline constexpr T get_usr_addr(F addr) { return reinterpret_cast<T>((uintptr_t)(addr) + USR_ADDR); }
+
 template <class T = uintptr_t, class F>
 inline constexpr T get_rusr_addr(F addr) { return reinterpret_cast<T>((uintptr_t)(addr)-USR_ADDR); }
+
 template <class T = uintptr_t, class F>
 inline constexpr T get_mem_addr(F addr) { return reinterpret_cast<T>((uintptr_t)(addr) + MEM_ADDR); }
+
 template <class T = uintptr_t, class F>
 inline constexpr T get_rmem_addr(F addr) { return reinterpret_cast<T>((uintptr_t)(addr)-MEM_ADDR); }
+
 template <class T = uintptr_t, class F>
 inline constexpr T get_kern_addr(F addr) { return reinterpret_cast<T>((uintptr_t)(addr) + KER_ADDR); }
+
 template <class T = uintptr_t, class F>
 inline constexpr T get_rkern_addr(F addr) { return reinterpret_cast<T>((uintptr_t)(addr)-KER_ADDR); }
 

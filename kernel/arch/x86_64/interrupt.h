@@ -47,5 +47,7 @@ struct idtr
 void init_idt();
 
 void dump_backtrace(const char *msg, uint64_t *array);
+
 void dumpregister(InterruptStackFrame *stck);
+
 void add_irq_handler(irq_handler_func func, uint8_t irq_target);

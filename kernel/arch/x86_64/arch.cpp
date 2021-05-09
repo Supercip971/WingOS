@@ -77,10 +77,12 @@ size_t get_cpu_count()
 {
     return smp::the()->processor_count;
 }
+
 size_t get_current_cpu_id()
 {
     return apic::the()->get_current_processor_id();
 }
+
 ASM_FUNCTION void kernel_start(stivale_struct *bootloader_data)
 {
     asm volatile("and rsp, -16");
@@ -138,11 +140,9 @@ ASM_FUNCTION void kernel_start(stivale_struct *bootloader_data)
     asm volatile("sti");
     asm("hlt");
 }
+
 void start_process()
 {
-
-    //    ps_keyboard *keyboard = new ps_keyboard;
-    //    keyboard->init();
 
     basic_framebuffer_graphic_device *framebuff = new basic_framebuffer_graphic_device(boot_loader_data_copy.framebuffer_width, boot_loader_data_copy.framebuffer_height, boot_loader_data_copy.framebuffer_addr);
     add_device(framebuff);

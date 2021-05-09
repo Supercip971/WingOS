@@ -36,18 +36,22 @@ struct InterruptStackFrame
 } __attribute__((packed));
 
 extern stivale_struct boot_loader_data_copy;
+
 inline void outb(uint16_t port, uint8_t value)
 {
     asm volatile("out  dx, al" ::"a"(value), "d"(port));
 }
+
 inline void outw(uint16_t port, uint16_t value)
 {
     asm volatile("out  dx, ax" ::"a"(value), "d"(port));
 }
+
 inline void outl(uint16_t port, uint32_t value)
 {
     asm volatile("out  dx, eax" ::"a"(value), "d"(port));
 }
+
 inline uint8_t inb(uint16_t port)
 {
     uint8_t ret;
@@ -56,6 +60,7 @@ inline uint8_t inb(uint16_t port)
                  : "d"(port));
     return ret;
 }
+
 inline uint16_t inw(uint16_t port)
 {
     uint16_t ret;
@@ -64,6 +69,7 @@ inline uint16_t inw(uint16_t port)
                  : "d"(port));
     return ret;
 }
+
 inline uint32_t inl(uint16_t port)
 {
     uint32_t ret;
@@ -72,6 +78,7 @@ inline uint32_t inl(uint16_t port)
                  : "d"(port));
     return ret;
 }
+
 inline void wait()
 {
     for (int i = 0; i < 40; i++)
@@ -79,6 +86,7 @@ inline void wait()
         inw(i);
     }
 }
+
 static inline uintptr_t x86_get_cr3(void)
 {
     uintptr_t rv;
@@ -95,6 +103,7 @@ static inline void x86_set_cr3(uintptr_t cr3)
                  : "a"(cr3)
                  : "memory");
 }
+
 inline static uintptr_t x86_rdmsr(uintptr_t msr)
 {
 
@@ -133,7 +142,9 @@ static inline int x86_cpuid(uint32_t target, uint32_t low_target,
                  : "a"(target), "c"(low_target));
     return 1;
 }
+
 #define MSR_EFER_SCE 1
+
 enum MSR_REGISTERS
 {
     APIC = 0x1B,
@@ -146,6 +157,7 @@ enum MSR_REGISTERS
     GS_BASE = 0xC0000101,
     KERN_GS_BASE = 0xc0000102,
 };
+
 union wrmsr_star_register
 {
     struct

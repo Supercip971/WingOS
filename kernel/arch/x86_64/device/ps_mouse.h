@@ -1,6 +1,7 @@
 #pragma once
 #include <general_device.h>
 #include <stdint.h>
+
 class ps_mouse : public general_mouse
 {
 

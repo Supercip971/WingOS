@@ -41,26 +41,44 @@ class pci_device
 public:
     void debug_log();
     pci_device(uint8_t bus, uint8_t device, uint8_t function);
+
     void write_dword(uint8_t reg, uint32_t value);
     uint32_t read_dword(uint8_t reg);
     uint32_t read_dword_func(uint8_t func, uint8_t reg);
+
     bool function_exist();
     bool valid();
+
     uint8_t get_header();
+
     uint8_t get_class();
+
     uint16_t get_vendor();
+
     void enable_mastering();
+
     uint16_t get_dev_id();
+
     uint8_t get_sub_buss();
+
     uint8_t get_subclass();
+
     uint8_t get_progif();
+
     uint8_t get_irq();
+
     uint8_t bus() const { return dbus; };
+
     uint8_t device() const { return ddev; };
+
     uint8_t function() const { return dfunc; };
+
     pci_device_raw to_raw();
+
     bool has_multiple_function();
+
     pci_bar_data get_bar(uint64_t id);
+
     bool is_bridge();
 };
 

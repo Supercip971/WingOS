@@ -65,13 +65,17 @@ struct fis_reg_host2device
     uint8_t cmd_or_ctrl : 1; // command=1 control=0
     uint8_t command_register;
     uint8_t feature_low;
+
     uint8_t lba0;
     uint8_t lba1;
     uint8_t lba2;
+
     uint8_t device;
+
     uint8_t lba3;
     uint8_t lba4;
     uint8_t lba5;
+
     uint8_t feature_high;
     uint8_t count_low;
     uint8_t count_high;
@@ -83,10 +87,12 @@ struct fis_reg_host2device
 struct fis_reg_device2host
 {
     uint8_t type;
+
     uint8_t port_multiplier : 4;
     uint8_t reserved : 2;
     uint8_t interrupt : 1; // command=1 control=0
     uint8_t reserved_1 : 1;
+
     uint8_t status;
     uint8_t error;
 
@@ -99,6 +105,7 @@ struct fis_reg_device2host
     uint8_t lba4;
     uint8_t lba5;
     uint8_t reserved_2;
+
     uint8_t count_low;
     uint8_t count_high;
     uint8_t reserved_3[5];
@@ -163,21 +170,32 @@ struct hba_port
 {
     uint32_t command_list_base_addr_low;
     uint32_t command_list_base_addr_up;
+
     uint32_t fis_base_addr_low;
     uint32_t fis_base_addr_up;
+
     uint32_t interrupt_status;
     uint32_t interrupt_enable;
+
     uint32_t command_and_status;
+
     uint32_t reserved;
+
     uint32_t task_file_data;
+
     uint32_t signature;
+
     uint32_t sata_status;
     uint32_t sata_control;
     uint32_t sata_error;
     uint32_t sata_active;
+
     uint32_t command_issue;
+
     uint32_t sata_notification;
+
     uint32_t fis_based_switch_control;
+
     uint32_t reserved_1[11];
     uint32_t vendor[4];
 } __attribute__((packed));
@@ -185,9 +203,11 @@ struct hba_port
 struct hba_memory
 {
     uint32_t capability;
+
     uint32_t global_host_control;
     uint32_t interrupt_status;
     uint32_t port_implemented;
+
     uint32_t version;
 
     uint32_t command_completion_coalescin_control;

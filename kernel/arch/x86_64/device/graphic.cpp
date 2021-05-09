@@ -2,6 +2,7 @@
 #include <logging.h>
 #include <physical.h>
 #include <virtual.h>
+
 basic_framebuffer_graphic_device::basic_framebuffer_graphic_device(size_t width, size_t height, uintptr_t physical_addr, framebuff_bpp bpp)
 {
     if (bpp == BPP_32_BIT)

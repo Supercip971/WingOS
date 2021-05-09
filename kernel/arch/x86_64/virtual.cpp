@@ -170,6 +170,7 @@ void update_paging()
 {
     set_paging_dir(get_rmem_addr(get_current_cpu()->cpu_page_table));
 }
+
 // todo: fix this function, use page_table::get_entry()
 void map_page_recursive(size_t page_idx, page_table *table, const page_table *from, size_t *pml_idx)
 {
@@ -260,6 +261,7 @@ int free_if_necessary_tables(page_table *table, uint64_t updated_addr)
     free_if_necessary_table(pdpt, table, pml4_entry);
     return 1;
 }
+
 int unmap_page(page_table *table, uint64_t virt_addr)
 {
 
@@ -272,12 +274,15 @@ int unmap_page(page_table *table, uint64_t virt_addr)
     pdpt = page_table::get_entry(get_current_cpu()->cpu_page_table, pml4_entry);
     pd = page_table::get_entry(pdpt, pdpt_entry);
     pt = page_table::get_entry(pd, pd_entry);
+
     page_table *page = page_table::get_entry(pt, pt_entry);
     if (page == nullptr)
     {
         return -1;
     }
+
     page->set_present(false);
+
     free_if_necessary_tables(table, virt_addr);
     update_paging();
     return 0;

@@ -22,8 +22,11 @@ class smp
 public:
     static const unsigned int max_cpu = MAX_CPU_COUNT;
     tss cpu_tss[max_cpu];
+
     smp();
+
     void wait();
+
     void init();
     void init_cpu(int apic, int id);
 

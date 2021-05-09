@@ -202,6 +202,7 @@ void elf64_reloc_relative(Elf64_Rela *table, uint8_t *target, uintptr_t &offset)
     offset += table->r_addend;
     memcpy(target + table->r_offset, &offset, sizeof(uintptr_t));
 }
+
 void elf64_load_module_relocation_addens(Elf64_Shdr *section_header, uint8_t *code, uint8_t *target, uintptr_t &offset)
 {
 
@@ -222,6 +223,7 @@ void elf64_load_module_relocation_addens(Elf64_Shdr *section_header, uint8_t *co
         table++;
     }
 }
+
 void elf64_load_module_relocation(Elf64_Ehdr *header, uint8_t *code, uint8_t *target)
 {
 
@@ -276,6 +278,7 @@ void elf64_load_module_entry(Elf64_Phdr *entry, uint8_t *programm_code, uint8_t 
         log("prog launcher (module)", LOG_ERROR, "not supported entry type: {}", entry->p_type);
     }
 }
+
 // FIXME: the code of launch_programm launch_programm_usr & launch_module is ultra repetitive, make this code better and use function
 uint64_t launch_programm(const char *path, file_system *file_sys, int argc, const char **argv)
 {
@@ -321,6 +324,7 @@ uint64_t launch_programm(const char *path, file_system *file_sys, int argc, cons
     unlock_process();
     return to_launch->get_pid();
 }
+
 size_t launch_programm_usr(programm_exec_info *info)
 {
     lock_process();
@@ -365,6 +369,7 @@ size_t launch_programm_usr(programm_exec_info *info)
     unlock_process();
     return to_launch->get_pid();
 }
+
 // find the end of the address space of a PIC
 size_t get_module_table_max_addr(Elf64_Phdr *p_entry, Elf64_Ehdr *programm_header)
 {
@@ -380,6 +385,7 @@ size_t get_module_table_max_addr(Elf64_Phdr *p_entry, Elf64_Ehdr *programm_heade
     }
     return current_max;
 }
+
 uint64_t launch_module(const char *path, file_system *file_sys, int argc, const char **argv)
 {
     utils::context_lock locker(file_sys->fs_lock);
@@ -423,7 +429,7 @@ uint64_t launch_module(const char *path, file_system *file_sys, int argc, const 
         elf64_load_module_entry(p_entry, programm_code, target_end_code, &info);
         p_entry = reinterpret_cast<Elf64_Phdr *>((uintptr_t)p_entry + programm_header->e_phentsize);
     }
-    process *to_launch = init_process((func)((uintptr_t)target_end_code + info.init), false, path, false, AUTO_SELECT_CPU, argc + 1, end_argv);
+    process *to_launch = init_process((func)((uintptr_t)target_end_code + info.init), false, path, false, CURRENT_CPU, argc + 1, end_argv);
 
     elf64_load_module_relocation(programm_header, programm_code, target_end_code);
     to_launch->set_module(true);

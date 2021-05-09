@@ -14,13 +14,17 @@
 #include <utility.h>
 #include <utils/memory/liballoc.h>
 #include <virtual.h>
+
 #define TRAMPOLINE_START 0x1000
 #define SMP_MAP_PAGE_FLAGS 0x7
+
 smp main_smp;
 int cpu_counter = 0;
+
 extern "C" uintptr_t start_cpu_entry;
 extern "C" uintptr_t end_cpu_entry;
 extern "C" uint32_t trampoline_start, trampoline_end, nstack;
+
 volatile bool SMPloaded = false;
 
 smp::smp()
@@ -140,6 +144,7 @@ void smp::init_cpu(int apic, int id)
     apic::the()->preinit_processor(apic);
 
     get_current_cpu(id)->lapic_id = apic;
+
     init_cpu_trampoline();
     init_cpu_future_value(id);
 

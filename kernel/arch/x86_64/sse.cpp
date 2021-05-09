@@ -3,18 +3,27 @@
 #include <sse.h>
 #include <utils/lock.h>
 #include <utils/sys/config.h>
+
 ASM_FUNCTION void sse_init(void);
 ASM_FUNCTION void avx_init(void);
+
 ASM_FUNCTION void enable_xsave(void);
+
 ASM_FUNCTION void asm_sse_save(uintptr_t addr);
 ASM_FUNCTION void asm_sse_load(uintptr_t addr);
+
 ASM_FUNCTION void asm_avx_save(uintptr_t addr);
 ASM_FUNCTION void asm_avx_load(uintptr_t addr);
+
 bool use_xsave = false;
 bool checked_xsave = false;
+
 uint64_t *fpu_reg = nullptr;
+
 size_t xsave_size;
+
 uint64_t fpu_data[128] __attribute__((aligned(64)));
+
 utils::lock_type sse_lock;
 
 SSE_LOW_LEVEL_FUNC bool has_xsave()
@@ -35,6 +44,7 @@ SSE_LOW_LEVEL_FUNC bool has_avx()
                  : "a"(1), "c"(0));
     return ecx & (1 << 28);
 }
+
 uint32_t get_xsave_size()
 {
     uint32_t ecx = 0;

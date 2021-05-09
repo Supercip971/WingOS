@@ -19,6 +19,7 @@ void apic_timer::init()
 
     uint64_t ticks = 0xFFFFFFFF - apic::the()->read(timer_current);
     ticks /= 100; // 1 ms
+
     apic::the()->write(lvt_timer, 32 | 0x20000);
     apic::the()->write(timer_div, 0x3);
     apic::the()->write(timer_init_counter, ticks);
@@ -28,10 +29,12 @@ void apic_timer::set_clock(uint32_t clock)
 {
     log("apic timer", LOG_WARNING, __PRETTY_FUNCTION__, "not implemented");
 };
+
 void apic_timer::turn_off()
 {
     log("apic timer", LOG_WARNING, __PRETTY_FUNCTION__, "not implemented");
 };
+
 void apic_timer::turn_on()
 {
     log("apic timer", LOG_WARNING, __PRETTY_FUNCTION__, "not implemented");

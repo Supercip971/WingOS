@@ -20,6 +20,7 @@
 #include <utils/lock.h>
 
 extern utils::lock_type log_locker;
+
 struct interrupt_handler_specific_array
 {
     irq_handler_func function_list[8]; // max 8 handler for an irq;
@@ -64,6 +65,7 @@ const char *interrupt_exception_name[] = {
     "invalid (31)"};
 
 extern uintptr_t __interrupt_vector[128];
+bool error = false;
 idt_entry idt[IDT_ENTRY_COUNT];
 
 idtr idt_descriptor = {
@@ -149,7 +151,6 @@ void update_backtrace(InterruptStackFrame *stackframe)
     get_current_cpu()->local_backtrace.add_entry(stackframe->rip);
 }
 
-bool error = false;
 void interrupt_error_handle(InterruptStackFrame *stackframe)
 {
     error = true;

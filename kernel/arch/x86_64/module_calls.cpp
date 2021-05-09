@@ -2,6 +2,7 @@
 #include <arch.h>
 #include <interrupt.h>
 #include <logging.h>
+
 void M_echo_out(const char *data)
 {
     log("module", LOG_INFO, data);
@@ -59,21 +60,25 @@ size_t M_io_func(size_t addr, size_t write, io_func_exec flags)
         return 1;
     }
 }
+
 int M_set_device_driver(uint32_t id, general_device *target)
 {
 
     add_device(target);
     return 1;
 }
+
 const general_device *M_get_device_driver(uint32_t id)
 {
     return get_device(id);
 }
+
 bool M_add_irq_handler(size_t irq, mfunc<void, uint32_t> func)
 {
     add_irq_handler(func, irq);
     return true;
 }
+
 void set_modules_calls(module_calls_list *list)
 {
     list->echo_out = M_echo_out;

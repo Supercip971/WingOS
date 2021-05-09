@@ -38,6 +38,8 @@ void _start(stivale_struct *bootloader_data)
     main_fs_system::the()->init_file_system();
     launch_module("initfs/ps2_mouse_module.module", main_fs_system::the()->main_fs(), 0, nullptr);
     sleep(100);
+    launch_module("initfs/ps2_keyboard_module.module", main_fs_system::the()->main_fs(), 0, nullptr);
+    sleep(100);
     log("kernel", LOG_INFO, "==== KERNEL STARTED ====");
 
     show_art();

@@ -172,6 +172,7 @@ app: $(APP_FILE_CHANGE)
 	@make -C ./app/wstart $(APP_FS_MAKEFILE_FLAGS)	
 	@make -C ./app/shell $(APP_FS_MAKEFILE_FLAGS)	
 	@make -C ./app/ps2_mouse_module $(APP_FS_MAKEFILE_FLAGS)	
+	@make -C ./app/ps2_keyboard_module $(APP_FS_MAKEFILE_FLAGS)	
 
 .PHONY:super
 super:

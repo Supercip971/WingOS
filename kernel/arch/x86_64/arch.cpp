@@ -28,11 +28,11 @@
 #include <sse.h>
 #include <stddef.h>
 #include <utility.h>
+#include <utils/attribute.h>
 #include <utils/memory/liballoc.h>
 #include <utils/sys/config.h>
 #include <virtual.h>
 
-#include <utils/attribute.h>
 struct stackframe
 {
     stackframe *rbp;
@@ -110,7 +110,9 @@ ASM_FUNCTION void kernel_start(stivale_struct *bootloader_data)
     init_physical_memory(bootloader_data);
     init_vmm(bootloader_data);
     pic_init();
+
     RTC::the()->init();
+
     acpi::the()->init((reinterpret_cast<stivale_struct *>(bootdat))->rsdp);
 
     acpi::the()->getFACP();
@@ -139,18 +141,19 @@ ASM_FUNCTION void kernel_start(stivale_struct *bootloader_data)
 void start_process()
 {
 
-    // ps_mouse *psmouse = new ps_mouse;
-    // psmouse->init();
-    ps_keyboard *keyboard = new ps_keyboard;
-    keyboard->init();
+    //    ps_keyboard *keyboard = new ps_keyboard;
+    //    keyboard->init();
+
     basic_framebuffer_graphic_device *framebuff = new basic_framebuffer_graphic_device(boot_loader_data_copy.framebuffer_width, boot_loader_data_copy.framebuffer_height, boot_loader_data_copy.framebuffer_addr);
     add_device(framebuff);
+
     if (ata_driver::has_ata_device())
     {
         ata_driver *me = new ata_driver();
         me->init();
         add_io_device(me);
     }
+
     pci_system *pci = new pci_system();
     pci->init();
 

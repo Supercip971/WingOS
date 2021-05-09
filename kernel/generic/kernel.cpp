@@ -10,14 +10,9 @@
 #include <stdint.h>
 #include <stivale_struct.h>
 #include <utility.h>
-/*
-    pour le moment tout ce qui est ici est un test
-    for the moment everything here is for test
-*/
 
 void show_art()
 {
-
     log("kernel", LOG_INFO, ":::       ::: ::::::::::: ::::    :::  ::::::::         ::::::::   ::::::::");
     log("kernel", LOG_INFO, ":+:       :+:     :+:     :+:+:   :+: :+:    :+:       :+:    :+: :+:    :+:");
     log("kernel", LOG_INFO, "+:+       +:+     +:+     :+:+:+  +:+ +:+              +:+    +:+ +:+        ");

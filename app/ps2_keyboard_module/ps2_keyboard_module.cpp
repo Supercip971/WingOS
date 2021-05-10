@@ -22,7 +22,7 @@ void irq_handle_mouse(unsigned int handler);
 
 #define KEY_COUNT 128
 
-static const char asciiDefault[58] =
+static const char ascii_default[58] =
     {
         0,
         0,  // ESC
@@ -83,7 +83,7 @@ static const char asciiDefault[58] =
         0,
         32, // SPACE
 };
-static const char asciiShift[] =
+static const char ascii_shift[] =
     {
         0,
         0,  // ESC
@@ -147,7 +147,6 @@ static const char asciiShift[] =
 
 class ps_keyboard : public general_keyboard
 {
-
     void wait(bool is_signal);
     int32_t mouse_x_offset = 0;
     int32_t mouse_y_offset = 0;
@@ -159,6 +158,8 @@ class ps_keyboard : public general_keyboard
     uint8_t *ptr_to_update;
 
 public:
+    char *ascii_default_copy;
+    char *ascii_shifted_copy;
     ps_keyboard();
 
     void write(uint8_t data);
@@ -169,7 +170,7 @@ public:
     bool get_key(uint8_t keycode) const;
     uint8_t get_last_keypress() const
     {
-        return asciiDefault[last_keypress];
+        return ascii_default_copy[last_keypress];
     }
     void set_ptr_to_update(uint32_t *d);
 
@@ -212,7 +213,7 @@ bool ps_keyboard::get_key(uint8_t keycode) const
 
 void ps_keyboard::init()
 {
-
+    buffer.reserve(500);
     main_ps_key = this;
     for (int i = 0; i < KEY_COUNT; i++)
     {
@@ -254,6 +255,8 @@ int main(int argc, char **argv)
     asm volatile("cli");
     ps_keyboard *pss_kb = new ps_keyboard();
     pss_kb->init();
+    pss_kb->ascii_default_copy = new char[KEY_COUNT];
+    memcpy(pss_kb->ascii_default_copy, ascii_default, KEY_COUNT);
 
     set_device_driver(device_type::KEYBOARD_DEVICE, pss_kb);
 

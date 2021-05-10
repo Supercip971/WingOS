@@ -280,7 +280,7 @@ void elf64_load_module_entry(Elf64_Phdr *entry, uint8_t *programm_code, uint8_t 
 }
 
 // FIXME: the code of launch_programm launch_programm_usr & launch_module is ultra repetitive, make this code better and use function
-uint64_t launch_programm(const char *path, file_system *file_sys, int argc, const char **argv)
+pid_t launch_programm(const char *path, file_system *file_sys, int argc, const char **argv)
 {
     utils::context_lock locker(file_sys->fs_lock);
     lock_process();
@@ -325,7 +325,7 @@ uint64_t launch_programm(const char *path, file_system *file_sys, int argc, cons
     return to_launch->get_pid();
 }
 
-size_t launch_programm_usr(programm_exec_info *info)
+pid_t launch_programm_usr(programm_exec_info *info)
 {
     lock_process();
     log("prog launcher", LOG_DEBUG, "starting {} with name {}", info->path, info->name);
@@ -386,7 +386,7 @@ size_t get_module_table_max_addr(Elf64_Phdr *p_entry, Elf64_Ehdr *programm_heade
     return current_max;
 }
 
-uint64_t launch_module(const char *path, file_system *file_sys, int argc, const char **argv)
+pid_t launch_module(const char *path, file_system *file_sys, int argc, const char **argv)
 {
     utils::context_lock locker(file_sys->fs_lock);
     lock_process();

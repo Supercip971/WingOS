@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <utils/wstring.h>
+#include <sys/types.h>
 namespace sys
 {
 
@@ -31,5 +32,5 @@ namespace sys
     extern file stdout;
     extern file stderr;
 
-    file get_process_stdf(int idx, int pid);
+    file get_process_stdf(int idx, pid_t pid);
 } // namespace sys

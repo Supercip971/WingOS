@@ -8,7 +8,7 @@
 namespace gui
 {
 
-    terminal_widget::terminal_widget(size_t x, size_t y, size_t width, size_t heigth, int pid) : col(color(0, 0, 0, 255)),
+    terminal_widget::terminal_widget(size_t x, size_t y, size_t width, size_t heigth, pid_t pid) : col(color(0, 0, 0, 255)),
                                                                                                  outbuffer(sys::get_process_stdf(1, pid)),
                                                                                                  inbuffer(sys::get_process_stdf(3, pid))
     {
@@ -23,7 +23,7 @@ namespace gui
         buffer_offset = 0;
         widget_width = width;
         widget_height = heigth;
-        last_key_press = sys::get_current_keyboard_offset();
+        inbuffer.seek(0);
     }
     void terminal_widget::increase(size_t new_size)
     {

@@ -35,10 +35,10 @@ void _start(stivale_struct *bootloader_data)
 {
     main_fs_system::the()->init_file_system();
     launch_module("initfs/ps2_mouse_module.module", main_fs_system::the()->main_fs(), 0, nullptr);
-    sleep(200);
+    sleep(500);
 
     launch_module("initfs/ps2_keyboard_module.module", main_fs_system::the()->main_fs(), 0, nullptr);
-    sleep(200);
+    sleep(500);
     log("kernel", LOG_INFO, "==== KERNEL STARTED ====");
 
     show_art();
@@ -47,7 +47,7 @@ void _start(stivale_struct *bootloader_data)
     log("kernel", LOG_INFO, "memory used: {}", get_used_memory() * PAGE_SIZE);
     //  dump_process();
     launch_programm("initfs/graphic_service.exe", main_fs_system::the()->main_fs(), 0, nullptr);
-    sleep(1);
+    sleep(10);
     launch_programm("initfs/background.exe", main_fs_system::the()->main_fs(), 0, nullptr);
     launch_programm("initfs/test2.exe", main_fs_system::the()->main_fs(), 0, nullptr);
 

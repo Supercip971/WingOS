@@ -11,7 +11,7 @@
 // when a process is dead but we still want to know some things we use this
 struct last_sign_of_process_status
 {
-    uint32_t pid;
+    pid_t pid;
     uint32_t status;
     uint32_t ret;
 };
@@ -298,7 +298,7 @@ process *process::from_name(const char *name)
     return nullptr;
 }
 
-process *process::from_pid(size_t pid)
+process *process::from_pid(pid_t pid)
 {
 
     for (size_t i = 0; i < MAX_PROCESS; i++)
@@ -314,7 +314,7 @@ process *process::from_pid(size_t pid)
     return nullptr;
 }
 
-void rename_process(const char *name, uint64_t pid)
+void rename_process(const char *name, pid_t pid)
 {
 
     process *target = process::from_pid(pid);
@@ -333,7 +333,7 @@ void sleep(uint64_t count)
     yield();
 }
 
-void sleep(uint64_t count, uint64_t pid)
+void sleep(uint64_t count, pid_t pid)
 {
     lock_process();
 
@@ -359,7 +359,7 @@ void dump_process()
     unlock_process();
 }
 
-void kill(uint64_t pid)
+void kill(pid_t pid)
 {
     auto target = process::from_pid(pid);
     if (target == nullptr)
@@ -441,7 +441,7 @@ bool process::has_virtual_addr(uintptr_t addr, size_t count)
     return true;
 }
 
-void get_process_status(uint32_t pid, int *ret, int *status)
+void get_process_status(pid_t pid, int *ret, int *status)
 {
     for (size_t i = 0; i < dead_process_status.size(); i++)
     {

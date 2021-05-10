@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include <sys/types.h>
 
 namespace sys
 {
@@ -50,8 +51,8 @@ namespace sys
         };
     } __attribute__((packed));
 
-    uint64_t get_current_pid();
-    uint64_t get_process_pid(const char *process_name);
+    pid_t get_current_pid();
+    pid_t get_process_pid(const char *process_name);
     inline void switch_process()
     {
         asm volatile("int 100");

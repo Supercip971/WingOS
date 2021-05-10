@@ -3,6 +3,7 @@
 #include <io_device.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <sys/types.h>
 #include <utils/container/wvector.h>
 
 class vfile
@@ -25,7 +26,7 @@ struct filesystem_file_t
     char *path;
     int mode;
     size_t cur;
-    uint64_t rpid;
+    pid_t rpid;
     int state;
     bool can_free_handle;
     class vfile *file;

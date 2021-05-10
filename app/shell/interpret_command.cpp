@@ -36,7 +36,7 @@ size_t start_programm(const char *path)
 
     sys::file inbuffer;
     sys::file outbuffer;
-    auto pid = sys::start_programm(path);
+    pid_t pid = sys::start_programm(path);
 
     inbuffer = sys::get_process_stdf(3, pid);
     outbuffer = sys::get_process_stdf(1, pid);

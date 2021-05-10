@@ -5,6 +5,7 @@
 #include <logging.h>
 #include <process_context.h>
 #include <stdint.h>
+#include <sys/types.h>
 #include <utils/bitmap.h>
 #include <utils/math.h>
 #include <utils/sys/config.h>
@@ -42,8 +43,8 @@ class process
 {
     arch_process_data arch_info;
     process_state current_process_state;
-    uint64_t upid = 0;
-    uint64_t kpid = 0;
+    pid_t upid = 0;
+    pid_t kpid = 0;
     char process_name[128];
     uint64_t entry_point = 0x0;
     uint8_t processor_target;
@@ -54,7 +55,7 @@ class process
     backtrace process_backtrace;
     per_process_userspace_fs ufs;
 
-    uint64_t parrent_pid = 0x0;
+    pid_t parrent_pid = 0x0;
     bitmap virtual_addr;
 
 public:
@@ -63,11 +64,11 @@ public:
                                                                                      };
 
     per_process_userspace_fs &get_ufs() { return ufs; };
-    process(const char *name, uint64_t kernel_pid, uint64_t unique_pid, uintptr_t process_entry_point, bool is_user) : upid(unique_pid),
-                                                                                                                       kpid(kernel_pid),
-                                                                                                                       entry_point(process_entry_point),
-                                                                                                                       user(is_user),
-                                                                                                                       sleeping(0)
+    process(const char *name, uint64_t kernel_pid, pid_t unique_pid, uintptr_t process_entry_point, bool is_user) : upid(unique_pid),
+                                                                                                                    kpid(kernel_pid),
+                                                                                                                    entry_point(process_entry_point),
+                                                                                                                    user(is_user),
+                                                                                                                    sleeping(0)
     {
         memcpy(process_name, name, strlen(name) + 1);
         virtual_addr = bitmap(new uint8_t[USR_VIRT_ADDR_SIZE / PAGE_SIZE / 8], USR_VIRT_ADDR_SIZE / PAGE_SIZE);
@@ -92,12 +93,12 @@ public:
     {
         return kpid != 0;
     }
-    void set_parent(uint64_t pid)
+    void set_parent(pid_t pid)
     {
         parrent_pid = pid;
     }
 
-    uint64_t get_parent_pid() const
+    pid_t get_parent_pid() const
     {
         return parrent_pid;
     }
@@ -148,7 +149,7 @@ public:
 
     const char *get_name() { return process_name; };
 
-    size_t get_pid() const { return upid; };
+    pid_t get_pid() const { return upid; };
     uint64_t get_kpid() { return kpid; };
 
     void set_state(process_state state) { current_process_state = state; };
@@ -158,7 +159,7 @@ public:
     void create_message_list();
 
     static process *from_name(const char *name);
-    static process *from_pid(size_t pid);
+    static process *from_pid(pid_t pid);
     static process *current();
     static void set_current(process *target);
     bool destroy();
@@ -191,12 +192,12 @@ void lock_process();
 void task_update_switch(process *next);
 uintptr_t process_switch_handler(arch_stackframe *isf, bool switch_all);
 
-void rename_process(const char *name, uint64_t pid);
+void rename_process(const char *name, pid_t pid);
 
 void sleep(uint64_t count);
-void sleep(uint64_t count, uint64_t pid);
+void sleep(uint64_t count, pid_t pid);
 
-void kill(uint64_t pid);
+void kill(pid_t pid);
 NO_RETURN void kill_current(int code);
 
-void get_process_status(uint32_t pid, int *ret, int *status);
+void get_process_status(pid_t pid, int *ret, int *status);

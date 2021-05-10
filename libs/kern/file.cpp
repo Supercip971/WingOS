@@ -90,7 +90,7 @@ namespace sys
         return size;
     }
 
-    file get_process_stdf(int idx, int pid)
+    file get_process_stdf(int idx, pid_t pid)
     {
         char *temp = (char *)malloc(255);
         char *path = (char *)malloc(255);

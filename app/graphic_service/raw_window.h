@@ -3,6 +3,7 @@
 #include <gui/graphic_system.h>
 #include <gui/raw_graphic.h>
 #include <stdint.h>
+#include <sys/types.h>
 #include <utils/container/wvector.h>
 
 #define MAX_WINDOW 255
@@ -10,7 +11,7 @@
 struct raw_window_data
 {
     uint64_t wid;
-    uint64_t pid;
+    pid_t pid;
     uint64_t px;
     uint64_t py;
     uint64_t width;
@@ -32,17 +33,17 @@ void set_window_on_top(uint64_t wid);
 void set_window_background(uint64_t wid);
 void set_window_top_background(uint64_t wid);
 
-uint64_t create_window(gui::graphic_system_service_protocol *request, uint64_t pid);
+uint64_t create_window(gui::graphic_system_service_protocol *request, pid_t pid);
 
 raw_window_data *get_top_window();
-bool valid_window(uint64_t target_wid, uint64_t pid);
+bool valid_window(uint64_t target_wid, pid_t pid);
 raw_window_data *get_window(uint64_t target_wid);
 
-uint64_t get_window_back_buffer(gui::graphic_system_service_protocol *request, uint64_t pid);
-uint64_t window_swap_buffer(gui::graphic_system_service_protocol *request, uint64_t pid);
-uint64_t get_window_position(gui::graphic_system_service_protocol *request, uint64_t pid);
-uint64_t set_window_position(gui::graphic_system_service_protocol *request, uint64_t pid);
-uint64_t window_depth_action(gui::graphic_system_service_protocol *request, uint64_t pid);
+uint64_t get_window_back_buffer(gui::graphic_system_service_protocol *request, pid_t pid);
+uint64_t window_swap_buffer(gui::graphic_system_service_protocol *request, pid_t pid);
+uint64_t get_window_position(gui::graphic_system_service_protocol *request, pid_t pid);
+uint64_t set_window_position(gui::graphic_system_service_protocol *request, pid_t pid);
+uint64_t window_depth_action(gui::graphic_system_service_protocol *request, pid_t pid);
 
 void update_mouse_in_window();
 

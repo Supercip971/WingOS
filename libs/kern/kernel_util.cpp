@@ -25,12 +25,12 @@ namespace sys
         return 1;
     }
 
-    uint64_t get_process_pid(const char *process_name)
+    pid_t get_process_pid(const char *process_name)
     {
         printf("error: %s removed for the moment \n", __PRETTY_FUNCTION__);
         return 0;
     }
-    uint64_t get_current_pid()
+    pid_t get_current_pid()
     {
         return sys::sys$getpid();
     }

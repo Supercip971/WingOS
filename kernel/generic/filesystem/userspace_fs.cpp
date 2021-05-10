@@ -70,7 +70,7 @@ vfile *process_ramdir::get(const char *msg)
 {
     msg += strlen("/proc/");
 
-    auto pid = atoi(msg);
+    pid_t pid = atoi(msg);
     auto process = process::from_pid(pid);
     if (process == nullptr)
     {

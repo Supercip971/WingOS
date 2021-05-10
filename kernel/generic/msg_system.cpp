@@ -33,7 +33,7 @@ msg_system *get_msg_system(const char *val)
     return nullptr;
 }
 
-bool is_valid_msg_system(size_t pid, int msg_id)
+bool is_valid_msg_system(pid_t pid, int msg_id)
 {
     auto res = get_msg_system(msg_id);
     if (res == nullptr)
@@ -57,7 +57,7 @@ raw_msg_request copy_request(const raw_msg_request from)
     return target;
 }
 
-int create_msg_system(const char *path, size_t by_pid)
+int create_msg_system(const char *path, pid_t by_pid)
 {
     size_t res = msg_system_list.alloc();
     msg_system_list[res].set(path, msg_system_id, by_pid);
@@ -116,7 +116,7 @@ bool connection_accepted(uint32_t id)
     return v->get_connection(msg_connection.element.connection_id)->accepted();
 }
 
-uint32_t connect(const char *msg_system, size_t by_pid)
+uint32_t connect(const char *msg_system, pid_t by_pid)
 {
     auto v = get_msg_system(msg_system);
     if (v == nullptr)
@@ -212,7 +212,7 @@ uint32_t msg_system::accept_connection()
     return 0;
 }
 
-int msg_system::add_connection(int pid)
+int msg_system::add_connection(pid_t pid)
 {
     utils::context_lock locker(msg_system_lock);
     msg_connection connect(next_connection_uid++, pid, msg_system_id);
@@ -230,7 +230,7 @@ int msg_system::add_connection(int pid)
     }
 }
 
-bool msg_system::valid_connection(int id, int pid)
+bool msg_system::valid_connection(int id, pid_t pid)
 {
     auto conn = get_connection(id);
     if (conn == nullptr)
@@ -267,7 +267,7 @@ int msg_system::get_connection_table_id(uint32_t connection_id)
     return -1;
 }
 
-bool msg_system::deconnect(int connection_id, int pid)
+bool msg_system::deconnect(int connection_id, pid_t pid)
 {
     if (!valid_connection(connection_id, pid))
     {
@@ -280,7 +280,7 @@ bool msg_system::deconnect(int connection_id, int pid)
     return true;
 }
 
-int msg_system::send(int connection_id, const raw_msg_request request, int flags, size_t by_pid)
+int msg_system::send(int connection_id, const raw_msg_request request, int flags, pid_t by_pid)
 {
     if (by_pid == by_server_pid)
     {
@@ -309,7 +309,7 @@ int msg_system::send(int connection_id, const raw_msg_request request, int flags
     }
 }
 
-int msg_system::receive(int connection_id, raw_msg_request request, int flags, size_t by_pid)
+int msg_system::receive(int connection_id, raw_msg_request request, int flags, pid_t by_pid)
 {
 
     if (by_pid == by_server_pid)

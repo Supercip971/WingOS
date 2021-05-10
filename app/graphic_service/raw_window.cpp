@@ -54,7 +54,7 @@ size_t get_window_id(uint64_t target_wid)
     return -1;
 }
 
-bool valid_window(uint64_t target_wid, uint64_t pid)
+bool valid_window(uint64_t target_wid, pid_t pid)
 {
     auto raw = get_window(target_wid);
     if (raw == nullptr)
@@ -93,7 +93,7 @@ void set_window_top_background(uint64_t wid)
 }
 uint32_t next_wid = 10;
 
-uint64_t create_window(gui::graphic_system_service_protocol *request, uint64_t pid)
+uint64_t create_window(gui::graphic_system_service_protocol *request, pid_t pid)
 {
     raw_window_data targ = {0};
 
@@ -120,7 +120,7 @@ uint64_t create_window(gui::graphic_system_service_protocol *request, uint64_t p
     return targ.wid;
 }
 
-uint64_t get_window_back_buffer(gui::graphic_system_service_protocol *request, uint64_t pid)
+uint64_t get_window_back_buffer(gui::graphic_system_service_protocol *request, pid_t pid)
 {
     if (!valid_window(request->get_request.window_handler_code, pid))
     {
@@ -131,7 +131,7 @@ uint64_t get_window_back_buffer(gui::graphic_system_service_protocol *request, u
     return (uint64_t)raw->window_back_buffer;
 }
 
-uint64_t window_swap_buffer(gui::graphic_system_service_protocol *request, uint64_t pid)
+uint64_t window_swap_buffer(gui::graphic_system_service_protocol *request, pid_t pid)
 {
     if (!valid_window(request->get_request.window_handler_code, pid))
     {
@@ -143,7 +143,7 @@ uint64_t window_swap_buffer(gui::graphic_system_service_protocol *request, uint6
     swap_buffers(raw->window_front_buffer, raw->window_back_buffer, raw->width * raw->height);
     return 1;
 }
-uint64_t get_window_position(gui::graphic_system_service_protocol *request, uint64_t pid)
+uint64_t get_window_position(gui::graphic_system_service_protocol *request, pid_t pid)
 {
     if (!valid_window(request->get_request.window_handler_code, pid))
     {
@@ -158,7 +158,7 @@ uint64_t get_window_position(gui::graphic_system_service_protocol *request, uint
 
     return (uint64_t)pos.pos;
 }
-uint64_t set_window_position(gui::graphic_system_service_protocol *request, uint64_t pid)
+uint64_t set_window_position(gui::graphic_system_service_protocol *request, pid_t pid)
 {
     if (!valid_window(request->set_pos.window_handler_code, pid))
     {
@@ -180,7 +180,7 @@ uint64_t set_window_position(gui::graphic_system_service_protocol *request, uint
     return 1;
 }
 
-uint64_t window_depth_action(gui::graphic_system_service_protocol *request, uint64_t pid)
+uint64_t window_depth_action(gui::graphic_system_service_protocol *request, pid_t pid)
 {
     if (request->depth_request.set)
     {

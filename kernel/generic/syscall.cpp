@@ -100,12 +100,12 @@ int sys$nano_sleep(const timespec *request, timespec *remaning)
     return 0;
 }
 
-size_t sys$getpid()
+pid_t sys$getpid()
 {
     return process::current()->get_pid();
 }
 
-size_t sys$exec(programm_exec_info *info)
+pid_t sys$exec(programm_exec_info *info)
 {
     return launch_programm_usr(info);
 }
@@ -163,7 +163,7 @@ size_t sys$receive(uint32_t id, raw_msg_request *request, int flags)
     return receive(id, request, flags);
 }
 
-size_t sys$get_process_info(uint32_t pid, int flag, void *arg1, void *arg2)
+size_t sys$get_process_info(pid_t pid, int flag, void *arg1, void *arg2)
 {
     if (flag == PROC_INFO_STATUS)
     {

@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <sys/types.h>
 #include <utils/container/alloc_array.h>
 #include <utils/container/warray.h>
 #include <utils/container/wvector.h>
@@ -67,7 +68,7 @@ public:
 
 class msg_connection
 {
-    int _from_pid;
+    pid_t _from_pid;
     int _to_msg_system;
     bool _accepted;
     uint32_t _id;
@@ -82,7 +83,7 @@ public:
         _out = msg_queue();
         _in = msg_queue();
     }
-    msg_connection(uint32_t connection_id, int pid, int msg_sys_id) : _from_pid(pid), _to_msg_system(msg_sys_id), _id(connection_id)
+    msg_connection(uint32_t connection_id, pid_t pid, int msg_sys_id) : _from_pid(pid), _to_msg_system(msg_sys_id), _id(connection_id)
     {
         _out = msg_queue();
         _in = msg_queue();
@@ -99,7 +100,7 @@ public:
     }
 
     uint32_t id() const { return _id; };
-    int from_pid() const { return _from_pid; };
+    pid_t from_pid() const { return _from_pid; };
     msg_queue &out_queue() { return _out; };
     msg_queue &in_queue() { return _in; };
 };
@@ -113,7 +114,7 @@ class msg_system
     utils::unique_ptr<char> name;
     int connection_waiting_count = 0;
     uint32_t msg_system_id;
-    size_t by_server_pid;
+    pid_t by_server_pid;
     int get_connection_table_id(uint32_t connection_id);
 
 public:
@@ -125,7 +126,7 @@ public:
         name = utils::unique_ptr<char>(nullptr);
     }
 
-    void set(const char *path, int id, size_t pid_server)
+    void set(const char *path, int id, pid_t pid_server)
     {
         msg_system_lock.unlock();
         next_connection_uid = 10;
@@ -163,27 +164,27 @@ public:
 
     uint32_t accept_connection();
 
-    int add_connection(int pid);
+    int add_connection(pid_t pid);
 
     msg_connection *get_connection(uint32_t msg_id);
 
-    bool deconnect(int connection_id, int pid);
+    bool deconnect(int connection_id, pid_t pid);
 
-    bool valid_connection(int id, int pid);
+    bool valid_connection(int id, pid_t pid);
 
-    size_t get_server_pid() const { return by_server_pid; };
+    pid_t get_server_pid() const { return by_server_pid; };
 
-    int send(int connection_id, const raw_msg_request request, int flags, size_t by_pid);
-    int receive(int connection_id, raw_msg_request request, int flags, size_t by_pid);
+    int send(int connection_id, const raw_msg_request request, int flags, pid_t by_pid);
+    int receive(int connection_id, raw_msg_request request, int flags, pid_t by_pid);
 };
 
 void init_msg_system();
 
 bool service_exist(const char *path);
-int create_msg_system(const char *path, size_t by_pid);
+int create_msg_system(const char *path, pid_t by_pid);
 
 size_t accept_connection(int service_id);
-uint32_t connect(const char *msg_system, size_t by_pid);
+uint32_t connect(const char *msg_system, pid_t by_pid);
 bool connection_accepted(uint32_t id);
 int deconnect(uint32_t id);
 

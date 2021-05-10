@@ -25,7 +25,7 @@ int main(int argc, char **argv)
     return 1;
 }
 
-graphic_request_return interpret(gui::graphic_system_service_protocol *request, uint64_t pid)
+graphic_request_return interpret(gui::graphic_system_service_protocol *request, pid_t pid)
 {
     if (request->request_type == 0)
     {

@@ -47,7 +47,7 @@ namespace gui
         };
 
     public:
-        terminal_widget(size_t x, size_t y, size_t width, size_t heigth, int pid);
+        terminal_widget(size_t x, size_t y, size_t width, size_t heigth, pid_t pid);
 
         virtual void update_widget() override;
         virtual void draw_widget(graphic_context &context) override;

@@ -30,8 +30,8 @@ pci: enabled=1, chipset=i440fx
 vga: extension=vbe, update_freq=5, realtime=1
 cpu: count=1:1:1, ips=4000000, quantum=16, model=bx_generic, reset_on_triple_fault=1, cpuid_limit_winnt=0, ignore_bad_msrs=1, mwait_is_nop=0
 cpuid: level=6, stepping=3, model=3, family=6, vendor_string="AuthenticAMD", brand_string="AMD Athlon(tm) processor"
-cpuid: mmx=true, apic=xapic, simd=sse2, sse4a=false, misaligned_sse=false, sep=true
-cpuid: movbe=false, adx=false, aes=false, sha=false, xsave=false, xsaveopt=false, avx_f16c=false
+cpuid: mmx=true, apic=xapic, simd=avx, sse4a=false, misaligned_sse=false, sep=true
+cpuid: movbe=false, adx=false, aes=false, sha=false, xsave=true, xsaveopt=true, avx_f16c=false
 cpuid: avx_fma=false, bmi=0, xop=false, fma4=false, tbm=false, x86_64=true, 1g_pages=false
 cpuid: pcid=false, fsgsbase=false, smep=false, smap=false, mwait=true
 print_timestamps: enabled=0

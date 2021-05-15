@@ -1,15 +1,18 @@
 #pragma once
+#include <logging.h>
 #include <stdint.h>
 #include <stivale_struct.h>
 #include <string.h>
+#include <utils/config.h>
 #define GDT_DESCRIPTORS 7
+
 enum gdt_selector : uint16_t
 {
     NULL_SELECTOR = 0,
     KERNEL_CODE = 0x8,
     KERNEL_DATA = 0x10,
-    USER_DATA = 0x1b,
-    USER_CODE = 0x23,
+    USER_CODE = 0x1b,
+    USER_DATA = 0x23,
     TSS_SELECTOR = 0x28,
 };
 enum gdt_flags : uint8_t
@@ -17,14 +20,14 @@ enum gdt_flags : uint8_t
     WRITABLE = 0b10,
     USER = 0b1100000,
     PRESENT = 0b10000000,
+    CONFORMING = 0b100,
     TSS = 0b1001,
     DS = 0b10000,
     CS = 0b11000,
 };
-
 enum gdt_granularity : uint8_t
 {
-    LONG_MODE_GRANULARITY = 0x2,
+    LONG_MODE_GRANULARITY = 0b00100000,
 };
 
 struct gdtr
@@ -49,11 +52,11 @@ struct gdt_descriptor
         base_mid = 0;
         base_low = 0;
         flags = flag | gdt_flags::PRESENT;
-        granularity = (gran << 4) | 0x0F;
+        granularity = gran;
         limit_low = 0;
     }
+    void debug_out();
 } __attribute__((packed));
-
 struct gdt_xdescriptor
 {
     gdt_descriptor low;
@@ -101,7 +104,7 @@ struct tss
     uint16_t iomap_base;
 } __attribute__((packed));
 
-#define GDT_ARRAY_SEL(a) a / sizeof(gdt_descriptor)
+#define GDT_ARRAY_SEL(a) (a / 8)
 
 template <int entry_count>
 class gdt_descriptor_array
@@ -139,14 +142,24 @@ public:
     }
     void fill_gdt_register(gdtr *target)
     {
-        target->len = size();
+        target->len = size() - 1;
         target->addr = (uintptr_t)raw();
+    }
+    void debug_out()
+    {
+        for (int i = 0; i < entry_count; i++)
+        {
+            log("gdt", LOG_DEBUG, "gdt info: {}", i * 8);
+            entrys->debug_out();
+        }
     }
 };
 
-void tss_init(uint64_t i);
-void tss_set_rsp0(uint64_t rsp0);
+__attribute__((optimize("O2"))) void tss_init(uint64_t i);
+__attribute__((optimize("O2"))) void tss_set_rsp0(uint64_t rsp0);
 
-void gdt_init();
-void setup_gdt();
-void gdt_ap_init();
+__attribute__((optimize("O2"))) void gdt_init();
+__attribute__((optimize("O2"))) void setup_gdt();
+__attribute__((optimize("O2"))) void gdt_ap_init();
+
+extern gdt_descriptor_array<GDT_DESCRIPTORS> gdt_descriptors[MAX_CPU_COUNT];

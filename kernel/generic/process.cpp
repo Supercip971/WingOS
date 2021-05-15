@@ -22,7 +22,7 @@ bool process_loaded = false;
 
 utils::lock_type process_creator_lock;
 uint64_t last_process = 0;
-process *current_cpu_process[MAX_CPU_COUNT];
+process *current_cpu_process[MAX_CPU_COUNT] = {0};
 utils::lock_type task_lock;
 int dying_process_count = 0;
 uint64_t next_upid = 1;

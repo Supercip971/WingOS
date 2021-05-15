@@ -3,7 +3,7 @@
 #include <stivale_struct.h>
 #include <utils/bitmap.h>
 extern uint64_t available_memory;
-void init_physical_memory(stivale_struct *bootdata);
+void init_physical_memory(stivale2_struct_tag_memmap *bootdata);
 
 uint64_t find_free_page();
 uint64_t get_used_memory();

@@ -80,7 +80,7 @@ void *findFACP(void *RootSDT)
     return nullptr;
 }
 
-void acpi::init(uint64_t rsdp)
+void acpi::init()
 {
     log("acpi", LOG_DEBUG, "loading acpi");
 

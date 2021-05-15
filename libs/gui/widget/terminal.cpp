@@ -9,8 +9,8 @@ namespace gui
 {
 
     terminal_widget::terminal_widget(size_t x, size_t y, size_t width, size_t heigth, pid_t pid) : col(color(0, 0, 0, 255)),
-                                                                                                 outbuffer(sys::get_process_stdf(1, pid)),
-                                                                                                 inbuffer(sys::get_process_stdf(3, pid))
+                                                                                                   outbuffer(sys::get_process_stdf(1, pid)),
+                                                                                                   inbuffer(sys::get_process_stdf(3, pid))
     {
         pb_lenth = 0;
         terminal_width = width / 8;

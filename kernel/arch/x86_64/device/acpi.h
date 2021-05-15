@@ -53,6 +53,6 @@ public:
 
     void *find_entry(const char *entry_name);
     void descriptor_dump();
-    void init(uint64_t rsdp);
+    void init();
     static acpi *the();
 };

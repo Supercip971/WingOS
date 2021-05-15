@@ -116,7 +116,7 @@ void init_idt()
 {
 
     log("idt", LOG_INFO, "loading idt table...");
-    for (int i = 0; i < 32 + 48; i++)
+    for (int i = 0; i < 48; i++)
     {
         idt[i] = idt_entry((void *)__interrupt_vector[i], 0, INTGATE);
     }

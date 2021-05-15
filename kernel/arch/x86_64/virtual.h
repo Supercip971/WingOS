@@ -80,6 +80,10 @@ public:
     {
         utils::set_bit(_raw, (size_t)page_table_offset::WRITABLE, new_value);
     };
+    constexpr void set_noexecutable(bool new_value)
+    {
+        utils::set_bit(_raw, (size_t)page_table_offset::NO_EXECUTE, new_value);
+    };
 
     uint64_t get_addr() const { return _raw & FRAME_ADDR; };
 
@@ -90,6 +94,7 @@ public:
         v.set_present(true);
         v.set_user(is_user);
         v.set_writable(is_writable);
+        v.set_noexecutable(false);
 
         return v;
     }
@@ -119,6 +124,6 @@ uint64_t get_physical_addr(uint64_t virt);
 
 page_table *new_vmm_page_dir();
 
-void init_vmm(stivale_struct *bootdata);
+void init_vmm(stivale2_struct_tag_memmap *bootdata);
 
 page_table *clone_directory(page_table *from);

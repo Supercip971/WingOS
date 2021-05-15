@@ -72,69 +72,93 @@ void pmm_free(void *where, uint64_t lenght)
     pmm_lock.unlock();
 }
 
-size_t get_available_memory(e820_entry_t *mem_entry, size_t length)
+size_t get_available_memory(stivale2_struct_tag_memmap *mem_entry)
 {
-    return mem_entry[length - 1].length + mem_entry[length - 1].base;
+    return mem_entry->memmap[mem_entry->entries - 1].length + mem_entry->memmap[mem_entry->entries - 1].base;
 }
 
-void init_bitmap_base(e820_entry_t *mem_entry, size_t entry_count, size_t targetted_length)
+void init_bitmap_base(stivale2_struct_tag_memmap *mem_entry, size_t targetted_length)
 {
-    for (uint64_t i = 0; i < entry_count; i++)
+    for (uint64_t i = 0; i < mem_entry->entries; i++)
     {
-        if (mem_entry[i].type == MEMMAP_USABLE)
+        if (mem_entry->memmap[i].type == STIVALE2_MMAP_USABLE)
         {
-            if (mem_entry[i].length > (targetted_length) / 8)
+            if (mem_entry->memmap[i].length > (targetted_length) / 8)
             {
 
                 log("pmm", LOG_INFO, "memory entry used: {}", i);
                 log("pmm", LOG_INFO, "total bitmap length: {}", (targetted_length) / 8);
-                bitmap_base = mem_entry[i].base + PAGE_SIZE;
+                bitmap_base = mem_entry->memmap[i].base + PAGE_SIZE;
 
                 log("pmm", LOG_INFO, "bitmap addr: {}", bitmap_base);
 
                 pmm_length = (targetted_length);
-                mem_entry[i].base += ((targetted_length) / 8) + PAGE_SIZE + PAGE_SIZE;
+                mem_entry->memmap[i].base += ((targetted_length) / 8) + PAGE_SIZE + PAGE_SIZE;
                 return;
             }
         }
     }
 }
 
-void init_bitmap_memory_map(e820_entry_t *mem_entry, size_t entry_count, bitmap &target)
+const char *mem_entry_to_str(uint32_t type)
+{
+    switch (type)
+    {
+
+    case STIVALE2_MMAP_USABLE:
+        return "mmap usable";
+    case STIVALE2_MMAP_RESERVED:
+        return "mmap reserved";
+    case STIVALE2_MMAP_ACPI_RECLAIMABLE:
+        return "mmap acpi reclaimable";
+    case STIVALE2_MMAP_ACPI_NVS:
+        return "mmap acpi nvs";
+    case STIVALE2_MMAP_BAD_MEMORY:
+        return "mmap bad memory";
+
+    case STIVALE2_MMAP_BOOTLOADER_RECLAIMABLE:
+        return "mmap bootloader reclaimable";
+    case STIVALE2_MMAP_KERNEL_AND_MODULES:
+        return "mmap kernel and modules";
+    default:
+        return "mmap unknown";
+    }
+}
+void init_bitmap_memory_map(stivale2_struct_tag_memmap *mem_entry, bitmap &target)
 {
 
-    for (uint64_t i = 0; i < entry_count; i++)
+    for (uint64_t i = 0; i < mem_entry->entries; i++)
     {
-        log("pmm", LOG_INFO, "entry: {} -- from: {} to: {} -- status: {}", i, mem_entry[i].base, mem_entry[i].base + mem_entry[i].length, mem_entry[i].type);
+        log("pmm", LOG_INFO, "entry: {} -- from: {} to: {} -- status: {}", i, mem_entry->memmap[i].base, mem_entry->memmap[i].base + mem_entry->memmap[i].length, mem_entry_to_str(mem_entry->memmap[i].type));
 
-        if (mem_entry[i].type == MEMMAP_USABLE)
+        if (mem_entry->memmap[i].type == STIVALE2_MMAP_USABLE)
         {
-            target.set_free(mem_entry[i].base / PAGE_SIZE, mem_entry[i].length / PAGE_SIZE);
-            available_memory += mem_entry[i].length / PAGE_SIZE;
+            target.set_free(mem_entry->memmap[i].base / PAGE_SIZE, mem_entry->memmap[i].length / PAGE_SIZE);
+            available_memory += mem_entry->memmap[i].length / PAGE_SIZE;
         }
-        pmm_page_entry_count += mem_entry[i].length / PAGE_SIZE;
+        pmm_page_entry_count += mem_entry->memmap[i].length / PAGE_SIZE;
     }
 }
 
-void init_physical_memory(stivale_struct *bootdata)
+void init_physical_memory(stivale2_struct_tag_memmap *bootdata)
 {
     available_memory = 0;
 
     log("pmm", LOG_DEBUG, "loading pmm");
 
-    e820_entry_t *mementry = reinterpret_cast<e820_entry_t *>(bootdata->memory_map_addr);
-    uint64_t total_memory_lenght = get_available_memory(mementry, bootdata->memory_map_entries);
+    uint64_t total_memory_lenght = get_available_memory(bootdata);
 
-    bitmap_base = reinterpret_cast<uintptr_t>(bootdata) + sizeof(stivale_struct);
+    bitmap_base = 0;
 
     log("pmm", LOG_INFO, "finding physical memory mem map entry");
-    init_bitmap_base(mementry, bootdata->memory_map_entries, total_memory_lenght / PAGE_SIZE);
+    init_bitmap_base(bootdata, total_memory_lenght / PAGE_SIZE);
 
     pmm_bitmap = bitmap(reinterpret_cast<uint8_t *>(bitmap_base), pmm_length);
 
+    memset(reinterpret_cast<void *>(bitmap_base), 0xff, pmm_length / 8);
     log("pmm", LOG_DEBUG, "loading pmm memory map");
 
-    init_bitmap_memory_map(mementry, bootdata->memory_map_entries, pmm_bitmap);
+    init_bitmap_memory_map(bootdata, pmm_bitmap);
     pmm_bitmap.reset_last_free();
     log("pmm", LOG_INFO, "free memory: {}", available_memory);
 }

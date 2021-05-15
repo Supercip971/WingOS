@@ -63,3 +63,5 @@ size_t get_cpu_count();
 size_t get_current_cpu_id();
 
 void dump_stackframe(void *rbp);
+
+stivale2_tag *stivale2_find_tag(uint64_t tag_id);

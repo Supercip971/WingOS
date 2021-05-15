@@ -1,4 +1,5 @@
 
+#include <arch.h>
 #include <com.h>
 #include <device/mboot_module.h>
 #include <kernel.h>
@@ -11,28 +12,12 @@ mboot_module::mboot_module()
 {
 }
 
-void mboot_module::init(stivale_struct *main_struct)
+void mboot_module::init(stivale2_struct *main_struct)
 {
-    stistruct = main_struct;
-    log("mboot", LOG_DEBUG, "loading mboot mudules");
-    log("mboot", LOG_INFO, "mboot module count: {}", main_struct->module_count);
-
-    for (uint64_t i = 0; i < main_struct->module_count + 2; i++)
-    {
-        modules[i] = 0;
-    }
-
-    uintptr_t at = main_struct->modules;
-
-    for (uint64_t i = 0; i < main_struct->module_count; i++)
-    {
-        modules[i] = reinterpret_cast<stivale_module *>(at);
-        at = modules[i]->next;
-        log("mboot", LOG_INFO, "detected module: {} at: {} end: {}", modules[i]->string, modules[i]->begin, modules[i]->end);
-    }
+    log("mboot", LOG_ERROR, "todo: reimplement module (for the moment the kernel don't use module)");
 }
 
-stivale_module *mboot_module::get_fs_module()
+stivale2_module *mboot_module::get_fs_module()
 {
     for (uint64_t i = 0; modules[i] != 0; i++)
     {

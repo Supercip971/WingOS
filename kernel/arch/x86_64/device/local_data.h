@@ -23,7 +23,7 @@ public:
 
     tss ctss;
 
-    static const uint32_t stack_size = 8192;
+    static const uint32_t stack_size = STACK_SIZE;
     uint8_t stack_data[stack_size] PAGE_ALIGN;
     uint8_t stack_data_interrupt[stack_size] PAGE_ALIGN;
     uint8_t syscall_stack[stack_size] PAGE_ALIGN;

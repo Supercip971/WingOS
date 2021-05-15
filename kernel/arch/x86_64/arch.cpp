@@ -53,15 +53,37 @@ void dump_stackframe(void *rbp)
 
 static char stack[STACK_SIZE] = {0};
 static uintptr_t bootdat = 0;
-__attribute__((section(".stivalehdr"), used))
-stivale_header header = {.stack = (uintptr_t)stack + (sizeof(char) * STACK_SIZE),
-                         .flags = 1,
-                         .framebuffer_width = 1440,
-                         .framebuffer_height = 900,
-                         .framebuffer_bpp = 32,
-                         .entry_point = 0};
+static struct stivale2_header_tag_framebuffer framebuffer_hdr_tag = {
+    .tag = {
+        .identifier = STIVALE2_HEADER_TAG_FRAMEBUFFER_ID,
+        .next = 0},
+    .framebuffer_width = 1440,
+    .framebuffer_height = 900,
+    .framebuffer_bpp = 32};
 
-stivale_struct boot_loader_data_copy;
+__attribute__((section(".stivale2hdr"), used)) static struct stivale2_header stivale_hdr = {
+    .entry_point = 0,
+    .stack = (uintptr_t)stack + sizeof(stack),
+    .flags = 0,
+    .tags = (uintptr_t)&framebuffer_hdr_tag};
+
+struct stivale2_struct boot_loader_data_copy;
+
+stivale2_tag *stivale2_find_tag(uint64_t tag_id)
+{
+    stivale2_tag *current = (stivale2_tag *)boot_loader_data_copy.tags;
+    while (current != NULL)
+    {
+        if (current->identifier == tag_id) // est ce que cette entrée est bien celle que l'on cherche ?
+        {
+            return current;
+        }
+
+        current = (stivale2_tag *)current->next; // avance d'une entrée dans la liste
+    }
+    return NULL;
+}
+
 void start_process();
 
 /*
@@ -83,8 +105,10 @@ size_t get_current_cpu_id()
     return apic::the()->get_current_processor_id();
 }
 
-ASM_FUNCTION void kernel_start(stivale_struct *bootloader_data)
+ASM_FUNCTION void kernel_start(struct stivale2_struct *bootloader_data)
 {
+    outw(0x8A00, 0x8A00);
+    outw(0x8A00, 0x08AE0);
     asm volatile("and rsp, -16");
     asm volatile("cli");
     // fs is used for getting cpu n°
@@ -96,6 +120,7 @@ ASM_FUNCTION void kernel_start(stivale_struct *bootloader_data)
     init_sse();
 
     setup_gdt();
+    gdt_descriptors[get_current_cpu_id()].debug_out();
     init_idt();
     if (has_xsave())
     {
@@ -105,17 +130,26 @@ ASM_FUNCTION void kernel_start(stivale_struct *bootloader_data)
     {
         log("avx", LOG_INFO, "cpu has support for avx");
     }
-    memcpy(&boot_loader_data_copy, bootloader_data, sizeof(stivale_struct));
+    memcpy(&boot_loader_data_copy, bootloader_data, sizeof(struct stivale2_struct));
 
+    gdt_descriptors[get_current_cpu_id()].debug_out();
     tss_init((uintptr_t)stack + sizeof(char) * STACK_SIZE);
 
-    init_physical_memory(bootloader_data);
-    init_vmm(bootloader_data);
-    pic_init();
+    stivale2_struct_tag_memmap *memmap_tag = (stivale2_struct_tag_memmap *)stivale2_find_tag(STIVALE2_STRUCT_TAG_MEMMAP_ID);
 
+    gdt_descriptors[get_current_cpu_id()].debug_out();
+    init_physical_memory(memmap_tag);
+    init_vmm(memmap_tag);
+    pic_init();
+    gdt_descriptors[get_current_cpu_id()].debug_out();
+    log("gdt", LOG_INFO, "addr: {} len: {}", get_current_cpu()->cgdt.addr, get_current_cpu()->cgdt.len);
+    outw(0x8A00, 0x8A00);
+    outw(0x8A00, 0x08AE0);
+
+    asm volatile("int 0");
     RTC::the()->init();
 
-    acpi::the()->init((reinterpret_cast<stivale_struct *>(bootdat))->rsdp);
+    acpi::the()->init();
 
     acpi::the()->getFACP();
 
@@ -144,7 +178,8 @@ ASM_FUNCTION void kernel_start(stivale_struct *bootloader_data)
 void start_process()
 {
 
-    basic_framebuffer_graphic_device *framebuff = new basic_framebuffer_graphic_device(boot_loader_data_copy.framebuffer_width, boot_loader_data_copy.framebuffer_height, boot_loader_data_copy.framebuffer_addr);
+    stivale2_struct_tag_framebuffer *fb_str_tag = (stivale2_struct_tag_framebuffer *)stivale2_find_tag(STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID);
+    basic_framebuffer_graphic_device *framebuff = new basic_framebuffer_graphic_device(fb_str_tag->framebuffer_width, fb_str_tag->framebuffer_height, fb_str_tag->framebuffer_addr);
     add_device(framebuff);
 
     if (ata_driver::has_ata_device())

@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <stivale_struct.h>
 
-#define STACK_SIZE 65536
+#define STACK_SIZE (65536)
 
 struct InterruptStackFrame
 {
@@ -35,7 +35,7 @@ struct InterruptStackFrame
     uintptr_t ss;
 } __attribute__((packed));
 
-extern stivale_struct boot_loader_data_copy;
+extern stivale2_struct boot_loader_data_copy;
 
 inline void outb(uint16_t port, uint8_t value)
 {

@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stivale_struct.h>
 #include <string.h>
-#include <utils/config.h>
+#include <utils/sys/config.h>
 #define GDT_DESCRIPTORS 7
 
 enum gdt_selector : uint16_t
@@ -25,6 +25,7 @@ enum gdt_flags : uint8_t
     DS = 0b10000,
     CS = 0b11000,
 };
+
 enum gdt_granularity : uint8_t
 {
     LONG_MODE_GRANULARITY = 0b00100000,
@@ -150,7 +151,7 @@ public:
         for (int i = 0; i < entry_count; i++)
         {
             log("gdt", LOG_DEBUG, "gdt info: {}", i * 8);
-            entrys->debug_out();
+            entrys[i].debug_out();
         }
     }
 };

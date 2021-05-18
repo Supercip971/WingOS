@@ -200,4 +200,6 @@ void sleep(uint64_t count, pid_t pid);
 void kill(pid_t pid);
 NO_RETURN void kill_current(int code);
 
+int is_process_locked();
+
 void get_process_status(pid_t pid, int *ret, int *status);

@@ -46,6 +46,10 @@ void unlock_process()
     process_locked--;
 }
 
+int is_process_locked()
+{
+    return process_locked != 0;
+}
 NO_RETURN void null_process()
 {
     turn_on_interrupt();

@@ -6,7 +6,7 @@
 namespace utils
 {
 
-    lock_type liballoc_locker;
+    lock_type liballoc_locker = lock_type();
     /**  Durand's Amazing Super Duper Memory functions.  */
 
 #define VERSION "1.1"

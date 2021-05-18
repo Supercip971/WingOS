@@ -21,6 +21,7 @@ namespace gui
         uint64_t current_tick;
         widget *header_widget_movable;
         void update_input();
+
     public:
         // create a simple window
         // if you don't want a update_function give just a nullptr,

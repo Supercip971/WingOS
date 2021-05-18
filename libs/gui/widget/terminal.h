@@ -52,6 +52,6 @@ namespace gui
         virtual void update_widget() override;
         virtual void draw_widget(graphic_context &context) override;
         virtual void init_widget(void *new_parent) override;
-        virtual void callback(graphic_system_update_info& info) override;
+        virtual void callback(graphic_system_update_info &info) override;
     };
 } // namespace gui

@@ -132,17 +132,20 @@ LIB(libc_string)
             }
         }
     }
-    SECTION("split string into tokens verification") {
-        CHECK("strtok test") 
+    SECTION("split string into tokens verification")
+    {
+        CHECK("strtok test")
         {
             const char s[21] = "This is a cool test!";
-            char *e = strtok(const_cast<char*>(s), ' ');
+            char *e = strtok(const_cast<char *>(s), ' ');
 
-            for (int i = 0; s[i] != ' '; i++) {
-                REQUIRE(s[i] == *(e+i)) 
+            for (int i = 0; s[i] != ' '; i++)
+            {
+                REQUIRE(s[i] == *(e + i))
             }
-            for (int i = 4; s[i] != ' '; i++) {
-                REQUIRE(s[i] == *(e+i)) 
+            for (int i = 4; s[i] != ' '; i++)
+            {
+                REQUIRE(s[i] == *(e + i))
             }
             delete[] e;
         }

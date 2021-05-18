@@ -3,8 +3,8 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <time.h>
-#include <utils/sys/raw_msg_system.h>
 #include <utils/sys/programm_exec_info.h>
+#include <utils/sys/raw_msg_system.h>
 #include <utils/sys/syscall_codes.h>
 namespace sys
 {
@@ -75,42 +75,48 @@ namespace sys
     {
         return syscall((uintptr_t)syscall_codes::EXIT, (uintptr_t)code, 0, 0, 0, 0);
     }
-    static inline int sys$ipc_server_exist(const char* path){
-        return syscall((uintptr_t)syscall_codes::IPC_SERV_EXIST, (uintptr_t)path, 0,0,0,0);
+    static inline int sys$ipc_server_exist(const char *path)
+    {
+        return syscall((uintptr_t)syscall_codes::IPC_SERV_EXIST, (uintptr_t)path, 0, 0, 0, 0);
     }
 
-    static inline int sys$create_server(const char* path){
-        return syscall((uintptr_t)syscall_codes::CREATE_SERVER, (uintptr_t)path, 0,0,0,0);
+    static inline int sys$create_server(const char *path)
+    {
+        return syscall((uintptr_t)syscall_codes::CREATE_SERVER, (uintptr_t)path, 0, 0, 0, 0);
     }
 
-    static inline uint32_t sys$connect_to_server(const char* path){
-        return syscall((uintptr_t)syscall_codes::CONNECT_SERVER, (uintptr_t)path, 0,0,0,0);
+    static inline uint32_t sys$connect_to_server(const char *path)
+    {
+        return syscall((uintptr_t)syscall_codes::CONNECT_SERVER, (uintptr_t)path, 0, 0, 0, 0);
     }
 
-    static inline uint32_t sys$accept_connection(int server_id){
-        return syscall((uintptr_t)syscall_codes::ACCEPT_CONNECTION, (uintptr_t)server_id, 0,0,0,0);
+    static inline uint32_t sys$accept_connection(int server_id)
+    {
+        return syscall((uintptr_t)syscall_codes::ACCEPT_CONNECTION, (uintptr_t)server_id, 0, 0, 0, 0);
     }
 
-
-    static inline int sys$is_connection_accepted(uint32_t id){
-        return syscall((uintptr_t)syscall_codes::IS_CONNECTION_ACCEPTED, (uintptr_t)id, 0,0,0,0);
+    static inline int sys$is_connection_accepted(uint32_t id)
+    {
+        return syscall((uintptr_t)syscall_codes::IS_CONNECTION_ACCEPTED, (uintptr_t)id, 0, 0, 0, 0);
     }
 
-
-    static inline int sys$deconnect(uint32_t id){
-        return syscall((uintptr_t)syscall_codes::DECONNECT, (uintptr_t)id, 0,0,0,0);
+    static inline int sys$deconnect(uint32_t id)
+    {
+        return syscall((uintptr_t)syscall_codes::DECONNECT, (uintptr_t)id, 0, 0, 0, 0);
     }
 
-
-    static inline size_t sys$send(uint32_t id, const raw_msg_request *request, int flags){
-        return syscall((uintptr_t)syscall_codes::SEND, (uintptr_t)id, (uintptr_t)request,(uintptr_t)flags,0,0);
+    static inline size_t sys$send(uint32_t id, const raw_msg_request *request, int flags)
+    {
+        return syscall((uintptr_t)syscall_codes::SEND, (uintptr_t)id, (uintptr_t)request, (uintptr_t)flags, 0, 0);
     }
 
-    static inline size_t sys$receive(uint32_t id, raw_msg_request *request, int flags){
-        return syscall((uintptr_t)syscall_codes::RECEIVE, (uintptr_t)id, (uintptr_t)request,(uintptr_t)flags,0,0);
+    static inline size_t sys$receive(uint32_t id, raw_msg_request *request, int flags)
+    {
+        return syscall((uintptr_t)syscall_codes::RECEIVE, (uintptr_t)id, (uintptr_t)request, (uintptr_t)flags, 0, 0);
     }
-    static inline size_t sys$get_process_info(uint32_t pid, int flag, void* arg1, void* arg2){
-        return syscall((uintptr_t)syscall_codes::GET_PROC_INFO, (uintptr_t)pid, (uintptr_t)flag,(uintptr_t)arg1,(uintptr_t)arg2,0);
+    static inline size_t sys$get_process_info(uint32_t pid, int flag, void *arg1, void *arg2)
+    {
+        return syscall((uintptr_t)syscall_codes::GET_PROC_INFO, (uintptr_t)pid, (uintptr_t)flag, (uintptr_t)arg1, (uintptr_t)arg2, 0);
     }
 
 } // namespace sys

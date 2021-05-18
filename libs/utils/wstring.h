@@ -132,7 +132,6 @@ namespace utils
         {
             return string_length == 0;
         }
-
     };
 
 } // namespace utils

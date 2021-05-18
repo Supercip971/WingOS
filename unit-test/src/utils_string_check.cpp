@@ -20,7 +20,6 @@ LIB(wstring)
             REQUIRE_EQUAL(test.length(), 5);
             REQUIRE((test.c_str() != nullptr));
         }
-
     }
 
     SECTION("access check")

@@ -83,17 +83,17 @@ int run_all_test();
     __check__.logged = false;             \
     __check__.created = false;
 
-#define REQUIRE(condition)                 \
-    {                                      \
+#define REQUIRE(condition)                   \
+    {                                        \
         bool condition_result = (condition); \
-        if (!condition_result)             \
-        {                                  \
-            __check__.status = false;      \
-            __check__.error = #condition;  \
-            __check__.logged = false;      \
-            __check__.echo_out();          \
-            return -1;                     \
-        }                                  \
+        if (!condition_result)               \
+        {                                    \
+            __check__.status = false;        \
+            __check__.error = #condition;    \
+            __check__.logged = false;        \
+            __check__.echo_out();            \
+            return -1;                       \
+        }                                    \
     }
 
 #define REQUIRE_EQUAL(value, expected_value)                 \

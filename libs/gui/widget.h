@@ -19,7 +19,7 @@ namespace gui
         widget();
         virtual void update_widget(){};
         virtual void draw_widget(graphic_context &context) = 0;
-        virtual void callback(graphic_system_update_info& info){};
+        virtual void callback(graphic_system_update_info &info){};
         constexpr bool should_redraw()
         {
             return widget_should_draw;
@@ -39,9 +39,9 @@ namespace gui
 
     public:
         void init(size_t length);
-        void callback_update(graphic_system_update_info& info)
+        void callback_update(graphic_system_update_info &info)
         {
-            for(size_t i = 0; i < list.size(); i++)
+            for (size_t i = 0; i < list.size(); i++)
             {
                 (*list[i]).callback(info);
             }

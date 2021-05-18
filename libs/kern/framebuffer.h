@@ -11,5 +11,5 @@ namespace sys
     size_t get_framebuffer_width();
     size_t get_framebuffer_height();
     uintptr_t get_framebuffer_addr();
-}
+} // namespace sys
 #endif // FRAMEBUFFER_H

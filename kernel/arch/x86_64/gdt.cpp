@@ -1,18 +1,16 @@
 #include <com.h>
+#include <device/local_data.h>
 #include <gdt.h>
 #include <kernel.h>
 #include <logging.h>
 #include <utility.h>
-#include <device/local_data.h>
 #include <utils/memory/liballoc.h>
-
 
 gdt_descriptor_array<GDT_DESCRIPTORS> gdt_descriptors[MAX_CPU_COUNT];
 
 char tss_ist1[STACK_SIZE] __attribute__((aligned(16)));
 char tss_ist2[STACK_SIZE] __attribute__((aligned(16)));
 char tss_ist3[STACK_SIZE] __attribute__((aligned(16)));
-
 
 ASM_FUNCTION void gdtr_install(gdtr *, unsigned short, unsigned short);
 

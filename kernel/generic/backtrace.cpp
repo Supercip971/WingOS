@@ -21,7 +21,6 @@ void backtrace::dump_backtrace()
 {
     for (int i = backtrace_max_entry_count - 1; i >= 0; i--)
     {
-
         log("backtrace", LOG_INFO, "id {} = {}", i, entry[i]);
     }
 }

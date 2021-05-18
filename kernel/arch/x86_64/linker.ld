@@ -9,9 +9,9 @@ SECTIONS
     addr_kernel_start = .;
     . = kernel_phys_offset + 0x100000;
 
-    .stivalehdr ALIGN(4K):
+    .stivale2hdr ALIGN(4K):
     {
-        KEEP(*(.stivalehdr))
+        KEEP(*(.stivale2hdr))
     }
 
     .text ALIGN(4K):

@@ -140,7 +140,7 @@ void init_bitmap_memory_map(stivale2_struct_tag_memmap *mem_entry, bitmap &targe
         {
             size_t start = ((mem_entry->memmap[i].base) + PAGE_SIZE - ((mem_entry->memmap[i].base) % PAGE_SIZE)) / PAGE_SIZE; // align up
             size_t size = ((mem_entry->memmap[i].length) - ((mem_entry->memmap[i].length) % PAGE_SIZE)) / PAGE_SIZE;          // align down
-            target.set_free(start, size);
+            target.set_free(start, size - 1);
             available_memory += size;
         }
         pmm_page_entry_count += mem_entry->memmap[i].length / PAGE_SIZE;
@@ -160,13 +160,13 @@ void init_physical_memory(stivale2_struct_tag_memmap *bootdata)
     log("pmm", LOG_INFO, "finding physical memory mem map entry");
     init_bitmap_base(bootdata, total_memory_lenght / PAGE_SIZE);
 
-    pmm_bitmap = bitmap(reinterpret_cast<uint8_t *>(bitmap_base), pmm_length);
+    pmm_bitmap = bitmap(reinterpret_cast<uint8_t *>(bitmap_base), pmm_length + 2);
 
-    memset(reinterpret_cast<void *>(bitmap_base), 0xff, pmm_length / 8);
+    memset(reinterpret_cast<void *>(bitmap_base), 0xff, (pmm_length + 2) / 8);
     log("pmm", LOG_DEBUG, "loading pmm memory map");
 
     init_bitmap_memory_map(bootdata, pmm_bitmap);
-    pmm_bitmap.set_used((bitmap_base / PAGE_SIZE) - 1, (pmm_length / PAGE_SIZE) + 1);
+    pmm_bitmap.set_used((bitmap_base / PAGE_SIZE) - 1, ((pmm_length / 8) / PAGE_SIZE) + 1);
     pmm_bitmap.reset_last_free();
 
     log("pmm", LOG_INFO, "free memory: {}", available_memory);

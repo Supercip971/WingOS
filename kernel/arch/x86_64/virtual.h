@@ -94,7 +94,6 @@ public:
         v.set_present(true);
         v.set_user(is_user);
         v.set_writable(is_writable);
-        v.set_noexecutable(false);
 
         return v;
     }

@@ -55,8 +55,8 @@ CHARDFLAGS := $(CFLAGS)               \
         -fno-pic                       \
         -no-pie \
         -m64 \
-		-msse \
 		-mavx \
+		-msse \
 	    -Wall \
 	    -MD \
 	    -MMD \
@@ -84,12 +84,10 @@ CXXHARDFLAGS := $(CFLAGS)               \
         -fno-pic                       \
         -no-pie \
         -m64 \
-				-mavx \
-				-mavx2 \
 	    -Wall \
 	    -MD \
-			-msse \
-			-mavx \
+		-msse \
+		-mavx \
 	    -MMD \
 	    -Werror \
         -O3 \
@@ -136,7 +134,7 @@ first_setup:
 bochs: $(KERNEL_HDD)
 	-rm disk.img
 	@bximage -q -mode=convert -imgmode=flat $(KERNEL_HDD) disk.img
-	@bochs
+	@bochs 
 
 .PHONY:disk
 disk: $(KERNEL_HDD)

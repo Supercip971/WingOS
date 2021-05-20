@@ -1,6 +1,8 @@
 ![Banner](screen_shot/wingOS.png)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/a93122f607b943fd960639747f19f29c)](https://www.codacy.com/gh/Supercip971/WingOS/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Supercip971/WingOS&amp;utm_campaign=Badge_Grade)
 ----
+
+<!> currently rewriting wingos, see the rewrite branch <!>
 ## WingOS:
 WingOS is a small hobbyist 64 bit kernel made with <3 in C++ 
 

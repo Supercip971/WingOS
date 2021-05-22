@@ -10,6 +10,7 @@ typedef uint64_t backtrace_entry_type;
 #define arch_stackframe InterruptStackFrame
 
 typedef void (*func)();
+typedef void (*module_func)(int, char **, char **);
 //int map_page(uint64_t phys_addr, uint64_t virt_addr, uint64_t flags);
 #define arch_map_page(phys, virt, flags) map_page(phys, virt, flags)
 #define arch_map_page_tbl(table, phys, virt, flags) map_page(table, phys, virt, flags)

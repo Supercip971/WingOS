@@ -86,3 +86,11 @@ void plug_exit(int)
     try_to_exit = true;
     printf("exit plug \n");
 }
+
+int plug_error_quit(int code)
+{
+    printf("exit error plug \n");
+    try_to_exit = true ;
+    return;
+
+}

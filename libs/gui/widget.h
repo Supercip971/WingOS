@@ -14,17 +14,36 @@ namespace gui
         int64_t widget_y;
         bool widget_should_draw = true;
         bool is_position_inside_widget(const pos pos);
+        bool is_forced_size = false;
 
     public:
+        bool is_manually_sized()
+        {
+            return is_forced_size;
+        }
+
+        long width() { return widget_width; };
+        long height() { return widget_height; };
+        long x() { return widget_x; };
+        long y() { return widget_y; };
         widget();
         virtual void update_widget(){};
-        virtual void draw_widget(graphic_context &context) = 0;
         virtual void callback(graphic_system_update_info &info){};
-        constexpr bool should_redraw()
+
+        virtual void resize(int64_t new_x, int64_t new_y, int64_t new_width, int64_t new_height)
+        {
+            widget_x = new_x;
+            widget_y = new_y;
+            widget_width = new_width;
+            widget_height = new_height;
+            update_widget();
+        }
+        virtual void draw_widget(graphic_context &context) = 0;
+        virtual bool should_redraw()
         {
             return widget_should_draw;
         }
-        bool set_should_redraw(bool value)
+        virtual bool set_should_redraw(bool value)
         {
             return widget_should_draw;
         }
@@ -32,13 +51,58 @@ namespace gui
         virtual void init_widget(void *new_parent){};
     };
 
-    class widget_list
+    enum layout_type
     {
+        LAYOUT_VERTICAL = 0,
+        LAYOUT_HORIZONTAL = 1,
+    };
+
+    class widget_container : public widget
+
+    {
+
         utils::vector<widget *> list;
-        uint64_t list_length = 0;
+        int layout_type;
+        void *parent;
+        void relayout();
 
     public:
-        void init(size_t length);
+        widget_container() : widget()
+        {
+            list.clear();
+            layout_type = LAYOUT_VERTICAL;
+        }
+        virtual void update_widget() override
+        {
+            for (size_t i = 0; i < list.size(); i++)
+            {
+                (*list[i]).update_widget();
+            }
+        }
+        virtual void callback(graphic_system_update_info &info) override
+        {
+            for (size_t i = 0; i < list.size(); i++)
+            {
+                (*list[i]).callback(info);
+            }
+        }
+        virtual void draw_widget(graphic_context &context) override;
+        virtual void init_widget(void *new_parent) override;
+        virtual void resize(int64_t new_x, int64_t new_y, int64_t new_width, int64_t new_height)
+        {
+            widget_x = new_x;
+            widget_y = new_y;
+            widget_width = new_width;
+            widget_height = new_height;
+            relayout();
+            update_widget();
+        }
+        void add_widget(widget *widget)
+        {
+            widget->init_widget(parent);
+            list.push_back(widget);
+            relayout();
+        }
         void callback_update(graphic_system_update_info &info)
         {
             for (size_t i = 0; i < list.size(); i++)
@@ -46,9 +110,17 @@ namespace gui
                 (*list[i]).callback(info);
             }
         }
-        void add_widget(widget *widget);
-
-        bool update_all();
-        void draw_all(graphic_context &context);
+        virtual bool should_redraw()
+        {
+            for (size_t i = 0; i < list.size(); i++)
+            {
+                if ((*list[i]).should_redraw())
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
     };
+
 } // namespace gui

@@ -16,7 +16,7 @@ namespace gui
 
     public:
         button_widget();
-        button_widget(uint64_t x, uint64_t y, uint64_t width, uint64_t heigth, const char *title) __attribute__((__target__("no-sse")));
+        button_widget(const char *title) __attribute__((__target__("no-sse")));
         constexpr void set_click_callback(void (*callback)(uint64_t click_count))
         {
             click = callback;

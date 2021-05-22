@@ -25,39 +25,67 @@ namespace gui
         }
         return false;
     }
-    void widget_list::init(size_t length)
+    void widget_container::relayout()
     {
-        list.clear();
-    }
 
-    void widget_list::add_widget(widget *widget)
-    {
-        list.push_back(widget);
-    }
-
-    bool widget_list::update_all()
-    {
-        bool should_redraw = false;
-        for (size_t i = 0; i < list.size(); i++)
+        if (list.size() == 0)
         {
-
-            list[i]->update_widget();
-            if (should_redraw == false && list[i]->should_redraw())
+            return;
+        }
+        if (layout_type == layout_type::LAYOUT_VERTICAL)
+        {
+            size_t layout_reserved_size = 0;
+            size_t layout_reserved_count = 0;
+            size_t layout_off = 0;
+            for (size_t i = 0; i < list.size(); i++)
             {
-                should_redraw = true;
+
+                if (list[i]->is_manually_sized())
+                {
+                    layout_reserved_size += list[i]->height();
+                    layout_reserved_count++;
+                }
+            }
+            if ((list.size() - layout_reserved_count) != 0)
+            {
+                layout_off = (height() - layout_reserved_size) / (list.size() - layout_reserved_count);
+            }
+            size_t current_offset = 0;
+            for (size_t i = 0; i < list.size(); i++)
+            {
+                if (list[i]->is_manually_sized())
+                {
+                    list[i]->resize(widget_x, widget_y, list[i]->width(), list[i]->height());
+                    current_offset += list[i]->height();
+                }
+                else
+                {
+
+                    list[i]->resize(widget_x, widget_y + (current_offset), widget_width, layout_off);
+                    current_offset += layout_off;
+                }
             }
         }
-        return should_redraw;
+        if (layout_type == layout_type::LAYOUT_HORIZONTAL)
+        {
+            size_t layout_off = widget_width / list.size();
+            for (size_t i = 0; i < list.size(); i++)
+            {
+                list[i]->resize(widget_x + (layout_off * i), widget_y, layout_off, widget_height);
+            }
+        }
     }
-    void widget_list::draw_all(graphic_context &context)
+    void widget_container::init_widget(void *new_parent)
     {
+        parent = new_parent;
+    }
 
-        for (size_t i = 0; i < list.size(); i++)
+    void widget_container::draw_widget(graphic_context &context)
+    {
+        for (int i = 0; i < list.size(); i++)
         {
             if (list[i]->should_redraw())
             {
-                list[i]->set_should_redraw(false);
-
                 list[i]->draw_widget(context);
             }
         }

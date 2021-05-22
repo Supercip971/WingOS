@@ -16,8 +16,9 @@ namespace gui
 
         window_graphic_context.clear_buffer(color(100, 100, 100, 0));
         window_graphic_context.swap_buffer();
-        lst = widget_list();
-        lst.init(128); // wax 128 widget may be increase later, but you will be able to put widget list as a widget so meh
+        lst = new widget_container();
+        lst->init_widget(this); // wax 128 widget may be increase later, but you will be able to put widget list as a widget so meh
+        lst->resize(0, 0, width, height);
         header_widget_movable = new gui::movable_context_widget(0, 0, width, 20, this);
         has_at_least_one_redraw = true;
         add_widget(header_widget_movable);
@@ -34,7 +35,7 @@ namespace gui
             }
             else
             {
-                lst.callback_update(v);
+                lst->callback_update(v);
             }
         }
     }
@@ -46,7 +47,7 @@ namespace gui
         window_graphic_context.draw_rounded_rectangle(4, 0, 0, width, height, back_window_color);
         window_graphic_context.draw_rounded_rectangle(4, 0, 0, width, 20, window_front_color);
         window_graphic_context.draw_basic_string((width / 2) - (get_basic_font_width_text(window_name) / 2), 20 / 2 - (8 / 2), window_name, color(255, 255, 255));
-        lst.draw_all(window_graphic_context);
+        lst->draw_widget(window_graphic_context);
         window_graphic_context.swap_buffer();
         bool start_click = false;
         while (true)
@@ -61,7 +62,8 @@ namespace gui
             {
                 start_click = true;
             }
-            has_at_least_one_redraw = lst.update_all();
+            lst->update_widget();
+            has_at_least_one_redraw = lst->should_redraw();
 
             if (has_at_least_one_redraw)
             {
@@ -70,7 +72,7 @@ namespace gui
                 window_graphic_context.draw_rounded_rectangle(4, 1, 1, width - 2, height - 2, back_window_color);
                 window_graphic_context.draw_rounded_rectangle(4, 0, 0, width, 20, window_front_color);
                 window_graphic_context.draw_basic_string((width / 2) - (get_basic_font_width_text(window_name) / 2), 20 / 2 - (8 / 2), window_name, color(255, 255, 255));
-                lst.draw_all(window_graphic_context);
+                lst->draw_widget(window_graphic_context);
                 update_input(); // we need to do that JUST before the swap buffer
                 window_graphic_context.swap_buffer();
             }
@@ -84,7 +86,7 @@ namespace gui
     }
     void window::add_widget(widget *wdget)
     {
-        lst.add_widget(wdget);
+        lst->add_widget(wdget);
         wdget->init_widget(this);
     }
 

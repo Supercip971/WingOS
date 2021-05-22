@@ -16,7 +16,7 @@ namespace gui
         graphic_context window_graphic_context;
         uint64_t width;
         uint64_t height;
-        widget_list lst;
+        widget_container *lst;
         bool has_at_least_one_redraw = true;
         uint64_t current_tick;
         widget *header_widget_movable;

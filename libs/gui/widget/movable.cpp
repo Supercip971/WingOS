@@ -15,6 +15,7 @@ namespace gui
         widget_height = height;
         parent = target;
         dragging = false;
+        is_forced_size = true;
     }
 
     void movable_context_widget::update_widget()

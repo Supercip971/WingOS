@@ -11,13 +11,9 @@ namespace gui
     {
         button_title = "null";
     }
-    button_widget::button_widget(uint64_t x, uint64_t y, uint64_t width, uint64_t heigth, const char *title)
+    button_widget::button_widget(const char *title)
         : widget()
     {
-        widget_x = x;
-        widget_y = y;
-        widget_width = width;
-        widget_height = heigth;
         button_title = title;
         text_length = strlen(title) * 8;
         is_hovered = false;

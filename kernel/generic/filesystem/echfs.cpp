@@ -1,8 +1,8 @@
 // this code is bad !! don't look at it i should die
 #include <arch.h>
-#include <device/ata_driver.h>
+#include <device/disk/ata_driver.h>
+#include <device/io_device.h>
 #include <filesystem/echfs.h>
-#include <io_device.h>
 #include <kernel.h>
 #include <logging.h>
 #include <physical.h>

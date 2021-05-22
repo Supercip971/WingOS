@@ -1,7 +1,7 @@
-#include <com.h>
 #include <device/acpi.h>
 #include <device/apic.h>
-#include <device/hpet.h>
+#include <device/debug/com.h>
+#include <device/time/hpet.h>
 #include <logging.h>
 
 hpet main_hpet;

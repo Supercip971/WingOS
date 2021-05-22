@@ -1,8 +1,8 @@
 #include <arch.h>
 #include <device/network/rtl8139.h>
 #include <logging.h>
+#include <mem/virtual.h>
 #include <utils/memory/liballoc.h>
-#include <virtual.h>
 
 rtl8139 main_rtl;
 

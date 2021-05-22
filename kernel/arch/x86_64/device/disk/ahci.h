@@ -1,8 +1,8 @@
 #ifndef AHCI_H
 #define AHCI_H
 
+#include <device/io_device.h>
 #include <device/pci.h>
-#include <io_device.h>
 
 enum fis_type_def
 {

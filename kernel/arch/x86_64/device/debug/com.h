@@ -1,7 +1,7 @@
 #pragma once
 #include <64bit.h>
 #include <arch.h>
-#include <general_device.h>
+#include <device/general_device.h>
 #include <stdint.h>
 #include <utility.h>
 enum COM_PORT

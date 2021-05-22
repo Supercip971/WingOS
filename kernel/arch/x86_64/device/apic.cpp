@@ -1,11 +1,11 @@
 #include <arch.h>
-#include <com.h>
 #include <device/acpi.h>
 #include <device/apic.h>
+#include <device/debug/com.h>
 #include <device/local_data.h>
 #include <logging.h>
+#include <mem/virtual.h>
 #include <pic.h>
-#include <virtual.h>
 apic main_apic = apic();
 
 apic::apic()

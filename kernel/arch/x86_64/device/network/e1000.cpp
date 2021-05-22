@@ -1,10 +1,10 @@
 #include <arch.h>
-#include <com.h>
+#include <device/debug/com.h>
 #include <device/network/e1000.h>
 #include <interrupt.h>
 #include <logging.h>
+#include <mem/virtual.h>
 #include <utils/memory/liballoc.h>
-#include <virtual.h>
 e1000 main_e1000;
 
 e1000::e1000()

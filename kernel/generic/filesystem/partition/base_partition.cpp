@@ -1,7 +1,7 @@
-#include <com.h>
-#include <device/ata_driver.h>
+#include <device/debug/com.h>
+#include <device/disk/ata_driver.h>
+#include <device/io_device.h>
 #include <filesystem/partition/base_partition.h>
-#include <io_device.h>
 #include <logging.h>
 #include <utils/memory/liballoc.h>
 base_partition::base_partition()

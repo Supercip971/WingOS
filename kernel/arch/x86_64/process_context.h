@@ -2,7 +2,7 @@
 #include <64bit.h>
 #include <arch.h>
 #include <device/local_data.h>
-#include <process.h>
+#include <proc/process.h>
 #include <stdint.h>
 class process;
 void send_switch_process_to_all_cpu();

@@ -1,6 +1,6 @@
 #include <arch.h>
-#include <com.h>
-#include <device/ata_driver.h>
+#include <device/debug/com.h>
+#include <device/disk/ata_driver.h>
 #include <interrupt.h>
 #include <logging.h>
 #include <utils/lock.h>

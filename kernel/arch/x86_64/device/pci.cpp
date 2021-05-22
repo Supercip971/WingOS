@@ -1,6 +1,6 @@
 #include <arch.h>
 
-#include <device/ahci.h>
+#include <device/disk/ahci.h>
 #include <device/network/e1000.h>
 #include <device/network/rtl8139.h>
 #include <device/pci.h>

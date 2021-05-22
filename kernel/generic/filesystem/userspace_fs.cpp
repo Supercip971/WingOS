@@ -1,7 +1,7 @@
 #include "userspace_fs.h"
+#include <device/io_device.h>
 #include <device/local_data.h>
 #include <filesystem/file_system.h>
-#include <io_device.h>
 #include <logging.h>
 #include <stdlib.h>
 #include <string.h>

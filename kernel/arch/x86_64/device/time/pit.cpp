@@ -1,7 +1,7 @@
 #include <arch.h>
-#include <com.h>
 #include <device/apic.h>
-#include <device/pit.h>
+#include <device/debug/com.h>
+#include <device/time/pit.h>
 #include <kernel.h>
 #include <logging.h>
 ASM_FUNCTION uint32_t read_pit_counter();

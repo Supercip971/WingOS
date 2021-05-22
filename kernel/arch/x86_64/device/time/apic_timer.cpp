@@ -1,7 +1,7 @@
 #include <device/apic.h>
-#include <device/apic_timer.h>
-#include <device/pit.h>
-#include <device/rtc.h>
+#include <device/time/apic_timer.h>
+#include <device/time/pit.h>
+#include <device/time/rtc.h>
 #include <logging.h>
 apic_timer main_apic_timer;
 

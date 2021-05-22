@@ -5,10 +5,10 @@
 #include <device/apic.h>
 #include <gdt.h>
 #include <interrupt.h>
-#include <process.h>
+#include <mem/virtual.h>
+#include <proc/process.h>
 #include <smp.h>
 #include <stdint.h>
-#include <virtual.h>
 class page_table;
 class cpu
 {

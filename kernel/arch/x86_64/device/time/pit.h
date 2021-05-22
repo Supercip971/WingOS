@@ -1,5 +1,5 @@
 #pragma once
-#include <general_device.h>
+#include <device/general_device.h>
 #include <stdint.h>
 #define PIT_START_FREQUENCY 1193182
 #define PIT_TARGET_FREQUECY 1000

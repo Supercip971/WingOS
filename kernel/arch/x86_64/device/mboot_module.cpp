@@ -1,6 +1,6 @@
 
 #include <arch.h>
-#include <com.h>
+#include <device/debug/com.h>
 #include <device/mboot_module.h>
 #include <kernel.h>
 #include <logging.h>

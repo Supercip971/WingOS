@@ -1,4 +1,4 @@
-#include <com.h>
+#include <device/debug/com.h>
 #include <device/local_data.h>
 #include <gdt.h>
 #include <kernel.h>

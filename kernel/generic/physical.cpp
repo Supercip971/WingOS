@@ -1,5 +1,5 @@
 #include <arch.h>
-#include <com.h>
+#include <device/debug/com.h>
 #include <kernel.h>
 #include <logging.h>
 #include <physical.h>

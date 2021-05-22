@@ -1,6 +1,6 @@
 #ifndef APIC_TIMER_H
 #define APIC_TIMER_H
-#include <general_device.h>
+#include <device/general_device.h>
 class apic_timer : public interrupt_timer
 {
 public:

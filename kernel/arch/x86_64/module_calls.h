@@ -1,6 +1,6 @@
 #ifndef KMODULE_CALLS_H
 #define KMODULE_CALLS_H
-#include <general_device.h>
+#include <device/general_device.h>
 #include <stddef.h>
 #include <stdint.h>
 

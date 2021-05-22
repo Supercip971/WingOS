@@ -1,4 +1,4 @@
-#include <com.h>
+#include <device/debug/com.h>
 #include <filesystem/tar_fs.h>
 #include <utility.h>
 #include <utils/memory/liballoc.h>

@@ -1,6 +1,6 @@
 #include "msg_system.h"
 #include <logging.h>
-#include <process.h>
+#include <proc/process.h>
 #include <utils/lock.h>
 #include <utils/math.h>
 int msg_system_id = 10;

@@ -1,10 +1,10 @@
 #pragma once
 #include <64bit.h>
+#include <mem/virtual.h>
 #include <stddef.h>
 #include <utils/attribute.h>
 #include <utils/lock.h>
 #include <utils/sys/config.h>
-#include <virtual.h>
 typedef page_table arch_page_table;
 typedef uint64_t backtrace_entry_type;
 #define arch_stackframe InterruptStackFrame

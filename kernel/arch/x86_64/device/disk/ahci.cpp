@@ -1,6 +1,6 @@
 #include "ahci.h"
 #include <arch.h>
-#include <io_device.h>
+#include <device/io_device.h>
 #include <logging.h>
 #include <utility.h>
 #include <utils/lock.h>

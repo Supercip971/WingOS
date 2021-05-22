@@ -1,9 +1,9 @@
-#include <com.h>
 #include <device/acpi.h>
 #include <device/apic.h>
+#include <device/debug/com.h>
 #include <logging.h>
+#include <mem/virtual.h>
 #include <utility.h>
-#include <virtual.h>
 acpi main_acpi;
 
 void *get_rsdp(void)

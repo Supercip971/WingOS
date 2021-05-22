@@ -1,5 +1,5 @@
-#include <com.h>
 #include <device/acpi.h>
+#include <device/debug/com.h>
 #include <device/madt.h>
 #include <logging.h>
 #include <utils/memory/liballoc.h>

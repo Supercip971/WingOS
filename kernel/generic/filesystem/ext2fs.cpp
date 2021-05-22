@@ -1,9 +1,8 @@
 #include "ext2fs.h"
 
 #include <arch.h>
-#include <device/ata_driver.h>
+#include <device/io_device.h>
 #include <filesystem/echfs.h>
-#include <io_device.h>
 #include <kernel.h>
 #include <logging.h>
 #include <physical.h>

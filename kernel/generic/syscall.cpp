@@ -3,8 +3,8 @@
 #include <logging.h>
 #include <module/module_calls.h>
 #include <module_calls.h>
-#include <msg_system.h>
-#include <process.h>
+#include <proc/msg_system.h>
+#include <proc/process.h>
 #include <programm_launcher.h>
 #include <syscall.h>
 #include <utils/sys/proc_info_flag.h>
@@ -35,7 +35,7 @@ void *sys$alloc(uint64_t count, uint8_t flag)
     auto res = (pmm_alloc_zero(count));
     if (flag & SYS_ALLOC_SHARED || process::current()->is_module())
     {
-
+        log("syscall", LOG_INFO, "(shared) allocating {}", (void *)get_mem_addr(res));
         return (void *)get_mem_addr(res);
     }
     else
@@ -46,6 +46,7 @@ void *sys$alloc(uint64_t count, uint8_t flag)
             map_page((uintptr_t)res + i * PAGE_SIZE, get_usr_addr(addr) + i * PAGE_SIZE, true, true);
         }
         update_paging();
+        log("syscall", LOG_INFO, "(local) allocating {}", (void *)get_usr_addr(addr));
         return (void *)get_usr_addr(addr);
     }
 }
@@ -54,11 +55,13 @@ int sys$free(uintptr_t target, uint64_t count)
 {
     if (target >= MEM_ADDR)
     {
+        log("syscall", LOG_INFO, "(local) freeing {}", target);
 
         pmm_free((void *)get_physical_addr(target), count);
     }
     else
     {
+        log("syscall", LOG_INFO, "(shared) freeing {}", target);
 
         process::current()->free_virtual_addr(get_rusr_addr(target) / PAGE_SIZE, count);
 

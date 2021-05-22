@@ -1,15 +1,14 @@
 #include <arch.h>
 
-#include <com.h>
 #include <device/acpi.h>
 #include <device/local_data.h>
 #include <kernel.h>
 #include <logging.h>
+#include <mem/virtual.h>
 #include <physical.h>
 #include <stivale_struct.h>
 #include <utility.h>
 #include <utils/bitmap.h>
-#include <virtual.h>
 stivale2_struct_tag_memmap *vmbootdata;
 page_table *page_table::get_or_create_entry(page_table *table, uint64_t entry, bool is_writable, bool is_user)
 {

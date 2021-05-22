@@ -1,19 +1,18 @@
 #include <arch.h>
 #include <gdt.h>
 
-#include <com.h>
 #include <device/apic.h>
 #include <device/local_data.h>
-#include <device/pit.h>
+#include <device/time/pit.h>
 #include <kernel.h>
 #include <logging.h>
+#include <mem/virtual.h>
 #include <physical.h>
-#include <process.h>
+#include <proc/process.h>
 #include <smp.h>
 #include <sse.h>
 #include <utility.h>
 #include <utils/memory/liballoc.h>
-#include <virtual.h>
 
 #define TRAMPOLINE_START 0x1000
 #define SMP_MAP_PAGE_FLAGS 0x7

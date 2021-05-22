@@ -1,7 +1,7 @@
 #include <arch.h>
-#include <com.h>
+#include <device/debug/com.h>
 #include <kernel.h>
-#include <process.h>
+#include <proc/process.h>
 #include <stdarg.h>
 #include <utility.h>
 char temp_buffer[17];

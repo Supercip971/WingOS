@@ -1,11 +1,11 @@
-#include <com.h>
-#include <device/pit.h>
-#include <device/rtc.h>
+#include <device/debug/com.h>
+#include <device/time/pit.h>
+#include <device/time/rtc.h>
 #include <filesystem/file_system.h>
 #include <kernel.h>
 #include <logging.h>
 #include <physical.h>
-#include <process.h>
+#include <proc/process.h>
 #include <programm_launcher.h>
 #include <stdint.h>
 #include <stivale_struct.h>

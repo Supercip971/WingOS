@@ -1,5 +1,5 @@
 #include <arch.h>
-#include <device/rtc.h>
+#include <device/time/rtc.h>
 #include <kernel.h>
 #include <logging.h>
 RTC main_rtc;

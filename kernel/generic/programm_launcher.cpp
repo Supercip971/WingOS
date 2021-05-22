@@ -6,7 +6,7 @@
 #include <filesystem/file_system.h>
 #include <kernel.h>
 #include <logging.h>
-#include <process.h>
+#include <proc/process.h>
 #include <stdlib.h>
 #include <string.h>
 #include <utility.h>

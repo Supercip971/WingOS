@@ -5,13 +5,13 @@
 #include <syscall.h>
 
 int plug_error_quit(int code)
-
 {
     log("kernel", LOG_ERROR, "called plug error quit: code {}", code);
 
     asm volatile("int 1");
     return 0;
 }
+
 uintptr_t plug_allocate_page(size_t count)
 {
     return reinterpret_cast<uintptr_t>(get_mem_addr(pmm_alloc(count)));

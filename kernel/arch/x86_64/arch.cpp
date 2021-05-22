@@ -1,19 +1,19 @@
 #include <arch.h>
-#include <com.h>
 #include <device/acpi.h>
 #include <device/apic.h>
-#include <device/apic_timer.h>
-#include <device/ata_driver.h>
+#include <device/debug/com.h>
+#include <device/disk/ata_driver.h>
 #include <device/graphic.h>
-#include <device/hpet.h>
 #include <device/local_data.h>
 #include <device/madt.h>
 #include <device/mboot_module.h>
 #include <device/pci.h>
-#include <device/pit.h>
 #include <device/ps_keyboard.h>
 #include <device/ps_mouse.h>
-#include <device/rtc.h>
+#include <device/time/apic_timer.h>
+#include <device/time/hpet.h>
+#include <device/time/pit.h>
+#include <device/time/rtc.h>
 #include <filesystem/echfs.h>
 #include <filesystem/file_system.h>
 #include <filesystem/partition/base_partition.h>
@@ -21,8 +21,9 @@
 #include <interrupt.h>
 #include <kernel.h>
 #include <logging.h>
+#include <mem/virtual.h>
 #include <pic.h>
-#include <process.h>
+#include <proc/process.h>
 #include <programm_launcher.h>
 #include <smp.h>
 #include <sse.h>
@@ -31,7 +32,6 @@
 #include <utils/attribute.h>
 #include <utils/memory/liballoc.h>
 #include <utils/sys/config.h>
-#include <virtual.h>
 
 struct stackframe
 {

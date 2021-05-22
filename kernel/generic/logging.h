@@ -1,7 +1,7 @@
 #ifndef LOGGING_H
 #define LOGGING_H
-#include <com.h>
-#include <general_device.h>
+#include <device/debug/com.h>
+#include <device/general_device.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>

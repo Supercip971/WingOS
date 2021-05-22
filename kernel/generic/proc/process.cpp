@@ -1,7 +1,6 @@
 #include <64bit.h>
-#include <com.h>
 #include <kernel.h>
-#include <process.h>
+#include <proc/process.h>
 #include <stdlib.h>
 #include <syscall.h>
 #include <utility.h>

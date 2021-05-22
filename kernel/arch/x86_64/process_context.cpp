@@ -1,13 +1,13 @@
 #include <device/local_data.h>
 #include <gdt.h>
-#include <process.h>
+#include <mem/virtual.h>
+#include <proc/process.h>
 #include <process_context.h>
 #include <smp.h>
 #include <sse.h>
 #include <utility.h>
 #include <utils/lock.h>
 #include <utils/memory/liballoc.h>
-#include <virtual.h>
 extern int process_locked;
 uint8_t proc_last_selected_cpu = 0;
 

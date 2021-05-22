@@ -1,5 +1,5 @@
 #pragma once
-#include <general_device.h>
+#include <device/general_device.h>
 
 enum framebuff_bpp
 {

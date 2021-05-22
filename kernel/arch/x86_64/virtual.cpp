@@ -90,7 +90,7 @@ page_table *new_vmm_page_dir()
 {
     page_table *ret_pml4 = get_mem_addr<page_table *>(pmm_alloc_zero(1));
 
-    for (int i = 255; i < 512; i++)
+    for (size_t i = ((PML4_GET_INDEX(MEM_PHYS_OFFSET)) - 1); i < 512; i++)
     {
         ret_pml4[i] = get_current_cpu()->cpu_page_table[i];
     }
@@ -100,38 +100,12 @@ page_table *new_vmm_page_dir()
         uint64_t addr = i * PAGE_SIZE;
 
         map_page(ret_pml4, addr, addr, true, false);
-        map_page(ret_pml4, addr, get_mem_addr(addr), true, false);
-        map_page(ret_pml4, addr, get_kern_addr(addr), true, false);
     }
 
     for (uint64_t i = TWO_MEGS / PAGE_SIZE; i < (FOUR_GIGS / PAGE_SIZE); i++)
     {
         uint64_t addr = i * PAGE_SIZE;
         map_page(ret_pml4, addr, (addr), true, true);
-    }
-    for (uint64_t i = 0; i < vmbootdata->entries; i++)
-    {
-
-        uint64_t aligned_base = vmbootdata->memmap[i].base - (vmbootdata->memmap[i].base % PAGE_SIZE);
-        uint64_t aligned_length = ((vmbootdata->memmap[i].length / PAGE_SIZE) + 1) * PAGE_SIZE;
-
-        for (uint64_t j = 0; j * PAGE_SIZE < aligned_length; j++)
-        {
-            uint64_t addr = aligned_base + j * PAGE_SIZE;
-
-            map_page(ret_pml4, addr, get_mem_addr(addr), true, false);
-
-            if (vmbootdata->memmap[i].type == STIVALE2_MMAP_KERNEL_AND_MODULES)
-            {
-
-                map_page(ret_pml4, addr, get_kern_addr(addr), true, false);
-            }
-
-            if (aligned_base < 0x2000000)
-            {
-                map_page(ret_pml4, addr, (addr), true, false);
-            }
-        }
     }
 
     return ret_pml4;
@@ -153,13 +127,12 @@ void init_vmm(stivale2_struct_tag_memmap *bootdata)
         map_page(table, addr, get_kern_addr(addr), true, false);
     }
 
-
     for (uint64_t i = (TWO_MEGS / PAGE_SIZE); i < (FOUR_GIGS / PAGE_SIZE); i++)
     {
         uint64_t addr = i * PAGE_SIZE;
         map_page(table, addr, get_mem_addr(addr), true, true);
     }
-    
+
     log("vmm", LOG_INFO, "loading vmm with memory entries");
 
     for (uint64_t i = 0; i < bootdata->entries; i++)

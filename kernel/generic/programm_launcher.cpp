@@ -423,18 +423,27 @@ pid_t launch_module(const char *path, file_system *file_sys, int argc, const cha
 
     Elf64_Phdr *p_entry = reinterpret_cast<Elf64_Phdr *>((uintptr_t)programm_code + programm_header->e_phoff);
     uint8_t *target_end_code = (uint8_t *)malloc((get_module_table_max_addr(p_entry, programm_header) + 128));
+
+    memset(target_end_code, 0, (get_module_table_max_addr(p_entry, programm_header) + 128));
     log("prog launcher", LOG_DEBUG, "launching module: {} offset: {}", path, (uintptr_t)(target_end_code));
     for (int table_entry = 0; table_entry < programm_header->e_phnum; table_entry++)
     {
         elf64_load_module_entry(p_entry, programm_code, target_end_code, &info);
         p_entry = reinterpret_cast<Elf64_Phdr *>((uintptr_t)p_entry + programm_header->e_phentsize);
     }
-    process *to_launch = init_process((func)((uintptr_t)target_end_code + info.init), false, path, false, CURRENT_CPU, argc + 1, end_argv);
+    module_func v = (module_func)((uintptr_t)target_end_code + info.init);
+    //process *to_launch = init_process((func)((uintptr_t)target_end_code + info.init), false, path, false, CURRENT_CPU, argc + 1, end_argv);
 
     elf64_load_module_relocation(programm_header, programm_code, target_end_code);
-    to_launch->set_module(true);
-    to_launch->set_state(process_state::PROCESS_WAITING);
+    //to_launch->set_module(true);
+    //to_launch->set_state(process_state::PROCESS_WAITING);
+
+    bool is_current_module_saved_state = process::current();
+    process::current()->set_module(true);
+
+    v(argc + 1, end_argv, nullptr);
+    process::current()->set_module(is_current_module_saved_state);
 
     unlock_process();
-    return to_launch->get_pid();
+    return 1;
 }

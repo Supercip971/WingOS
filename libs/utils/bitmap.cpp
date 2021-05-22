@@ -13,6 +13,7 @@ void bitmap::set(size_t idx, bool value)
     if (idx > bitmap_size)
     {
         printf("[error] bitmap: trying to set out of bound of the bitmap: %i> %i\n", idx, bitmap_size);
+        plug_error_quit(0);
         return;
     }
     size_t bit = idx % 8;
@@ -32,7 +33,7 @@ bool bitmap::get(size_t idx) const
     if (idx > bitmap_size)
     {
         printf("[error] bitmap: trying to get out of bound of the bitmap: %i> %i\n", idx, bitmap_size);
-
+        plug_error_quit(0);
         return false;
     }
     size_t bit = idx % 8;
@@ -76,6 +77,7 @@ size_t bitmap::find_free(size_t length)
     if (last_free == 0)
     {
         printf("[error] bitmap: no free bitmap entry\n");
+        plug_error_quit(0);
         return 0;
     }
     else
@@ -110,7 +112,8 @@ size_t bitmap::set_free(size_t idx, size_t length)
     {
         if (get(idx + i) == false)
         {
-            printf("freeing already free block: %i \n", idx + i);
+            printf("freeing already free block: %x while freeing from %x - %x (size: %x)\n", idx + i, idx, idx + length, length);
+            plug_error_quit(0);
             while (true)
             {
             };
@@ -128,7 +131,8 @@ size_t bitmap::set_used(size_t idx, size_t length)
 
         if (get(idx + i) == true)
         {
-            printf("setting already set block: %i", idx + i);
+            printf("setting already set block: %x while setting from %x - %x (size: %x) \n", idx + i, idx, idx + length, length);
+            plug_error_quit(0);
         }
         set(idx + i, true);
     }

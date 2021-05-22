@@ -18,6 +18,11 @@ int plug_free_page(uintptr_t addr, size_t count)
 {
     return sys::sys$free(addr, count);
 }
+int plug_error_quit(int code)
+{
+    plug_exit(code);
+    return 0;
+}
 void plug_debug_out(const char *str, size_t length)
 {
     sys::write_console(str, length);

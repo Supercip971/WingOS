@@ -135,7 +135,7 @@ bool is_interrupt_error(uint8_t intno)
         return false;
     }
     // yeah i should do an array
-    if (intno == 1 || intno == 15 || (intno >= 21 && intno <= 29) ||
+    if (intno == 15 || (intno >= 21 && intno <= 29) ||
         intno == 31)
     {
         return false;

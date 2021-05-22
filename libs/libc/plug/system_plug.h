@@ -11,3 +11,5 @@ int plug_close(int fd);
 size_t plug_lseek(int fd, size_t offset, int whence);
 size_t plug_read(int fd, void *buffer, size_t count);
 void plug_exit(int s);
+
+int plug_error_quit(int code);

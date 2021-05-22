@@ -9,11 +9,9 @@ extern "C" int main(int argc, char **argv);
 extern "C" void __entry_point(int argc, char **argv, char **env)
 {
 
-    asm volatile("and rsp, -16");
     call_init();
     int res = main(argc, argv);
     __cxa_finalize(nullptr);
-    exit(res);
 }
 #else
 extern "C" void __entry_point(int argc, char **argv, char **env)

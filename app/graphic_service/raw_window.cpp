@@ -112,8 +112,10 @@ uint64_t create_window(gui::graphic_system_service_protocol *request, pid_t pid)
     targ.py = last_window_y;
     targ.window_name = request->create_window_info.name;
     targ.wid = next_wid++;
-    targ.window_front_buffer = (gui::color *)sys::pmm_malloc_shared(request->create_window_info.width * request->create_window_info.height * sizeof(gui::color));
+    targ.window_front_buffer = (gui::color *)sys::pmm_malloc_shared((request->create_window_info.width + 64) * (request->create_window_info.height + 64) * sizeof(gui::color));
     targ.window_back_buffer = (gui::color *)sys::pmm_malloc_shared((request->create_window_info.width + 64) * (request->create_window_info.height + 64) * sizeof(gui::color));
+    targ.allocated_size = (request->create_window_info.width + 64) * (request->create_window_info.height + 64) * sizeof(gui::color);
+
     window_list.push_back(targ);
     set_window_on_top(targ.wid);
 
@@ -178,6 +180,35 @@ uint64_t set_window_position(gui::graphic_system_service_protocol *request, pid_
         raw->py = get_scr_height() - raw->height;
     }
     return 1;
+}
+uint64_t resize_window(gui::graphic_system_service_protocol *request, pid_t pid)
+{
+    if (!valid_window(request->resize_request.window_handler_code, pid))
+    {
+        printf("invalid resize window position call \n");
+        return -2;
+    }
+    auto raw = get_window(request->set_pos.window_handler_code);
+    auto target_size = request->resize_request.new_size;
+
+    // don't reallocate everything if the buffer is already big enough
+    if (target_size.rpos.x * target_size.rpos.y * sizeof(gui::color) < raw->allocated_size)
+    {
+        raw->height = target_size.rpos.y;
+        raw->width = target_size.rpos.x;
+        return (uint64_t)raw->window_back_buffer;
+    }
+
+    sys::pmm_free(raw->window_back_buffer, raw->allocated_size / 4096);
+    sys::pmm_free(raw->window_front_buffer, raw->allocated_size / 4096);
+    raw->height = target_size.rpos.y;
+    raw->width = target_size.rpos.x;
+
+    raw->window_front_buffer = (gui::color *)sys::pmm_malloc_shared((request->create_window_info.width + 64) * (request->create_window_info.height + 64) * sizeof(gui::color));
+    raw->window_back_buffer = (gui::color *)sys::pmm_malloc_shared((request->create_window_info.width + 64) * (request->create_window_info.height + 64) * sizeof(gui::color));
+    raw->allocated_size = (request->create_window_info.width + 64) * (request->create_window_info.height + 64) * sizeof(gui::color);
+
+    return (uint64_t)raw->window_back_buffer;
 }
 
 uint64_t window_depth_action(gui::graphic_system_service_protocol *request, pid_t pid)

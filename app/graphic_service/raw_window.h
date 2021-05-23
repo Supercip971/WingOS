@@ -16,6 +16,7 @@ struct raw_window_data
     uint64_t py;
     uint64_t width;
     uint64_t height;
+    uint64_t allocated_size;
     char *window_name;
     gui::color *window_front_buffer;
     gui::color *window_back_buffer;
@@ -44,6 +45,7 @@ uint64_t window_swap_buffer(gui::graphic_system_service_protocol *request, pid_t
 uint64_t get_window_position(gui::graphic_system_service_protocol *request, pid_t pid);
 uint64_t set_window_position(gui::graphic_system_service_protocol *request, pid_t pid);
 uint64_t window_depth_action(gui::graphic_system_service_protocol *request, pid_t pid);
+uint64_t resize_window(gui::graphic_system_service_protocol *request, pid_t pid);
 
 void update_mouse_in_window();
 

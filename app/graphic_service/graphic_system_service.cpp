@@ -52,6 +52,10 @@ graphic_request_return interpret(gui::graphic_system_service_protocol *request, 
     {
         return {false, set_window_position(request, pid)};
     }
+    else if (request->request_type == gui::GRAPHIC_SYSTEM_REQUEST::WINDOW_RESIZE)
+    {
+        return {true, resize_window(request, pid)};
+    }
     else if (request->request_type == gui::GRAPHIC_SYSTEM_REQUEST::WINDOW_DEPTH_ACTION)
     {
         if (request->depth_request.set)

@@ -190,8 +190,10 @@ ASM_FUNCTION uintptr_t interrupts_handler(InterruptStackFrame *stackframe)
     update_backtrace(stackframe);
     if (error)
     {
-        while (error)
-            ;
+        while (true)
+        {
+            halt_interrupt();
+        }
     }
     if (is_interrupt_error(stackframe->int_no))
     {

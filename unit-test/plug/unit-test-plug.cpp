@@ -91,6 +91,6 @@ int plug_error_quit(int code)
 {
     printf("exit error plug \n");
     try_to_exit = true ;
-    return;
+    return 0;
 
 }

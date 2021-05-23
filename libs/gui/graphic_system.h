@@ -21,6 +21,13 @@ namespace gui
         uint64_t window_handler_code;
         sys::raw_pos position;
     } __attribute__((packed));
+
+    struct window_resize_request
+    {
+        uint64_t window_handler_code;
+        sys::raw_pos new_size;
+    } __attribute__((packed));
+
     enum WINDOW_DEPTH_TYPE
     {
         BACKGROUND = 1,     // back
@@ -43,6 +50,7 @@ namespace gui
         GET_WINDOW_POSITION = 4,
         SET_WINDOW_POSITION = 5,
         WINDOW_DEPTH_ACTION = 6,
+        WINDOW_RESIZE = 7,
     };
 
     // window event are not used for the moment
@@ -62,6 +70,7 @@ namespace gui
             individual_request get_request;
             set_window_pos_request set_pos;
             window_depth_request depth_request;
+            window_resize_request resize_request;
         };
     } __attribute__((packed));
     enum GRAPHIC_SYSTEM_INFO_SEND
@@ -234,6 +243,7 @@ namespace gui
         void set_on_top_of_background();
         bool is_on_top();
         bool is_mouse_inside();
+        void resize(uint64_t new_width, uint64_t new_height);
         sys::raw_pos get_graphic_context_position();
         void set_graphic_context_position(const sys::raw_pos position);
     };

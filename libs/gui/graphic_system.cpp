@@ -217,6 +217,19 @@ namespace gui
         p.pos = v;
         return p;
     }
+    void graphic_context::resize(uint64_t new_width, uint64_t new_height)
+    {
+        gui::graphic_system_service_protocol request = {0};
+        request.request_type = gui::GRAPHIC_SYSTEM_REQUEST::WINDOW_RESIZE;
+        request.resize_request.window_handler_code = wid;
+        request.resize_request.new_size.rpos.x = new_width;
+        request.resize_request.new_size.rpos.y = new_width;
+
+        uint64_t v = send_data_with_result(&request);
+
+        back_buffer = (gui::color*)v;
+
+    }
 
     void graphic_context::set_graphic_context_position(const sys::raw_pos position)
     {

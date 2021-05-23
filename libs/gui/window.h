@@ -31,6 +31,11 @@ namespace gui
         void add_widget(widget *wdget);
         bool is_mouse_on_window();
         bool is_window_front();
+
+        uint64_t window_width();
+        uint64_t window_height();
+
+        void resize(uint64_t new_width, uint64_t new_height);
         // get mouse position inside the window
         int32_t get_mouse_pos_relative_x();
         int32_t get_mouse_pos_relative_y();

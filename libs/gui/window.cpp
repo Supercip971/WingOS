@@ -24,6 +24,13 @@ namespace gui
         add_widget(header_widget_movable);
     };
 
+    void window::resize(uint64_t new_width, uint64_t new_height)
+    {
+        width = new_width;
+        height = new_height;
+        window_graphic_context.resize(new_width, new_height);
+        lst->resize(0, 0, width, height);
+    }
     void window::update_input()
     {
         while (true)

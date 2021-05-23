@@ -22,12 +22,11 @@ struct module_info
     uintptr_t fini;
 };
 
-void load_segment(process *pro, uintptr_t source, uint64_t size, uintptr_t dest, uint64_t destsize)
+void load_segment(process *pro, uintptr_t source, uintptr_t dest, uint64_t destsize)
 {
     uint64_t count = destsize / PAGE_SIZE;
     uintptr_t ndest = ALIGN_DOWN(dest, PAGE_SIZE);
     source = ALIGN_DOWN(source, PAGE_SIZE);
-    count++;
     add_thread_map(pro, source, ndest, count + 1);
 }
 
@@ -163,7 +162,7 @@ void elf64_load_programm_segment(Elf64_Phdr *entry, uint8_t *programm_code, proc
     char *temp_copy = (char *)get_mem_addr(pmm_alloc_zero((max_size + PAGE_SIZE) / PAGE_SIZE));
     memzero(temp_copy, max_size);
     memcpy(temp_copy, (char *)((uintptr_t)programm_code + entry->p_offset), entry->p_filesz);
-    load_segment(target, (uintptr_t)get_rmem_addr(temp_copy), entry->p_filesz, entry->p_vaddr, entry->p_memsz);
+    load_segment(target, (uintptr_t)get_physical_addr((uintptr_t)temp_copy), entry->p_vaddr, max_size);
 }
 
 void elf64_load_module_segment(Elf64_Phdr *entry, uint8_t *programm_code, uint8_t *target)

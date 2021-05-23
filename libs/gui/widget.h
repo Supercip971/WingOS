@@ -63,13 +63,26 @@ namespace gui
 
         utils::vector<widget *> list;
         int layout_type;
+        size_t _padding;
         void *parent;
         void relayout();
 
     public:
+
+        void set_padding(size_t amount)
+        {
+            _padding = amount;
+        }
+        
+        size_t padding() const
+        {
+            return _padding;
+        }
+
         widget_container() : widget()
         {
             list.clear();
+            set_padding(4);
             layout_type = LAYOUT_VERTICAL;
         }
         virtual void update_widget() override

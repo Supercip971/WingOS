@@ -42,7 +42,7 @@ namespace gui
 
                 if (list[i]->is_manually_sized())
                 {
-                    layout_reserved_size += list[i]->height();
+                    layout_reserved_size += list[i]->height() + padding();
                     layout_reserved_count++;
                 }
             }
@@ -56,12 +56,12 @@ namespace gui
                 if (list[i]->is_manually_sized())
                 {
                     list[i]->resize(widget_x, widget_y, list[i]->width(), list[i]->height());
-                    current_offset += list[i]->height();
+                    current_offset += list[i]->height() + padding();
                 }
                 else
                 {
 
-                    list[i]->resize(widget_x, widget_y + (current_offset), widget_width, layout_off);
+                    list[i]->resize(widget_x + padding(), widget_y + (current_offset) + padding(), widget_width - padding()*2, layout_off - padding()*2);
                     current_offset += layout_off;
                 }
             }

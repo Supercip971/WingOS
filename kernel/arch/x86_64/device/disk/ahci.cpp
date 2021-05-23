@@ -63,6 +63,12 @@ void ahci::init()
     ahci_bar = get_bar(5);
 
     log("ahci", LOG_INFO, "ahci addr: {}", ahci_bar.base);
+
+    for (size_t i = 0; i < ahci_bar.size / PAGE_SIZE; i++)
+    {
+        map_page((ahci_bar.base / PAGE_SIZE) * PAGE_SIZE + i * PAGE_SIZE, get_mem_addr((ahci_bar.base / PAGE_SIZE) * PAGE_SIZE + i * PAGE_SIZE), true, false);
+    }
+    update_paging();
     data_addr = get_mem_addr(ahci_bar.base);
     hba_mem = (hba_memory *)data_addr;
 

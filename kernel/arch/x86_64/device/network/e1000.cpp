@@ -259,10 +259,15 @@ void e1000::init(pci_device *dev)
     if (d.type == pci_bar_type::MM_IO_32)
     {
         bar_t = 0;
+        for (size_t i = 0; i < d.size / PAGE_SIZE; i++)
+        {
+            map_page((d.base / PAGE_SIZE) * PAGE_SIZE + i * PAGE_SIZE, get_mem_addr((d.base / PAGE_SIZE) * PAGE_SIZE + i * PAGE_SIZE), true, false);
+        }
+        update_paging();
         mm_address = get_mem_addr(d.base);
         log("e1000", LOG_INFO, "e1000 is mm: {}", mm_address);
+        log("e1000", LOG_INFO, "e1000 from: {}", d.base);
         log("e1000", LOG_INFO, "e1000 is length: {}", d.size);
-        update_paging();
     }
     else
     {

@@ -43,11 +43,8 @@ void *pmm_alloc(uint64_t lenght)
 void *pmm_alloc_zero(uint64_t lenght)
 {
     void *d = pmm_alloc(lenght);
-    pmm_lock.lock();
 
-    memset(d, 0, PAGE_SIZE * lenght);
-
-    pmm_lock.unlock();
+    memset((void *)get_mem_addr(d), 0, PAGE_SIZE * lenght);
 
     return d;
 }

@@ -89,22 +89,20 @@ page_table *new_vmm_page_dir()
 {
     page_table *ret_pml4 = get_mem_addr<page_table *>(pmm_alloc_zero(1));
 
+    for (size_t i = 0; i < 512; i++)
+    {
+        ret_pml4[i] = page_table(0);
+    }
     for (size_t i = ((PML4_GET_INDEX(MEM_PHYS_OFFSET)) - 1); i < 512; i++)
     {
         ret_pml4[i] = get_current_cpu()->cpu_page_table[i];
     }
 
-    for (uint64_t i = 0; i < (TWO_MEGS / PAGE_SIZE); i++)
+    for (uint64_t i = 0; i < (FOUR_GIGS / PAGE_SIZE); i++)
     {
         uint64_t addr = i * PAGE_SIZE;
 
         map_page(ret_pml4, addr, addr, true, false);
-    }
-
-    for (uint64_t i = TWO_MEGS / PAGE_SIZE; i < (FOUR_GIGS / PAGE_SIZE); i++)
-    {
-        uint64_t addr = i * PAGE_SIZE;
-        map_page(ret_pml4, addr, (addr), true, true);
     }
 
     return ret_pml4;
@@ -126,12 +124,6 @@ void init_vmm(stivale2_struct_tag_memmap *bootdata)
         map_page(table, addr, get_kern_addr(addr), true, false);
     }
 
-    for (uint64_t i = (TWO_MEGS / PAGE_SIZE); i < (FOUR_GIGS / PAGE_SIZE); i++)
-    {
-        uint64_t addr = i * PAGE_SIZE;
-        map_page(table, addr, get_mem_addr(addr), true, true);
-    }
-
     log("vmm", LOG_INFO, "loading vmm with memory entries");
 
     for (uint64_t i = 0; i < bootdata->entries; i++)
@@ -150,11 +142,6 @@ void init_vmm(stivale2_struct_tag_memmap *bootdata)
             {
 
                 map_page(table, addr, get_kern_addr(addr), true, false);
-            }
-
-            if (aligned_base < 0x2000000)
-            {
-                map_page(table, addr, (addr), true, false);
             }
         }
     }

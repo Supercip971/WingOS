@@ -15,7 +15,7 @@ struct last_sign_of_process_status
     uint32_t ret;
 };
 utils::vector<last_sign_of_process_status> dead_process_status;
-process *process_array = nullptr;
+process **process_array = nullptr;
 int process_locked = 1;
 bool process_loaded = false;
 
@@ -79,18 +79,19 @@ NO_RETURN void utility_process()
         }
         for (uint64_t i = 0; i < MAX_PROCESS; i++)
         {
-            if (process_loaded == true && i == 0) // process 0 is null only after the kernel start
+            if ((process_loaded == true && i == 0) || process_array[i] == nullptr) // process 0 is null only after the kernel start
             {
                 continue;
             }
             process_creator_lock.lock();
             lock_process();
-            if (process_array[i].get_state() == PROCESS_SHOULD_BE_DEAD)
+            if (process_array[i]->get_state() == PROCESS_SHOULD_BE_DEAD)
             {
 
-                log("proc", LOG_INFO, "killing process [{}] : {}", i, process_array[i].get_name());
+                log("proc", LOG_INFO, "killing process [{}] : {}", i, process_array[i]->get_name());
 
-                process_array[i].destroy();
+                process_array[i]->destroy();
+                process_array[i] = nullptr;
                 dying_process_count--;
                 process_creator_lock.unlock();
             }
@@ -104,12 +105,12 @@ NO_RETURN void init_multi_process(func start)
 {
     log("proc", LOG_DEBUG, "loading multi processing");
 
-    process_array = reinterpret_cast<process *>(malloc(sizeof(process) * MAX_PROCESS + PAGE_SIZE));
+    process_array = reinterpret_cast<process **>(malloc(sizeof(process *) * MAX_PROCESS + PAGE_SIZE));
     process::set_current(nullptr);
 
     for (size_t i = 0; i < MAX_PROCESS; i++)
     {
-        process_array[i] = process(i);
+        process_array[i] = nullptr;
     }
 
     init_process(null_process, true, "testing1", false);
@@ -142,11 +143,11 @@ int64_t find_free_process()
 {
     for (uint64_t i = last_process; i < MAX_PROCESS; i++)
     {
-        if (process_loaded == true && i == 0) // process 0 is null only after the kernel start
+        if ((process_loaded == true && i == 0) || process_array[i] != nullptr) // process 0 is null only after the kernel start
         {
             continue;
         }
-        if (!process_array[i].is_used())
+        if (process_array[i] == nullptr)
         {
             last_process = i + 1;
             return i;
@@ -172,10 +173,9 @@ process *alloc_process(const char *end_name, func entry_point, bool is_user)
         return nullptr;
     }
     next_upid++;
-    auto process_to_add = &process_array[process_to_add_kpid];
-    *process_to_add = process(end_name, process_to_add_kpid, next_upid, reinterpret_cast<uintptr_t>(entry_point), is_user);
-    process_to_add->set_state(process_state::PROCESS_NOT_STARTED);
-    return process_to_add;
+    process_array[process_to_add_kpid] = new process(end_name, process_to_add_kpid, next_upid, reinterpret_cast<uintptr_t>(entry_point), is_user);
+    process_array[process_to_add_kpid]->set_state(process_state::PROCESS_NOT_STARTED);
+    return process_array[process_to_add_kpid];
 }
 
 void init_process_entry(process *target, const char *name, bool is_user, char **argv, int argc, func entry_point)
@@ -225,10 +225,10 @@ process *get_next_process(uint64_t current_id)
     for (uint64_t i = current_id + 1; i < MAX_PROCESS; i++)
     {
 
-        if (process_array[i].is_runnable(dad))
+        if (process_array[i] != nullptr && process_array[i]->is_runnable(dad))
         {
 
-            return &process_array[i];
+            return process_array[i];
         }
     }
 
@@ -257,12 +257,12 @@ uintptr_t process_switch_handler(arch_stackframe *isf, bool switch_all) // switc
     }
     if (switch_all)
     {
-        for (uint64_t i = 0; i < MAX_PROCESS; i++)
+        for (uint64_t i = 1; i < MAX_PROCESS; i++)
         {
 
-            if (process_array[i].is_used() && process_array[i].is_sleeping())
+            if (process_array[i] != nullptr && process_array[i]->is_sleeping())
             {
-                process_array[i].decrease_sleep(1);
+                process_array[i]->decrease_sleep(1);
             }
         }
         send_switch_process_to_all_cpu();
@@ -290,11 +290,11 @@ process *process::from_name(const char *name)
 {
     for (size_t i = 0; i < MAX_PROCESS; i++)
     {
-        if (process_array[i].is_used())
+        if (process_array[i] != nullptr)
         {
-            if (strcmp(name, process_array[i].get_name()) == 0)
+            if (strcmp(name, process_array[i]->get_name()) == 0)
             {
-                return &process_array[i];
+                return process_array[i];
             }
         }
     }
@@ -306,11 +306,11 @@ process *process::from_pid(pid_t pid)
 
     for (size_t i = 0; i < MAX_PROCESS; i++)
     {
-        if (process_array[i].is_used())
+        if (process_array[i] != nullptr)
         {
-            if (process_array[i].get_pid() == pid)
+            if (process_array[i]->get_pid() == pid)
             {
-                return &process_array[i];
+                return process_array[i];
             }
         }
     }
@@ -349,14 +349,14 @@ void dump_process()
     lock_process();
     for (int i = 0; i < MAX_PROCESS; i++)
     {
-        if (process_array[i].is_used())
+        if (process_array[i] != nullptr)
         {
             log("proc", LOG_DEBUG, "info for process: {}", i);
-            log("proc", LOG_INFO, "process name : {}", process_array[i].get_name());
-            log("proc", LOG_INFO, "process state: {}", (int)process_array[i].get_state());
-            log("proc", LOG_INFO, "process cpu  : {}", process_array[i].get_cpu());
-            log("proc", LOG_INFO, "process upid : {}", process_array[i].get_pid());
-            log("proc", LOG_INFO, "process sleep: {}", process_array[i].get_sleep_count());
+            log("proc", LOG_INFO, "process name : {}", process_array[i]->get_name());
+            log("proc", LOG_INFO, "process state: {}", (int)process_array[i]->get_state());
+            log("proc", LOG_INFO, "process cpu  : {}", process_array[i]->get_cpu());
+            log("proc", LOG_INFO, "process upid : {}", process_array[i]->get_pid());
+            log("proc", LOG_INFO, "process sleep: {}", process_array[i]->get_sleep_count());
         }
     }
     unlock_process();

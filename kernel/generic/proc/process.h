@@ -72,21 +72,11 @@ public:
                                                                                                                     virtual_addr(new uint8_t[USR_VIRT_ADDR_SIZE / PAGE_SIZE / 8], USR_VIRT_ADDR_SIZE / PAGE_SIZE)
     {
         memcpy(process_name, name, strlen(name) + 1);
-        virtual_addr.set_free(0, virtual_addr.get_size());
+        virtual_addr.set_free(0, USR_VIRT_ADDR_SIZE / PAGE_SIZE, true);
         virtual_addr.reset_last_free();
         module = false;
     }
 
-    process(const process &move)
-    {
-
-        memcpy(this, &move, sizeof(process));
-    }
-    process &operator=(const process &move)
-    {
-        memcpy(this, &move, sizeof(process));
-        return *this;
-    }
     arch_process_data *get_arch_info() { return &arch_info; };
 
     bool is_valid() const
@@ -181,7 +171,7 @@ struct message_identifier
     uint16_t mid; // message_id
 } __attribute__((packed));
 
-extern process *process_array;
+extern process **process_array;
 
 process *init_process(func entry_point, bool start_direct, const char *name, bool user, uint64_t cpu_target = CURRENT_CPU, int argc = 0, char **argv = nullptr);
 NO_RETURN void init_multi_process(func start);

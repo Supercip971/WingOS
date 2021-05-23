@@ -14,7 +14,7 @@ class bitmap
     size_t last_free = 0;
 
 public:
-    constexpr size_t get_size() const { return bitmap_size; };
+    size_t get_size() const { return bitmap_size; };
     void set(size_t idx, bool value);
     bool get(size_t idx) const;
     bitmap(uint8_t *data, size_t size);
@@ -28,6 +28,7 @@ public:
     size_t alloc(size_t length); // same as find free but set the bits
 
     size_t set_free(size_t idx, size_t length);
+    size_t set_free(size_t idx, size_t length, bool forced);
     size_t set_used(size_t idx, size_t length);
 
     void reset_last_free() { last_free = 0; };

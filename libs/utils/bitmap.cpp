@@ -124,6 +124,24 @@ size_t bitmap::set_free(size_t idx, size_t length)
     return 1;
 }
 
+size_t bitmap::set_free(size_t idx, size_t length, bool forced)
+{
+
+    for (size_t i = 0; i < length; i++)
+    {
+        if (forced && get(idx + i) == false)
+        {
+            printf("freeing already free block: %x while freeing from %x - %x (size: %x)\n", idx + i, idx, idx + length, length);
+            plug_error_quit(0);
+            while (true)
+            {
+            };
+        }
+        set(idx + i, false);
+    }
+    last_free = idx;
+    return 1;
+}
 size_t bitmap::set_used(size_t idx, size_t length)
 {
     for (size_t i = 0; i < length; i++)

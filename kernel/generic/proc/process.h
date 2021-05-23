@@ -68,10 +68,10 @@ public:
                                                                                                                     kpid(kernel_pid),
                                                                                                                     entry_point(process_entry_point),
                                                                                                                     user(is_user),
-                                                                                                                    sleeping(0)
+                                                                                                                    sleeping(0),
+                                                                                                                    virtual_addr(new uint8_t[USR_VIRT_ADDR_SIZE / PAGE_SIZE / 8], USR_VIRT_ADDR_SIZE / PAGE_SIZE)
     {
         memcpy(process_name, name, strlen(name) + 1);
-        virtual_addr = bitmap(new uint8_t[USR_VIRT_ADDR_SIZE / PAGE_SIZE / 8], USR_VIRT_ADDR_SIZE / PAGE_SIZE);
         virtual_addr.set_free(0, virtual_addr.get_size());
         virtual_addr.reset_last_free();
         module = false;

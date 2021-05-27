@@ -22,9 +22,12 @@ int main(int argc, char **argv)
     printf("hello world ! <3 \n");
     gui::window test_window("my window", 300, 200);
     gui::button_widget *button = new gui::button_widget("a button");
+    gui::button_widget *button2 = new gui::button_widget("another button");
 
     button->set_click_callback(click);
+    button2->set_click_callback(click);
     test_window.add_widget(dynamic_cast<gui::widget *>(button));
-
+    test_window.add_widget(dynamic_cast<gui::widget *>(button2));
+    test_window.resize(300, 300);
     return test_window.start();
 }

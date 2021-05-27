@@ -43,8 +43,8 @@ void dump_stackframe(void *rbp)
 {
 
     stackframe *frame = reinterpret_cast<stackframe *>(rbp);
-
-    while (frame)
+    int size = 0;
+    while (frame && size++ < 20)
     {
         log("stackframe", LOG_INFO, "{}", frame->rip);
         frame = frame->rbp;

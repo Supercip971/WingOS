@@ -19,7 +19,7 @@ uintptr_t plug_allocate_page(size_t count)
 
 int plug_free_page(uintptr_t addr, size_t count)
 {
-    pmm_free(reinterpret_cast<void *>(get_rmem_addr(addr)), count);
+    pmm_free(reinterpret_cast<void *>(get_physical_addr(addr)), count);
     return true;
 }
 

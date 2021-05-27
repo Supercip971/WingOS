@@ -36,6 +36,7 @@ void task_update_switch(process *next)
     tss_set_rsp0((uint64_t)next->get_arch_info()->stack + PROCESS_STACK_SIZE);
 
     get_current_cpu()->cpu_page_table = next->get_arch_info()->page_directory;
+    set_paging_dir(get_physical_addr((uintptr_t)next->get_arch_info()->page_directory));
     update_paging();
 }
 

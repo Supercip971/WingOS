@@ -22,13 +22,13 @@ void update_out_output(sys::file &outbuffer, char *temp_buffer)
         printf(temp_buffer);
     }
 }
+char in_input = 0;
 void update_in_input(sys::file &inbuffer)
 {
     while (sys::stdin.get_cursor_pos() < sys::stdin.get_file_length() - 1)
     {
-        char temp = 0;
-        sys::stdin.read((uint8_t *)&temp, 1);
-        inbuffer.write((uint8_t *)&temp, 1);
+        sys::stdin.read((uint8_t *)&in_input, 1);
+        inbuffer.write((uint8_t *)&in_input, 1);
     }
 }
 size_t start_programm(const char *path)
@@ -48,12 +48,13 @@ size_t start_programm(const char *path)
         sys::sys$get_process_info(pid, PROC_INFO_STATUS, &ret, &status);
         if (status == -2)
         {
-            free(echo_buffer);
+            delete[] echo_buffer;
             return ret;
         }
         update_out_output(outbuffer, echo_buffer);
         update_in_input(inbuffer);
     }
+    delete[] echo_buffer;
 
     return 0;
 }
@@ -65,9 +66,17 @@ int interpret_command(char *v)
     }
     else
     {
-        char *target_str = new char[2048];
+
+        if (strlen(v) > 2048)
+        {
+            printf("command too long (over 2048 char)\n");
+            return -1;
+        }
+
+        char *target_str = new char[2049];
         memset(target_str, 0, 2048);
-        for (size_t i = 0; i < strlen(v); i++)
+
+        for (size_t i = 0; i < strlen(v) + 1; i++)
         {
             if (v[i] == ' ')
             {
@@ -76,6 +85,7 @@ int interpret_command(char *v)
             }
             target_str[i] = v[i];
         }
+
         printf("running: %s \n", target_str);
         sys::file target = sys::file(target_str);
         if (target.is_openned())

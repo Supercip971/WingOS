@@ -54,12 +54,9 @@ int main(int argc, char **argv)
     sys::stdin.seek(stdin_length);
     printf("wingos shell \n");
     printf("hello world ! \n");
-    utils::string v = utils::string("hello");
-    v.append("world");
-    printf("hello + world = %s\n", v.c_str());
     printf(">");
     int i = 0;
-    buffer_length = 2048;
+    buffer_length = 2049;
     temp_buffer = (char *)malloc(buffer_length);
     while (true)
     {

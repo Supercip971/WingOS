@@ -32,18 +32,27 @@ int sys$set_modules_calls(module_calls_list *target)
 
 void *sys$alloc(uint64_t count, uint8_t flag)
 {
-    auto res = (pmm_alloc_zero(count));
     if (flag & SYS_ALLOC_SHARED || process::current()->is_module())
     {
+        auto res = (pmm_alloc_zero(count));
         log("syscall", LOG_INFO, "(shared) allocating {}", (void *)get_mem_addr(res));
+
+        for (uint64_t i = 0; i < count; i++)
+        {
+            map_page(process::current()->get_arch_info()->page_directory, (uintptr_t)res + i * PAGE_SIZE, get_mem_addr(res) + i * PAGE_SIZE, true, true);
+        }
+
+        update_paging();
         return (void *)get_mem_addr(res);
     }
     else
     {
+        auto res = (pmm_alloc_zero(count));
         uintptr_t addr = process::current()->allocate_virtual_addr(count) * PAGE_SIZE;
+
         for (uint64_t i = 0; i < count; i++)
         {
-            map_page((uintptr_t)res + i * PAGE_SIZE, get_usr_addr(addr) + i * PAGE_SIZE, true, true);
+            map_page(process::current()->get_arch_info()->page_directory, (uintptr_t)res + i * PAGE_SIZE, get_usr_addr(addr) + i * PAGE_SIZE, true, true);
         }
         update_paging();
         log("syscall", LOG_INFO, "(local) allocating {}", (void *)get_usr_addr(addr));

@@ -11,8 +11,8 @@ enum gdt_selector : uint16_t
     NULL_SELECTOR = 0,
     KERNEL_CODE = 0x8,
     KERNEL_DATA = 0x10,
-    USER_CODE = 0x1b,
-    USER_DATA = 0x23,
+    USER_DATA = 0x1b,
+    USER_CODE = 0x23,
     TSS_SELECTOR = 0x28,
 };
 enum gdt_flags : uint8_t

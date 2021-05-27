@@ -51,14 +51,14 @@ dq __interrupt%1
 
 %macro INTERRUPT_ERR 1
 __interrupt%1:
-    push %1
+    push qword %1
     jmp __interrupt_common
 %endmacro
 
 %macro INTERRUPT_NOERR 1
 __interrupt%1:
-    push 0
-    push %1
+    push qword 0
+    push qword %1
     jmp __interrupt_common
 %endmacro
 section .text

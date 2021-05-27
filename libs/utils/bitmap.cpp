@@ -129,7 +129,7 @@ size_t bitmap::set_free(size_t idx, size_t length, bool forced)
 
     for (size_t i = 0; i < length; i++)
     {
-        if (forced && get(idx + i) == false)
+        if (!(forced) && get(idx + i) == false)
         {
             printf("freeing already free block: %x while freeing from %x - %x (size: %x)\n", idx + i, idx, idx + length, length);
             plug_error_quit(0);

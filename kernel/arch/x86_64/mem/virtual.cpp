@@ -58,9 +58,21 @@ uint64_t get_physical_addr(uint64_t virt)
 
     page_table *pdpt, *pd, *pt;
     pdpt = page_table::get_entry(get_current_cpu()->cpu_page_table, pml4_entry);
+    if (pdpt == nullptr)
+    {
+        log("vmm", LOG_WARNING, "get_physical addr for virtual address {} is invalid", virt);
+    }
     pd = page_table::get_entry(pdpt, pdpt_entry);
+    if (pd == nullptr)
+    {
+        log("vmm", LOG_WARNING, "get_physical addr for virtual address {} is invalid", virt);
+    }
     pt = page_table::get_entry(pd, pd_entry);
 
+    if (pt == nullptr)
+    {
+        log("vmm", LOG_WARNING, "get_physical addr for virtual address {} is invalid", virt);
+    }
     return pt[pt_entry].get_addr();
 }
 int map_page(page_table *table, uint64_t phys_addr, uint64_t virt_addr, bool is_writable, bool is_user)

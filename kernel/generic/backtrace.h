@@ -11,6 +11,6 @@ public:
     backtrace();
     void add_entry(const backtrace_entry_type added_entry);
     void dump_backtrace();
-};
+} __attribute__((packed));
 
 #endif // BACKTRACE_H

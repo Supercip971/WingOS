@@ -157,14 +157,17 @@ void init_vmm(stivale2_struct_tag_memmap *bootdata)
             }
         }
     }
-    set_paging_dir(get_rmem_addr(get_current_cpu()->cpu_page_table));
+    set_paging_dir((uintptr_t)get_physical_addr((uintptr_t)get_current_cpu()->cpu_page_table));
 
     log("vmm", LOG_INFO, "loading vmm done");
 }
 
 void update_paging()
 {
-    set_paging_dir(get_rmem_addr(get_current_cpu()->cpu_page_table));
+
+    asm volatile("mov rax, cr3");
+    asm volatile("mov cr3, rax");
+    //set_paging_dir((uintptr_t)get_physical_addr((uintptr_t)get_current_cpu()->cpu_page_table));
 }
 
 // todo: fix this function, use page_table::get_entry()

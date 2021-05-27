@@ -161,8 +161,8 @@ foreachramfs:
 .PHONY:app
 app: $(APP_FILE_CHANGE)
 	@bash make_sysroot.sh
-	@make -C ./app/test $(APP_FS_MAKEFILE_FLAGS)	
-	@make -C ./app/test2 $(APP_FS_MAKEFILE_FLAGS)	
+	@make -C ./app/test $(APP_FS_MAKEFILE_FLAGS)
+	@make -C ./app/test2 $(APP_FS_MAKEFILE_FLAGS) 
 	@make -C ./app/graphic_service $(APP_FS_MAKEFILE_FLAGS)	
 #	@make -C ./app/memory_service $(APP_FS_MAKEFILE_FLAGS)	
 	@make -C ./app/console_service $(APP_FS_MAKEFILE_FLAGS)	
@@ -171,6 +171,7 @@ app: $(APP_FILE_CHANGE)
 	@make -C ./app/shell $(APP_FS_MAKEFILE_FLAGS)	
 	@make -C ./app/ps2_mouse_module $(APP_FS_MAKEFILE_FLAGS)	
 	@make -C ./app/ps2_keyboard_module $(APP_FS_MAKEFILE_FLAGS)	
+	@make -C ./app/tui_service $(APP_FS_MAKEFILE_FLAGS)
 
 .PHONY:super
 super:

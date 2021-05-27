@@ -156,6 +156,26 @@ void interrupt_error_handle(InterruptStackFrame *stackframe)
     error = true;
     log("pic", LOG_FATAL, "!!! fatal interrupt error !!! {}", stackframe->rip);
     log("pic", LOG_ERROR, "ID   : {}", stackframe->int_no);
+    if (stackframe->int_no == 0x6)
+    {
+        for (int i = 0; i < 8; i++)
+        {
+
+            log("pic", LOG_ERROR, "on: {} = {}", stackframe->rip + i, ((uint8_t *)stackframe->rip)[i]);
+        }
+    }
+    if (stackframe->int_no == 14)
+    {
+
+        uint64_t CRX;
+        asm volatile("mov %0, cr2"
+                     : "=r"(CRX));
+        if (CRX < (uintptr_t)process::current()->get_arch_info()->stack && CRX >= (uintptr_t)process::current()->get_arch_info()->stack - 64)
+        {
+
+            log("pic", LOG_WARNING, "stack overflow are not handled for the moment");
+        }
+    }
     log("pic", LOG_ERROR, "type : {}", interrupt_exception_name[stackframe->int_no]);
 
     printf("\n");

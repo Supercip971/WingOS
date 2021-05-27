@@ -73,16 +73,34 @@ uintptr_t switch_context(InterruptStackFrame *current_Isf, process *next)
 }
 void init_process_stackframe(process *pro, func entry_point, int argc, char **argv)
 {
-    pro->get_arch_info()->stack = (uint8_t *)get_mem_addr(pmm_alloc(PROCESS_STACK_SIZE / PAGE_SIZE));
-    memzero(pro->get_arch_info()->stack, PROCESS_STACK_SIZE);
+    pro->get_arch_info()->stack = (uint8_t *)get_mem_addr(pmm_alloc(PROCESS_STACK_SIZE / PAGE_SIZE + 1));
+    memzero(pro->get_arch_info()->stack, PROCESS_STACK_SIZE + 1);
     pro->get_arch_info()->rsp =
         ((uint64_t)pro->get_arch_info()->stack) + PROCESS_STACK_SIZE;
 
     InterruptStackFrame *ISF = (InterruptStackFrame *)(pro->get_arch_info()->rsp - (sizeof(InterruptStackFrame)) - 8);
 
     ISF->rip = (uint64_t)entry_point;
-    ISF->ss = gdt_selector::KERNEL_DATA;
-    ISF->cs = gdt_selector::KERNEL_CODE;
+
+    if (pro->is_user())
+    {
+
+        add_thread_map(pro, (uintptr_t)get_physical_addr((uintptr_t)pro->get_arch_info()->stack), (uintptr_t)pro->get_arch_info()->stack, PROCESS_STACK_SIZE / PAGE_SIZE + 1);
+        add_thread_map(pro, (uintptr_t)get_physical_addr((uintptr_t)argv), (uintptr_t)argv, PAGE_SIZE);
+        for (int i = 0; i < argc; i++)
+        {
+            add_thread_map(pro, (uintptr_t)get_physical_addr((uintptr_t)argv[i]), (uintptr_t)argv[i], PAGE_SIZE);
+        }
+
+        ISF->ss = gdt_selector::USER_DATA;
+        ISF->cs = gdt_selector::USER_CODE;
+    }
+    else
+    {
+
+        ISF->ss = gdt_selector::KERNEL_DATA;
+        ISF->cs = gdt_selector::KERNEL_CODE;
+    }
     ISF->rflags = 0x286;
     ISF->rsp = (uint64_t)ISF;
     ISF->rbp = 0;

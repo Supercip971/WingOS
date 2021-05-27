@@ -4,7 +4,7 @@
 module_calls_list calls_list;
 static inline uintptr_t sys$set_module_call()
 {
-    return sys::syscall((uintptr_t)syscall_codes::SET_MODULES_CALLS, (uintptr_t)&calls_list, 0, 0, 0, 0);
+    return sys::syscall((uintptr_t)syscall_codes::SET_MODULES_CALLS, (uintptr_t)&calls_list, 0, 0, 0);
 }
 void call_init()
 {

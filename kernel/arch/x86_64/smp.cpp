@@ -9,6 +9,7 @@
 #include <mem/virtual.h>
 #include <physical.h>
 #include <proc/process.h>
+#include <rsyscall.h>
 #include <smp.h>
 #include <sse.h>
 #include <utility.h>
@@ -42,8 +43,14 @@ extern "C" void cpuupstart(void)
 
     log("smp", LOG_INFO, "after loading cpu: {}", apic::the()->get_current_processor_id());
     gdt_ap_init(); // create a new gdt for the cpu
+    get_current_cpu()->cpu_page_table = new_vmm_page_dir();
     asm("cli");
 
+    init_syscall_for_current_cpu();
+    x86_wrmsr(GS_BASE, (uintptr_t)get_current_cpu());
+    x86_wrmsr(FS_BASE, apic::the()->get_current_processor_id());
+    x86_wrmsr(KERN_GS_BASE, (uintptr_t)get_current_cpu());
+    get_current_cpu()->syscall_stack = (new uint8_t[stack_size]) + stack_size;
     SMPloaded = true;
     asm("sti");
     while (true)
@@ -61,6 +68,8 @@ void smp::init()
         cpu_lapic_entry[i] = 0x0;
     }
 
+    // init current cpu
+    get_current_cpu()->syscall_stack = (new uint8_t[stack_size]) + stack_size;
     MADT_record_table_entry *mrte = madt::the()->get_madt_table_record();
 
     processor_count = 0;
@@ -92,6 +101,11 @@ void smp::init()
             init_cpu(cpu_lapic_entry[i]->apic_id, cpu_lapic_entry[i]->processor_id);
         }
     }
+    x86_wrmsr(GS_BASE, (uintptr_t)get_current_cpu());
+    x86_wrmsr(FS_BASE, apic::the()->get_current_processor_id());
+    x86_wrmsr(KERN_GS_BASE, (uintptr_t)get_current_cpu());
+
+    init_syscall_for_current_cpu();
 }
 // to do : use the pit or anything else instead of this
 void smp::wait()
@@ -119,11 +133,12 @@ void smp::init_cpu_future_value(uint64_t id)
     POKE((smp_cpu_init_address::PAGE_TABLE)) =
         get_rmem_addr(get_current_cpu(id)->cpu_page_table);
 
-    memzero(get_current_cpu(id)->stack_data, get_current_cpu(id)->stack_size);
+    memzero(get_current_cpu(id)->stack_data, stack_size);
 
     POKE((smp_cpu_init_address::STACK)) =
-        (uint64_t)get_current_cpu(id)->stack_data + get_current_cpu(id)->stack_size;
+        (uint64_t)get_current_cpu(id)->stack_data + stack_size;
 
+    get_current_cpu(id)->syscall_stack = (new uint8_t[stack_size]) + stack_size;
     // gdt at 0x580
     // idt at 0x590
     asm volatile(" \n"

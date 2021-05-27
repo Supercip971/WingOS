@@ -10,10 +10,12 @@
 #include <smp.h>
 #include <stdint.h>
 class page_table;
+static const uint32_t stack_size = STACK_SIZE;
 class cpu
 {
 public:
-    uint64_t stack_base;
+    uint8_t *syscall_stack;
+    uint64_t saved_stack;
 
     uint64_t current_processor_id;
 
@@ -23,10 +25,8 @@ public:
 
     tss ctss;
 
-    static const uint32_t stack_size = STACK_SIZE;
     uint8_t stack_data[stack_size] PAGE_ALIGN;
     uint8_t stack_data_interrupt[stack_size] PAGE_ALIGN;
-    uint8_t syscall_stack[stack_size] PAGE_ALIGN;
 
     uint64_t lapic_id;
     page_table *cpu_page_table;
@@ -37,7 +37,7 @@ public:
     void save_sse(uint64_t *data);
 
     backtrace local_backtrace;
-};
+} __attribute__((packed));
 //local_data *get_current_data();
 //local_data *get_current_data(int id);
 extern cpu procData[smp::max_cpu];

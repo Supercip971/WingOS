@@ -223,7 +223,7 @@ ASM_FUNCTION uintptr_t interrupts_handler(InterruptStackFrame *stackframe)
 
     if (stackframe->int_no == 0x7f)
     {
-        stackframe->rax = syscall(stackframe->rax, stackframe->rbx, stackframe->rcx, stackframe->rdx, stackframe->rsi, stackframe->rdi, stackframe); // don't use r11 for future use with x64 syscalls
+        stackframe->rax = syscall(stackframe->rax, stackframe->rbx, stackframe->rcx, stackframe->rdx, stackframe->rsi, stackframe->rdi, (cpu_registers *)stackframe); // don't use r11 for future use with x64 syscalls
     }
     else if (stackframe->int_no == 32)
     {

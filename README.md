@@ -11,6 +11,8 @@
 
 WingOS is a small hobbyist 64 bit kernel made with <3 in C++ 
 
+Note: the userspace is not really developed right now, there are not really functional binutils nor useful applications, for the moment I prefer developing the kernel than the userspace.
+
 </div>
 
 ## Contact 

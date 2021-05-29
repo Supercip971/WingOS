@@ -64,7 +64,7 @@ struct stivale2_header_tag_framebuffer framebuffer_hdr_tag = {
 __attribute__((section(".stivale2hdr"), used)) struct stivale2_header stivale_hdr = {
     .entry_point = 0,
     .stack = (uintptr_t)stack + sizeof(stack),
-    .flags = 0b0,
+    .flags = 0b1,
     .tags = (uintptr_t)&framebuffer_hdr_tag};
 
 struct stivale2_struct boot_loader_data_copy;
@@ -117,6 +117,8 @@ ASM_FUNCTION void kernel_start(struct stivale2_struct *bootloader_data)
     com_device com = com_device();
     com.init(COM_PORT::COM1);
 
+    // get_current_cpu()->interrupt_stack = get_current_cpu()->stack_data_interrupt;
+
     init_sse();
 
     setup_gdt();
@@ -135,15 +137,13 @@ ASM_FUNCTION void kernel_start(struct stivale2_struct *bootloader_data)
     tag_framebuffer_copy = *(stivale2_struct_tag_framebuffer *)stivale2_find_tag(STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID);
 
     gdt_descriptors[get_current_cpu_id()].debug_out();
-    tss_init((uintptr_t)stack + sizeof(char) * STACK_SIZE);
 
     stivale2_struct_tag_memmap *memmap_tag = (stivale2_struct_tag_memmap *)stivale2_find_tag(STIVALE2_STRUCT_TAG_MEMMAP_ID);
 
-    gdt_descriptors[get_current_cpu_id()].debug_out();
     init_physical_memory(memmap_tag);
+    tss_init((uintptr_t)stack + sizeof(char) * STACK_SIZE);
     outw(0x8A00, 0x8A00);
     outw(0x8A00, 0x08AE0);
-    gdt_descriptors[get_current_cpu_id()].debug_out();
     init_vmm(memmap_tag);
     pic_init();
 

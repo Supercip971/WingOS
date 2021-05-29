@@ -16,7 +16,6 @@ class cpu
 public:
     uint8_t *syscall_stack;
     uint64_t saved_stack;
-
     uint64_t current_processor_id;
 
     idtr cidt;
@@ -26,7 +25,7 @@ public:
     tss ctss;
 
     uint8_t stack_data[stack_size] PAGE_ALIGN;
-    uint8_t stack_data_interrupt[stack_size] PAGE_ALIGN;
+    uint8_t *stack_data_interrupt;
 
     uint64_t lapic_id;
     page_table *cpu_page_table;

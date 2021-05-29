@@ -63,7 +63,8 @@ __attribute__((optimize("O2"))) void tss_init(uint64_t i)
 
     get_current_cpu()->ctss.iomap_base = sizeof(tss);
     get_current_cpu()->ctss.rsp0 = (uintptr_t)i;
-    get_current_cpu()->ctss.ist1 = (uintptr_t)i;
+    get_current_cpu()->stack_data_interrupt = new uint8_t[STACK_SIZE];
+    get_current_cpu()->ctss.ist1 = (uintptr_t)get_current_cpu()->stack_data_interrupt + STACK_SIZE;
 
     asm volatile("mov ax, %0 \n ltr ax"
                  :
@@ -89,6 +90,7 @@ __attribute__((optimize("O2"))) void gdt_ap_init()
     get_current_cpu()->ctss.iomap_base = sizeof(tss);
 
     get_current_cpu()->ctss.rsp0 = (uintptr_t)POKE(smp_cpu_init_address::STACK);
+    get_current_cpu()->stack_data_interrupt = new uint8_t[STACK_SIZE];
     get_current_cpu()->ctss.ist1 = (uintptr_t)get_current_cpu()->stack_data_interrupt + STACK_SIZE;
 
     asm volatile("mov ax, %0 \n ltr ax"

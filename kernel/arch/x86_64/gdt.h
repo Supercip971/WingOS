@@ -83,7 +83,7 @@ struct gdt_xdescriptor
 
 struct tss
 {
-    uint32_t reserved0;
+    uint32_t reserved0 __attribute__((aligned(16)));
 
     uint64_t rsp0;
     uint64_t rsp1;

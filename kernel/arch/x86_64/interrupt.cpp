@@ -118,10 +118,17 @@ void init_idt()
     log("idt", LOG_INFO, "loading idt table...");
     for (int i = 0; i < 48; i++)
     {
-        idt[i] = idt_entry((void *)__interrupt_vector[i], 0, INTGATE);
+        if (i == 14 || i == 32)
+        {
+            idt[i] = idt_entry((void *)__interrupt_vector[i], 1, INTGATE);
+        }
+        else
+        {
+            idt[i] = idt_entry((void *)__interrupt_vector[i], 0, INTGATE);
+        }
     }
     idt[127] = idt_entry((void *)__interrupt_vector[48], 0, INTGATE | INT_USER);
-    idt[100] = idt_entry((void *)__interrupt_vector[49], 0, INTGATE | INT_USER);
+    idt[100] = idt_entry((void *)__interrupt_vector[49], 1, INTGATE | INT_USER);
 
     log("idt", LOG_DEBUG, "flushing idt...");
     init_irq_handlers();

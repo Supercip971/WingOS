@@ -9,6 +9,7 @@
 
 #define KERNEL_PHYS_OFFSET ((uint64_t)0xffffffff80000000)
 #define USR_MEM_OFFSET ((uint64_t)0x0000002000000000)
+#define USR_STK_OFFSET ((uint64_t)0x0000003fffffffff)
 #define USR_BFRAME_SIZE ((uint64_t)0x0000000010000000)
 #define MEM_PHYS_OFFSET ((uint64_t)0xffff800000000000)
 

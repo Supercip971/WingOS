@@ -14,7 +14,16 @@ extern "C" void __entry_point(int argc, char **argv, char **env)
     __cxa_finalize(nullptr);
 }
 #else
-extern "C" void __entry_point(int argc, char **argv, char **env)
+
+asm(
+    ".global __entry_point \n"
+    "__entry_point: \n"
+    "   and rsp, -16 \n"
+    "   sub rsp, 512 \n"
+    "   call _entry_point \n"
+    "   int 0x1 \n"
+);
+extern "C" void _entry_point(int argc, char **argv, char **env)
 {
     asm volatile("and rsp, -16");
     sys::stdin = sys::file("/dev/stdin");

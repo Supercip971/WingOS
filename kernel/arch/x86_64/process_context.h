@@ -22,3 +22,5 @@ uint64_t interpret_cpu_request(uint64_t cpu); // with architecture with no multi
 void init_process_paging(process *pro, bool is_user);
 
 void init_process_arch_ext(process *pro);
+
+void *realloc_process_stack(InterruptStackFrame *current_isf, process *target);

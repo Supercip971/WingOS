@@ -61,11 +61,15 @@ uintptr_t switch_context(InterruptStackFrame *current_Isf, process *next)
 
             process::current()->set_state(PROCESS_WAITING);
             process::current()->get_arch_info()->rsp = (uint64_t)current_Isf;
+            process::current()->get_arch_info()->status = *current_Isf;
             get_current_cpu()->save_sse(process::current()->get_arch_info()->sse_context);
         }
     }
+
     next->set_state(process_state::PROCESS_RUNNING);
     process::set_current(next);
+    *current_Isf = process::current()->get_arch_info()->status;
+
     get_current_cpu()->load_sse(process::current()->get_arch_info()->sse_context);
     task_update_switch(next);
 
@@ -73,23 +77,58 @@ uintptr_t switch_context(InterruptStackFrame *current_Isf, process *next)
 }
 void init_process_stackframe(process *pro, func entry_point, int argc, char **argv)
 {
-    pro->get_arch_info()->stack = (uint8_t *)get_mem_addr(pmm_alloc(PROCESS_STACK_SIZE / PAGE_SIZE + 1));
-    memzero(pro->get_arch_info()->stack, PROCESS_STACK_SIZE + 1);
-    pro->get_arch_info()->rsp =
-        ((uint64_t)pro->get_arch_info()->stack) + PROCESS_STACK_SIZE;
+    InterruptStackFrame *ISF;
+    if (pro->is_user())
+    {
 
-    InterruptStackFrame *ISF = (InterruptStackFrame *)(pro->get_arch_info()->rsp - (sizeof(InterruptStackFrame)) - 8);
+        arch_process_data *target_arch = (pro->get_arch_info());
+        void *physical_mem = (void *)get_mem_addr(pmm_alloc(PROCESS_STACK_SIZE / PAGE_SIZE + 1));
 
+        void *phys_rsp = (uint8_t *)physical_mem + PROCESS_STACK_SIZE;
+        void *phys_stack = physical_mem;
+        memzero(phys_stack, PROCESS_STACK_SIZE + PAGE_SIZE);
+
+        void *virtual_rsp = (void *)(USR_STK_OFFSET);
+
+        void *virtual_stack = (void *)(USR_STK_OFFSET - PROCESS_STACK_SIZE);
+
+        target_arch->stack = (uint8_t *)(virtual_stack);
+        target_arch->rsp = (uintptr_t)(virtual_rsp);
+
+        add_thread_map(pro, get_rmem_addr((uintptr_t)phys_stack), (uintptr_t)(virtual_stack)-PAGE_SIZE, PROCESS_STACK_SIZE / PAGE_SIZE + 2);
+
+        ISF = (InterruptStackFrame *)(((uint8_t *)phys_rsp) - (sizeof(InterruptStackFrame)));
+        ISF->rsp = (uint64_t)virtual_rsp - (sizeof(InterruptStackFrame));
+        target_arch->rsp = (uintptr_t)ISF;
+    }
+    else
+    {
+        pro->get_arch_info()->stack = (uint8_t *)get_mem_addr(pmm_alloc(PROCESS_STACK_SIZE / PAGE_SIZE + 1));
+        pro->get_arch_info()->rsp =
+            ((uint64_t)pro->get_arch_info()->stack) + PROCESS_STACK_SIZE;
+        memzero(pro->get_arch_info()->stack, PROCESS_STACK_SIZE + 1);
+
+        ISF = (InterruptStackFrame *)(pro->get_arch_info()->rsp - (sizeof(InterruptStackFrame)) - 8);
+
+        ISF->rsp = (uint64_t)ISF;
+        pro->get_arch_info()->rsp = (uint64_t)ISF;
+    }
+
+    pro->get_arch_info()->process_stack_size = PROCESS_STACK_SIZE / PAGE_SIZE;
+
+    ISF->rflags = 0x286;
     ISF->rip = (uint64_t)entry_point;
+    ISF->rbp = ISF->rsp - sizeof(InterruptStackFrame);
+    ISF->rdi = argc;
+    ISF->rsi = (uint64_t)argv;
 
     if (pro->is_user())
     {
 
-        add_thread_map(pro, (uintptr_t)get_physical_addr((uintptr_t)pro->get_arch_info()->stack), (uintptr_t)pro->get_arch_info()->stack, PROCESS_STACK_SIZE / PAGE_SIZE + 1);
-        add_thread_map(pro, (uintptr_t)get_physical_addr((uintptr_t)argv), (uintptr_t)argv, PAGE_SIZE);
+        add_thread_map(pro, (uintptr_t)get_physical_addr((uintptr_t)argv), (uintptr_t)argv, 1);
         for (int i = 0; i < argc; i++)
         {
-            add_thread_map(pro, (uintptr_t)get_physical_addr((uintptr_t)argv[i]), (uintptr_t)argv[i], PAGE_SIZE);
+            add_thread_map(pro, (uintptr_t)get_physical_addr((uintptr_t)argv[i]), (uintptr_t)argv[i], 1);
         }
 
         ISF->ss = gdt_selector::USER_DATA;
@@ -101,12 +140,8 @@ void init_process_stackframe(process *pro, func entry_point, int argc, char **ar
         ISF->ss = gdt_selector::KERNEL_DATA;
         ISF->cs = gdt_selector::KERNEL_CODE;
     }
-    ISF->rflags = 0x286;
-    ISF->rsp = (uint64_t)ISF;
-    ISF->rbp = 0;
-    ISF->rdi = argc;
-    ISF->rsi = (uint64_t)argv;
-    pro->get_arch_info()->rsp = (uint64_t)ISF;
+    pro->get_arch_info()->status = *ISF;
+
     log("proc", LOG_INFO, "process stack {}", pro->get_arch_info()->rsp);
 }
 
@@ -146,4 +181,35 @@ void init_process_arch_ext(process *pro)
 {
 
     get_current_cpu()->save_sse(pro->get_arch_info()->sse_context);
+}
+
+void *realloc_process_stack(InterruptStackFrame *current_isf, process *target)
+{
+
+    /*
+    size_t previous_size = target->get_arch_info()->;
+    size_t previous_rsp = target->get_arch_info()->rsp;
+
+    uint8_t* new_stack;
+    previous_size = target->get_arch_info()->process_stack_size;
+    target->get_arch_info()->process_stack_size += 4;
+    log("stack", LOG_INFO, "reallocating stack (new size: {})", target->get_arch_info()->process_stack_size);
+    
+    new_stack = (uint8_t *)get_mem_addr(pmm_alloc(target->get_arch_info()->process_stack_size));
+   
+    memzero(new_stack, target->get_arch_info()->process_stack_size*PAGE_SIZE);
+
+    mempcpy(new_stack+4*PAGE_SIZE, target->get_arch_info()->stack, previous_size);
+
+    target->get_arch_info()->rsp = (uintptr_t)(new_stack + (target->get_arch_info()->process_stack_size*PAGE_SIZE));
+
+    pmm_free((void*)get_physical_addr((uintptr_t)target->get_arch_info()->stack), previous_size); // note: this is sooooooooooooo dumb, because this may be the stack we are using rn TODO: fix this shit
+
+    target->get_arch_info()->stack = new_stack;
+    current_isf->rbp = (current_isf->rbp - current_isf->rsp + target->get_arch_info()->rsp);
+    current_isf->rsp = current_isf->rsp - target->get_arch_info()->rsp;
+    return target->get_arch_info()->stack;
+
+*/
+    return nullptr;
 }

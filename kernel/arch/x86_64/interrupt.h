@@ -8,6 +8,21 @@
 #define TRAPGATE 0xeF
 #define INT_USER 0x60
 
+enum class interrupt_error_types : int
+{
+    DIVIDED_BY_ZERO = 0,
+    DEBUG_CALL = 1,
+    NMI_INTERRUPT = 2,
+    BREAKPOINT = 3,
+    INVALID_OPCODE = 6,
+    DOUBLE_FAULT = 8,
+    INVALID_TSS = 10,
+    NON_PRESENT_SEGMENT = 11,
+    INVALID_STACK_SEGMENT = 12,
+    GENERAL_PROTECTION_FAULT = 13,
+    PAGE_FAULT = 14,
+};
+
 typedef void (*irq_handler_func)(unsigned int irq);
 
 class idt_entry

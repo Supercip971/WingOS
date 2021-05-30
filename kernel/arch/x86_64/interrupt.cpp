@@ -161,23 +161,27 @@ void update_backtrace(InterruptStackFrame *stackframe)
 void interrupt_error_handle(InterruptStackFrame *stackframe)
 {
     error = true;
+
     log("pic", LOG_FATAL, "!!! fatal interrupt error !!! {}", stackframe->rip);
     log("pic", LOG_ERROR, "ID   : {}", stackframe->int_no);
     log("pic", LOG_ERROR, "STACK: {}", (uintptr_t)process::current()->get_arch_info()->stack);
-    if (stackframe->int_no == 0x6)
+
+    if (stackframe->int_no == (int)interrupt_error_types::INVALID_OPCODE && stackframe->rip < PAGE_SIZE)
     {
         for (int i = 0; i < 8; i++)
         {
-
             log("pic", LOG_ERROR, "on: {} = {}", stackframe->rip + i, ((uint8_t *)stackframe->rip)[i]);
         }
     }
-    if (stackframe->int_no == 14)
+
+    if (stackframe->int_no == (int)interrupt_error_types::PAGE_FAULT)
     {
 
-        uint64_t CRX;
+        uint64_t CRX = 0;
+
         asm volatile("mov %0, cr2"
                      : "=r"(CRX));
+
         if ((CRX < (uintptr_t)process::current()->get_arch_info()->stack) && (CRX >= (uintptr_t)process::current()->get_arch_info()->stack - PAGE_SIZE))
         {
 
@@ -198,8 +202,10 @@ void interrupt_error_handle(InterruptStackFrame *stackframe)
 
     log("pic", LOG_ERROR, "current process stackframe:");
     dump_stackframe((void *)stackframe->rbp);
+
     log("pic", LOG_ERROR, "current process backtrace:");
     process::current()->get_backtrace().dump_backtrace();
+
     log("pic", LOG_ERROR, "current cpu backtrace :");
     get_current_cpu()->local_backtrace.dump_backtrace();
 
@@ -209,6 +215,7 @@ void interrupt_error_handle(InterruptStackFrame *stackframe)
         log("pic", LOG_INFO, "in processor: {}", process::current()->get_cpu());
         dump_process();
     }
+
     while (true)
     {
         halt_interrupt();

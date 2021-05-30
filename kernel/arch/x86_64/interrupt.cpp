@@ -163,6 +163,7 @@ void interrupt_error_handle(InterruptStackFrame *stackframe)
     error = true;
     log("pic", LOG_FATAL, "!!! fatal interrupt error !!! {}", stackframe->rip);
     log("pic", LOG_ERROR, "ID   : {}", stackframe->int_no);
+    log("pic", LOG_ERROR, "STACK: {}", (uintptr_t)process::current()->get_arch_info()->stack);
     if (stackframe->int_no == 0x6)
     {
         for (int i = 0; i < 8; i++)
@@ -177,10 +178,14 @@ void interrupt_error_handle(InterruptStackFrame *stackframe)
         uint64_t CRX;
         asm volatile("mov %0, cr2"
                      : "=r"(CRX));
-        if (CRX < (uintptr_t)process::current()->get_arch_info()->stack && CRX >= (uintptr_t)process::current()->get_arch_info()->stack - 64)
+        if ((CRX < (uintptr_t)process::current()->get_arch_info()->stack) && (CRX >= (uintptr_t)process::current()->get_arch_info()->stack - PAGE_SIZE))
         {
 
-            log("pic", LOG_WARNING, "stack overflow are not handled for the moment");
+            realloc_process_stack(stackframe, process::current());
+
+            log("proc", LOG_INFO, "reallocating process stack: {}", process::current()->get_arch_info()->process_stack_size);
+            error = false;
+            return;
         }
     }
     log("pic", LOG_ERROR, "type : {}", interrupt_exception_name[stackframe->int_no]);

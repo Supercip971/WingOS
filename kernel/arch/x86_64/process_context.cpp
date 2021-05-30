@@ -95,7 +95,7 @@ void init_process_stackframe(process *pro, func entry_point, int argc, char **ar
         target_arch->stack = (uint8_t *)(virtual_stack);
         target_arch->rsp = (uintptr_t)(virtual_rsp);
 
-        add_thread_map(pro, get_rmem_addr((uintptr_t)phys_stack), (uintptr_t)(virtual_stack)-PAGE_SIZE, PROCESS_STACK_SIZE / PAGE_SIZE + 2);
+        add_thread_map(pro, get_rmem_addr((uintptr_t)phys_stack), (uintptr_t)(virtual_stack), PROCESS_STACK_SIZE / PAGE_SIZE + 1);
 
         ISF = (InterruptStackFrame *)(((uint8_t *)phys_rsp) - (sizeof(InterruptStackFrame)));
         ISF->rsp = (uint64_t)virtual_rsp - (sizeof(InterruptStackFrame));
@@ -114,7 +114,7 @@ void init_process_stackframe(process *pro, func entry_point, int argc, char **ar
         pro->get_arch_info()->rsp = (uint64_t)ISF;
     }
 
-    pro->get_arch_info()->process_stack_size = PROCESS_STACK_SIZE / PAGE_SIZE;
+    pro->get_arch_info()->process_stack_size = PROCESS_STACK_SIZE;
 
     ISF->rflags = 0x286;
     ISF->rip = (uint64_t)entry_point;
@@ -185,31 +185,11 @@ void init_process_arch_ext(process *pro)
 
 void *realloc_process_stack(InterruptStackFrame *current_isf, process *target)
 {
+    arch_process_data *target_arch = target->get_arch_info();
+    target_arch->process_stack_size += PAGE_SIZE * 2;
+    target_arch->stack -= PAGE_SIZE * 2;
+    void *target_new_stack = pmm_alloc(2);
+    add_thread_map(target, (uintptr_t)target_new_stack, (uintptr_t)target_arch->stack, 2);
 
-    /*
-    size_t previous_size = target->get_arch_info()->;
-    size_t previous_rsp = target->get_arch_info()->rsp;
-
-    uint8_t* new_stack;
-    previous_size = target->get_arch_info()->process_stack_size;
-    target->get_arch_info()->process_stack_size += 4;
-    log("stack", LOG_INFO, "reallocating stack (new size: {})", target->get_arch_info()->process_stack_size);
-    
-    new_stack = (uint8_t *)get_mem_addr(pmm_alloc(target->get_arch_info()->process_stack_size));
-   
-    memzero(new_stack, target->get_arch_info()->process_stack_size*PAGE_SIZE);
-
-    mempcpy(new_stack+4*PAGE_SIZE, target->get_arch_info()->stack, previous_size);
-
-    target->get_arch_info()->rsp = (uintptr_t)(new_stack + (target->get_arch_info()->process_stack_size*PAGE_SIZE));
-
-    pmm_free((void*)get_physical_addr((uintptr_t)target->get_arch_info()->stack), previous_size); // note: this is sooooooooooooo dumb, because this may be the stack we are using rn TODO: fix this shit
-
-    target->get_arch_info()->stack = new_stack;
-    current_isf->rbp = (current_isf->rbp - current_isf->rsp + target->get_arch_info()->rsp);
-    current_isf->rsp = current_isf->rsp - target->get_arch_info()->rsp;
-    return target->get_arch_info()->stack;
-
-*/
     return nullptr;
 }

@@ -119,6 +119,36 @@ namespace utils
             string_length += added_length;
         }
 
+        bool has(const string &str)
+        {
+
+            if (str.length() > length())
+            {
+                return false;
+            }
+            for (size_t i = 0; i < (length()); i++)
+            {
+                bool contained = true;
+                for (size_t y = 0; y < str.length(); y++)
+                {
+                    if (i + y > length())
+                    {
+                        return false;
+                    }
+                    if (get(i + y) != str.get(y))
+                    {
+                        contained = false;
+                        break;
+                    }
+                }
+                if (contained)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         string &operator+=(const string &v)
         {
             append(v);

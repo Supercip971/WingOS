@@ -82,5 +82,23 @@ LIB(wstring)
             REQUIRE(test1 == "-64");
         }
     }
+
+    SECTION("has check")
+    {
+        utils::string test1 = utils::string("monday");
+        CHECK("positive result")
+        {
+            REQUIRE(test1.has("monday"));
+            REQUIRE(test1.has("mon"));
+            REQUIRE(test1.has("y"));
+        }
+
+        CHECK("negative result")
+        {
+            REQUIRE(!test1.has("mun"));
+            REQUIRE(!test1.has("mondayyyy"));
+            REQUIRE(!test1.has("z"));
+        }
+    }
 }
 END_LIB(wstring)

@@ -32,31 +32,39 @@ size_t M_io_func(size_t addr, size_t write, io_func_exec flags)
         {
             outb(addr, write);
         }
-        if (flags.bit_size == IO_BIT_SIZE_16)
+        else if (flags.bit_size == IO_BIT_SIZE_16)
         {
             outl(addr, write);
         }
-        if (flags.bit_size == IO_BIT_SIZE_32)
+        else if (flags.bit_size == IO_BIT_SIZE_32)
         {
             outw(addr, write);
+        }
+        else
+        {
+            log("module", LOG_ERROR, "invalid bit_size write: {}", flags.bit_size);
         }
         return 1;
     }
     else
     {
-
         if (flags.bit_size == IO_BIT_SIZE_8)
         {
             return inb(addr);
         }
-        if (flags.bit_size == IO_BIT_SIZE_16)
+        else if (flags.bit_size == IO_BIT_SIZE_16)
         {
             return inl(addr);
         }
-        if (flags.bit_size == IO_BIT_SIZE_32)
+        else if (flags.bit_size == IO_BIT_SIZE_32)
         {
             return inw(addr);
         }
+        else
+        {
+            log("module", LOG_ERROR, "invalid bit_size read", flags.bit_size);
+        }
+
         return 1;
     }
 }

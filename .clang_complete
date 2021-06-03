@@ -1,0 +1,6 @@
+-DDEBUG
+-I./libs/
+-I./libs/libc/
+-I./kernel/arch/x86_64/
+-I./kernel/generic/
+-I./kernel/

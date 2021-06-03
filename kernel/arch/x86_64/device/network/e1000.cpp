@@ -9,6 +9,7 @@ e1000 main_e1000;
 
 e1000::e1000()
 {
+    packet_reception_list.clear();
 }
 
 e1000 *e1000::the()
@@ -126,13 +127,13 @@ void e1000::setup_rx()
 {
     uint8_t *tmp_ptr;
     rx_desc *descriptor;
-    tmp_ptr = (uint8_t *)malloc(sizeof(rx_desc) * RX_DESCRIPTOR_COUNT + 16);
+    tmp_ptr = (uint8_t *)malloc(sizeof(rx_desc) * RX_DESCRIPTOR_COUNT + sizeof(rx_desc));
     descriptor = (rx_desc *)tmp_ptr;
 
     for (int i = 0; i < RX_DESCRIPTOR_COUNT; i++)
     {
-        rx_descriptor[i] = (rx_desc *)((uint8_t *)descriptor + i * 16);
-        rx_descriptor[i]->address = (uint64_t)(uint8_t *)(malloc(8192 + 16));
+        rx_descriptor[i] = (rx_desc *)((uint8_t *)descriptor + i * sizeof(rx_desc));
+        rx_descriptor[i]->address = (uint64_t)(uint8_t *)(malloc(8192 + sizeof(rx_desc)));
         rx_descriptor[i]->status = 0;
     }
 
@@ -142,7 +143,7 @@ void e1000::setup_rx()
 
     write(E_RX_DESCRIPTOR_HIGH, 0);
 
-    write(E_RX_DESCRIPTOR_LENGTH, RX_DESCRIPTOR_COUNT * 16);
+    write(E_RX_DESCRIPTOR_LENGTH, RX_DESCRIPTOR_COUNT * sizeof(rx_desc));
     write(E_RX_DESCRIPTOR_HEAD, 0);
     write(E_RX_DESCRIPTOR_TAIL, RX_DESCRIPTOR_COUNT - 1);
 
@@ -155,11 +156,11 @@ void e1000::setup_tx()
 
     uint8_t *tmp_ptr;
     tx_desc *descriptor;
-    tmp_ptr = (uint8_t *)malloc(sizeof(tx_desc) * TX_DESCRIPTOR_COUNT + 16);
+    tmp_ptr = (uint8_t *)malloc(sizeof(tx_desc) * TX_DESCRIPTOR_COUNT + sizeof(tx_desc));
     descriptor = (tx_desc *)tmp_ptr;
     for (int i = 0; i < TX_DESCRIPTOR_COUNT; i++)
     {
-        tx_descriptor[i] = (tx_desc *)((uint8_t *)descriptor + i * 16);
+        tx_descriptor[i] = (tx_desc *)((uint8_t *)descriptor + i * sizeof(tx_desc));
         tx_descriptor[i]->address = 0;
         tx_descriptor[i]->command = 0;
         tx_descriptor[i]->status = DESC_DONE;
@@ -168,7 +169,7 @@ void e1000::setup_tx()
     write(E_TX_DESCRIPTOR_LOW, (uint64_t)tmp_ptr >> 32);
     write(E_TX_DESCRIPTOR_HIGH, (uint64_t)tmp_ptr & 0xFFFFFFFF);
 
-    write(E_TX_DESCRIPTOR_LENGTH, TX_DESCRIPTOR_COUNT * 16);
+    write(E_TX_DESCRIPTOR_LENGTH, TX_DESCRIPTOR_COUNT * sizeof(tx_desc));
 
     write(E_TX_DESCRIPTOR_HEAD, 0);
     write(E_TX_DESCRIPTOR_TAIL, 0);
@@ -193,9 +194,18 @@ void e1000::handle_packet_reception()
     while (rx_descriptor[rx_current_buf]->status & 0x1)
     {
         rx_descriptor[rx_current_buf]->status = 0;
+        log("e1000", LOG_INFO, "received packets (size: {})", rx_descriptor[rx_current_buf]->length);
+        
+        {
+            utils::context_lock locker {packet_reception_lock};
+            void* data = malloc(8192);
+            memcpy(data, (void*)(uint64_t)(rx_descriptor[rx_current_buf]->address), rx_descriptor[rx_current_buf]->length);
+            packet_reception_list.push_back(data);
+
+        }
+        
         old_cursor = rx_current_buf;
         rx_current_buf = (rx_current_buf + 1) % RX_DESCRIPTOR_COUNT;
-
         write(E_RX_DESCRIPTOR_TAIL, old_cursor);
     }
 }
@@ -218,6 +228,20 @@ int e1000::send_packet(uint8_t *data, uint16_t length)
     return 0;
 }
 
+
+void* e1000::read_last_packet()
+{
+
+    utils::context_lock locker {packet_reception_lock};
+    if(packet_reception_list.size() == 0)
+    {
+        return nullptr;
+    }
+    void * target = packet_reception_list[packet_reception_list.size()-1];
+    packet_reception_list.remove(packet_reception_list.size()-1);
+    return target;
+}
+
 void e1000::irq_handle()
 {
     write(E_IMASK, 0x1);
@@ -231,6 +255,10 @@ void e1000::irq_handle()
     else if (status & 0x10)
     {
     }
+    else if (status & (1 << 6))
+    {
+        log("e1000", LOG_ERROR, "buffer overrun");
+    }
     else if (status & 0x80)
     {
         handle_packet_reception();
@@ -239,8 +267,9 @@ void e1000::irq_handle()
 
 void e1000::turn_on_int()
 {
-    write(E_IMASK, 0x1F6DC);
-    write(E_IMASK, 0xff & ~4);
+    write(E_INTERRUPT_RATE, 6000);
+    write(E_IMASK, (1 << 2) | (1 << 7) | (1 << 6));
+
     read(0xc0);
 }
 
@@ -286,7 +315,7 @@ void e1000::init(pci_device *dev)
 
     for (int i = 0; i < 6; i++)
     {
-        log("e1000", LOG_INFO, "mac addr[{}] = {}", i, " = ", (uint32_t)get_mac_addr().mac[i]);
+        log("e1000", LOG_INFO, "mac addr[{}] = {}", i, (uint32_t)(get_mac_addr().mac[i]));
     }
 
     for (int i = 0; i < 0x80; i++)

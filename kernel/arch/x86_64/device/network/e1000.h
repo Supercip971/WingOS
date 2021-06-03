@@ -3,6 +3,7 @@
 #include <device/network/ethernet_protocol.h>
 #include <device/pci.h>
 #include <stdint.h>
+#include <utils/container/wvector.h>
 
 #define E_INTEL_VENDOR 0x8086
 #define E_DEVICE 0x100e
@@ -16,6 +17,7 @@ enum e1000_registers
     E_EEPROM = 0x14,
     E_CONTROL_EXT = 0x18,
     E_IMASK = 0xD0,
+    E_INTERRUPT_RATE = 0xC4,
     E_RCONTROL = 0x100,
     E_RX_DESCRIPTOR_LOW = 0x2800,
     E_RX_DESCRIPTOR_HIGH = 0x2804,
@@ -101,7 +103,9 @@ class e1000
 
     uint16_t io_base_addr;
     uint64_t mm_address;
-
+    utils::lock_type packet_reception_lock;
+    
+    utils::vector<void*> packet_reception_list;
     bool eerp_rom_detection();
     bool does_eerprom_exists;
 
@@ -150,6 +154,8 @@ public:
     void init(pci_device *dev);
     static e1000 *the();
     void irq_handle();
+
+    void* read_last_packet();
     constexpr mac_address &get_mac_addr()
     {
         return maddr;

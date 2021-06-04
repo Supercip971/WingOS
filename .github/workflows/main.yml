@@ -58,7 +58,11 @@ jobs:
       - name: app 
         run: |
           make app -j$(nproc)
-
+          
+      - name: kernel
+        run: |
+          make -j$(nproc)
+          
       - name: disk 
         run: |
           make disk -j$(nproc)

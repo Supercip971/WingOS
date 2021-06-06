@@ -41,14 +41,18 @@ this is for testing the library in a linux environment
 
 ## Supported features 
 
-- PCI
-- AHCI
-- SATA
-- ATA
-- EXT2FS
-- SMP (multi cpu)
+- pci
+- ahci
+- sata
+- ata
+- e1000
+- syscall/sysret
+- ext2fs
+- smp (multi cpu)
 - little gui
 - basic module (for the moment we have the mouse and keyboard module in the userspace)
+- basic ipc
+- basic terminal
 - ...
 
 ## License: 

@@ -75,6 +75,7 @@ uintptr_t switch_context(InterruptStackFrame *current_Isf, process *next)
 
     return next->get_arch_info()->rsp;
 }
+
 void init_process_stackframe(process *pro, func entry_point, int argc, char **argv)
 {
     InterruptStackFrame *ISF;
@@ -116,6 +117,8 @@ void init_process_stackframe(process *pro, func entry_point, int argc, char **ar
 
     pro->get_arch_info()->process_stack_size = PROCESS_STACK_SIZE;
 
+    pro->get_arch_info()->sse_context = (uint8_t *)get_mem_addr((uintptr_t)pmm_alloc_zero(get_sse_size()));
+
     ISF->rflags = 0x286;
     ISF->rip = (uint64_t)entry_point;
     ISF->rbp = ISF->rsp - sizeof(InterruptStackFrame);
@@ -140,7 +143,8 @@ void init_process_stackframe(process *pro, func entry_point, int argc, char **ar
         ISF->ss = gdt_selector::KERNEL_DATA;
         ISF->cs = gdt_selector::KERNEL_CODE;
     }
-    pro->get_arch_info()->status = *ISF;
+
+    get_current_cpu()->save_sse(pro->get_arch_info()->sse_context);
 
     log("proc", LOG_INFO, "process stack {}", pro->get_arch_info()->rsp);
 }
@@ -179,7 +183,6 @@ void init_process_paging(process *pro, bool is_user)
 
 void init_process_arch_ext(process *pro)
 {
-
     get_current_cpu()->save_sse(pro->get_arch_info()->sse_context);
 }
 

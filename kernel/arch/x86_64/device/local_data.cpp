@@ -10,12 +10,12 @@ cpu procData[smp::max_cpu];
 ASM_FUNCTION void asm_sse_save(uintptr_t addr);
 ASM_FUNCTION void asm_sse_load(uintptr_t addr);
 
-void cpu::load_sse(uint64_t *data)
+void cpu::load_sse(uint8_t *data)
 {
     load_sse_context(data);
 }
 
-void cpu::save_sse(uint64_t *data)
+void cpu::save_sse(uint8_t *data)
 {
 
     save_sse_context(data);

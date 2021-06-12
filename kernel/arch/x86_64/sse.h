@@ -13,9 +13,9 @@ enum xsave_reg
 SSE_LOW_LEVEL_FUNC bool has_xsave();
 SSE_LOW_LEVEL_FUNC bool has_avx();
 
-uint32_t get_xsave_size();
+uint32_t get_sse_size();
 void init_sse();
 
-void save_sse_context(uint64_t *context);
+void save_sse_context(uint8_t *context);
 
-void load_sse_context(uint64_t *context);
+void load_sse_context(uint8_t *context);

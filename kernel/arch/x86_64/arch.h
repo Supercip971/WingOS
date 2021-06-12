@@ -23,7 +23,7 @@ struct arch_process_data
     size_t process_stack_size;
     uint8_t *stack;
     uint64_t rsp = 0;
-    uint64_t sse_context[128] __attribute__((aligned(64)));
+    uint8_t *sse_context;
 
     arch_page_table *page_directory = 0;
     InterruptStackFrame status;

@@ -32,8 +32,8 @@ public:
 
     uint64_t fpu_data[128] __attribute__((aligned(16)));
 
-    void load_sse(uint64_t *data);
-    void save_sse(uint64_t *data);
+    void load_sse(uint8_t *data);
+    void save_sse(uint8_t *data);
 
     backtrace local_backtrace;
 } __attribute__((packed));

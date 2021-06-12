@@ -180,9 +180,9 @@ process *alloc_process(const char *end_name, func entry_point, bool is_user)
 
 void init_process_entry(process *target, const char *name, bool is_user, char **argv, int argc, func entry_point)
 {
+    init_process_paging(target, is_user);
     init_process_stackframe(target, entry_point, argc, argv);
     init_process_userspace_fs(target->get_ufs());
-    init_process_paging(target, is_user);
     init_process_arch_ext(target);
 }
 

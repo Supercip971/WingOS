@@ -28,9 +28,8 @@ public:
     uint8_t *stack_data_interrupt;
 
     uint64_t lapic_id;
-    page_table *cpu_page_table;
 
-    uint64_t fpu_data[128] __attribute__((aligned(16)));
+    page_table *cpu_page_table;
 
     void load_sse(uint8_t *data);
     void save_sse(uint8_t *data);

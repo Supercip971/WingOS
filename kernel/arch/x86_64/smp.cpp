@@ -154,7 +154,6 @@ void smp::init_cpu(int apic, int id)
 
     log("smp cpu", LOG_DEBUG, "loading smp cpu: {} with apic id: {}", id, apic);
 
-    memzero(get_current_cpu(id)->fpu_data, sizeof(get_current_cpu(id)->fpu_data));
     apic::the()->preinit_processor(apic);
 
     get_current_cpu(id)->lapic_id = apic;

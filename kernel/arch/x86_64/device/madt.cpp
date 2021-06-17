@@ -110,7 +110,6 @@ MADT_table_IOAPIC **madt::get_madt_ioAPIC()
 
     while (uintptr_t(table) < get_madt_table_lenght())
     {
-        table = (MADT_record_table_entry *)(((uint64_t)table) + table->tlenght);
 
         if (table->ttype == MADT_type::MADT_IOAPIC)
         {
@@ -119,6 +118,7 @@ MADT_table_IOAPIC **madt::get_madt_ioAPIC()
             MTIO[count] = (MADT_table_IOAPIC *)((uint64_t)local_apic);
             count++;
         }
+        table = (MADT_record_table_entry *)(((uint64_t)table) + table->tlenght);
     }
 
     MTIO[count] = 0;
@@ -134,7 +134,6 @@ MADT_table_ISO **madt::get_madt_ISO()
 
     while (uintptr_t(table) < get_madt_table_lenght())
     {
-        table = reinterpret_cast<MADT_record_table_entry *>(((uint64_t)table) + table->tlenght);
 
         if (table->ttype == MADT_type::MADT_ISO)
         {
@@ -143,6 +142,7 @@ MADT_table_ISO **madt::get_madt_ISO()
             MTIO[count] = reinterpret_cast<MADT_table_ISO *>((uint64_t)local_apic);
             count++;
         }
+        table = reinterpret_cast<MADT_record_table_entry *>(((uint64_t)table) + table->tlenght);
     }
 
     if (has_one == false)

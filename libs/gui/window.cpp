@@ -88,7 +88,6 @@ namespace gui
                 update_input();
             }
 
-            sys::switch_process();
         }
     }
     void window::add_widget(widget *wdget)

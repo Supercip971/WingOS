@@ -116,5 +116,4 @@ void graphic_system_update()
     update_mouse();
 
     swap_buffers(front_buffer, back_buffer, screen_width * screen_height);
-    sys::switch_process();
 }

@@ -78,6 +78,6 @@ struct icmp_v4
     uint8_t code;
     uint16_t check_sum;
     uint8_t data[];
-}__attribute__((packed));
+} __attribute__((packed));
 
 #endif // ETHERNET_PROTOCOL_H

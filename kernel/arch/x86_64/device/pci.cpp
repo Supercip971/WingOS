@@ -248,29 +248,32 @@ void pci_system::init_device()
 {
     log("pci", LOG_DEBUG, "loading pci device");
     // this is dumb, i may do something better later + rip clang format
-    check([](pci_device &dev) {
-        if (dev.get_dev_id() == 0x100E || dev.get_dev_id() == 0x153A || dev.get_dev_id() == 0x10EA)
-        {
-            dev.enable_mastering();
-            e1000::the()->init(&dev);
-        }
-    },
+    check([](pci_device &dev)
+          {
+              if (dev.get_dev_id() == 0x100E || dev.get_dev_id() == 0x153A || dev.get_dev_id() == 0x10EA)
+              {
+                  dev.enable_mastering();
+                  e1000::the()->init(&dev);
+              }
+          },
           pci_vendors::PCI_INTEL_VENDOR, device_class_code::NETWORK_CONTROLLER, 0);
 
-    check([](pci_device &dev) {
-        ahci *ahci_new_dev = new ahci(dev);
-        ahci_new_dev->init();
-    },
+    check([](pci_device &dev)
+          {
+              ahci *ahci_new_dev = new ahci(dev);
+              ahci_new_dev->init();
+          },
           pci_vendors::PCI_INTEL_VENDOR, device_class_code::MASS_STORAGE_CONTROLLER, 6);
 
-    check([](pci_device &dev) {
-        if (dev.get_dev_id() == 0x8139)
-        {
+    check([](pci_device &dev)
+          {
+              if (dev.get_dev_id() == 0x8139)
+              {
 
-            dev.enable_mastering();
-            rtl8139::the()->init(&dev);
-        }
-    },
+                  dev.enable_mastering();
+                  rtl8139::the()->init(&dev);
+              }
+          },
           pci_vendors::PCI_REALTECK_VENDOR, device_class_code::NETWORK_CONTROLLER);
 }
 void pci_system::init()

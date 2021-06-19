@@ -195,15 +195,14 @@ void e1000::handle_packet_reception()
     {
         rx_descriptor[rx_current_buf]->status = 0;
         log("e1000", LOG_INFO, "received packets (size: {})", rx_descriptor[rx_current_buf]->length);
-        
-        {
-            utils::context_lock locker {packet_reception_lock};
-            void* data = malloc(8192);
-            memcpy(data, (void*)(uint64_t)(rx_descriptor[rx_current_buf]->address), rx_descriptor[rx_current_buf]->length);
-            packet_reception_list.push_back(data);
 
+        {
+            utils::context_lock locker{packet_reception_lock};
+            void *data = malloc(8192);
+            memcpy(data, (void *)(uint64_t)(rx_descriptor[rx_current_buf]->address), rx_descriptor[rx_current_buf]->length);
+            packet_reception_list.push_back(data);
         }
-        
+
         old_cursor = rx_current_buf;
         rx_current_buf = (rx_current_buf + 1) % RX_DESCRIPTOR_COUNT;
         write(E_RX_DESCRIPTOR_TAIL, old_cursor);
@@ -228,17 +227,16 @@ int e1000::send_packet(uint8_t *data, uint16_t length)
     return 0;
 }
 
-
-void* e1000::read_last_packet()
+void *e1000::read_last_packet()
 {
 
-    utils::context_lock locker {packet_reception_lock};
-    if(packet_reception_list.size() == 0)
+    utils::context_lock locker{packet_reception_lock};
+    if (packet_reception_list.size() == 0)
     {
         return nullptr;
     }
-    void * target = packet_reception_list[packet_reception_list.size()-1];
-    packet_reception_list.remove(packet_reception_list.size()-1);
+    void *target = packet_reception_list[packet_reception_list.size() - 1];
+    packet_reception_list.remove(packet_reception_list.size() - 1);
     return target;
 }
 

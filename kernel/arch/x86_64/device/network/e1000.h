@@ -104,8 +104,8 @@ class e1000
     uint16_t io_base_addr;
     uint64_t mm_address;
     utils::lock_type packet_reception_lock;
-    
-    utils::vector<void*> packet_reception_list;
+
+    utils::vector<void *> packet_reception_list;
     bool eerp_rom_detection();
     bool does_eerprom_exists;
 
@@ -155,7 +155,7 @@ public:
     static e1000 *the();
     void irq_handle();
 
-    void* read_last_packet();
+    void *read_last_packet();
     constexpr mac_address &get_mac_addr()
     {
         return maddr;

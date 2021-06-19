@@ -166,14 +166,6 @@ void interrupt_error_handle(InterruptStackFrame *stackframe)
     log("pic", LOG_ERROR, "ID   : {}", stackframe->int_no);
     log("pic", LOG_ERROR, "STACK: {}", (uintptr_t)process::current()->get_arch_info()->stack);
 
-    if (stackframe->int_no == (int)interrupt_error_types::INVALID_OPCODE && stackframe->rip < PAGE_SIZE)
-    {
-        for (int i = 0; i < 8; i++)
-        {
-            log("pic", LOG_ERROR, "on: {} = {}", stackframe->rip + i, ((uint8_t *)stackframe->rip)[i]);
-        }
-    }
-
     if (stackframe->int_no == (int)interrupt_error_types::PAGE_FAULT)
     {
 
@@ -212,7 +204,7 @@ void interrupt_error_handle(InterruptStackFrame *stackframe)
     if (process::current() != nullptr)
     {
         log("pic", LOG_INFO, "in process: {}", process::current()->get_name());
-        log("pic", LOG_INFO, "in processor: {}", process::current()->get_cpu());
+        log("pic", LOG_INFO, "in processor: {}", get_current_cpu_id());
         dump_process();
     }
 

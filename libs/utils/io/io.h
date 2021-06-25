@@ -75,16 +75,16 @@ namespace utils
     concept write_only = is_base_of<writer, T>::value; // write only
 
     template <typename T>
-    concept duplex = is_base_of<reader, T>::value &&is_base_of<writer, T>::value; // read write
+    concept duplex = is_base_of<reader, T>::value && is_base_of<writer, T>::value; // read write
 
     template <typename T>
-    concept seekable_readable = is_base_of<reader, T>::value &&is_base_of<seeker, T>::value; // seekable and readable
+    concept seekable_readable = is_base_of<reader, T>::value && is_base_of<seeker, T>::value; // seekable and readable
 
     template <typename T>
-    concept seekable_writable = is_base_of<writer, T>::value &&is_base_of<seeker, T>::value; // seekable and writable
+    concept seekable_writable = is_base_of<writer, T>::value && is_base_of<seeker, T>::value; // seekable and writable
 
     template <typename T>
-    concept seekable_duplex = is_base_of<writer, T>::value &&is_base_of<seeker, T>::value &&is_base_of<reader, T>::value; // seekable, writable & readable
+    concept seekable_duplex = is_base_of<writer, T>::value && is_base_of<seeker, T>::value && is_base_of<reader, T>::value; // seekable, writable & readable
 
     /*
      * basic_seeker_implementation is just a basic seeker implementation

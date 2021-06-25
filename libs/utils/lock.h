@@ -35,6 +35,12 @@ namespace utils
 
             __sync_synchronize();
         };
+        void force_lock()
+        {
+            raw = LOCK_LOCKED;
+
+            __sync_synchronize();
+        };
         void unlock()
         {
             __sync_synchronize();

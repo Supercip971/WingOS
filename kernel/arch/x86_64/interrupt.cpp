@@ -160,11 +160,6 @@ void update_backtrace(InterruptStackFrame *stackframe)
 
 void interrupt_error_handle(InterruptStackFrame *stackframe)
 {
-    error = true;
-
-    log("pic", LOG_FATAL, "!!! fatal interrupt error !!! {}", stackframe->rip);
-    log("pic", LOG_ERROR, "ID   : {}", stackframe->int_no);
-    log("pic", LOG_ERROR, "STACK: {}", (uintptr_t)process::current()->get_arch_info()->stack);
 
     if (stackframe->int_no == (int)interrupt_error_types::PAGE_FAULT)
     {
@@ -184,6 +179,21 @@ void interrupt_error_handle(InterruptStackFrame *stackframe)
             return;
         }
     }
+
+    error = true;
+    for (size_t i = 0; i < get_cpu_count(); i++)
+    {
+        if (i != get_current_cpu_id())
+        {
+            apic::the()->send_ipi(i, 0);
+        }
+    }
+    log_locker.unlock();
+
+    log("pic", LOG_FATAL, "!!! fatal interrupt error !!! {}", stackframe->rip);
+    log("pic", LOG_ERROR, "ID   : {}", stackframe->int_no);
+    log("pic", LOG_ERROR, "STACK: {}", (uintptr_t)process::current()->get_arch_info()->stack);
+
     log("pic", LOG_ERROR, "type : {}", interrupt_exception_name[stackframe->int_no]);
 
     printf("\n");
@@ -228,7 +238,6 @@ ASM_FUNCTION uintptr_t interrupts_handler(InterruptStackFrame *stackframe)
     }
     if (is_interrupt_error(stackframe->int_no))
     {
-        log_locker.unlock();
         interrupt_error_handle(stackframe);
     }
 

@@ -73,9 +73,9 @@ void smp::init()
     MADT_record_table_entry *mrte = madt::the()->get_madt_table_record();
 
     processor_count = 0;
-    while ((uintptr_t)(mrte) < madt::the()->get_madt_table_lenght())
+    while ((uintptr_t)(mrte) < madt::the()->get_madt_table_length())
     {
-        mrte = (MADT_record_table_entry *)(((uintptr_t)mrte) + mrte->tlenght);
+        mrte = (MADT_record_table_entry *)(((uintptr_t)mrte) + mrte->tlength);
         if (mrte->ttype == MADT_type::MADT_LAPIC)
         {
             auto local_apic = reinterpret_cast<MADT_table_LAPIC *>(mrte);

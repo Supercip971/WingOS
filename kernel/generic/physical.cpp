@@ -25,34 +25,34 @@ uint64_t get_total_memory()
     return available_memory;
 }
 
-void *pmm_alloc(uint64_t lenght)
+void *pmm_alloc(uint64_t length)
 {
     pmm_lock.lock();
-    used_memory += lenght;
+    used_memory += length;
     if (used_memory >= available_memory)
     {
         log("pmm", LOG_WARNING, "too much memory used: {}/{}", used_memory, available_memory);
     }
 
-    uint64_t res = pmm_bitmap.alloc(lenght);
+    uint64_t res = pmm_bitmap.alloc(length);
 
     pmm_lock.unlock();
     return (void *)(res * PAGE_SIZE);
 }
 
-void *pmm_alloc_zero(uint64_t lenght)
+void *pmm_alloc_zero(uint64_t length)
 {
-    void *d = pmm_alloc(lenght);
+    void *d = pmm_alloc(length);
 
-    memset((void *)get_mem_addr(d), 0, PAGE_SIZE * lenght);
+    memset((void *)get_mem_addr(d), 0, PAGE_SIZE * length);
 
     return d;
 }
 
-void pmm_free(void *where, uint64_t lenght)
+void pmm_free(void *where, uint64_t length)
 {
     pmm_lock.lock();
-    used_memory -= lenght;
+    used_memory -= length;
     uint64_t where_aligned = (uint64_t)where;
     where_aligned /= PAGE_SIZE;
     if ((uint64_t)where > bitmap_base && (uint64_t)where < bitmap_base + pmm_length)
@@ -61,7 +61,7 @@ void pmm_free(void *where, uint64_t lenght)
 
         return;
     }
-    pmm_bitmap.set_free((uint64_t)where / PAGE_SIZE, lenght);
+    pmm_bitmap.set_free((uint64_t)where / PAGE_SIZE, length);
     pmm_lock.unlock();
 }
 

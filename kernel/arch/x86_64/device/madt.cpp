@@ -9,7 +9,7 @@ madt::madt()
 {
 }
 
-uint64_t madt::get_madt_table_lenght()
+uint64_t madt::get_madt_table_length()
 {
     return ((uintptr_t)&madt_header->RShead) + madt_header->RShead.Length;
 }
@@ -17,16 +17,16 @@ uint64_t madt::get_madt_table_lenght()
 void madt::log_all()
 {
     MADT_record_table_entry *table = madt_header->MADT_table;
-    while (uintptr_t(table) < get_madt_table_lenght())
+    while (uintptr_t(table) < get_madt_table_length())
     {
         printf("\n ===================");
-        table = (MADT_record_table_entry *)(((uint64_t)table) + table->tlenght);
+        table = (MADT_record_table_entry *)(((uint64_t)table) + table->tlength);
 
         if (table->ttype == MADT_type::MADT_LAPIC)
         {
             log("madt", LOG_INFO, " madt LAPIC table entry : ");
             log("madt", LOG_INFO, "type   : {}", table->ttype);
-            log("madt", LOG_INFO, "lenght : {}", table->tlenght);
+            log("madt", LOG_INFO, "length : {}", table->tlength);
 
             auto local_apic = reinterpret_cast<MADT_table_LAPIC *>(table);
 
@@ -39,7 +39,7 @@ void madt::log_all()
 
             log("madt", LOG_INFO, " madt IOAPIC table entry : ");
             log("madt", LOG_INFO, "type   : {}", table->ttype);
-            log("madt", LOG_INFO, "lenght : {}", table->tlenght);
+            log("madt", LOG_INFO, "length : {}", table->tlength);
 
             auto ioapic = reinterpret_cast<MADT_table_IOAPIC *>(table);
 
@@ -53,7 +53,7 @@ void madt::log_all()
         {
             log("madt", LOG_INFO, " madt IOAPIC override table entry : ");
             log("madt", LOG_INFO, "type   : {}", table->ttype);
-            log("madt", LOG_INFO, "lenght : {}", table->tlenght);
+            log("madt", LOG_INFO, "length : {}", table->tlength);
 
             auto ioapic = reinterpret_cast<MADT_table_LAPICO *>(table);
 
@@ -64,7 +64,7 @@ void madt::log_all()
         {
             log("madt", LOG_INFO, " madt ISO table entry : ");
             log("madt", LOG_INFO, "type   : {}", table->ttype);
-            log("madt", LOG_INFO, "lenght : {}", table->tlenght);
+            log("madt", LOG_INFO, "length : {}", table->tlength);
 
             auto iso = reinterpret_cast<MADT_table_ISO *>(table);
 
@@ -79,7 +79,7 @@ void madt::log_all()
 
             log("madt", LOG_INFO, " not detected madt table entry : ");
             log("madt", LOG_INFO, "type   : {}", table->ttype);
-            log("madt", LOG_INFO, "lenght : {}", table->tlenght);
+            log("madt", LOG_INFO, "length : {}", table->tlength);
         }
     }
 }
@@ -108,7 +108,7 @@ MADT_table_IOAPIC **madt::get_madt_ioAPIC()
     MADT_table_IOAPIC **MTIO = (MADT_table_IOAPIC **)malloc(255);
     uint64_t count = 0;
 
-    while (uintptr_t(table) < get_madt_table_lenght())
+    while (uintptr_t(table) < get_madt_table_length())
     {
 
         if (table->ttype == MADT_type::MADT_IOAPIC)
@@ -118,7 +118,7 @@ MADT_table_IOAPIC **madt::get_madt_ioAPIC()
             MTIO[count] = (MADT_table_IOAPIC *)((uint64_t)local_apic);
             count++;
         }
-        table = (MADT_record_table_entry *)(((uint64_t)table) + table->tlenght);
+        table = (MADT_record_table_entry *)(((uint64_t)table) + table->tlength);
     }
 
     MTIO[count] = 0;
@@ -132,7 +132,7 @@ MADT_table_ISO **madt::get_madt_ISO()
     uint64_t count = 0;
     bool has_one = false;
 
-    while (uintptr_t(table) < get_madt_table_lenght())
+    while (uintptr_t(table) < get_madt_table_length())
     {
 
         if (table->ttype == MADT_type::MADT_ISO)
@@ -142,7 +142,7 @@ MADT_table_ISO **madt::get_madt_ISO()
             MTIO[count] = reinterpret_cast<MADT_table_ISO *>((uint64_t)local_apic);
             count++;
         }
-        table = reinterpret_cast<MADT_record_table_entry *>(((uint64_t)table) + table->tlenght);
+        table = reinterpret_cast<MADT_record_table_entry *>(((uint64_t)table) + table->tlength);
     }
 
     if (has_one == false)

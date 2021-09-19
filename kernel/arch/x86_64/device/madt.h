@@ -13,7 +13,7 @@ enum MADT_type
 struct MADT_record_table_entry
 {
     uint8_t ttype; // MADT_type
-    uint8_t tlenght;
+    uint8_t tlength;
 } __attribute__((packed));
 
 // entry type 0
@@ -86,7 +86,7 @@ public:
     MADT_head *madt_header = 0x0;
     void log_all();
     void init();
-    uint64_t get_madt_table_lenght();
+    uint64_t get_madt_table_length();
     MADT_record_table_entry *get_madt_table_record();
     MADT_table_IOAPIC **get_madt_ioAPIC();
     MADT_table_ISO **get_madt_ISO();

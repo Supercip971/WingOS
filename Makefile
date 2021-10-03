@@ -176,7 +176,6 @@ app: $(APP_FILE_CHANGE)
 .PHONY:super
 super:
 	@make app -j12
-	@make format
 	@make -j12
 
 	@objdump kernel.elf -f -s -d --source > kernel.map

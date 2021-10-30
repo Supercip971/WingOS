@@ -11,9 +11,7 @@
 
 WingOS is a small hobbyist 64 bit kernel made with <3 in C++ 
 
-Note: the userspace is not really developed right now, there are not really functional binutils nor useful applications, for the moment I prefer developing the kernel than the userspace.
-
-Note2: for the moment I am working on [Brutal](https://github.com/brutal-org/brutal) a super cool microkernel written in C.
+!! Note: for the moment I am working on [Brutal](https://github.com/brutal-org/brutal) a super cool microkernel written in C.
 
 </div>
 

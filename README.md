@@ -1,5 +1,19 @@
 <div align="center">
-
+<br>
+<br>
+<br>
+<p align="center">🪦🪦🪦</p>
+<p align="center">WingOS</p>
+<p align="center">2020-2021</p>
+<p align="center">
+"Long live <a href="https://github.com/brutal-org/brutal">BRUTAL</a>!"
+</p>
+<br>
+<br>
+<br>
+ 
+ 
+ 
 ![Banner](screen_shot/wingOS.png)
 
 ----
@@ -9,9 +23,7 @@
  [![License](https://img.shields.io/github/license/cute-engineewing/mulib?style=flat-square)](./LICENSE)
  [![Codacy Badge](https://app.codacy.com/project/badge/Grade/a93122f607b943fd960639747f19f29c)](https://www.codacy.com/gh/Supercip971/WingOS/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Supercip971/WingOS&amp;utm_campaign=Badge_Grade)
 
-WingOS is a small hobbyist 64 bit kernel made with <3 in C++ 
-
-!! Note: for the moment I am working on [Brutal](https://github.com/brutal-org/brutal) a super cool microkernel written in C.
+WingOS was a small hobbyist 64 bit kernel made with <3 in C++ 
 
 </div>
 

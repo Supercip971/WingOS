@@ -9,7 +9,7 @@ namespace log
 {
 
     core::VoidRW default_target;
-    core::Writer* target = &default_target; 
+    static core::Writer* target = &default_target; 
     void provide_log_target(core::Writer* writer)
     {
         target = writer;

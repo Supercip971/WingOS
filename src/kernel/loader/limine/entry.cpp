@@ -56,7 +56,7 @@ mcx::MachineContext _mcx;
 static arch::x86::Com com;
 extern "C" void __cxa_pure_virtual()
 {
-    limine_writer.writeV(core::Str("Pure virtual function called!"));
+    //limine_writer.writeV(core::Str("Pure virtual function called!"));
     done();
 }
 void load_mcx(mcx::MachineContext *context);
@@ -64,6 +64,7 @@ void load_mcx(mcx::MachineContext *context);
 // The following will be our kernel's entry point.
 void _start(void)
 {
+    asm volatile("cli");
     limine_writer = LimineWriter();
     log::provide_log_target(&limine_writer);
 
@@ -73,7 +74,6 @@ void _start(void)
     log::provide_log_target(&com);
 
     log::log$("successfully started serial...");
-    // We're done, just hang...
 
     load_mcx(&_mcx);
 

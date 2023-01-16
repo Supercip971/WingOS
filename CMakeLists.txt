@@ -13,6 +13,7 @@ set(LOADER "limine")
 set(CMAKE_STAGING_PREFIX "${CMAKE_BINARY_DIR}/root-path")
 set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/root-path")
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/meta/build" ${CMAKE_MODULE_PATH})
+
 set(CMAKE_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/src")
 set(BUILD_SHARED_LIBS OFF)
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
@@ -24,24 +25,6 @@ add_compile_options(-Wall -Wextra -Werror -Wvla -Wshadow)
 add_compile_options(-O3) 
 add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-std=c++2b>)
 
-add_compile_options(-mcmodel=large -mno-red-zone)
-add_compile_options(-fno-exceptions -fno-rtti)
-add_compile_options(-fno-stack-protector)
-add_compile_options(-fno-pic -fno-pie)
-add_compile_options(-fno-asynchronous-unwind-tables)
-add_compile_options(-fno-lto)
-add_compile_options(-fno-pie)
-add_compile_options(-fno-pic)
-add_compile_options(-mno-mmx)
-add_compile_options(-mno-80387)
-
-
-add_compile_options(-mno-avx)
-add_compile_options(-mno-sse)
-add_compile_options(-mno-sse2)
-add_compile_options(-mno-sse3)
-add_compile_options(-ffreestanding -fbuiltin -nostdlib -nostdlib++)
-
 
 
 
@@ -49,6 +32,7 @@ add_compile_options(-ffreestanding -fbuiltin -nostdlib -nostdlib++)
 include("toolchains/llvm")
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/src")
 file(TO_CMAKE_PATH "${PROJECT_BINARY_DIR}/CMakeLists.txt" LOC_PATH)
+
 if(EXISTS "${LOC_PATH}")
     message(FATAL_ERROR "You cannot build in a source directory (or any directory with a CMakeLists.txt file). Please make a build subdirectory. Feel free to remove CMakeCache.txt and CMakeFiles.")
 endif()

@@ -21,8 +21,11 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
 add_compile_options(-fno-exceptions -fno-rtti )
 
 add_compile_options(-fno-stack-protector)
-add_compile_options(-Wall -Wextra -Werror -Wvla -Wshadow) 
-add_compile_options(-O3) 
+add_compile_options( -Wall -Wextra -Werror -Wvla -Wshadow) 
+add_compile_options( -Og -g  ) 
+#add_compile_options(-O3) 
+
+
 add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-std=c++2b>)
 
 

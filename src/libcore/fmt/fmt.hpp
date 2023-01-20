@@ -67,7 +67,10 @@ constexpr core::Result<void> format_impl(Targ &target,   core::Str fmt, int c, A
 template <core::Writable Targ, typename Arg, typename... Args>
 constexpr core::Result<void> format_impl(Targ &target,   core::Str fmt, int c, Arg&& a, Args&&... args)
 {
-
+    if(fmt.data() == nullptr)
+    {
+        return format_v(target, core::Str("{null}"));
+    }
     while (c < fmt.len() && fmt[c] != '{')
     {
         target.write(fmt.begin()+c, 1);
@@ -99,7 +102,7 @@ constexpr core::Result<void> format_impl(Targ &target,   core::Str fmt, int c, A
 template <core::Writable Targ, core::IsConvertibleTo<core::Str> Fmt, typename... Args>
 constexpr core::Result<void> format(Targ &target,   Fmt&& fmt,  Args&&... args)
 {
-    return format_impl(target, (fmt), 0, core::forward<Args>(args)...);
+    return format_impl(target, core::Str(fmt), 0, core::forward<Args>(args)...);
 }
 
 

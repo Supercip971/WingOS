@@ -68,8 +68,8 @@ fi
 
 echo "Using loopback device: $LOOPBACK_DEV"
 
-MOUNT_ROOT_PATH="mnt"
-MOUNT_EFI_PATH="esp"
+MOUNT_ROOT_PATH="./mnt"
+MOUNT_EFI_PATH="./esp"
 
 
 cleanup() {
@@ -81,14 +81,16 @@ cleanup() {
         printf "Unmounting 'root' partition ($MOUNT_ROOT_PATH)... "
         tree "$MOUNT_ROOT_PATH"
         umount -R $MOUNT_ROOT_PATH
+        sync 
         rm -rf $MOUNT_ROOT_PATH
         printf "done \n"
     fi
-
+    sync
     if [ -d $MOUNT_EFI_PATH ]; then
         printf "Unmounting 'efi' partition ($MOUNT_EFI_PATH)... "
         tree "$MOUNT_EFI_PATH"
         umount -R $MOUNT_EFI_PATH
+        sync
         rm -rf $MOUNT_EFI_PATH
         printf "done \n"
     fi

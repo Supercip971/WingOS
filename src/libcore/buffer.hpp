@@ -23,7 +23,7 @@ public:
     constexpr T const &operator[](size_t index) const { return _data[index]; }
 
     constexpr const T *data() const { return _data; }
-    constexpr size_t len() const { return _len; }
+    __attribute__((always_inline)) inline constexpr size_t len() const { return _len; }
 
     constexpr const T *begin() const { return _data; }
     constexpr const T *end() const { return _data + _len; }

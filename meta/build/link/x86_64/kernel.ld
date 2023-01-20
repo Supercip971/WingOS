@@ -44,6 +44,8 @@ SECTIONS
     .bss : {
         *(COMMON)
         *(.bss .bss.*)
+        *(.note .note.*)
+        *(.eh_frame .eh_frame.*)
     } 
 
     /* Discard .note.* and .eh_frame since they may cause issues on some hosts. */

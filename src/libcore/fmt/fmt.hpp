@@ -18,7 +18,7 @@ namespace fmt
 
 
 template <core::IsConvertibleTo<core::Str> T, core::Writable Targ>
-constexpr core::Result<int> format_v(Targ &target, T&& value)
+constexpr core::Result<void> format_v(Targ &target, T&& value)
 {
     target.write(core::Str(value));
     return {};
@@ -31,6 +31,7 @@ constexpr core::Result<int> format_v(Targ &target, T&& value)
 template <core::Writable Targ>
 constexpr core::Result<void> format_impl(Targ &target, core::Str fmt, int c)
 {
+
     while (c < fmt.len())
     {
         target.write(&fmt[c], 1);
@@ -42,7 +43,6 @@ constexpr core::Result<void> format_impl(Targ &target, core::Str fmt, int c)
 template <core::Writable Targ, typename Arg>
 constexpr core::Result<void> format_impl(Targ &target,   core::Str fmt, int c, Arg&& a)
 {
-
     while (c < fmt.len() && fmt[c] != '{')
     {
         target.write(&fmt[c], 1);

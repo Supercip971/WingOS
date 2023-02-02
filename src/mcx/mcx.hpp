@@ -41,7 +41,7 @@ public:
 
 
 template <core::IsSame<const MachineContext*> T, core::Writable Targ>
-constexpr core::Result<int> format_v(Targ &target, T value)
+constexpr core::Result<void> format_v(Targ &target, T value)
 {
     fmt::format(target, "\n MachineContext [ \n");
     fmt::format(target, "  _memory_map_count: {} \n", value->_memory_map_count);

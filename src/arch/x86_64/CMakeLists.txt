@@ -1,4 +1,4 @@
-set(X86_64_ARCH_SPECIFIC x86_64.cpp)
+set(X86_64_ARCH_SPECIFIC x86_64.cpp gdt.hpp gdt.cpp gdt_loading.s)
 
 
 list(TRANSFORM X86_64_ARCH_SPECIFIC PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/")

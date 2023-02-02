@@ -59,6 +59,12 @@ namespace arch::amd64
             GdtEntry::make_entry(0, 0xFFFFFFFF, 0x92, 0xCF), // data segment
             GdtEntry::make_entry(0, 0xFFFFFFFF, 0xFA, 0xCF), // user code segment
             GdtEntry::make_entry(0, 0xFFFFFFFF, 0xF2, 0xCF), // user data segment
-        }) {}
+        }) {};
+
     } __attribute__((packed));
+
+
+    Gdtr default_gdt();
+    void load_gdt(Gdtr gdtr);
+
 }

@@ -5,7 +5,6 @@ if("${ARCH}" STREQUAL "x86_64")
     add_subdirectory(x86)
     add_subdirectory(x86_64)
     set(ARCH_SPECIFIC ${X86_64_ARCH_SPECIFIC} ${X86_ARCH_SPECIFIC})
-    set(ARCH_SPECIFIC ${X86_ARCH_SPECIFIC})
 
 
 

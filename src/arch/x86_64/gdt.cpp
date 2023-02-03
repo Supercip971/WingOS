@@ -13,9 +13,10 @@ Gdtr default_gdt()
         sizeof(_default_gdt) - 1,
     };
     return _default_gdtr;
+    
 }
 
-extern void gdtr_install(Gdtr gdtr);
+extern "C" void gdtr_install(Gdtr gdtr);
 void load_gdt(Gdtr gdtr)
 {
     gdtr_install(gdtr);

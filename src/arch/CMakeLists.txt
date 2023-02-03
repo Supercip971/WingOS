@@ -18,8 +18,25 @@ endif()
 set(ARCH_GENERIC arch.hpp arch.cpp)
 
 set(ARCH_SRC ${ARCH_GENERIC} ${ARCH_SPECIFIC})
-
+print_all_variables()
 add_library(Arch STATIC ${ARCH_SRC})
+
+target_compile_options(Arch PUBLIC $<$<COMPILE_LANGUAGE:CXX,C>:
+                                        -g -Og
+                                        -fno-exceptions -fno-rtti
+                                        -fno-stack-protector
+                                        -fno-pic -fno-pie
+                                        -fno-asynchronous-unwind-tables
+                                        -fno-lto
+                                        -fno-pie
+                                        -fno-pic
+                                        -mno-mmx
+                                        -mno-80387
+                                        -mno-avx
+                                        -mno-sse
+                                        -mno-sse2
+                                        -mno-sse3
+                                        -ffreestanding -fbuiltin -nostdlib -nostdlib++>)
 
 list(TRANSFORM ARCH_SRC PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/")
 set(ARCH_SOURCES ${ARCH_SRC} PARENT_SCOPE)

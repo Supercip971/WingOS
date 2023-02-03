@@ -1,13 +1,21 @@
 
 
 
-cmake_minimum_required(VERSION 3.14...3.24)
+cmake_minimum_required(VERSION 3.15...3.24)
 
 project(
   Wingos
   VERSION 1.0
   LANGUAGES CXX C)
-
+enable_language(ASM_NASM)
+macro(print_all_variables)
+    message(STATUS "print_all_variables------------------------------------------{")
+    get_cmake_property(_variableNames VARIABLES)
+    foreach (_variableName ${_variableNames})
+        message(STATUS "${_variableName}=${${_variableName}}")
+    endforeach()
+    message(STATUS "print_all_variables------------------------------------------}")
+endmacro()
 set(ARCH "x86_64")
 set(LOADER "limine")
 set(CMAKE_STAGING_PREFIX "${CMAKE_BINARY_DIR}/root-path")
@@ -17,12 +25,9 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/meta/build" ${CMAKE_MODULE_PATH})
 set(CMAKE_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/src")
 set(BUILD_SHARED_LIBS OFF)
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+add_compile_options("$<$<COMPILE_LANGUAGE:CXX,C>:-fno-exceptions;-fno-rtti;-fno-stack-protector;-Wall;-Wextra;-Werror;-Wvla;-Wshadow;-Og;-g;>")
 
-add_compile_options(-fno-exceptions -fno-rtti )
 
-add_compile_options(-fno-stack-protector)
-add_compile_options( -Wall -Wextra -Werror -Wvla -Wshadow) 
-add_compile_options( -Og -g  ) 
 #add_compile_options(-O3) 
 
 

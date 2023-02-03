@@ -19,31 +19,30 @@ if("${ARCH}" STREQUAL "x86_64")
     set_target_properties(Kernel PROPERTIES
     LINK_FLAGS "-nostdlib -ffreestanding -nostdlib++ -fno-rtti -fno-stack-protector -e 0")
 
-    target_compile_options(Kernel PUBLIC -g -Og -mcmodel=large -mno-red-zone)
-    target_compile_options(Kernel PUBLIC -fno-exceptions -fno-rtti)
-    target_compile_options(Kernel PUBLIC -fno-stack-protector)
-    target_compile_options(Kernel PUBLIC -fno-pic -fno-pie)
-    target_compile_options(Kernel PUBLIC -fno-asynchronous-unwind-tables)
-    target_compile_options(Kernel PUBLIC -fno-lto)
-    target_compile_options(Kernel PUBLIC -fno-pie)
-    target_compile_options(Kernel PUBLIC -fno-pic)
-    target_compile_options(Kernel PUBLIC -mno-mmx)
-    target_compile_options(Kernel PUBLIC -mno-80387)
-    
-    
-    target_compile_options(Kernel PUBLIC -mno-avx)
-    target_compile_options(Kernel PUBLIC -mno-sse)
-    target_compile_options(Kernel PUBLIC -mno-sse2)
-    target_compile_options(Kernel PUBLIC -mno-sse3)
-    target_compile_options(Kernel PUBLIC -ffreestanding -fbuiltin -nostdlib -nostdlib++)
+    target_compile_options(Kernel PUBLIC $<$<COMPILE_LANGUAGE:CXX,C>:
+                                        -g -Og -mcmodel=large -mno-red-zone
+                                        -fno-exceptions -fno-rtti
+                                        -fno-stack-protector
+                                        -fno-pic -fno-pie
+                                        -fno-asynchronous-unwind-tables
+                                        -fno-lto
+                                        -fno-pie
+                                        -fno-pic
+                                        -mno-mmx
+                                        -mno-80387
+                                        -mno-avx
+                                        -mno-sse
+                                        -mno-sse2
+                                        -mno-sse3
+                                        -ffreestanding -fbuiltin -nostdlib -nostdlib++>)
     
 
     target_link_libraries(Kernel PRIVATE Arch)
-
 endif()
 #target_link_libraries(Kernel PRIVATE Mcx)
 #target_link_libraries(Kernel PRIVATE Core)
 
+set_target_properties(Kernel PROPERTIES LINKER_LANGUAGE C)
 
 
 

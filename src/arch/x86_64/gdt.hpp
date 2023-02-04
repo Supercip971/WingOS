@@ -14,8 +14,6 @@ namespace arch::amd64
 
         constexpr Gdtr() : base(0), limit(0) {}
 
-
-
         template<typename T>
         constexpr static Gdtr gdtr_from_ptr(T* ptr) {
             return Gdtr((uint64_t)ptr, sizeof(T) - 1);
@@ -35,7 +33,6 @@ namespace arch::amd64
 
         constexpr static GdtEntry make_entry( uint32_t base, uint32_t limit, uint8_t granularity, uint8_t flags )
         {
-
             return (GdtEntry) {
                 .limit_low = static_cast<uint16_t>(limit & 0xFFFF),
                 .base_low = static_cast<uint16_t>(base & 0xFFFF),
@@ -55,16 +52,16 @@ namespace arch::amd64
 
         constexpr Gdt() : _entries({
             GdtEntry::make_entry(0, 0, 0, 0), // null segment
-            GdtEntry::make_entry(0, 0xFFFFFFFF, 0x9A, 0xCF), // code segment
-            GdtEntry::make_entry(0, 0xFFFFFFFF, 0x92, 0xCF), // data segment
-            GdtEntry::make_entry(0, 0xFFFFFFFF, 0xFA, 0xCF), // user code segment
-            GdtEntry::make_entry(0, 0xFFFFFFFF, 0xF2, 0xCF), // user data segment
+            GdtEntry::make_entry(0, 0xFFFFFFFF, 0b10,0b10011010), // code segment
+            GdtEntry::make_entry(0, 0xFFFFFFFF, 0,   0b10010010), // data segment
+            GdtEntry::make_entry(0, 0xFFFFFFFF, 0,   0b11110010), // user data segment
+            GdtEntry::make_entry(0, 0xFFFFFFFF, 0b10,0b11111010), // user code segment
         }) {};
 
     } __attribute__((packed));
 
 
-    Gdtr default_gdt();
-    void load_gdt(Gdtr gdtr);
+    Gdtr* default_gdt();
+    void load_gdt(Gdtr* gdtr);
 
 }

@@ -21,6 +21,10 @@ set(ARCH_SRC ${ARCH_GENERIC} ${ARCH_SPECIFIC})
 print_all_variables()
 add_library(Arch STATIC ${ARCH_SRC})
 
+target_compile_options(Arch PUBLIC $<$<COMPILE_LANGUAGE:ASM_NASM>:
+                                        -f elf64>)
+
+
 target_compile_options(Arch PUBLIC $<$<COMPILE_LANGUAGE:CXX,C>:
                                         -g -Og
                                         -fno-exceptions -fno-rtti

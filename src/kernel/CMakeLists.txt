@@ -36,6 +36,8 @@ if("${ARCH}" STREQUAL "x86_64")
                                         -mno-sse3
                                         -ffreestanding -fbuiltin -nostdlib -nostdlib++>)
     
+    target_compile_options(Kernel PUBLIC $<$<COMPILE_LANGUAGE:ASM_NASM>:
+                                        -f elf64>)
 
     target_link_libraries(Kernel PRIVATE Arch)
 endif()

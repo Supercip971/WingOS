@@ -9,7 +9,7 @@ add_subdirectory("${ARCH}")
 
 # We do this, because of the fact that we need to control the compilation of the library.
 
-add_executable(Kernel ${SOURCES} ${LOADER_SOURCES} ${ARCH_SOURCES} ${MCX_SOURCES} ${LIBC_SOURCES} ${LIBCORE_SOURCES})
+add_executable(Kernel ${SOURCES} ${LOADER_SOURCES} ${KERNEL_ARCH_SOURCES} ${ARCH_SOURCES} ${MCX_SOURCES} ${LIBC_SOURCES} ${LIBCORE_SOURCES})
 #target_link_libraries(Kernel PRIVATE Libc)
 if("${ARCH}" STREQUAL "x86_64")
 
@@ -39,7 +39,8 @@ if("${ARCH}" STREQUAL "x86_64")
     target_compile_options(Kernel PUBLIC $<$<COMPILE_LANGUAGE:ASM_NASM>:
                                         -f elf64>)
 
-    target_link_libraries(Kernel PRIVATE Arch)
+
+    #target_link_libraries(Kernel PRIVATE Arch)
 endif()
 #target_link_libraries(Kernel PRIVATE Mcx)
 #target_link_libraries(Kernel PRIVATE Core)

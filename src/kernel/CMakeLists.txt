@@ -20,21 +20,19 @@ if("${ARCH}" STREQUAL "x86_64")
     LINK_FLAGS "-nostdlib -ffreestanding -nostdlib++ -fno-rtti -fno-stack-protector -e 0")
 
     target_compile_options(Kernel PUBLIC $<$<COMPILE_LANGUAGE:CXX,C>:
-                                        -g -Og -mcmodel=large -mno-red-zone
+                                        -g -Og -mcmodel=kernel -mno-red-zone
                                         -fno-exceptions -fno-rtti
                                         -fno-stack-protector
                                         -fno-pic -fno-pie
                                         -fno-asynchronous-unwind-tables
                                         -fno-lto
-                                        -fno-pie
-                                        -fno-pic
                                         -mno-mmx
                                         -mno-80387
                                         -mno-avx
                                         -mno-sse
                                         -mno-sse2
                                         -mno-sse3
-                                        -ffreestanding -fbuiltin -nostdlib -nostdlib++>)
+                                        -ffreestanding -fno-builtin -nostdlib -nostdlib++>)
     
     target_compile_options(Kernel PUBLIC $<$<COMPILE_LANGUAGE:ASM_NASM>:
                                         -f elf64>)
@@ -45,7 +43,6 @@ endif()
 #target_link_libraries(Kernel PRIVATE Mcx)
 #target_link_libraries(Kernel PRIVATE Core)
 
-set_target_properties(Kernel PROPERTIES LINKER_LANGUAGE C)
 
 
 

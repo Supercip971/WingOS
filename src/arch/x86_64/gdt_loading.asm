@@ -15,5 +15,4 @@ gdtr_install:
     o64 retf  ; fait un far return
 
 .trampoline:
-    pop rbp
     ret

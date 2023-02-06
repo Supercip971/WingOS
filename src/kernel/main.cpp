@@ -9,6 +9,6 @@ void kernel_entry(const mcx::MachineContext* context)
 
     while(true)
     {
-
+        asm volatile("hlt");
     }
 }

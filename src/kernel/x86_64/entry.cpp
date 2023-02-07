@@ -9,7 +9,7 @@ void arch_entry(const mcx::MachineContext *context)
 {
     log::log$("started kernel arch");
 
-    arch::amd64::load_gdt(arch::amd64::default_gdt());
+    arch::amd64::gdt_use(arch::amd64::load_default_gdt());
     log::log$("loaded kernel gdt");
 
 

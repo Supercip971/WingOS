@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include "libcore/ds/array.hpp"
+
 namespace arch::amd64 
 {
     struct Gdtr 
@@ -45,10 +46,14 @@ namespace arch::amd64
         }; 
     } __attribute__((packed));
 
-
     struct Gdt 
     {
         core::Array<GdtEntry, 5> _entries;   
+
+        static const int kernel_code_segment_id = 1;
+        static const int kernel_data_segment_id = 2;
+        static const int user_data_segment_id = 3;
+        static const int user_code_segment_id = 4;
 
         constexpr Gdt() : _entries({
             GdtEntry::make_entry(0, 0, 0, 0), // null segment
@@ -61,7 +66,7 @@ namespace arch::amd64
     } __attribute__((packed));
 
 
-    Gdtr* default_gdt();
-    void load_gdt(Gdtr* gdtr);
+    Gdtr* load_default_gdt();
+    void gdt_use(Gdtr* gdtr);
 
 }

@@ -5,7 +5,7 @@
 #include <stdint.h>
 namespace core
 {
-template <class T>
+template <class T = uint8_t>
 class MemView
 {
 protected:
@@ -18,7 +18,7 @@ public:
     constexpr MemView() : _data(nullptr), _len(0) {}
     constexpr MemView(const T *data, size_t len) : _data(data), _len(len) {}
 
-    
+
 
     constexpr T const &operator[](size_t index) const { return _data[index]; }
 
@@ -54,6 +54,7 @@ public:
     }
 };
 
+
 template <typename T>
 concept Viewable = requires(T a)
 {
@@ -70,6 +71,7 @@ concept Viewable = requires(T a)
         a.end()
         } -> IsConvertibleTo<const typename T::Type *>;
 };
+
 
 static_assert(Viewable<MemView<char>>);
 } // namespace core

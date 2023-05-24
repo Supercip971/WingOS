@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include "libcore/ds/array.hpp"
 #include "libcore/enum-op.hpp"
+#include <libcore/funcs.hpp>
 namespace arch::amd64 
 {
     struct IDTRegister
@@ -59,12 +60,13 @@ namespace arch::amd64
 
         constexpr IDT() : _entries{} {};
 
-        
-        void fill( uintptr_t* handler_table, int cs) {
-            for(int i = 0; i < _size; i++)
-            {
-                _entries[i] = IDTEntry(reinterpret_cast<uintptr_t>(handler_table[i]), cs, 0, IDTEntry::Type::TRAP);
-            }
+        template<core::Viewable T>
+        void fill(const T& handler_table, int cs) {
+
+            core::forEachIdx(handler_table, [&](auto v, size_t index){
+                _entries[index] = IDTEntry(reinterpret_cast<uintptr_t>(v), cs, 0, IDTEntry::Type::TRAP);
+            });
+
         }
 
     } __attribute__((packed)); 

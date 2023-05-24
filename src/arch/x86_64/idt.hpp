@@ -60,10 +60,10 @@ namespace arch::amd64
         constexpr IDT() : _entries{} {};
 
         
-        void fill( uintptr_t handler_table_base, int cs) {
+        void fill( uintptr_t* handler_table, int cs) {
             for(int i = 0; i < _size; i++)
             {
-                _entries[i] = IDTEntry(reinterpret_cast<uintptr_t>(handler_table_base) + i*8, cs, 0, IDTEntry::Type::TRAP);
+                _entries[i] = IDTEntry(reinterpret_cast<uintptr_t>(handler_table[i]), cs, 0, IDTEntry::Type::TRAP);
             }
         }
 

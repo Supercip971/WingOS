@@ -11,7 +11,7 @@ namespace arch::amd64
     IDTRegister* load_default_idt()
     {
         default_idt = IDT();
-        default_idt.fill(reinterpret_cast<uintptr_t>(__interrupt_vector), Gdt::kernel_code_segment_id * 8);
+        default_idt.fill((__interrupt_vector), Gdt::kernel_code_segment_id * 8);
         default_idt_register = IDTRegister(default_idt._size, reinterpret_cast<uintptr_t>(&default_idt));
         return &default_idt_register;
     }

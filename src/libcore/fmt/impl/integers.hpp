@@ -12,8 +12,16 @@
 namespace fmt
 {
 
+// FIXME: rewrite everything here, as it is really bad
+typedef struct
+{
+    bool hex;
+    int pad;
+    char pad_char;
+} FormatIntegerFlags;
+
 template <core::IsIdentityIntegral T, core::Writable Targ>
-constexpr core::Result<int> format_v(Targ &target, T &&v)
+constexpr core::Result<int> format_v(Targ &target, T &&v, FormatIntegerFlags flags)
 {
 
     core::Pure<T> value = v;
@@ -46,7 +54,13 @@ constexpr core::Result<int> format_v(Targ &target, T &&v)
 }
 
 template <core::IsIdentityIntegral T, core::Writable Targ>
-constexpr core::Result<int> format_v_hex(Targ &target, T &&v)
+constexpr core::Result<int> format_v(Targ &target, T &&v)
+{
+    return format_v(target, v, {false, 0, ' '});
+}
+
+template <core::IsIdentityIntegral T, core::Writable Targ>
+constexpr core::Result<int> format_v_hex(Targ &target, T &&v, FormatIntegerFlags flags)
 {
 
     core::Pure<T> value = v;
@@ -74,6 +88,13 @@ constexpr core::Result<int> format_v_hex(Targ &target, T &&v)
         digit = value % 16;
     }
 
+    if (flags.pad > i)
+    {
+        for (int v = i; v < flags.pad; v++)
+        {
+            target.write(&flags.pad_char, 1);
+        }
+    }
     for (int v = i - 1; v >= 0; v--)
     {
         target.write(&buffer[v], 1);
@@ -82,17 +103,67 @@ constexpr core::Result<int> format_v_hex(Targ &target, T &&v)
 }
 
 template <core::IsIdentityIntegral T, core::Writable Targ>
+constexpr core::Result<int> format_v_hex(Targ &target, T &&v)
+{
+    return format_v_hex(target, v, {true, 0, ' '});
+}
+
+template <core::IsIdentityIntegral T, core::Writable Targ>
 constexpr core::Result<int> format_v(Targ &target, FormatFlags<T> &&v)
 {
-
+    if (v.color != Color::NONE)
+    {
+        target.write("\033[", 2);
+        format_v(target, (int)v.color);
+        target.write("m", 1);
+    }
     if (v.is_hex)
     {
-        return format_v_hex(target, v.value);
+        auto r = format_v_hex(target, v.value, {v.is_hex, v.pad_size, v.pad_char});
+
+        if (v.color != Color::NONE)
+        {
+            target.write("\033[0m", 4);
+        }
+        return r;
     }
     else
     {
-        return format_v(target, v.value);
+        auto r = format_v(target, (int)v.value, {v.is_hex, v.pad_size, v.pad_char});
+        if (v.color != Color::NONE)
+        {
+            target.write("\033[0m", 4);
+        }
+        return r;
     }
 }
+template <core::IsIdentityIntegral T, core::Writable Targ>
+constexpr core::Result<int> format_v(Targ &target, const FormatFlags<T> &v)
+{
+    if (v.color != Color::NONE)
+    {
+        target.write("\033[", 2);
+        format_v(target, (int)v.color);
+        target.write("m", 1);
+    }
+    if (v.is_hex)
+    {
+        auto r = format_v_hex(target, v.value, {v.is_hex, v.pad_size, v.pad_char});
 
+        if (v.color != Color::NONE)
+        {
+            target.write("\033[0m", 4);
+        }
+        return r;
+    }
+    else
+    {
+        auto r = format_v(target, (int)v.value, {v.is_hex, v.pad_size, v.pad_char});
+        if (v.color != Color::NONE)
+        {
+            target.write("\033[0m", 4);
+        }
+        return r;
+    }
+}
 } // namespace fmt

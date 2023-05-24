@@ -1,9 +1,11 @@
 #pragma once
 #include <libcore/ds/array.hpp>
-#include <math/range.hpp>
 #include <libcore/fmt/fmt.hpp>
+#include <math/range.hpp>
 #include <stdint.h>
+
 #include "libcore/fmt/flags.hpp"
+
 namespace mcx
 {
 
@@ -39,8 +41,7 @@ public:
     uintptr_t _rsdp;
 };
 
-
-template <core::IsSame<const MachineContext*> T, core::Writable Targ>
+template <core::IsSame<const MachineContext *> T, core::Writable Targ>
 constexpr core::Result<void> format_v(Targ &target, T value)
 {
     fmt::format(target, "\n MachineContext [ \n");
@@ -55,6 +56,5 @@ constexpr core::Result<void> format_v(Targ &target, T value)
     fmt::format(target, "] \n");
     return {};
 }
-
 
 } // namespace mcx

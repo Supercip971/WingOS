@@ -4,9 +4,9 @@
 namespace core
 {
 
-constexpr Str isnt_encouraging_messages[] =
+constexpr Array isnt_encouraging_messages =
     {
-        "You can do it!",
+        Str("You can do it!"),
         "Guru Meditation",
         "Should have been using Rust",
         "I bet it's C++ fault",

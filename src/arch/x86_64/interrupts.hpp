@@ -7,8 +7,8 @@ namespace arch::amd64
 
 // table 8-1 (part 8.2 Vectors) amd64 architecture programmer's manual volume 2
 
-static constexpr core::Array<core::Str, 32> interrupts_names{
-    "Divide by zero [#DE]",
+static constexpr core::Array interrupts_names{
+    core::Str("Divide by zero [#DE]"),
     "Debug [#DB]",
     "Non-maskable interrupt [#NMI]",
     "Breakpoint [#BP]",

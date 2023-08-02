@@ -24,8 +24,9 @@ constexpr core::Result<void> format_v(Targ &target, T &&value)
 // What I have done ?
 
 template <core::Writable Targ>
-constexpr core::Result<void> format_impl(Targ &target, core::Str fmt, int c)
+constexpr core::Result<void> format_impl(Targ &target, core::Str fmt, int _c)
 {
+    size_t c = _c;
 
     while (c < fmt.len())
     {
@@ -36,8 +37,9 @@ constexpr core::Result<void> format_impl(Targ &target, core::Str fmt, int c)
 }
 
 template <core::Writable Targ, typename Arg>
-constexpr core::Result<void> format_impl(Targ &target, core::Str fmt, int c, Arg &&a)
+constexpr core::Result<void> format_impl(Targ &target, core::Str fmt, int _c, Arg &&a)
 {
+    size_t c = _c;
     while (c < fmt.len() && fmt[c] != '{')
     {
         target.write(&fmt[c], 1);
@@ -61,8 +63,9 @@ constexpr core::Result<void> format_impl(Targ &target, core::Str fmt, int c, Arg
 }
 
 template <core::Writable Targ, typename Arg, typename... Args>
-constexpr core::Result<void> format_impl(Targ &target, core::Str fmt, int c, Arg &&a, Args &&...args)
+constexpr core::Result<void> format_impl(Targ &target, core::Str fmt, int _c, Arg &&a, Args &&...args)
 {
+    size_t c = _c;
     if (fmt.data() == nullptr)
     {
         return format_v(target, core::Str("{null}"));

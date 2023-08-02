@@ -1,26 +1,32 @@
 #pragma once
 
 #include <libcore/optional.hpp>
-
 #include <libcore/type-utils.hpp>
+
 #include "libcore/type/trait.hpp"
 
 namespace core
 {
 
 class Str;
-template <typename ValT, typename ErrT = const char*>
+template <typename ValT, typename ErrT = const char *>
 struct Result : public NoCopy
 {
 
 private:
     Optional<ValT> _value;
     Optional<ErrT> _error;
-    public:
 
+public:
     using ErrorType = RemoveReference<ErrT>;
     using ValueType = RemoveReference<ValT>;
     constexpr Result() : _value(), _error() {}
+
+    constexpr ~Result()
+    {
+        _value.~Optional();
+        _error.~Optional();
+    }
 
     constexpr Result(const ValT &value) : _value(value), _error() {}
 
@@ -29,7 +35,6 @@ private:
     constexpr Result(const ErrT &error) : _value(), _error(error) {}
 
     constexpr Result(ErrT &&error) : _value(), _error(core::move(error)) {}
-
 
     constexpr Result(Result &&other) : _value(core::move(other._value)), _error(core::move(other._error)) {}
 
@@ -40,11 +45,9 @@ private:
         return *this;
     }
 
-    constexpr void assert(); 
+    void assert();
 
-
-
-    constexpr ValT &&unwrap()
+    ValT &&unwrap()
     {
         assert();
         return core::move(_value.unwrap());
@@ -54,7 +57,6 @@ private:
     {
         return _value.has_value();
     }
-
 
     constexpr ErrT error() const
     {
@@ -68,33 +70,27 @@ struct Result<void, ErrT> : public NoCopy
 
 private:
     Optional<ErrT> _error;
-    public:
 
+public:
     using ErrorType = RemoveReference<ErrT>;
     using ValueType = void;
-    constexpr Result() :  _error() {}
+    constexpr Result() : _error() {}
 
-    constexpr Result(const ErrT &error) :  _error(error) {}
+    constexpr Result(const ErrT &error) : _error(error) {}
 
-    constexpr Result(ErrT &&error) :  _error(core::move(error)) {}
-
-
-
+    constexpr Result(ErrT &&error) : _error(core::move(error)) {}
 
     constexpr Result(Result &&other) : _error(core::move(other._error)) {}
 
     constexpr Result &operator=(Result &&other)
     {
-        other.unwrap();
         _error = core::move(other._error);
         return *this;
     }
 
-    constexpr void assert(); 
+    void assert();
 
-
-
-    constexpr void unwrap()
+    void unwrap()
     {
         assert();
     }
@@ -104,18 +100,20 @@ private:
         return !_error.has_value();
     }
 
-
     constexpr ErrT error() const
     {
         return *_error;
     }
+
+    constexpr ~Result()
+    {
+        _error.~Optional();
+    }
 };
 
-
-template<typename A,typename T>
-concept IsConvertibleToResult = 
-    core::IsConvertibleTo<typename A::ValueType,  T>;
-
+template <typename A, typename T>
+concept IsConvertibleToResult =
+    core::IsConvertibleTo<typename A::ValueType, T>;
 
 template <typename T>
 using EResult = Result<T, Str>;

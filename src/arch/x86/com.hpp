@@ -1,10 +1,10 @@
 #pragma once
 
 #include <arch/x86/port.hpp>
-#include <cstdint>
 #include <libcore/enum-op.hpp>
 #include <libcore/io/writer.hpp>
 #include <libcore/result.hpp>
+#include <stdint.h>
 namespace arch::x86
 {
 
@@ -40,7 +40,7 @@ public:
 
     enum class LineControl : uint8_t
     {
-        
+
         DATA_SIZE_5 = 0,
         DATA_SIZE_6 = 1,
         DATA_SIZE_7 = 2,
@@ -87,20 +87,23 @@ public:
 
     bool can_write() const;
 
-
     void wait_write();
 
-    core::Result<void> write(const char* data, size_t size) override;
+    core::Result<void> write(const char *data, size_t size) override;
 
     static core::Result<Com> initialize(Com::Port port);
-        template<core::Viewable T>
-        constexpr  core::Result<void> write(T view) requires (core::Viewable<T> ){
-            return write(view.data(), view.len());
-        }
- 
+    template <core::Viewable T>
+    constexpr core::Result<void> write(T view)
+        requires(core::Viewable<T>)
+    {
+        return write(view.data(), view.len());
+    }
+
+    ~Com()
+    {
+    }
+
 private:
-
-
     Port _port{};
 };
 
@@ -108,9 +111,5 @@ ENUM_OP$(Com::LineControl);
 ENUM_OP$(Com::Modem);
 ENUM_OP$(Com::InterruptEnable);
 ENUM_OP$(Com::LineStatus);
-
-
-
-
 
 } // namespace arch::x86

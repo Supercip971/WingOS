@@ -23,6 +23,7 @@ typedef struct
 template <core::IsIdentityIntegral T, core::Writable Targ>
 constexpr core::Result<int> format_v(Targ &target, T &&v, FormatIntegerFlags flags)
 {
+    (void)flags;
 
     core::Pure<T> value = v;
     core::Pure<T> digit = value % 10;

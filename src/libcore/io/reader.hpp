@@ -10,16 +10,24 @@ namespace core
 class Reader
 {
 public:
-    virtual Result<size_t> read(char *data, size_t size) const { return size_t(0); };
+    virtual Result<size_t> read(char *data, size_t size) const
+    {
+        (void)data;
+        (void)size;
+        return size_t(0);
+    };
+
+    constexpr virtual ~Reader()
+    {
+    }
 };
 
 template <typename T>
-concept Readable = requires(T *x)
-{
-    {
-        x->read((char *)0, 10)
-        } -> IsConvertibleToResult<size_t>;
-};
+concept Readable = requires(T *x) {
+                       {
+                           x->read((char *)0, 10)
+                           } -> IsConvertibleToResult<size_t>;
+                   };
 
 static_assert(Readable<Reader>);
 

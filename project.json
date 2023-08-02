@@ -1,0 +1,7 @@
+{
+    "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.project.v1",
+    "type": "project",
+    "id": "supercip971/wingos",
+    "description": "A simple operating system",
+    "extern": {}
+}

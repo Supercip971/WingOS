@@ -1,12 +1,13 @@
 
+#include <arch/x86/com.hpp>
+#include <kernel/generic/kernel.hpp>
 #include <kernel/loader/limine/limine.hpp>
+#include <libcore/fmt/fmt.hpp>
 #include <stddef.h>
 #include <stdint.h>
-#include <arch/x86/com.hpp>
-#include <libcore/fmt/fmt.hpp>
-#include <kernel/kernel.hpp>
-#include "libcore/io/writer.hpp"
+
 #include "libcore/fmt/log.hpp"
+#include "libcore/io/writer.hpp"
 #include "libcore/str.hpp"
 #include "mcx/mcx.hpp"
 
@@ -44,19 +45,17 @@ public:
         terminal_request.response->write(terminal, data, size);
         return {};
     }
-    template<core::Viewable T>
-        constexpr core::Result<void> write(T view)  requires (core::Viewable<T> ) {
-            return write(view.data(), view.len());
-        }
+    template <core::Viewable T>
+    constexpr core::Result<void> write(T view)
+        requires(core::Viewable<T>)
+    {
+        return write(view.data(), view.len());
+    }
 };
 
-static  LimineWriter limine_writer;
-
-mcx::MachineContext _mcx;
-static arch::x86::Com com;
 extern "C" void __cxa_pure_virtual()
 {
-    //limine_writer.writeV(core::Str("Pure virtual function called!"));
+    // limine_writer.writeV(core::Str("Pure virtual function called!"));
     done();
 }
 void load_mcx(mcx::MachineContext *context);
@@ -64,10 +63,14 @@ void load_mcx(mcx::MachineContext *context);
 // The following will be our kernel's entry point.
 void _start(void)
 {
+
+    static LimineWriter limine_writer{};
+
+    static mcx::MachineContext _mcx{};
+    static arch::x86::Com com{};
     asm volatile("cli");
     limine_writer = LimineWriter();
     log::provide_log_target(&limine_writer);
-
 
     com = arch::x86::Com::initialize(arch::x86::Com::Port::COM1).unwrap();
 
@@ -77,7 +80,7 @@ void _start(void)
 
     load_mcx(&_mcx);
 
-    log::log$("Mcx: {}", (const mcx::MachineContext*)&_mcx);
+    log::log$("Mcx: {}", (const mcx::MachineContext *)&_mcx);
     arch_entry(&_mcx);
     done();
 }

@@ -1,0 +1,83 @@
+{
+    "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
+    "id": "wingos-x86_64",
+    "type": "target",
+    "props": {
+        "toolchain": "clang",
+        "arch": "x86_64",
+        "bits": "64",
+        "sys": "wingos",
+        "abi": "sysv",
+        "encoding": "utf8",
+        "freestanding": false,
+        "host": false
+    },
+    "tools": {
+        "cc": {
+            "cmd": [
+                "@latest",
+                "clang"
+            ],
+            "args": [
+                "-target",
+                "x86_64-none-elf",
+                "-ffreestanding",
+                "-mno-80387",
+                "-mno-mmx",
+                "-mno-3dnow",
+                "-mno-sse",
+                "-mno-sse2"
+            ]
+        },
+        "cxx": {
+            "cmd": [
+                "@latest",
+                "clang++"
+            ],
+            "args": [
+                "-target",
+                "x86_64-none-elf",
+                "-ffreestanding",
+                "-mno-80387",
+                "-mno-mmx",
+                "-mno-3dnow",
+                "-mno-sse",
+                "-mno-sse2"
+            ]
+        },
+        "ld": {
+            "cmd": [
+                "@latest",
+                "ld.lld"
+            ],
+            "args": [
+                "-m",
+                "elf_x86_64",
+                "-T",
+                [
+                    "@abspath",
+                    "wingos-x86_64.ld"
+                ],
+                "-z",
+                "max-page-size=0x1000"
+            ]
+        },
+        "ar": {
+            "cmd": [
+                "@latest",
+                "llvm-ar"
+            ],
+            "args": [
+                "rcs"
+            ]
+        },
+        "as": {
+            "cmd": "clang",
+            "args": [
+                "-target",
+                "x86_64-none-elf",
+                "-c"
+            ]
+        }
+    }
+}

@@ -1,0 +1,12 @@
+{
+    "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
+    "type": "lib",
+    "id": "iol-kernel",
+    "description": "system abstraction layer for Wingos Kernel",
+    "provides": [
+        "iol"
+    ],
+    "enableIf": {
+        "sys": ["kernel"]
+    }
+}

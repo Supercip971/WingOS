@@ -1,0 +1,101 @@
+
+{
+    "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.target.v1",
+    "id": "kernel-x86_64",
+    "type": "target",
+    "props": {
+        "toolchain": "clang",
+        "arch": "x86_64",
+        "bits": "64",
+        "sys": "kernel",
+        "abi": "sysv",
+        "loader":"limine",
+        "encoding": "utf8",
+        "freestanding": true,
+        "host": false
+    },
+    "tools": {
+        "cc": {
+            "cmd": [
+                "@latest",
+                "clang"
+            ],
+            "args": [
+                "-target",
+                "x86_64-none-elf",
+                "-ffreestanding",
+                "-fno-stack-protector",
+                "-mno-80387",
+                "-mno-mmx",
+                "-mno-3dnow",
+                "-mno-sse",
+                "-mno-sse2",
+                "-mno-red-zone",
+                "-mcmodel=kernel"
+            ]
+        },
+        "cxx": {
+            "cmd": [
+                "@latest",
+                "clang++"
+            ],
+            "args": [
+                "-target",
+                "x86_64-none-elf",
+                "-ffreestanding",
+                "-fno-exceptions",
+                "-fno-rtti",
+                "-fno-stack-protector",
+                "-fno-c++-static-destructors",
+                "-fno-builtin",
+                "-fno-threadsafe-statics",
+                "-fno-c++-static-destructors",
+                "-mno-80387",
+                "-mno-mmx",
+                "-mno-3dnow",
+                "-mno-sse",
+                "-mno-sse2",
+                "-mno-red-zone",
+                "-mcmodel=kernel"
+            ]
+        },
+        "ld": {
+            "cmd": [
+                "@latest",
+                "ld.lld"
+            ],
+            "args": [
+                "-m",
+                "elf_x86_64",
+                "-T",
+                [
+                    "@abspath",
+                    "kernel-x86_64.ld"
+                ],
+                "-z",
+                "max-page-size=0x1000"
+            ],
+            "files": [
+                "meta/targets/kernel-x86_64.ld"
+            ]
+        },
+        "ar": {
+            "cmd": [
+                "@latest",
+                "llvm-ar"
+            ],
+            "args": [
+                "rcs"
+            ]
+        },
+        "as": {
+            "cmd": 
+                "nasm"
+            ,
+            "args": [
+                "-f",
+                "elf64"
+            ]
+        }
+    }
+}

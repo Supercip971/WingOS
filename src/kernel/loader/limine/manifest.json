@@ -1,0 +1,20 @@
+{
+    "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
+    "type": "exe",
+    "id": "kernel-loader-limine",
+    "description": "kernel bootloader interface layer for limine ",
+    "provides": [
+        "kernel-entry"
+    ],
+    "requires": [
+        "kernel",
+        "libcore",
+        "arch-generic",
+        "arch-x86-64",
+        "arch-x86"
+    ],
+    "enableIf": {
+        "arch": ["x86_64"],
+        "sys": ["kernel"]
+    }
+}

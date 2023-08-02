@@ -1,0 +1,5 @@
+
+
+void operator delete(void *)
+{
+}

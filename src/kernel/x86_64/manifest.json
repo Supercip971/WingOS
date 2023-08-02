@@ -1,0 +1,13 @@
+{
+    "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
+    "type": "lib",
+    "id": "kernel-arch-abstraction-x86-64",
+    "description": "kernel abstraction layer for x86-64 ",
+    "provides": [
+        "kernel-arch"
+    ],
+    "enableIf": {
+        "arch": ["x86_64"],
+        "sys": ["kernel"]
+    }
+}

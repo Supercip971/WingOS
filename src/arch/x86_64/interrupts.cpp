@@ -4,7 +4,6 @@
 #include "arch/x86_64/idt.hpp"
 #include "arch/x86_64/interrupts.hpp"
 
-#include "kernel/kernel.hpp"
 #include "libcore/encourage.hpp"
 
 uint64_t ccount;

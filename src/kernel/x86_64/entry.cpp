@@ -1,5 +1,5 @@
 
-#include <kernel/kernel.hpp>
+#include <kernel/generic/kernel.hpp>
 #include <libcore/fmt/log.hpp>
 #include <mcx/mcx.hpp>
 
@@ -15,7 +15,6 @@ void arch_entry(const mcx::MachineContext *context)
 
     arch::amd64::idt_use(arch::amd64::load_default_idt());
     log::log$("loaded kernel idt");
-
 
     kernel_entry(context);
 }

@@ -1,0 +1,65 @@
+{
+    "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
+    "id": "host-x86_64",
+    "type": "target",
+    "props": {
+        "toolchain": "clang",
+        "arch": "x86_64",
+        "bits": "64",
+        "sys": [
+            "@uname",
+            "sysname"
+        ],
+        "abi": "unknown",
+        "encoding": "utf8",
+        "freestanding": false,
+        "host": true
+    },
+    "tools": {
+        "cc": {
+            "cmd": [
+                "@latest",
+                "clang"
+            ],
+            "args": [
+               "-fno-stack-protector" 
+            ]
+        },
+        "cxx": {
+            "cmd": [
+                "@latest",
+                "clang++"
+            ],
+            "args": [
+
+               "-fno-stack-protector"
+            ]
+        },
+        "ld": {
+            "cmd": [
+                "@latest",
+                "clang++"
+            ],
+            "args": [
+                "-e",
+                "_cstart"
+            ]
+        },
+        "ar": {
+            "cmd": [
+                "@latest",
+                "llvm-ar"
+            ],
+            "args": [
+                "rcs"
+            ]
+        },
+        "as": {
+            "cmd": "nasm",
+            "args": [
+                "-f",
+                "elf64"
+            ]
+        }
+    }
+}

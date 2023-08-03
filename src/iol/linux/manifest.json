@@ -2,11 +2,11 @@
     "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
     "type": "lib",
     "id": "iol-linux",
-    "description": "system abstraction layer for Linux ",
+    "description": "system abstraction layer for Linux",
     "provides": [
         "iol"
     ],
     "enableIf": {
-        "sys": ["Linux"]
+        "sys": ["linux"]
     }
 }

@@ -1,5 +1,5 @@
-#include <mcx/mcx.hpp>
 #include <libcore/fmt/log.hpp>
-namespace mcx 
+#include <mcx/mcx.hpp>
+namespace mcx
 {
 }

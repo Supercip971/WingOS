@@ -1,12 +1,12 @@
-#pragma once 
+#pragma once
 
-#include <stdint.h>
-#include <stddef.h>
-#include <libcore/io/writer.hpp>
 #include <libcore/io/reader.hpp>
 #include <libcore/io/seekable.hpp>
+#include <libcore/io/writer.hpp>
+#include <stddef.h>
+#include <stdint.h>
 
-namespace core 
+namespace core
 {
-    
+
 }

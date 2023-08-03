@@ -27,7 +27,6 @@ void Com::update_baud_rate(int baud_rate)
     write_reg(Com::Register::LINE_CONTROL, core::underlying_value(Com::LineControl::DATA_SIZE_8));
 }
 
-
 bool Com::can_write() const
 {
     return read_reg(Com::Register::LINE_STATUS) & core::underlying_value(Com::LineStatus::TRANSMITTER_BUFFER_EMPTY);
@@ -63,7 +62,6 @@ core::Result<Com> Com::initialize(Com::Port port)
     com.write_reg(Com::Register::MODEM_CONTROL, core::underlying_value(Com::Modem::DTR | Com::Modem::RTS | Com::Modem::OUT2 | Com::Modem::OUT1));
 
     com.write_reg(Com::Register::INTERRUPT_ENABLE, core::underlying_value(Com::InterruptEnable::WHEN_DATA_AVAILABLE));
-
 
     return (com);
 }

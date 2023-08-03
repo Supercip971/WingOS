@@ -21,35 +21,30 @@ public:
     NoMove() = default;
 };
 
-
 template <class T>
-constexpr T &&forward(RemoveReference<T> &t) 
+constexpr T &&forward(RemoveReference<T> &t)
 {
     return static_cast<T &&>(t);
 }
 
 template <class T>
-constexpr T &&forward(RemoveReference<T> &&t) 
+constexpr T &&forward(RemoveReference<T> &&t)
 {
     return static_cast<T &&>(t);
 }
 
-
-template <class T> 
-constexpr RemoveReference<T>&& move(T&& t) 
+template <class T>
+constexpr RemoveReference<T> &&move(T &&t)
 {
-    return static_cast<RemoveReference<T>&&>(t);
+    return static_cast<RemoveReference<T> &&>(t);
 }
 
-template<typename T> 
-constexpr void swap(T& a, T& b) 
+template <typename T>
+constexpr void swap(T &a, T &b)
 {
     T c = core::move(a);
     a = core::move(b);
     b = core::move(c);
 }
-
-
-
 
 } // namespace core

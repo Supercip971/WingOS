@@ -1,5 +1,6 @@
 #pragma once
 #include <libcore/fmt/impl/integers.hpp>
+
 #include "libcore/fmt/flags.hpp"
 
 namespace fmt
@@ -24,6 +25,5 @@ constexpr core::Result<int> format_v(Targ &target, fmt::FormatFlags<C> range)
     target.write(core::Str(" }"));
     return {};
 }
-
 
 } // namespace fmt

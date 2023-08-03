@@ -1,6 +1,7 @@
 
 #pragma once
 #include <libcore/mem/mem.hpp>
+#include <libcore/result.hpp>
 #include <stddef.h>
 #include <stdint.h>
 namespace core
@@ -14,13 +15,17 @@ public:
     Bitmap() = default;
     Bitmap(MemAccess<uint8_t> &&data) : _data{core::move(data)} {};
 
+    constexpr bool byte(size_t index) const
+    {
+        return _data[index / 8];
+    }
     constexpr bool bit(size_t index) const
     {
-        return (*this)[index];
+        return (byte(index) & (1 << (index % 8))) != 0;
     }
     constexpr bool operator[](size_t index) const
     {
-        return (_data[index / 8] & (1 << (index % 8))) != 0;
+        return this->bit(index);
     }
 
     constexpr void bit(size_t index, bool value)
@@ -62,7 +67,7 @@ public:
 
         for (size_t i = 0; i < len(); i++)
         {
-            if ((*this)[i] != other[i])
+            if (bit(i) != other.bit(i))
             {
                 return false;
             }
@@ -81,7 +86,7 @@ public:
         return _data.data();
     }
 
-    constexpr size_t find(size_t continuous_len)
+    constexpr Result<size_t> find(size_t continuous_len)
     {
         size_t found = 0;
         size_t start = 0;
@@ -90,7 +95,7 @@ public:
             if (bit(i))
             {
                 found = 0;
-                start = i;
+                start = i + 1;
             }
             else
             {
@@ -101,7 +106,7 @@ public:
                 }
             }
         }
-        return -1;
+        return Result<size_t>("Bitmap: Not found");
     }
 };
 } // namespace core

@@ -6,7 +6,7 @@
 #include <libcore/str.hpp>
 #include <math/range.hpp>
 
-#include "libcore/buffer.hpp"
+#include "libcore/mem/view.hpp"
 #include "libcore/result.hpp"
 #include "libcore/type-utils.hpp"
 #include "libcore/type/trait.hpp"

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <libcore/buffer.hpp>
 #include <libcore/io/reader.hpp>
 #include <libcore/io/seekable.hpp>
+#include <libcore/mem/view.hpp>
 #include <stddef.h>
 #include <stdint.h>
 namespace core

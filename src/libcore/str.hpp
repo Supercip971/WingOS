@@ -1,16 +1,15 @@
 #pragma once
 #include <libcore/io/reader.hpp>
+#include <libcore/mem/view.hpp>
 #include <libcore/type-utils.hpp>
 #include <stddef.h>
-#include <libcore/buffer.hpp>
 
 namespace core
 {
 class Str : public MemView<char>
 {
 
-
-    static constexpr size_t compute_len(const char* str) 
+    static constexpr size_t compute_len(const char *str)
     {
         size_t i = 0;
         while (str[i] != '\0')
@@ -21,14 +20,13 @@ class Str : public MemView<char>
     }
 
 public:
-    constexpr Str(const char *str) : MemView(str, Str::compute_len(str)) {};
-    constexpr Str(const char *str, int len) : MemView(str, len) {};
+    constexpr Str(const char *str) : MemView(str, Str::compute_len(str)){};
+    constexpr Str(const char *str, int len) : MemView(str, len){};
 
+    constexpr Str() : MemView("", 0){};
 
-    constexpr Str() : MemView("", 0) {};
-
-    constexpr Str( Str &&other) 
-    : MemView(other._data, other._len)
+    constexpr Str(Str &&other)
+        : MemView(other._data, other._len)
     {
     }
 
@@ -49,21 +47,19 @@ public:
         return *this;
     }
 
-
-   constexpr operator bool() const
+    constexpr operator bool() const
     {
         return _len > 0 && _data != nullptr;
     }
 
-    const  MemView<char>& view() const
+    const MemView<char> &view() const
     {
         return *this;
     }
 
-
     constexpr Str substr(int start, int end) const
     {
-        if(end <= start)
+        if (end <= start)
         {
             return Str();
         }
@@ -75,10 +71,10 @@ public:
         return substr(start, _len);
     }
 
-    constexpr Str sub_last_char(char v) const 
+    constexpr Str sub_last_char(char v) const
     {
-        int last  = _len + 1;
-        
+        int last = _len + 1;
+
         for (size_t i = 0; i < _len; i++)
         {
             if (_data[i] == v)
@@ -89,15 +85,11 @@ public:
 
         return substr(last);
     }
-    
-
-
 };
 
-
-constexpr char * StrChr(char *str, char c)
+constexpr char *StrChr(char *str, char c)
 {
-    char* last = nullptr;
+    char *last = nullptr;
     while (*str != '\0')
     {
         if (*str == c)

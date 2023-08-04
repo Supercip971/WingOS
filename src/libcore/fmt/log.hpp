@@ -56,13 +56,10 @@ inline constexpr core::Str file_name(const char *s)
         log::log(__VA_ARGS__);                                       \
         log::log("\n")
 
-#    define warn$(...)                                                \
+#    define warn$(...)                                               \
         log("\033[93m[{}:{}]:\033[0m ", __LOG_FILENAME__, __LINE__); \
         log::log(__VA_ARGS__);                                       \
         log::log("\n")
-
-
-
 
 #else
 #    define log$(...)                                 \

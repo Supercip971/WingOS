@@ -15,6 +15,8 @@ static constexpr TestGroup unitTestTests = {
         Test(
             "Always fail",
             []() -> Test::RetFn
-            { return "Expected failure"; },
+            {
+                return "Expected failure";
+            },
             "Expected failure")),
 };

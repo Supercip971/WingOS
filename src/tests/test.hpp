@@ -81,14 +81,14 @@ struct TestGroup
         // test not failed but was expected to fail
         if (test_result && tst.expect_failure)
         {
-            log::err$("{} * [FAILED] Test {} expected failure: '{}' but got success", fmt::Tabbed(depth), name, tst.expected_failure_msg);
+            log::err$("{} * [FAILED] Test '{}' expected failure: '{}' but got success", fmt::Tabbed(depth), tst.name, tst.expected_failure_msg);
             result.failed = 1;
         }
 
         // test failed but was not expected to fail
         if (!test_result && !tst.expect_failure)
         {
-            log::err$("{} * [FAILED] Test {} with error: {}", name, test_result.error());
+            log::err$("{} * [FAILED] Test '{}' with error: {}", tst.name, test_result.error());
             result.failed = 1;
         }
 
@@ -97,19 +97,19 @@ struct TestGroup
         {
             if (core::Str(tst.expected_failure_msg) != core::Str(test_result.error()))
             {
-                log::err$("{} * [FAILED] Test {} expected failure: '{}' but got: '{}'", fmt::Tabbed(depth), name, tst.expected_failure_msg, test_result.error());
+                log::err$("{} * [FAILED] Test '{}' expected failure: '{}' but got: '{}'", fmt::Tabbed(depth), tst.name, tst.expected_failure_msg, test_result.error());
                 result.failed = 1;
             }
             else
             {
-                log::log$("{} * [OK] Test {} ", fmt::Tabbed(depth), name);
+                log::log$("{} * [OK] Test '{}' ", fmt::Tabbed(depth), tst.name);
                 result.failed = 0;
             }
         }
         // test passed and was not expected to fail
         else if (test_result && !tst.expect_failure)
         {
-            log::log$("{} * [OK] Test {} ", fmt::Tabbed(depth), name);
+            log::log$("{} * [OK] Test '{}' ", fmt::Tabbed(depth), tst.name);
             result.failed = 0;
         }
         result.count = 1;

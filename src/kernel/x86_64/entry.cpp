@@ -1,10 +1,15 @@
 
+#include <kernel/generic/pmm.hpp>
+
+#include "libcore/fmt/impl/bitmap.hpp"
+// ee
 #include <kernel/generic/kernel.hpp>
 #include <libcore/fmt/log.hpp>
 #include <mcx/mcx.hpp>
 
 #include "arch/x86_64/idt.hpp"
 #include <arch/x86_64/gdt.hpp>
+// ee
 
 void arch_entry(const mcx::MachineContext *context)
 {
@@ -16,5 +21,10 @@ void arch_entry(const mcx::MachineContext *context)
     arch::amd64::idt_use(arch::amd64::load_default_idt());
     log::log$("loaded kernel idt");
 
+    Pmm::initialize(context).assert();
+
+    log::log$("initialized kernel pmm");
+
+    log::log$(" pmm: {}", Pmm::the());
     kernel_entry(context);
 }

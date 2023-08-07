@@ -3,7 +3,8 @@
     "type": "lib",
     "id": "kernel",
     "requires": [
-        "kernel-arch"
+        "kernel-arch",
+        "libcore"
     ],
     "description": "WingOS Kernel" 
 }

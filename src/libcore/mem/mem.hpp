@@ -22,6 +22,21 @@ public:
     constexpr MemAccess() : _data(nullptr), _len(0) {}
     constexpr MemAccess(T *data, size_t len) : _data(data), _len(len) {}
 
+    constexpr MemAccess(MemAccess &&other) : _data(other._data), _len(other._len)
+    {
+        other._data = nullptr;
+        other._len = 0;
+    }
+
+    constexpr MemAccess &operator=(MemAccess &&other)
+    {
+        _data = other._data;
+        _len = other._len;
+        other._data = nullptr;
+        other._len = 0;
+        return *this;
+    }
+
     constexpr T const &operator[](size_t index) const { return _data[index]; }
     constexpr T &operator[](size_t index) { return _data[index]; }
 

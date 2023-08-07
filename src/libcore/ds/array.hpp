@@ -65,6 +65,16 @@ public:
     {
         return MemView<const T>(_data, size);
     }
+
+    constexpr MemView<T> sub(size_t start, size_t end) const
+    {
+        return MemView<T>(_data + start, end - start);
+    }
+
+    constexpr MemView<T> sub(size_t end) const
+    {
+        return sub(0, end);
+    }
 };
 template <class T, class... U>
 Array(T, U...) -> Array<T, 1 + (sizeof...(U))>;

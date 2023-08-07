@@ -2,6 +2,7 @@
 #pragma once
 #include <libcore/mem/mem.hpp>
 #include <libcore/result.hpp>
+#include <math/range.hpp>
 #include <stddef.h>
 #include <stdint.h>
 namespace core
@@ -9,19 +10,21 @@ namespace core
 
 struct Bitmap
 {
+    size_t _cache_latest_free = 0;
+
 public:
     MemAccess<uint8_t> _data;
 
     Bitmap() = default;
     Bitmap(MemAccess<uint8_t> &&data) : _data{core::move(data)} {};
 
-    constexpr bool byte(size_t index) const
+    constexpr uint8_t byte(size_t index) const
     {
         return _data[index / 8];
     }
     constexpr bool bit(size_t index) const
     {
-        return (byte(index) & (1 << (index % 8))) != 0;
+        return (byte(index) & (1 << (index % 8)));
     }
     constexpr bool operator[](size_t index) const
     {
@@ -30,13 +33,14 @@ public:
 
     constexpr void bit(size_t index, bool value)
     {
+        auto prev = _data[index / 8];
         if (value)
         {
-            _data[index / 8] |= (1 << (index % 8));
+            _data[index / 8] = prev | ((uint8_t)1 << (index % 8));
         }
         else
         {
-            _data[index / 8] &= ~(1 << (index % 8));
+            _data[index / 8] = prev & ~((uint8_t)1 << (index % 8));
         }
     }
 
@@ -48,14 +52,18 @@ public:
         }
     }
 
+    template <math::IntRangeable T>
+    constexpr void fill(bool value, T range)
+    {
+        for (size_t i = range.start(); i < range.end(); i++)
+        {
+            bit(i, value);
+        }
+    }
+
     constexpr size_t len() const
     {
         return _data.len() * 8;
-    }
-
-    constexpr operator bool() const
-    {
-        return _data;
     }
 
     constexpr bool operator==(const Bitmap &other) const
@@ -86,11 +94,11 @@ public:
         return _data.data();
     }
 
-    constexpr Result<size_t> find(size_t continuous_len)
+    constexpr Result<size_t> alloc(size_t continuous_len)
     {
         size_t found = 0;
         size_t start = 0;
-        for (size_t i = 0; i < len(); i++)
+        for (size_t i = _cache_latest_free; i < len(); i++)
         {
             if (bit(i))
             {
@@ -106,7 +114,17 @@ public:
                 }
             }
         }
-        return Result<size_t>("Bitmap: Not found");
+
+        // we already searched the whole bitmap
+        if (_cache_latest_free == 0)
+        {
+
+            return Result<size_t>("Bitmap: Not found");
+        }
+
+        // search from the beginning
+        _cache_latest_free = 0;
+        return alloc(continuous_len);
     }
 };
 } // namespace core

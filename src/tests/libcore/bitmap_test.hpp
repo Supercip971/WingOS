@@ -1,73 +1,64 @@
 #pragma once
 
+#include <libcore/fmt/log.hpp>
 #include <libcore/str.hpp>
 
 #include "../test.hpp"
+#include "libcore/ds/bitmap.hpp"
+#include "libcore/mem/mem.hpp"
+
+static uint8_t tbuf[128];
 
 static constexpr TestGroup bitmapTests = {
     test_grouped_tests$(
-        "strings",
+        "bitmap",
         Test(
 
-            "str equality",
+            "bitmap fill",
             []() -> Test::RetFn
             {
-                core::Str a = "Hello";
-                core::Str b = "Hello";
-                core::Str c = "World";
+                auto v = core::Bitmap(core::MemAccess<>(tbuf, sizeof(tbuf)));
 
-                if (a != b)
+                v.fill(true);
+                for (size_t i = 0; i < v.len(); i++)
                 {
-                    return "a != b; they should be equal";
+                    if (!v[i])
+                    {
+                        return "v[i] != true";
+                    }
                 }
 
-                if (a == c)
-                {
-                    return "a == c; they should not be equals";
-                }
+                v.fill(false);
 
+                for (size_t i = 0; i < v.len(); i++)
+                {
+                    if (v[i])
+                    {
+                        return "v[i] != false";
+                    }
+                }
                 return {};
             }),
         Test(
-            "str length",
+            "bitmap random set",
             []() -> Test::RetFn
             {
-                core::Str empty;
+                auto v = core::Bitmap(core::MemAccess<>(tbuf, sizeof(tbuf)));
 
-                if (empty.len() != 0)
+                v.fill(false);
+
+                for (size_t i = 0; i < v.len(); i++)
                 {
-                    return "''.length() != 0";
+                    v.bit(i, i % 2);
                 }
-
-                core::Str a = "Hello";
-
-                if (a.len() != 5)
+                for (size_t i = 0; i < v.len(); i++)
                 {
-                    return "'Hello'.length() != 5";
+                    if (v[i] != (i % 2))
+                    {
+                        return "v[i] != i % 2";
+                    }
                 }
 
                 return {};
-            }),
-        Test(
-            "sub str",
-            []() -> Test::RetFn
-            {
-                core::Str a = "Hello World";
-                core::Str b = a.substr(6);
-
-                if (b != core::Str("World"))
-                {
-                    return "'Hello World'.substr(6) != 'World'";
-                }
-
-                core::Str c = a.substr(0, 5);
-
-                if (c != core::Str("Hello"))
-                {
-                    return "'Hello World'.substr(0, 5) != 'Hello'";
-                }
-                return {};
-            })
-
-            ),
+            })),
 };

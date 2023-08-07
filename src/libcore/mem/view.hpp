@@ -69,4 +69,18 @@ concept Viewable = requires(T a) {
                    };
 
 static_assert(Viewable<MemView<char>>);
+
+template <Viewable T, typename P>
+constexpr size_t count(const T &view, P predicate)
+{
+    size_t count = 0;
+    for (auto &item : view)
+    {
+        if (predicate(item))
+        {
+            count++;
+        }
+    }
+    return count;
+}
 } // namespace core

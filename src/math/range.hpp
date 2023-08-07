@@ -1,6 +1,7 @@
 #pragma once
 #include <libcore/type-utils.hpp>
 
+#include "align.hpp"
 #include "libcore/result.hpp"
 
 namespace math
@@ -22,13 +23,45 @@ public:
 
     constexpr T end() const { return _end; }
 
-    constexpr T length() const { return _end - _start; }
+    constexpr T len() const { return _end - _start; }
+
+    constexpr void start(T v) { _start = v; }
+
+    constexpr void end(T v) { _end = v; }
+
+    constexpr void len(T v) { _end = _start + v; }
 
     constexpr bool contains(T value) const { return value >= _start && value < _end; }
 
     constexpr bool contains(Range<T> range) const { return contains(range.start()) && contains(range.end()); }
 
     constexpr bool overlaps(Range<T> range) const { return contains(range.start()) || contains(range.end()); }
+
+    // lower will be ceiled
+    // upper will be floored
+    // making the range:
+    // -> range.len >= aligned_range.len
+    constexpr Range<T> shrinkAlign(size_t alignment) const
+    {
+        auto aligned_start = math::alignUp(_start, alignment);
+        auto aligned_len = math::alignDown(len(), alignment);
+
+        return this->from_begin_len(aligned_start, aligned_len);
+    }
+
+    constexpr Range<T> offsetted(T offset) const
+    {
+        return Range<T>(_start + offset, _end + offset);
+    }
+
+    constexpr Range<T> offsettedSub(T offset) const
+    {
+        return Range<T>(_start - offset, _end - offset);
+    }
+    constexpr Range<T> div(size_t div) const
+    {
+        return Range<T>(_start / div, _end / div);
+    }
 
     template <typename C>
     constexpr Range<C> as() const
@@ -49,7 +82,7 @@ concept IntRangeable = requires(T a) {
                                a.end()
                                } -> core::IsIdentityIntegral;
                            {
-                               a.length()
+                               a.len()
                                } -> core::IsIdentityIntegral;
                            {
                                a.contains(a.start())

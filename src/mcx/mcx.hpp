@@ -30,6 +30,8 @@ struct MemoryMap
     MemoryMap::Type type;
 };
 
+using MemoryMapIdx = int;
+
 class MachineContext
 {
 

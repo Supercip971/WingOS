@@ -15,6 +15,8 @@ constexpr core::Result<void> format_v(Targ &target, T &value)
     size_t begin = 0;
     size_t end = 0;
 
+    fmt::format(target, "Bitmap[{}]:\n", value.len() | flags);
+
     for (size_t i = 0; i < value.len(); i++)
     {
         if (last != value.bit(i))

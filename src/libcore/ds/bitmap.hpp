@@ -55,10 +55,34 @@ public:
     template <math::IntRangeable T>
     constexpr void fill(bool value, T range)
     {
+        if (value == false)
+        {
+            _cache_latest_free = range.start();
+        }
         for (size_t i = range.start(); i < range.end(); i++)
         {
             bit(i, value);
         }
+    }
+
+    /*
+        Used to test if the bitmap is filled with the expected (inverse) value
+        if you want to fill 0 and expect to replace 1 for example.
+        This may be used to test if we are freeing already freed memory. For example
+    */
+
+    template <math::IntRangeable T>
+    constexpr Result<void> fill_expected_inverse(bool value, T range)
+    {
+        for (size_t i = range.start(); i < range.end(); i++)
+        {
+            if (bit(i) == value)
+            {
+                return Result<void>("Bitmap: fill_expected_inverse: expected inverse");
+            }
+            bit(i, value);
+        }
+        return {};
     }
 
     constexpr size_t len() const

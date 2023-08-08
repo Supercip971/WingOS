@@ -2,7 +2,7 @@
 import os
 import shutil
 from cutekit import args, cmds, builder, context, const, shell, model
-from typing import Self
+from typing_extensions import Self
 
 
 def kvmAvailable() -> bool:

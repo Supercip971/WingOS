@@ -5,6 +5,8 @@
 #include <mcx/mcx.hpp>
 #include <stdint.h>
 
+#include <iol/mem_flags.h>
+
 #include "libcore/fmt/impl/bitmap.hpp"
 #include "libcore/mem/mem.hpp"
 #include "libcore/type-utils.hpp"
@@ -55,10 +57,15 @@ struct Pmm
 
     static core::Result<void> initialize(const mcx::MachineContext *context);
 
-    static core::Result<Pmm> _allocate(const mcx::MachineContext *context);
+    static core::Result<Pmm> _allocate_structure(const mcx::MachineContext *context);
+
     core::Result<void> _fill(const mcx::MachineContext *context);
 
     static core::Result<Pmm> create(const mcx::MachineContext *context);
+
+    core::Result<PhysAddr> allocate(size_t count, IolAllocMemoryFlag flags);
+
+    core::Result<void> release(PhysAddr addr, size_t count);
 };
 
 template <core::IsConvertibleTo<Pmm> T, core::Writable Targ>

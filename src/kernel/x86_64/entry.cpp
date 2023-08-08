@@ -8,6 +8,7 @@
 #include <mcx/mcx.hpp>
 
 #include "arch/x86_64/idt.hpp"
+#include "iol/mem_flags.h"
 #include <arch/x86_64/gdt.hpp>
 // ee
 
@@ -26,5 +27,13 @@ void arch_entry(const mcx::MachineContext *context)
     log::log$("initialized kernel pmm");
 
     log::log$(" pmm: {}", Pmm::the());
+
+    auto res = Pmm::the().allocate(16, IOL_ALLOC_MEMORY_FLAG_NONE).unwrap();
+
+    log::log$(" pmm: {}", Pmm::the());
+
+    Pmm::the().release(res, 16).unwrap();
+    log::log$(" pmm: {}", Pmm::the());
+
     kernel_entry(context);
 }

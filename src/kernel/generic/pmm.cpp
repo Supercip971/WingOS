@@ -14,7 +14,7 @@ core::Result<void> Pmm::initialize(const mcx::MachineContext *context)
     return {};
 }
 
-core::Result<Pmm> Pmm::_allocate(const mcx::MachineContext *context)
+core::Result<Pmm> Pmm::_allocate_structure(const mcx::MachineContext *context)
 {
     size_t const size = pmm_size(context);
     Pmm pmm;
@@ -106,9 +106,67 @@ core::Result<void> Pmm::_fill(const mcx::MachineContext *context)
     return {};
 }
 
+core::Result<PhysAddr> Pmm::allocate(size_t count, IolAllocMemoryFlag flags)
+{
+
+    if (flags & IolAllocMemoryFlag::IOL_ALLOC_MEMORY_FLAG_LOWER_SPACE)
+    {
+        for (size_t i = 0; i < this->_sections_count; i++)
+        {
+            auto &section = this->_sections[i];
+            auto start = section.bitmap.alloc(count);
+
+            if (start)
+            {
+
+                auto range = mcx::MemoryRange::from_begin_len(start, count);
+                section.bitmap.fill(true, range);
+                return PhysAddr(section.range.start() + range.start() * page_size_bit);
+            }
+        }
+    }
+
+    for (size_t i = this->_sections_count - 1; i >= 0; i--)
+    {
+        auto &section = this->_sections[i];
+        auto start = section.bitmap.alloc(count);
+
+        if (start)
+        {
+            size_t start_addr = start.unwrap();
+            auto range = mcx::MemoryRange::from_begin_len(start_addr, count);
+
+            section.bitmap.fill(true, range);
+
+            log::log$("Pmm: allocated {} pages at {}", count, start_addr);
+            return PhysAddr(section.range.start() + range.start() * page_size_bit);
+        }
+    }
+
+    log::warn$("Pmm: out of memory: {}", count * page_size_bit);
+    return ("Could not allocate memory");
+}
+
+core::Result<void> Pmm::release(PhysAddr addr, size_t count)
+{
+    for (size_t i = 0; i < this->_sections_count; i++)
+    {
+        auto &section = this->_sections[i];
+        if (section.range.contains(addr))
+        {
+
+            auto range = mcx::MemoryRange::from_begin_len(addr - section.range.start(), count);
+            try$(section.bitmap.fill_expected_inverse(false, range));
+            return {};
+        }
+    }
+
+    return ("Could not release memory");
+}
+
 core::Result<Pmm> Pmm::create(const mcx::MachineContext *context)
 {
-    Pmm pmm = try$(_allocate(context));
+    Pmm pmm = try$(_allocate_structure(context));
 
     try$(pmm._fill(context));
 

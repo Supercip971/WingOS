@@ -1,6 +1,8 @@
 
 #include <kernel/generic/pmm.hpp>
 
+#include "kernel/generic/mem.hpp"
+#include "kernel/generic/paging.hpp"
 #include "libcore/fmt/impl/bitmap.hpp"
 // ee
 #include <kernel/generic/kernel.hpp>
@@ -34,6 +36,14 @@ void arch_entry(const mcx::MachineContext *context)
 
     Pmm::the().release(res, 16).unwrap();
     log::log$(" pmm: {}", Pmm::the());
+
+    log::log$(" loading the vmm");
+
+    auto kernel_space = VmmSpace::kernel_initialize(context).unwrap();
+    log::log$("using vmm...");
+
+    kernel_space.use();
+    log::log$("using vmm");
 
     kernel_entry(context);
 }

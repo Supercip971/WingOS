@@ -6,8 +6,15 @@
     "provides": [
         "kernel-arch"
     ],
+    "requires": [
+        "arch-x86-64"
+    ],
     "enableIf": {
-        "arch": ["x86_64"],
-        "sys": ["kernel"]
+        "arch": [
+            "x86_64"
+        ],
+        "sys": [
+            "kernel"
+        ]
     }
 }

@@ -1,0 +1,85 @@
+#include <kernel/generic/paging.hpp>
+
+#include <arch/x86_64/paging.hpp>
+
+#include "kernel/generic/mem.hpp"
+
+static VmmSpace kernel_space;
+arch::amd64::Pml4 *as_root(VmmSpace &space)
+{
+    return reinterpret_cast<arch::amd64::Pml4 *>(space.self());
+};
+
+constexpr arch::amd64::Page page_create(PageFlags flags, PhysAddr addr)
+{
+    auto p = arch::amd64::Page{
+        ._present = 1,
+        ._writeable = flags._writeable,
+        ._user = flags._user,
+        ._write_through = flags._write_through,
+        ._cache_disabled = flags._cache_disable,
+        ._accessed = 0,
+        ._dirty = 0,
+        ._huge_page = 0,
+        ._global = 0,
+        ._available = 0,
+    };
+    p.address(addr);
+    return p;
+}
+
+void VmmSpace::use()
+{
+
+    asm volatile("mov %0, %%cr3" ::"r"(toPhys(VirtAddr((uintptr_t)self()))));
+}
+core::Result<void> VmmSpace::map(VirtRange virt, PhysRange phys, PageFlags flags)
+{
+    auto root = as_root(*this);
+
+    if (virt.len() != phys.len())
+    {
+        return "Virtual and physical ranges must be of equal length";
+    }
+
+    if (virt.len() % arch::amd64::PAGE_SIZE != 0)
+    {
+        return "Virtual and physical ranges must be page aligned";
+    }
+    auto virt_begin = virt.start();
+    auto phys_begin = phys.start();
+
+    // TODO: map 1meg page when possible
+    for (size_t i = 0; i < virt.len(); i += arch::amd64::PAGE_SIZE)
+    {
+        auto virt_addr = virt_begin + i;
+        auto phys_addr = phys_begin + i;
+
+        try$(root->map(virt_addr, page_create(flags, phys_addr)));
+    }
+
+    return {};
+}
+
+core::Result<VmmSpace> VmmSpace::create(bool empty)
+{
+    VmmSpace result = {};
+    result._self = toVirt(try$(Pmm::the().allocate(1))).as<void *>();
+
+    auto root = as_root(result);
+    auto kernel_root = as_root(kernel_space);
+    for (size_t i = 0; i < arch::amd64::PAGE_TABLE_SIZE; i++)
+    {
+        // map the IO kernel space
+        if (!empty && i >= 255)
+        {
+            root->page(i) = kernel_root->page(i);
+        }
+        else
+        {
+            root->page(i) = arch::amd64::Page{};
+        }
+    }
+
+    return result;
+}

@@ -59,3 +59,10 @@ Using a fixed size of 8 bit per space, instead of SeL4 variable size space, the 
 - The fact that we are using multiple indirect byte, make the cache less efficient. Maybe the userspace could 
   use a shallow space when needed. 
 - Each space is $16*256= 4096$ bytes long, which means that if we want to use a 5 space deep tree, we would need $4096 * 5 = 20480$ bytes of memory.  This is a lot of memory, and we may want to use a smaller space. Or, the first allocations are automatically done in the root space, and then the user can create a new space to store more data.
+
+
+## Sources / doc 
+- [The SeL4 capability system](https://www.cl.cam.ac.uk/research/security/ctsrd/cheri/workshops/pdfs/20160423-sel4-capabilities.pdf)
+- [The SeL4 manual](https://sel4.systems/Info/Docs/seL4-manual-10.1.1.pdf)
+- [SeL4](https://sel4.systems/)
+- [Fuschia caps](https://fuchsia.dev/fuchsia-src/concepts/components/v2/capabilities)

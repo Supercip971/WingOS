@@ -16,12 +16,23 @@ private:
 
 public:
     using Type = T;
-    Range(){};
-    Range(T start, T end) : _start(start), _end(end) {}
+    constexpr Range(){};
+    constexpr Range(T start, T end) : _start(start), _end(end) {}
 
     constexpr T start() const { return _start; }
 
     constexpr T end() const { return _end; }
+
+    constexpr T len() const
+        requires(core::IsIdentityIntegral<T>)
+    {
+        return _end - _start;
+    }
+    constexpr size_t len() const
+        requires(!core::IsIdentityIntegral<T>)
+    {
+        return _end - _start;
+    }
 
     constexpr T len() const { return _end - _start; }
 

@@ -32,13 +32,31 @@ struct MemoryMap
 
 using MemoryMapIdx = int;
 
-class MachineContext
+struct MachineFramebuffer
+{
+    void *address;
+    int width;
+    int height;
+    int pitch;
+    int bpp;
+
+    enum class PixelFormat
+    {
+        RGB,
+        BGR,
+    };
+
+    PixelFormat pixel_format;
+};
+struct MachineContext
 {
 
 public:
     constexpr static int max_memory_map = 64;
     core::Array<MemoryMap, max_memory_map> _memory_map;
     int _memory_map_count = 0;
+
+    MachineFramebuffer _framebuffer;
 
     uintptr_t _rsdp;
 };

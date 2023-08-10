@@ -17,16 +17,17 @@
 
 void _start(void);
 
-__attribute__((used)) static volatile struct limine_terminal_request terminal_request = {
-    .id = LIMINE_TERMINAL_REQUEST,
-    .revision = 0};
-
 __attribute__((used)) static volatile struct limine_entry_point_request entry_point_request = {
     .id = LIMINE_ENTRY_POINT_REQUEST,
     .revision = 0,
     .entry = _start,
 };
 
+__attribute__((used)) static volatile struct limine_kernel_address_request kernel_request = {
+    .id = LIMINE_KERNEL_ADDRESS_REQUEST,
+    .revision = 0,
+
+};
 static void done(void)
 {
     for (;;)
@@ -34,15 +35,25 @@ static void done(void)
         __asm__("hlt");
     }
 }
+extern "C" uintptr_t kernel_physical_base()
+{
+    return kernel_request.response->physical_base;
+}
+extern "C" uintptr_t kernel_virtual_base()
+{
+    return kernel_request.response->virtual_base;
+}
 
 class LimineWriter : public core::Writer
 {
 public:
     core::Result<void> write(const char *data, size_t size) override
     {
-
-        struct limine_terminal *terminal = terminal_request.response->terminals[0];
-        terminal_request.response->write(terminal, data, size);
+        (void)data;
+        (void)size;
+        /*
+                struct limine_terminal *terminal = terminal_request.response->terminals[0];
+                terminal_request.response->write(terminal, data, size);*/
         return {};
     }
     template <core::Viewable T>
@@ -64,13 +75,9 @@ void load_mcx(mcx::MachineContext *context);
 void _start(void)
 {
 
-    static LimineWriter limine_writer{};
-
     static mcx::MachineContext _mcx{};
     static arch::x86::Com com{};
     asm volatile("cli");
-    limine_writer = LimineWriter();
-    log::provide_log_target(&limine_writer);
 
     com = arch::x86::Com::initialize(arch::x86::Com::Port::COM1).unwrap();
 

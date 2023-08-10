@@ -9,6 +9,9 @@ __attribute__((used)) static volatile struct limine_memmap_request mmap_request 
     .revision = 0,
 };
 
+__attribute__((used)) static volatile struct limine_framebuffer_request limine_framebuffer_req = {
+    .id = LIMINE_FRAMEBUFFER_REQUEST,
+    .revision = 0};
 static mcx::MemoryMap::Type limine_type_to_mcx(int type)
 {
     switch (type)
@@ -46,8 +49,16 @@ static void load_mcx_mmap(mcx::MachineContext *context)
         context->_memory_map[i].type = limine_type_to_mcx(mmap[i]->type);
     }
     context->_memory_map_count = mmap_size;
-}
 
+    context->_framebuffer = mcx::MachineFramebuffer{
+        .address = limine_framebuffer_req.response->framebuffers[0]->address,
+        .width = (int)limine_framebuffer_req.response->framebuffers[0]->width,
+        .height = (int)limine_framebuffer_req.response->framebuffers[0]->height,
+        .pitch = (int)limine_framebuffer_req.response->framebuffers[0]->pitch,
+
+        .bpp = limine_framebuffer_req.response->framebuffers[0]->bpp,
+    };
+}
 void load_mcx(mcx::MachineContext *context)
 {
     load_mcx_mmap(context);

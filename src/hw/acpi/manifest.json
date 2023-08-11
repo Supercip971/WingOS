@@ -1,0 +1,11 @@
+
+{
+    "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
+    "type": "lib",
+    "id": "hw-acpi",
+    "description": "ACPI hardware library",
+    "requires": [
+        "libcore",
+        "hw-mem"
+    ]
+}

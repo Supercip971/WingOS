@@ -5,6 +5,10 @@
 #include "kernel/generic/mem.hpp"
 
 static VmmSpace kernel_space;
+void VmmSpace::use_kernel(VmmSpace &space)
+{
+    kernel_space = space;
+}
 arch::amd64::Pml4 *as_root(VmmSpace &space)
 {
     return reinterpret_cast<arch::amd64::Pml4 *>(space.self());

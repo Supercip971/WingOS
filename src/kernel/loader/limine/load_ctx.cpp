@@ -12,6 +12,9 @@ __attribute__((used)) static volatile struct limine_memmap_request mmap_request 
 __attribute__((used)) static volatile struct limine_framebuffer_request limine_framebuffer_req = {
     .id = LIMINE_FRAMEBUFFER_REQUEST,
     .revision = 0};
+__attribute__((used)) static volatile struct limine_rsdp_request rsdp_request = {
+    .id = LIMINE_RSDP_REQUEST,
+    .revision = 0};
 static mcx::MemoryMap::Type limine_type_to_mcx(int type)
 {
     switch (type)
@@ -58,6 +61,8 @@ static void load_mcx_mmap(mcx::MachineContext *context)
 
         .bpp = limine_framebuffer_req.response->framebuffers[0]->bpp,
     };
+
+    context->_rsdp = (uintptr_t)rsdp_request.response->address;
 }
 void load_mcx(mcx::MachineContext *context)
 {

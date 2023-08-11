@@ -5,6 +5,7 @@
 #include <math/range.hpp>
 #include <stddef.h>
 #include <stdint.h>
+
 namespace core
 {
 
@@ -16,7 +17,7 @@ public:
     MemAccess<uint8_t> _data;
 
     Bitmap() = default;
-    Bitmap(MemAccess<uint8_t> &&data) : _data{core::move(data)} {};
+    Bitmap(MemAccess<uint8_t> &&data) : _cache_latest_free(0), _data{core::move(data)} {};
 
     constexpr uint8_t byte(size_t index) const
     {
@@ -33,6 +34,7 @@ public:
 
     constexpr void bit(size_t index, bool value)
     {
+
         auto prev = _data[index / 8];
         if (value)
         {
@@ -121,7 +123,7 @@ public:
     constexpr Result<size_t> alloc(size_t continuous_len)
     {
         size_t found = 0;
-        size_t start = 0;
+        size_t start = _cache_latest_free;
         for (size_t i = _cache_latest_free; i < len(); i++)
         {
             if (bit(i))
@@ -134,6 +136,7 @@ public:
                 found++;
                 if (found == continuous_len)
                 {
+                    _cache_latest_free = i;
                     return start;
                 }
             }

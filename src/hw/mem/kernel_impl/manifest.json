@@ -1,0 +1,17 @@
+{
+    "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
+    "type": "lib",
+    "id": "kernel-mem-management-x86-64",
+    "description": "Kernel memory space mapping implementation ",
+    "provides": [
+        "hw-mem"
+    ],
+    "enableIf": {
+        "arch": [
+            "x86_64"
+        ],
+        "sys": [
+            "kernel"
+        ]
+    }
+}

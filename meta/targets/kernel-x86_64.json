@@ -12,7 +12,8 @@
         "loader":"limine",
         "encoding": "utf8",
         "freestanding": true,
-        "host": false
+        "host": false,
+        "kernel": true
     },
     "tools": {
         "cc": {

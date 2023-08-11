@@ -11,7 +11,8 @@
         "libcore",
         "arch-generic",
         "arch-x86-64",
-        "arch-x86"
+        "arch-x86", 
+        "hw-mem"
     ],
     "enableIf": {
         "arch": ["x86_64"],

@@ -92,4 +92,6 @@ public:
     // this is used for the kernel page table
 
     static core::Result<VmmSpace> create(bool empty);
+
+    static void use_kernel(VmmSpace &space);
 };

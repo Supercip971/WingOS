@@ -1,6 +1,8 @@
 
 #include "kernel/generic/paging.hpp"
 
+#include "hw/mem/addr_space.hpp"
+
 #include "kernel/generic/mem.hpp"
 #include "libcore/fmt/log.hpp"
 #include "mcx/mcx.hpp"
@@ -13,6 +15,10 @@ core::Result<VmmSpace> VmmSpace::kernel_initialize(const mcx::MachineContext *ct
     VmmSpace result = try$(VmmSpace::create(true));
 
     log::log$("mapping space: {}", ctx->_memory_map_count);
+
+    result.map(VirtRange(toVirt(0x1000), toVirt(0x100000000)), PhysRange(0x1000, 0x100000000),
+               PageFlags().present(true).writeable(true).user(false));
+
     for (int i = 0; i < ctx->_memory_map_count; i++)
     {
 

@@ -7,7 +7,8 @@
         "kernel-arch"
     ],
     "requires": [
-        "arch-x86-64"
+        "arch-x86-64",
+		"hw-acpi"
     ],
     "enableIf": {
         "arch": [

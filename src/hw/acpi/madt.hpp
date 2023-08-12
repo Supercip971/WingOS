@@ -38,6 +38,7 @@ struct [[gnu::packed]] MadtEntryLapic
     uint8_t apic_id;
     uint32_t flags;
 };
+
 struct [[gnu::packed]] MadtEntryIoapic
 {
     MadtEntry header;
@@ -115,10 +116,10 @@ struct [[gnu::packed]] MadtEntryLapicX2
 template <typename T>
 concept MadtEntryT = requires(T entry) {
                          {
-                             entry->type
+                             entry.header.type
                              } -> core::IsConvertibleTo<uint8_t>;
                          {
-                             entry->length
+                             entry.header.length
                              } -> core::IsConvertibleTo<uint8_t>;
                          {
                              T::HeaderType

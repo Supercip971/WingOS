@@ -1,3 +1,4 @@
 
 -Isrc/
 -std=c++2b
+-D__ck_kernel__

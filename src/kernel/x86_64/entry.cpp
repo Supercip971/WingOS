@@ -8,6 +8,8 @@
 #include "libcore/fmt/impl/bitmap.hpp"
 // ee
 #include <hw/acpi/madt.hpp>
+#include <hw/acpi/apic.hpp>
+
 #include <kernel/generic/kernel.hpp>
 #include <libcore/fmt/log.hpp>
 #include <mcx/mcx.hpp>
@@ -48,33 +50,7 @@ void arch_entry(const mcx::MachineContext *context)
     kernel_space.use();
     log::log$("using vmm");
 
-    hw::acpi::Rsdp *rsdp = (hw::acpi::Rsdp *)context->_rsdp;
 
-    log::log$("rsdp: {}", context->_rsdp | fmt::FMT_HEX);
-
-    auto addr = rsdp->rsdt_phys_addr();
-
-    if (addr.type == hw::acpi::RsdtTypes::RSDT)
-    {
-        log::log$("kind: RSDT");
-
-        auto rsdt = toVirt(addr.physical_addr).as<hw::acpi::Rsdt>();
-
-        log::log$("rev: {}", rsdt->header.revision);
-
-        hw::acpi::dump(rsdt);
-    }
-    else
-    {
-        log::log$("kind: XSDT");
-
-        auto xsdt = toVirt(addr.physical_addr).as<hw::acpi::Xsdt>();
-
-        log::log$("rev: {}", xsdt->header.revision);
-        hw::acpi::dump(xsdt);
-
-        hw::acpi::SdtFind<hw::acpi::Xsdt, hw::acpi::Madt>(xsdt).unwrap()->dump();
-    }
-
+	hw::acpi::apic_initialize(context);
     kernel_entry(context);
 }

@@ -138,8 +138,11 @@ core::Result<PhysAddr> Pmm::allocate(size_t count, IolAllocMemoryFlag flags)
 
             section.bitmap.fill(true, range);
 
-            //  log::log$("Pmm: allocated {} pages at {} -> {}", count, start_addr, section.range.start() + range.start() * page_size_bit);
             return PhysAddr(section.range.start() + range.start() * page_size_bit);
+        }
+        else
+        {
+            log::warn$("Pmm: out of memory: {}", count * page_size_bit);
         }
     }
 

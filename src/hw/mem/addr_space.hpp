@@ -14,9 +14,9 @@ struct VirtAddr
     constexpr VirtAddr() = default;
     constexpr VirtAddr(uintptr_t addr) : _addr(addr) {}
 
-    operator void *(void) const { return (void *)_addr; }
+    operator void *() const { return (void *)_addr; }
     template <typename T>
-    constexpr const T *as(void) const { return (T *)_addr; }
+    constexpr const T *as() const { return (T *)_addr; }
 
     template <typename T>
     constexpr T *as(void) { return (T *)_addr; }
@@ -33,6 +33,22 @@ struct VirtAddr
         return *this;
     }
 
+	template<typename T> 
+	void write(T value)
+	{
+		*as<T>() = value;
+	}
+
+	template<typename T>
+	T read() const
+	{
+		return *as<T>();
+	}
+
+	VirtAddr offsetted(uintptr_t offset) const
+	{
+		return VirtAddr(_addr + offset);
+	}
     constexpr VirtAddr operator+(uintptr_t offset) const { return VirtAddr(_addr + offset); }
     constexpr VirtAddr operator-(uintptr_t offset) const { return VirtAddr(_addr - offset); }
     constexpr size_t operator+(const VirtAddr &other) const { return (_addr + other._addr); }

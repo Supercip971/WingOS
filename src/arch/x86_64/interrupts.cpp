@@ -1,3 +1,5 @@
+
+
 #include <libcore/fmt/log.hpp>
 
 #include "arch/x86_64/context.hpp"
@@ -5,12 +7,12 @@
 #include "arch/x86_64/interrupts.hpp"
 
 #include "libcore/encourage.hpp"
-
 uint64_t ccount;
 extern "C" uintptr_t interrupt_handler(uintptr_t stack)
 {
 
     arch::amd64::StackFrame const *frame = reinterpret_cast<arch::amd64::StackFrame *>(stack);
+    arch::amd64::StackFrame const nframe = *reinterpret_cast<arch::amd64::StackFrame *>(stack);
 
     if (frame->interrupt_number < 32)
     {
@@ -26,8 +28,18 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
             uid = uid % (sizeof(core::isnt_encouraging_messages) / sizeof(core::isnt_encouraging_messages[0]));
             log::log$("-> '{}'", core::isnt_encouraging_messages[uid]);
         }
+
+        log::log$("{}", nframe);
+
+        uintptr_t cr2 = 0;
+        asm volatile("mov %%cr2, %0"
+                     : "=r"(cr2));
+        log::log$("cr2: {}", cr2 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
+        while (true)
+        {
+            asm volatile("hlt");
+        }
     }
-    log::log$("{}", *frame);
 
     return stack;
 }

@@ -7,9 +7,8 @@
 #include "kernel/generic/paging.hpp"
 #include "libcore/fmt/impl/bitmap.hpp"
 // ee
-#include <hw/acpi/madt.hpp>
 #include <hw/acpi/apic.hpp>
-
+#include <hw/acpi/madt.hpp>
 #include <kernel/generic/kernel.hpp>
 #include <libcore/fmt/log.hpp>
 #include <mcx/mcx.hpp>
@@ -35,13 +34,6 @@ void arch_entry(const mcx::MachineContext *context)
 
     log::log$(" pmm: {}", Pmm::the());
 
-    auto res = Pmm::the().allocate(16, IOL_ALLOC_MEMORY_FLAG_NONE).unwrap();
-
-    log::log$(" pmm: {}", Pmm::the());
-
-    Pmm::the().release(res, 16).unwrap();
-    log::log$(" pmm: {}", Pmm::the());
-
     log::log$(" loading the vmm");
 
     auto kernel_space = VmmSpace::kernel_initialize(context).unwrap();
@@ -50,7 +42,8 @@ void arch_entry(const mcx::MachineContext *context)
     kernel_space.use();
     log::log$("using vmm");
 
+    hw::acpi::apic_initialize(context);
 
-	hw::acpi::apic_initialize(context);
+    log::log$("cpu count: {}", hw::acpi::apic_cpu_count());
     kernel_entry(context);
 }

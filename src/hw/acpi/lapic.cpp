@@ -4,6 +4,7 @@
 #include "arch/x86_64/msr.hpp"
 #include "hw/mem/addr_space.hpp"
 
+#include "hw/acpi/madt.hpp"
 #include "lapic.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/result.hpp"
@@ -12,7 +13,7 @@ static hw::acpi::Lapic main_lapic;
 namespace hw::acpi
 {
 
-Lapic &Lapic::current()
+Lapic &Lapic::current_cpu()
 {
     return main_lapic;
 }
@@ -34,8 +35,18 @@ core::Result<void> Lapic::enable()
     log::log$("LAPIC Enabled");
     return {};
 }
-core::Result<void> Lapic::initialize(PhysAddr lapic_addr)
+
+core::Result<void> Lapic::initialize(Madt *madt)
 {
+    PhysAddr lapic_addr = madt->local_apic_addr;
+
+    madt->foreach_entry<MadtEntryLapicOverride>([&](MadtEntryLapicOverride *entry)
+                                                    -> void
+                                                {
+		log::log$("lapic override: {}", entry->local_apic_addr);
+		lapic_addr = entry->local_apic_addr; });
+
+    log::log$("lapic: {}", lapic_addr._addr | fmt::FMT_HEX);
 
     VirtAddr mapped_registers = toVirt(lapic_addr);
 

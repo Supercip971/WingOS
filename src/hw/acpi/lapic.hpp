@@ -4,6 +4,7 @@
 
 #include "hw/mem/addr_space.hpp"
 
+#include "hw/acpi/madt.hpp"
 #include "libcore/enum-op.hpp"
 #include "libcore/result.hpp"
 #include "libcore/type/trait.hpp"
@@ -69,14 +70,14 @@ public:
 
     Lapic() = default;
 
-    static Lapic &current();
+    static Lapic &current_cpu();
 
-    LCpuId cpu_id() const
+    LCpuId id() const
     {
         return read(LAPICReg::ID) >> 24;
     }
 
-    static core::Result<void> initialize(PhysAddr lapic_addr);
+    static core::Result<void> initialize(Madt *madt);
 
     void eoi()
     {

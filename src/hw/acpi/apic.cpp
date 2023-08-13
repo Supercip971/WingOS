@@ -4,6 +4,7 @@
 
 #include "hw/mem/addr_space.hpp"
 
+#include "apic.hpp"
 #include "hw/acpi/lapic.hpp"
 #include "hw/acpi/madt.hpp"
 #include "hw/acpi/rsdp.hpp"
@@ -11,17 +12,27 @@
 #include "libcore/result.hpp"
 #include "mcx/mcx.hpp"
 
+size_t _cpu_count;
+hw::acpi::Rsdp *_rsdp;
+hw::acpi::Madt *_madt;
+
 namespace hw::acpi
 {
 
+size_t apic_cpu_count()
+{
+    return _cpu_count;
+}
+
 core::Result<void> apic_initialize(mcx::MachineContext const *context)
 {
-    hw::acpi::Rsdp *rsdp = (hw::acpi::Rsdp *)context->_rsdp;
+
+    _rsdp = (hw::acpi::Rsdp *)context->_rsdp;
 
     log::log$("rsdp: {}", context->_rsdp | fmt::FMT_HEX);
 
     hw::acpi::Madt *madt;
-    auto addr = rsdp->rsdt_phys_addr();
+    auto addr = _rsdp->rsdt_phys_addr();
     if (addr.type == hw::acpi::RsdtTypes::RSDT)
     {
         log::log$("kind: RSDT");
@@ -43,21 +54,16 @@ core::Result<void> apic_initialize(mcx::MachineContext const *context)
         log::log$("rev: {}", xsdt->header.revision);
         hw::acpi::dump(xsdt);
 
-        // madt  = try$(hw::acpi::SdtFind<hw::acpi::Xsdt, hw::acpi::Madt>(xsdt));
-
         madt = try$((hw::acpi::SdtFind<hw::acpi::Xsdt, hw::acpi::Madt>(xsdt)));
     }
 
-    PhysAddr lapic_addr = madt->local_apic_addr;
+    _madt = madt;
 
-    madt->foreach_entry<MadtEntryLapicOverride>([&](MadtEntryLapicOverride *entry)
-                                                {
-		log::log$("lapic override: {}", entry->local_apic_addr);
-		lapic_addr = entry->local_apic_addr; });
+    madt->foreach_entry<MadtEntryLapic>([](MadtEntryLapic *entry)
+                                        { log::log$("- cpu detected: {} {}", entry->acpi_processor_id, entry->apic_id);
+                                        _cpu_count++; });
 
-    log::log$("lapic: {}", lapic_addr._addr | fmt::FMT_HEX);
-
-    Lapic::initialize(lapic_addr);
+    Lapic::initialize(madt);
     return {};
 }
 } // namespace hw::acpi

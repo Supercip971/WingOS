@@ -1,7 +1,5 @@
 
 
-#pragma once
-
 #include <stddef.h>
 
 #include "hw/acpi/ioapic.hpp"
@@ -24,7 +22,7 @@ IOApic &IOApic::get(size_t index)
     }
     return ioapics[index];
 }
-static core::Result<void> initialize(size_t index, MadtEntryIoapic const *entry)
+ core::Result<void> initialize(size_t index, MadtEntryIoapic const *entry)
 {
     if (index >= max_ioapic)
     {
@@ -32,7 +30,9 @@ static core::Result<void> initialize(size_t index, MadtEntryIoapic const *entry)
     }
 
     auto &ioapic = ioapics[index];
+    (void)ioapic;
 
+    (void)entry;
     return {};
 }
 }; // namespace hw::acpi

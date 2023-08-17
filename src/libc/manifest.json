@@ -1,9 +1,14 @@
 {
     "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
     "type": "lib",
-    "id": "libc",
+    "id": "libc-custom",
+    "enableIf": {
+        "host": [false]
+    },
     "description": "Core C standart library",
     "requires": [
-        "iol"
-    ]
+        "iol",
+        "libheap"
+    ],
+    "provides": ["libc"]
 }

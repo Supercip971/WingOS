@@ -4,7 +4,8 @@
     "id": "libcore",
     "description": "Core library for Wingos",
     "requires": [
-        "libc"
+        "libc",
+        "iol"
     ],
     "subdirs": [
         "ds",

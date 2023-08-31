@@ -2,6 +2,7 @@
 #pragma once
 
 #include <stddef.h>
+#include "hw/mem/addr_space.hpp"
 
 #include "hw/acpi/madt.hpp"
 #include "libcore/result.hpp"
@@ -25,7 +26,7 @@ class IOApic
 public:
     IOApic() = default;
     IOApic(VirtAddr base) : _base(base) {}
-
+    IOApic(MadtEntryIoapic entry, VirtAddr base) : _base(base), _entry(entry) {}
     template <typename T = uint32_t>
     T read(size_t reg)
     {

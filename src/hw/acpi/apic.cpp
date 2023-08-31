@@ -5,6 +5,7 @@
 #include "hw/mem/addr_space.hpp"
 
 #include "apic.hpp"
+#include "hw/acpi/ioapic.hpp"
 #include "hw/acpi/lapic.hpp"
 #include "hw/acpi/madt.hpp"
 #include "hw/acpi/rsdp.hpp"
@@ -67,6 +68,12 @@ core::Result<void> apic_initialize(mcx::MachineContext const *context, CpuDetect
                                             
                                             });
 
+
+    int count = 0;
+    madt->foreach_entry<MadtEntryIoapic>([&count](auto *value){
+        IOApic::initialize(count, value);
+        count++;
+    });
     Lapic::initialize(madt);
     return {};
 }

@@ -1,6 +1,7 @@
 
 
 #include <stddef.h>
+#include "hw/mem/addr_space.hpp"
 
 #include "hw/acpi/ioapic.hpp"
 #include "hw/acpi/madt.hpp"
@@ -23,17 +24,26 @@ IOApic &IOApic::get(size_t index)
     return ioapics[index];
 }
 
-core::Result<void> initialize(size_t index, MadtEntryIoapic const *entry)
+core::Result<void> IOApic::initialize(size_t index, MadtEntryIoapic const *entry)
 {
     if (index >= max_ioapic)
     {
         return "error: out of range";
     }
 
-    auto &ioapic = ioapics[index];
-    (void)ioapic;
+    auto &ioapic = ioapics[entry->ioapic_id];
 
-    (void)entry;
+    ioapic = IOApic(*entry, toVirt(entry->ioapic_addr));
+
+
+    log::log$("ioapic[{}]: ", entry->ioapic_id);
+    log::log$("  id: {}", ioapic.read(IOAPIC_REG_ID));
+    log::log$("  max redirect: {}", ioapic.max_redirect());
+    log::log$("  interrupt base: {}", ioapic.interrupt_base());
+    log::log$("  version: {}", ioapic.read(IOAPIC_REG_VERSION));
+    log::log$("  arbitration: {}", ioapic.read(IOAPIC_REG_ARBITRATION));
+    log::log$("  redir table base: {}", ioapic.read(IOAPIC_REG_REDIR_TABLE_BASE));
+
     return {};
 }
 }; // namespace hw::acpi

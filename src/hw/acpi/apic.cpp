@@ -24,7 +24,7 @@ size_t apic_cpu_count()
     return _cpu_count;
 }
 
-core::Result<void> apic_initialize(mcx::MachineContext const *context)
+core::Result<void> apic_initialize(mcx::MachineContext const *context, CpuDetectedFunc* cpu_callback)
 {
 
     _rsdp = (hw::acpi::Rsdp *)context->_rsdp;
@@ -59,9 +59,13 @@ core::Result<void> apic_initialize(mcx::MachineContext const *context)
 
     _madt = madt;
 
-    madt->foreach_entry<MadtEntryLapic>([](MadtEntryLapic *entry)
-                                        { log::log$("- cpu detected: {} {}", entry->acpi_processor_id, entry->apic_id);
-                                        _cpu_count++; });
+    madt->foreach_entry<MadtEntryLapic>([cpu_callback](MadtEntryLapic *entry)
+                                        { 
+                                            log::log$("- cpu detected: {} {}", entry->acpi_processor_id, entry->apic_id);
+                                            cpu_callback(entry).assert();
+                                            _cpu_count++; 
+                                            
+                                            });
 
     Lapic::initialize(madt);
     return {};

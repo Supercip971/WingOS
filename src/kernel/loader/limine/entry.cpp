@@ -38,6 +38,7 @@ static void done(void)
 extern "C" uintptr_t kernel_physical_base()
 {
     return kernel_request.response->physical_base;
+
 }
 extern "C" uintptr_t kernel_virtual_base()
 {

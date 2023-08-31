@@ -22,7 +22,8 @@ IOApic &IOApic::get(size_t index)
     }
     return ioapics[index];
 }
- core::Result<void> initialize(size_t index, MadtEntryIoapic const *entry)
+
+core::Result<void> initialize(size_t index, MadtEntryIoapic const *entry)
 {
     if (index >= max_ioapic)
     {

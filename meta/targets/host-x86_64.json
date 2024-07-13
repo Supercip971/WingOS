@@ -6,10 +6,7 @@
         "toolchain": "clang",
         "arch": "x86_64",
         "bits": "64",
-        "sys": [
-            "@uname",
-            "sysname"
-        ],
+        "sys": "{shell.uname().sysname}",
         "abi": "unknown",
         "encoding": "utf8",
         "freestanding": false,
@@ -17,39 +14,27 @@
     },
     "tools": {
         "cc": {
-            "cmd": [
-                "@latest",
-                "clang"
-            ],
+            "cmd": "{shell.latest('clang')}",
             "args": [
                "-fno-stack-protector" 
             ]
         },
         "cxx": {
-            "cmd": [
-                "@latest",
-                "clang++"
-            ],
+            "cmd": "{shell.latest('clang++')}",
             "args": [
 
                "-fno-stack-protector"
             ]
         },
         "ld": {
-            "cmd": [
-                "@latest",
-                "clang++"
-            ],
+            "cmd": "{shell.latest('clang++')}",
             "args": [
                 "-e",
                 "_cstart"
             ]
         },
         "ar": {
-            "cmd": [
-                "@latest",
-                "llvm-ar"
-            ],
+            "cmd": "{shell.latest('llvm-ar')}",
             "args": [
                 "rcs"
             ]

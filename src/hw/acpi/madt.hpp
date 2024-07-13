@@ -115,19 +115,19 @@ struct [[gnu::packed]] MadtEntryLapicX2
 
 template <typename T>
 concept MadtEntryT = requires(T entry) {
-                         {
-                             entry.header.type
-                             } -> core::IsConvertibleTo<uint8_t>;
-                         {
-                             entry.header.length
-                             } -> core::IsConvertibleTo<uint8_t>;
-                         {
-                             T::HeaderType
-                             } -> core::IsConvertibleTo<uint8_t>;
-                         {
-                             T::name
-                             } -> core::IsConvertibleTo<core::Str>;
-                     };
+    {
+        entry.header.type
+    } -> core::IsConvertibleTo<uint8_t>;
+    {
+        entry.header.length
+    } -> core::IsConvertibleTo<uint8_t>;
+    {
+        T::HeaderType
+    } -> core::IsConvertibleTo<uint8_t>;
+    {
+        T::name
+    } -> core::IsConvertibleTo<core::Str>;
+};
 
 struct [[gnu::packed]] Madt
 {

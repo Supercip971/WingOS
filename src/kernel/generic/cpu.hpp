@@ -1,27 +1,25 @@
 
-#pragma once 
-
-
+#pragma once
 
 // generally used by implementation
-class Cpu {
-    protected:
+class Cpu
+{
+protected:
     int _id;
 
-    bool _present;    
-    public:
-    
-    int id() const {return _id;};
+    bool _present;
 
-    bool present() const {return _present;};
+public:
+    int id() const { return _id; };
 
-    Cpu(int id, bool present) : _id(id), _present(present) {};
+    bool present() const { return _present; };
 
-    Cpu() : _id(-1), _present(false) {};
+    Cpu(int id, bool present) : _id(id), _present(present){};
+
+    Cpu() : _id(-1), _present(false){};
 
     static int currentId();
-    static Cpu* current();
+    static Cpu *current();
 
-    static Cpu* get(int id);
+    static Cpu *get(int id);
 };
-

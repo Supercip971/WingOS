@@ -60,13 +60,13 @@ struct [[gnu::packed]] Xsdt
 // So that I can easily handle XSDT and RSDT at the same time
 template <typename T>
 concept SdtEntry = requires(T sdt) {
-                       {
-                           sdt.signature
-                           } -> core::IsConvertibleTo<core::Str>;
-                       {
-                           sdt.header
-                           } -> core::IsConvertibleTo<SdtHeader>;
-                   };
+    {
+        sdt.signature
+    } -> core::IsConvertibleTo<core::Str>;
+    {
+        sdt.header
+    } -> core::IsConvertibleTo<SdtHeader>;
+};
 
 template <typename T>
 concept SdTable = SdtEntry<T> &&

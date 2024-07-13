@@ -1,6 +1,7 @@
 
 
 #include <stddef.h>
+
 #include "hw/mem/addr_space.hpp"
 
 #include "hw/acpi/ioapic.hpp"
@@ -34,7 +35,6 @@ core::Result<void> IOApic::initialize(size_t index, MadtEntryIoapic const *entry
     auto &ioapic = ioapics[entry->ioapic_id];
 
     ioapic = IOApic(*entry, toVirt(entry->ioapic_addr));
-
 
     log::log$("ioapic[{}]: ", entry->ioapic_id);
     log::log$("  id: {}", ioapic.read(IOAPIC_REG_ID));

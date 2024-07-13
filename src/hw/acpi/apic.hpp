@@ -6,9 +6,9 @@
 namespace hw::acpi
 {
 
-using CpuDetectedFunc =core::Result<void>(MadtEntryLapic const *);
+using CpuDetectedFunc = core::Result<void>(MadtEntryLapic const *);
 
 size_t apic_cpu_count();
 
-core::Result<void> apic_initialize(mcx::MachineContext const *context, CpuDetectedFunc* cpu_callback);
+core::Result<void> apic_initialize(mcx::MachineContext const *context, CpuDetectedFunc *cpu_callback);
 } // namespace hw::acpi

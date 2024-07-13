@@ -54,19 +54,19 @@ public:
 
 template <typename T>
 concept Viewable = requires(T a) {
-                       {
-                           a.data()
-                           } -> IsConvertibleTo<const typename T::Type *>;
-                       {
-                           a.len()
-                           } -> IsConvertibleTo<size_t>;
-                       {
-                           a.begin()
-                           } -> IsConvertibleTo<const typename T::Type *>;
-                       {
-                           a.end()
-                           } -> IsConvertibleTo<const typename T::Type *>;
-                   };
+    {
+        a.data()
+    } -> IsConvertibleTo<const typename T::Type *>;
+    {
+        a.len()
+    } -> IsConvertibleTo<size_t>;
+    {
+        a.begin()
+    } -> IsConvertibleTo<const typename T::Type *>;
+    {
+        a.end()
+    } -> IsConvertibleTo<const typename T::Type *>;
+};
 
 static_assert(Viewable<MemView<char>>);
 

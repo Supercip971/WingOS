@@ -24,10 +24,10 @@ public:
 
 template <typename T>
 concept Readable = requires(T *x) {
-                       {
-                           x->read((char *)0, 10)
-                           } -> IsConvertibleToResult<size_t>;
-                   };
+    {
+        x->read((char *)0, 10)
+    } -> IsConvertibleToResult<size_t>;
+};
 
 static_assert(Readable<Reader>);
 

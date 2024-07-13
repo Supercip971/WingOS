@@ -9,13 +9,13 @@ namespace core
 {
 template <typename T>
 concept Iterable = requires(T a) {
-                       {
-                           a.begin()
-                           } -> IsConvertibleTo<const typename T::Type *>;
-                       {
-                           a.end()
-                           } -> IsConvertibleTo<const typename T::Type *>;
-                   };
+    {
+        a.begin()
+    } -> IsConvertibleTo<const typename T::Type *>;
+    {
+        a.end()
+    } -> IsConvertibleTo<const typename T::Type *>;
+};
 
 template <Iterable T, typename V>
 constexpr Optional<size_t> indexOf(V val)

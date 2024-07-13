@@ -86,23 +86,23 @@ public:
 
 template <typename T>
 concept IntRangeable = requires(T a) {
-                           {
-                               a.start()
-                               } -> core::IsIdentityIntegral;
-                           {
-                               a.end()
-                               } -> core::IsIdentityIntegral;
-                           {
-                               a.len()
-                               } -> core::IsIdentityIntegral;
-                           {
-                               a.contains(a.start())
-                               } -> core::IsIdentityIntegral;
-                           {
-                               a.contains(a)
-                               } -> core::IsIdentityIntegral;
-                           {
-                               a.overlaps(a)
-                               } -> core::IsIdentityIntegral;
-                       };
+    {
+        a.start()
+    } -> core::IsIdentityIntegral;
+    {
+        a.end()
+    } -> core::IsIdentityIntegral;
+    {
+        a.len()
+    } -> core::IsIdentityIntegral;
+    {
+        a.contains(a.start())
+    } -> core::IsIdentityIntegral;
+    {
+        a.contains(a)
+    } -> core::IsIdentityIntegral;
+    {
+        a.overlaps(a)
+    } -> core::IsIdentityIntegral;
+};
 } // namespace math

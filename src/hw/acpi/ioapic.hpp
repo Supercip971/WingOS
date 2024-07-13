@@ -2,6 +2,7 @@
 #pragma once
 
 #include <stddef.h>
+
 #include "hw/mem/addr_space.hpp"
 
 #include "hw/acpi/madt.hpp"

@@ -19,13 +19,12 @@
 // ee
 
 #include "cpu.hpp"
-static core::Result<void> cpu_detect(const hw::acpi::MadtEntryLapic* lapic)
+static core::Result<void> cpu_detect(const hw::acpi::MadtEntryLapic *lapic)
 {
 
     try$(arch::amd64::cpuContextInit(lapic->acpi_processor_id, lapic->apic_id));
 
     return {};
-
 }
 void arch_entry(const mcx::MachineContext *context)
 {
@@ -52,8 +51,6 @@ void arch_entry(const mcx::MachineContext *context)
     log::log$("using vmm");
 
     hw::acpi::apic_initialize(context, cpu_detect);
-
-    
 
     log::log$("cpu count: {}", hw::acpi::apic_cpu_count());
     kernel_entry(context);

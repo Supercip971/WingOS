@@ -38,13 +38,13 @@ public:
 
 template <typename T>
 concept Writable = requires(T *x) {
-                       {
-                           x->write((const char *)0, 10)
-                           } -> IsConvertibleToResult<void>;
-                       {
-                           x->write(MemView<char>())
-                           } -> IsConvertibleToResult<void>;
-                   };
+    {
+        x->write((const char *)0, 10)
+    } -> IsConvertibleToResult<void>;
+    {
+        x->write(MemView<char>())
+    } -> IsConvertibleToResult<void>;
+};
 
 static_assert(Writable<Writer>);
 

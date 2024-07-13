@@ -38,19 +38,19 @@ public:
 
 template <typename T>
 concept Seekable = requires(T *x) {
-                       {
-                           x->seek(0, SeekFrom::SEEK_BEGIN)
-                           } -> IsConvertibleToResult<void>;
-                       {
-                           x->tell()
-                           } -> IsConvertibleToResult<size_t>;
-                       {
-                           x->size()
-                           } -> IsConvertibleToResult<size_t>;
-                       {
-                           x->rewind()
-                           } -> IsConvertibleToResult<size_t>;
-                   };
+    {
+        x->seek(0, SeekFrom::SEEK_BEGIN)
+    } -> IsConvertibleToResult<void>;
+    {
+        x->tell()
+    } -> IsConvertibleToResult<size_t>;
+    {
+        x->size()
+    } -> IsConvertibleToResult<size_t>;
+    {
+        x->rewind()
+    } -> IsConvertibleToResult<size_t>;
+};
 
 static_assert(Seekable<Seeker>);
 

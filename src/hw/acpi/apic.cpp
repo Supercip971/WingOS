@@ -64,8 +64,7 @@ core::Result<void> apic_initialize(mcx::MachineContext const *context, CpuDetect
                                         {
                                             log::log$("- cpu detected: {} {}", entry->acpi_processor_id, entry->apic_id);
                                             cpu_callback(entry).assert();
-                                            _cpu_count++;
-                                        });
+                                            _cpu_count++; });
 
     int count = 0;
     madt->foreach_entry<MadtEntryIoapic>([&count](auto *value)

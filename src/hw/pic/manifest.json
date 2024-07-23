@@ -1,0 +1,12 @@
+
+{
+    "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
+    "type": "lib",
+    "id": "hw-pic",
+    "description": "PIC hardware library",
+    "requires": [
+        "libcore",
+        "hw-mem",
+        "arch-x86"
+    ]
+}

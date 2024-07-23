@@ -5,6 +5,7 @@
 #include "hw/mem/addr_space.hpp"
 
 #include "hw/acpi/madt.hpp"
+#include "hw/pic/pic.hpp"
 #include "lapic.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/result.hpp"
@@ -33,6 +34,11 @@ core::Result<void> Lapic::enable()
                     LAPIC_SPURIOUS_VECTOR);
 
     log::log$("LAPIC Enabled");
+
+    log::log$("disabling 8259 PIC");
+
+    hw::Pic::disable();
+
     return {};
 }
 
@@ -53,6 +59,7 @@ core::Result<void> Lapic::initialize(Madt *madt)
     main_lapic = Lapic(mapped_registers);
 
     try$(main_lapic.enable());
+
     return {};
 }
 }; // namespace hw::acpi

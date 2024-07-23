@@ -6,6 +6,7 @@
     "description": "ACPI hardware library",
     "requires": [
         "libcore",
-        "hw-mem"
+        "hw-mem",
+        "hw-pic"
     ]
 }

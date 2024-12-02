@@ -11,11 +11,11 @@
 #include "libcore/result.hpp"
 namespace hw::acpi
 {
-
+// CONFIGURABLE
 constexpr int max_ioapic = 256;
 core::Array<IOApic, max_ioapic> ioapics = {};
 
-IOApic &IOApic::get(size_t index)
+IOApic &IOApic::get(IOApicIndex index)
 {
     if (index >= max_ioapic)
     {
@@ -25,7 +25,7 @@ IOApic &IOApic::get(size_t index)
     return ioapics[index];
 }
 
-core::Result<void> IOApic::initialize(size_t index, MadtEntryIoapic const *entry)
+core::Result<void> IOApic::initialize(IOApicIndex index, MadtEntryIoapic const *entry)
 {
     if (index >= max_ioapic)
     {
@@ -46,4 +46,19 @@ core::Result<void> IOApic::initialize(size_t index, MadtEntryIoapic const *entry
 
     return {};
 }
+
+
+core::Result<IOApicIndex> IOApic::query_from_irq(size_t irq)
+{
+    for (size_t i = 0; i < max_ioapic; i++)
+    {
+        auto &ioapic = ioapics[i];
+        if (ioapic.interrupt_base() <= irq && ioapic.interrupt_base() + ioapic.max_redirect() > irq)
+        {
+            return i;
+        }
+    }
+    return "error: no ioapic found for irq";
+}
+
 }; // namespace hw::acpi

@@ -11,6 +11,9 @@ class CpuImpl : public Cpu
     int _lapic;
 
 public:
+
+    int lapic() const { return _lapic; };
+
     CpuImpl(int id, int lapic) : Cpu(id, true), _lapic(lapic){};
     static CpuImpl *getImpl(int id);
     static CpuImpl *currentImpl();

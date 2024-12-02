@@ -21,7 +21,7 @@ core::Result<void> cpuContextInit(int id, int lapic)
 
     cpus[id] = CpuImpl(id, lapic);
 
-    log::log$("initialized cpu context: {}", id);
+    log::log$("initialized cpu context: {} (lapic: {})", id, lapic);
     initialized_count++;
     return {};
 }

@@ -18,6 +18,46 @@ enum IOApicRegs : uint32_t
     IOAPIC_REG_REDIR_TABLE_BASE = 0x10,
 };
 
+
+enum IoapicRegDeliveryType {
+
+    IOAPIC_REG_DELIVERY_NORMAL = 0,
+    IOAPIC_REG_DELIVERY_LOWEST_PRIORITY = 1,
+    IOAPIC_REG_DELIVERY_SMI = 2,
+    IOAPIC_REG_DELIVERY_NMI = 4,
+    IOAPIC_REG_DELIVERY_INIT = 5,
+    IOAPIC_REG_DELIVERY_EXTINT = 7,
+};
+
+union IoapicRedirectionReg {
+
+    uint64_t raw;
+    struct [[gnu::packed]] {
+        uint8_t vector; 
+        
+        uint8_t delivery_type : 3;
+        // physical or logical
+        uint8_t destination_mode : 1;
+
+
+        uint8_t pending : 1;
+        
+
+        uint8_t polarity : 1;
+
+        uint8_t level_trigerred_received : 1;
+        // 0 = edge sensitive 
+        // 1 = Level sensitive
+        uint8_t is_level_sensitive : 1;
+        
+        uint8_t mask : 1;
+
+        uint64_t reserved : 39;
+
+        uint8_t destination : 8;
+    }  val;
+};
+using IOApicIndex = size_t;
 class IOApic
 {
 
@@ -39,7 +79,7 @@ public:
     }
 
     template <typename T = uint32_t>
-    T write(size_t reg, T value)
+    void write(size_t reg, T value)
     {
         T volatile *reg_ptr = _base.as<T volatile>();
         T volatile *value_ptr = (_base + 16).as<T volatile>();
@@ -48,13 +88,25 @@ public:
         *value_ptr = value;
     }
 
+    void redirect(uint16_t local_irq, IoapicRedirectionReg reg)
+    {
+        write<uint32_t>(IOAPIC_REG_REDIR_TABLE_BASE  + local_irq * 2, reg.raw & 0xFFFFFFFF);
+        write<uint32_t>(IOAPIC_REG_REDIR_TABLE_BASE  + local_irq * 2 + 1, reg.raw >> 32);
+    }
+
     size_t interrupt_base() const { return _entry.global_system_interrupt_base; }
 
     size_t max_redirect() { return (read(IOAPIC_REG_VERSION) & 0x00FF0000) >> 16; }
 
-    static IOApic &get(size_t index);
+    static IOApic &get(IOApicIndex index);
 
-    static core::Result<void> initialize(size_t index, MadtEntryIoapic const *entry);
+    // in the case of multiple ioapics, we need to select the one 
+    // that is responsible for the interrupt
+    static core::Result<IOApicIndex> query_from_irq(size_t irq);
+
+    static core::Result<void> initialize(IOApicIndex index, MadtEntryIoapic const *entry);
+
+
 };
 
 }; // namespace hw::acpi

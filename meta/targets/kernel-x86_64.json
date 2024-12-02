@@ -29,7 +29,8 @@
                 "-mno-sse",
                 "-mno-sse2",
                 "-mno-red-zone",
-                "-mcmodel=kernel"
+                "-mcmodel=kernel",
+                "-Wno-missing-field-initializers"
             ]
         },
         "cxx": {
@@ -51,7 +52,8 @@
                 "-mno-sse",
                 "-mno-sse2",
                 "-mno-red-zone",
-                "-mcmodel=kernel"
+                "-mcmodel=kernel",
+                "-Wno-missing-field-initializers"
             ]
         },
         "ld": {

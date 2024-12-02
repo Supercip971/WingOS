@@ -20,12 +20,14 @@ void _start(void);
 __attribute__((used)) static volatile struct limine_entry_point_request entry_point_request = {
     .id = LIMINE_ENTRY_POINT_REQUEST,
     .revision = 0,
+    .response = NULL,
     .entry = _start,
 };
 
 __attribute__((used)) static volatile struct limine_kernel_address_request kernel_request = {
     .id = LIMINE_KERNEL_ADDRESS_REQUEST,
     .revision = 0,
+    .response = NULL,
 
 };
 static void done(void)

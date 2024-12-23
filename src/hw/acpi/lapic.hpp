@@ -12,7 +12,7 @@ namespace hw::acpi
 {
 
 // cf section 11.4 in chapter 3 of intel programmer manual
-using LCpuId = uint32_t;
+using LCpuId = uint64_t;
 
 enum class LAPICReg : uint32_t
 {
@@ -33,6 +33,7 @@ enum class LAPICReg : uint32_t
     ERROR_STATUS = 0x280,
     LVT_CMCI = 0x2F0,
     INTERRUPT_COMMAND_START = 0x300,
+    INTERRUPT_COMMAND_START_2 = 0x310,
     LVT_TIMER = 0x320,
     LVT_THERMAL_SENSOR = 0x330,
     LVT_PERFORMANCE_MONITORING_COUNTERS = 0x340,
@@ -70,7 +71,7 @@ public:
 
     Lapic() = default;
 
-    static Lapic &current_cpu();
+    static Lapic &the();
 
     LCpuId id() const
     {

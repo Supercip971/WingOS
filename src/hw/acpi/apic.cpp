@@ -56,7 +56,7 @@ core::Result<void> update_interrupt_source_override(MadtEntryIso const *entry)
 
 core::Result<void> apic_enable()
 {
-    return Lapic::current_cpu().enable();
+    return Lapic::the().enable();
 }
 
 core::Result<void> apic_initialize(mcx::MachineContext const *context, CpuDetectedFunc *cpu_callback)
@@ -179,4 +179,6 @@ core::Result<void> redirect_interrupt(LCpuId cpu, uint8_t irq, uint8_t vector, b
 
     return {};
 }
+
+
 } // namespace hw::acpi

@@ -14,7 +14,7 @@ static hw::acpi::Lapic main_lapic;
 namespace hw::acpi
 {
 
-Lapic &Lapic::current_cpu()
+Lapic &Lapic::the()
 {
     return main_lapic;
 }

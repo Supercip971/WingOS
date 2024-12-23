@@ -18,4 +18,5 @@ core::Result<void> apic_initialize(mcx::MachineContext const *context, CpuDetect
 core::Result<void> redirect_interrupt(LCpuId cpu, uint8_t irq, uint8_t vector, bool enabled = true);
 
 core::Result<void> update_interrupt_source_override(MadtEntryIso const *entry);
+
 } // namespace hw::acpi

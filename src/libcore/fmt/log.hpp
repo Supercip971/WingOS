@@ -77,7 +77,7 @@ inline void core::Result<ValT, ErrT>::assert()
     if (_error.has_value())
     {
 
-        log::log("Result assert failed: ", _error.unwrap());
+        log::log("Result assert failed: {}", _error.unwrap());
 
         while (true)
         {
@@ -90,7 +90,7 @@ inline void core::Result<void, ErrT>::assert()
     if (_error.has_value())
     {
 
-        log::log("Result assert failed: ", _error.unwrap());
+        log::log("Result assert failed: {}", _error.unwrap());
 
         while (true)
         {

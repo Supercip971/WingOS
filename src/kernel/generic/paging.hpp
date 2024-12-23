@@ -93,5 +93,9 @@ public:
 
     static core::Result<VmmSpace> create(bool empty);
 
+    static  void invalidate() {
+        asm volatile ("mov %cr3, %rax; mov %rax, %cr3");
+    }
+
     static void use_kernel(VmmSpace &space);
 };

@@ -71,6 +71,9 @@ class VmmSpace
     void *_self;
 
 public:
+
+
+    PhysAddr self_addr() const { return toPhys(VirtAddr((uintptr_t)self())); }
     void const *self() const { return _self; }
 
     void *self() { return _self; }

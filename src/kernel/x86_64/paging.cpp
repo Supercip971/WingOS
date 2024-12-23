@@ -1,5 +1,6 @@
 #include <kernel/generic/paging.hpp>
 
+#include "iol/mem_flags.h"
 #include <arch/x86_64/paging.hpp>
 
 #include "kernel/generic/mem.hpp"
@@ -8,6 +9,13 @@ static VmmSpace kernel_space;
 void VmmSpace::use_kernel(VmmSpace &space)
 {
     kernel_space = space;
+}
+
+
+
+VmmSpace &VmmSpace::kernel_page_table()
+{
+    return kernel_space;
 }
 arch::amd64::Pml4 *as_root(VmmSpace &space)
 {
@@ -27,6 +35,7 @@ constexpr arch::amd64::Page page_create(PageFlags flags, PhysAddr addr)
         ._huge_page = 0,
         ._global = 0,
         ._available = 0,
+        ._address = 0,
     };
     p.address(addr);
     return p;
@@ -35,7 +44,7 @@ constexpr arch::amd64::Page page_create(PageFlags flags, PhysAddr addr)
 void VmmSpace::use()
 {
 
-    asm volatile("mov %0, %%cr3" ::"r"(toPhys(VirtAddr((uintptr_t)self()))));
+    asm volatile("mov %0, %%cr3" ::"r"(self_addr()));
 }
 core::Result<void> VmmSpace::map(VirtRange virt, PhysRange phys, PageFlags flags)
 {
@@ -68,7 +77,8 @@ core::Result<void> VmmSpace::map(VirtRange virt, PhysRange phys, PageFlags flags
 core::Result<VmmSpace> VmmSpace::create(bool empty)
 {
     VmmSpace result = {};
-    result._self = toVirt(try$(Pmm::the().allocate(1))).as<void *>();
+    // allocate to lower half because SMP need the pagetable address to be in the lower 4GB
+    result._self = toVirt(try$(Pmm::the().allocate(1, IOL_ALLOC_MEMORY_FLAG_LOWER_SPACE))).as<void *>();
 
     auto root = as_root(result);
     auto kernel_root = as_root(kernel_space);

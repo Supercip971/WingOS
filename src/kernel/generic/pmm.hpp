@@ -5,6 +5,7 @@
 #include <mcx/mcx.hpp>
 #include <stdint.h>
 
+#include "hw/mem/addr_space.hpp"
 #include <iol/mem_flags.h>
 
 #include "libcore/fmt/impl/bitmap.hpp"
@@ -65,6 +66,7 @@ struct Pmm
 
     core::Result<PhysAddr> allocate(size_t count, IolAllocMemoryFlag flags = IOL_ALLOC_MEMORY_FLAG_NONE);
 
+    core::Result<void> own(PhysAddr addr, size_t count);
     core::Result<void> release(PhysAddr addr, size_t count);
 };
 

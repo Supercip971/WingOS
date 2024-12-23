@@ -150,6 +150,23 @@ core::Result<PhysAddr> Pmm::allocate(size_t count, IolAllocMemoryFlag flags)
     return ("Could not allocate memory");
 }
 
+core::Result<void> Pmm::own(PhysAddr addr, size_t count)
+{
+
+    for (size_t i = 0; i < this->_sections_count; i++)
+    {
+        auto &section = this->_sections[i];
+        if (section.range.contains(addr))
+        {
+
+            auto range = mcx::MemoryRange::from_begin_len(addr - section.range.start(), count);
+            section.bitmap.fill(true, range);
+            return {};
+        }
+    }
+
+    return ("Could not own memory");
+}
 core::Result<void> Pmm::release(PhysAddr addr, size_t count)
 {
     for (size_t i = 0; i < this->_sections_count; i++)
@@ -172,6 +189,8 @@ core::Result<Pmm> Pmm::create(const mcx::MachineContext *context)
     Pmm pmm = try$(_allocate_structure(context));
 
     try$(pmm._fill(context));
-
+    
+    pmm.own(0, 16); // own the first 16 pages
+    
     return pmm;
 }

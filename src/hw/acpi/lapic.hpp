@@ -52,6 +52,37 @@ enum LAPICSpuriousReg : uint32_t
     LAPIC_SPURIOUS_FOCUS_CORE_CHECK = 1 << 9,
 };
 
+// FIXME: seems weird, I feel like I'm mixing two definition in the same struct ?
+// view: Interrupt Command Register # https://wiki.osdev.org/APIC
+enum LAPICInterruptCommandDeliveryMode : uint8_t
+{
+    LAPIC_INTERRUPT_DELIVERY_FIXED = 0,
+    LAPIC_INTERRUPT_DELIVERY_LOWEST_PRIORITY = 1,
+    LAPIC_INTERRUPT_DELIVERY_SMI = 2,
+    LAPIC_INTERRUPT_DELIVERY_NMI = 4,
+    LAPIC_INTERRUPT_DELIVERY_INIT = 5,
+    LAPIC_INTERRUPT_DELIVERY_SIPI = 6,
+    LAPIC_INTERRUPT_DELIVERY_EXTINT = 7,
+};
+
+
+union LAPICInterruptCommandRegister {
+
+    uint32_t raw;
+    struct [[gnu::packed]] {
+        uint8_t vector; 
+        uint8_t delivery_type : 3; // 0 = fixed, 1 = lowest priority, 2 = SMI, 4 = NMI, 5 = INIT, 6 SIPI
+        // physical or logical
+        uint8_t destination_mode : 1;
+        uint8_t delivery_status : 1;
+        uint8_t _reserved : 1;
+        uint8_t clear_init_level_deassert : 1;
+        uint8_t set_init_level_deassert : 1;
+        uint8_t destination_type : 2;
+        uint16_t reserved : 8;
+    }  val;
+};
+
 class Lapic
 {
 
@@ -86,5 +117,9 @@ public:
     }
 
     core::Result<void> enable();
+
+    core::Result<void> init_cpu(LCpuId id);
+
+    core::Result<void> send_sipi(LCpuId id, PhysAddr jump_addr);
 };
 } // namespace hw::acpi

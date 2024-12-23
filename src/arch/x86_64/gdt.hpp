@@ -62,7 +62,7 @@ struct Gdt
                           GdtEntry::make_entry(0, 0xFFFFFFFF, 0, 0b10010010),    // data segment
                           GdtEntry::make_entry(0, 0xFFFFFFFF, 0, 0b11110010),    // user data segment
                           GdtEntry::make_entry(0, 0xFFFFFFFF, 0b10, 0b11111010), // user code segment
-                      }){};
+                      }) {};
 
 } __attribute__((packed));
 

@@ -7,19 +7,19 @@
 __attribute__((used)) static volatile struct limine_memmap_request mmap_request = {
     .id = LIMINE_MEMMAP_REQUEST,
     .revision = 0,
-    .response = NULL, 
+    .response = NULL,
 
 };
 
 __attribute__((used)) static volatile struct limine_framebuffer_request limine_framebuffer_req = {
     .id = LIMINE_FRAMEBUFFER_REQUEST,
     .revision = 0,
-    .response = NULL, 
+    .response = NULL,
 };
 __attribute__((used)) static volatile struct limine_rsdp_request rsdp_request = {
     .id = LIMINE_RSDP_REQUEST,
     .revision = 0,
-    .response = NULL, 
+    .response = NULL,
 };
 static mcx::MemoryMap::Type limine_type_to_mcx(int type)
 {

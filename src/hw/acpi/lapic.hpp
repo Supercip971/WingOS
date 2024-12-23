@@ -65,12 +65,13 @@ enum LAPICInterruptCommandDeliveryMode : uint8_t
     LAPIC_INTERRUPT_DELIVERY_EXTINT = 7,
 };
 
-
-union LAPICInterruptCommandRegister {
+union LAPICInterruptCommandRegister
+{
 
     uint32_t raw;
-    struct [[gnu::packed]] {
-        uint8_t vector; 
+    struct [[gnu::packed]]
+    {
+        uint8_t vector;
         uint8_t delivery_type : 3; // 0 = fixed, 1 = lowest priority, 2 = SMI, 4 = NMI, 5 = INIT, 6 SIPI
         // physical or logical
         uint8_t destination_mode : 1;
@@ -80,7 +81,7 @@ union LAPICInterruptCommandRegister {
         uint8_t set_init_level_deassert : 1;
         uint8_t destination_type : 2;
         uint16_t reserved : 8;
-    }  val;
+    } val;
 };
 
 class Lapic

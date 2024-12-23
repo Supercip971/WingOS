@@ -189,8 +189,8 @@ core::Result<Pmm> Pmm::create(const mcx::MachineContext *context)
     Pmm pmm = try$(_allocate_structure(context));
 
     try$(pmm._fill(context));
-    
+
     pmm.own(0, 16); // own the first 16 pages
-    
+
     return pmm;
 }

@@ -16,7 +16,7 @@ private:
 
 public:
     using Type = T;
-    constexpr Range(){};
+    constexpr Range() {};
     constexpr Range(T start, T end) : _start(start), _end(end) {}
 
     constexpr T start() const { return _start; }

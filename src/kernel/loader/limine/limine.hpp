@@ -53,10 +53,9 @@ extern "C"
 
     /* Boot info */
 
-#define LIMINE_BOOTLOADER_INFO_REQUEST                              \
-    {                                                               \
-        LIMINE_COMMON_MAGIC, 0xf55038d8e2a1202f, 0x279426fcf5f59740 \
-    }
+#define LIMINE_BOOTLOADER_INFO_REQUEST \
+    {                                  \
+        LIMINE_COMMON_MAGIC, 0xf55038d8e2a1202f, 0x279426fcf5f59740}
 
     struct limine_bootloader_info_response
     {
@@ -77,10 +76,9 @@ extern "C"
 
     /* Stack size */
 
-#define LIMINE_STACK_SIZE_REQUEST                                   \
-    {                                                               \
-        LIMINE_COMMON_MAGIC, 0x224ef0460a8e8926, 0xe1cb0fc25f46ea3d \
-    }
+#define LIMINE_STACK_SIZE_REQUEST \
+    {                             \
+        LIMINE_COMMON_MAGIC, 0x224ef0460a8e8926, 0xe1cb0fc25f46ea3d}
 
     struct limine_stack_size_response
     {
@@ -98,10 +96,9 @@ extern "C"
 
     /* HHDM */
 
-#define LIMINE_HHDM_REQUEST                                         \
-    {                                                               \
-        LIMINE_COMMON_MAGIC, 0x48dcf1cb8ad2b852, 0x63984e959a98244b \
-    }
+#define LIMINE_HHDM_REQUEST \
+    {                       \
+        LIMINE_COMMON_MAGIC, 0x48dcf1cb8ad2b852, 0x63984e959a98244b}
 
     struct limine_hhdm_response
     {
@@ -119,10 +116,9 @@ extern "C"
 
     /* Framebuffer */
 
-#define LIMINE_FRAMEBUFFER_REQUEST                                  \
-    {                                                               \
-        LIMINE_COMMON_MAGIC, 0x9d5827dcd881dd75, 0xa3148604f6fab11b \
-    }
+#define LIMINE_FRAMEBUFFER_REQUEST \
+    {                              \
+        LIMINE_COMMON_MAGIC, 0x9d5827dcd881dd75, 0xa3148604f6fab11b}
 
 #define LIMINE_FRAMEBUFFER_RGB 1
 
@@ -184,10 +180,9 @@ extern "C"
 
     /* Terminal */
 
-#define LIMINE_TERMINAL_REQUEST                                     \
-    {                                                               \
-        LIMINE_COMMON_MAGIC, 0xc8ac59310c2b0844, 0xa68d0c7265d38878 \
-    }
+#define LIMINE_TERMINAL_REQUEST \
+    {                           \
+        LIMINE_COMMON_MAGIC, 0xc8ac59310c2b0844, 0xa68d0c7265d38878}
 
 #define LIMINE_TERMINAL_CB_DEC 10
 #define LIMINE_TERMINAL_CB_BELL 20
@@ -238,10 +233,9 @@ extern "C"
 
     /* 5-level paging */
 
-#define LIMINE_5_LEVEL_PAGING_REQUEST                               \
-    {                                                               \
-        LIMINE_COMMON_MAGIC, 0x94469551da9b3192, 0xebe5e86db7382888 \
-    }
+#define LIMINE_5_LEVEL_PAGING_REQUEST \
+    {                                 \
+        LIMINE_COMMON_MAGIC, 0x94469551da9b3192, 0xebe5e86db7382888}
 
     struct limine_5_level_paging_response
     {
@@ -258,10 +252,9 @@ extern "C"
 
     /* SMP */
 
-#define LIMINE_SMP_REQUEST                                          \
-    {                                                               \
-        LIMINE_COMMON_MAGIC, 0x95a67b819a1b857e, 0xa0b61b723b6a73e0 \
-    }
+#define LIMINE_SMP_REQUEST \
+    {                      \
+        LIMINE_COMMON_MAGIC, 0x95a67b819a1b857e, 0xa0b61b723b6a73e0}
 
     struct limine_smp_info;
 
@@ -329,10 +322,9 @@ struct limine_smp_response
 
     /* Memory map */
 
-#define LIMINE_MEMMAP_REQUEST                                       \
-    {                                                               \
-        LIMINE_COMMON_MAGIC, 0x67cf3d9d378a806f, 0xe304acdfc50c3c62 \
-    }
+#define LIMINE_MEMMAP_REQUEST \
+    {                         \
+        LIMINE_COMMON_MAGIC, 0x67cf3d9d378a806f, 0xe304acdfc50c3c62}
 
 #define LIMINE_MEMMAP_USABLE 0
 #define LIMINE_MEMMAP_RESERVED 1
@@ -368,10 +360,9 @@ struct limine_smp_response
 
     /* Entry point */
 
-#define LIMINE_ENTRY_POINT_REQUEST                                  \
-    {                                                               \
-        LIMINE_COMMON_MAGIC, 0x13d86c035a1cd3e1, 0x2b0caa89d8f3026a \
-    }
+#define LIMINE_ENTRY_POINT_REQUEST \
+    {                              \
+        LIMINE_COMMON_MAGIC, 0x13d86c035a1cd3e1, 0x2b0caa89d8f3026a}
 
     typedef void (*limine_entry_point)(void);
 
@@ -392,10 +383,9 @@ struct limine_smp_response
 
     /* Kernel File */
 
-#define LIMINE_KERNEL_FILE_REQUEST                                  \
-    {                                                               \
-        LIMINE_COMMON_MAGIC, 0xad97e90e83f1ed67, 0x31eb5d1c5ff23b69 \
-    }
+#define LIMINE_KERNEL_FILE_REQUEST \
+    {                              \
+        LIMINE_COMMON_MAGIC, 0xad97e90e83f1ed67, 0x31eb5d1c5ff23b69}
 
     struct limine_kernel_file_response
     {
@@ -414,10 +404,9 @@ struct limine_smp_response
 
     /* Module */
 
-#define LIMINE_MODULE_REQUEST                                       \
-    {                                                               \
-        LIMINE_COMMON_MAGIC, 0x3e7e279702be32af, 0xca1c4f3bd1280cee \
-    }
+#define LIMINE_MODULE_REQUEST \
+    {                         \
+        LIMINE_COMMON_MAGIC, 0x3e7e279702be32af, 0xca1c4f3bd1280cee}
 
     struct limine_module_response
     {
@@ -437,10 +426,9 @@ struct limine_smp_response
 
     /* RSDP */
 
-#define LIMINE_RSDP_REQUEST                                         \
-    {                                                               \
-        LIMINE_COMMON_MAGIC, 0xc5e77b6b397e7b43, 0x27637845accdcf3c \
-    }
+#define LIMINE_RSDP_REQUEST \
+    {                       \
+        LIMINE_COMMON_MAGIC, 0xc5e77b6b397e7b43, 0x27637845accdcf3c}
 
     struct limine_rsdp_response
     {
@@ -459,10 +447,9 @@ struct limine_smp_response
 
     /* SMBIOS */
 
-#define LIMINE_SMBIOS_REQUEST                                       \
-    {                                                               \
-        LIMINE_COMMON_MAGIC, 0x9e9046f11e095391, 0xaa4a520fefbde5ee \
-    }
+#define LIMINE_SMBIOS_REQUEST \
+    {                         \
+        LIMINE_COMMON_MAGIC, 0x9e9046f11e095391, 0xaa4a520fefbde5ee}
 
     struct limine_smbios_response
     {
@@ -483,10 +470,9 @@ struct limine_smp_response
 
     /* EFI system table */
 
-#define LIMINE_EFI_SYSTEM_TABLE_REQUEST                             \
-    {                                                               \
-        LIMINE_COMMON_MAGIC, 0x5ceba5163eaaf6d6, 0x0a6981610cf65fcc \
-    }
+#define LIMINE_EFI_SYSTEM_TABLE_REQUEST \
+    {                                   \
+        LIMINE_COMMON_MAGIC, 0x5ceba5163eaaf6d6, 0x0a6981610cf65fcc}
 
     struct limine_efi_system_table_response
     {
@@ -505,10 +491,9 @@ struct limine_smp_response
 
     /* Boot time */
 
-#define LIMINE_BOOT_TIME_REQUEST                                    \
-    {                                                               \
-        LIMINE_COMMON_MAGIC, 0x502746e184c088aa, 0xfbc5ec83e6327893 \
-    }
+#define LIMINE_BOOT_TIME_REQUEST \
+    {                            \
+        LIMINE_COMMON_MAGIC, 0x502746e184c088aa, 0xfbc5ec83e6327893}
 
     struct limine_boot_time_response
     {
@@ -526,10 +511,9 @@ struct limine_smp_response
 
     /* Kernel address */
 
-#define LIMINE_KERNEL_ADDRESS_REQUEST                               \
-    {                                                               \
-        LIMINE_COMMON_MAGIC, 0x71ba76863cc55f63, 0xb2644a48c516a487 \
-    }
+#define LIMINE_KERNEL_ADDRESS_REQUEST \
+    {                                 \
+        LIMINE_COMMON_MAGIC, 0x71ba76863cc55f63, 0xb2644a48c516a487}
 
     struct limine_kernel_address_response
     {
@@ -548,10 +532,9 @@ struct limine_smp_response
 
     /* Device Tree Blob */
 
-#define LIMINE_DTB_REQUEST                                          \
-    {                                                               \
-        LIMINE_COMMON_MAGIC, 0xb40ddb48fb54bac7, 0x545081493f81ffb7 \
-    }
+#define LIMINE_DTB_REQUEST \
+    {                      \
+        LIMINE_COMMON_MAGIC, 0xb40ddb48fb54bac7, 0x545081493f81ffb7}
 
     struct limine_dtb_response
     {

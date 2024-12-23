@@ -8,7 +8,6 @@
 namespace hw::acpi
 {
 
-
 using CpuDetectedFunc = core::Result<void>(MadtEntryLapic const *);
 
 size_t apic_cpu_count();

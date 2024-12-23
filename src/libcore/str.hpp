@@ -20,10 +20,10 @@ class Str : public MemView<char>
     }
 
 public:
-    constexpr Str(const char *str) : MemView(str, Str::compute_len(str)){};
-    constexpr Str(const char *str, int len) : MemView(str, len){};
+    constexpr Str(const char *str) : MemView(str, Str::compute_len(str)) {};
+    constexpr Str(const char *str, int len) : MemView(str, len) {};
 
-    constexpr Str() : MemView("", 0){};
+    constexpr Str() : MemView("", 0) {};
 
     constexpr Str(Str &&other)
         : MemView(other._data, other._len)

@@ -63,14 +63,13 @@ core::Result<void> Lapic::initialize(Madt *madt)
     return {};
 }
 
-
 core::Result<void> Lapic::init_cpu(LCpuId id)
 {
     LAPICInterruptCommandRegister reg = {0};
 
     reg.val.delivery_type = LAPIC_INTERRUPT_DELIVERY_INIT;
 
-    write(LAPICReg::INTERRUPT_COMMAND_START_2 , (static_cast<uint64_t>(id) << 24));
+    write(LAPICReg::INTERRUPT_COMMAND_START_2, (static_cast<uint64_t>(id) << 24));
     write(LAPICReg::INTERRUPT_COMMAND_START, reg.raw);
 
     return {};
@@ -83,9 +82,8 @@ core::Result<void> Lapic::send_sipi(LCpuId id, PhysAddr jump_addr)
     reg.val.delivery_type = LAPIC_INTERRUPT_DELIVERY_SIPI;
     reg.val.vector = (uint8_t)((uintptr_t)jump_addr._addr >> 12);
 
-    write(LAPICReg::INTERRUPT_COMMAND_START_2 , (static_cast<uint64_t>(id) << 24));
+    write(LAPICReg::INTERRUPT_COMMAND_START_2, (static_cast<uint64_t>(id) << 24));
     write(LAPICReg::INTERRUPT_COMMAND_START, reg.raw);
-
 
     return {};
 }

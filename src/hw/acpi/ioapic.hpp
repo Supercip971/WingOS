@@ -18,8 +18,8 @@ enum IOApicRegs : uint32_t
     IOAPIC_REG_REDIR_TABLE_BASE = 0x10,
 };
 
-
-enum IoapicRegDeliveryType {
+enum IoapicRegDeliveryType
+{
 
     IOAPIC_REG_DELIVERY_NORMAL = 0,
     IOAPIC_REG_DELIVERY_LOWEST_PRIORITY = 1,
@@ -29,33 +29,33 @@ enum IoapicRegDeliveryType {
     IOAPIC_REG_DELIVERY_EXTINT = 7,
 };
 
-union IoapicRedirectionReg {
+union IoapicRedirectionReg
+{
 
     uint64_t raw;
-    struct [[gnu::packed]] {
-        uint8_t vector; 
-        
+    struct [[gnu::packed]]
+    {
+        uint8_t vector;
+
         uint8_t delivery_type : 3;
         // physical or logical
         uint8_t destination_mode : 1;
 
-
         uint8_t pending : 1;
-        
 
         uint8_t polarity : 1;
 
         uint8_t level_trigerred_received : 1;
-        // 0 = edge sensitive 
+        // 0 = edge sensitive
         // 1 = Level sensitive
         uint8_t is_level_sensitive : 1;
-        
+
         uint8_t mask : 1;
 
         uint64_t reserved : 39;
 
         uint8_t destination : 8;
-    }  val;
+    } val;
 };
 using IOApicIndex = size_t;
 class IOApic
@@ -90,8 +90,8 @@ public:
 
     void redirect(uint16_t local_irq, IoapicRedirectionReg reg)
     {
-        write<uint32_t>(IOAPIC_REG_REDIR_TABLE_BASE  + local_irq * 2, reg.raw & 0xFFFFFFFF);
-        write<uint32_t>(IOAPIC_REG_REDIR_TABLE_BASE  + local_irq * 2 + 1, reg.raw >> 32);
+        write<uint32_t>(IOAPIC_REG_REDIR_TABLE_BASE + local_irq * 2, reg.raw & 0xFFFFFFFF);
+        write<uint32_t>(IOAPIC_REG_REDIR_TABLE_BASE + local_irq * 2 + 1, reg.raw >> 32);
     }
 
     size_t interrupt_base() const { return _entry.global_system_interrupt_base; }
@@ -100,13 +100,11 @@ public:
 
     static IOApic &get(IOApicIndex index);
 
-    // in the case of multiple ioapics, we need to select the one 
+    // in the case of multiple ioapics, we need to select the one
     // that is responsible for the interrupt
     static core::Result<IOApicIndex> query_from_irq(size_t irq);
 
     static core::Result<void> initialize(IOApicIndex index, MadtEntryIoapic const *entry);
-
-
 };
 
 }; // namespace hw::acpi

@@ -16,7 +16,7 @@ struct PageFlags
     // but instead to a custom handler
     bool _custom_map_handler : 1;
 
-    constexpr PageFlags(){};
+    constexpr PageFlags() {};
 
     constexpr PageFlags present(bool present) const
     {
@@ -71,8 +71,6 @@ class VmmSpace
     void *_self;
 
 public:
-
-
     PhysAddr self_addr() const { return toPhys(VirtAddr((uintptr_t)self())); }
     void const *self() const { return _self; }
 
@@ -96,8 +94,9 @@ public:
 
     static core::Result<VmmSpace> create(bool empty);
 
-    static  void invalidate() {
-        asm volatile ("mov %cr3, %rax; mov %rax, %cr3");
+    static void invalidate()
+    {
+        asm volatile("mov %cr3, %rax; mov %rax, %cr3");
     }
 
     static void use_kernel(VmmSpace &space);

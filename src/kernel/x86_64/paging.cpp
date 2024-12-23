@@ -11,8 +11,6 @@ void VmmSpace::use_kernel(VmmSpace &space)
     kernel_space = space;
 }
 
-
-
 VmmSpace &VmmSpace::kernel_page_table()
 {
     return kernel_space;

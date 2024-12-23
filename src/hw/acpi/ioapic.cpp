@@ -47,7 +47,6 @@ core::Result<void> IOApic::initialize(IOApicIndex index, MadtEntryIoapic const *
     return {};
 }
 
-
 core::Result<IOApicIndex> IOApic::query_from_irq(size_t irq)
 {
     for (size_t i = 0; i < max_ioapic; i++)

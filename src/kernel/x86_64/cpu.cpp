@@ -6,8 +6,7 @@
 #include "kernel/generic/cpu.hpp"
 #include "libcore/ds/array.hpp"
 #include "libcore/result.hpp"
-constexpr int max_cpu = 512;
-core::Array<arch::amd64::CpuImpl, max_cpu> cpus;
+core::Array<arch::amd64::CpuImpl, arch::amd64::max_cpu> cpus;
 
 static int initialized_count = 0;
 namespace arch::amd64
@@ -36,6 +35,16 @@ CpuImpl *CpuImpl::getImpl(int id)
     return &cpus[id];
 }
 
+size_t CpuImpl::count()
+{
+    return initialized_count;
+}
+
+size_t CpuImpl::max_processors()
+{
+    return max_cpu;
+}
+
 } // namespace arch::amd64
 Cpu *Cpu::current()
 {
@@ -49,5 +58,5 @@ Cpu *Cpu::get(int id)
 
 int Cpu::currentId()
 {
-    return hw::acpi::Lapic::current_cpu().id();
+    return hw::acpi::Lapic::the().id();
 }

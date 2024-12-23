@@ -15,6 +15,7 @@
 
 #include "arch/x86_64/idt.hpp"
 #include "iol/mem_flags.h"
+#include "kernel/x86_64/smp.hpp"
 #include <arch/x86_64/gdt.hpp>
 // ee
 
@@ -48,10 +49,14 @@ void arch_entry(const mcx::MachineContext *context)
     log::log$("using vmm...");
 
     kernel_space.use();
+    VmmSpace::use_kernel(kernel_space);
+
     log::log$("using vmm");
 
-    hw::acpi::apic_initialize(context, cpu_detect);
+    hw::acpi::apic_initialize(context, cpu_detect).assert();
 
     log::log$("cpu count: {}", hw::acpi::apic_cpu_count());
+    arch::amd64::smp_initialize().assert();
+
     kernel_entry(context);
 }

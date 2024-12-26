@@ -11,10 +11,10 @@
 #include "libcore/fmt/flags.hpp"
 #include "libcore/fmt/log.hpp"
 
-volatile bool _ready = false;
+static volatile bool _ready = false;
 core::Result<void> arch::amd64::smp_initialize()
 {
-    log::log$("initializing smp");
+    log::log$("initializing smp (cpu count: {})", CpuImpl::count());
 
     if (CpuImpl::count() > arch::amd64::max_cpu)
     {
@@ -40,9 +40,13 @@ void smp_entry_other(void)
 {
     log::log$("cpu booted!");
     _ready = true;
+    arch::amd64::other_cpu_entry();
+
+    log::err$("cpu entry exited while it shouldn't");
 
     while (true)
     {
+        asm volatile("hlt");
     };
 }
 
@@ -76,7 +80,7 @@ core::Result<void> _setup_trampoline(hw::acpi::LCpuId cpu_id)
 
     // setting up stack
     PhysAddr stack = try$(Pmm::the().allocate(arch::amd64::kernel_stack_size, IOL_ALLOC_MEMORY_FLAG_LOWER_SPACE));
-
+    log::log$("stack addr: {}", stack._addr | fmt::FMT_HEX);
     cpu->trampoline_stack(stack);
 
     VirtAddr(arch::amd64::SMP_STACK).write(toVirt(stack) + arch::amd64::kernel_stack_size);
@@ -92,7 +96,7 @@ core::Result<void> _setup_trampoline(hw::acpi::LCpuId cpu_id)
 
 core::Result<void> arch::amd64::smp_initialize_cpu(int apic, int id)
 {
-    log::log$("initialized cpu: {} (lapic: {})", id, apic);
+    log::log$("initializing cpu: {} (lapic: {})...", id, apic);
 
     _ready = false;
 
@@ -107,5 +111,7 @@ core::Result<void> arch::amd64::smp_initialize_cpu(int apic, int id)
         // do nothing
         asm volatile("pause");
     }
+    log::log$("initialized cpu");
+
     return {};
 }

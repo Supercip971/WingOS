@@ -90,6 +90,8 @@ trampoline64:
     push 0x0
     popf
 
+    cli 
+    
     mov rax, [SMP_INIT_ENTRY]
     call rax
 

@@ -1,6 +1,7 @@
 
 #include <kernel/generic/pmm.hpp>
 
+#include "hw/acpi/lapic.hpp"
 #include "hw/acpi/rsdp.hpp"
 #include "hw/acpi/rsdt.hpp"
 #include "kernel/generic/mem.hpp"
@@ -20,6 +21,9 @@
 // ee
 
 #include "cpu.hpp"
+
+volatile size_t _running_cpu_count = 0;
+
 static core::Result<void> cpu_detect(const hw::acpi::MadtEntryLapic *lapic)
 {
 
@@ -29,6 +33,7 @@ static core::Result<void> cpu_detect(const hw::acpi::MadtEntryLapic *lapic)
 }
 void arch_entry(const mcx::MachineContext *context)
 {
+    _running_cpu_count = 1;
     log::log$("started kernel arch");
 
     arch::amd64::gdt_use(arch::amd64::load_default_gdt());
@@ -58,5 +63,28 @@ void arch_entry(const mcx::MachineContext *context)
     log::log$("cpu count: {}", hw::acpi::apic_cpu_count());
     arch::amd64::smp_initialize().assert();
 
+    while (_running_cpu_count < arch::amd64::CpuImpl::count())
+    {
+        asm volatile("pause");
+    }
+
+    log::log$("all cpus are ready");
     kernel_entry(context);
+}
+
+void arch::amd64::other_cpu_entry()
+{
+    //  log::log$("other cpu entry");
+    hw::acpi::Lapic::the().enable().assert();
+    _running_cpu_count += 1;
+
+    while (_running_cpu_count < CpuImpl::count())
+    {
+        asm volatile("pause");
+    }
+
+    while (true)
+    {
+        asm volatile("hlt");
+    };
 }

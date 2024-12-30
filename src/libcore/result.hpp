@@ -45,6 +45,13 @@ public:
         return *this;
     }
 
+    static constexpr auto error(ErrT &&error)
+    {
+        auto res = Result<ValT, ErrT>();
+        res._error = core::move(error);
+        return core::move(res);
+    }
+
     void assert();
 
     ValT &&unwrap()
@@ -118,13 +125,13 @@ concept IsConvertibleToResult =
 template <typename T>
 using EResult = Result<T, Str>;
 
-#define try$(expr) ({           \
-    auto _result = (expr);      \
-    if (!_result)               \
-    {                           \
-        return _result.error(); \
-    }                           \
-    _result.unwrap();           \
+#define try$(expr) ({            \
+    auto _result = (expr);       \
+    if (!(_result)) [[unlikely]] \
+    {                            \
+        return _result.error();  \
+    }                            \
+    _result.unwrap();            \
 })
 
 } // namespace core

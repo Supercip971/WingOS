@@ -14,6 +14,7 @@ struct Result : public NoCopy
 {
 
 private:
+    // FIXME: introduce either type
     Optional<ValT> _value;
     Optional<ErrT> _error;
 
@@ -65,16 +66,19 @@ public:
         return _value.has_value();
     }
 
-    constexpr ErrT error() const
+    constexpr ErrT &error() const
     {
-        return *_error;
+        return _error.value();
+    }
+    constexpr ErrT &error()
+    {
+        return _error.value();
     }
 };
 
 template <typename ErrT>
 struct Result<void, ErrT> : public NoCopy
 {
-
 private:
     Optional<ErrT> _error;
 
@@ -109,7 +113,7 @@ public:
 
     constexpr ErrT error() const
     {
-        return *_error;
+        return _error.value();
     }
 
     constexpr ~Result()

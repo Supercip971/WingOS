@@ -1,24 +1,60 @@
 #pragma once
-
+#include <libcore/core.hpp>
 #include <libcore/type-utils.hpp>
-#include <stddef.h>
+#include <stdint.h>
+
+#include "libcore/type/trait.hpp"
 namespace core
 {
 
-template <class T>
+template <class _T>
 union Storage
 {
-    bool _dummy;
-    T _value;
 
-    constexpr Storage() : _dummy(false) {}
-    constexpr Storage(const T &value) : _value(value) {}
-    constexpr Storage(T &&value) : _value(core::move(value)) {}
+    using T = Pure<_T>;
+    [[gnu::aligned(alignof(T))]] uint8_t _data[sizeof(T)];
 
+    constexpr const T *as_ptr() const
+    {
+        return (T const *)(_data);
+    }
+
+    constexpr T *as_ptr()
+    {
+        return (T *)(_data);
+    }
+
+    constexpr Storage() {}
+    constexpr Storage(const T &value)
+    {
+        new (_data) T((value));
+    }
+    constexpr Storage(T &&value)
+    {
+        new (_data) T(core::move(value));
+    }
+
+    constexpr void destruct()
+    {
+        value().~T();
+    }
     constexpr ~Storage()
     {
+        destruct();
+    }
 
-        _value.~T();
+    constexpr T &value()
+    {
+        return *as_ptr();
+    }
+    constexpr T const &value() const
+    {
+        return *as_ptr();
+    }
+
+    constexpr T &&retreive()
+    {
+        return core::move(*as_ptr());
     }
 
     // template<typename ...Args>
@@ -28,19 +64,19 @@ union Storage
 template <class T>
 class Optional
 {
-    bool _contain_value;
     Storage<T> _value;
+    bool _contain_value;
 
 public:
     constexpr Optional() : _contain_value(false) {}
-    constexpr Optional(const T &value) : _contain_value(true), _value(value) {}
-    constexpr Optional(T &&value) : _contain_value(true), _value(core::move(value)) {}
+    constexpr Optional(const T &value) : _value(value), _contain_value(true) {}
+    constexpr Optional(T &&value) : _value(core::move(value)), _contain_value(true) {}
 
     constexpr Optional(const Optional &other) : _contain_value(other._contain_value)
     {
         if (_contain_value)
         {
-            _value._value = other._value._value;
+            _value.value() = other.value();
         }
     }
     constexpr Optional(Optional &&other) : _contain_value(other._contain_value)
@@ -48,7 +84,7 @@ public:
 
         if (other._contain_value)
         {
-            _value._value = core::move(other._value._value);
+            _value.value() = core::move(other._value.retreive());
         }
     }
 
@@ -57,18 +93,18 @@ public:
 
         if (other.has_value() && _contain_value)
         {
-            _value._value = (*other);
+            _value.value() = (*other);
         }
         else if (other.has_value() && !_contain_value)
         {
-            _value._value = core::move((*other));
-            other._contain_value = false;
+            _value.value() = core::move(*(other));
+
             _contain_value = true;
         }
         else if (!other.has_value() && _contain_value)
         {
             _contain_value = false;
-            _value._value.~T();
+            _value.destruct();
         }
         return *this;
     }
@@ -78,17 +114,18 @@ public:
 
         if (other.has_value() && _contain_value)
         {
-            _value._value = core::move(other._value._value);
+            _value.value() = core::move(other._value.retreive());
         }
         else if (other.has_value() && !_contain_value)
         {
-            _value._value = core::move(other._value._value);
+            _value.value() = core::move(other._value.retreive());
+            other._contain_value = false;
             _contain_value = true;
         }
         else if (!other.has_value() && _contain_value)
         {
             _contain_value = false;
-            _value._value.~T();
+            _value.destruct();
         }
         return *this;
     }
@@ -100,45 +137,45 @@ public:
 
     constexpr T &value()
     {
-        return _value._value;
+        return _value.value();
     }
 
-    constexpr const T &value() const
+    constexpr T const &value() const
     {
-        return _value._value;
+        return _value.value();
     }
 
     constexpr T &operator*()
     {
-        return _value._value;
+        return _value.value();
     }
 
     constexpr const T &operator*() const
     {
-        return _value._value;
+        return _value.value();
     }
 
     constexpr T *operator->()
     {
-        return &_value._value;
+        return &_value.value();
     }
 
     constexpr const T *operator->() const
     {
-        return &_value._value;
+        return &_value.value();
     }
 
     constexpr T &&unwrap()
     {
         _contain_value = false;
-        return core::move(_value._value);
+        return core::move(_value.retreive());
     }
 
     constexpr ~Optional()
     {
         if (_contain_value)
         {
-            _value._value.~T();
+            _value.destruct();
         }
         _contain_value = false;
     }

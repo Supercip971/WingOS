@@ -2,7 +2,7 @@
 <div align="center">
 <br>
  
-![Banner](meta/doc/wingOS.png)
+![Banner](meta/doc/wingOS-new.svg)
 
 # Wingos
 

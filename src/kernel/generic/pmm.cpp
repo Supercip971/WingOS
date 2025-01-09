@@ -119,7 +119,7 @@ core::Result<PhysAddr> Pmm::allocate(size_t count, IolAllocMemoryFlag flags)
             if (start)
             {
 
-                auto range = mcx::MemoryRange::from_begin_len(start, count);
+                auto range = mcx::MemoryRange::from_begin_len(start.unwrap(), count);
                 section.bitmap.fill(true, range);
                 return PhysAddr(section.range.start() + range.start() * page_size_bit);
             }
@@ -139,10 +139,6 @@ core::Result<PhysAddr> Pmm::allocate(size_t count, IolAllocMemoryFlag flags)
             section.bitmap.fill(true, range);
 
             return PhysAddr(section.range.start() + range.start() * page_size_bit);
-        }
-        else
-        {
-            log::warn$("Pmm: out of memory: {}", count * page_size_bit);
         }
     }
 

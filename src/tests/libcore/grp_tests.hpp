@@ -2,6 +2,7 @@
 
 #include "str_test.hpp"
 #include "tests/libcore/bitmap_test.hpp"
+#include "tests/libcore/llist_test.hpp"
 #include "tests/libcore/vec_test.hpp"
 
 #include "../test.hpp"
@@ -11,5 +12,6 @@ static constexpr TestGroup libcoreTests = {
         "libcore tests",
         strTests,
         bitmapTests,
-        vecTests),
+        vecTests, 
+        llistTests),
 };

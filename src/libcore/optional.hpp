@@ -57,6 +57,10 @@ union Storage
         return core::move(*as_ptr());
     }
 
+    static constexpr T&& empty() {
+        return core::move(Storage().retreive());
+    }
+
     // template<typename ...Args>
     // constexpr Storage(Args&&... args) : _value(core::forward(args)...) {}
 };

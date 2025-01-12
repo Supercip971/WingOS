@@ -10,11 +10,14 @@ namespace core
 template <typename T>
 concept Iterable = requires(T a) {
     {
-        a.begin()
-    } -> IsConvertibleTo<const typename T::Type *>;
+        *a.begin()
+    } -> IsConvertibleTo<const typename T::Type>;
     {
-        a.end()
-    } -> IsConvertibleTo<const typename T::Type *>;
+        *a.end()
+    } -> IsConvertibleTo<const typename T::Type>;
+    {
+        *(++(a.begin()))
+    } -> IsConvertibleTo<const typename T::Type>;
 };
 
 template <Iterable T, typename V>
@@ -47,19 +50,19 @@ constexpr bool find(T view, F f)
 }
 
 template <Iterable T, typename F>
-constexpr void forEach(T view, F f)
+constexpr void forEach(T& view, F f)
 {
-    for (auto it = view.begin(); it != view.end(); it++)
+    for (auto it = view.begin(); it != view.end(); ++it)
     {
         f(*it);
     }
 }
 
 template <Iterable T, typename F>
-constexpr size_t forEachIdx(T view, F f)
+constexpr size_t forEachIdx(T& view, F f)
 {
     size_t idx = 0;
-    for (auto it = view.begin(); it != view.end(); it++)
+    for (auto it = view.begin(); it != view.end(); ++it)
     {
         f(*it, idx);
         idx++;

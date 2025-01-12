@@ -1,6 +1,5 @@
 #include <liballoc/liballoc.h>
 
-
 // allocate linux pages
 #include <sys/mman.h>
 
@@ -27,7 +26,7 @@ extern "C" int liballoc_unlock()
  * \return NULL if the pages were not allocated.
  * \return A pointer to the allocated memory.
  */
-extern "C" void* liballoc_alloc(size_t l)
+extern "C" void *liballoc_alloc(size_t l)
 {
     (void)l;
     // unimplemented for now
@@ -42,7 +41,7 @@ extern "C" void* liballoc_alloc(size_t l)
  *
  * \return 0 if the memory was successfully freed.
  */
-extern "C" int liballoc_free(void* ptr,size_t l)
+extern "C" int liballoc_free(void *ptr, size_t l)
 {
     (void)ptr;
     (void)l;

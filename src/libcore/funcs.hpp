@@ -50,7 +50,7 @@ constexpr bool find(T view, F f)
 }
 
 template <Iterable T, typename F>
-constexpr void forEach(T& view, F f)
+constexpr void forEach(T &view, F f)
 {
     for (auto it = view.begin(); it != view.end(); ++it)
     {
@@ -59,7 +59,7 @@ constexpr void forEach(T& view, F f)
 }
 
 template <Iterable T, typename F>
-constexpr size_t forEachIdx(T& view, F f)
+constexpr size_t forEachIdx(T &view, F f)
 {
     size_t idx = 0;
     for (auto it = view.begin(); it != view.end(); ++it)

@@ -57,7 +57,8 @@ union Storage
         return core::move(*as_ptr());
     }
 
-    static constexpr T&& empty() {
+    static constexpr T &&empty()
+    {
         return core::move(Storage().retreive());
     }
 

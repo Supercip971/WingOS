@@ -12,6 +12,6 @@ static constexpr TestGroup libcoreTests = {
         "libcore tests",
         strTests,
         bitmapTests,
-        vecTests, 
+        vecTests,
         llistTests),
 };

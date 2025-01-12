@@ -1,8 +1,9 @@
-#include <liballoc/liballoc.h>
 #include <kernel/generic/mem.hpp>
-#include "hw/mem/addr_space.hpp"
-#include "kernel/generic/pmm.hpp"
+#include <liballoc/liballoc.h>
 
+#include "hw/mem/addr_space.hpp"
+
+#include "kernel/generic/pmm.hpp"
 
 extern "C" int liballoc_lock()
 {
@@ -27,9 +28,9 @@ extern "C" int liballoc_unlock()
  * \return NULL if the pages were not allocated.
  * \return A pointer to the allocated memory.
  */
-extern "C" void* liballoc_alloc(size_t l)
+extern "C" void *liballoc_alloc(size_t l)
 {
-    void* res = toVirt(Pmm::the().allocate(l).unwrap()); 
+    void *res = toVirt(Pmm::the().allocate(l).unwrap());
     return res;
 }
 
@@ -41,9 +42,9 @@ extern "C" void* liballoc_alloc(size_t l)
  *
  * \return 0 if the memory was successfully freed.
  */
-extern "C" int liballoc_free(void* ptr,size_t l)
+extern "C" int liballoc_free(void *ptr, size_t l)
 {
 
-    auto v = Pmm::the().release(toPhys((uintptr_t)ptr),l); 
+    auto v = Pmm::the().release(toPhys((uintptr_t)ptr), l);
     return 0;
 }

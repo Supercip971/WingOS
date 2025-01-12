@@ -4,8 +4,9 @@
 #include <libcore/fmt/log.hpp>
 #include <libcore/str.hpp>
 
-#include "../test.hpp"
 #include "libcore/ds/linked_list.hpp"
+
+#include "../test.hpp"
 #include "libcore/fmt/flags.hpp"
 #include "libcore/funcs.hpp"
 
@@ -18,18 +19,19 @@ static constexpr TestGroup llistTests = {
             []() -> Test::RetFn
             {
                 auto ll = core::LinkedList<int>();
-                for(int i = 0; i < 10; i++)
+                for (int i = 0; i < 10; i++)
                 {
                     ll.push(10);
                 }
                 ll.release();
 
-                if(ll.count() != 0)
+                if (ll.count() != 0)
                 {
                     return "unable to release list";
                 }
                 return {};
-            }),Test(
+            }),
+        Test(
 
             "llist push",
             []() -> Test::RetFn
@@ -40,27 +42,27 @@ static constexpr TestGroup llistTests = {
                 {
                     ll.push(i);
                 }
-                
+
                 int i = 0;
 
-                for(auto &v: ll)
+                for (auto &v : ll)
                 {
-                    if (v != i )
+                    if (v != i)
                     {
                         log::log$("[{}] = {}", i, v);
 
-                        log::log$("{} : {}", (uintptr_t)ll.begin()._ptr | fmt::FMT_HEX, (uintptr_t)ll.end()._ptr | fmt::FMT_HEX);;
-                        
-                        core::forEachIdx(ll, [&](auto& val, int idx){
-                            log::log$("[{}] = {}", idx, val);
-                        });
+                        log::log$("{} : {}", (uintptr_t)ll.begin()._ptr | fmt::FMT_HEX, (uintptr_t)ll.end()._ptr | fmt::FMT_HEX);
+                        ;
+
+                        core::forEachIdx(ll, [&](auto &val, int idx)
+                                         { log::log$("[{}] = {}", idx, val); });
 
                         return "v[i] != i";
                     }
                     i++;
                 }
 
-                if(ll.count() != 16 || i != 16)
+                if (ll.count() != 16 || i != 16)
                 {
                     log::log$("{} : {}", ll.count(), i);
                     return "count != 16";
@@ -80,25 +82,25 @@ static constexpr TestGroup llistTests = {
                     ll.push(i);
                     if (i % 2 != 0)
                     {
-                        ll.remove(ll.count()-1);
+                        ll.remove(ll.count() - 1);
                     }
                 }
-                
+
                 int i = 0;
 
-                for(auto &v: ll)
+                for (auto &v : ll)
                 {
                     if (v != i * 2)
                     {
                         log::log$("[{}] = {}", i, v);
 
                         log::log$("{} : {}", (uintptr_t)ll.begin()._ptr | fmt::FMT_HEX, (uintptr_t)ll.end()._ptr | fmt::FMT_HEX);
-                        core::forEachIdx(ll, [&](auto& val, int idx){
+                        core::forEachIdx(ll, [&](auto &val, int idx)
+                                         {
                             if(idx < 100)
                             {
                                 log::log$("[{}] = {}", idx, val);
-                            }
-                        });
+                            } });
 
                         return "v[i/2] != i";
                     }
@@ -107,7 +109,7 @@ static constexpr TestGroup llistTests = {
 
                 return {};
             }),
-        
+
         Test(
             "llist random set",
             []() -> Test::RetFn
@@ -119,27 +121,25 @@ static constexpr TestGroup llistTests = {
                     v.push(i);
                 }
                 bool has_issue = false;
-                core::forEachIdx(v, [&](auto& v, int i){
+                core::forEachIdx(v, [&](auto &v, int i)
+                                 {
                     if(v != i)
                     {
                         has_issue = true;
-                    }
-                });
-                
+                    } });
 
                 if (has_issue)
                 {
                     return "v[i] != i";
                 }
-                
+
                 v.release();
 
-                if(v.count() != 0)
+                if (v.count() != 0)
                 {
                     return "v not cleared correctly";
                 }
-                
+
                 return {};
-            }),
-        ),
+            }), ),
 };

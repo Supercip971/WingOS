@@ -1,0 +1,16 @@
+{
+    "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
+    "type": "lib",
+    "id": "userspace-arch-x86-64",
+    "description": "X86-64 low level library specific to userspace (syscall, ins::pause,...)",
+    "provides": [
+        "userspace-arch"
+    ],
+
+    
+    "enableIf": {
+        "arch": [
+            "x86_64"
+        ]
+    }
+}

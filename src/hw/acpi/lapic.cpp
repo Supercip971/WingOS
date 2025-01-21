@@ -24,7 +24,7 @@ using MsrReg = arch::amd64::MsrReg;
 core::Result<void> Lapic::enable()
 {
 
-    log::log$("Enabling LAPIC");
+    // log::log$("Enabling LAPIC");
 
     AMsr::Write(MsrReg::APIC,
                 (AMsr::Read(MsrReg::APIC) | arch::amd64::MsrApicBits::MSR_APIC_ENABLE) & (~(arch::amd64::MsrApicBits::MSR_X2APIC_ENABLE)));
@@ -33,9 +33,9 @@ core::Result<void> Lapic::enable()
                 this->read(LAPICReg::SPURIOUS_INTERRUPT_VECTOR) | LAPIC_SPURIOUS_APIC_SOFT_ENABLE |
                     LAPIC_SPURIOUS_VECTOR);
 
-    log::log$("LAPIC Enabled");
+    // log::log$("LAPIC Enabled");
 
-    log::log$("disabling 8259 PIC");
+    // log::log$("disabling 8259 PIC");
 
     hw::Pic::disable();
 

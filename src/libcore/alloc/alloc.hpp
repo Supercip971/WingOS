@@ -30,13 +30,13 @@ static inline Result<void *> mem_alloc(size_t bytes)
 template <typename T>
 static inline Result<T *> mem_alloc(size_t count)
 {
-    return mem_alloc(sizeof(T) * count);
+    return static_cast<T *>(try$(mem_alloc(sizeof(T) * count)));
 }
 
 template <typename T>
 static inline Result<T *> mem_alloc()
 {
-    return mem_alloc(sizeof(T));
+    return static_cast<T *>(try$(mem_alloc(sizeof(T))));
 }
 
 static inline void mem_free(void *addr)

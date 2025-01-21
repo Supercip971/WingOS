@@ -64,6 +64,11 @@ struct VirtAddr
     constexpr explicit operator uintptr_t(void) const { return _addr; }
 };
 
+static constexpr inline auto addrOf(auto *ptr)
+{
+    return VirtAddr(reinterpret_cast<uintptr_t>(ptr));
+}
+
 static_assert(sizeof(VirtAddr) == sizeof(uintptr_t));
 
 using VirtRange = math::Range<VirtAddr>;

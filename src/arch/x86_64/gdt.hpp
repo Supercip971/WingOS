@@ -69,4 +69,14 @@ struct Gdt
 Gdtr *load_default_gdt();
 void gdt_use(Gdtr *gdtr);
 
+static constexpr auto segment_to_offset_kernel(uint16_t segment)
+{
+    return segment * 8;
+}
+
+static constexpr auto segment_to_offset_user(uint16_t segment)
+{
+    return (segment * 8) + 3;
+}
+
 } // namespace arch::amd64

@@ -2,12 +2,15 @@
 #pragma once
 
 // generally used by implementation
+#include "kernel/generic/task.hpp"
 class Cpu
 {
 protected:
     int _id;
 
     bool _present;
+
+    kernel::Task *_current_task = nullptr;
 
 public:
     int id() const { return _id; };
@@ -22,4 +25,7 @@ public:
     static Cpu *current();
 
     static Cpu *get(int id);
+
+    kernel::Task *currentTask() const { return _current_task; }
+    void currentTask(kernel::Task *task) { _current_task = task; }
 };

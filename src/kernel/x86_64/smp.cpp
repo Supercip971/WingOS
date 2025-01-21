@@ -6,6 +6,7 @@
 
 #include "hw/acpi/lapic.hpp"
 #include "kernel/generic/cpu.hpp"
+#include "kernel/generic/kernel.hpp"
 #include "kernel/generic/paging.hpp"
 #include "kernel/generic/pmm.hpp"
 #include "libcore/fmt/flags.hpp"
@@ -79,13 +80,13 @@ core::Result<void> _setup_trampoline(hw::acpi::LCpuId cpu_id)
     VirtAddr(arch::amd64::SMP_START_ADDR).write(smp_entry_other);
 
     // setting up stack
-    PhysAddr stack = try$(Pmm::the().allocate(arch::amd64::kernel_stack_size, IOL_ALLOC_MEMORY_FLAG_LOWER_SPACE));
+    PhysAddr stack = try$(Pmm::the().allocate(kernel::kernel_stack_size, IOL_ALLOC_MEMORY_FLAG_LOWER_SPACE));
     log::log$("stack addr: {}", stack._addr | fmt::FMT_HEX);
     cpu->trampoline_stack(stack);
 
-    VirtAddr(arch::amd64::SMP_STACK).write(toVirt(stack) + arch::amd64::kernel_stack_size);
+    VirtAddr(arch::amd64::SMP_STACK).write(toVirt(stack) + kernel::kernel_stack_size);
 
-    memset(toVirt(stack), 0, arch::amd64::kernel_stack_size);
+    memset(toVirt(stack), 0, kernel::kernel_stack_size);
 
     asm volatile(
         "sgdt 0x530\n"

@@ -8,7 +8,6 @@
 namespace arch::amd64
 {
 
-constexpr size_t kernel_stack_size = (16384);
 constexpr int max_cpu = 512;
 
 class CpuImpl : public Cpu

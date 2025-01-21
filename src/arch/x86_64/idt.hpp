@@ -61,7 +61,6 @@ struct IDT
     template <core::Viewable T>
     void fill(const T &handler_table, int cs)
     {
-
         core::forEachIdx(handler_table, [&](auto v, size_t index)
                          { _entries[index] = IDTEntry(reinterpret_cast<uintptr_t>(v), cs, 0, IDTEntry::Type::TRAP); });
     }

@@ -13,7 +13,7 @@ protected:
     size_t _len;
 
 public:
-    using Type = T;
+    using Type = const T;
 
     constexpr MemView() : _data(nullptr), _len(0) {}
     constexpr MemView(const T *data, size_t len) : _data(data), _len(len) {}

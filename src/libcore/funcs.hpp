@@ -4,9 +4,13 @@
 #include <libcore/type-utils.hpp>
 #include <stddef.h>
 
+#include "libcore/type/trait.hpp"
+
 void operator delete(void *);
+
 namespace core
 {
+
 template <typename T>
 concept Iterable = requires(T a) {
     {
@@ -14,9 +18,6 @@ concept Iterable = requires(T a) {
     } -> IsConvertibleTo<const typename T::Type>;
     {
         *a.end()
-    } -> IsConvertibleTo<const typename T::Type>;
-    {
-        *(++(a.begin()))
     } -> IsConvertibleTo<const typename T::Type>;
 };
 

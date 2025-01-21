@@ -51,15 +51,21 @@ class LinkedList
             this->_ptr = this->_ptr->next;
             return *this;
         }
-    };
 
-    using Type = T;
+        Iterator operator++(int)
+        {
+            Iterator res = *this;
+            this->_ptr = this->_ptr->next;
+            return res;
+        }
+    };
 
     Node *head = nullptr;
     Node *tail = nullptr;
     size_t _count = 0;
 
 public:
+    using Type = T;
     LinkedList() = default;
 
     LinkedList(LinkedList &&other)

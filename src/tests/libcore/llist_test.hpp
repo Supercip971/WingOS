@@ -1,6 +1,4 @@
 #pragma once
-
-#include <cstdint>
 #include <libcore/fmt/log.hpp>
 #include <libcore/str.hpp>
 

@@ -1,5 +1,6 @@
 #pragma once
 #include <libcore/type-utils.hpp>
+#include <stddef.h>
 
 #include "align.hpp"
 #include "libcore/result.hpp"

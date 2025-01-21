@@ -1,6 +1,6 @@
-#pragma once 
+#pragma once
 
-
-namespace arch {
-    void pause(); 
+namespace arch
+{
+void pause();
 }

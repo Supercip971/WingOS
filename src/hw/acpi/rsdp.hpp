@@ -5,7 +5,6 @@
 
 #include "hw/mem/addr_space.hpp"
 
-#include "rsdt.hpp"
 namespace hw::acpi
 {
 struct [[gnu::packed]] RsdpExtended
@@ -15,6 +14,12 @@ struct [[gnu::packed]] RsdpExtended
     uint64_t xsdt_address;
     uint8_t extended_checksum;
     uint8_t reserved[3];
+};
+
+enum class RsdtTypes
+{
+    RSDT,
+    XSDT
 };
 
 struct RsdtRet

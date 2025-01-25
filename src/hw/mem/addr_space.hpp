@@ -15,11 +15,11 @@ struct VirtAddr
     constexpr VirtAddr(uintptr_t addr) : _addr(addr) {}
 
     operator void *() const { return (void *)_addr; }
+    
     template <typename T>
-    constexpr const T *as() const { return (T *)_addr; }
+    constexpr T *as(void) const { return (T *)_addr; }
 
-    template <typename T>
-    constexpr T *as(void) { return (T *)_addr; }
+
 
     constexpr VirtAddr &operator+=(uintptr_t offset)
     {
@@ -33,8 +33,11 @@ struct VirtAddr
         return *this;
     }
 
+
+    // technically it's like a pointer, the pointer is constant 
+    // but not the value it points to 
     template <typename T>
-    void write(T value)
+    void write(T value) const
     {
         *as<T>() = value;
     }
@@ -45,6 +48,19 @@ struct VirtAddr
         return *as<T>();
     }
 
+    template<typename T>
+    void vwrite(T value) const
+    {
+        *as<volatile T>() = value;
+    }
+    
+    template <typename T>
+    T vread() const
+    {
+        return *as<volatile T>();
+    }
+
+    
     VirtAddr offsetted(uintptr_t offset) const
     {
         return VirtAddr(_addr + offset);
@@ -73,7 +89,7 @@ static_assert(sizeof(VirtAddr) == sizeof(uintptr_t));
 
 using VirtRange = math::Range<VirtAddr>;
 
-struct PhysAddr
+struct [[gnu::packed]] PhysAddr
 {
     uintptr_t _addr;
 

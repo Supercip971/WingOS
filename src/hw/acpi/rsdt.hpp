@@ -3,6 +3,7 @@
 
 #include <hw/mem/addr_space.hpp>
 
+#include "hw/acpi/rsdp.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/result.hpp"
 #include "libcore/str.hpp"
@@ -10,11 +11,6 @@
 namespace hw::acpi
 {
 
-enum class RsdtTypes
-{
-    RSDT,
-    XSDT
-};
 
 struct [[gnu::packed]] SdtHeader
 {
@@ -75,6 +71,9 @@ concept SdTable = SdtEntry<T> &&
 static_assert(SdTable<Xsdt>);
 static_assert(SdTable<Rsdt>);
 
+
+
+
 template <SdTable T, SdtEntry K>
 core::Result<K *> SdtFind(T *table)
 {
@@ -92,6 +91,24 @@ core::Result<K *> SdtFind(T *table)
     }
 
     return "Not found";
+}
+
+
+template <SdtEntry K> 
+core::Result<K *> rsdt_find(hw::acpi::Rsdp* _rsdp)
+{
+    auto addr = _rsdp->rsdt_phys_addr();
+    if (addr.type == hw::acpi::RsdtTypes::RSDT)
+    {
+        auto rsdt = toVirt(addr.physical_addr).as<hw::acpi::Rsdt>();
+        return try$((hw::acpi::SdtFind<hw::acpi::Rsdt, K>(rsdt)));
+    }
+    else // XSDT
+    {
+        auto xsdt = toVirt(addr.physical_addr).as<hw::acpi::Xsdt>();
+        return try$((hw::acpi::SdtFind<hw::acpi::Xsdt, K>(xsdt)));
+    }
+
 }
 
 template <SdTable T, typename Fn>

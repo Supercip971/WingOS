@@ -4,6 +4,7 @@
 #include "hw/acpi/lapic.hpp"
 #include "hw/acpi/rsdp.hpp"
 #include "hw/acpi/rsdt.hpp"
+#include "hw/hpet/hpet.hpp"
 #include "kernel/generic/mem.hpp"
 #include "kernel/generic/paging.hpp"
 #include "libcore/fmt/impl/bitmap.hpp"
@@ -59,6 +60,11 @@ void arch_entry(const mcx::MachineContext *context)
     log::log$("using vmm");
 
     hw::acpi::apic_initialize(context, cpu_detect).assert();
+
+    log::log$("HPET initializing");
+    hw::hpet::hpet_initialize(hw::acpi::rsdp()).assert();
+
+    log::log$("HPET initialized");
 
     log::log$("cpu count: {}", hw::acpi::apic_cpu_count());
     arch::amd64::smp_initialize().assert();

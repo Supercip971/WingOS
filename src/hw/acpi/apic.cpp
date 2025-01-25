@@ -58,6 +58,11 @@ core::Result<void> apic_enable()
     return Lapic::the().enable();
 }
 
+hw::acpi::Rsdp *rsdp()
+{
+    return _rsdp;
+}
+
 core::Result<void> apic_initialize(mcx::MachineContext const *context, CpuDetectedFunc *cpu_callback)
 {
 
@@ -94,6 +99,8 @@ core::Result<void> apic_initialize(mcx::MachineContext const *context, CpuDetect
 
     _madt = madt;
 
+
+    madt->dump();
     madt->foreach_entry<MadtEntryLapic>([cpu_callback](MadtEntryLapic *entry)
                                         {
                                             log::log$("- cpu detected: {} {}", entry->acpi_processor_id, entry->apic_id);

@@ -119,6 +119,8 @@ core::Result<void> apic_initialize(mcx::MachineContext const *context, CpuDetect
     // will disable PIC
     // will enable APIC
     Lapic::initialize(madt);
+
+
     return {};
 }
 

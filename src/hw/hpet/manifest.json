@@ -2,12 +2,11 @@
 {
     "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
     "type": "lib",
-    "id": "hw-acpi",
-    "description": "ACPI hardware library",
+    "id": "hw-hpet",
+    "description": "ACPI Hardware precision timer library",
     "requires": [
         "libcore",
         "hw-mem",
-        "hw-pic",
-        "hw-hpet"
+        "hw-pic"
     ]
 }

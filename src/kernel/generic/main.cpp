@@ -11,6 +11,8 @@ void kernel_entry(const mcx::MachineContext *context)
 {
 
     (void)context;
+    
+    asm volatile("sti");
     log::log$("started kernel");
 
     while (true)

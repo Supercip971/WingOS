@@ -5,6 +5,7 @@
 #include "hw/mem/addr_space.hpp"
 
 #include "hw/acpi/madt.hpp"
+#include "hw/hpet/hpet.hpp"
 #include "hw/pic/pic.hpp"
 #include "lapic.hpp"
 #include "libcore/fmt/log.hpp"
@@ -84,6 +85,41 @@ core::Result<void> Lapic::send_sipi(LCpuId id, PhysAddr jump_addr)
 
     write(LAPICReg::INTERRUPT_COMMAND_START_2, (static_cast<uint64_t>(id) << 24));
     write(LAPICReg::INTERRUPT_COMMAND_START, reg.raw);
+
+    return {};
+}
+
+
+
+size_t Lapic::_timer_tick_in_10ms() 
+{
+    write(LAPICReg::TIMER_INITIAL_COUNT, 0xFFFFFFFF);
+    
+    // wait for 10ms
+    hpet::hpet_sleep(10);
+
+    LAPICLocalVectorTable lvt = {0};
+    lvt.val.mask = 1;
+
+    write(LAPICReg::LVT_TIMER, lvt.raw);
+
+    return 0xFFFFFFFF - read(LAPICReg::TIMER_CURRENT_COUNT);
+}
+core::Result<void> Lapic::timer_initialize() 
+{
+    write(LAPICReg::TIMER_DIVIDE_CONFIGURATION, LAPIC_TIMER_DIVIDE_BY_16);
+    auto ticks = _timer_tick_in_10ms();
+
+    log::log$("LAPIC ticks in 10ms: {}", ticks);
+
+    LAPICLocalVectorTable lvt = {0};
+    lvt.val.mask = 0;
+    lvt.val.vector = 32;
+    lvt.val._timer_mode = 0b01; // mode: periodic
+    write(LAPICReg::LVT_TIMER, lvt.raw );
+    log::log$("LVT_TIMER: {}", lvt.raw);
+    write(LAPICReg::TIMER_DIVIDE_CONFIGURATION, LAPIC_TIMER_DIVIDE_BY_16);
+    write(LAPICReg::TIMER_INITIAL_COUNT, ticks / 100); // 0.1 ms per switch
 
     return {};
 }

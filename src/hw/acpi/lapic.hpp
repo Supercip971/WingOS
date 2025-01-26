@@ -84,12 +84,43 @@ union LAPICInterruptCommandRegister
     } val;
 };
 
+union LAPICLocalVectorTable {
+    uint32_t raw;
+    struct [[gnu::packed]]
+    {
+        uint8_t vector;
+        uint8_t delivery_mode : 3;
+        uint8_t _reserved : 1;
+        uint8_t delivery_status : 1;
+        uint8_t pin_polarity : 1;
+        uint8_t remote_irr : 1;
+        uint8_t trigger_mode : 1; // 0 : edge | 1 : level
+        uint8_t mask : 1;
+        uint8_t _timer_mode : 2; // 00 : one shot | 01 : periodic | 10 : tsc deadline
+        uint32_t _reserved2 : 14;
+    } val;
+} ;
+// Intel volume 3A 12.5
+
+enum LAPICTimerDivision : uint8_t
+{
+    LAPIC_TIMER_DIVIDE_BY_2 = 0,
+    LAPIC_TIMER_DIVIDE_BY_4 = 1,
+    LAPIC_TIMER_DIVIDE_BY_8 = 2,
+    LAPIC_TIMER_DIVIDE_BY_16 = 3,
+    LAPIC_TIMER_DIVIDE_BY_32 = 4,
+    LAPIC_TIMER_DIVIDE_BY_64 = 5,
+    LAPIC_TIMER_DIVIDE_BY_128 = 6,
+    LAPIC_TIMER_DIVIDE_BY_1 = 7
+};
+
 class Lapic
 {
 
     VirtAddr mapped_registers;
     Lapic(VirtAddr lapic_addr) : mapped_registers(lapic_addr) {}
 
+    size_t _timer_tick_in_10ms();
 public:
     void write(LAPICReg reg, uint32_t value)
     {
@@ -122,5 +153,9 @@ public:
     core::Result<void> init_cpu(LCpuId id);
 
     core::Result<void> send_sipi(LCpuId id, PhysAddr jump_addr);
+
+    core::Result<void> timer_initialize(); 
+    
+
 };
 } // namespace hw::acpi

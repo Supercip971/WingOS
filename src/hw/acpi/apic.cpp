@@ -99,7 +99,6 @@ core::Result<void> apic_initialize(mcx::MachineContext const *context, CpuDetect
 
     _madt = madt;
 
-
     madt->dump();
     madt->foreach_entry<MadtEntryLapic>([cpu_callback](MadtEntryLapic *entry)
                                         {
@@ -119,7 +118,6 @@ core::Result<void> apic_initialize(mcx::MachineContext const *context, CpuDetect
     // will disable PIC
     // will enable APIC
     Lapic::initialize(madt);
-
 
     return {};
 }

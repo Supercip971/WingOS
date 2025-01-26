@@ -65,7 +65,7 @@ void arch_entry(const mcx::MachineContext *context)
     hw::hpet::hpet_initialize(hw::acpi::rsdp()).assert();
 
     log::log$("HPET initialized");
-    
+
     hw::acpi::Lapic::the().timer_initialize().assert();
 
     log::log$("cpu count: {}", hw::acpi::apic_cpu_count());

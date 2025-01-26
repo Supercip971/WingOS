@@ -63,10 +63,8 @@ struct IDT
     {
         core::forEachIdx(handler_table, [&](auto v, size_t index)
                          { _entries[index] = IDTEntry(reinterpret_cast<uintptr_t>(v), cs, 0,
-                         
-                         IDTEntry::Type::GATE ); 
-                         });
 
+                                                      IDTEntry::Type::GATE); });
     }
 
     constexpr size_t size() const { return _size * sizeof(IDTEntry); }

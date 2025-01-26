@@ -3,6 +3,8 @@
 #include <libcore/io/void.hpp>
 #include <libcore/io/writer.hpp>
 #include <libcore/str.hpp>
+
+#include "libcore/fmt/log.hpp"
 namespace log
 {
 
@@ -19,3 +21,7 @@ core::Writer *log_target()
 }
 
 } // namespace log
+void core::debug_provide_info(const char *info, const char *data)
+{
+    log::log$("{} {}", info, data);
+}

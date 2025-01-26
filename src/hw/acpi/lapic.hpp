@@ -84,7 +84,8 @@ union LAPICInterruptCommandRegister
     } val;
 };
 
-union LAPICLocalVectorTable {
+union LAPICLocalVectorTable
+{
     uint32_t raw;
     struct [[gnu::packed]]
     {
@@ -99,7 +100,7 @@ union LAPICLocalVectorTable {
         uint8_t _timer_mode : 2; // 00 : one shot | 01 : periodic | 10 : tsc deadline
         uint32_t _reserved2 : 14;
     } val;
-} ;
+};
 // Intel volume 3A 12.5
 
 enum LAPICTimerDivision : uint8_t
@@ -121,6 +122,7 @@ class Lapic
     Lapic(VirtAddr lapic_addr) : mapped_registers(lapic_addr) {}
 
     size_t _timer_tick_in_10ms();
+
 public:
     void write(LAPICReg reg, uint32_t value)
     {
@@ -154,8 +156,6 @@ public:
 
     core::Result<void> send_sipi(LCpuId id, PhysAddr jump_addr);
 
-    core::Result<void> timer_initialize(); 
-    
-
+    core::Result<void> timer_initialize();
 };
 } // namespace hw::acpi

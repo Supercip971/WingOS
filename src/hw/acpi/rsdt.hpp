@@ -11,7 +11,6 @@
 namespace hw::acpi
 {
 
-
 struct [[gnu::packed]] SdtHeader
 {
     char signature[4];
@@ -71,9 +70,6 @@ concept SdTable = SdtEntry<T> &&
 static_assert(SdTable<Xsdt>);
 static_assert(SdTable<Rsdt>);
 
-
-
-
 template <SdTable T, SdtEntry K>
 core::Result<K *> SdtFind(T *table)
 {
@@ -93,9 +89,8 @@ core::Result<K *> SdtFind(T *table)
     return "Not found";
 }
 
-
-template <SdtEntry K> 
-core::Result<K *> rsdt_find(hw::acpi::Rsdp* _rsdp)
+template <SdtEntry K>
+core::Result<K *> rsdt_find(hw::acpi::Rsdp *_rsdp)
 {
     auto addr = _rsdp->rsdt_phys_addr();
     if (addr.type == hw::acpi::RsdtTypes::RSDT)
@@ -108,7 +103,6 @@ core::Result<K *> rsdt_find(hw::acpi::Rsdp* _rsdp)
         auto xsdt = toVirt(addr.physical_addr).as<hw::acpi::Xsdt>();
         return try$((hw::acpi::SdtFind<hw::acpi::Xsdt, K>(xsdt)));
     }
-
 }
 
 template <SdTable T, typename Fn>

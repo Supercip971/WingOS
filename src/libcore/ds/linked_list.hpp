@@ -20,6 +20,11 @@ class LinkedList
         Storage<T> data;
     };
 
+    Node *head = nullptr;
+    Node *tail = nullptr;
+    size_t _count = 0;
+
+public:
     struct Iterator
     {
         Node *_ptr = nullptr;
@@ -60,11 +65,6 @@ class LinkedList
         }
     };
 
-    Node *head = nullptr;
-    Node *tail = nullptr;
-    size_t _count = 0;
-
-public:
     using Type = T;
     LinkedList() = default;
 

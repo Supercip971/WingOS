@@ -16,9 +16,9 @@ struct Result : public NoCopy
 private:
     // FIXME: introduce either type
     Optional<ValT> _value;
-    Optional<ErrT> _error;
 
 public:
+    Optional<ErrT> _error;
     using ErrorType = RemoveReference<ErrT>;
     using ValueType = RemoveReference<ValT>;
     constexpr Result() : _value(), _error() {}
@@ -74,15 +74,19 @@ public:
     {
         return _error.value();
     }
+
+    constexpr bool is_error() const
+    {
+        return _error.has_value();
+    }
 };
 
 template <typename ErrT>
 struct Result<void, ErrT> : public NoCopy
 {
 private:
-    Optional<ErrT> _error;
-
 public:
+    Optional<ErrT> _error;
     using ErrorType = RemoveReference<ErrT>;
     using ValueType = void;
     constexpr Result() : _error() {}
@@ -120,6 +124,11 @@ public:
     {
         _error.~Optional();
     }
+
+    constexpr bool is_error() const
+    {
+        return _error.has_value();
+    }
 };
 
 template <typename A, typename T>
@@ -129,13 +138,19 @@ concept IsConvertibleToResult =
 template <typename T>
 using EResult = Result<T, Str>;
 
-#define try$(expr) ({            \
-    auto _result = (expr);       \
-    if (!(_result)) [[unlikely]] \
-    {                            \
-        return _result.error();  \
-    }                            \
-    _result.unwrap();            \
+extern void debug_provide_info(const char *info, const char *data);
+
+#define try$(expr) ({                                                      \
+    auto _result = (expr);                                                 \
+    if ((_result._error.has_value())) [[unlikely]]                         \
+    {                                                                      \
+        core::debug_provide_info("error:", (const char *)_result.error()); \
+        core::debug_provide_info("at:", #expr);                            \
+        core::debug_provide_info("function:", __FUNCTION__);               \
+        core::debug_provide_info("file:", __FILE__);                       \
+        return _result.error();                                            \
+    }                                                                      \
+    _result.unwrap();                                                      \
 })
 
 } // namespace core

@@ -3,10 +3,12 @@
 
 // generally used by implementation
 #include "kernel/generic/task.hpp"
+
+using CoreId = int;
 class Cpu
 {
 protected:
-    int _id;
+    CoreId _id;
 
     bool _present;
 
@@ -21,10 +23,12 @@ public:
 
     Cpu() : _id(-1), _present(false) {};
 
-    static int currentId();
+    static CoreId currentId();
     static Cpu *current();
 
     static Cpu *get(int id);
+
+    static size_t count();
 
     kernel::Task *currentTask() const { return _current_task; }
     void currentTask(kernel::Task *task) { _current_task = task; }

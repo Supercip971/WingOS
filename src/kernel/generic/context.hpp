@@ -31,14 +31,19 @@ public:
 
     core::Result<void> prepare(CpuContextLaunch launch);
 
-    void save();
-    void load();
+    void save_in(void *state);
+    void load_to(void *state) const;
     void release();
 
     template <typename T>
     T *as()
     {
         return static_cast<T *>(this);
+    }
+    template <typename T>
+    T const *as() const
+    {
+        return static_cast<T const *>(this);
     }
 };
 } // namespace kernel

@@ -53,6 +53,8 @@ public:
     VmmSpace &vmm_space() { return _vmm_space; };
 
     void user_stack_addr(uintptr_t addr) { _cpu_context->use_stack_addr(addr); }
+
+    CpuContext *cpu_context() { return _cpu_context; }
 };
 
 } // namespace kernel

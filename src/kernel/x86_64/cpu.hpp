@@ -21,7 +21,6 @@ public:
     CpuImpl(int id, int lapic) : Cpu(id, true), _lapic(lapic) {};
     static CpuImpl *getImpl(int id);
     static CpuImpl *currentImpl();
-    static size_t count();
     static size_t max_processors();
 
     PhysAddr trampoline_stack() const { return _trampoline_stack; }

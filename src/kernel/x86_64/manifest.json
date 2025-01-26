@@ -7,8 +7,10 @@
         "kernel-arch"
     ],
     "requires": [
+        "libcore",
         "arch-x86-64",
-		"hw-acpi"
+		"hw-acpi",
+        "hw-hpet"
     ],
     "enableIf": {
         "arch": [

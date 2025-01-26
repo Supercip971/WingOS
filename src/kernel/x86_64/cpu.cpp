@@ -9,6 +9,11 @@
 core::Array<arch::amd64::CpuImpl, arch::amd64::max_cpu> cpus;
 
 static int initialized_count = 0;
+size_t Cpu::count()
+{
+    return initialized_count;
+}
+
 namespace arch::amd64
 {
 core::Result<void> cpuContextInit(int id, int lapic)
@@ -35,11 +40,6 @@ CpuImpl *CpuImpl::getImpl(int id)
     return &cpus[id];
 }
 
-size_t CpuImpl::count()
-{
-    return initialized_count;
-}
-
 size_t CpuImpl::max_processors()
 {
     return max_cpu;
@@ -55,8 +55,7 @@ Cpu *Cpu::get(int id)
 {
     return &cpus[id];
 }
-
-int Cpu::currentId()
+CoreId Cpu::currentId()
 {
     return hw::acpi::Lapic::the().id();
 }

@@ -17,9 +17,9 @@ struct IDTRegister
     constexpr IDTRegister(unsigned short size, uintptr_t addr) : _size{size}, _addr{addr} {};
 } __attribute__((packed));
 
-struct IDTEntry
+struct [[gnu::packed]] IDTEntry
 {
-    enum class Type
+    enum class Type : unsigned int
     {
         TRAP = 0xeF,
         USER = 0x60,
@@ -62,8 +62,14 @@ struct IDT
     void fill(const T &handler_table, int cs)
     {
         core::forEachIdx(handler_table, [&](auto v, size_t index)
-                         { _entries[index] = IDTEntry(reinterpret_cast<uintptr_t>(v), cs, 0, IDTEntry::Type::TRAP); });
+                         { _entries[index] = IDTEntry(reinterpret_cast<uintptr_t>(v), cs, 0,
+                         
+                         IDTEntry::Type::GATE ); 
+                         });
+
     }
+
+    constexpr size_t size() const { return _size * sizeof(IDTEntry); }
 
 } __attribute__((packed));
 

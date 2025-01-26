@@ -16,6 +16,7 @@
         "cc": {
             "cmd": "{shell.latest('clang')}",
             "args": [
+                "-g",
                 "-target",
                 "x86_64-none-elf",
                 "-ffreestanding",
@@ -23,12 +24,14 @@
                 "-mno-mmx",
                 "-mno-3dnow",
                 "-mno-sse",
-                "-mno-sse2"
+                "-mno-sse2",
+                "-std=gnu23"
             ]
         },
         "cxx": {
             "cmd": "{shell.latest('clang++')}",
             "args": [
+                "-g",
                 "-target",
                 "x86_64-none-elf",
                 "-ffreestanding",
@@ -36,7 +39,8 @@
                 "-mno-mmx",
                 "-mno-3dnow",
                 "-mno-sse",
-                "-mno-sse2"
+                "-mno-sse2",
+                "-std=gnu++26"
             ]
         },
         "ld": {

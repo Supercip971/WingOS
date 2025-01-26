@@ -19,6 +19,7 @@
         "cc": {
             "cmd": "{shell.latest('clang')}",
              "args": [
+                "-g",
                 "-target",
                 "x86_64-none-elf",
                 "-ffreestanding",
@@ -30,12 +31,14 @@
                 "-mno-sse2",
                 "-mno-red-zone",
                 "-mcmodel=kernel",
-                "-Wno-missing-field-initializers"
+                "-Wno-missing-field-initializers",
+                "-std=gnu23"
             ]
         },
         "cxx": {
             "cmd": "{shell.latest('clang++')}",
             "args": [
+                "-g",
                 "-target",
                 "x86_64-none-elf",
                 "-ffreestanding",
@@ -53,7 +56,8 @@
                 "-mno-sse2",
                 "-mno-red-zone",
                 "-mcmodel=kernel",
-                "-Wno-missing-field-initializers"
+                "-Wno-missing-field-initializers",
+                "-std=gnu++26"
             ]
         },
         "ld": {
@@ -62,12 +66,12 @@
                 "-m",
                 "elf_x86_64",
                 "-T",
-                "meta/targets/kernel-x86_64.ld",
+                "{utils.relpath('kernel-x86_64.ld')}",
                 "-z",
                 "max-page-size=0x1000"
             ],
             "files": [
-                "meta/targets/kernel-x86_64.ld"
+                "{utils.relpath('kernel-x86_64.ld')}"
             ]
         },
         "ar": {

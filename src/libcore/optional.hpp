@@ -66,6 +66,11 @@ union Storage
     // constexpr Storage(Args&&... args) : _value(core::forward(args)...) {}
 };
 
+class NoneValue {
+    public:
+
+};
+
 template <class T>
 class Optional
 {
@@ -76,6 +81,8 @@ public:
     constexpr Optional() : _contain_value(false) {}
     constexpr Optional(const T &value) : _value(value), _contain_value(true) {}
     constexpr Optional(T &&value) : _value(core::move(value)), _contain_value(true) {}
+
+    explicit constexpr Optional([[maybe_unused]] NoneValue v) : _contain_value(false) {};
 
     constexpr Optional(const Optional &other) : _contain_value(other._contain_value)
     {

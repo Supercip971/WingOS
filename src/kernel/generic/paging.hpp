@@ -61,11 +61,6 @@ struct PageFlags
     }
 };
 
-/*
-  It is called a VMM but it is simple,
-  The userspace will have the VMM service itself
-  Maybe it will use AVL to manage the pages
-*/
 class VmmSpace
 {
     void *_self;

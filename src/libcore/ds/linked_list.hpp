@@ -83,6 +83,31 @@ public:
         return *this;
     }
 
+    LinkedList &operator+=(LinkedList&& other)
+    {
+        //for (auto &v : other)
+        //{
+        //    try$(push(v));
+        //}
+        if (tail != nullptr)
+        {
+            tail->next = other.head;
+            _count += other._count;
+        }
+        else
+        {
+            head = other.head;
+            tail = other.tail;
+            _count = other._count;
+        }
+
+        other.head = nullptr;
+        other.tail = nullptr;
+        other._count = 0;
+
+        return *this;
+    }
+
     void release()
     {
         while (head != nullptr)

@@ -10,26 +10,7 @@ class CpuTreeNode:
         self.cpu_id = cpu_id
         self.children = children or []
         self.is_leaf = is_leaf
-
-    def total_weight(self):
-        if self.is_leaf:
-            return 1
-        return sum(child.total_weight() for child in self.children)
    
-    def distance_to(self, other):
-        """Return the distance between this node and other, or None if not a descendant."""
-        if self == other:
-            return 0
-        
-        for child in self.children:
-            if child == other:
-                return 1
-            d = child.distance_to(other)
-            if d is not None:
-                return 1 + d
-
-        return None
-    
     def are_they_siblings(self, a, b):
         """
         Return True if nodes a and b are siblings in the tree.
@@ -86,7 +67,6 @@ class MultiCPUScheduler:
         self.task_queues = [[] for _ in range(128)]
         self.total_cycles = total_cycles
         self.current_cycle = 0
-        self.runned_tasks = []
         self.cpu_runned = {}
 
     def task_queue_id(self, task):
@@ -214,28 +194,6 @@ class MultiCPUScheduler:
             if len(retried) == 0:
                 break
             choosen = retried
-        
-    def tick_force(self, cpu):
-        """
-        Go over the task queues in order (lowest indices = highest priority)
-        and pick one task for the given CPU to run.
-        """
-
-        c = self.task_count()
-        for (i,task_queue) in enumerate(self.task_queues):
-            if not task_queue:
-                continue
-
-            task_index = self.query_shortest_path_id(task_queue, cpu)
-            # If none of the tasks in this queue match the affinity criteria, fallback to the first.
-            if task_index is None:
-                task_index = 0
-            # Run only one task per tick.
-
-            self.run_task_queued(cpu, i, task_index,c)
-            return
-        print(f"Cycle {self.current_cycle}: {cpu} found no task to run.")
-    
     def simulate(self):
         """
         Simulate a number of scheduling cycles across the provided CPU nodes.

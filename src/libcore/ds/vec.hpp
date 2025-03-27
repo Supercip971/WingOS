@@ -42,7 +42,7 @@ public:
         }
         release();
         try$(reserve(other._capacity));
-        for (size_t i = 0; i < other._size; i++)
+        for (size_t i = 0; i < other._count; i++)
         {
             try$(push(other._data[i]));
         }
@@ -151,13 +151,16 @@ public:
         return _data;
     }
 
-    void pop()
+    T&& pop()
     {
         if (_count > 0)
         {
             _count--;
-            _data[_count].~T();
+            return core::move(_data[_count]);
         }
+
+        log::err$("error: pop on empty vec");
+        return core::move(_data[0]);
     }
 
     ~Vec()

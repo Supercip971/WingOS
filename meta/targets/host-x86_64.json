@@ -16,21 +16,29 @@
         "cc": {
             "cmd": "{shell.latest('clang')}",
             "args": [
-               "-fno-stack-protector" 
+                "-Isrc/libc",
+               "-fno-stack-protector" ,
+               "-g", "-fsanitize=address",
+            "-fno-omit-frame-pointer"
             ]
         },
         "cxx": {
             "cmd": "{shell.latest('clang++')}",
             "args": [
+                "-Isrc/libc",
 
-               "-fno-stack-protector"
+               "-fno-stack-protector",
+               "-g", "-fsanitize=address",
+            "-fno-omit-frame-pointer"
             ]
         },
         "ld": {
             "cmd": "{shell.latest('clang++')}",
             "args": [
                 "-e",
-                "_cstart"
+                "_cstart",
+                "-g",
+                "-fsanitize=address"
             ]
         },
         "ar": {

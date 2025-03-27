@@ -5,7 +5,7 @@
     "enableIf": {
         "host": [false]
     },
-    "description": "Core C standart library",
+    "description": "Core C standard library",
     "requires": [
         "iol",
         "liballoc"

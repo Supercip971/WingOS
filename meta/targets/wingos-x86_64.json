@@ -17,9 +17,11 @@
             "cmd": "{shell.latest('clang')}",
             "args": [
                 "-g",
+                "-Isrc/libc",
                 "-target",
                 "x86_64-none-elf",
                 "-ffreestanding",
+
                 "-mno-80387",
                 "-mno-mmx",
                 "-mno-3dnow",
@@ -32,9 +34,11 @@
             "cmd": "{shell.latest('clang++')}",
             "args": [
                 "-g",
+                "-Isrc/libc",
                 "-target",
                 "x86_64-none-elf",
                 "-ffreestanding",
+
                 "-mno-80387",
                 "-mno-mmx",
                 "-mno-3dnow",

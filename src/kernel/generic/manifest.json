@@ -4,7 +4,8 @@
     "id": "kernel",
     "requires": [
         "kernel-arch",
-        "libcore"
+        "libcore",
+        "libc"
     ],
     "description": "WingOS Kernel" 
 }

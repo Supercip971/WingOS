@@ -19,6 +19,7 @@
         "cc": {
             "cmd": "{shell.latest('clang')}",
              "args": [
+                "-Isrc/libc",
                 "-g",
                 "-target",
                 "x86_64-none-elf",
@@ -29,6 +30,7 @@
                 "-mno-3dnow",
                 "-mno-sse",
                 "-mno-sse2",
+                "-D__STRICT_ANSI__",
                 "-mno-red-zone",
                 "-mcmodel=kernel",
                 "-Wno-missing-field-initializers",
@@ -38,12 +40,14 @@
         "cxx": {
             "cmd": "{shell.latest('clang++')}",
             "args": [
+                "-Isrc/libc",
                 "-g",
                 "-target",
                 "x86_64-none-elf",
                 "-ffreestanding",
                 "-fno-exceptions",
                 "-fno-rtti",
+                "-D__STRICT_ANSI__",
                 "-fno-stack-protector",
                 "-fno-c++-static-destructors",
                 "-fno-builtin",

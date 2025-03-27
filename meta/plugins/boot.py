@@ -73,7 +73,11 @@ class LimineCfg:
             "-m", "4G",
             "-smp", "4",
             "-drive",
+
             f"file=fat:rw:{self.imageDir},media=disk,format=raw",
+          #  "-d", "cpu_reset",
+           # "-d", "guest_errors",
+          #  "-d", "int"
         ]
 
         if kvmAvailable():
@@ -141,8 +145,7 @@ def bootFunc(args: model.TargetArgs):
     vt100.title("Components")
     vt100.p(f'{components}')
     for pkg in filter(lambda m: const.EXTERN_DIR not in m.dirname(), components):
-        
-        if pkg.type == model.Kind.EXE and pkg.id != "kernel-loader-limine":
+        if pkg.type == model.Kind.EXE and pkg.id != "kernel-loader-limine" and pkg.props.get("exported", False):
             limine.append_component(build_object(args, pkg.id, "wingos-x86_64"))
 
     limine.createImage().run()

@@ -2,5 +2,8 @@
     "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
     "type": "lib",
     "id": "arch-x86-64",
-    "description": "X86-64 low level library"
+    "description": "X86-64 low level library",
+    "requires": [
+        "libcore"
+    ]
 }

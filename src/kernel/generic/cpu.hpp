@@ -5,6 +5,7 @@
 #include "kernel/generic/task.hpp"
 
 using CoreId = int;
+static constexpr CoreId CpuCoreNone = -1;
 class Cpu
 {
 protected:

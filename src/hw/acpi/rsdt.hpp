@@ -49,6 +49,14 @@ struct [[gnu::packed]] Xsdt
     using childType = PhysAddr;
 };
 
+struct [[gnu::packed]] SRAT {
+    SdtHeader header;
+    uint8_t reserved[8];
+
+
+    uint8_t data[];
+    static constexpr core::Str signature = "SRAT";
+};
 // Maybe I'm over-engineering this
 // It's an excuse to explore further more concepts
 // And avoiding to use virtual functions

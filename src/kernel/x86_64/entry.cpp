@@ -17,6 +17,8 @@
 
 #include "arch/x86_64/idt.hpp"
 #include "iol/mem_flags.h"
+#include "kernel/generic/cpu_tree.hpp"
+#include "kernel/x86_64/numa.hpp"
 #include "kernel/x86_64/smp.hpp"
 #include <arch/x86_64/gdt.hpp>
 // ee
@@ -77,6 +79,12 @@ void arch_entry(const mcx::MachineContext *context)
     }
 
     log::log$("all cpus are ready");
+
+    log::log$("Initialize cpu tree:");
+    auto root=    initialize_cpu_tree().unwrap();
+    CpuTreeNode::assign_root(root);
+
+    log::log$("cpu tree initialized");
 
     kernel_entry(context);
 }

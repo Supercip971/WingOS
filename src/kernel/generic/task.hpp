@@ -11,6 +11,7 @@ namespace kernel
 {
 using TUID = uint64_t;
 
+
 enum class TaskState
 {
     TASK_NONE,
@@ -20,6 +21,18 @@ enum class TaskState
     TASK_DELETABLE,
     TASK_ZOMBIE,
 };
+
+
+// re-using the same keywords as Linux
+enum  TaskPriority : uint32_t {
+    TASK_PRIORITY_IDLE,
+    TASK_PRIORITY_NORMAL, 
+    TASK_PRIORITY_REALTIME, 
+    TASK_PRIORITY_DEADLINE,
+    TASK_PRIORITY_COUNT,
+};
+
+static constexpr size_t TASK_QUEUE_COUNT = 128;
 
 class Task
 {

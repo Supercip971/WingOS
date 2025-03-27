@@ -13,6 +13,7 @@ static core::LinkedList<kernel::Task> task_list = {};
 static kernel::TUID next_uid = 1;
 static core::RWLock _task_lock = {};
 
+
 kernel::Task *_task_allocate()
 {
     core::lock_scope_writer$(_task_lock);
@@ -43,6 +44,7 @@ core::Result<kernel::Task *> kernel::Task::by_id(kernel::TUID uid)
     auto task = kernel::Task::by_id_unsafe(uid);
     if (task == nullptr)
     {
+        log::warn$("unable to find task {}", uid);
         return "unable to find task";
     }
 

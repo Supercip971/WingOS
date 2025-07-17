@@ -20,5 +20,4 @@ void gdt_use(Gdtr *gdtr)
 {
     gdtr_install(gdtr);
 }
-
 } // namespace arch::amd64

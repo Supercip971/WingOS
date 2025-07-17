@@ -121,4 +121,11 @@ core::Result<void> Lapic::timer_initialize()
 
     return {};
 }
+void Lapic::send_interrupt(LCpuId cpu, uint8_t vector)
+{
+    write(LAPICReg::INTERRUPT_COMMAND_START_2, (static_cast<uint64_t>(cpu) << 24));
+    write(LAPICReg::INTERRUPT_COMMAND_START, vector | LAPIC_INTERRUPT_CMD_SET_INIT_DEASSERT);
+
+}
+
 }; // namespace hw::acpi

@@ -65,6 +65,14 @@ enum LAPICInterruptCommandDeliveryMode : uint8_t
     LAPIC_INTERRUPT_DELIVERY_EXTINT = 7,
 };
 
+
+enum LAPICInterruptCommandBits : uint16_t
+{
+    LAPIC_INTERRUPT_CMD_LOGICAL = 1 << 11,
+    LAPIC_INTERRUPT_CMD_PENDING = 1 << 12,
+    LAPIC_INTERRUPT_CMD_SET_INIT_DEASSERT = 1 << 14,
+};
+
 union LAPICInterruptCommandRegister
 {
 
@@ -126,12 +134,12 @@ class Lapic
 public:
     void write(LAPICReg reg, uint32_t value)
     {
-        mapped_registers.offsetted((uint32_t)reg).write<uint32_t>(value);
+        mapped_registers.offsetted((uint32_t)reg).vwrite<uint32_t>(value);
     }
 
     uint32_t read(LAPICReg reg) const
     {
-        return mapped_registers.offsetted((uint32_t)reg).read<uint32_t>();
+        return mapped_registers.offsetted((uint32_t)reg).vread<uint32_t>();
     }
 
     Lapic() = default;
@@ -157,5 +165,8 @@ public:
     core::Result<void> send_sipi(LCpuId id, PhysAddr jump_addr);
 
     core::Result<void> timer_initialize();
+
+    void send_interrupt(LCpuId cpu, uint8_t vector);
+
 };
 } // namespace hw::acpi

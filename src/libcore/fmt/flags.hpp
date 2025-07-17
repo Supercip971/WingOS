@@ -27,8 +27,8 @@ enum class Color
 template <typename T>
 struct FormatFlags
 {
-    bool is_hex;
-    Color color;
+    bool is_hex = false;
+    Color color = Color::NONE;
     char pad_char = ' ';
     int pad_size = 0;
     T &&value;
@@ -60,12 +60,14 @@ constexpr FormatFlags<T> operator|(T &&a, FmtFlag flag)
     {
     case FMT_PAD_8BYTES:
         return FormatFlags<T>{
+            .color = Color::NONE,
             .pad_char = ' ',
             .pad_size = 8,
             .value = core::forward<T>(a),
         };
     case FMT_PAD_ZERO:
         return FormatFlags<T>{
+            .color = Color::NONE,
             .pad_char = '0',
             .pad_size = 8,
             .value = core::forward<T>(a),

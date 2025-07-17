@@ -117,6 +117,7 @@ public:
             free(head);
             head = next;
         }
+        head = nullptr;
         tail = nullptr;
         _count = 0;
     }

@@ -5,6 +5,7 @@
 
 #include "kernel/generic/context.hpp"
 #include "kernel/generic/paging.hpp"
+#include "libcore/lock/lock.hpp"
 #include "libcore/result.hpp"
 
 namespace kernel
@@ -42,7 +43,7 @@ class Task
     CpuContext *_cpu_context;
 
 public:
-    TaskState state() const { return _state; }
+   TaskState state() const { return _state; }
     void state(TaskState state) { _state = state; }
 
     Task() = default;

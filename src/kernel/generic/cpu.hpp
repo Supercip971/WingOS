@@ -15,6 +15,7 @@ protected:
 
     kernel::Task *_current_task = nullptr;
 
+    
 public:
     int id() const { return _id; };
 

@@ -6,7 +6,6 @@
 
 #include "libcore/type/trait.hpp"
 
-void operator delete(void *);
 
 namespace core
 {

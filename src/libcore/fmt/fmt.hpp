@@ -6,6 +6,7 @@
 #include <libcore/str.hpp>
 #include <math/range.hpp>
 
+#include "libcore/lock/lock.hpp"
 #include "libcore/mem/view.hpp"
 #include "libcore/result.hpp"
 #include "libcore/type-utils.hpp"
@@ -62,9 +63,12 @@ constexpr core::Result<void> format_impl(Targ &target, core::Str fmt, int _c, Ar
     }
 }
 
+
+
 template <core::Writable Targ, typename Arg, typename... Args>
 constexpr core::Result<void> format_impl(Targ &target, core::Str fmt, int _c, Arg &&a, Args &&...args)
 {
+
     size_t c = _c;
     if (fmt.data() == nullptr)
     {

@@ -48,12 +48,12 @@ core::Result<void> VmmSpace::map(VirtRange virt, PhysRange phys, PageFlags flags
 {
     auto root = as_root(*this);
 
-    if (virt.len() != phys.len())
+    if (virt.len() != phys.len()) [[unlikely]]
     {
         return "Virtual and physical ranges must be of equal length";
     }
 
-    if (virt.len() % arch::amd64::PAGE_SIZE != 0)
+    if (virt.len() % arch::amd64::PAGE_SIZE != 0) [[unlikely]]
     {
         return "Virtual and physical ranges must be page aligned";
     }

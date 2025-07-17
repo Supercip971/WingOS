@@ -83,12 +83,12 @@ public:
         return *this;
     }
 
-    LinkedList &operator+=(LinkedList&& other)
+    LinkedList &operator+=(LinkedList &&other)
     {
-        //for (auto &v : other)
+        // for (auto &v : other)
         //{
-        //    try$(push(v));
-        //}
+        //     try$(push(v));
+        // }
         if (tail != nullptr)
         {
             tail->next = other.head;

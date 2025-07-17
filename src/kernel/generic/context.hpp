@@ -27,8 +27,8 @@ public:
 
     core::Lock lock;
     bool await_save;
-    bool await_load; 
-  
+    bool await_load;
+
     static core::Result<CpuContext *> create_empty();
     static core::Result<CpuContext *> create(CpuContextLaunch launch);
 
@@ -37,7 +37,7 @@ public:
     core::Result<void> prepare(CpuContextLaunch launch);
 
     void save_in(void volatile *state);
-    void load_to(void volatile*state) ;
+    void load_to(void volatile *state);
     void release();
 
     template <typename T>

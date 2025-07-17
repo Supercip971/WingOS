@@ -25,4 +25,3 @@ void trigger_reschedule(CoreId cpu)
 {
     hw::acpi::Lapic::the().send_interrupt(cpu, 100);
 }
-

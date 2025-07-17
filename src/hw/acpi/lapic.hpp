@@ -65,7 +65,6 @@ enum LAPICInterruptCommandDeliveryMode : uint8_t
     LAPIC_INTERRUPT_DELIVERY_EXTINT = 7,
 };
 
-
 enum LAPICInterruptCommandBits : uint16_t
 {
     LAPIC_INTERRUPT_CMD_LOGICAL = 1 << 11,
@@ -167,6 +166,5 @@ public:
     core::Result<void> timer_initialize();
 
     void send_interrupt(LCpuId cpu, uint8_t vector);
-
 };
 } // namespace hw::acpi

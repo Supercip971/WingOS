@@ -12,7 +12,6 @@ namespace kernel
 {
 using TUID = uint64_t;
 
-
 enum class TaskState
 {
     TASK_NONE,
@@ -23,12 +22,12 @@ enum class TaskState
     TASK_ZOMBIE,
 };
 
-
 // re-using the same keywords as Linux
-enum  TaskPriority : uint32_t {
+enum TaskPriority : uint32_t
+{
     TASK_PRIORITY_IDLE,
-    TASK_PRIORITY_NORMAL, 
-    TASK_PRIORITY_REALTIME, 
+    TASK_PRIORITY_NORMAL,
+    TASK_PRIORITY_REALTIME,
     TASK_PRIORITY_DEADLINE,
     TASK_PRIORITY_COUNT,
 };
@@ -43,7 +42,7 @@ class Task
     CpuContext *_cpu_context;
 
 public:
-   TaskState state() const { return _state; }
+    TaskState state() const { return _state; }
     void state(TaskState state) { _state = state; }
 
     Task() = default;

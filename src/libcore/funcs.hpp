@@ -6,7 +6,6 @@
 
 #include "libcore/type/trait.hpp"
 
-
 namespace core
 {
 

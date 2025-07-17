@@ -55,7 +55,6 @@ core::Result<void> scheduler_init_idle_task()
         CpuContextLaunch launch = {};
         launch.entry = (void *)idle;
         launch.user = false;
-        
 
         t->initialize(launch);
         scheduler_idles.push(t);
@@ -84,8 +83,6 @@ core::Result<void> scheduler_init([[maybe_unused]] int cpu_count)
     // Ensure cpu_runned has enough space
     try$(cpu_runned.reserve(running_cpu_count));
     cpu_runned.clear();
-
-    
 
     try$(scheduler_init_idle_task());
     scheduler_lock.write_release();
@@ -443,7 +440,6 @@ void schedule_other_cpus()
         {
             cpu_runned[i].task->cpu_context()->await_load = true;
             Cpu::get(i)->currentTask()->cpu_context()->await_save = true;
-
         }
     }
 
@@ -479,7 +475,7 @@ core::Result<void> reschedule_all()
     return {};
 }
 
-core::Result<Task *> schedule(Task *current, void volatile*state, CoreId core)
+core::Result<Task *> schedule(Task *current, void volatile *state, CoreId core)
 {
 
     if (core == 0)
@@ -497,7 +493,7 @@ core::Result<Task *> schedule(Task *current, void volatile*state, CoreId core)
     {
         current->cpu_context()->save_in(state);
     }
-    
+
     scheduler_lock.read_acquire();
 
     auto next = try$(next_task_select(core));
@@ -506,7 +502,7 @@ core::Result<Task *> schedule(Task *current, void volatile*state, CoreId core)
 
     scheduler_lock.read_release();
 
-    // if the next task is swapped between two cpus, wait 
+    // if the next task is swapped between two cpus, wait
     // for it to save to load it
     while (next->cpu_context()->await_save)
     {

@@ -18,7 +18,6 @@ core::Result<void> redirect_interrupt(LCpuId cpu, uint8_t irq, uint8_t vector, b
 
 core::Result<void> update_interrupt_source_override(MadtEntryIso const *entry);
 
-
 hw::acpi::Rsdp *rsdp();
 
 } // namespace hw::acpi

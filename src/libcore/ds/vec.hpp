@@ -152,7 +152,7 @@ public:
         return _data;
     }
 
-    T&& pop()
+    T &&pop()
     {
         if (_count > 0)
         {

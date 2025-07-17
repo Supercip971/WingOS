@@ -5,7 +5,6 @@
 
 #include "hw/mem/addr_space.hpp"
 #include "kernel/x86_64/cpu.hpp"
-#include "hw/pic/pic.hpp"
 
 #include "apic.hpp"
 #include "hw/acpi/ioapic.hpp"
@@ -13,6 +12,7 @@
 #include "hw/acpi/madt.hpp"
 #include "hw/acpi/rsdp.hpp"
 #include "hw/acpi/rsdt.hpp"
+#include "hw/pic/pic.hpp"
 #include "kernel/generic/cpu.hpp"
 #include "libcore/result.hpp"
 #include "mcx/mcx.hpp"
@@ -59,7 +59,6 @@ core::Result<void> apic_enable()
     try$(Lapic::the().enable());
     hw::Pic::disable();
     return {};
-
 }
 
 hw::acpi::Rsdp *rsdp()
@@ -122,7 +121,7 @@ core::Result<void> apic_initialize(mcx::MachineContext const *context, CpuDetect
     // will disable PIC
     // will enable APIC
     Lapic::initialize(madt);
-    
+
     return {};
 }
 

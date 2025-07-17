@@ -2,8 +2,9 @@
 
 #include <stdint.h>
 
-#include "libcore/ds/array.hpp"
 #include <arch/x86_64/tss.hpp>
+
+#include "libcore/ds/array.hpp"
 namespace arch::amd64
 {
 struct Gdtr
@@ -47,10 +48,9 @@ struct GdtEntry
     };
 } __attribute__((packed));
 
-
-struct TssEntry 
+struct TssEntry
 {
-    uint16_t len; 
+    uint16_t len;
     uint16_t base_low;
     uint8_t base_middle;
     uint8_t flags;
@@ -61,17 +61,17 @@ struct TssEntry
 
     TssEntry() : len(0), base_low(0), base_middle(0), flags(0), flags2(0), base_high(0), base_upper(0), _reserved(0) {}
 
-    TssEntry(Tss* tss_ptr)
+    TssEntry(Tss *tss_ptr)
     {
         const uintptr_t tss_address = reinterpret_cast<uintptr_t>(tss_ptr);
         len = static_cast<uint16_t>(Tss::size() - 1);
         base_low = static_cast<uint16_t>(tss_address & 0xFFFF);
         base_middle = static_cast<uint8_t>((tss_address >> 16) &
-                                            0xFF);
-        flags = 0b10001001; 
-        flags2 = 0b00000000; 
+                                           0xFF);
+        flags = 0b10001001;
+        flags2 = 0b00000000;
         base_high = static_cast<uint8_t>((tss_address >> 24) &
-                                            0xFF);
+                                         0xFF);
         base_upper = static_cast<uint32_t>((tss_address >> 32) & 0xFFFFFFFF);
         _reserved = 0; // Reserved field
     }
@@ -101,7 +101,6 @@ struct Gdt
 
 Gdtr *load_default_gdt();
 void gdt_use(Gdtr *gdtr);
-
 
 static constexpr auto segment_to_offset_kernel(uint16_t segment)
 {

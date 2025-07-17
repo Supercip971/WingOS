@@ -14,7 +14,6 @@ class CpuImpl : public Cpu
 {
     int _lapic;
     PhysAddr _trampoline_stack;
-    
 
 public:
     int lapic() const { return _lapic; };

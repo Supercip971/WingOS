@@ -22,13 +22,12 @@ core::Result<CpuContext *> CpuContext::create_empty()
     return data;
 }
 
-void CpuContext::load_to(void volatile*state) 
+void CpuContext::load_to(void volatile *state)
 {
     arch::amd64::CpuContextAmd64 const *data = this->as<arch::amd64::CpuContextAmd64>();
 
     arch::amd64::StackFrame *frame = (arch::amd64::StackFrame *)state;
-    
-    
+
     *frame = data->frame;
 
     lock_scope$(this->lock);

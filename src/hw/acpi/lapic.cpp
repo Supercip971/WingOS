@@ -34,13 +34,11 @@ core::Result<void> Lapic::enable()
                 this->read(LAPICReg::SPURIOUS_INTERRUPT_VECTOR) | LAPIC_SPURIOUS_APIC_SOFT_ENABLE |
                     LAPIC_SPURIOUS_VECTOR);
 
-                    
-                    
     // log::log$("LAPIC Enabled");
 
     // log::log$("disabling 8259 PIC");
 
-      return {};
+    return {};
 }
 
 core::Result<void> Lapic::initialize(Madt *madt)
@@ -125,7 +123,6 @@ void Lapic::send_interrupt(LCpuId cpu, uint8_t vector)
 {
     write(LAPICReg::INTERRUPT_COMMAND_START_2, (static_cast<uint64_t>(cpu) << 24));
     write(LAPICReg::INTERRUPT_COMMAND_START, vector | LAPIC_INTERRUPT_CMD_SET_INIT_DEASSERT);
-
 }
 
 }; // namespace hw::acpi

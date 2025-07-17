@@ -11,8 +11,6 @@
 #include "libcore/encourage.hpp"
 uint64_t ccount;
 
-
-
 bool inside_error = false;
 extern uintptr_t _scheduler_impl(uintptr_t stack);
 
@@ -23,7 +21,7 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
 
     if (frame->interrupt_number < 32)
     {
-        while(inside_error)
+        while (inside_error)
         {
             asm volatile("pause");
         }
@@ -43,7 +41,7 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
             log::log$("-> '{}'", core::isnt_encouraging_messages[uid]);
         }
 
-        log::log$("{}", *(arch::amd64::StackFrame*)frame);
+        log::log$("{}", *(arch::amd64::StackFrame *)frame);
 
         uintptr_t cr2 = 0;
         asm volatile("mov %%cr2, %0"
@@ -55,12 +53,13 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
             asm volatile("hlt");
         }
     }
-    else if(frame->interrupt_number == 32){
+    else if (frame->interrupt_number == 32)
+    {
         _scheduler_impl(stack);
     }
-    else if(frame->interrupt_number == 100)
+    else if (frame->interrupt_number == 100)
     {
-     // log::log$("rescheduling on cpu {}", hw::acpi::Lapic::the().id());
+        // log::log$("rescheduling on cpu {}", hw::acpi::Lapic::the().id());
         _scheduler_impl(stack);
     }
 

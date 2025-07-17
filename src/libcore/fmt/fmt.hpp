@@ -63,8 +63,6 @@ constexpr core::Result<void> format_impl(Targ &target, core::Str fmt, int _c, Ar
     }
 }
 
-
-
 template <core::Writable Targ, typename Arg, typename... Args>
 constexpr core::Result<void> format_impl(Targ &target, core::Str fmt, int _c, Arg &&a, Args &&...args)
 {

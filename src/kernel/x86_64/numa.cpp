@@ -1,12 +1,11 @@
 #include "numa.hpp"
 
-
-core::Result<CpuTreeNode*> _initialize_cpu_tree_impl()
+core::Result<CpuTreeNode *> _initialize_cpu_tree_impl()
 {
-    return core::Result<CpuTreeNode*>::error("not implemented, as QEMU don't export an SRAT structure");
+    return core::Result<CpuTreeNode *>::error("not implemented, as QEMU don't export an SRAT structure");
 }
 
-core::Result<CpuTreeNode*> initialize_cpu_tree()
+core::Result<CpuTreeNode *> initialize_cpu_tree()
 {
     auto root = _initialize_cpu_tree_impl();
 
@@ -21,11 +20,11 @@ core::Result<CpuTreeNode*> initialize_cpu_tree()
     return root;
 }
 
-core::Result<CpuTreeNode*> fallback_use_guessed()
+core::Result<CpuTreeNode *> fallback_use_guessed()
 {
     auto root = new CpuTreeNode();
 
-    for(size_t i = 0; i < Cpu::count(); i++)
+    for (size_t i = 0; i < Cpu::count(); i++)
     {
         auto node = new CpuTreeNode();
         node->_children = {};

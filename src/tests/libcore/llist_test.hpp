@@ -83,7 +83,7 @@ static constexpr TestGroup llistTests = {
                         ll.remove(ll.count() - 1);
                     }
                 }
-                if(ll.count() != 8)
+                if (ll.count() != 8)
                 {
                     return "ll.count() != 8";
                 }

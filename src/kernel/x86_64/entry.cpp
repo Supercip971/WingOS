@@ -81,7 +81,7 @@ void arch_entry(const mcx::MachineContext *context)
     log::log$("all cpus are ready");
 
     log::log$("Initialize cpu tree:");
-    auto root=    initialize_cpu_tree().unwrap();
+    auto root = initialize_cpu_tree().unwrap();
     CpuTreeNode::assign_root(root);
 
     log::log$("cpu tree initialized");

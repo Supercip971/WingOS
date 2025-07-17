@@ -66,9 +66,9 @@ union Storage
     // constexpr Storage(Args&&... args) : _value(core::forward(args)...) {}
 };
 
-class NoneValue {
-    public:
-
+class NoneValue
+{
+public:
 };
 
 template <class T>

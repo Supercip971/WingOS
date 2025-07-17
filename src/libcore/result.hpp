@@ -61,7 +61,7 @@ public:
         return core::move(_value.unwrap());
     }
 
-    constexpr operator bool() const
+    explicit constexpr operator bool() const
     {
         return _value.has_value();
     }
@@ -110,7 +110,7 @@ public:
         assert();
     }
 
-    constexpr operator bool() const
+    explicit constexpr operator bool() const
     {
         return !_error.has_value();
     }

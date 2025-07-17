@@ -24,7 +24,7 @@ public:
     {
         size_t current = try$(tell());
         seek(0, SeekFrom::SEEK_END);
-        size_t size = tell();
+        size_t size = try$(tell());
         seek(current, SeekFrom::SEEK_BEGIN);
         return size;
     }

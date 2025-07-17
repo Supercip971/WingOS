@@ -1,6 +1,7 @@
 #include <kernel/generic/task.hpp>
 #include <libcore/fmt/log.hpp>
 
+#include "arch/x86_64/context.hpp"
 #include "arch/x86_64/gdt.hpp"
 #include "kernel/x86_64/context.hpp"
 #include "kernel/x86_64/cpu.hpp"
@@ -8,6 +9,7 @@
 #include "kernel/generic/context.hpp"
 #include "kernel/generic/kernel.hpp"
 #include "libcore/alloc/alloc.hpp"
+#include "libcore/lock/lock.hpp"
 
 namespace kernel
 {
@@ -16,23 +18,33 @@ core::Result<CpuContext *> CpuContext::create_empty()
 
     arch::amd64::CpuContextAmd64 *data = try$(core::mem_alloc<arch::amd64::CpuContextAmd64>());
 
+    *data = {};
     return data;
 }
 
-void CpuContext::load_to(void *state) const
+void CpuContext::load_to(void volatile*state) 
 {
     arch::amd64::CpuContextAmd64 const *data = this->as<arch::amd64::CpuContextAmd64>();
 
     arch::amd64::StackFrame *frame = (arch::amd64::StackFrame *)state;
+    
+    
     *frame = data->frame;
+
+    lock_scope$(this->lock);
+    this->await_load = false;
 }
 
-void CpuContext::save_in(void *state)
+void CpuContext::save_in(void volatile *state)
 {
+
     arch::amd64::CpuContextAmd64 *data = this->as<arch::amd64::CpuContextAmd64>();
 
     arch::amd64::StackFrame *frame = (arch::amd64::StackFrame *)state;
     data->frame = *frame;
+
+    lock_scope$(this->lock);
+    this->await_save = false;
 }
 
 void CpuContext::release()
@@ -67,8 +79,8 @@ core::Result<void> CpuContext::prepare(CpuContextLaunch launch)
 
     data->frame = arch::amd64::StackFrame();
 
-    data->frame.rsp = (uint64_t)data->stack_top;
-    data->frame.rbp = (uint64_t)data->stack_top;
+    data->frame.rsp = (uint64_t)data->stack_top - 16;
+    data->frame.rbp = (uint64_t)data->stack_top - 16;
     data->frame.rip = (uint64_t)launch.entry;
     data->frame.rdi = launch.args[0];
     data->frame.rsi = launch.args[1];

@@ -100,6 +100,7 @@ void arch::amd64::other_cpu_entry()
         asm volatile("pause");
     }
 
+    asm volatile("sti");
     while (true)
     {
         asm volatile("hlt");

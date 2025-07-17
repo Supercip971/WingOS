@@ -5,6 +5,7 @@
 
 #include "hw/mem/addr_space.hpp"
 #include "kernel/x86_64/cpu.hpp"
+#include "hw/pic/pic.hpp"
 
 #include "apic.hpp"
 #include "hw/acpi/ioapic.hpp"
@@ -55,7 +56,10 @@ core::Result<void> update_interrupt_source_override(MadtEntryIso const *entry)
 
 core::Result<void> apic_enable()
 {
-    return Lapic::the().enable();
+    try$(Lapic::the().enable());
+    hw::Pic::disable();
+    return {};
+
 }
 
 hw::acpi::Rsdp *rsdp()

@@ -11,16 +11,26 @@
 #include "libcore/encourage.hpp"
 uint64_t ccount;
 
+
+
+bool inside_error = false;
 extern uintptr_t _scheduler_impl(uintptr_t stack);
 
 extern "C" uintptr_t interrupt_handler(uintptr_t stack)
 {
 
-    arch::amd64::StackFrame const *frame = reinterpret_cast<arch::amd64::StackFrame *>(stack);
+    arch::amd64::StackFrame volatile *frame = reinterpret_cast<arch::amd64::StackFrame *>(stack);
 
     if (frame->interrupt_number < 32)
     {
+        while(inside_error)
+        {
+            asm volatile("pause");
+        }
+        inside_error = true;
 
+        log::log$("cpu: {}", hw::acpi::Lapic::the().id());
+        log::log$("stackframe: {}", (uint64_t)frame | fmt::FMT_HEX);
         log::log$("interrupt error: n°{} - {}", frame->interrupt_number, arch::amd64::interrupts_names[frame->interrupt_number]);
 
         // fixme: use a real number generator for 'funny' messages instead of this
@@ -33,23 +43,27 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
             log::log$("-> '{}'", core::isnt_encouraging_messages[uid]);
         }
 
-        log::log$("{}", *frame);
+        log::log$("{}", *(arch::amd64::StackFrame*)frame);
 
         uintptr_t cr2 = 0;
         asm volatile("mov %%cr2, %0"
                      : "=r"(cr2));
         log::log$("cr2: {}", cr2 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
+        inside_error = false;
         while (true)
         {
             asm volatile("hlt");
         }
     }
-    else
-    {
-
+    else if(frame->interrupt_number == 32){
         _scheduler_impl(stack);
-        hw::acpi::Lapic::the().eoi();
+    }
+    else if(frame->interrupt_number == 100)
+    {
+     // log::log$("rescheduling on cpu {}", hw::acpi::Lapic::the().id());
+        _scheduler_impl(stack);
     }
 
+    hw::acpi::Lapic::the().eoi();
     return stack;
 }

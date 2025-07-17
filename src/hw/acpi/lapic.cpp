@@ -34,13 +34,13 @@ core::Result<void> Lapic::enable()
                 this->read(LAPICReg::SPURIOUS_INTERRUPT_VECTOR) | LAPIC_SPURIOUS_APIC_SOFT_ENABLE |
                     LAPIC_SPURIOUS_VECTOR);
 
+                    
+                    
     // log::log$("LAPIC Enabled");
 
     // log::log$("disabling 8259 PIC");
 
-    hw::Pic::disable();
-
-    return {};
+      return {};
 }
 
 core::Result<void> Lapic::initialize(Madt *madt)

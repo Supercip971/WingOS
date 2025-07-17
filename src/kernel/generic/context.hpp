@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "libcore/lock/lock.hpp"
 #include "libcore/result.hpp"
 namespace kernel
 {
@@ -24,6 +25,10 @@ public:
     void *stack_top;
     void *kernel_stack_top;
 
+    core::Lock lock;
+    bool await_save;
+    bool await_load; 
+  
     static core::Result<CpuContext *> create_empty();
     static core::Result<CpuContext *> create(CpuContextLaunch launch);
 
@@ -31,8 +36,8 @@ public:
 
     core::Result<void> prepare(CpuContextLaunch launch);
 
-    void save_in(void *state);
-    void load_to(void *state) const;
+    void save_in(void volatile *state);
+    void load_to(void volatile*state) ;
     void release();
 
     template <typename T>

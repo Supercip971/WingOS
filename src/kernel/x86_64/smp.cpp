@@ -1,6 +1,7 @@
 #include "smp.hpp"
 #include <string.h>
 
+#include "arch/x86_64/gdt.hpp"
 #include "hw/mem/addr_space.hpp"
 #include "kernel/x86_64/cpu.hpp"
 
@@ -100,6 +101,7 @@ core::Result<void> arch::amd64::smp_initialize_cpu(int apic, int id)
     log::log$("initializing cpu: {} (lapic: {})...", id, apic);
 
     _ready = false;
+
 
     try$(hw::acpi::Lapic::the().init_cpu(id));
 

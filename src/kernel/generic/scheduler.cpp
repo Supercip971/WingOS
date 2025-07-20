@@ -6,6 +6,7 @@
 #include "kernel/generic/context.hpp"
 #include "kernel/generic/cpu.hpp"
 #include "kernel/generic/task.hpp"
+#include "libcore/atomic.hpp"
 #include "libcore/ds/array.hpp"
 #include "libcore/ds/vec.hpp"
 #include "libcore/fmt/log.hpp"
@@ -112,7 +113,7 @@ core::Result<kernel::Task *> next_task_select(CoreId core)
 {
     if ((size_t)core >= running_cpu_count)
     {
-        return "invalid core id";
+        return core::Result<kernel::Task*>::error("invalid core id");
     }
 
     if (cpu_runned[core].task == nullptr)
@@ -121,7 +122,7 @@ core::Result<kernel::Task *> next_task_select(CoreId core)
         {
             return scheduler_idles[core];
         }
-        return "no idle task available for core";
+        return core::Result<kernel::Task*>::error("no idle task available for core");
     }
 
     return cpu_runned[core].task;
@@ -461,15 +462,37 @@ void schedule_other_cpus()
     }
 }
 
+core::Result<void> dump_all_current_running_tasks()
+{
+    log::log$("Dumping all current running tasks:");
+    for (size_t i = 0; i < running_cpu_count; i++)
+    {
+        if (cpu_runned[i].task != nullptr)
+        {
+            log::log$("CPU[{}] = Task UID: {}, State: {}",
+                      i,
+                      (int)cpu_runned[i].task->uid(),
+                      (int)cpu_runned[i].task->state());
+        }
+        else
+        {
+            log::log$("CPU {}: No task running", i);
+        }
+    }
+    return {};
+}
+
 core::Result<void> reschedule_all()
 {
     {
-        core::lock_scope_writer$(scheduler_lock);
         tick++;
-
         update_runned_tasks();
+
         try$(schedule_all());
+ 
         try$(fix_sched_affinity());
+//  dump_all_current_running_tasks();
+ 
     }
     schedule_other_cpus();
     return {};
@@ -480,36 +503,60 @@ core::Result<Task *> schedule(Task *current, void volatile *state, CoreId core)
 
     if (core == 0)
     {
+        scheduler_lock.write_acquire();
         auto v = reschedule_all();
         if (v.is_error())
         {
             log::err$("unable to reschedule all tasks");
             log::err$("we will continue to run the current ones");
+
+            scheduler_lock.write_release();
             return {};
         }
+        scheduler_lock.write_release();
     }
 
-    if (current != nullptr)
+
+    scheduler_lock.read_acquire();
+    auto next = try$(next_task_select(core));
+
+
+    if (current != nullptr )
     {
+        if(current->uid() == next->uid())
+        {
+            scheduler_lock.read_release();
+            return next;
+        }
         current->cpu_context()->save_in(state);
     }
 
-    scheduler_lock.read_acquire();
 
-    auto next = try$(next_task_select(core));
-
-    Cpu::current()->currentTask(next);
 
     scheduler_lock.read_release();
 
     // if the next task is swapped between two cpus, wait
     // for it to save to load it
-    while (next->cpu_context()->await_save)
+    while (true)
     {
+        next->cpu_context()->lock.lock();
+
+        if(!next->cpu_context()->await_save)
+        {
+            next->cpu_context()->lock.release();
+            break; 
+        }
+
+        next->cpu_context()->lock.release();
+ 
         asm volatile("pause");
     }
 
+    scheduler_lock.read_acquire();
     next->cpu_context()->load_to(state);
+
+    Cpu::current()->currentTask(next);
+    scheduler_lock.read_release();
     return next;
 }
 } // namespace kernel

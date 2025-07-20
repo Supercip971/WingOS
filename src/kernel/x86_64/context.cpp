@@ -18,17 +18,36 @@ core::Result<CpuContext *> CpuContext::create_empty()
 
     arch::amd64::CpuContextAmd64 *data = try$(core::mem_alloc<arch::amd64::CpuContextAmd64>());
 
-    *data = {};
+    data->stackframe(arch::amd64::StackFrame{});
     return data;
 }
 
 void CpuContext::load_to(void volatile *state)
 {
     arch::amd64::CpuContextAmd64 const *data = this->as<arch::amd64::CpuContextAmd64>();
-
     arch::amd64::StackFrame *frame = (arch::amd64::StackFrame *)state;
 
-    *frame = data->frame;
+    // Validate frame before loading
+    if (!frame || !data) {
+        log::err$("Invalid frame or data in load_to");
+        return;
+    }
+
+    auto stored_frame = data->stackframe();
+    
+    // Validate segment selectors
+    if (stored_frame.cs == 0 || stored_frame.ss == 0) {
+        log::err$("Invalid segment selectors: CS={}, SS={}", stored_frame.cs, stored_frame.ss);
+        return;
+    }
+
+    // Validate stack pointer
+    if (stored_frame.rsp == 0) {
+        log::err$("Invalid stack pointer: RSP={}", stored_frame.rsp);
+        return;
+    }
+
+    *frame = stored_frame;
 
     lock_scope$(this->lock);
     this->await_load = false;
@@ -40,7 +59,7 @@ void CpuContext::save_in(void volatile *state)
     arch::amd64::CpuContextAmd64 *data = this->as<arch::amd64::CpuContextAmd64>();
 
     arch::amd64::StackFrame *frame = (arch::amd64::StackFrame *)state;
-    data->frame = *frame;
+    data->stackframe(*frame);
 
     lock_scope$(this->lock);
     this->await_save = false;
@@ -76,29 +95,31 @@ core::Result<void> CpuContext::prepare(CpuContextLaunch launch)
     data->stack_top = (void *)((uintptr_t)data->stack_ptr + kernel::userspace_stack_size);
     data->kernel_stack_top = (void *)((uintptr_t)data->kernel_stack_ptr + kernel::kernel_stack_size);
 
-    data->frame = arch::amd64::StackFrame();
+    auto frame = arch::amd64::StackFrame();
 
-    data->frame.rsp = (uint64_t)data->stack_top - 16;
-    data->frame.rbp = (uint64_t)data->stack_top - 16;
-    data->frame.rip = (uint64_t)launch.entry;
-    data->frame.rdi = launch.args[0];
-    data->frame.rsi = launch.args[1];
-    data->frame.rdx = launch.args[2];
-    data->frame.rcx = launch.args[3];
-    data->frame.r8 = launch.args[4];
+    frame.rsp = (uint64_t)data->stack_top ;
+    frame.rbp = (uint64_t)0;
+    frame.rip = (uint64_t)launch.entry;
+    frame.rdi = launch.args[0];
+    frame.rsi = launch.args[1];
+    frame.rdx = launch.args[2];
+    frame.rcx = launch.args[3];
+    frame.r8 = launch.args[4];
 
     if (launch.user)
     {
-        data->frame.cs = (arch::amd64::Gdt::user_code_segment_id * 8) | 3;
-        data->frame.ss = (arch::amd64::Gdt::user_data_segment_id * 8) | 3;
+        frame.cs = (arch::amd64::Gdt::user_code_segment_id * 8) | 3;
+        frame.ss = (arch::amd64::Gdt::user_data_segment_id * 8) | 3;
     }
     else
     {
-        data->frame.cs = arch::amd64::Gdt::kernel_code_segment_id * 8;
-        data->frame.ss = arch::amd64::Gdt::kernel_data_segment_id * 8;
+        frame.cs = arch::amd64::Gdt::kernel_code_segment_id * 8;
+        frame.ss = arch::amd64::Gdt::kernel_data_segment_id * 8;
     }
 
-    data->frame.rflags = arch::amd64::RFLAGS_INTERRUPT_ENABLE | arch::amd64::RFLAGS_ONE;
+    frame.rflags = arch::amd64::RFLAGS_INTERRUPT_ENABLE | arch::amd64::RFLAGS_ONE;
+
+    data->stackframe(frame);
 
     return {};
 }

@@ -18,7 +18,7 @@ void fun1()
     while (true)
     {
         lock_scope$(kernel_lock);
-      //  log::log$("fun1 {}", Cpu::currentId());
+        log::log$("fun1 {}", Cpu::currentId());
         asm volatile("pause");
     }
 }
@@ -28,7 +28,7 @@ void fun2()
     while (true)
     {
         lock_scope$(kernel_lock);
-      //  log::log$("fun2 {}", Cpu::currentId());
+        log::log$("fun2 {}", Cpu::currentId());
         asm volatile("pause");
     }
 }
@@ -38,7 +38,7 @@ void fun3()
     while (true)
     {
         lock_scope$(kernel_lock);
-      //  log::log$("fun3 {}", Cpu::currentId());
+        log::log$("fun3 {}", Cpu::currentId());
         asm volatile("pause");
     }
 }
@@ -47,7 +47,7 @@ void fun4()
     while (true)
     {
         lock_scope$(kernel_lock);
-        //log::log$("fun4 {}", Cpu::currentId());
+        log::log$("fun4 {}", Cpu::currentId());
         asm volatile("pause");
     }
 }
@@ -56,7 +56,7 @@ void fun5()
     while (true)
     {
         lock_scope$(kernel_lock);
-        //log::log$("fun5 {}", Cpu::currentId());
+        log::log$("fun5 {}", Cpu::currentId());
 
         asm volatile("pause");
     }

@@ -26,8 +26,8 @@ public:
     void *kernel_stack_top;
 
     core::Lock lock;
-    bool await_save;
-    bool await_load;
+    volatile bool await_save;
+    volatile bool await_load;
 
     static core::Result<CpuContext *> create_empty();
     static core::Result<CpuContext *> create(CpuContextLaunch launch);

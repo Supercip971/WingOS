@@ -14,6 +14,23 @@ size_t Cpu::count()
     return initialized_count;
 }
 
+void Cpu::interrupt_hold()
+{
+    if (this->interrupt_depth == 0)
+    {
+        asm volatile("cli");
+    }
+    this->interrupt_depth++;
+}
+void Cpu::interrupt_release()
+{
+    this->interrupt_depth--;
+    if (this->interrupt_depth == 0)
+    {
+        asm volatile("sti");
+    }
+}
+
 namespace arch::amd64
 {
 core::Result<void> cpuContextInit(int id, int lapic)

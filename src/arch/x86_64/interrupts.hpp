@@ -7,6 +7,10 @@ namespace arch::amd64
 
 // table 8-1 (part 8.2 Vectors) amd64 architecture programmer's manual volume 2
 
+void interrupt_hold(); 
+
+void interrupt_release(); 
+
 static constexpr core::Array interrupts_names{
     core::Str("Divide by zero [#DE]"),
     "Debug [#DB]",

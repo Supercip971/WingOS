@@ -7,6 +7,7 @@
 #include "arch/x86_64/interrupts.hpp"
 
 #include "hw/acpi/lapic.hpp"
+#include "kernel/generic/cpu.hpp"
 #include "kernel/generic/scheduler.hpp"
 #include "libcore/encourage.hpp"
 uint64_t ccount;
@@ -14,9 +15,22 @@ uint64_t ccount;
 bool inside_error = false;
 extern uintptr_t _scheduler_impl(uintptr_t stack);
 
+void interrupt_release(); 
+
+
 extern "C" uintptr_t interrupt_handler(uintptr_t stack)
 {
 
+    
+
+    Cpu::current()->interrupt_hold();
+
+    if(Cpu::current()->in_interrupt())
+    {
+        log::warn$("already in an interrupt {}", Cpu::currentId());
+    }
+
+    Cpu::current()->in_interrupt(true);
     arch::amd64::StackFrame volatile *frame = reinterpret_cast<arch::amd64::StackFrame *>(stack);
 
     if (frame->interrupt_number < 32)
@@ -64,5 +78,9 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
     }
 
     hw::acpi::Lapic::the().eoi();
+
+    Cpu::current()->in_interrupt(false);
+    Cpu::current()->interrupt_release();
+ 
     return stack;
 }

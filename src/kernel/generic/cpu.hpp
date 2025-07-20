@@ -11,11 +11,24 @@ class Cpu
 protected:
     CoreId _id;
 
+    size_t interrupt_depth = 0;
+    bool _in_interrupt = false;
     bool _present;
 
     kernel::Task *_current_task = nullptr;
 
 public:
+
+    bool in_interrupt()
+    {
+        return _in_interrupt;
+    }
+
+    void in_interrupt(bool val)
+    {
+        _in_interrupt = val;
+    }
+    
     int id() const { return _id; };
 
     bool present() const { return _present; };
@@ -33,4 +46,9 @@ public:
 
     kernel::Task *currentTask() const { return _current_task; }
     void currentTask(kernel::Task *task) { _current_task = task; }
+
+    void interrupt_hold(); 
+
+    void interrupt_release(); 
+
 };

@@ -14,36 +14,29 @@ class Lock
     bool try_acquire()
     {
         int expected = false;
-        int result = atomic_compare_exchange_strong(&_locked, &expected, true);
-
-        atomic_thread_fence(memory_order_seq_cst);
-        return result;
+        return atomic_compare_exchange_strong_explicit(
+            &_locked, &expected, true,
+            memory_order_acquire, memory_order_relaxed);
     }
 
 public:
     bool try_lock()
     {
-        if (try_acquire())
-        {
-            return true;
-        }
-        return false;
-    };
+        return try_acquire();
+    }
 
     void lock()
     {
         while (!try_acquire())
         {
-            atomic_thread_fence(memory_order_seq_cst);
             arch::pause();
         }
-    };
+    }
 
     void release()
     {
-        atomic_thread_fence(memory_order_seq_cst);
-        _locked = false;
-    };
+        atomic_store_explicit(&_locked, false, memory_order_release);
+    }
 };
 
 class CtxLocker : public NoCopy, NoMove

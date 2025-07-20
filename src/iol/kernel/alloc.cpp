@@ -4,9 +4,14 @@
 #include "hw/mem/addr_space.hpp"
 
 #include "kernel/generic/pmm.hpp"
+#include "libcore/lock/lock.hpp"
+
+
+core::Lock _liballoc_lock = core::Lock();
 
 extern "C" int liballoc_lock()
 {
+    _liballoc_lock.lock();
     // FIXME: implement
     return 0;
 }
@@ -18,6 +23,7 @@ extern "C" int liballoc_lock()
  */
 extern "C" int liballoc_unlock()
 {
+    _liballoc_lock.release();
     // FIXME: implement
     return 0;
 }

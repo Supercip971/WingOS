@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "arch/x86_64/gdt.hpp"
 #include "hw/mem/addr_space.hpp"
 
 #include "kernel/generic/cpu.hpp"
@@ -15,7 +16,11 @@ class CpuImpl : public Cpu
     int _lapic;
     PhysAddr _trampoline_stack;
 
+
 public:
+
+    Gdt *gdt() ; 
+    Gdtr *gdtr() ;
     int lapic() const { return _lapic; };
 
     CpuImpl(int id, int lapic) : Cpu(id, true), _lapic(lapic) {};

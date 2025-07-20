@@ -1,5 +1,7 @@
 
 #include "cpu.hpp"
+#include "arch/x86_64/gdt.hpp"
+#include <kernel/x86_64/cpu.hpp>
 #include <libcore/fmt/log.hpp>
 
 #include "hw/acpi/lapic.hpp"
@@ -49,7 +51,7 @@ core::Result<void> cpuContextInit(int id, int lapic)
 
 CpuImpl *CpuImpl::getImpl(int id)
 {
-    if (id > max_cpu || !cpus[id]._present) [[unlikely]]
+    if ((id > max_cpu || !cpus[id]._present) && id != 0) [[unlikely]]
     {
         log::log$("error: cpu id {} is not valid", id);
         return nullptr;
@@ -72,7 +74,36 @@ Cpu *Cpu::get(int id)
 {
     return &cpus[id];
 }
+
+arch::amd64::CpuImpl *arch::amd64::CpuImpl::currentImpl()
+{
+    auto id = Cpu::currentId();
+    if (id == -1)
+    {
+        return nullptr;
+    }
+    return CpuImpl::getImpl(id);
+}
+
+ static arch::amd64::Gdt _gdt[arch::amd64::max_cpu] = {};
+ static arch::amd64::Gdtr _gdtr[arch::amd64::max_cpu] = {};
+
+
+ arch::amd64::Gdt *arch::amd64::CpuImpl::gdt()
+ {
+        return &_gdt[this->id()];
+ }
+
+    arch::amd64::Gdtr *arch::amd64::CpuImpl::gdtr()
+    {
+            return &_gdtr[this->id()];
+    }
+
 CoreId Cpu::currentId()
 {
+    if(hw::acpi::Lapic::the().is_loaded() == false)
+    {
+        return 0;
+    }
     return hw::acpi::Lapic::the().id();
 }

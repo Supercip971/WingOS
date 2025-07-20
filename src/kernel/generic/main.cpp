@@ -18,7 +18,7 @@ void fun1()
     while (true)
     {
         lock_scope$(kernel_lock);
-        log::log$("fun1 {}", Cpu::currentId());
+      //  log::log$("fun1 {}", Cpu::currentId());
         asm volatile("pause");
     }
 }
@@ -28,7 +28,7 @@ void fun2()
     while (true)
     {
         lock_scope$(kernel_lock);
-        log::log$("fun2 {}", Cpu::currentId());
+      //  log::log$("fun2 {}", Cpu::currentId());
         asm volatile("pause");
     }
 }
@@ -38,7 +38,7 @@ void fun3()
     while (true)
     {
         lock_scope$(kernel_lock);
-        log::log$("fun3 {}", Cpu::currentId());
+      //  log::log$("fun3 {}", Cpu::currentId());
         asm volatile("pause");
     }
 }
@@ -47,10 +47,21 @@ void fun4()
     while (true)
     {
         lock_scope$(kernel_lock);
-        log::log$("fun4 {}", Cpu::currentId());
+        //log::log$("fun4 {}", Cpu::currentId());
         asm volatile("pause");
     }
 }
+void fun5()
+{
+    while (true)
+    {
+        lock_scope$(kernel_lock);
+        //log::log$("fun5 {}", Cpu::currentId());
+
+        asm volatile("pause");
+    }
+}
+
 
 void kernel_entry(const mcx::MachineContext *context)
 {
@@ -65,24 +76,32 @@ void kernel_entry(const mcx::MachineContext *context)
     kernel::Task *task2 = kernel::Task::task_create().unwrap();
     kernel::Task *task3 = kernel::Task::task_create().unwrap();
     kernel::Task *task4 = kernel::Task::task_create().unwrap();
+    kernel::Task *task5 = kernel::Task::task_create().unwrap();
+
 
     task1->initialize({.entry = (void *)fun1, .user = false}).assert();
     task2->initialize({.entry = (void *)fun2, .user = false}).assert();
     task3->initialize({.entry = (void *)fun3, .user = false}).assert();
     task4->initialize({.entry = (void *)fun4, .user = false}).assert();
+    task5->initialize({.entry = (void *)fun5, .user = false}).assert();
+
 
     log::log$("task1: {}", task1->uid());
     log::log$("task2: {}", task2->uid());
     log::log$("task3: {}", task3->uid());
     log::log$("task4: {}", task4->uid());
+    log::log$("task5: {}", task5->uid());
+
 
     kernel::task_run(task1->uid()).assert();
     kernel::task_run(task2->uid()).assert();
     kernel::task_run(task3->uid()).assert();
     kernel::task_run(task4->uid()).assert();
+    kernel::task_run(task5->uid()).assert();
 
-    asm volatile("sti");
 
+
+    Cpu::current()->interrupt_release();
     while (true)
     {
         asm volatile("hlt");

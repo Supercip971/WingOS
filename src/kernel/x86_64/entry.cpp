@@ -39,7 +39,9 @@ void arch_entry(const mcx::MachineContext *context)
     _running_cpu_count = 1;
     log::log$("started kernel arch");
 
-    arch::amd64::gdt_use(arch::amd64::load_default_gdt());
+
+    arch::amd64::load_default_gdt();
+    arch::amd64::gdt_use();
     log::log$("loaded kernel gdt");
 
     arch::amd64::idt_use(arch::amd64::load_default_idt());
@@ -73,6 +75,7 @@ void arch_entry(const mcx::MachineContext *context)
     log::log$("cpu count: {}", hw::acpi::apic_cpu_count());
     arch::amd64::smp_initialize().assert();
 
+    Cpu::current()->interrupt_hold();
     while (_running_cpu_count < arch::amd64::CpuImpl::count())
     {
         asm volatile("pause");
@@ -93,6 +96,8 @@ void arch::amd64::other_cpu_entry()
 {
     //  log::log$("other cpu entry");
     hw::acpi::Lapic::the().enable().assert();
+
+    Cpu::current()->interrupt_hold();
     _running_cpu_count += 1;
 
     while (_running_cpu_count < CpuImpl::count())
@@ -100,7 +105,7 @@ void arch::amd64::other_cpu_entry()
         asm volatile("pause");
     }
 
-    asm volatile("sti");
+    Cpu::current()->interrupt_release();
     while (true)
     {
         asm volatile("hlt");

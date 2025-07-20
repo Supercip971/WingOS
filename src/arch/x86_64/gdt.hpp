@@ -100,7 +100,7 @@ struct Gdt
 } __attribute__((packed));
 
 Gdtr *load_default_gdt();
-void gdt_use(Gdtr *gdtr);
+void gdt_use();
 
 static constexpr auto segment_to_offset_kernel(uint16_t segment)
 {

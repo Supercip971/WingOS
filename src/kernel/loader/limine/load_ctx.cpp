@@ -21,6 +21,12 @@ __attribute__((used)) static volatile struct limine_rsdp_request rsdp_request = 
     .revision = 0,
     .response = NULL,
 };
+
+__attribute__((used)) static volatile struct limine_module_request module = {
+    .id = LIMINE_MODULE_REQUEST,
+    .revision = 0,
+    .response = NULL,
+};
 static mcx::MemoryMap::Type limine_type_to_mcx(int type)
 {
     switch (type)
@@ -46,6 +52,21 @@ static mcx::MemoryMap::Type limine_type_to_mcx(int type)
     }
 }
 
+static void load_mcx_modules(mcx::MachineContext *context)
+{
+    struct limine_file **modules = module.response->modules;
+    size_t modules_size = module.response->module_count;
+
+    for (size_t i = 0; i < modules_size; i++)
+    {
+
+        context->_modules[i].range = mcx::MemoryRange::from_begin_len((uintptr_t)modules[i]->address, modules[i]->size);
+        context->_modules[i].name = modules[i]->path;
+        context->_modules[i].path = modules[i]->path;
+    }
+    context->_modules_count = modules_size;
+}
+
 static void load_mcx_mmap(mcx::MachineContext *context)
 {
     struct limine_memmap_entry **mmap = mmap_request.response->entries;
@@ -59,6 +80,11 @@ static void load_mcx_mmap(mcx::MachineContext *context)
     }
     context->_memory_map_count = mmap_size;
 
+}
+void load_mcx(mcx::MachineContext *context)
+{
+    load_mcx_mmap(context);
+    load_mcx_modules(context);
     context->_framebuffer = mcx::MachineFramebuffer{
         .address = limine_framebuffer_req.response->framebuffers[0]->address,
         .width = (int)limine_framebuffer_req.response->framebuffers[0]->width,
@@ -69,8 +95,6 @@ static void load_mcx_mmap(mcx::MachineContext *context)
     };
 
     context->_rsdp = (uintptr_t)rsdp_request.response->address;
-}
-void load_mcx(mcx::MachineContext *context)
-{
-    load_mcx_mmap(context);
+
+
 }

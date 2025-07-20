@@ -48,6 +48,14 @@ struct MachineFramebuffer
 
     PixelFormat pixel_format;
 };
+
+
+struct MachineContextModule 
+{
+    MemoryRange range;
+    const char *name;
+    const char *path;
+};
 struct MachineContext
 {
 
@@ -55,6 +63,9 @@ public:
     constexpr static int max_memory_map = 64;
     core::Array<MemoryMap, max_memory_map> _memory_map;
     int _memory_map_count = 0;
+    constexpr static int max_modules = 64;
+    core::Array<MachineContextModule, max_modules> _modules;
+    int _modules_count = 0;
 
     MachineFramebuffer _framebuffer;
 
@@ -71,6 +82,13 @@ constexpr core::Result<void> format_v(Targ &target, T value)
     {
         fmt::format(target, "   - range: {} \n", value->_memory_map[i].range | fmt::FMT_HEX);
         fmt::format(target, "     type: {} \n", (int)value->_memory_map[i].type);
+    }
+    fmt::format(target, "  module_count: {} \n", value->_memory_map_count);
+    fmt::format(target, "  module: \n");
+    for (int i = 0; i < value->_modules_count; i++)
+    {
+        fmt::format(target, "   - name: {} \n", value->_modules[i].name );
+        fmt::format(target, "     range: {} \n", value->_modules[i].range | fmt::FMT_HEX);
     }
     fmt::format(target, "  _rsdp: {} \n", value->_rsdp);
     fmt::format(target, "] \n");

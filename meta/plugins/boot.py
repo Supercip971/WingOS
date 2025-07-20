@@ -23,7 +23,8 @@ class LimineCfg:
         self.imageDir = None
 
     def append_file(self, pkg: builder.ProductScope):
-        self.cfg += f"MODULE_PATH=boot://{pkg}\n"
+        if pkg != '.keep':
+            self.cfg += f"MODULE_PATH=boot://{pkg}\n"
 
     def append_component(self, pkg: builder.ProductScope, is_bin=True):
         if is_bin:
@@ -34,7 +35,7 @@ class LimineCfg:
 
     def createImage(self) -> Self:
         self.imageDir = shell.mkdir(
-            os.path.join(const.PROJECT_CK_DIR, "munix"))
+            os.path.join(const.PROJECT_CK_DIR, "wingos"))
         efiBootDir = shell.mkdir(os.path.join(self.imageDir, "EFI", "BOOT"))
         bootDir = shell.mkdir(os.path.join(self.imageDir, "boot"))
         binDir = shell.mkdir(os.path.join(self.imageDir, "bin"))
@@ -48,6 +49,7 @@ class LimineCfg:
 
         for root, _, files in os.walk(os.path.join(const.META_DIR, "sysroot")): 
             root = root.replace(os.path.join(const.META_DIR, "sysroot"), "")
+            print(f"\n\n root: {root}\n\n")
             list(map(lambda f: self.append_file(os.path.join(root, f)), files))
 
         shell.cpTree(os.path.join(const.META_DIR, "sysroot"), self.imageDir)

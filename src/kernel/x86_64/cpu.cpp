@@ -87,7 +87,7 @@ arch::amd64::CpuImpl *arch::amd64::CpuImpl::currentImpl()
 
  static arch::amd64::Gdt _gdt[arch::amd64::max_cpu] = {};
  static arch::amd64::Gdtr _gdtr[arch::amd64::max_cpu] = {};
-
+ static arch::amd64::Tss _tss[arch::amd64::max_cpu] = {};
 
  arch::amd64::Gdt *arch::amd64::CpuImpl::gdt()
  {
@@ -97,6 +97,11 @@ arch::amd64::CpuImpl *arch::amd64::CpuImpl::currentImpl()
     arch::amd64::Gdtr *arch::amd64::CpuImpl::gdtr()
     {
             return &_gdtr[this->id()];
+    }
+
+    arch::amd64::Tss *arch::amd64::CpuImpl::tss()
+    {
+            return &_tss[this->id()];
     }
 
 CoreId Cpu::currentId()

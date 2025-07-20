@@ -125,12 +125,19 @@ enum LAPICTimerDivision : uint8_t
 class Lapic
 {
 
+
     VirtAddr mapped_registers;
     Lapic(VirtAddr lapic_addr) : mapped_registers(lapic_addr) {}
 
     size_t _timer_tick_in_10ms();
-
+    bool loaded = false;
 public:
+
+    bool is_loaded() const
+    {
+        return loaded;
+    }
+    
     void write(LAPICReg reg, uint32_t value)
     {
         mapped_registers.offsetted((uint32_t)reg).vwrite<uint32_t>(value);

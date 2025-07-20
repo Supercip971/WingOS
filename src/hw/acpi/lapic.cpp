@@ -43,6 +43,7 @@ core::Result<void> Lapic::enable()
 
 core::Result<void> Lapic::initialize(Madt *madt)
 {
+
     PhysAddr lapic_addr = madt->local_apic_addr;
 
     madt->foreach_entry<MadtEntryLapicOverride>([&](MadtEntryLapicOverride *entry)
@@ -58,6 +59,9 @@ core::Result<void> Lapic::initialize(Madt *madt)
     main_lapic = Lapic(mapped_registers);
 
     try$(main_lapic.enable());
+
+    main_lapic.loaded = true;
+    
 
     return {};
 }

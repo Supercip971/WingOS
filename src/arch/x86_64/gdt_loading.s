@@ -16,3 +16,10 @@ gdtr_install:
 
 .trampoline:
     ret
+
+
+global tss_update
+tss_update:
+  mov ax, 0x28
+  ltr ax
+  ret

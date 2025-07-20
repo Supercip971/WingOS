@@ -75,6 +75,8 @@ void arch_entry(const mcx::MachineContext *context)
     log::log$("cpu count: {}", hw::acpi::apic_cpu_count());
     arch::amd64::smp_initialize().assert();
 
+    arch::amd64::setup_ist();
+
     Cpu::current()->interrupt_hold();
     while (_running_cpu_count < arch::amd64::CpuImpl::count())
     {
@@ -99,6 +101,13 @@ void arch::amd64::other_cpu_entry()
 
     Cpu::current()->interrupt_hold();
     _running_cpu_count += 1;
+
+    arch::amd64::load_default_gdt();
+    arch::amd64::gdt_use();
+   
+    arch::amd64::setup_ist();
+
+
 
     while (_running_cpu_count < CpuImpl::count())
     {

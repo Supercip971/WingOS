@@ -77,9 +77,10 @@ struct TssEntry
     }
 } __attribute__((packed));
 
-struct Gdt
+struct [[gnu::packed]] Gdt
 {
     core::Array<GdtEntry, 5> _entries;
+
 
     static const int kernel_code_segment_id = 1;
     static const int kernel_data_segment_id = 2;
@@ -87,7 +88,7 @@ struct Gdt
     static const int user_code_segment_id = 4;
     static const int tss_segment_id = 5;
 
-    Tss tss;
+    TssEntry tss;
 
     constexpr Gdt() : _entries({
                           GdtEntry::make_entry(0, 0, 0, 0),                      // null segment
@@ -101,6 +102,7 @@ struct Gdt
 
 Gdtr *load_default_gdt();
 void gdt_use();
+void setup_ist();
 
 static constexpr auto segment_to_offset_kernel(uint16_t segment)
 {

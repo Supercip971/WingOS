@@ -21,6 +21,7 @@ public:
 
     Gdt *gdt() ; 
     Gdtr *gdtr() ;
+    Tss* tss() ;
     int lapic() const { return _lapic; };
 
     CpuImpl(int id, int lapic) : Cpu(id, true), _lapic(lapic) {};

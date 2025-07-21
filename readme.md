@@ -41,8 +41,8 @@ For now the kernel is still in development, but it has a few key features:
 - [x] x86 basic support (interrupt, paging, ...) 
 - [x] SMP support (apic, ...)
 - [x] Scheduler (with SMP support, priority, and cpu affinity support)
-- [ ] Loading user space app   
-- [ ] User space (ring 3)
+- [x] Loading user space app   
+- [x] User space (ring 3)
 - [ ] Syscalls 
 - [ ] Services and IPC (inter process communication) 
 - [ ] Filesystem and disk support

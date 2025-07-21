@@ -85,6 +85,24 @@ public:
 
         return substr(last);
     }
+
+    constexpr bool start_with(const Str &str) const
+    {
+        if (str._len > _len)
+        {
+            return false;
+        }
+        for (size_t i = 0; i < str._len; i++)
+        {
+            if (_data[i] != str._data[i])
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    
 };
 
 constexpr char *StrChr(char *str, char c)

@@ -38,7 +38,6 @@ class Task
 {
     TUID _uid = 0;
     TaskState _state = TaskState::TASK_NONE;
-    VmmSpace _vmm_space;
     CpuContext *_cpu_context;
 
 public:
@@ -63,7 +62,7 @@ public:
 
     static core::Result<Task *> task_create();
 
-    VmmSpace &vmm_space() { return _vmm_space; };
+    VmmSpace &vmm_space() { return _cpu_context->_vmm_space; };
 
     void user_stack_addr(uintptr_t addr) { _cpu_context->use_stack_addr(addr); }
 

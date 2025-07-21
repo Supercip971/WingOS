@@ -25,6 +25,7 @@ core::Result<CpuContext *> CpuContext::create_empty()
 void CpuContext::load_to(void volatile *state)
 {
     arch::amd64::CpuContextAmd64 const *data = this->as<arch::amd64::CpuContextAmd64>();
+
     arch::amd64::StackFrame *frame = (arch::amd64::StackFrame *)state;
 
     // Validate frame before loading
@@ -49,8 +50,13 @@ void CpuContext::load_to(void volatile *state)
 
     *frame = stored_frame;
 
+    this->_vmm_space.use();
+
+    
     lock_scope$(this->lock);
     this->await_load = false;
+
+    
 }
 
 void CpuContext::save_in(void volatile *state)

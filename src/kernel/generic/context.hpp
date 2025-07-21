@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "kernel/generic/paging.hpp"
 #include "libcore/lock/lock.hpp"
 #include "libcore/result.hpp"
 namespace kernel
@@ -29,6 +30,8 @@ public:
     volatile bool await_save;
     volatile bool await_load;
 
+
+    VmmSpace _vmm_space;
     static core::Result<CpuContext *> create_empty();
     static core::Result<CpuContext *> create(CpuContextLaunch launch);
 

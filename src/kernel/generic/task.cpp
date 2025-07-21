@@ -59,7 +59,7 @@ core::Result<kernel::Task *> kernel::Task::task_create()
     }
 
     task->_cpu_context = try$(kernel::CpuContext::create_empty());
-    task->_vmm_space = try$(VmmSpace::create(false));
+    task->_cpu_context->_vmm_space = try$(VmmSpace::create(false));
 
     return task;
 }

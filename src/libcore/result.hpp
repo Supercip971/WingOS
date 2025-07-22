@@ -45,7 +45,12 @@ public:
         _error = core::move(other._error);
         return *this;
     }
-
+    static constexpr auto success(ValT &&val)
+    {
+        auto res = Result<ValT, ErrT>();
+        res._value = core::move(val);
+        return core::move(res);
+    }
     static constexpr auto error(ErrT &&error)
     {
         auto res = Result<ValT, ErrT>();
@@ -144,10 +149,10 @@ extern void debug_provide_info(const char *info, const char *data);
     auto _result = (expr);                                                 \
     if ((_result._error.has_value())) [[unlikely]]                         \
     {                                                                      \
-        core::debug_provide_info("error:", (const char *)_result.error()); \
-        core::debug_provide_info("at:", #expr);                            \
-        core::debug_provide_info("function:", __FUNCTION__);               \
-        core::debug_provide_info("file:", __FILE__);                       \
+        core::debug_provide_info("error:    ", (const char *)_result.error()); \
+        core::debug_provide_info("at:       ", #expr);                     \
+        core::debug_provide_info("function: ", __FUNCTION__);              \
+        core::debug_provide_info("file:     ", __FILE__);                  \
         return _result.error();                                            \
     }                                                                      \
     _result.unwrap();                                                      \

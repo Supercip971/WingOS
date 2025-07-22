@@ -7,6 +7,9 @@
     "props": {
         "exported": true
     },
+    "requires": [
+        "libcore"
+    ],
     "enableIf": {
         "sys": [
             "wingos"

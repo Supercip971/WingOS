@@ -1,6 +1,7 @@
 
 #include "cpu.hpp"
 #include "arch/x86_64/gdt.hpp"
+#include "arch/x86_64/msr.hpp"
 #include <kernel/x86_64/cpu.hpp>
 #include <libcore/fmt/log.hpp>
 
@@ -64,6 +65,11 @@ size_t CpuImpl::max_processors()
     return max_cpu;
 }
 
+void setup_entry_gs()
+{
+    Msr::Write(MsrReg::GS_BASE, (uintptr_t)Cpu::current());
+    Msr::Write(MsrReg::KERNEL_GS_BASE, (uintptr_t)Cpu::current());
+}
 } // namespace arch::amd64
 Cpu *Cpu::current()
 {
@@ -74,6 +80,8 @@ Cpu *Cpu::get(int id)
 {
     return &cpus[id];
 }
+
+
 
 arch::amd64::CpuImpl *arch::amd64::CpuImpl::currentImpl()
 {

@@ -8,7 +8,16 @@ using CoreId = int;
 static constexpr CoreId CpuCoreNone = -1;
 class Cpu
 {
+
+// used for syscall handling -- <!> ORDER IS IMPORTANT FOR ASM CODE <!>
+public:
+    void* syscall_stack; 
+    uintptr_t saved_stack; // used to save the stack pointer before syscall
+
+
 protected:
+    
+    // 
     CoreId _id;
 
     size_t interrupt_depth = 0;

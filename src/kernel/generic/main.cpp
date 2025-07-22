@@ -106,7 +106,6 @@ void kernel_entry(const mcx::MachineContext *context)
         auto mod = context->_modules[i];
 
 
-
         if(!core::Str(mod.path).start_with("/bin/"))
         {
             log::log$("skipping module {}: {}", i, mod.path);

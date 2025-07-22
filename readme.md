@@ -43,7 +43,7 @@ For now the kernel is still in development, but it has a few key features:
 - [x] Scheduler (with SMP support, priority, and cpu affinity support)
 - [x] Loading user space app   
 - [x] User space (ring 3)
-- [ ] Syscalls 
+- [x] Syscalls 
 - [ ] Services and IPC (inter process communication) 
 - [ ] Filesystem and disk support
 - [ ] Above and beyond 

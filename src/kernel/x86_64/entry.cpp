@@ -20,6 +20,7 @@
 #include "kernel/generic/cpu_tree.hpp"
 #include "kernel/x86_64/numa.hpp"
 #include "kernel/x86_64/smp.hpp"
+#include "kernel/x86_64/syscall.hpp"
 #include <arch/x86_64/gdt.hpp>
 // ee
 
@@ -91,6 +92,8 @@ void arch_entry(const mcx::MachineContext *context)
 
     log::log$("cpu tree initialized");
 
+    arch::amd64::syscall_init_for_current_cpu().assert();
+    arch::amd64::setup_entry_gs();
     kernel_entry(context);
 }
 
@@ -106,6 +109,8 @@ void arch::amd64::other_cpu_entry()
     arch::amd64::gdt_use();
    
     arch::amd64::setup_ist();
+    arch::amd64::syscall_init_for_current_cpu();
+    arch::amd64::setup_entry_gs();
 
 
 

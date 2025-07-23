@@ -44,6 +44,11 @@ For now the kernel is still in development, but it has a few key features:
 - [x] Loading user space app   
 - [x] User space (ring 3)
 - [x] Syscalls 
+- [ ] Spaces and handles 
+- [ ] Userspace objects
+    - [ ] Memory management (physical)
+    - [ ] Memory management (virtual) 
+    - [ ] IPC endpoint 
 - [ ] Services and IPC (inter process communication) 
 - [ ] Filesystem and disk support
 - [ ] Above and beyond 

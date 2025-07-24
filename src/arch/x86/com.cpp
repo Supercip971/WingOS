@@ -36,6 +36,7 @@ void Com::putc(char value)
 {
     while (!can_write())
     {
+        asm volatile("pause");
     }
     write_reg(Com::Register::DATA, value);
 }

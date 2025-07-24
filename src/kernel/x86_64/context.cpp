@@ -8,6 +8,7 @@
 
 #include "kernel/generic/context.hpp"
 #include "kernel/generic/kernel.hpp"
+#include "kernel/generic/paging.hpp"
 #include "libcore/alloc/alloc.hpp"
 #include "libcore/lock/lock.hpp"
 
@@ -50,7 +51,7 @@ void CpuContext::load_to(void volatile *state)
 
     *frame = stored_frame;
 
-    this->_vmm_space.use();
+    this->_vmm_space->use();
 
     
     lock_scope$(this->lock);
@@ -97,6 +98,7 @@ core::Result<void> CpuContext::prepare(CpuContextLaunch launch)
 
     data->stack_ptr = try$(core::mem_alloc(kernel::userspace_stack_size));
     data->kernel_stack_ptr = try$(core::mem_alloc(kernel::kernel_stack_size));
+
 
     data->stack_top = (void *)((uintptr_t)data->stack_ptr + kernel::userspace_stack_size);
     data->kernel_stack_top = (void *)((uintptr_t)data->kernel_stack_ptr + kernel::kernel_stack_size);

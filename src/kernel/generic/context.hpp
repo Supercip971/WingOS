@@ -31,14 +31,13 @@ public:
     volatile bool await_load;
 
 
-    VmmSpace _vmm_space;
+    VmmSpace* _vmm_space;
     static core::Result<CpuContext *> create_empty();
     static core::Result<CpuContext *> create(CpuContextLaunch launch);
 
     void use_stack_addr(uintptr_t addr);
 
     core::Result<void> prepare(CpuContextLaunch launch);
-
     void save_in(void volatile *state);
     void load_to(void volatile *state);
     void release();

@@ -59,19 +59,21 @@ core::Result<kernel::Task *> kernel::Task::task_create()
     }
 
     task->_cpu_context = try$(kernel::CpuContext::create_empty());
-    task->_cpu_context->_vmm_space = try$(VmmSpace::create(false));
 
     return task;
 }
 
-core::Result<void> kernel::Task::initialize(CpuContextLaunch params)
+core::Result<void> kernel::Task::_initialize(CpuContextLaunch params, VmmSpace *target_vspace)
 {
     auto task = this;
+
 
     task->_cpu_context->prepare(params);
 
     task->_state = kernel::TaskState::TASK_IDLE;
 
+    task->_cpu_context->_vmm_space = target_vspace;
+    
     if (params.user)
     {
         VirtRange userspace_stack = VirtRange{

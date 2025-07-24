@@ -47,7 +47,9 @@ public:
     Task() = default;
     Task(TUID uid) : _uid(uid) {};
 
-    core::Result<void> initialize(CpuContextLaunch params);
+
+    core::Result<void> _initialize(CpuContextLaunch params, VmmSpace* target_vspace);
+
 
     virtual ~Task() = default;
 
@@ -62,7 +64,7 @@ public:
 
     static core::Result<Task *> task_create();
 
-    VmmSpace &vmm_space() { return _cpu_context->_vmm_space; };
+    VmmSpace &vmm_space() { return *_cpu_context->_vmm_space; };
 
     void user_stack_addr(uintptr_t addr) { _cpu_context->use_stack_addr(addr); }
 

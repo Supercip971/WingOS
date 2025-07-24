@@ -26,6 +26,8 @@ struct AssetPtr {
 };
 
 struct Space {
+
+    size_t uid ;
     Asset* self;
     uint64_t space_handle; 
     Space* parent_space_handle; // the space that created this space

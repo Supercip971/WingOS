@@ -2,12 +2,27 @@
 #include "asset.hpp"
 
 
-Asset * _asset_create(AssetKind kind)
+Asset * _asset_create(Space* space, AssetKind kind)
 {
     Asset *asset = new Asset();
     *asset = {};
     asset->kind = kind;
-    return asset;
+ 
+    asset->lock.lock();
+
+    asset->ref_count = 1;
+
+
+    if(space != nullptr)
+    {
+        AssetPtr ptr; 
+        ptr.asset = asset;
+        ptr.handle = space->uid ++;
+    
+        space->assets.push(ptr);
+ 
+    }
+   return asset;
 }
 void asset_own(Asset *asset)
 {
@@ -26,9 +41,9 @@ void asset_release(Asset *asset)
     asset->lock.release();
 }
 
-Asset *asset_create_memory(AssetMemoryCreateParams params)
+Asset *asset_create_memory(Space* space, AssetMemoryCreateParams params)
 {
-    Asset *asset = _asset_create(OBJECT_KIND_MEMORY);
+    Asset *asset = _asset_create(space, OBJECT_KIND_MEMORY);
     asset->memory.size = params.size;
     asset->memory.addr = params.addr;
     if (params.addr == 0)
@@ -42,12 +57,14 @@ Asset *asset_create_memory(AssetMemoryCreateParams params)
             asset->memory.addr = Pmm::the().allocate(params.size).unwrap();
         }
     }
+
+    asset->lock.release();
     return asset;
 }
 
-Asset *asset_create_mapping(AssetMappingCreateParams params, VmmSpace *space)
+Asset *asset_create_mapping(Space* space, AssetMappingCreateParams params)
 {
-    Asset *asset = _asset_create(OBJECT_KIND_MAPPING);
+    Asset *asset = _asset_create(space, OBJECT_KIND_MAPPING);
 
     if (params.start >= params.end)
     {
@@ -55,9 +72,16 @@ Asset *asset_create_mapping(AssetMappingCreateParams params, VmmSpace *space)
         return nullptr;
     }
 
+    if(params.physical_mem->kind != OBJECT_KIND_MEMORY)
+    {
+        log::err$("asset_create_mapping: physical_mem must be a memory asset");
+        return nullptr;
+    }
+
     if (params.start >= kernel_virtual_base())
     {
         log::err$("asset_create_mapping: start must be less than kernel virtual base");
+
         return nullptr;
     }
     asset->mapping.start = params.start;
@@ -77,20 +101,22 @@ Asset *asset_create_mapping(AssetMappingCreateParams params, VmmSpace *space)
                     .present(true)
                     .writeable(asset->mapping.writable);
 
-    if (!space->map({asset->mapping.start, asset->mapping.end},
-                    {asset->mapping.physical_mem->memory.addr, asset->mapping.physical_mem->memory.size},
+    if (!space->vmm_space.map({asset->mapping.start, asset->mapping.end},
+                    {asset->mapping.physical_mem->memory.addr, asset->mapping.physical_mem->memory.size + asset->mapping.physical_mem->memory.addr},
                    flags ))
     {
         log::err$("asset_create_mapping: failed to map memory");
         return nullptr;
     }
 
+    asset->lock.release();
+
     return asset;
 }
 
-Asset* asset_create_task(VmmSpace* vspace, AssetTaskCreateParams params)
+Asset* asset_create_task(Space* space, AssetTaskCreateParams params)
 {
-    Asset *asset = _asset_create(OBJECT_KIND_TASK);
+    Asset *asset = _asset_create(space, OBJECT_KIND_TASK);
     asset->task = kernel::Task::task_create().unwrap();
     if (asset->task == nullptr)
     {
@@ -98,7 +124,7 @@ Asset* asset_create_task(VmmSpace* vspace, AssetTaskCreateParams params)
         return nullptr;
     }
 
-    if (!asset->task->_initialize(params.launch, vspace))
+    if (!asset->task->_initialize(params.launch, &space->vmm_space))
     {
         log::err$("unable to initialize task asset");
         return nullptr;

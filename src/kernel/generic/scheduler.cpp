@@ -5,6 +5,7 @@
 
 #include "kernel/generic/context.hpp"
 #include "kernel/generic/cpu.hpp"
+#include "kernel/generic/paging.hpp"
 #include "kernel/generic/task.hpp"
 #include "libcore/atomic.hpp"
 #include "libcore/ds/array.hpp"
@@ -57,7 +58,7 @@ core::Result<void> scheduler_init_idle_task()
         launch.entry = (void *)idle;
         launch.user = false;
 
-        t->initialize(launch);
+        t->_initialize(launch, &VmmSpace::kernel_page_table()).assert();
         scheduler_idles.push(t);
         auto sched_entity = SchedulerEntity(t, 0);
         sched_entity.is_idle = true;

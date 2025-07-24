@@ -5,8 +5,10 @@
 
 #include "hw/mem/addr_space.hpp"
 
+#include "kernel/generic/asset.hpp"
 #include "kernel/generic/pmm.hpp"
 #include "kernel/generic/scheduler.hpp"
+#include "kernel/generic/space.hpp"
 #include "kernel/generic/task.hpp"
 #include "libcore/alloc/alloc.hpp"
 #include "libcore/enum-op.hpp"
@@ -18,12 +20,21 @@
 core::Result<void> start_module_execution(elf::ElfLoader loaded)
 {
 
-    kernel::Task *task = kernel::Task::task_create().unwrap();
+    Asset* asset = space_create(nullptr, 0, 0);
 
-    try$(task->initialize({
-        .entry = (void *)loaded.entry_point(),
-        .user = true,
-    }));
+    Space* root_space = asset->space;
+
+
+
+    auto task_asset = asset_create_task(root_space, {
+        .launch = {
+            .entry = (void *)loaded.entry_point(),
+            .user = true,
+        },
+    });
+
+    auto task = task_asset->task;
+
 
     for (size_t i = 0; i < loaded.program_count(); i++)
     {
@@ -35,12 +46,7 @@ core::Result<void> start_module_execution(elf::ElfLoader loaded)
         }
         log::log$("section[{}]: type: {}, flags: {}, virt_addr: {}, file_offset: {}, file_size: {}",
                   i, ph.type, ph.flags, ph.virt_addr, ph.file_offset, ph.file_size);
-
-        auto flags = PageFlags()
-                         .present(true)
-                         .writeable(true)
-                         .executable(true)
-                         .user(true);
+        
 
         size_t page_count = math::alignUp(ph.mem_size, 4096ul) / 4096;
         size_t mem_size = page_count * 4096;
@@ -49,27 +55,32 @@ core::Result<void> start_module_execution(elf::ElfLoader loaded)
             log::warn$("skipping program header {}: page count is 0", i);
             continue;
         }
+        auto mem_asset = asset_create_memory(root_space, {
+            .size = mem_size,
+        });
 
-        PhysAddr copied_data_paddr = try$(Pmm::the().allocate(page_count));
-        void *copied_data = (void *)toVirt(copied_data_paddr);
+        if (mem_asset == nullptr)
+        {
+            log::err$("unable to create memory asset for program header {}", i);
+            return "unable to create memory asset";
+        }
+
+        auto mem = mem_asset->memory;
+
+        void *copied_data = (void *)toVirt(mem.addr);
 
         memset(copied_data, 0, ph.mem_size);
         memcpy(copied_data,
                (void *)((uintptr_t)loaded.range().start() + ph.file_offset),
                ph.file_size);
 
-        auto virt_range = VirtRange{ph.virt_addr, ph.virt_addr + mem_size};
-        auto phys_range = PhysRange{
-            copied_data_paddr,
-            copied_data_paddr + mem_size,
-        };
-        
-        auto res = task->vmm_space().map(virt_range, phys_range, flags);
-        if (res.is_error())
-        {
-            log::err$("unable to map program header {}: {}", i, res.error());
-            return res;
-        }
+        asset_create_mapping(root_space, (AssetMappingCreateParams){
+            .start = ph.virt_addr,
+            .end = ph.virt_addr + mem_size,
+            .physical_mem = mem_asset,
+            .writable = true,
+            .executable = true,
+        });
     }
 
     log::log$("module loaded: task uid: {}", task->uid());

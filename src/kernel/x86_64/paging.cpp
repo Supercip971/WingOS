@@ -95,3 +95,11 @@ core::Result<VmmSpace> VmmSpace::create(bool empty)
 
     return result;
 }
+
+
+core::Result<void> VmmSpace::verify(VirtAddr virt, size_t size)
+{
+    auto root = as_root(*this);
+    
+    return root->verify(virt, size);
+}

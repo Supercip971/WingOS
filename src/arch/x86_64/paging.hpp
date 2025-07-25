@@ -2,6 +2,10 @@
 
 #include <kernel/generic/pmm.hpp>
 
+#include "hw/mem/addr_space.hpp"
+
+#include "math/align.hpp"
+
 namespace arch::amd64
 {
 struct [[gnu::packed]] Page
@@ -66,6 +70,11 @@ public:
     static constexpr unsigned int index(VirtAddr addr)
     {
         return ((uint64_t)addr._addr & ((uint64_t)0x1ff << (12 + (level - 1) * 9))) >> (12 + (level - 1) * 9);
+    }
+
+    static constexpr unsigned int page_size()
+    {
+        return PAGE_SIZE << (level - 1);
     }
 
     Page &page(size_t index)
@@ -133,6 +142,45 @@ public:
                 entry.address(addr);
             }
             return table_from_addr(vaddr)->map(vaddr, page);
+        }
+
+        return {};
+    }
+
+    core::Result<void> _verify(VirtAddr addr)
+    {
+
+        auto &page = page_from_addr(addr);
+        if (!page.present())
+        {
+            return "Page not present";
+        }
+
+        if (!page.user())
+        {
+            return "Page not user accessible";
+        }
+
+        if (!page.writeable())
+        {
+            return "Page is not writable";
+        }
+
+        if constexpr (level == 1)
+        {
+            return {};
+        }
+        return _verify(VirtAddr(addr._addr + PAGE_SIZE));
+    }
+
+    core::Result<void> verify(VirtAddr vaddr, size_t size)
+    {
+        auto begin = math::alignDown(vaddr._addr, (size_t)PAGE_SIZE);
+        auto end = math::alignUp(begin + size, (size_t)PAGE_SIZE);
+        for (size_t i = begin; i < end; i += PAGE_SIZE)
+        {
+            auto addr = VirtAddr(i);
+            try$(_verify(addr));
         }
 
         return {};

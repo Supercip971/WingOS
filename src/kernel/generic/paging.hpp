@@ -84,6 +84,8 @@ public:
 
     core::Result<PhysAddr> get_phys(VirtAddr virt);
 
+    core::Result<void> verify(VirtAddr virt, size_t size);
+
     // empty: means that the higher half won't be copied from the kernel
     // this is used for the kernel page table
 

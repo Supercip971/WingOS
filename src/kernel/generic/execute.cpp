@@ -20,21 +20,25 @@
 core::Result<void> start_module_execution(elf::ElfLoader loaded)
 {
 
-    Asset* asset = space_create(nullptr, 0, 0);
+    Asset *asset = try$(space_create(nullptr, 0, 0));
 
-    Space* root_space = asset->space;
+    Space *root_space = asset->space;
 
+    auto task_asset_res = asset_create_task(root_space, {
+                                                            .launch = {
+                                                                .entry = (void *)loaded.entry_point(),
+                                                                .user = true,
+                                                            },
+                                                        });
 
+    if (task_asset_res.is_error())
+    {
+        log::err$("unable to create task asset: {}", task_asset_res.error());
+        asset_release(nullptr, asset);
+        return task_asset_res.error();
+    }
 
-    auto task_asset = asset_create_task(root_space, {
-        .launch = {
-            .entry = (void *)loaded.entry_point(),
-            .user = true,
-        },
-    });
-
-    auto task = task_asset->task;
-
+    auto task = task_asset_res.unwrap()->task;
 
     for (size_t i = 0; i < loaded.program_count(); i++)
     {
@@ -46,7 +50,6 @@ core::Result<void> start_module_execution(elf::ElfLoader loaded)
         }
         log::log$("section[{}]: type: {}, flags: {}, virt_addr: {}, file_offset: {}, file_size: {}",
                   i, ph.type, ph.flags, ph.virt_addr, ph.file_offset, ph.file_size);
-        
 
         size_t page_count = math::alignUp(ph.mem_size, 4096ul) / 4096;
         size_t mem_size = page_count * 4096;
@@ -55,16 +58,19 @@ core::Result<void> start_module_execution(elf::ElfLoader loaded)
             log::warn$("skipping program header {}: page count is 0", i);
             continue;
         }
-        auto mem_asset = asset_create_memory(root_space, {
-            .size = mem_size,
-        });
+        auto mem_asset_res = asset_create_memory(root_space, {
+                                                                 .size = mem_size,
+                                                             });
 
-        if (mem_asset == nullptr)
+        if (mem_asset_res.is_error())
         {
-            log::err$("unable to create memory asset for program header {}", i);
-            return "unable to create memory asset";
+            log::err$("unable to create memory asset for program header {}: {}", i, mem_asset_res.error());
+            asset_release(nullptr, asset);
+
+            return mem_asset_res.error();
         }
 
+        auto mem_asset = mem_asset_res.unwrap();
         auto mem = mem_asset->memory;
 
         void *copied_data = (void *)toVirt(mem.addr);
@@ -74,21 +80,24 @@ core::Result<void> start_module_execution(elf::ElfLoader loaded)
                (void *)((uintptr_t)loaded.range().start() + ph.file_offset),
                ph.file_size);
 
-        asset_create_mapping(root_space, (AssetMappingCreateParams){
-            .start = ph.virt_addr,
-            .end = ph.virt_addr + mem_size,
-            .physical_mem = mem_asset,
-            .writable = true,
-            .executable = true,
-        });
+        if (asset_create_mapping(root_space, (AssetMappingCreateParams){
+                                                 .start = ph.virt_addr,
+                                                 .end = ph.virt_addr + mem_size,
+                                                 .physical_mem = mem_asset,
+                                                 .writable = true,
+                                                 .executable = true,
+                                             })
+                .is_error())
+        {
+            log::err$("unable to create mapping for program header {}: {}", i, mem_asset_res.error());
+            asset_release(nullptr, asset);
+            return mem_asset_res.error();
+        }
     }
 
     log::log$("module loaded: task uid: {}", task->uid());
 
     try$(kernel::task_run(task->uid()));
-
-
-    
 
     return {};
 }

@@ -64,4 +64,4 @@ struct Asset {
 };
 
 
-Asset * space_create(Space* parent, uint64_t flags, uint64_t rights);
+core::Result<Asset *> space_create(Space* parent, uint64_t flags, uint64_t rights);

@@ -1,6 +1,7 @@
 #include "space.hpp"
 #include "kernel/generic/asset.hpp"
 #include "libcore/ds/vec.hpp"
+#include "libcore/result.hpp"
 
 
 size_t _space_handle; 
@@ -13,10 +14,10 @@ struct SpacePtr {
 
 core::Vec<SpacePtr> _spaces;
 
-Asset * space_create(Space* parent, [[maybe_unused]] uint64_t flags, [[maybe_unused]] uint64_t rights)
+core::Result<Asset *> space_create(Space* parent, [[maybe_unused]] uint64_t flags, [[maybe_unused]] uint64_t rights)
 {
     
-    Asset *asset = _asset_create(parent, OBJECT_KIND_SPACE);
+    Asset *asset = try$(_asset_create(parent, OBJECT_KIND_SPACE));
     
     Space* space = new Space();
 
@@ -31,9 +32,10 @@ Asset * space_create(Space* parent, [[maybe_unused]] uint64_t flags, [[maybe_unu
     if (vspace.is_error())
     {
         log::err$("space_create: failed to create vmm space: {}", vspace.error());
-        delete space;
-        delete asset;
-        return nullptr;
+        asset->lock.release();
+        asset_release(parent, asset);
+        delete space; 
+        return vspace.error();
     }
 
     space->vmm_space = vspace.unwrap();
@@ -47,7 +49,6 @@ Asset * space_create(Space* parent, [[maybe_unused]] uint64_t flags, [[maybe_unu
     space->assets.push({.asset = asset, .handle = 0});
 
     asset->lock.release();
-
 
     return asset;
 }

@@ -9,7 +9,7 @@
 #include "mcx/mcx.hpp"
 #include "space.hpp"
 
-core::Result<Asset *>_asset_create(Space* space, AssetKind kind);
+core::Result<AssetPtr>_asset_create(Space* space, AssetKind kind);
 
 struct AssetMemoryCreateParams
 {
@@ -18,7 +18,7 @@ struct AssetMemoryCreateParams
     bool lower_half; // if true, the memory will be allocated in priority under the 4GB limit, otherwise it will be allocated in the upper half
 };
 
-core::Result<Asset *>asset_create_memory(Space* space, AssetMemoryCreateParams params);
+core::Result<AssetPtr>asset_create_memory(Space* space, AssetMemoryCreateParams params);
 
 
 struct AssetMappingCreateParams
@@ -31,14 +31,14 @@ struct AssetMappingCreateParams
     bool executable;
 };
 
-core::Result<Asset *>asset_create_mapping(Space* space, AssetMappingCreateParams params);
+core::Result<AssetPtr>asset_create_mapping(Space* space, AssetMappingCreateParams params);
 
 struct AssetTaskCreateParams
 {
     kernel::CpuContextLaunch launch;
 };
 
-core::Result<Asset*> asset_create_task(Space* vspace, AssetTaskCreateParams params);
+core::Result<AssetPtr> asset_create_task(Space* vspace, AssetTaskCreateParams params);
 
 
 void asset_own(Asset *asset);

@@ -6,23 +6,16 @@
 #include "libcore/ds/vec.hpp"
 #include "libcore/lock/lock.hpp"
 
-
-
-typedef enum {
-    OBJECT_KIND_UNKNOWN = 0,
-    OBJECT_KIND_MEMORY, // memory object, used for memory management
-    OBJECT_KIND_MAPPING, // mapping object, used for memory mapping
-    OBJECT_KIND_IPC, // IPC object, used for inter process communication
-    OBJECT_KIND_SPACE,
-    OBJECT_KIND_TASK,
-} AssetKind;
-
+#include <wingos-headers/asset.h>
 
 struct Asset;
 
 struct AssetPtr {
     Asset *asset;
     uint64_t handle; // the handle of the asset in the space
+    bool write;
+    bool read; 
+    bool share;
 };
 
 struct Space {

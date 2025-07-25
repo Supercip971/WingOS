@@ -8,6 +8,7 @@
 #include "libcore/lock/lock.hpp"
 #include "libcore/result.hpp"
 
+struct Space;
 namespace kernel
 {
 using TUID = uint64_t;
@@ -41,6 +42,14 @@ class Task
     CpuContext *_cpu_context;
 
 public:
+
+    Space * _space_owner;
+
+    Space * space()
+    {
+        return _space_owner;
+    }
+    
     TaskState state() const { return _state; }
     void state(TaskState state) { _state = state; }
 

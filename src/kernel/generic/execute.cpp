@@ -38,7 +38,9 @@ core::Result<void> start_module_execution(elf::ElfLoader loaded)
         return task_asset_res.error();
     }
 
-    auto task = task_asset_res.unwrap()->task;
+    auto task_asset_ptr = task_asset_res.unwrap();
+    auto task_asset = task_asset_ptr.asset;
+    auto task = task_asset->task;
 
     for (size_t i = 0; i < loaded.program_count(); i++)
     {
@@ -70,7 +72,8 @@ core::Result<void> start_module_execution(elf::ElfLoader loaded)
             return mem_asset_res.error();
         }
 
-        auto mem_asset = mem_asset_res.unwrap();
+        auto mem_asset_ptr = mem_asset_res.unwrap();
+        auto mem_asset = mem_asset_ptr.asset;
         auto mem = mem_asset->memory;
 
         void *copied_data = (void *)toVirt(mem.addr);

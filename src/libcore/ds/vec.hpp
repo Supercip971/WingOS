@@ -164,6 +164,23 @@ public:
         return core::move(_data[0]);
     }
 
+    T&& pop(size_t id)
+    {
+        if (id >= _count)
+        {
+            log::err$("error: pop on empty vec or out of range {}", id);
+            return core::move(_data[0]);
+        }
+
+        T &&value = core::move(_data[id]);
+        for (size_t i = id; i < _count - 1; i++)
+        {
+            _data[i] = core::move(_data[i + 1]);
+        }
+        _count--;
+        return value;
+    }
+
     ~Vec()
     {
         release();

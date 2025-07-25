@@ -77,9 +77,6 @@ void kernel_entry(const mcx::MachineContext *context)
     kernel::scheduler_init(Cpu::count()).assert();
 
 
-
-    
-
   //  kernel::task_run(task1->uid()).assert();
   //  kernel::task_run(task2->uid()).assert();
   //  kernel::task_run(task3->uid()).assert();
@@ -91,7 +88,7 @@ void kernel_entry(const mcx::MachineContext *context)
         auto mod = context->_modules[i];
 
 
-        if(!core::Str(mod.path).start_with("/bin/"))
+        if(!core::Str(mod.path).start_with("/bin/init"))
         {
             log::log$("skipping module {}: {}", i, mod.path);
             continue;

@@ -1,6 +1,6 @@
 {
     "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
-    "id": "wingos-hello-world",
+    "id": "init-wingos",
     "type": "exe",
     "description": "WingOS App",
     

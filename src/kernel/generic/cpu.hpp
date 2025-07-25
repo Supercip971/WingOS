@@ -2,6 +2,7 @@
 #pragma once
 
 // generally used by implementation
+#include "kernel/generic/space.hpp"
 #include "kernel/generic/task.hpp"
 
 using CoreId = int;

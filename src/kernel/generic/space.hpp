@@ -54,7 +54,20 @@ struct Asset {
 
         kernel::Task* task;
     };
+
+
+    static core::Result<Asset*> by_handle(Space* space, uint64_t handle)
+    {
+        for (size_t i = 0; i < space->assets.len(); i++)
+        {
+            if (space->assets[i].handle == handle)
+            {
+                return space->assets[i].asset;
+            }
+        }
+        return core::Result<Asset*>::error("asset not found");
+    }
 };
 
 
-core::Result<Asset *> space_create(Space* parent, uint64_t flags, uint64_t rights);
+core::Result<AssetPtr> space_create(Space* parent, uint64_t flags, uint64_t rights);

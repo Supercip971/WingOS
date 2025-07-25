@@ -198,6 +198,8 @@ core::Result<AssetPtr> asset_create_task(Space *space, AssetTaskCreateParams par
 {
     AssetPtr ptr = try$(_asset_create(space, OBJECT_KIND_TASK));
     ptr.asset->task = kernel::Task::task_create().unwrap();
+
+
     ptr.asset->task->_space_owner = space;
     if (ptr.asset->task == nullptr)
     {

@@ -20,8 +20,8 @@
 core::Result<void> start_module_execution(elf::ElfLoader loaded)
 {
 
-    Asset *asset = try$(space_create(nullptr, 0, 0));
-
+    AssetPtr ptr = try$(space_create(nullptr, 0, 0));
+    Asset *asset = ptr.asset;
     Space *root_space = asset->space;
 
     auto task_asset_res = asset_create_task(root_space, {

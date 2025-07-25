@@ -14,11 +14,11 @@ struct SpacePtr {
 
 core::Vec<SpacePtr> _spaces;
 
-core::Result<Asset *> space_create(Space* parent, [[maybe_unused]] uint64_t flags, [[maybe_unused]] uint64_t rights)
+core::Result<AssetPtr> space_create(Space* parent, [[maybe_unused]] uint64_t flags, [[maybe_unused]] uint64_t rights)
 {
     
-    Asset *asset = try$(_asset_create(parent, OBJECT_KIND_SPACE));
-    
+    AssetPtr ptr = try$(_asset_create(parent, OBJECT_KIND_SPACE));
+    Asset * asset = ptr.asset;
     Space* space = new Space();
 
     *space = {};
@@ -50,5 +50,5 @@ core::Result<Asset *> space_create(Space* parent, [[maybe_unused]] uint64_t flag
 
     asset->lock.release();
 
-    return asset;
+    return ptr;
 }

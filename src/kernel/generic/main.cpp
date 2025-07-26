@@ -104,7 +104,7 @@ void kernel_entry(const mcx::MachineContext *context)
 
         log::log$("module {} loaded: {}", i, mod.path);
 
-        start_module_execution(loader.unwrap());
+        start_module_execution(loader.unwrap(), context);
     }
 
 

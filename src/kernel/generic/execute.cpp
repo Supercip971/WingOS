@@ -16,20 +16,59 @@
 #include "libcore/type/trait.hpp"
 #include "libelf/elf.hpp"
 #include "math/align.hpp"
+#include "mcx/mcx.hpp"
 
-core::Result<void> start_module_execution(elf::ElfLoader loaded)
+core::Result<void> start_module_execution(elf::ElfLoader loaded, mcx::MachineContext const*context)
 {
 
     AssetPtr ptr = try$(space_create(nullptr, 0, 0));
     Asset *asset = ptr.asset;
     Space *root_space = asset->space;
+    void *context_mapped = nullptr;
+    // copy machine context to task
+    if (context)
+    {
+        auto mem_asset_res = asset_create_memory(root_space, {
+                                                                 .size = math::alignUp(sizeof(mcx::MachineContext), 4096ul),
+                                                             });
+        if (mem_asset_res.is_error())
+        {
+            log::err$("unable to create memory asset for machine context: {}", mem_asset_res.error());
+            asset_release(nullptr, asset);
+            return mem_asset_res.error();
+        }
 
-    auto task_asset_res = asset_create_task(root_space, {
-                                                            .launch = {
-                                                                .entry = (void *)loaded.entry_point(),
-                                                                .user = true,
-                                                            },
-                                                        });
+        auto mem_asset_ptr = mem_asset_res.unwrap();
+        auto mem_asset = mem_asset_ptr.asset;
+        auto mem = mem_asset->memory;
+        void *copied_data = (void *)toVirt(mem.addr);
+        memcpy(copied_data, context, sizeof(mcx::MachineContext));
+        if (asset_create_mapping(root_space, (AssetMappingCreateParams){
+                                                 .start = mem.addr,
+                                                 .end = math::alignUp(mem.addr + sizeof(mcx::MachineContext), 4096ul),
+                                                 .physical_mem = mem_asset,
+                                                 .writable = true,
+                                             })
+                .is_error())
+        {
+            log::err$("unable to create mapping for machine context: {}", mem_asset_res.error());
+            asset_release(nullptr, asset);
+            return mem_asset_res.error();
+        }
+        context_mapped = (void *)mem.addr;
+    }
+
+    auto task_asset_res = asset_create_task(root_space,
+                                            {
+                                                .launch = {
+                                                    .entry = (void *)loaded.entry_point(),
+                                                    .args = {
+                                                        (uintptr_t)context_mapped},
+                                                    .user = true,
+
+                                                },
+                                            });
+        
 
     if (task_asset_res.is_error())
     {

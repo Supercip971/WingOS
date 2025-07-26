@@ -61,8 +61,11 @@ static void load_mcx_modules(mcx::MachineContext *context)
     {
 
         context->_modules[i].range = mcx::MemoryRange::from_begin_len((uintptr_t)modules[i]->address, modules[i]->size);
-        context->_modules[i].name = modules[i]->path;
-        context->_modules[i].path = modules[i]->path;
+        for(size_t j = 0; j < 128 && modules[i]->path[j] != '\0'; j++)
+        {
+            context->_modules[i].path[j] = modules[i]->path[j];
+        }
+    
     }
     context->_modules_count = modules_size;
 }

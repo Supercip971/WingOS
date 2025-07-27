@@ -3,6 +3,11 @@
 // allocate linux pages
 
 #include <stdint.h>
+#include "arch/x86_64/paging.hpp"
+#include "arch/generic/syscalls.h"
+#include "iol/wingos/syscalls.h"
+#include "libcore/fmt/log.hpp"
+#include "wingos-headers/asset.h"
 
 
 
@@ -32,9 +37,19 @@ extern "C" int liballoc_unlock()
  */
 extern "C" void *liballoc_alloc(size_t l)
 {
-    (void)l;
-    // unimplemented for now
-    return nullptr;
+
+    log::log$("1");
+
+    auto owned = sys$mem_own(SPACE_SELF, l * arch::amd64::PAGE_SIZE, 0);
+
+    log::log$("2");
+
+
+    
+    auto addr = owned.addr +  0x0000002000000000;
+    auto end = owned.addr + l * arch::amd64::PAGE_SIZE + 0x0000002000000000;
+    auto mapped = sys$map_create(SPACE_SELF, addr, end, owned.returned_handle, ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);
+    return mapped.start == 0 ? nullptr : (void *)mapped.start;
 }
 
 /** This frees previously allocated memory. The void* parameter passed
@@ -47,7 +62,7 @@ extern "C" void *liballoc_alloc(size_t l)
  */
 extern "C" int liballoc_free(void *ptr, size_t l)
 {
-    (void)ptr;
     (void)l;
-    return 1;
+    sys$asset_release_mem(ptr);
+    return 0;
 }

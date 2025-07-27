@@ -194,11 +194,15 @@ public:
             return "Page is not writable";
         }
 
-        if constexpr (level == 1)
+        if constexpr (level <= 1)
         {
-            return {};
+            return core::Result<void>();
         }
-        return _verify(VirtAddr(addr._addr + PAGE_SIZE));
+        else
+        {
+
+            return table_from_addr(addr)->_verify(addr);
+        }
     }
 
     core::Result<void> verify(VirtAddr vaddr, size_t size)

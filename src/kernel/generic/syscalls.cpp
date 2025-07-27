@@ -5,6 +5,7 @@
 #include "kernel/generic/asset.hpp"
 #include "kernel/generic/context.hpp"
 #include "kernel/generic/cpu.hpp"
+#include "kernel/generic/scheduler.hpp"
 #include "kernel/generic/task.hpp"
 #include "libcore/fmt/log.hpp"
 #include "wingos-headers/asset.h"
@@ -35,7 +36,10 @@ core::Result<uintptr_t> ksyscall_mem_own(SyscallMemOwn *mem_own)
 
     if (mem_own->target_space_handle != 0)
     {
-        space = try$(Space::space_by_handle(mem_own->target_space_handle));
+        space = try$(Space::space_by_handle(
+            Cpu::current()->currentTask()->space(),
+
+            mem_own->target_space_handle));
     }
     else
     {
@@ -68,7 +72,10 @@ core::Result<uintptr_t> ksyscall_map(SyscallMap *map)
     bool need_invalidate = false;
     if (map->target_space_handle != 0)
     {
-        space = try$(Space::space_by_handle(map->target_space_handle));
+        space = try$(Space::space_by_handle(
+            Cpu::current()->currentTask()->space(),
+
+            map->target_space_handle));
     }
     else
     {
@@ -97,6 +104,8 @@ core::Result<uintptr_t> ksyscall_map(SyscallMap *map)
         }
     }
 
+    map->returned_handle = asset.handle;
+
     return core::Result<size_t>::success((uint64_t)asset.handle);
 }
 
@@ -105,7 +114,10 @@ core::Result<size_t> ksyscall_task_create(SyscallTaskCreate *task_create)
     Space *space = nullptr;
     if (task_create->target_space_handle != 0)
     {
-        space = try$(Space::space_by_handle(task_create->target_space_handle));
+        space = try$(Space::space_by_handle(
+            Cpu::current()->currentTask()->space(),
+
+            task_create->target_space_handle));
     }
     else
     {
@@ -124,6 +136,7 @@ core::Result<size_t> ksyscall_task_create(SyscallTaskCreate *task_create)
                                                    },
                                                }));
 
+    task_create->returned_handle = asset.handle;
     return core::Result<size_t>::success((uint64_t)asset.handle);
 }
 
@@ -132,7 +145,10 @@ core::Result<size_t> ksyscall_space_create(SyscallSpaceCreate *args)
     Space *space = nullptr;
     if (args->parent_space_handle != 0)
     {
-        space = try$(Space::space_by_handle(args->parent_space_handle));
+        space = try$(Space::space_by_handle(
+            Cpu::current()->currentTask()->space(),
+
+            args->parent_space_handle));
     }
     else
     {
@@ -146,6 +162,7 @@ core::Result<size_t> ksyscall_space_create(SyscallSpaceCreate *args)
 
     auto asset = try$(space_create(space, args->flags, args->rights));
 
+    args->returned_handle = asset.handle;
     return core::Result<size_t>::success((uint64_t)asset.handle);
 }
 core::Result<size_t> ksyscall_mem_release(SyscallAssetRelease *release)
@@ -156,6 +173,7 @@ core::Result<size_t> ksyscall_mem_release(SyscallAssetRelease *release)
     {
         return core::Result<size_t>::error("no current space");
     }
+
     Asset *phys_mem = nullptr;
     Asset *virt_mem = nullptr;
     for (size_t i = 0; i < space->assets.len(); i++)
@@ -199,7 +217,10 @@ core::Result<size_t> ksyscall_asset_release(SyscallAssetRelease *release)
     Space *space = nullptr;
     if (release->space_handle != 0)
     {
-        space = try$(Space::space_by_handle(release->space_handle));
+        space = try$(Space::space_by_handle(
+            Cpu::current()->currentTask()->space(),
+
+            release->space_handle));
     }
     else
     {

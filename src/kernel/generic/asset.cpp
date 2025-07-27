@@ -63,8 +63,9 @@ void asset_release(Space *space, Asset *asset)
     {
         if (asset->kind == OBJECT_KIND_MEMORY)
         {
-
-            Pmm::the().release(PhysAddr{asset->memory.addr}, asset->memory.size);
+            if(asset->memory.allocated){
+                Pmm::the().release(PhysAddr{asset->memory.addr}, asset->memory.size);
+            }
         }
         else if (asset->kind == OBJECT_KIND_MAPPING)
         {
@@ -125,10 +126,12 @@ core::Result<AssetPtr> asset_create_memory(Space *space, AssetMemoryCreateParams
         {
             res = Pmm::the().allocate(math::alignUp<size_t>(params.size, arch::amd64::PAGE_SIZE) / arch::amd64::PAGE_SIZE);
         }
+
+            ptr.asset->memory.addr = res.unwrap()._addr;
     }
     else
     {
-        return core::Result<AssetPtr>::error("addr must be 0 to allocate memory, non 0 not supported yet");
+        // 
     }
 
     if (res.is_error())
@@ -140,7 +143,6 @@ core::Result<AssetPtr> asset_create_memory(Space *space, AssetMemoryCreateParams
         return core::Result<AssetPtr>::error("unable to allocate memory");
     }
 
-    ptr.asset->memory.addr = res.unwrap()._addr;
 
     ptr.asset->lock.release();
     return ptr;

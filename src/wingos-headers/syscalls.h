@@ -73,6 +73,7 @@ typedef struct SyscallMap
     size_t end;
     uint64_t physical_mem_handle; // the handle of the physical memory asset
     uint64_t flags;
+    uint64_t returned_handle; // the handle of the created mapping
 } SyscallMap;
 
 static inline SyscallInterface syscall_map_encode(SyscallMap* create)
@@ -96,6 +97,7 @@ typedef struct SyscallTaskCreate
     uint64_t launch; // the launch parameters for the task
     
     uint64_t args[4]; // the arguments for the task, can be used to pass data to the task
+    uint64_t returned_handle;
 } SyscallTaskCreate;
 
 static inline SyscallInterface syscall_task_create_encode(SyscallTaskCreate* create)
@@ -117,6 +119,7 @@ typedef struct SyscallSpaceCreate
     uint64_t parent_space_handle; // the handle of the parent space
     uint64_t flags; // flags for the space creation
     uint64_t rights; // rights for the space creation
+    uint64_t returned_handle; // the handle of the created space
 } SyscallSpaceCreate;
 
 static inline SyscallInterface syscall_space_create_encode(SyscallSpaceCreate* create)
@@ -151,6 +154,30 @@ static inline SyscallAssetRelease syscall_asset_release_decode(SyscallInterface 
     SyscallAssetRelease *release = (SyscallAssetRelease *)interface.arg1;
     return *release;
 }
+
+
+// ------- SYSCALL TASK LAUNCH ----
+
+#define SYSCALL_TASK_LAUNCH_ID 0x00000006
+
+typedef struct SyscallTaskLaunch
+{
+    uint64_t target_space_handle; // the handle of the space to launch the task in
+    uint64_t task_handle; // the handle of the task to launch
+    uint64_t args[4]; // the arguments for the task, can be used to pass data to the task
+} SyscallTaskLaunch;
+
+static inline SyscallInterface syscall_task_launch_encode(SyscallTaskLaunch* launch)
+{
+    return SyscallInterface{SYSCALL_TASK_LAUNCH_ID, 0, (uintptr_t)launch, 0, 0, 0, 0, 0};
+}
+
+static inline SyscallTaskLaunch syscall_task_launch_decode(SyscallInterface interface)
+{
+    SyscallTaskLaunch *launch = (SyscallTaskLaunch *)interface.arg1;
+    return *launch;
+}
+
 
 
 #ifdef __cplusplus

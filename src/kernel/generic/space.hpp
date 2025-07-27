@@ -30,7 +30,8 @@ struct Space
 
     core::Vec<AssetPtr> assets;
 
-    static core::Result<Space *> space_by_handle(uint64_t handle);
+    static core::Result<Space *> space_by_handle(Space* parent, uint64_t handle);
+    static core::Result<Space *> global_space_by_handle(uint64_t handle);
 };
 
 struct Asset
@@ -45,6 +46,7 @@ struct Asset
         {
             size_t size;
             size_t addr;
+            bool allocated;
         } memory;
 
         struct

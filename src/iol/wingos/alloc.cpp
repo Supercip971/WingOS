@@ -1,7 +1,11 @@
 #include <liballoc/liballoc.h>
 
 // allocate linux pages
-#include <sys/mman.h>
+
+#include <stdint.h>
+
+
+
 
 extern "C" int liballoc_lock()
 {

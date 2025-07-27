@@ -94,6 +94,7 @@ typedef struct SyscallTaskCreate
     uint64_t target_space_handle;
     uint64_t launch; // the launch parameters for the task
     
+    uint64_t args[4]; // the arguments for the task, can be used to pass data to the task
 } SyscallTaskCreate;
 
 static inline SyscallInterface syscall_task_create_encode(SyscallTaskCreate create)
@@ -136,6 +137,7 @@ typedef struct SyscallAssetRelease
 {
     uint64_t space_handle; // the handle of the space, if null, the asset will be released from the kernel
     uint64_t asset_handle; // the handle of the asset to release
+    void* addr; // the address of the asset if it is memory 
 } SyscallAssetRelease;
 
 static inline SyscallInterface syscall_asset_release_encode(SyscallAssetRelease release)

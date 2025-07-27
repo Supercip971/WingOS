@@ -1,4 +1,5 @@
 #include "syscalls.hpp"
+#include "arch/x86_64/paging.hpp"
 
 #include "kernel/generic/asset.hpp"
 #include "kernel/generic/context.hpp"
@@ -30,6 +31,8 @@ core::Result<T *> syscall_check_ptr(uintptr_t ptr)
 core::Result<uintptr_t> ksyscall_mem_own(SyscallMemOwn *mem_own)
 {
     Space *space = nullptr;
+
+
     if (mem_own->target_space_handle != 0)
     {
         space = try$(Space::space_by_handle(mem_own->target_space_handle));
@@ -39,6 +42,7 @@ core::Result<uintptr_t> ksyscall_mem_own(SyscallMemOwn *mem_own)
         space = Cpu::current()->currentTask()->space();
     }
 
+
     if (space == nullptr)
     {
         return core::Result<size_t>::error("no current space");
@@ -47,10 +51,13 @@ core::Result<uintptr_t> ksyscall_mem_own(SyscallMemOwn *mem_own)
     auto asset = try$(asset_create_memory(space, {
                                                      .size = mem_own->size,
                                                      .addr = mem_own->addr,
-                                                     .lower_half = true, // TODO: implement lower half allocation
+                                                     .lower_half = false, // TODO: implement lower half allocation
                                                  }));
 
     mem_own->addr = asset.asset->memory.addr;
+
+    mem_own->returned_handle = asset.handle;
+
 
     return core::Result<size_t>::success((uint64_t)asset.handle);
 
@@ -60,6 +67,7 @@ core::Result<uintptr_t> ksyscall_mem_own(SyscallMemOwn *mem_own)
 core::Result<uintptr_t> ksyscall_map(SyscallMap *map)
 {
     Space *space = nullptr;
+    bool need_invalidate = false;
     if (map->target_space_handle != 0)
     {
         space = try$(Space::space_by_handle(map->target_space_handle));
@@ -67,6 +75,7 @@ core::Result<uintptr_t> ksyscall_map(SyscallMap *map)
     else
     {
         space = Cpu::current()->currentTask()->space();
+        need_invalidate = true;
     }
 
     if (space == nullptr)
@@ -81,6 +90,14 @@ core::Result<uintptr_t> ksyscall_map(SyscallMap *map)
                                                       .writable = (map->flags & ASSET_MAPPING_FLAG_WRITE) != 0,
                                                       .executable = (map->flags & ASSET_MAPPING_FLAG_EXECUTE) != 0,
                                                   }));
+
+    if (need_invalidate)
+    {
+        for(size_t i = map->start; i < map->end; i += arch::amd64::PAGE_SIZE)
+        {
+            VmmSpace::invalidate_address(VirtAddr(i));
+        }
+    }
 
     return core::Result<size_t>::success((uint64_t)asset.handle);
 }
@@ -133,7 +150,76 @@ core::Result<size_t> ksyscall_space_create(SyscallSpaceCreate *args)
 
     return core::Result<size_t>::success((uint64_t)asset.handle);
 }
+core::Result<size_t> ksyscall_mem_release(SyscallAssetRelease *release)
+{
 
+    auto space = Cpu::current()->currentTask()->space();
+    if (space == nullptr)
+    {
+        return core::Result<size_t>::error("no current space");
+
+    }
+    Asset* phys_mem = nullptr;
+    Asset* virt_mem = nullptr;
+    for(size_t i = 0; i < space->assets.len(); i++)
+    {
+        if(space->assets[i].asset->kind == OBJECT_KIND_MAPPING && space->assets[i].asset->mapping.start == (uintptr_t)release->addr)
+        {
+
+            virt_mem = space->assets[i].asset;
+            phys_mem = space->assets[i].asset->mapping.physical_mem;
+            break;
+        }
+    }
+    if (phys_mem == nullptr || virt_mem == nullptr)
+    {
+        return core::Result<size_t>::error("no memory mapping found for address");
+    }
+
+    if (phys_mem->kind != OBJECT_KIND_MEMORY)
+    {
+        return core::Result<size_t>::error("physical memory asset is not a memory asset");
+    }
+
+    if (virt_mem->kind != OBJECT_KIND_MAPPING)
+    {
+        return core::Result<size_t>::error("virtual memory asset is not a mapping asset");
+    }
+
+    asset_release(space, phys_mem);
+    asset_release(space, virt_mem);
+
+    return core::Result<size_t>::success(0);
+}
+core::Result<size_t> ksyscall_asset_release(SyscallAssetRelease *release)
+{
+
+    if(release->asset_handle == 0 && release->addr != nullptr)
+    {
+        return ksyscall_mem_release(release);
+    }
+
+    Space *space = nullptr;
+    if (release->space_handle != 0)
+    {
+        space = try$(Space::space_by_handle(release->space_handle));
+    }
+    else
+    {
+        space = Cpu::current()->currentTask()->space();
+    }
+
+    if (space == nullptr)
+    {
+        return core::Result<size_t>::error("no current space");
+    }
+
+    auto asset = try$(Asset::by_handle(space, release->asset_handle));
+
+    asset_release(space, asset);
+
+    return core::Result<size_t>::success(0);
+}
 core::Result<size_t> syscall_handle(SyscallInterface syscall)
 {
     switch (syscall.id)
@@ -166,6 +252,11 @@ core::Result<size_t> syscall_handle(SyscallInterface syscall)
     {
         SyscallSpaceCreate *space_create = try$(syscall_check_ptr<SyscallSpaceCreate>(syscall.arg1));
         return ksyscall_space_create(space_create);
+    }
+    case SYSCALL_ASSET_RELEASE_ID:
+    {
+        SyscallAssetRelease *asset_release = try$(syscall_check_ptr<SyscallAssetRelease>(syscall.arg1));
+        return ksyscall_asset_release(asset_release);
     }
     default:
         return {"Unknown syscall ID"};

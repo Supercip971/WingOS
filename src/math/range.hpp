@@ -61,6 +61,15 @@ public:
         return this->from_begin_len(aligned_start, aligned_len);
     }
 
+
+    constexpr Range<T> growAlign(size_t alignment) const
+    {
+        auto aligned_start = math::alignDown(_start, alignment);
+        auto aligned_end = math::alignUp(_end, alignment);
+
+        return Range<T>(aligned_start, aligned_end);
+    }
+
     constexpr Range<T> offsetted(T offset) const
     {
         return Range<T>(_start + offset, _end + offset);

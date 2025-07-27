@@ -1,7 +1,10 @@
 
 #include "asset.hpp"
 
+#include "arch/x86_64/paging.hpp"
 #include "hw/mem/addr_space.hpp"
+#include "iol/mem_flags.h"
+#include "math/align.hpp"
 
 core::Result<AssetPtr> _asset_create(Space *space, AssetKind kind)
 {
@@ -60,11 +63,16 @@ void asset_release(Space *space, Asset *asset)
         if (asset->kind == OBJECT_KIND_MEMORY)
         {
 
-            log::warn$("asset_release: memory asset is not supported yet");
+            Pmm::the().release(PhysAddr{asset->memory.addr}, asset->memory.size);
         }
         else if (asset->kind == OBJECT_KIND_MAPPING)
         {
-            log::warn$("asset_release: mapping asset is not supported yet");
+            if (space != nullptr)
+            {
+                space->vmm_space.unmap(
+                    VirtRange(asset->mapping.start,
+                    asset->mapping.end));
+            }
         }
         else if (asset->kind == OBJECT_KIND_IPC)
         {
@@ -110,11 +118,11 @@ core::Result<AssetPtr> asset_create_memory(Space *space, AssetMemoryCreateParams
     {
         if (params.lower_half)
         {
-            res = Pmm::the().allocate(params.size, IOL_ALLOC_MEMORY_FLAG_LOWER_SPACE);
+            res = Pmm::the().allocate(math::alignUp<size_t>(params.size, arch::amd64::PAGE_SIZE) / arch::amd64::PAGE_SIZE, IOL_ALLOC_MEMORY_FLAG_LOWER_SPACE);
         }
         else
         {
-            res = Pmm::the().allocate(params.size);
+            res = Pmm::the().allocate(math::alignUp<size_t>(params.size, arch::amd64::PAGE_SIZE) / arch::amd64::PAGE_SIZE);
         }
     }
     else
@@ -132,6 +140,7 @@ core::Result<AssetPtr> asset_create_memory(Space *space, AssetMemoryCreateParams
     }
 
     ptr.asset->memory.addr = res.unwrap()._addr;
+    
 
     ptr.asset->lock.release();
     return ptr;
@@ -170,22 +179,20 @@ core::Result<AssetPtr> asset_create_mapping(Space *space, AssetMappingCreatePara
     }
 
     auto flags = PageFlags()
-        .user(true)
-        .executable(ptr.asset->mapping.executable)
-        .present(true)
-        .writeable(ptr.asset->mapping.writable);
+                     .user(true)
+                     .executable(ptr.asset->mapping.executable)
+                     .present(true)
+                     .writeable(ptr.asset->mapping.writable)
+                     ;
 
     if (!space->vmm_space.map(
-        {
-            ptr.asset->mapping.start, ptr.asset->mapping.end
-        },
-                              {
-                                ptr.asset->mapping.physical_mem->memory.addr, 
-                                ptr.asset->mapping.physical_mem->memory.size +ptr. asset->mapping.physical_mem->memory.addr},
-                              flags))
+            {ptr.asset->mapping.start, ptr.asset->mapping.end},
+            {ptr.asset->mapping.physical_mem->memory.addr,
+             ptr.asset->mapping.physical_mem->memory.size + ptr.asset->mapping.physical_mem->memory.addr},
+            flags))
     {
         ptr.asset->lock.release();
-        asset_release(space,ptr. asset);
+        asset_release(space, ptr.asset);
         return core::Result<AssetPtr>::error("unable to map memory");
     }
 
@@ -198,7 +205,6 @@ core::Result<AssetPtr> asset_create_task(Space *space, AssetTaskCreateParams par
 {
     AssetPtr ptr = try$(_asset_create(space, OBJECT_KIND_TASK));
     ptr.asset->task = kernel::Task::task_create().unwrap();
-
 
     ptr.asset->task->_space_owner = space;
     if (ptr.asset->task == nullptr)

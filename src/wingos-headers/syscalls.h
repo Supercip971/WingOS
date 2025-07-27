@@ -48,11 +48,12 @@ typedef struct SyscallMemOwn
     uint64_t target_space_handle;
     size_t size;
     size_t addr; // the address of the memory, if 0, it will be allocated by the kernel, will be set to the allocated address
+    uint64_t returned_handle;
 } SyscallMemOwn;
 
-static inline SyscallInterface syscall_physical_mem_own_encode(SyscallMemOwn create)
+static inline SyscallInterface syscall_physical_mem_own_encode(SyscallMemOwn* create)
 {
-    return SyscallInterface{SYSCALL_PHYSICAL_MEM_OWN_ID, 0,(uintptr_t) &create, 0, 0, 0, 0, 0};
+    return SyscallInterface{SYSCALL_PHYSICAL_MEM_OWN_ID, 0,(uintptr_t) create, 0, 0, 0, 0, 0};
 }
 
 static inline SyscallMemOwn syscall_physical_mem_own_decode(SyscallInterface interface)
@@ -74,9 +75,9 @@ typedef struct SyscallMap
     uint64_t flags;
 } SyscallMap;
 
-static inline SyscallInterface syscall_map_encode(SyscallMap create)
+static inline SyscallInterface syscall_map_encode(SyscallMap* create)
 {
-    return SyscallInterface{SYSCALL_MAPPING_CREATE_ID, 0, (uintptr_t)&create, 0, 0, 0, 0, 0};
+    return SyscallInterface{SYSCALL_MAPPING_CREATE_ID, 0, (uintptr_t)create, 0, 0, 0, 0, 0};
 }
 
 static inline SyscallMap syscall_map_decode(SyscallInterface interface)
@@ -97,9 +98,9 @@ typedef struct SyscallTaskCreate
     uint64_t args[4]; // the arguments for the task, can be used to pass data to the task
 } SyscallTaskCreate;
 
-static inline SyscallInterface syscall_task_create_encode(SyscallTaskCreate create)
+static inline SyscallInterface syscall_task_create_encode(SyscallTaskCreate* create)
 {
-    return SyscallInterface{SYSCALL_TASK_CREATE_ID, 0, (uintptr_t)&create, 0, 0, 0, 0, 0};
+    return SyscallInterface{SYSCALL_TASK_CREATE_ID, 0, (uintptr_t)create, 0, 0, 0, 0, 0};
 }
 
 static inline SyscallTaskCreate syscall_task_create_decode(SyscallInterface interface)
@@ -118,9 +119,9 @@ typedef struct SyscallSpaceCreate
     uint64_t rights; // rights for the space creation
 } SyscallSpaceCreate;
 
-static inline SyscallInterface syscall_space_create_encode(SyscallSpaceCreate create)
+static inline SyscallInterface syscall_space_create_encode(SyscallSpaceCreate* create)
 {
-    return SyscallInterface{SYSCALL_SPACE_CREATE_ID, 0, (uintptr_t)&create, 0, 0, 0, 0, 0};
+    return SyscallInterface{SYSCALL_SPACE_CREATE_ID, 0, (uintptr_t)create, 0, 0, 0, 0, 0};
 }
 
 static inline SyscallSpaceCreate syscall_space_create_decode(SyscallInterface interface)
@@ -140,10 +141,9 @@ typedef struct SyscallAssetRelease
     void* addr; // the address of the asset if it is memory 
 } SyscallAssetRelease;
 
-static inline SyscallInterface syscall_asset_release_encode(SyscallAssetRelease release)
+static inline SyscallInterface syscall_asset_release_encode(SyscallAssetRelease* release)
 {
-    SyscallAssetRelease *release_ptr = &release;
-    return SyscallInterface{SYSCALL_ASSET_RELEASE_ID, 0, (uintptr_t)release_ptr, 0, 0, 0, 0, 0};
+    return SyscallInterface{SYSCALL_ASSET_RELEASE_ID, 0, (uintptr_t)release, 0, 0, 0, 0, 0};
 }
 
 static inline SyscallAssetRelease syscall_asset_release_decode(SyscallInterface interface)

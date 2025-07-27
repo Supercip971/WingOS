@@ -61,11 +61,10 @@ static void load_mcx_modules(mcx::MachineContext *context)
     {
 
         context->_modules[i].range = mcx::MemoryRange::from_begin_len((uintptr_t)modules[i]->address, modules[i]->size);
-        for(size_t j = 0; j < 128 && modules[i]->path[j] != '\0'; j++)
+        for (size_t j = 0; j < 128 && modules[i]->path[j] != '\0'; j++)
         {
             context->_modules[i].path[j] = modules[i]->path[j];
         }
-    
     }
     context->_modules_count = modules_size;
 }
@@ -82,7 +81,6 @@ static void load_mcx_mmap(mcx::MachineContext *context)
         context->_memory_map[i].type = limine_type_to_mcx(mmap[i]->type);
     }
     context->_memory_map_count = mmap_size;
-
 }
 void load_mcx(mcx::MachineContext *context)
 {
@@ -98,6 +96,4 @@ void load_mcx(mcx::MachineContext *context)
     };
 
     context->_rsdp = (uintptr_t)rsdp_request.response->address;
-
-
 }

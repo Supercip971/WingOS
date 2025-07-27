@@ -101,8 +101,6 @@ public:
         }
         return true;
     }
-
-    
 };
 
 constexpr char *StrChr(char *str, char c)

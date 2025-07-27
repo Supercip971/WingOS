@@ -1,13 +1,12 @@
 #include "kernel/x86_64/cpu.hpp"
 #include <arch/x86_64/gdt.hpp>
+
 #include "kernel/generic/cpu.hpp"
 #include "kernel/generic/kernel.hpp"
 #include "libcore/alloc/alloc.hpp"
 #include "libcore/fmt/log.hpp"
 namespace arch::amd64
 {
-
-
 
 Gdtr *load_default_gdt()
 {
@@ -27,7 +26,6 @@ void gdt_use()
     gdtr_install(CpuImpl::currentImpl()->gdtr());
 }
 
-
 void setup_ist()
 {
     auto cpu = arch::amd64::CpuImpl::currentImpl();
@@ -36,7 +34,6 @@ void setup_ist()
         log::err$("Failed to get current CPU implementation for IST setup");
         return;
     }
-
 
     *cpu->tss() = Tss();
     cpu->tss()->ist[0] = (uintptr_t)core::mem_alloc(kernel::kernel_stack_size).unwrap() + kernel::kernel_stack_size;
@@ -47,4 +44,4 @@ void setup_ist()
     cpu->gdt()->tss = TssEntry(cpu->tss());
     tss_update();
 }
-}
+} // namespace arch::amd64

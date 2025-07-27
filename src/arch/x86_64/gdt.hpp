@@ -81,7 +81,6 @@ struct [[gnu::packed]] Gdt
 {
     core::Array<GdtEntry, 5> _entries;
 
-
     static const int kernel_code_segment_id = 1;
     static const int kernel_data_segment_id = 2;
     static const int user_data_segment_id = 3;

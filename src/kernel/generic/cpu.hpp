@@ -10,15 +10,13 @@ static constexpr CoreId CpuCoreNone = -1;
 class Cpu
 {
 
-// used for syscall handling -- <!> ORDER IS IMPORTANT FOR ASM CODE <!>
+    // used for syscall handling -- <!> ORDER IS IMPORTANT FOR ASM CODE <!>
 public:
-    void* syscall_stack; 
+    void *syscall_stack;
     uintptr_t saved_stack; // used to save the stack pointer before syscall
 
-
 protected:
-    
-    // 
+    //
     CoreId _id;
 
     size_t interrupt_depth = 0;
@@ -28,7 +26,6 @@ protected:
     kernel::Task *_current_task = nullptr;
 
 public:
-
     bool in_interrupt()
     {
         return _in_interrupt;
@@ -38,7 +35,7 @@ public:
     {
         _in_interrupt = val;
     }
-    
+
     int id() const { return _id; };
 
     bool present() const { return _present; };
@@ -57,8 +54,7 @@ public:
     kernel::Task *currentTask() const { return _current_task; }
     void currentTask(kernel::Task *task) { _current_task = task; }
 
-    void interrupt_hold(); 
+    void interrupt_hold();
 
-    void interrupt_release(); 
-
+    void interrupt_release();
 };

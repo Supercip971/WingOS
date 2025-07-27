@@ -164,7 +164,7 @@ public:
         return core::move(_data[0]);
     }
 
-    T&& pop(size_t id)
+    T &&pop(size_t id)
     {
         if (id >= _count)
         {

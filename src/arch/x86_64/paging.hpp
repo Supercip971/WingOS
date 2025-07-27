@@ -161,7 +161,7 @@ public:
                 return "Page not present";
             }
             try$(table_from_addr(vaddr)->unmap(vaddr));
-            for(int i = 0; i < 512; i++)
+            for (int i = 0; i < 512; i++)
             {
                 if (table(i)->page(i).present())
                 {

@@ -18,7 +18,7 @@
 #include "math/align.hpp"
 #include "mcx/mcx.hpp"
 
-core::Result<void> start_module_execution(elf::ElfLoader loaded, mcx::MachineContext const*context)
+core::Result<void> start_module_execution(elf::ElfLoader loaded, mcx::MachineContext const *context)
 {
 
     AssetPtr ptr = try$(space_create(nullptr, 0, 0));
@@ -68,7 +68,6 @@ core::Result<void> start_module_execution(elf::ElfLoader loaded, mcx::MachineCon
 
                                                 },
                                             });
-        
 
     if (task_asset_res.is_error())
     {

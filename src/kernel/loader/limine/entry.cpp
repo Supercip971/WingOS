@@ -31,7 +31,6 @@ __attribute__((used)) static volatile struct limine_kernel_address_request kerne
 
 };
 
-
 static void done(void)
 {
     for (;;)

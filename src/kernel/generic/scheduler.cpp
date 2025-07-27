@@ -114,7 +114,7 @@ core::Result<kernel::Task *> next_task_select(CoreId core)
 {
     if ((size_t)core >= running_cpu_count)
     {
-        return core::Result<kernel::Task*>::error("invalid core id");
+        return core::Result<kernel::Task *>::error("invalid core id");
     }
 
     if (cpu_runned[core].task == nullptr)
@@ -123,7 +123,7 @@ core::Result<kernel::Task *> next_task_select(CoreId core)
         {
             return scheduler_idles[core];
         }
-        return core::Result<kernel::Task*>::error("no idle task available for core");
+        return core::Result<kernel::Task *>::error("no idle task available for core");
     }
 
     return cpu_runned[core].task;
@@ -490,10 +490,9 @@ core::Result<void> reschedule_all()
         update_runned_tasks();
 
         try$(schedule_all());
- 
+
         try$(fix_sched_affinity());
-//  dump_all_current_running_tasks();
- 
+        //  dump_all_current_running_tasks();
     }
     schedule_other_cpus();
     return {};
@@ -517,22 +516,18 @@ core::Result<Task *> schedule(Task *current, void volatile *state, CoreId core)
         scheduler_lock.write_release();
     }
 
-
     scheduler_lock.read_acquire();
     auto next = try$(next_task_select(core));
 
-
-    if (current != nullptr )
+    if (current != nullptr)
     {
-        if(current->uid() == next->uid())
+        if (current->uid() == next->uid())
         {
             scheduler_lock.read_release();
             return next;
         }
         current->cpu_context()->save_in(state);
     }
-
-
 
     scheduler_lock.read_release();
 
@@ -542,14 +537,14 @@ core::Result<Task *> schedule(Task *current, void volatile *state, CoreId core)
     {
         next->cpu_context()->lock.lock();
 
-        if(!next->cpu_context()->await_save)
+        if (!next->cpu_context()->await_save)
         {
             next->cpu_context()->lock.release();
-            break; 
+            break;
         }
 
         next->cpu_context()->lock.release();
- 
+
         asm volatile("pause");
     }
 

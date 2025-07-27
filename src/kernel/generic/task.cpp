@@ -67,13 +67,12 @@ core::Result<void> kernel::Task::_initialize(CpuContextLaunch params, VmmSpace *
 {
     auto task = this;
 
-
     task->_cpu_context->prepare(params);
 
     task->_state = kernel::TaskState::TASK_IDLE;
 
     task->_cpu_context->_vmm_space = target_vspace;
-    
+
     if (params.user)
     {
         VirtRange userspace_stack = VirtRange{

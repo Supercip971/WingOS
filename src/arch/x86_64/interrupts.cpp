@@ -15,17 +15,14 @@ uint64_t ccount;
 bool inside_error = false;
 extern uintptr_t _scheduler_impl(uintptr_t stack);
 
-void interrupt_release(); 
-
+void interrupt_release();
 
 extern "C" uintptr_t interrupt_handler(uintptr_t stack)
 {
 
-    
-
     Cpu::current()->interrupt_hold();
 
-    if(Cpu::current()->in_interrupt())
+    if (Cpu::current()->in_interrupt())
     {
         log::warn$("already in an interrupt {}", Cpu::currentId());
     }
@@ -81,6 +78,6 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
 
     Cpu::current()->in_interrupt(false);
     Cpu::current()->interrupt_release();
- 
+
     return stack;
 }

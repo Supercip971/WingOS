@@ -86,7 +86,6 @@ public:
 
     core::Result<void> verify(VirtAddr virt, size_t size);
 
-
     static void invalidate_address(VirtAddr virt)
     {
         asm volatile("invlpg (%0)" ::"r"(virt._addr) : "memory");
@@ -99,7 +98,7 @@ public:
 
     static void invalidate()
     {
-        asm volatile("mov %cr3, %rax; mov %rax, %cr3" );
+        asm volatile("mov %cr3, %rax; mov %rax, %cr3");
     }
 
     static void use_kernel(VmmSpace &space);

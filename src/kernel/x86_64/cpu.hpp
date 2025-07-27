@@ -16,12 +16,10 @@ class CpuImpl : public Cpu
     int _lapic;
     PhysAddr _trampoline_stack;
 
-
 public:
-
-    Gdt *gdt() ; 
-    Gdtr *gdtr() ;
-    Tss* tss() ;
+    Gdt *gdt();
+    Gdtr *gdtr();
+    Tss *tss();
     int lapic() const { return _lapic; };
 
     CpuImpl(int id, int lapic) : Cpu(id, true), _lapic(lapic) {};
@@ -36,7 +34,6 @@ public:
 };
 
 void other_cpu_entry();
-
 
 void setup_entry_gs();
 

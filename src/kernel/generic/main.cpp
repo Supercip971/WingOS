@@ -2,7 +2,10 @@
 
 #include <kernel/generic/kernel.hpp>
 #include <libcore/fmt/log.hpp>
+#include <libelf/elf.hpp>
 #include <stdlib.h>
+
+#include "hw/mem/addr_space.hpp"
 
 #include "hw/acpi/lapic.hpp"
 #include "kernel/generic/execute.hpp"
@@ -13,8 +16,6 @@
 #include "kernel/generic/task.hpp"
 #include "libcore/fmt/flags.hpp"
 #include "libcore/lock/lock.hpp"
-#include <libelf/elf.hpp>
-#include "hw/mem/addr_space.hpp"
 core::Lock kernel_lock;
 
 void fun1()
@@ -66,7 +67,6 @@ void fun5()
     }
 }
 
-
 void kernel_entry(const mcx::MachineContext *context)
 {
 
@@ -76,19 +76,17 @@ void kernel_entry(const mcx::MachineContext *context)
 
     kernel::scheduler_init(Cpu::count()).assert();
 
+    //  kernel::task_run(task1->uid()).assert();
+    //  kernel::task_run(task2->uid()).assert();
+    //  kernel::task_run(task3->uid()).assert();
+    //  kernel::task_run(task4->uid()).assert();
+    //  kernel::task_run(task5->uid()).assert();
 
-  //  kernel::task_run(task1->uid()).assert();
-  //  kernel::task_run(task2->uid()).assert();
-  //  kernel::task_run(task3->uid()).assert();
-  //  kernel::task_run(task4->uid()).assert();
-  //  kernel::task_run(task5->uid()).assert();
-
-    for(int i = 0; i < context->_modules_count; i++)
+    for (int i = 0; i < context->_modules_count; i++)
     {
         auto mod = context->_modules[i];
 
-
-        if(!core::Str(mod.path).start_with("/bin/init"))
+        if (!core::Str(mod.path).start_with("/bin/init"))
         {
             log::log$("skipping module {}: {}", i, mod.path);
             continue;
@@ -96,7 +94,7 @@ void kernel_entry(const mcx::MachineContext *context)
         log::log$("module {}: {}", i, mod.path);
         auto loader = (elf::ElfLoader::load(mod.range.as<VirtAddr>()));
 
-        if(loader.is_error())
+        if (loader.is_error())
         {
             log::err$("unable to load module {}: {}", i, loader.error());
             continue;
@@ -106,7 +104,6 @@ void kernel_entry(const mcx::MachineContext *context)
 
         start_module_execution(loader.unwrap(), context);
     }
-
 
     Cpu::current()->interrupt_release();
     while (true)

@@ -40,7 +40,6 @@ void arch_entry(const mcx::MachineContext *context)
     _running_cpu_count = 1;
     log::log$("started kernel arch");
 
-
     arch::amd64::load_default_gdt();
     arch::amd64::gdt_use();
     log::log$("loaded kernel gdt");
@@ -107,12 +106,10 @@ void arch::amd64::other_cpu_entry()
 
     arch::amd64::load_default_gdt();
     arch::amd64::gdt_use();
-   
+
     arch::amd64::setup_ist();
     arch::amd64::syscall_init_for_current_cpu();
     arch::amd64::setup_entry_gs();
-
-
 
     while (_running_cpu_count < CpuImpl::count())
     {

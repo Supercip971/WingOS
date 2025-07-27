@@ -4,6 +4,7 @@
 #include "arch/x86_64/paging.hpp"
 #include "hw/mem/addr_space.hpp"
 #include "iol/mem_flags.h"
+
 #include "math/align.hpp"
 
 core::Result<AssetPtr> _asset_create(Space *space, AssetKind kind)
@@ -71,7 +72,7 @@ void asset_release(Space *space, Asset *asset)
             {
                 space->vmm_space.unmap(
                     VirtRange(asset->mapping.start,
-                    asset->mapping.end));
+                              asset->mapping.end));
             }
         }
         else if (asset->kind == OBJECT_KIND_IPC)
@@ -140,7 +141,6 @@ core::Result<AssetPtr> asset_create_memory(Space *space, AssetMemoryCreateParams
     }
 
     ptr.asset->memory.addr = res.unwrap()._addr;
-    
 
     ptr.asset->lock.release();
     return ptr;
@@ -182,8 +182,7 @@ core::Result<AssetPtr> asset_create_mapping(Space *space, AssetMappingCreatePara
                      .user(true)
                      .executable(ptr.asset->mapping.executable)
                      .present(true)
-                     .writeable(ptr.asset->mapping.writable)
-                     ;
+                     .writeable(ptr.asset->mapping.writable);
 
     if (!space->vmm_space.map(
             {ptr.asset->mapping.start, ptr.asset->mapping.end},

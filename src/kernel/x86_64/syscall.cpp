@@ -1,16 +1,17 @@
 #include "syscall.hpp"
+
 #include "arch/x86_64/context.hpp"
 #include "arch/x86_64/gdt.hpp"
 #include "arch/x86_64/msr.hpp"
+
 #include "kernel/generic/cpu.hpp"
 #include "kernel/generic/kernel.hpp"
 #include "kernel/generic/syscalls.hpp"
 #include "libcore/alloc/alloc.hpp"
 #include "libcore/fmt/log.hpp"
 
-
-namespace arch::amd64 {
-    
+namespace arch::amd64
+{
 
 extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *stackframe)
 {
@@ -66,9 +67,9 @@ core::Result<void> syscall_init_for_current_cpu()
     Msr::Write(MsrReg::LSTAR, (uint64_t)syscall_handle);
     Msr::Write(MsrReg::SYSCALL_FLAG_MASK, (uint64_t)(1 << 9));
 
-    Cpu::current()->syscall_stack = (void*)((uintptr_t)try$(core::mem_alloc(kernel::kernel_stack_size)) + 
-        kernel::kernel_stack_size - 1); // allocate a stack for syscall handling
+    Cpu::current()->syscall_stack = (void *)((uintptr_t)try$(core::mem_alloc(kernel::kernel_stack_size)) +
+                                             kernel::kernel_stack_size - 1); // allocate a stack for syscall handling
     return {};
 }
 
-}
+} // namespace arch::amd64

@@ -30,8 +30,7 @@ public:
     volatile bool await_save;
     volatile bool await_load;
 
-
-    VmmSpace* _vmm_space;
+    VmmSpace *_vmm_space;
     static core::Result<CpuContext *> create_empty();
     static core::Result<CpuContext *> create(CpuContextLaunch launch);
 

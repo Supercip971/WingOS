@@ -1,9 +1,10 @@
 
 #include "cpu.hpp"
+#include <libcore/fmt/log.hpp>
+
 #include "arch/x86_64/gdt.hpp"
 #include "arch/x86_64/msr.hpp"
 #include <kernel/x86_64/cpu.hpp>
-#include <libcore/fmt/log.hpp>
 
 #include "hw/acpi/lapic.hpp"
 #include "kernel/generic/cpu.hpp"
@@ -81,8 +82,6 @@ Cpu *Cpu::get(int id)
     return &cpus[id];
 }
 
-
-
 arch::amd64::CpuImpl *arch::amd64::CpuImpl::currentImpl()
 {
     auto id = Cpu::currentId();
@@ -93,28 +92,28 @@ arch::amd64::CpuImpl *arch::amd64::CpuImpl::currentImpl()
     return CpuImpl::getImpl(id);
 }
 
- static arch::amd64::Gdt _gdt[arch::amd64::max_cpu] = {};
- static arch::amd64::Gdtr _gdtr[arch::amd64::max_cpu] = {};
- static arch::amd64::Tss _tss[arch::amd64::max_cpu] = {};
+static arch::amd64::Gdt _gdt[arch::amd64::max_cpu] = {};
+static arch::amd64::Gdtr _gdtr[arch::amd64::max_cpu] = {};
+static arch::amd64::Tss _tss[arch::amd64::max_cpu] = {};
 
- arch::amd64::Gdt *arch::amd64::CpuImpl::gdt()
- {
-        return &_gdt[this->id()];
- }
+arch::amd64::Gdt *arch::amd64::CpuImpl::gdt()
+{
+    return &_gdt[this->id()];
+}
 
-    arch::amd64::Gdtr *arch::amd64::CpuImpl::gdtr()
-    {
-            return &_gdtr[this->id()];
-    }
+arch::amd64::Gdtr *arch::amd64::CpuImpl::gdtr()
+{
+    return &_gdtr[this->id()];
+}
 
-    arch::amd64::Tss *arch::amd64::CpuImpl::tss()
-    {
-            return &_tss[this->id()];
-    }
+arch::amd64::Tss *arch::amd64::CpuImpl::tss()
+{
+    return &_tss[this->id()];
+}
 
 CoreId Cpu::currentId()
 {
-    if(hw::acpi::Lapic::the().is_loaded() == false)
+    if (hw::acpi::Lapic::the().is_loaded() == false)
     {
         return 0;
     }

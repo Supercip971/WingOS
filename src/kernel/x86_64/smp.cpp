@@ -102,7 +102,6 @@ core::Result<void> arch::amd64::smp_initialize_cpu(int apic, int id)
 
     _ready = false;
 
-
     try$(hw::acpi::Lapic::the().init_cpu(id));
 
     try$(_setup_trampoline(id));

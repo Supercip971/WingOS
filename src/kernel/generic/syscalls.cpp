@@ -1,4 +1,5 @@
 #include "syscalls.hpp"
+
 #include "arch/x86_64/paging.hpp"
 
 #include "kernel/generic/asset.hpp"
@@ -32,7 +33,6 @@ core::Result<uintptr_t> ksyscall_mem_own(SyscallMemOwn *mem_own)
 {
     Space *space = nullptr;
 
-
     if (mem_own->target_space_handle != 0)
     {
         space = try$(Space::space_by_handle(mem_own->target_space_handle));
@@ -41,7 +41,6 @@ core::Result<uintptr_t> ksyscall_mem_own(SyscallMemOwn *mem_own)
     {
         space = Cpu::current()->currentTask()->space();
     }
-
 
     if (space == nullptr)
     {
@@ -57,7 +56,6 @@ core::Result<uintptr_t> ksyscall_mem_own(SyscallMemOwn *mem_own)
     mem_own->addr = asset.asset->memory.addr;
 
     mem_own->returned_handle = asset.handle;
-
 
     return core::Result<size_t>::success((uint64_t)asset.handle);
 
@@ -93,7 +91,7 @@ core::Result<uintptr_t> ksyscall_map(SyscallMap *map)
 
     if (need_invalidate)
     {
-        for(size_t i = map->start; i < map->end; i += arch::amd64::PAGE_SIZE)
+        for (size_t i = map->start; i < map->end; i += arch::amd64::PAGE_SIZE)
         {
             VmmSpace::invalidate_address(VirtAddr(i));
         }
@@ -157,13 +155,12 @@ core::Result<size_t> ksyscall_mem_release(SyscallAssetRelease *release)
     if (space == nullptr)
     {
         return core::Result<size_t>::error("no current space");
-
     }
-    Asset* phys_mem = nullptr;
-    Asset* virt_mem = nullptr;
-    for(size_t i = 0; i < space->assets.len(); i++)
+    Asset *phys_mem = nullptr;
+    Asset *virt_mem = nullptr;
+    for (size_t i = 0; i < space->assets.len(); i++)
     {
-        if(space->assets[i].asset->kind == OBJECT_KIND_MAPPING && space->assets[i].asset->mapping.start == (uintptr_t)release->addr)
+        if (space->assets[i].asset->kind == OBJECT_KIND_MAPPING && space->assets[i].asset->mapping.start == (uintptr_t)release->addr)
         {
 
             virt_mem = space->assets[i].asset;
@@ -194,7 +191,7 @@ core::Result<size_t> ksyscall_mem_release(SyscallAssetRelease *release)
 core::Result<size_t> ksyscall_asset_release(SyscallAssetRelease *release)
 {
 
-    if(release->asset_handle == 0 && release->addr != nullptr)
+    if (release->asset_handle == 0 && release->addr != nullptr)
     {
         return ksyscall_mem_release(release);
     }

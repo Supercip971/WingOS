@@ -61,7 +61,6 @@ core::Result<void> Lapic::initialize(Madt *madt)
     try$(main_lapic.enable());
 
     main_lapic.loaded = true;
-    
 
     return {};
 }

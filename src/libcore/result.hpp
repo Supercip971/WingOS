@@ -151,17 +151,17 @@ using EResult = Result<T, Str>;
 
 extern void debug_provide_info(const char *info, const char *data);
 
-#define try$(expr) ({                                                      \
-    auto _result = (expr);                                                 \
-    if ((_result._error.has_value())) [[unlikely]]                         \
-    {                                                                      \
+#define try$(expr) ({                                                          \
+    auto _result = (expr);                                                     \
+    if ((_result._error.has_value())) [[unlikely]]                             \
+    {                                                                          \
         core::debug_provide_info("error:    ", (const char *)_result.error()); \
-        core::debug_provide_info("at:       ", #expr);                     \
-        core::debug_provide_info("function: ", __FUNCTION__);              \
-        core::debug_provide_info("file:     ", __FILE__);                  \
-        return _result.error();                                            \
-    }                                                                      \
-    _result.unwrap();                                                      \
+        core::debug_provide_info("at:       ", #expr);                         \
+        core::debug_provide_info("function: ", __FUNCTION__);                  \
+        core::debug_provide_info("file:     ", __FILE__);                      \
+        return _result.error();                                                \
+    }                                                                          \
+    _result.unwrap();                                                          \
 })
 
 } // namespace core

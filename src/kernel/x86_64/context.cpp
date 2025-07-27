@@ -30,21 +30,24 @@ void CpuContext::load_to(void volatile *state)
     arch::amd64::StackFrame *frame = (arch::amd64::StackFrame *)state;
 
     // Validate frame before loading
-    if (!frame || !data) {
+    if (!frame || !data)
+    {
         log::err$("Invalid frame or data in load_to");
         return;
     }
 
     auto stored_frame = data->stackframe();
-    
+
     // Validate segment selectors
-    if (stored_frame.cs == 0 || stored_frame.ss == 0) {
+    if (stored_frame.cs == 0 || stored_frame.ss == 0)
+    {
         log::err$("Invalid segment selectors: CS={}, SS={}", stored_frame.cs, stored_frame.ss);
         return;
     }
 
     // Validate stack pointer
-    if (stored_frame.rsp == 0) {
+    if (stored_frame.rsp == 0)
+    {
         log::err$("Invalid stack pointer: RSP={}", stored_frame.rsp);
         return;
     }
@@ -53,11 +56,8 @@ void CpuContext::load_to(void volatile *state)
 
     this->_vmm_space->use();
 
-    
     lock_scope$(this->lock);
     this->await_load = false;
-
-    
 }
 
 void CpuContext::save_in(void volatile *state)
@@ -99,13 +99,12 @@ core::Result<void> CpuContext::prepare(CpuContextLaunch launch)
     data->stack_ptr = try$(core::mem_alloc(kernel::userspace_stack_size));
     data->kernel_stack_ptr = try$(core::mem_alloc(kernel::kernel_stack_size));
 
-
     data->stack_top = (void *)((uintptr_t)data->stack_ptr + kernel::userspace_stack_size);
     data->kernel_stack_top = (void *)((uintptr_t)data->kernel_stack_ptr + kernel::kernel_stack_size);
 
     auto frame = arch::amd64::StackFrame();
 
-    frame.rsp = (uint64_t)data->stack_top ;
+    frame.rsp = (uint64_t)data->stack_top;
     frame.rbp = (uint64_t)0;
     frame.rip = (uint64_t)launch.entry;
     frame.rdi = launch.args[0];

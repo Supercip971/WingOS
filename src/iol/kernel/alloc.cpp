@@ -6,7 +6,6 @@
 #include "kernel/generic/pmm.hpp"
 #include "libcore/lock/lock.hpp"
 
-
 core::Lock _liballoc_lock = core::Lock();
 
 extern "C" int liballoc_lock()

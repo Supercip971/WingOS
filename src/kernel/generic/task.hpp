@@ -42,23 +42,20 @@ class Task
     CpuContext *_cpu_context;
 
 public:
+    Space *_space_owner;
 
-    Space * _space_owner;
-
-    Space * space()
+    Space *space()
     {
         return _space_owner;
     }
-    
+
     TaskState state() const { return _state; }
     void state(TaskState state) { _state = state; }
 
     Task() = default;
     Task(TUID uid) : _uid(uid) {};
 
-
-    core::Result<void> _initialize(CpuContextLaunch params, VmmSpace* target_vspace);
-
+    core::Result<void> _initialize(CpuContextLaunch params, VmmSpace *target_vspace);
 
     virtual ~Task() = default;
 

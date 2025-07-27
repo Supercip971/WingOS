@@ -49,8 +49,7 @@ struct MachineFramebuffer
     PixelFormat pixel_format;
 };
 
-
-struct MachineContextModule 
+struct MachineContextModule
 {
     MemoryRange range;
     char path[128];
@@ -71,7 +70,6 @@ public:
     uintptr_t _rsdp;
 };
 
-
 template <core::IsSame<const MachineContext *> T, core::Writable Targ>
 constexpr core::Result<void> format_v(Targ &target, T value)
 {
@@ -87,7 +85,7 @@ constexpr core::Result<void> format_v(Targ &target, T value)
     fmt::format(target, "  module: \n");
     for (int i = 0; i < value->_modules_count; i++)
     {
-        fmt::format(target, "   - name: {} \n", (const char*)value->_modules[i].path );
+        fmt::format(target, "   - name: {} \n", (const char *)value->_modules[i].path);
         fmt::format(target, "     range: {} \n", value->_modules[i].range | fmt::FMT_HEX);
     }
     fmt::format(target, "  _rsdp: {} \n", value->_rsdp);

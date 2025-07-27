@@ -1,12 +1,14 @@
 #include "iol/wingos/syscalls.h"
+#include "libcore/fmt/log.hpp"
 #include "mcx/mcx.hpp"
 
-extern "C" int _start(void)
+int _main(mcx::MachineContext*)
 {
 
     while (true)
     {
-        sys$debug_log("Hello, World!");
+        log::log$("Hello, World!");
+
     }
     return 1;
 }

@@ -238,6 +238,83 @@ core::Result<size_t> ksyscall_asset_release(SyscallAssetRelease *release)
 
     return core::Result<size_t>::success(0);
 }
+
+core::Result<size_t> ksyscall_task_launch(SyscallTaskLaunch *task_launch)
+{
+    Space *space = nullptr;
+    if (task_launch->target_space_handle != 0)
+    {
+        space = try$(Space::space_by_handle(
+            Cpu::current()->currentTask()->space(),
+            task_launch->target_space_handle));
+    }
+    else
+    {
+        space = Cpu::current()->currentTask()->space();
+    }
+
+    if (space == nullptr)
+    {
+        return core::Result<size_t>::error("no current space");
+    }
+
+    auto task_asset = try$(Asset::by_handle(space, task_launch->task_handle));
+    if (task_asset->kind != OBJECT_KIND_TASK)
+    {
+        return core::Result<size_t>::error("task asset is not a task");
+    }
+    auto task = task_asset->task;
+    if (task == nullptr)
+    {
+        return core::Result<size_t>::error("task asset has no task");
+    }
+
+    try$(kernel::task_run(task->uid()));
+
+    return core::Result<size_t>::success(0);
+}
+
+core::Result<size_t> ksyscall_asset_move(SyscallAssetMove *asset_move_args)
+{
+    Space *from_space = nullptr;
+    Space *to_space = nullptr;
+
+    if (asset_move_args->from_space_handle != 0)
+    {
+        from_space = try$(Space::space_by_handle(
+            Cpu::current()->currentTask()->space(),
+            asset_move_args->from_space_handle));
+    }
+    else
+    {
+        from_space = Cpu::current()->currentTask()->space();
+    }
+
+    if (asset_move_args->to_space_handle != 0)
+    {
+        to_space = try$(Space::space_by_handle(
+            Cpu::current()->currentTask()->space(),
+            asset_move_args->to_space_handle));
+    }
+    else
+    {
+        to_space = Cpu::current()->currentTask()->space();
+    }
+
+    if (from_space == nullptr || to_space == nullptr)
+    {
+        return core::Result<size_t>::error("no current space");
+    }
+
+    auto asset = try$(Asset::by_handle_ptr(from_space, asset_move_args->asset_handle));
+
+    auto moved_asset = try$(asset_move(from_space, to_space, asset));
+
+    asset_move_args->returned_handle_in_space = moved_asset.handle;
+
+    return core::Result<size_t>::success((uint64_t)moved_asset.handle);
+}
+
 core::Result<size_t> syscall_handle(SyscallInterface syscall)
 {
     switch (syscall.id)
@@ -275,6 +352,16 @@ core::Result<size_t> syscall_handle(SyscallInterface syscall)
     {
         SyscallAssetRelease *asset_release = try$(syscall_check_ptr<SyscallAssetRelease>(syscall.arg1));
         return ksyscall_asset_release(asset_release);
+    }
+    case SYSCALL_TASK_LAUNCH_ID:
+    {
+        SyscallTaskLaunch *task_launch = try$(syscall_check_ptr<SyscallTaskLaunch>(syscall.arg1));
+        return ksyscall_task_launch(task_launch);
+    }
+    case SYSCALL_ASSET_MOVE:
+    {
+        SyscallAssetMove *asset_move = try$(syscall_check_ptr<SyscallAssetMove>(syscall.arg1));
+        return ksyscall_asset_move(asset_move);
     }
     default:
         return {"Unknown syscall ID"};

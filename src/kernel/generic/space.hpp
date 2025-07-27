@@ -74,6 +74,20 @@ struct Asset
         }
         return core::Result<Asset *>::error("asset not found");
     }
+
+    static core::Result<AssetPtr> by_handle_ptr(Space *space, uint64_t handle)
+    {
+        for (size_t i = 0; i < space->assets.len(); i++)
+        {
+            if (space->assets[i].handle == handle)
+            {
+                return space->assets[i];
+            }
+        }
+        return core::Result<AssetPtr>::error("asset not found");
+    }
+
+   
 };
 
 core::Result<AssetPtr> space_create(Space *parent, uint64_t flags, uint64_t rights);

@@ -39,6 +39,10 @@ struct AssetTaskCreateParams
 
 core::Result<AssetPtr> asset_create_task(Space *vspace, AssetTaskCreateParams params);
 
+core::Result<AssetPtr> asset_move(Space* from, Space* to, AssetPtr asset);
+core::Result<AssetPtr> asset_copy(Space* from, Space* to, AssetPtr asset);
+
+
 void asset_own(Asset *asset);
 
 void asset_release(Space *space, Asset *asset);

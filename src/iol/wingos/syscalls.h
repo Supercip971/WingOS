@@ -87,6 +87,33 @@ static inline SyscallAssetRelease sys$asset_release_mem(void* addr)
 
     return release;
 }
+
+static inline SyscallTaskLaunch sys$task_launch(uint64_t target_space_handle, uint64_t task_handle, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4)
+{
+    SyscallTaskLaunch launch = {target_space_handle, task_handle, {arg1, arg2, arg3, arg4}};
+    SyscallInterface interface = syscall_task_launch_encode(&launch);
+    uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
+        (void)result;
+    return launch;
+}
+
+static inline SyscallAssetMove sys$asset_move(uint64_t from_space_handle, uint64_t to_space_handle, uint64_t asset_handle)
+{
+    SyscallAssetMove move = {from_space_handle, to_space_handle, asset_handle, 0,0};
+    SyscallInterface interface = syscall_asset_move_encode(&move);
+    uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
+        (void)result;
+    return move;
+}
+
+static inline SyscallAssetMove sys$asset_copy(uint64_t from_space_handle, uint64_t to_space_handle, uint64_t asset_handle)
+{
+    SyscallAssetMove copy = {from_space_handle, to_space_handle, asset_handle, 1,0};
+    SyscallInterface interface = syscall_asset_move_encode(&copy);
+    uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
+        (void)result;
+    return copy;
+}
 #ifdef __cplusplus
 }
 #endif

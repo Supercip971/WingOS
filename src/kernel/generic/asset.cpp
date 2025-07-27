@@ -225,3 +225,57 @@ core::Result<AssetPtr> asset_create_task(Space *space, AssetTaskCreateParams par
     ptr.asset->lock.release();
     return ptr;
 }
+
+
+core::Result<AssetPtr> asset_move(Space* from, Space* to, AssetPtr asset)
+{
+    if (from == nullptr || to == nullptr)
+    {
+        return core::Result<AssetPtr>::error("from or to space is null");
+    }
+
+    if (asset.asset == nullptr)
+    {
+        return core::Result<AssetPtr>::error("asset is null");
+    }
+
+    // Check if the asset exists in the from space
+    for (size_t i = 0; i < from->assets.len(); i++)
+    {
+        if (from->assets[i].asset == asset.asset)
+        {
+            // Move the asset to the new space
+            AssetPtr moved_asset = from->assets[i];
+            moved_asset.handle = to->uid++;
+            to->assets.push(moved_asset);
+            from->assets.pop(i);
+            return moved_asset;
+        }
+    }
+
+    return core::Result<AssetPtr>::error("asset not found in from space");
+}
+
+core::Result<AssetPtr> asset_copy(Space* from, Space* to, AssetPtr asset)
+{
+    if (from == nullptr || to == nullptr)
+    {
+        return core::Result<AssetPtr>::error("from or to space is null");
+    }
+
+    if (asset.asset == nullptr)
+    {
+        return core::Result<AssetPtr>::error("asset is null");
+    }
+
+    // Check if the asset exists in the from space
+    AssetPtr copied_asset;
+    copied_asset.asset = asset.asset;
+    copied_asset.handle = to->uid++;
+    asset.asset->ref_count++;
+
+    to->assets.push(copied_asset);
+
+    return copied_asset;
+}
+

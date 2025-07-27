@@ -179,7 +179,28 @@ static inline SyscallTaskLaunch syscall_task_launch_decode(SyscallInterface inte
 }
 
 
+// ------- SYSCALL ASSET MOVE ----
 
+#define SYSCALL_ASSET_MOVE 0x00000007
+typedef struct SyscallAssetMove
+{
+    uint64_t from_space_handle; // the handle of the space to move the asset from
+    uint64_t to_space_handle; // the handle of the space to move the asset to
+    uint64_t asset_handle; // the handle of the asset to move
+
+    bool copy; // if true, the asset will be copied, otherwise it will be moved
+    uint64_t returned_handle_in_space;
+} SyscallAssetMove;
+
+static inline SyscallInterface syscall_asset_move_encode(SyscallAssetMove* move)
+{
+    return SyscallInterface{SYSCALL_ASSET_MOVE, 0, (uintptr_t)move, 0, 0, 0, 0, 0};
+}
+static inline SyscallAssetMove syscall_asset_move_decode(SyscallInterface interface)
+{
+    SyscallAssetMove *move = (SyscallAssetMove *)interface.arg1;
+    return *move;
+}
 #ifdef __cplusplus
 }
 #endif

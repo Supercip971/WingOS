@@ -78,13 +78,19 @@ public:
 
     core::Result<void> map(VirtRange virt, PhysRange phys, PageFlags flags);
 
-    core::Result<void> unmap(VirtAddr addr, size_t count);
+    core::Result<void> unmap(VirtRange virt);
 
     core::Result<void> virtual_map(VirtAddr virt, size_t count, PageFlags flags, size_t object_rid);
 
     core::Result<PhysAddr> get_phys(VirtAddr virt);
 
     core::Result<void> verify(VirtAddr virt, size_t size);
+
+
+    static void invalidate_address(VirtAddr virt)
+    {
+        asm volatile("invlpg (%0)" ::"r"(virt._addr) : "memory");
+    }
 
     // empty: means that the higher half won't be copied from the kernel
     // this is used for the kernel page table
@@ -93,7 +99,7 @@ public:
 
     static void invalidate()
     {
-        asm volatile("mov %cr3, %rax; mov %rax, %cr3");
+        asm volatile("mov %cr3, %rax; mov %rax, %cr3" );
     }
 
     static void use_kernel(VmmSpace &space);

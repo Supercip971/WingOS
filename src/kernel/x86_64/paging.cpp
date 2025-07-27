@@ -71,6 +71,25 @@ core::Result<void> VmmSpace::map(VirtRange virt, PhysRange phys, PageFlags flags
 
     return {};
 }
+core::Result<void> VmmSpace::unmap(VirtRange virt )
+{
+    auto root = as_root(*this);
+
+    if (virt.len() % arch::amd64::PAGE_SIZE != 0 || virt.start()._addr % arch::amd64::PAGE_SIZE != 0)  [[unlikely]]
+    {
+        return "Virtual and physical ranges must be page aligned";
+    }
+    
+    auto virt_begin = virt.start();
+    for (size_t i = 0; i < virt.len(); i += arch::amd64::PAGE_SIZE)
+    {
+        auto virt_addr = virt_begin + i;
+
+        try$(root->unmap(virt_addr));
+    }
+
+    return {};
+}
 
 core::Result<VmmSpace> VmmSpace::create(bool empty)
 {

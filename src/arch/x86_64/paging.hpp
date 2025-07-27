@@ -147,9 +147,37 @@ public:
         return {};
     }
 
+    core::Result<void> unmap(VirtAddr vaddr)
+    {
+        if constexpr (level == 1)
+        {
+            page_from_addr(vaddr) = Page{};
+        }
+        else
+        {
+            auto &entry = page_from_addr(vaddr);
+            if (!entry.present())
+            {
+                return "Page not present";
+            }
+            try$(table_from_addr(vaddr)->unmap(vaddr));
+            for(int i = 0; i < 512; i++)
+            {
+                if (table(i)->page(i).present())
+                {
+                    return {};
+                }
+            }
+
+            Pmm::the().release((entry.address()), 1);
+            entry = Page{};
+        }
+
+        return {};
+    }
+
     core::Result<void> _verify(VirtAddr addr)
     {
-
         auto &page = page_from_addr(addr);
         if (!page.present())
         {

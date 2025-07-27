@@ -27,6 +27,8 @@ struct Space {
     VmmSpace vmm_space; // the virtual memory space of this space
 
     core::Vec<AssetPtr> assets;
+
+    static core::Result<Space*> space_by_handle(uint64_t handle);
 };
 
 struct Asset {

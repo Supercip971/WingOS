@@ -52,3 +52,18 @@ core::Result<AssetPtr> space_create(Space* parent, [[maybe_unused]] uint64_t fla
 
     return ptr;
 }
+
+// FIXME: this is not safe, because it does not check if the space exists in the parent space 
+core::Result<Space*> Space::space_by_handle(uint64_t handle)
+{
+    for (auto &space_ptr : _spaces)
+    {
+        if (space_ptr.handle == handle)
+        {
+            return core::Result<Space *>::csuccess(space_ptr.space);
+        }
+    }
+
+    return core::Result<Space *>::error("space not found");
+}
+

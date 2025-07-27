@@ -45,6 +45,12 @@ public:
         _error = core::move(other._error);
         return *this;
     }
+    static constexpr auto csuccess(ValT val)
+    {
+        auto res = Result<ValT, ErrT>();
+        res._value = core::move(val);
+        return core::move(res);
+    }
     static constexpr auto success(ValT &&val)
     {
         auto res = Result<ValT, ErrT>();

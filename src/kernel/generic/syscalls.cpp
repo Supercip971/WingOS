@@ -29,13 +29,16 @@ core::Result<T *> syscall_check_ptr(uintptr_t ptr)
 
 core::Result<uintptr_t> ksyscall_mem_own(SyscallMemOwn *mem_own)
 {
+    Space *space = nullptr;
     if (mem_own->target_space_handle != 0)
     {
-        // TODO:
-        log::warn$("syscall: physical memory ownership is not implemented for target space handle, using current task space");
+        space = try$(Space::space_by_handle(mem_own->target_space_handle));
+    }
+    else
+    {
+        space = Cpu::current()->currentTask()->space();
     }
 
-    auto space = Cpu::current()->currentTask()->space();
     if (space == nullptr)
     {
         return core::Result<size_t>::error("no current space");
@@ -56,12 +59,16 @@ core::Result<uintptr_t> ksyscall_mem_own(SyscallMemOwn *mem_own)
 
 core::Result<uintptr_t> ksyscall_map(SyscallMap *map)
 {
+    Space *space = nullptr;
     if (map->target_space_handle != 0)
     {
-
-        log::warn$("syscall: mapping is not implemented for target space handle, using current task space");
+        space = try$(Space::space_by_handle(map->target_space_handle));
     }
-    auto space = Cpu::current()->currentTask()->space();
+    else
+    {
+        space = Cpu::current()->currentTask()->space();
+    }
+
     if (space == nullptr)
     {
         return core::Result<size_t>::error("no current space");
@@ -80,12 +87,16 @@ core::Result<uintptr_t> ksyscall_map(SyscallMap *map)
 
 core::Result<size_t> ksyscall_task_create(SyscallTaskCreate *task_create)
 {
+    Space *space = nullptr;
     if (task_create->target_space_handle != 0)
     {
-        log::warn$("syscall: task creation is not implemented for target space handle, using current task space");
+        space = try$(Space::space_by_handle(task_create->target_space_handle));
+    }
+    else
+    {
+        space = Cpu::current()->currentTask()->space();
     }
 
-    auto space = Cpu::current()->currentTask()->space();
     if (space == nullptr)
     {
         return core::Result<size_t>::error("no current space");
@@ -103,19 +114,22 @@ core::Result<size_t> ksyscall_task_create(SyscallTaskCreate *task_create)
 
 core::Result<size_t> ksyscall_space_create(SyscallSpaceCreate *args)
 {
-    auto parent_space = Cpu::current()->currentTask()->space();
-    if (parent_space == nullptr)
+    Space *space = nullptr;
+    if (args->parent_space_handle != 0)
+    {
+        space = try$(Space::space_by_handle(args->parent_space_handle));
+    }
+    else
+    {
+        space = Cpu::current()->currentTask()->space();
+    }
+
+    if (space == nullptr)
     {
         return core::Result<size_t>::error("no current space");
     }
 
-    if(args->parent_space_handle != 0)
-    {
-        log::warn$("syscall: space creation is not implemented for target space handle, using current task space");
-    }
-
-    auto asset = try$(space_create(parent_space, args->flags, args->rights));
-
+    auto asset = try$(space_create(space, args->flags, args->rights));
 
     return core::Result<size_t>::success((uint64_t)asset.handle);
 }
@@ -127,7 +141,8 @@ core::Result<size_t> syscall_handle(SyscallInterface syscall)
     case SYSCALL_DEBUG_LOG_ID:
     {
         auto debug = syscall_debug_decode(syscall);
-        log::log$("DEBUG: {}", debug.message);
+        log::log("{}", debug.message);
+
         return core::Result<size_t>::success(0);
     }
     case SYSCALL_PHYSICAL_MEM_OWN_ID:

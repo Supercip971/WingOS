@@ -114,6 +114,9 @@ static inline SyscallAssetMove sys$asset_copy(uint64_t from_space_handle, uint64
         (void)result;
     return copy;
 }
+
+
+
 #ifdef __cplusplus
 }
 #endif

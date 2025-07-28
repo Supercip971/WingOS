@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <wingos-headers/asset.h>
 
+#include "kernel/generic/ipc.hpp"
 #include "kernel/generic/paging.hpp"
 #include "kernel/generic/task.hpp"
 #include "libcore/ds/vec.hpp"
@@ -34,6 +35,8 @@ struct Space
     static core::Result<Space *> global_space_by_handle(uint64_t handle);
 };
 
+struct KernelIpcServer;
+struct IpcConnection;
 struct Asset
 {
     core::Lock lock;
@@ -61,6 +64,12 @@ struct Asset
         Space *space;
 
         kernel::Task *task;
+
+        KernelIpcServer* ipc_server; // the IPC server that this asset is associated with
+
+        IpcConnection* ipc_connection; 
+
+
     };
 
     static core::Result<Asset *> by_handle(Space *space, uint64_t handle)

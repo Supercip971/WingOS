@@ -3,7 +3,8 @@
 #include "kernel/generic/space.hpp"
 #include "libcore/lock/lock.hpp"
 #include "wingos-headers/ipc.h"
-
+#include "libcore/ds/vec.hpp"
+#include "kernel/generic/asset.hpp"
 
 
 using IpcMessageServer = IpcMessage;
@@ -62,7 +63,7 @@ core::Result<KernelIpcServer*> query_server(IpcServerHandle handle);
 
 // create a connection object for the server, 
 
-core::Result<AssetPtr> server_accept_connection(Space* space, KernelIpcServer* server);
+core::Result<AssetPtr> server_accept_connection(KernelIpcServer* server);
 
 
 core::Result<MessageHandle> server_send_message(IpcConnection* connection, IpcMessage message);

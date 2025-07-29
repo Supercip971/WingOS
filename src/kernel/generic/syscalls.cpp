@@ -367,7 +367,7 @@ core::Result<size_t> ksyscall_create_connection(SyscallIpcConnect *create)
         return core::Result<size_t>::error("no current space");
     }
 
-    auto asset = try$(asset_create_ipc_connection(space, {
+    auto asset = try$(asset_create_ipc_connections(space, {
         .server_handle = create->server_handle,
         .flags = create->flags,
     }));
@@ -606,19 +606,68 @@ core::Result<size_t> ksyscall_ipc_accept(SyscallIpcAccept* accept)
 
     auto kernel_server = server->ipc_server;
 
-    auto res = server_accept_connection(space, kernel_server);
+    auto res = server_accept_connection( kernel_server);
+
+    if(res.is_error())
+    {
+        accept->accepted_connection = false;
+        return core::Result<size_t>::success(0);
+    }
+    
+    auto connection = res.unwrap();
+
+    if(connection.asset == nullptr)
+    {
+        accept->accepted_connection = false;
+        return core::Result<size_t>::success(0);
+    }
+    accept->connection_handle = connection.handle;
+    accept->accepted_connection = true;
+    
+    return core::Result<size_t>::success((size_t)connection.handle);
+}
+
+core::Result<size_t> ksyscall_ipc_server_reply(SyscallIpcReply* reply)
+{
+    Space *space = nullptr;
+    if (reply->space_handle != 0)
+    {
+        space = try$(Space::space_by_handle(
+            Cpu::current()->currentTask()->space(),
+            reply->space_handle));
+    }
+    else
+    {
+        space = Cpu::current()->currentTask()->space();
+    }
+
+    if (space == nullptr)
+    {
+        return core::Result<size_t>::error("no current space");
+    }
+
+    auto connection = try$(Asset::by_handle(space, reply->connection_handle));
+
+    if (connection->kind != OBJECT_KIND_IPC_CONNECTION)
+    {
+        return core::Result<size_t>::error("connection is not an IPC connection");
+    }
+
+    auto ipc_connection = connection->ipc_connection;
+
+    if(!ipc_connection->accepted)
+    {
+        return core::Result<size_t>::error("connection is not accepted");
+    }
+
+    auto res = server_reply_message(ipc_connection, reply->message_handle, reply->message);
 
     if(res.is_error())
     {
         return core::Result<size_t>(res.error());
     }
 
-    auto connection = res.unwrap();
-
-    accept->connection_handle = connection.handle;
-    accept->accepted_connection = true;
-    
-    return core::Result<size_t>::success((size_t)connection.handle);
+    return core::Result<size_t>::success(0);
 }
 
 core::Result<size_t> syscall_handle(SyscallInterface syscall)
@@ -670,6 +719,48 @@ core::Result<size_t> syscall_handle(SyscallInterface syscall)
         SyscallAssetMove *asset_move = try$(syscall_check_ptr<SyscallAssetMove>(syscall.arg1));
         return ksyscall_asset_move(asset_move);
     }
+    case SYSCALL_IPC_CREATE_SERVER_ID:
+    {
+        SyscallIpcCreateServer *create = try$(syscall_check_ptr<SyscallIpcCreateServer>(syscall.arg1));
+        return ksyscall_create_server(create);
+    }
+    case SYSCALL_IPC_CONNECT_ID:
+    {
+        SyscallIpcConnect *create = try$(syscall_check_ptr<SyscallIpcConnect>(syscall.arg1));
+        return ksyscall_create_connection(create);
+    }
+    case SYSCALL_IPC_SEND_ID:
+    {
+        SyscallIpcSend *send = try$(syscall_check_ptr<SyscallIpcSend>(syscall.arg1));
+        return ksyscall_send(send);
+    }
+    case SYSCALL_IPC_SERVER_RECEIVE_ID:
+    {
+        SyscallIpcServerReceive *receive = try$(syscall_check_ptr<SyscallIpcServerReceive>(syscall.arg1));
+        return ksyscall_server_receive(receive);
+    }
+    case SYSCALL_IPC_CLIENT_RECEIVE_REPLY_ID:
+    {
+        SyscallIpcClientReceiveReply *receive = try$(syscall_check_ptr<SyscallIpcClientReceiveReply>(syscall.arg1));
+        return ksyscall_client_receive_reply(receive);
+    }
+    case SYSCALL_IPC_CALL_ID:
+    {
+        SyscallIpcCall *call = try$(syscall_check_ptr<SyscallIpcCall>(syscall.arg1));
+        return ksyscall_ipc_call(call);
+    }
+    case SYSCALL_IPC_ACCEPT_ID:
+    {
+        SyscallIpcAccept *accept = try$(syscall_check_ptr<SyscallIpcAccept>(syscall.arg1));
+        return ksyscall_ipc_accept(accept);
+    }
+    case SYSCALL_IPC_REPLY_ID:
+    {
+        SyscallIpcReply *reply = try$(syscall_check_ptr<SyscallIpcReply>(syscall.arg1));
+        return ksyscall_ipc_server_reply(reply);
+    }
+    
+    
     default:
         return {"Unknown syscall ID"};
     }

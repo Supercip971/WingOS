@@ -14,11 +14,12 @@ struct KernelIpcServerRegistered
 uint64_t next_free_ipc_server_handle = 1;
 
 core::Lock ipc_server_lock;
-core::Vec<KernelIpcServerRegistered> registered_servers;
+core::Vec<KernelIpcServerRegistered> registered_servers = {};
 
 KernelIpcServer *register_server(IpcServerHandle handle, uint64_t space_handle)
 {
     KernelIpcServer *server = new KernelIpcServer();
+    *server = {};
     server->handle = handle;
     server->parent_space = space_handle;
     server->lock.lock();
@@ -35,10 +36,12 @@ KernelIpcServer *register_server(IpcServerHandle handle, uint64_t space_handle)
 KernelIpcServer *create_server(uint64_t space_handle)
 {
     KernelIpcServer *server = new KernelIpcServer();
+    *server = {};
     server->handle = next_free_ipc_server_handle++;
     server->parent_space = space_handle;
     server->lock.lock();
     server->connections.clear();
+    server->self = nullptr; // will be set later when the asset is created
     server->lock.release();
 
     ipc_server_lock.lock();
@@ -47,6 +50,22 @@ KernelIpcServer *create_server(uint64_t space_handle)
 
     return server;
 }
+
+core::Result<KernelIpcServer*> query_server(IpcServerHandle handle)
+{
+    ipc_server_lock.lock();
+    for (size_t i = 0; i < registered_servers.len(); i++)
+    {
+        if (registered_servers[i].handle == handle)
+        {
+            ipc_server_lock.release();
+            return registered_servers[i].server;
+        }
+    }
+    ipc_server_lock.release();
+    return core::Result<KernelIpcServer *>::error("server not found");
+}
+
 
 void unregister_server(IpcServerHandle handle, uint64_t space_handle)
 {
@@ -65,13 +84,13 @@ void unregister_server(IpcServerHandle handle, uint64_t space_handle)
     log::warn$("unregister_server: server not found: {} {}", handle, space_handle);
 }
 
-core::Result<AssetPtr> server_accept_connection(KernelIpcServer *server)
+core::Result<AssetPtr> server_accept_connection( KernelIpcServer *server)
 {
     if (server == nullptr)
     {
         return core::Result<AssetPtr>::error("server is null");
     }
-
+    
     server->lock.lock();
     for (size_t i = 0; i < server->connections.len(); i++)
     {

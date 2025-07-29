@@ -387,6 +387,31 @@ static inline SyscallIpcAccept syscall_ipc_accept_decode(SyscallInterface interf
 }
 
 
+// ------- SYSCALL IPC REPLY ----
+
+#define SYSCALL_IPC_REPLY_ID 0x0000000F
+typedef struct SyscallIpcReply
+{
+    uint64_t space_handle;
+
+    IpcServerHandle server_handle; // the handle of the server to reply to
+    IpcConnectionHandle connection_handle; // the handle of the connection to reply to
+    MessageHandle message_handle; // the handle of the message to reply with
+    IpcMessage message; // the message to reply with
+} SyscallIpcReply;
+
+static inline SyscallInterface syscall_ipc_reply_encode(SyscallIpcReply* reply)
+{
+    return SyscallInterface{SYSCALL_IPC_REPLY_ID, 0, (uintptr_t)reply, 0, 0, 0, 0, 0};
+}
+
+static inline SyscallIpcReply syscall_ipc_reply_decode(SyscallInterface interface)
+{
+    SyscallIpcReply *reply = (SyscallIpcReply *)interface.arg1;
+    return *reply;
+}
+
+
 #ifdef __cplusplus
 }
 #endif

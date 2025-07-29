@@ -9,6 +9,7 @@
 #include "mcx/mcx.hpp"
 #include "space.hpp"
 
+#include "kernel/generic/ipc.hpp"
 core::Result<AssetPtr> _asset_create(Space *space, AssetKind kind);
 
 struct AssetMemoryCreateParams
@@ -53,7 +54,7 @@ struct AssetIpcConnectionCreateParams
 };
 
 // <!> create two object: one for the connection and one for the server
-core::Result<AssetPtr> asset_create_ipc_connection(Space *space, AssetIpcConnectionCreateParams params); 
+core::Result<AssetPtr> asset_create_ipc_connections(Space *space, AssetIpcConnectionCreateParams params); 
 
 core::Result<AssetPtr> asset_move(Space* from, Space* to, AssetPtr asset);
 core::Result<AssetPtr> asset_copy(Space* from, Space* to, AssetPtr asset);

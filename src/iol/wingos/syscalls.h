@@ -116,6 +116,77 @@ static inline SyscallAssetMove sys$asset_copy(uint64_t from_space_handle, uint64
 }
 
 
+static inline SyscallIpcCreateServer sys$ipc_create_server(uint64_t space_handle, bool is_root)
+{
+    SyscallIpcCreateServer create = {space_handle, is_root, 0, 0};
+    SyscallInterface interface = syscall_ipc_create_server_encode(&create);
+    uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
+        (void)result;
+    return create;
+}
+
+static inline SyscallIpcAccept sys$ipc_accept(bool block, uint64_t space_handle, IpcServerHandle server_handle)
+{
+    SyscallIpcAccept accept = {block, space_handle, false, server_handle, 0};
+    SyscallInterface interface = syscall_ipc_accept_encode(&accept);
+    uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
+        (void)result;
+    return accept;
+}
+
+static inline SyscallIpcConnect sys$ipc_connect(bool block, uint64_t space_handle, IpcServerHandle server_handle, uint64_t flags)
+{
+    SyscallIpcConnect connect = {block, space_handle, server_handle, flags, 0};
+    SyscallInterface interface = syscall_ipc_connect_encode(&connect);
+    uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
+        (void)result;
+    return connect;
+}
+
+static inline SyscallIpcSend sys$ipc_send(uint64_t space_handle, IpcConnectionHandle connection_handle, IpcMessage message)
+{
+    SyscallIpcSend send = {space_handle, connection_handle, message, 0};
+    SyscallInterface interface = syscall_ipc_send_encode(&send);
+    uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
+        (void)result;
+    return send;
+}
+
+static inline SyscallIpcClientReceiveReply sys$ipc_receive_reply_client(bool block, uint64_t space_handle, IpcConnectionHandle connection_handle)
+{
+    SyscallIpcClientReceiveReply receive = {block, false, space_handle, 0, connection_handle, 0, {}};
+    SyscallInterface interface = syscall_ipc_receive_client_reply_encode(&receive);
+    uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
+        (void)result;
+    return receive;
+}
+
+static inline SyscallIpcServerReceive sys$ipc_receive_server (bool block, uint64_t space_handle,uint64_t server_asset_handle, IpcConnectionHandle connection_handle)
+{
+    SyscallIpcServerReceive receive = {block, false, space_handle, server_asset_handle, false, connection_handle, 0, {}};
+    SyscallInterface interface = syscall_ipc_server_receive_encode(&receive);
+    uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
+        (void)result;
+    return receive;
+}
+
+static inline SyscallIpcCall sys$ipc_call(uint64_t space_handle, IpcConnectionHandle connection_handle, IpcMessage message)
+{
+    SyscallIpcCall call = {space_handle, false, connection_handle, message, {}};
+    SyscallInterface interface = syscall_ipc_call_encode(&call);
+    uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
+        (void)result;
+    return call;
+}
+
+static inline SyscallIpcReply sys$ipc_reply(uint64_t space_handle, uint64_t server_handle, MessageHandle message_handle, IpcMessage message)
+{
+    SyscallIpcReply reply = {space_handle, server_handle, message_handle,message_handle, message};
+    SyscallInterface interface = syscall_ipc_reply_encode(&reply);
+    uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
+        (void)result;
+    return reply;
+}
 
 #ifdef __cplusplus
 }

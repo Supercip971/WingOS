@@ -8,6 +8,7 @@
 #include "math/align.hpp"
 #include "mcx/mcx.hpp"
 #include "wingos-headers/asset.h"
+#include "wingos-headers/syscalls.h"
 
 #include <string.h>
 #include "hw/mem/addr_space.hpp"
@@ -22,7 +23,6 @@ core::Result<size_t> execute_module(elf::ElfLoader loaded)
     
     auto task_asset = sys$task_create(space_res.returned_handle, (uintptr_t)loaded.entry_point(), 0, 0, 0, 0);
 
-    log::log$("hey");
     if (task_asset.returned_handle == 0)
     {
         log::err$("failed to create task asset: {}", task_asset.returned_handle);
@@ -33,7 +33,6 @@ core::Result<size_t> execute_module(elf::ElfLoader loaded)
     for(size_t i = 0; i < loaded.program_count(); i++)
     {
  
-    log::log$("hey");       
         auto ph = try$(loaded.program_header(i));
         if (ph.type != core::underlying_value(ElfProgramHeaderType::HEADER_LOAD))
         {
@@ -41,7 +40,6 @@ core::Result<size_t> execute_module(elf::ElfLoader loaded)
             continue;
         }
 
-    log::log$("hey");
         log::log$("section[{}]: type: {}, flags: {}, virt_addr: {}, file_offset: {}, file_size: {}",
                   i, ph.type, ph.flags, ph.virt_addr, ph.file_offset, ph.file_size);
 
@@ -55,7 +53,6 @@ core::Result<size_t> execute_module(elf::ElfLoader loaded)
         auto mem_asset_res = sys$mem_own(0, mem_size, 0);
 
         auto self_addr = 0x0000002000000000 + mem_asset_res.addr;
-     log::log$("hey");
        
         auto self_mapped = sys$map_create(0, self_addr,
                            math::alignUp(self_addr + mem_size, 4096ul),
@@ -74,7 +71,6 @@ core::Result<size_t> execute_module(elf::ElfLoader loaded)
 
 
         auto new_handle = sys$asset_move(0, space_res.returned_handle, mem_asset_res.returned_handle);
-  log::log$("hey");
   
         auto target_mapped = sys$map_create(space_res.returned_handle, ph.virt_addr,
                            math::alignUp(ph.virt_addr + mem_size, 4096ul),
@@ -87,11 +83,18 @@ core::Result<size_t> execute_module(elf::ElfLoader loaded)
     return 0ul;
 }
 
+void start_server()
+{
+}
 
 
 int _main(mcx::MachineContext *context)
 {
 
+     SyscallIpcCreateServer create = sys$ipc_create_server(SPACE_SELF, true);
+    log::log$("created server with handle: {}", create.returned_handle);
+    core::Vec<IpcConnectionHandle> connections;
+   
     for (int i = 0; i < context->_modules_count; i++)
     {
         log::log$("module {}: {}", i, context->_modules[i].path);
@@ -146,7 +149,23 @@ int _main(mcx::MachineContext *context)
 
         execute_module(loaded.unwrap()).assert();
     }
+
+    start_server();
     
+   while(true)
+    {
+        SyscallIpcAccept accept = sys$ipc_accept(false, SPACE_SELF, create.returned_handle);
+        if (accept.accepted_connection)
+        {
+            log::log$("accepted connection: {}", accept.connection_handle);
+            connections.push(accept.connection_handle);
+        }
+        else
+        {
+     //       log::log$("no connection accepted");
+        }
+
+    }
     while (true)
     {
      //   log::log$("no Hello, World!");

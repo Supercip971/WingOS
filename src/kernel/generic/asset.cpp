@@ -5,7 +5,9 @@
 #include "hw/mem/addr_space.hpp"
 #include "iol/mem_flags.h"
 
+#include "kernel/generic/ipc.hpp"
 #include "math/align.hpp"
+#include "wingos-headers/asset.h"
 
 core::Result<AssetPtr> _asset_create(Space *space, AssetKind kind)
 {
@@ -63,7 +65,8 @@ void asset_release(Space *space, Asset *asset)
     {
         if (asset->kind == OBJECT_KIND_MEMORY)
         {
-            if(asset->memory.allocated){
+            if (asset->memory.allocated)
+            {
                 Pmm::the().release(PhysAddr{asset->memory.addr}, asset->memory.size);
             }
         }
@@ -76,7 +79,11 @@ void asset_release(Space *space, Asset *asset)
                               asset->mapping.end));
             }
         }
-        else if (asset->kind == OBJECT_KIND_IPC)
+        else if (asset->kind == OBJECT_KIND_IPC_CONNECTION)
+        {
+            log::warn$("asset_release: ipc asset is not supported yet");
+        }
+        else if (asset->kind == OBJECT_KIND_IPC_SERVER)
         {
             log::warn$("asset_release: ipc asset is not supported yet");
         }
@@ -127,11 +134,11 @@ core::Result<AssetPtr> asset_create_memory(Space *space, AssetMemoryCreateParams
             res = Pmm::the().allocate(math::alignUp<size_t>(params.size, arch::amd64::PAGE_SIZE) / arch::amd64::PAGE_SIZE);
         }
 
-            ptr.asset->memory.addr = res.unwrap()._addr;
+        ptr.asset->memory.addr = res.unwrap()._addr;
     }
     else
     {
-        // 
+        //
     }
 
     if (res.is_error())
@@ -142,7 +149,6 @@ core::Result<AssetPtr> asset_create_memory(Space *space, AssetMemoryCreateParams
         asset_release(space, ptr.asset);
         return core::Result<AssetPtr>::error("unable to allocate memory");
     }
-
 
     ptr.asset->lock.release();
     return ptr;
@@ -226,8 +232,7 @@ core::Result<AssetPtr> asset_create_task(Space *space, AssetTaskCreateParams par
     return ptr;
 }
 
-
-core::Result<AssetPtr> asset_move(Space* from, Space* to, AssetPtr asset)
+core::Result<AssetPtr> asset_move(Space *from, Space *to, AssetPtr asset)
 {
     if (from == nullptr || to == nullptr)
     {
@@ -256,7 +261,8 @@ core::Result<AssetPtr> asset_move(Space* from, Space* to, AssetPtr asset)
     return core::Result<AssetPtr>::error("asset not found in from space");
 }
 
-core::Result<AssetPtr> asset_copy(Space* from, Space* to, AssetPtr asset)
+// FIXME: rename this to asset_share
+core::Result<AssetPtr> asset_copy(Space *from, Space *to, AssetPtr asset)
 {
     if (from == nullptr || to == nullptr)
     {
@@ -279,3 +285,62 @@ core::Result<AssetPtr> asset_copy(Space* from, Space* to, AssetPtr asset)
     return copied_asset;
 }
 
+core::Result<AssetPtr> asset_create_ipc_server(Space *space, AssetIpcServerCreateParams params)
+{
+    AssetPtr ptr = try$(_asset_create(space, OBJECT_KIND_IPC_SERVER));
+
+    if (params.is_root)
+    {
+        ptr.asset->ipc_server = register_server(0, space->uid);
+    }
+    else
+    {
+        ptr.asset->ipc_server = create_server(space->uid);
+    }
+
+    ptr.asset->ipc_server->self = ptr.asset; // 
+    ptr.asset->lock.release();
+    return ptr;
+}
+
+core::Result<AssetPtr> asset_create_ipc_connections(Space *space, AssetIpcConnectionCreateParams params)
+{
+    AssetPtr ptr = try$(_asset_create(space, OBJECT_KIND_IPC_CONNECTION));
+
+
+    if (params.server_handle == 0)
+    {
+        return core::Result<AssetPtr>::error("asset_create_ipc_connection: server_handle must be greater than 0");
+    }
+
+    auto query_res = query_server(params.server_handle);
+    if (query_res.is_error())
+    {
+        log::err$("asset_create_ipc_connection: unable to query server: {}", query_res
+                                                                                 .error());
+        ptr.asset->lock.release();
+ 
+        asset_release(space, ptr.asset);
+        return core::Result<AssetPtr>::error("unable to query server");
+    }
+
+    auto server= query_res.unwrap();
+
+    ptr.asset->ipc_connection->server_handle = params.server_handle;
+    ptr.asset->ipc_connection->server_space_handle = server->parent_space;
+    ptr.asset->ipc_connection->client_space_handle = space->uid;
+
+    ptr.asset->lock.release();
+
+
+    auto ptr_in_server = try$(asset_copy(space, server->self->space, ptr));
+
+    
+    server->lock.lock();
+    server->connections.push(ptr_in_server);
+
+
+    server->self.ref_count++;
+    server->lock.release();
+    return ptr;
+}

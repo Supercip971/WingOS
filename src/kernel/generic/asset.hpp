@@ -39,8 +39,25 @@ struct AssetTaskCreateParams
 
 core::Result<AssetPtr> asset_create_task(Space *vspace, AssetTaskCreateParams params);
 
+struct AssetIpcServerCreateParams
+{
+    bool is_root; // if true, the server will be created as a root server, otherwise it will be created as a child server
+};
+
+core::Result<AssetPtr> asset_create_ipc_server(Space *space, AssetIpcServerCreateParams params);
+
+struct AssetIpcConnectionCreateParams
+{
+    IpcServerHandle server_handle; // the handle of the server to connect to
+    uint64_t flags; // flags for the connection
+};
+
+// <!> create two object: one for the connection and one for the server
+core::Result<AssetPtr> asset_create_ipc_connection(Space *space, AssetIpcConnectionCreateParams params); 
+
 core::Result<AssetPtr> asset_move(Space* from, Space* to, AssetPtr asset);
 core::Result<AssetPtr> asset_copy(Space* from, Space* to, AssetPtr asset);
+
 
 
 void asset_own(Asset *asset);

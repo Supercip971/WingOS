@@ -24,19 +24,13 @@ struct IpcData
     union 
     {
         uint64_t data; // the data for the IPC message
-        struct 
-        {
-            uint64_t asset_handle; // the handle of the asset
-        } asset;
+        uint64_t asset_handle; // the handle of the asset
     };
 };
 
 struct IpcMessage
 {
-    IpcConnectionHandle handle; // the handle of the message
-
-    IpcConnectionHandle sender; // the sender of the message (received)
-    IpcConnectionHandle receiver; // the receiver of the message (replied)
+    uint64_t message_id; // unique id of the message
     uint64_t flags; // flags for the message
     IpcData data[8]; // data for the message, can be used for IPC payload
 };

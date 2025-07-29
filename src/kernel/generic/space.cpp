@@ -45,8 +45,9 @@ core::Result<AssetPtr> space_create(Space *parent, [[maybe_unused]] uint64_t fla
     space_ptr.handle = _space_handle++;
     _spaces.push(space_ptr);
 
+    asset->space->uid = space_ptr.handle;    
     space->assets.push({.asset = asset, .handle = 0});
-    space->uid++;
+    space->alloc_uid = 16;
     asset->lock.release();
 
     return ptr;

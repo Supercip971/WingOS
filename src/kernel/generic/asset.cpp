@@ -24,7 +24,7 @@ core::Result<AssetPtr> _asset_create(Space *space, AssetKind kind)
     ptr.handle = 0;
     if (space != nullptr)
     {
-        ptr.handle = space->uid++;
+        ptr.handle = space->alloc_uid++;
 
         if (space->assets.push(ptr).is_error())
         {
@@ -298,7 +298,9 @@ core::Result<AssetPtr> asset_create_ipc_server(Space *space, AssetIpcServerCreat
         ptr.asset->ipc_server = create_server(space->uid);
     }
 
-    ptr.asset->ipc_server->self = ptr.asset; // 
+    ptr.asset->ipc_server->self = ptr.asset; 
+    
+    
     ptr.asset->lock.release();
     return ptr;
 }
@@ -306,12 +308,6 @@ core::Result<AssetPtr> asset_create_ipc_server(Space *space, AssetIpcServerCreat
 core::Result<AssetPtr> asset_create_ipc_connections(Space *space, AssetIpcConnectionCreateParams params)
 {
     AssetPtr ptr = try$(_asset_create(space, OBJECT_KIND_IPC_CONNECTION));
-
-
-    if (params.server_handle == 0)
-    {
-        return core::Result<AssetPtr>::error("asset_create_ipc_connection: server_handle must be greater than 0");
-    }
 
     auto query_res = query_server(params.server_handle);
     if (query_res.is_error())
@@ -324,8 +320,12 @@ core::Result<AssetPtr> asset_create_ipc_connections(Space *space, AssetIpcConnec
         return core::Result<AssetPtr>::error("unable to query server");
     }
 
+
     auto server= query_res.unwrap();
 
+    ptr.asset->ipc_connection = new IpcConnection();
+    *ptr.asset->ipc_connection = {};
+    ptr.asset->ipc_connection->accepted = false;
     ptr.asset->ipc_connection->server_handle = params.server_handle;
     ptr.asset->ipc_connection->server_space_handle = server->parent_space;
     ptr.asset->ipc_connection->client_space_handle = space->uid;
@@ -333,14 +333,17 @@ core::Result<AssetPtr> asset_create_ipc_connections(Space *space, AssetIpcConnec
     ptr.asset->lock.release();
 
 
-    auto ptr_in_server = try$(asset_copy(space, server->self->space, ptr));
+
+    auto server_space = Space::global_space_by_handle(server->parent_space).unwrap();
+    auto ptr_in_server = try$(asset_copy(space, server_space, ptr));
 
     
     server->lock.lock();
     server->connections.push(ptr_in_server);
 
 
-    server->self.ref_count++;
+    server->self->ref_count++;
     server->lock.release();
+
     return ptr;
 }

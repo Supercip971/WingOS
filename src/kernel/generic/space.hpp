@@ -3,7 +3,6 @@
 #include <stdint.h>
 #include <wingos-headers/asset.h>
 
-#include "kernel/generic/ipc.hpp"
 #include "kernel/generic/paging.hpp"
 #include "kernel/generic/task.hpp"
 #include "libcore/ds/vec.hpp"
@@ -18,12 +17,14 @@ struct AssetPtr
     bool write;
     bool read;
     bool share;
+    
 };
 
 struct Space
 {
 
     size_t uid;
+    size_t alloc_uid;
     Asset *self;
     uint64_t space_handle;
     Space *parent_space_handle; // the space that created this space

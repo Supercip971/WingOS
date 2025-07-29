@@ -9,9 +9,12 @@
 #include "kernel/generic/scheduler.hpp"
 #include "kernel/generic/task.hpp"
 #include "libcore/fmt/log.hpp"
+#include "libcore/lock/lock.hpp"
 #include "wingos-headers/asset.h"
 #include "wingos-headers/syscalls.h"
 
+
+core::Lock log_lock;
 template <typename T>
 core::Result<T *> syscall_check_ptr(uintptr_t ptr)
 {
@@ -625,8 +628,9 @@ core::Result<size_t> syscall_handle(SyscallInterface syscall)
     case SYSCALL_DEBUG_LOG_ID:
     {
         auto debug = syscall_debug_decode(syscall);
+        log_lock.lock();
         log::log("{}", debug.message);
-
+        log_lock.release();
         return core::Result<size_t>::success(0);
     }
     case SYSCALL_PHYSICAL_MEM_OWN_ID:

@@ -5,6 +5,7 @@
 #include "kernel/generic/asset.hpp"
 #include "kernel/generic/context.hpp"
 #include "kernel/generic/cpu.hpp"
+#include "kernel/generic/ipc.hpp"
 #include "kernel/generic/scheduler.hpp"
 #include "kernel/generic/task.hpp"
 #include "libcore/fmt/log.hpp"
@@ -313,6 +314,308 @@ core::Result<size_t> ksyscall_asset_move(SyscallAssetMove *asset_move_args)
     asset_move_args->returned_handle_in_space = moved_asset.handle;
 
     return core::Result<size_t>::success((uint64_t)moved_asset.handle);
+}
+
+core::Result<size_t> ksyscall_create_server(SyscallIpcCreateServer *create)
+{
+    Space *space = nullptr;
+    if (create->space_handle != 0)
+    {
+        space = try$(Space::space_by_handle(
+            Cpu::current()->currentTask()->space(),
+            create->space_handle));
+    }
+    else
+    {
+        space = Cpu::current()->currentTask()->space();
+    }
+
+    if (space == nullptr)
+    {
+        return core::Result<size_t>::error("no current space");
+    }
+
+    auto asset = try$(asset_create_ipc_server(space, {
+        .is_root = create->is_root,
+    }));
+
+    create->returned_addr = asset.asset->ipc_server->handle;
+    create->returned_handle = asset.handle;
+
+    return core::Result<size_t>::success((uint64_t)asset.handle);
+}
+
+core::Result<size_t> ksyscall_create_connection(SyscallIpcConnect *create)
+{
+    Space *space = nullptr;
+    if (create->space_handle != 0)
+    {
+        space = try$(Space::space_by_handle(
+            Cpu::current()->currentTask()->space(),
+            create->space_handle));
+    }
+    else
+    {
+        space = Cpu::current()->currentTask()->space();
+    }
+
+    if (space == nullptr)
+    {
+        return core::Result<size_t>::error("no current space");
+    }
+
+    auto asset = try$(asset_create_ipc_connection(space, {
+        .server_handle = create->server_handle,
+        .flags = create->flags,
+    }));
+
+    create->returned_handle = asset.handle;
+
+    return core::Result<size_t>::success((uint64_t)asset.handle);
+}
+
+core::Result<size_t> ksyscall_send(SyscallIpcSend* send) 
+{
+    Space *space = nullptr;
+    if (send->space_handle != 0)
+    {
+        space = try$(Space::space_by_handle(
+            Cpu::current()->currentTask()->space(),
+            send->space_handle));
+    }
+    else
+    {
+        space = Cpu::current()->currentTask()->space();
+    }
+
+    if (space == nullptr)
+    {
+        return core::Result<size_t>::error("no current space");
+    }
+
+    auto connection = try$(Asset::by_handle(space, send->connection_handle));
+
+    if (connection->kind != OBJECT_KIND_IPC_CONNECTION)
+    {
+        return core::Result<size_t>::error("connection is not an IPC connection");
+    }
+
+    auto ipc_connection = connection->ipc_connection;
+
+    if(!ipc_connection->accepted)
+    {
+        return core::Result<size_t>::error("connection is not accepted");
+    }
+    
+
+
+    auto res = try$(server_send_message(ipc_connection, send->message));
+
+    send->returned_msg_handle = res;
+    return core::Result<size_t>::success((size_t)res);
+}
+
+core::Result<size_t> ksyscall_server_receive(SyscallIpcServerReceive* receive)
+{
+    Space *space = nullptr;
+    if (receive->space_handle != 0)
+    {
+        space = try$(Space::space_by_handle(
+            Cpu::current()->currentTask()->space(),
+            receive->space_handle));
+    }
+    else
+    {
+        space = Cpu::current()->currentTask()->space();
+    }
+
+    if (space == nullptr)
+    {
+        return core::Result<size_t>::error("no current space");
+    }
+
+    auto connection = try$(Asset::by_handle(space, receive->connection_handle));
+
+    if (connection->kind != OBJECT_KIND_IPC_CONNECTION)
+    {
+        return core::Result<size_t>::error("connection is not an IPC connection");
+    }
+
+    auto ipc_connection = connection->ipc_connection;
+
+    if(!ipc_connection->accepted)
+    {
+        return core::Result<size_t>::error("connection is not accepted");
+    }
+
+    auto server = try$(Asset::by_handle(space, receive->server_handle));
+    if (server->kind != OBJECT_KIND_IPC_SERVER)
+    {
+        return core::Result<size_t>::error("server is not an IPC server");
+    }
+
+    auto kernel_server = server->ipc_server;
+
+    if(ipc_connection->server_handle != kernel_server->handle)
+    {
+        return core::Result<size_t>::error("connection is not connected to this server");
+    }
+
+    auto res = (server_receive_message(kernel_server, ipc_connection));
+
+    if(res.is_error())
+    {
+        return core::Result<size_t>(res.error());
+    }
+
+    auto received_message = res.unwrap();
+
+    receive->returned_msg_handle = received_message.uid;
+    receive->returned_message = received_message.message_sended.server;
+    receive->contain_response = true;
+    
+    return core::Result<size_t>::success((size_t)received_message.uid);
+}
+
+core::Result<size_t> ksyscall_client_receive_reply(SyscallIpcClientReceiveReply* receive)
+{
+    Space *space = nullptr;
+    if (receive->space_handle != 0)
+    {
+        space = try$(Space::space_by_handle(
+            Cpu::current()->currentTask()->space(),
+            receive->space_handle));
+    }
+    else
+    {
+        space = Cpu::current()->currentTask()->space();
+    }
+
+    if (space == nullptr)
+    {
+        return core::Result<size_t>::error("no current space");
+    }
+
+    auto connection = try$(Asset::by_handle(space, receive->connection_handle));
+
+    if (connection->kind != OBJECT_KIND_IPC_CONNECTION)
+    {
+        return core::Result<size_t>::error("connection is not an IPC connection");
+    }
+
+    auto ipc_connection = connection->ipc_connection;
+
+    if(!ipc_connection->accepted)
+    {
+        return core::Result<size_t>::error("connection is not accepted");
+    }
+
+    auto res = client_receive_response(ipc_connection, receive->message);
+
+    if(res.is_error())
+    {
+        return core::Result<size_t>(res.error());
+    }
+
+    auto received_message = res.unwrap();
+
+    //receive->returned_msg_handle = received_message.uid;
+    receive->returned_message = received_message.message_responded.client;
+    receive->contain_response = true;
+
+    return core::Result<size_t>::success((size_t)received_message.uid);
+}
+
+core::Result<size_t> ksyscall_ipc_call(SyscallIpcCall* call)
+{
+    Space *space = nullptr;
+    if (call->space_handle != 0)
+    {
+        space = try$(Space::space_by_handle(
+            Cpu::current()->currentTask()->space(),
+            call->space_handle));
+    }
+    else
+    {
+        space = Cpu::current()->currentTask()->space();
+    }
+
+    if (space == nullptr)
+    {
+        return core::Result<size_t>::error("no current space");
+    }
+
+    auto connection = try$(Asset::by_handle(space, call->connection_handle));
+
+    if (connection->kind != OBJECT_KIND_IPC_CONNECTION)
+    {
+        return core::Result<size_t>::error("connection is not an IPC connection");
+    }
+
+    auto ipc_connection = connection->ipc_connection;
+
+    if(!ipc_connection->accepted)
+    {
+        return core::Result<size_t>::error("connection is not accepted");
+    }
+
+    auto res = call_server_and_wait(ipc_connection, call->message);
+
+    if(res.is_error())
+    {
+        return core::Result<size_t>(res.error());
+    }
+
+    auto received_message = res.unwrap();
+
+    call->returned_message = received_message;
+    call->has_reply = true;
+    //call->returned_msg_handle = received_message.uid;
+    
+    return core::Result<size_t>::success((size_t)0);
+}
+
+core::Result<size_t> ksyscall_ipc_accept(SyscallIpcAccept* accept)
+{
+    Space *space = nullptr;
+    if (accept->space_handle != 0)
+    {
+        space = try$(Space::space_by_handle(
+            Cpu::current()->currentTask()->space(),
+            accept->space_handle));
+    }
+    else
+    {
+        space = Cpu::current()->currentTask()->space();
+    }
+
+    if (space == nullptr)
+    {
+        return core::Result<size_t>::error("no current space");
+    }
+
+    auto server = try$(Asset::by_handle(space, accept->server_handle));
+
+    if (server->kind != OBJECT_KIND_IPC_SERVER)
+    {
+        return core::Result<size_t>::error("server is not an IPC server");
+    }
+
+    auto kernel_server = server->ipc_server;
+
+    auto res = server_accept_connection(space, kernel_server);
+
+    if(res.is_error())
+    {
+        return core::Result<size_t>(res.error());
+    }
+
+    auto connection = res.unwrap();
+
+    accept->connection_handle = connection.handle;
+    accept->accepted_connection = true;
+    
+    return core::Result<size_t>::success((size_t)connection.handle);
 }
 
 core::Result<size_t> syscall_handle(SyscallInterface syscall)

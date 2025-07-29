@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "kernel/generic/ipc.hpp"
 #include "wingos-headers/ipc.h"
 
 #ifdef __cplusplus
@@ -212,7 +213,8 @@ typedef struct SyscallIpcCreateServer
     uint64_t space_handle;
    
     bool is_root; 
-    IpcServerHandle returned_handle; // the handle of the created server
+    IpcServerHandle returned_addr; // the handle of the created server
+    uint64_t returned_handle; // the handle of the created server asset
 } SyscallIpcCreateServer;
 
 static inline SyscallInterface syscall_ipc_create_server_encode(SyscallIpcCreateServer* create)
@@ -237,7 +239,7 @@ typedef struct SyscallIpcConnect
     
     IpcServerHandle server_handle; // the handle of the server to connect to
     uint64_t flags; // flags for the connection
-    IpcConnectionHandle returned_handle; // the handle of the connection
+    uint64_t returned_handle; // the handle of the connection
 } SyscallIpcConnect;
 
 static inline SyscallInterface syscall_ipc_connect_encode(SyscallIpcConnect* connect)
@@ -261,6 +263,7 @@ typedef struct SyscallIpcSend
     
     IpcConnectionHandle connection_handle; // the handle of the connection to send the message to
     IpcMessage message; // the message to send
+    MessageHandle returned_msg_handle; // the handle of the message sent, in the context of the connection
 } SyscallIpcSend;
 
 static inline SyscallInterface syscall_ipc_send_encode(SyscallIpcSend* send)
@@ -274,41 +277,74 @@ static inline SyscallIpcSend syscall_ipc_send_decode(SyscallInterface interface)
     return *send;
 }
 
-// ------- SYSCALL IPC RECEIVE ----
+// ------- SYSCALL IPC SERVER RECEIVE ----
 
-#define SYSCALL_IPC_RECEIVE_ID 0x0000000B
+#define SYSCALL_IPC_SERVER_RECEIVE_ID 0x0000000B
 
-typedef struct SyscallIpcReceive
+typedef struct SyscallIpcServerReceive
 {
     bool block;
+    bool contain_response;
  
     uint64_t space_handle;
     
+
+    uint64_t server_handle; // the handle of the server that received the message (asset)
     bool is_disconnect; // if true, the connection will be disconnected after receiving the message
     
     IpcConnectionHandle connection_handle; // the handle of the connection to receive the message from
-    IpcMessage message; // the message received
-    
-} SyscallIpcReceive;
+    MessageHandle returned_msg_handle; // the handle of the message received, in the context of the connection
+    IpcMessage returned_message; // the message received
+} SyscallIpcServerReceive;
 
-static inline SyscallInterface syscall_ipc_receive_encode(SyscallIpcReceive* receive)
+static inline SyscallInterface syscall_ipc_server_receive_encode(SyscallIpcServerReceive* receive)
 {
-    return SyscallInterface{SYSCALL_IPC_RECEIVE_ID, 0, (uintptr_t)receive, 0, 0, 0, 0, 0};
+    return SyscallInterface{SYSCALL_IPC_SERVER_RECEIVE_ID, 0, (uintptr_t)receive, 0, 0, 0, 0, 0};
 }
 
-static inline SyscallIpcReceive syscall_ipc_receive_decode(SyscallInterface interface)
+static inline SyscallIpcServerReceive syscall_ipc_server_receive_decode(SyscallInterface interface)
 {
-    SyscallIpcReceive *receive = (SyscallIpcReceive *)interface.arg1;
+    SyscallIpcServerReceive *receive = (SyscallIpcServerReceive *)interface.arg1;
+    return *receive;
+}
+// ------- SYSCALL IPC CLIENT RECEIVE REPLY ----
+
+#define SYSCALL_IPC_CLIENT_RECEIVE_REPLY_ID 0x0000000C
+
+typedef struct SyscallIpcClientReceiveReply
+{
+    bool block;
+    bool contain_response; // if true, the client will wait for a response from the server
+    uint64_t space_handle;
+    
+    
+    bool is_disconnect; // if true, the connection will be disconnected after receiving the message
+    MessageHandle message; // the message received
+    
+    IpcConnectionHandle connection_handle; // the handle of the connection to receive the message from
+    IpcMessage returned_message; // the message received
+    
+} SyscallIpcClientReceiveReply;
+
+static inline SyscallInterface syscall_ipc_receive_client_reply_encode(SyscallIpcClientReceiveReply* receive)
+{
+    return SyscallInterface{SYSCALL_IPC_CLIENT_RECEIVE_REPLY_ID, 0, (uintptr_t)receive, 0, 0, 0, 0, 0};
+}
+
+static inline SyscallIpcClientReceiveReply syscall_ipc_receive_client_reply_decode(SyscallInterface interface)
+{
+    SyscallIpcClientReceiveReply *receive = (SyscallIpcClientReceiveReply *)interface.arg1;
     return *receive;
 }
 
 // ------- SYSCALL IPC CALL ----
 
-#define SYSCALL_IPC_CALL_ID 0x0000000C
+#define SYSCALL_IPC_CALL_ID 0x0000000D
 
 typedef struct SyscallIpcCall
 {
     uint64_t space_handle;
+    bool has_reply;
     
     IpcConnectionHandle connection_handle; // the handle of the connection to call
     IpcMessage message; // the message to send
@@ -328,13 +364,13 @@ static inline SyscallIpcCall syscall_ipc_call_decode(SyscallInterface interface)
 
 // ------- SYSCALL IPC ACCEPT ----
 
-#define SYSCALL_IPC_ACCEPT_ID 0x0000000D
+#define SYSCALL_IPC_ACCEPT_ID 0x0000000E
 typedef struct SyscallIpcAccept
 {
     bool block;
     uint64_t space_handle;
     
-    bool accepted_connection; // if true, the connection will be accepted, otherwise it will be rejected
+    bool accepted_connection; // if true, has valid accepted connection, if false no attempt were made
     IpcServerHandle server_handle; // the handle of the server to accept the connection from
     IpcConnectionHandle connection_handle; // the handle of the connection to accept
 } SyscallIpcAccept;

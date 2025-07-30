@@ -251,7 +251,7 @@ core::Result<AssetPtr> asset_move(Space *from, Space *to, AssetPtr asset)
         {
             // Move the asset to the new space
             AssetPtr moved_asset = from->assets[i];
-            moved_asset.handle = to->uid++;
+            moved_asset.handle = to->alloc_uid++;
             to->assets.push(moved_asset);
             from->assets.pop(i);
             return moved_asset;
@@ -277,7 +277,7 @@ core::Result<AssetPtr> asset_copy(Space *from, Space *to, AssetPtr asset)
     // Check if the asset exists in the from space
     AssetPtr copied_asset;
     copied_asset.asset = asset.asset;
-    copied_asset.handle = to->uid++;
+    copied_asset.handle = to->alloc_uid++;
     asset.asset->ref_count++;
 
     to->assets.push(copied_asset);

@@ -3,6 +3,7 @@
 #include <arch/generic/syscalls.h>
 
 #include <wingos-headers/syscalls.h>
+#include "kernel/generic/ipc.hpp"
 
 #ifdef __cplusplus
 extern "C" {
@@ -143,18 +144,18 @@ static inline SyscallIpcConnect sys$ipc_connect(bool block, uint64_t space_handl
     return connect;
 }
 
-static inline SyscallIpcSend sys$ipc_send(uint64_t space_handle, IpcConnectionHandle connection_handle, IpcMessage message)
+static inline SyscallIpcSend sys$ipc_send(uint64_t space_handle, IpcConnectionHandle connection_handle, IpcMessage message, bool expect_reply)
 {
-    SyscallIpcSend send = {space_handle, connection_handle, message, 0};
+    SyscallIpcSend send = {space_handle, expect_reply, connection_handle, message, 0};
     SyscallInterface interface = syscall_ipc_send_encode(&send);
     uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
         (void)result;
     return send;
 }
 
-static inline SyscallIpcClientReceiveReply sys$ipc_receive_reply_client(bool block, uint64_t space_handle, IpcConnectionHandle connection_handle)
+static inline SyscallIpcClientReceiveReply sys$ipc_receive_reply_client(bool block, uint64_t space_handle, IpcConnectionHandle connection_handle, MessageHandle message_handle)
 {
-    SyscallIpcClientReceiveReply receive = {block, false, space_handle, 0, connection_handle, 0, {}};
+    SyscallIpcClientReceiveReply receive = {block, false, space_handle, 0, message_handle, connection_handle, {}};
     SyscallInterface interface = syscall_ipc_receive_client_reply_encode(&receive);
     uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
         (void)result;
@@ -179,14 +180,26 @@ static inline SyscallIpcCall sys$ipc_call(uint64_t space_handle, IpcConnectionHa
     return call;
 }
 
-static inline SyscallIpcReply sys$ipc_reply(uint64_t space_handle, uint64_t server_handle, MessageHandle message_handle, IpcMessage message)
+static inline SyscallIpcReply sys$ipc_reply(uint64_t space_handle, uint64_t server_handle, uint64_t connection_handle, MessageHandle message_handle, IpcMessage message)
 {
-    SyscallIpcReply reply = {space_handle, server_handle, message_handle,message_handle, message};
+    SyscallIpcReply reply = {space_handle, server_handle, connection_handle, message_handle, message};
     SyscallInterface interface = syscall_ipc_reply_encode(&reply);
     uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
         (void)result;
     return reply;
 }
+
+static inline SyscallIpcStatus sys$ipc_status(uint64_t space_handle, IpcConnectionHandle connection_handle)
+{
+    SyscallIpcStatus status = {space_handle, connection_handle, 0};
+    SyscallInterface interface = syscall_ipc_status_encode(&status);
+    uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
+        (void)result;
+    return status;
+}
+
+
+
 
 #ifdef __cplusplus
 }

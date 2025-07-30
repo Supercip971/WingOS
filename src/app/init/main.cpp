@@ -8,6 +8,7 @@
 #include "math/align.hpp"
 #include "mcx/mcx.hpp"
 #include "wingos-headers/asset.h"
+#include "wingos-headers/ipc.h"
 #include "wingos-headers/syscalls.h"
 
 #include <string.h>
@@ -93,7 +94,7 @@ int _main(mcx::MachineContext *context)
 
      SyscallIpcCreateServer create = sys$ipc_create_server(SPACE_SELF, true);
     log::log$("created server with handle: {}", create.returned_handle);
-    core::Vec<IpcConnectionHandle> connections;
+    core::Vec<IpcConnectionHandle> connections = {};
    
     for (int i = 0; i < context->_modules_count; i++)
     {
@@ -162,9 +163,26 @@ int _main(mcx::MachineContext *context)
         }
         else
         {
-     //       log::log$("no connection accepted");
         }
 
+        for(size_t i = 0; i < connections.len(); i++)
+        {
+            auto connection = connections[i];
+            
+            SyscallIpcServerReceive call = sys$ipc_receive_server(false, SPACE_SELF, create.returned_handle, connection);
+            
+            if(call.contain_response)
+            {
+                log::log$("received message from connection {}: {}", connection, call.returned_msg_handle);
+                log::log$("message: {}", call.returned_message.data[0].data);
+
+                IpcMessage reply = {};
+                reply.data[0].data = 1234;
+                reply.data[0].is_asset = false;
+                [[maybe_unused]] SyscallIpcReply reply_call = sys$ipc_reply(SPACE_SELF, create.returned_handle, connection, call.returned_msg_handle, reply);
+                
+            }
+        }
     }
     while (true)
     {

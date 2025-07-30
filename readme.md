@@ -48,8 +48,8 @@ For now the kernel is still in development, but it has a few key features:
 - [x] Userspace objects
     - [x] Memory management (physical)
     - [x] Memory management (virtual) 
-    - [ ] IPC endpoint 
-- [ ] Services and IPC (inter process communication) 
+    - [x] IPC endpoint 
+- [x] Services and IPC (inter process communication) 
 - [ ] Filesystem and disk support
 - [ ] Above and beyond 
 

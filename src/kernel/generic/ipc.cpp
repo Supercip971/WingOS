@@ -139,9 +139,11 @@ core::Result<MessageHandle> _server_send_message(IpcConnection *connection, IpcM
     
 }
 
-core::Result<MessageHandle> server_send_message(IpcConnection *connection, IpcMessage message)
+core::Result<MessageHandle> server_send_message(IpcConnection *connection, IpcMessage message, bool expect_reply)
 {
-    return _server_send_message(connection, message, false);
+
+// 
+    return _server_send_message(connection, message, expect_reply);
 }
 
 // for now share the same code, but for later, we will have to differentiate between call and message
@@ -251,6 +253,8 @@ core::Result<ReceivedIpcMessage> server_receive_message(KernelIpcServer *server,
                 connection->message_sent.pop(i);
             }
             server->lock.release();
+            message.is_null = false;
+            
 
 
             message.message_sended.server = try$(update_handle_from_client_to_server(connection, message.message_sended.client));
@@ -258,9 +262,12 @@ core::Result<ReceivedIpcMessage> server_receive_message(KernelIpcServer *server,
         }
     }
 
+
     server->lock.release();
 
-    return core::Result<ReceivedIpcMessage>::error("no message found");
+    ReceivedIpcMessage null_message = {};
+    null_message.is_null = true;
+    return null_message;
 }
 
 core::Result<ReceivedIpcMessage> client_receive_message(IpcConnection* connection)
@@ -307,14 +314,18 @@ core::Result<ReceivedIpcMessage> client_receive_response(IpcConnection* connecti
             connection->message_sent.pop(i);
             connection->lock.release();
 
-            message.message_sended.client = try$(update_handle_from_server_to_client(connection, message.message_sended.server));
+            message.message_responded.client = try$(update_handle_from_server_to_client(connection, message.message_responded.server));
             return message;
         }
     }
 
     connection->lock.release();
 
-    return core::Result<ReceivedIpcMessage>::error("no response found for handle");
+
+    ReceivedIpcMessage null_message = {};
+    null_message.is_null = true;
+    return null_message;
+
 }
 
 core::Result<void> server_reply_message(IpcConnection* connection, MessageHandle from , IpcMessage message)
@@ -347,9 +358,9 @@ core::Result<void> server_reply_message(IpcConnection* connection, MessageHandle
         }
     }
     connection->lock.release();
-    
 
-    return {};
+    return core::Result<void>("message not found in connection");
+    
 }
 
 

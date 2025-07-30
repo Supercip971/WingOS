@@ -261,6 +261,7 @@ typedef struct SyscallIpcSend
 {
      uint64_t space_handle;
     
+     bool expect_reply;
     IpcConnectionHandle connection_handle; // the handle of the connection to send the message to
     IpcMessage message; // the message to send
     MessageHandle returned_msg_handle; // the handle of the message sent, in the context of the connection
@@ -411,6 +412,26 @@ static inline SyscallIpcReply syscall_ipc_reply_decode(SyscallInterface interfac
     return *reply;
 }
 
+// ------- SYSCALL IPC STATUS ----
+
+#define SYSCALL_IPC_STATUS_ID 0x00000010
+typedef struct SyscallIpcStatus
+{
+    uint64_t space_handle;
+    IpcConnectionHandle connection_handle; // the handle of the connection to check the status of
+    bool returned_is_accepted; // if true, the connection is connected, otherwise it is not
+} SyscallIpcStatus;
+
+static inline SyscallInterface syscall_ipc_status_encode(SyscallIpcStatus* status)
+{
+    return SyscallInterface{SYSCALL_IPC_STATUS_ID, 0, (uintptr_t)status, 0, 0, 0, 0, 0};
+}
+
+static inline SyscallIpcStatus syscall_ipc_status_decode(SyscallInterface interface)
+{
+    SyscallIpcStatus *status = (SyscallIpcStatus *)interface.arg1;
+    return *status;
+}
 
 #ifdef __cplusplus
 }

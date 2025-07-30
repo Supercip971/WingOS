@@ -20,6 +20,7 @@ struct IpcMessagePair
 
 struct ReceivedIpcMessage
 {
+    bool is_null;
     bool is_call; 
     bool has_reply; // if true, the message has a reply
     bool has_been_received;
@@ -66,7 +67,7 @@ core::Result<KernelIpcServer*> query_server(IpcServerHandle handle);
 core::Result<AssetPtr> server_accept_connection(KernelIpcServer* server);
 
 
-core::Result<MessageHandle> server_send_message(IpcConnection* connection, IpcMessage message);
+core::Result<MessageHandle> server_send_message(IpcConnection* connection, IpcMessage message, bool expect_reply = false);
 core::Result<MessageHandle> server_send_call(IpcConnection* connection, IpcMessage message);
 
 core::Result<void> server_reply_message(IpcConnection* connection, MessageHandle from, IpcMessage message);

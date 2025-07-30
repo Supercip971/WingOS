@@ -412,7 +412,7 @@ core::Result<size_t> ksyscall_send(SyscallIpcSend* send)
     
 
 
-    auto res = try$(server_send_message(ipc_connection, send->message));
+    auto res = try$(server_send_message(ipc_connection, send->message, send->expect_reply));
 
     send->returned_msg_handle = res;
     return core::Result<size_t>::success((size_t)res);
@@ -471,7 +471,17 @@ core::Result<size_t> ksyscall_server_receive(SyscallIpcServerReceive* receive)
         return core::Result<size_t>(res.error());
     }
 
+    
+
     auto received_message = res.unwrap();
+
+    if(received_message.is_null)
+    {
+        receive->returned_msg_handle = 0;
+        receive->returned_message = {};
+        receive->contain_response = false;
+        return core::Result<size_t>::success(0);
+    }
 
     receive->returned_msg_handle = received_message.uid;
     receive->returned_message = received_message.message_sended.server;
@@ -520,7 +530,17 @@ core::Result<size_t> ksyscall_client_receive_reply(SyscallIpcClientReceiveReply*
         return core::Result<size_t>(res.error());
     }
 
+    
+
     auto received_message = res.unwrap();
+
+    if(received_message.is_null)
+    {
+        
+        receive->returned_message = {};
+        receive->contain_response = false;
+        return core::Result<size_t>::success(0);
+    }
 
     //receive->returned_msg_handle = received_message.uid;
     receive->returned_message = received_message.message_responded.client;
@@ -670,6 +690,45 @@ core::Result<size_t> ksyscall_ipc_server_reply(SyscallIpcReply* reply)
     return core::Result<size_t>::success(0);
 }
 
+
+core::Result<size_t> ksyscall_ipc_status(SyscallIpcStatus* status)
+{
+    Space *space = nullptr;
+    if (status->space_handle != 0)
+    {
+        space = try$(Space::space_by_handle(
+            Cpu::current()->currentTask()->space(),
+            status->space_handle));
+    }
+    else
+    {
+        space = Cpu::current()->currentTask()->space();
+    }
+
+    if (space == nullptr)
+    {
+        return core::Result<size_t>::error("no current space");
+    }
+
+    auto connection = try$(Asset::by_handle(space, status->connection_handle));
+
+    if (connection->kind != OBJECT_KIND_IPC_CONNECTION)
+    {
+        return core::Result<size_t>::error("connection is not an IPC connection");
+    }
+
+    auto ipc_connection = connection->ipc_connection;
+
+    if(!ipc_connection->accepted)
+    {
+        status->returned_is_accepted = false;
+    }
+
+    status->returned_is_accepted = true;
+    
+    return core::Result<size_t>::success(0);
+}
+
 core::Result<size_t> syscall_handle(SyscallInterface syscall)
 {
     switch (syscall.id)
@@ -677,9 +736,7 @@ core::Result<size_t> syscall_handle(SyscallInterface syscall)
     case SYSCALL_DEBUG_LOG_ID:
     {
         auto debug = syscall_debug_decode(syscall);
-        log_lock.lock();
         log::log("{}", debug.message);
-        log_lock.release();
         return core::Result<size_t>::success(0);
     }
     case SYSCALL_PHYSICAL_MEM_OWN_ID:
@@ -758,6 +815,11 @@ core::Result<size_t> syscall_handle(SyscallInterface syscall)
     {
         SyscallIpcReply *reply = try$(syscall_check_ptr<SyscallIpcReply>(syscall.arg1));
         return ksyscall_ipc_server_reply(reply);
+    }
+    case SYSCALL_IPC_STATUS_ID:
+    {
+        SyscallIpcStatus *status = try$(syscall_check_ptr<SyscallIpcStatus>(syscall.arg1));
+        return ksyscall_ipc_status(status);
     }
     
     

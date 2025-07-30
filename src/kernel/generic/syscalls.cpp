@@ -530,8 +530,6 @@ core::Result<size_t> ksyscall_client_receive_reply(SyscallIpcClientReceiveReply*
         return core::Result<size_t>(res.error());
     }
 
-    
-
     auto received_message = res.unwrap();
 
     if(received_message.is_null)

@@ -4,6 +4,7 @@
 #include <arch/x86_64/paging.hpp>
 
 #include "kernel/generic/mem.hpp"
+#include "libcore/fmt/flags.hpp"
 
 static VmmSpace kernel_space;
 void VmmSpace::use_kernel(VmmSpace &space)
@@ -51,12 +52,14 @@ core::Result<void> VmmSpace::map(VirtRange virt, PhysRange phys, PageFlags flags
     if (virt.len() != phys.len()) [[unlikely]]
     {
         log::err$("VmmSpace::map: virtual and physical ranges must be of equal length");
+        log::err$("virt: {}, phys: {}", virt.start()._addr | fmt::FMT_HEX, phys.start()._addr | fmt::FMT_HEX);
+        log::err$("virt len: {}, phys len: {}", virt.len() | fmt::FMT_HEX, phys.len() | fmt::FMT_HEX);
         return "Virtual and physical ranges must be of equal length";
     }
 
     if (virt.len() % arch::amd64::PAGE_SIZE != 0) [[unlikely]]
     {
-        log::err$("VmmSpace::map: virtual and physical ranges must be of equal length");
+        log::err$("VmmSpace::map: virtual and physical ranges must be page aligned");
         return "Virtual and physical ranges must be page aligned";
     }
     auto virt_begin = virt.start();

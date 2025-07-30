@@ -65,17 +65,13 @@ core::Result<size_t> execute_module(elf::ElfLoader loaded)
     return 0ul;
 }
 
-void start_server()
-{
-}
-
 int _main(mcx::MachineContext *context)
 {
 
-    SyscallIpcCreateServer create = sys$ipc_create_server(SPACE_SELF, true);
-    log::log$("created server with handle: {}", create.returned_handle);
-    core::Vec<IpcConnectionHandle> connections = {};
+    auto server = Wingos::Space::self().create_ipc_server(true);
 
+    log::log$("created server with handle: {}", server.handle);
+   
     for (int i = 0; i < context->_modules_count; i++)
     {
         log::log$("module {}: {}", i, context->_modules[i].path);
@@ -119,37 +115,30 @@ int _main(mcx::MachineContext *context)
         execute_module(loaded.unwrap()).assert();
     }
 
-    start_server();
 
     while (true)
     {
-        SyscallIpcAccept accept = sys$ipc_accept(false, SPACE_SELF, create.returned_handle);
-        if (accept.accepted_connection)
+
+        auto conn = server.accept();
+        if(!conn.is_error())
         {
-            log::log$("accepted connection: {}", accept.connection_handle);
-            connections.push(accept.connection_handle);
-        }
-        else
-        {
+            log::log$("(server) accepted connection: {}", conn.unwrap()->handle);
         }
 
-        for (size_t i = 0; i < connections.len(); i++)
+        auto received = server.receive();
+
+        if(!received.is_error())
         {
-            auto connection = connections[i];
+            auto msg = received.unwrap();
+            log::log$("(server) received message: {}", msg.received.data[0].data);
 
-            SyscallIpcServerReceive call = sys$ipc_receive_server(false, SPACE_SELF, create.returned_handle, connection);
+            IpcMessage reply = {};
+            reply.data[0].data = 1234;
+            reply.data[0].is_asset = false;
 
-            if (call.contain_response)
-            {
-                log::log$("received message from connection {}: {}", connection, call.returned_msg_handle);
-                log::log$("message: {}", call.returned_message.data[0].data);
-
-                IpcMessage reply = {};
-                reply.data[0].data = 1234;
-                reply.data[0].is_asset = false;
-                [[maybe_unused]] SyscallIpcReply reply_call = sys$ipc_reply(SPACE_SELF, create.returned_handle, connection, call.returned_msg_handle, reply);
-            }
+            server.reply(msg, reply).assert();
         }
+
     }
     while (true)
     {

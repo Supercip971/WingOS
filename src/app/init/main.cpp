@@ -65,6 +65,9 @@ core::Result<size_t> execute_module(elf::ElfLoader loaded)
     return 0ul;
 }
 
+
+
+
 int _main(mcx::MachineContext *context)
 {
 
@@ -77,19 +80,72 @@ int _main(mcx::MachineContext *context)
         log::log$("module {}: {}", i, context->_modules[i].path);
     }
 
-    void *ptr = malloc(1024 * 1024);
 
-    log::log$("allocated 1MB at: {}", (uintptr_t)ptr | fmt::FMT_HEX);
+
+    mcx::MachineContextModule config_module = {};
+    for(int i = 0; i < context->_modules_count; i++)
+    {
+        auto mod = context->_modules[i];
+
+        if (core::Str(mod.path) == core::Str("/config/init-services.config"))
+        {
+            log::log$("found config module: {}", mod.path);
+            config_module = mod;
+            break;
+        }
+    }
+
+    if (config_module.path[0] == '\0')
+    {
+        log::err$("no config module found, cannot continue");
+        return 1;
+    }
+
+    auto config_range = config_module.range;
+    config_range.start(config_range.start() - 0xffff800000000000);
+    config_range.end(config_range.end() - 0xffff800000000000);
+
+    Wingos::Space::self().map_physical_memory(config_range.start(), config_range.len(), ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);
+    
+
+    auto loaded_config = (void*)(config_range.start() + 0x0000002000000000);
+    
+    core::Vec<core::Str> module_service;
+    core::Vec<core::Str> disk_service;
+
+    auto line = core::Str((const char*)loaded_config, config_range.len()).split('\n');
+    
+    for (const auto &l : line)
+    {
+        if (l.start_with("module:"))
+        {
+            auto module = l.substr(7).trimmed();
+            if (!module.is_empty())
+            {
+                log::log$("found module service: {}", module);
+                module_service.push(module);
+            }
+        }
+        else if (l.start_with("disk:"))
+        {
+            auto disk = l.substr(5).trimmed();
+            if (!disk.is_empty())
+            {
+                log::log$("found disk service: {}", disk);
+                disk_service.push(disk);
+            }
+        }
+    }
 
     for (int i = 0; i < context->_modules_count; i++)
     {
         auto mod = context->_modules[i];
 
-        if (core::Str(mod.path).start_with("/bin/init"))
+        if(!module_service.contain(core::Str(mod.path)))
         {
-            log::log$("skipping module {}: {}", i, mod.path);
             continue;
         }
+
         log::log$("module {}: {}", i, mod.path);
 
         auto range = mod.range;

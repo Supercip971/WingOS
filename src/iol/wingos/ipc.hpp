@@ -47,14 +47,15 @@ struct IpcServer : public UAsset
     core::Result<MessageServerReceived> receive(IpcConnectionHandle connection_handle, bool block = false)
 
     {
-        auto res = sys$ipc_receive_server(block, space_handle, this->handle, connection_handle);
+        IpcMessage res_message;
+        auto res = sys$ipc_receive_server(block, space_handle, this->handle, connection_handle, &res_message);
         if (res.contain_response)
         {
             MessageServerReceived msg;
-            msg.received = res.returned_message;
+            msg.received = core::move(res_message);
             msg.connection = new IpcConnection();
             msg.connection->handle = res.connection_handle;
-            return core::Result<MessageServerReceived>::csuccess(msg);
+            return core::Result<MessageServerReceived>::success(core::move(msg));
         }
         return core::Result<MessageServerReceived>::error("failed to receive message");
     }
@@ -73,9 +74,10 @@ struct IpcServer : public UAsset
         return core::Result<MessageServerReceived>::error("no connection available to receive message");
     }
 
-    core::Result<void> reply(MessageServerReceived to, IpcMessage message)
+    core::Result<void> reply(MessageServerReceived&& to, IpcMessage& message)
     {
-        sys$ipc_reply(space_handle, this->handle, to.connection->handle, to.received.message_id, message);
+
+        sys$ipc_reply(space_handle, this->handle, to.connection->handle, to.received.message_id, &message);
         return {};
     }
 };
@@ -122,29 +124,33 @@ struct IpcClient : public UAsset
         return false; // should never reach here
     }
 
-    core::Result<MessageHandle> send(IpcMessage message, bool expect_reply = false)
+    core::Result<MessageHandle> send(IpcMessage& message, bool expect_reply = false)
     {
-        SyscallIpcSend send = sys$ipc_send(associated_space_handle, handle, message, expect_reply);
+
+        
+        SyscallIpcSend send = sys$ipc_send(associated_space_handle, handle, &message, expect_reply);
 
         return core::Result<size_t>::csuccess(send.returned_msg_handle);
     }
 
-    core::Result<IpcMessage> call(IpcMessage message)
+    core::Result<IpcMessage> call(IpcMessage& message)
     {
-        SyscallIpcCall call = sys$ipc_call(associated_space_handle, handle, message);
+        IpcMessage res;
+        SyscallIpcCall call = sys$ipc_call(associated_space_handle, handle, &message, &res);
         if (call.has_reply)
         {
-            return core::Result<IpcMessage>::csuccess(call.returned_message);
+            return core::Result<IpcMessage>::success(core::move(res));
         }
         return core::Result<IpcMessage>::error("failed to call server");
     }
 
     core::Result<IpcMessage> receive_reply(MessageHandle message_handle, bool block = false)
     {
-        SyscallIpcClientReceiveReply receive = sys$ipc_receive_reply_client(block, associated_space_handle, handle, message_handle);
+        IpcMessage res;
+        SyscallIpcClientReceiveReply receive = sys$ipc_receive_reply_client(block, associated_space_handle, handle, message_handle, &res);
         if (receive.contain_response)
         {
-            return core::Result<IpcMessage>::csuccess(receive.returned_message);
+            return core::Result<IpcMessage>::success(core::move(res));
         }
         return core::Result<IpcMessage>::error("failed to receive reply");
     }

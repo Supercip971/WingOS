@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "wingos-headers/ipc.h"
 #include "iol/mem_flags.h"
 
 #include "kernel/generic/mem.hpp"

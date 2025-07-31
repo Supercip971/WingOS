@@ -1,40 +1,71 @@
-#pragma once 
-
+#pragma once
 
 #ifdef __cplusplus
-extern "C" {
+
+#    include "libcore/type-utils.hpp"
+extern "C"
+{
 #endif
 
+#include <stddef.h>
 #include <stdint.h>
 
+typedef uint64_t  MessageHandle;
 typedef uint64_t IpcServerHandle;
 typedef uint64_t IpcConnectionHandle;
 
-
-// first IPC server manager, 
-// each server is a string and a handle and 
+// first IPC server manager,
+// each server is a string and a handle and
 // either need to register or unregister
 // and the handle is used to connect to the server
 #define IPC_SERVER_HANDLE_INIT 0
 
+#define MAX_IPC_DATA_SIZE 8
 
-struct IpcData 
-{
-    bool is_asset; 
-    union 
+#define MAX_IPC_BUFFER_SIZE 110
+
+    struct IpcData
     {
-        uint64_t data; // the data for the IPC message
-        uint64_t asset_handle; // the handle of the asset
+        bool is_asset;
+        union
+        {
+            uint64_t data;         // the data for the IPC message
+            uint64_t asset_handle; // the handle of the asset
+        };
     };
-};
-
-struct IpcMessage
-{
-    uint64_t message_id; // unique id of the message
-    uint64_t flags; // flags for the message
-    IpcData data[8]; // data for the message, can be used for IPC payload
-};
 
 #ifdef __cplusplus
-}
+    struct IpcMessage : public core::NoCopy
+    {
+        constexpr static IpcMessage copy(const IpcMessage &other)
+        {
+            IpcMessage msg;
+            msg.message_id = other.message_id;
+            msg.flags = other.flags;
+            msg.len = other.len;
+            for (size_t i = 0; i < 8; i++)
+            {
+                msg.data[i] = other.data[i];
+            }
+            for (size_t i = 0; i < other.len / sizeof(uint64_t); i++)
+            {
+                msg.buffer[i] = other.buffer[i];
+            }
+            return msg;
+        }
+#else
+struct IpcMessage
+{
+#endif
+        uint64_t message_id; // unique id of the message
+        uint64_t flags;      // flags for the message
+        IpcData data[8];     // data for the message, can be used for IPC payload
+
+        uint16_t len;
+        uint64_t buffer[MAX_IPC_BUFFER_SIZE / sizeof(uint64_t)]; // buffer for the message, used for IPC payload
+    };
+
+#ifdef __cplusplus
+};
+
 #endif

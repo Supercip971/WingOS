@@ -192,7 +192,7 @@ int _main(mcx::MachineContext *context)
             reply.data[0].data = 1234;
             reply.data[0].is_asset = false;
 
-            server.reply(msg, reply).assert();
+            server.reply(core::move(msg), reply).assert();
         }
 
     }

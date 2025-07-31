@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "kernel/generic/ipc.hpp"
+#include "libcore/type-utils.hpp"
 #include "wingos-headers/ipc.h"
 
 #ifdef __cplusplus
@@ -263,7 +263,7 @@ typedef struct SyscallIpcSend
     
      bool expect_reply;
     IpcConnectionHandle connection_handle; // the handle of the connection to send the message to
-    IpcMessage message; // the message to send
+    IpcMessage* message; // the message to send
     MessageHandle returned_msg_handle; // the handle of the message sent, in the context of the connection
 } SyscallIpcSend;
 
@@ -275,7 +275,7 @@ static inline SyscallInterface syscall_ipc_send_encode(SyscallIpcSend* send)
 static inline SyscallIpcSend syscall_ipc_send_decode(SyscallInterface interface)
 {
     SyscallIpcSend *send = (SyscallIpcSend *)interface.arg1;
-    return *send;
+    return core::move(*send);
 }
 
 // ------- SYSCALL IPC SERVER RECEIVE ----
@@ -295,7 +295,7 @@ typedef struct SyscallIpcServerReceive
     
     IpcConnectionHandle connection_handle; // the handle of the connection to receive the message from
     MessageHandle returned_msg_handle; // the handle of the message received, in the context of the connection
-    IpcMessage returned_message; // the message received
+    IpcMessage* returned_message; // the message received
 } SyscallIpcServerReceive;
 
 static inline SyscallInterface syscall_ipc_server_receive_encode(SyscallIpcServerReceive* receive)
@@ -306,7 +306,7 @@ static inline SyscallInterface syscall_ipc_server_receive_encode(SyscallIpcServe
 static inline SyscallIpcServerReceive syscall_ipc_server_receive_decode(SyscallInterface interface)
 {
     SyscallIpcServerReceive *receive = (SyscallIpcServerReceive *)interface.arg1;
-    return *receive;
+    return core::move(*receive);
 }
 // ------- SYSCALL IPC CLIENT RECEIVE REPLY ----
 
@@ -323,7 +323,7 @@ typedef struct SyscallIpcClientReceiveReply
     MessageHandle message; // the message received
     
     IpcConnectionHandle connection_handle; // the handle of the connection to receive the message from
-    IpcMessage returned_message; // the message received
+    IpcMessage* returned_message; // the message received
     
 } SyscallIpcClientReceiveReply;
 
@@ -335,7 +335,7 @@ static inline SyscallInterface syscall_ipc_receive_client_reply_encode(SyscallIp
 static inline SyscallIpcClientReceiveReply syscall_ipc_receive_client_reply_decode(SyscallInterface interface)
 {
     SyscallIpcClientReceiveReply *receive = (SyscallIpcClientReceiveReply *)interface.arg1;
-    return *receive;
+    return core::move(*receive);
 }
 
 // ------- SYSCALL IPC CALL ----
@@ -348,8 +348,8 @@ typedef struct SyscallIpcCall
     bool has_reply;
     
     IpcConnectionHandle connection_handle; // the handle of the connection to call
-    IpcMessage message; // the message to send
-    IpcMessage returned_message; // the message returned from the call operation, if any
+    IpcMessage* message; // the message to send
+    IpcMessage* returned_message; // the message returned from the call operation, if any
 } SyscallIpcCall;
 
 static inline SyscallInterface syscall_ipc_call_encode(SyscallIpcCall* call)
@@ -360,7 +360,7 @@ static inline SyscallInterface syscall_ipc_call_encode(SyscallIpcCall* call)
 static inline SyscallIpcCall syscall_ipc_call_decode(SyscallInterface interface)
 {
     SyscallIpcCall *call = (SyscallIpcCall *)interface.arg1;
-    return *call;
+    return core::move(*call);
 }
 
 // ------- SYSCALL IPC ACCEPT ----
@@ -398,7 +398,7 @@ typedef struct SyscallIpcReply
     IpcServerHandle server_handle; // the handle of the server to reply to
     IpcConnectionHandle connection_handle; // the handle of the connection to reply to
     MessageHandle message_handle; // the handle of the message to reply with
-    IpcMessage message; // the message to reply with
+    IpcMessage* message; // the message to reply with
 } SyscallIpcReply;
 
 static inline SyscallInterface syscall_ipc_reply_encode(SyscallIpcReply* reply)
@@ -409,7 +409,7 @@ static inline SyscallInterface syscall_ipc_reply_encode(SyscallIpcReply* reply)
 static inline SyscallIpcReply syscall_ipc_reply_decode(SyscallInterface interface)
 {
     SyscallIpcReply *reply = (SyscallIpcReply *)interface.arg1;
-    return *reply;
+    return core::move(*reply);
 }
 
 // ------- SYSCALL IPC STATUS ----

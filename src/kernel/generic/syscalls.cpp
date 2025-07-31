@@ -33,6 +33,24 @@ core::Result<T *> syscall_check_ptr(uintptr_t ptr)
 
     return reinterpret_cast<T *>(ptr);
 }
+template <typename T>
+core::Result<T *> syscall_check_ptr(T* ptr)
+{
+    if (ptr == 0)
+    {
+        return core::Result<T *>::error("null pointer");
+    }
+
+    auto tsk = Cpu::current()->currentTask();
+    if (tsk == nullptr)
+    {
+        return core::Result<T *>::error("no current task");
+    }
+
+    try$(tsk->vmm_space().verify((uintptr_t)ptr, sizeof(T)));
+
+    return reinterpret_cast<T *>(ptr);
+}
 
 core::Result<uintptr_t> ksyscall_mem_own(SyscallMemOwn *mem_own)
 {
@@ -367,7 +385,7 @@ core::Result<size_t> ksyscall_create_connection(SyscallIpcConnect *create)
         return core::Result<size_t>::error("no current space");
     }
 
-    auto asset = try$(asset_create_ipc_connections(space, {
+    auto asset = try$(asset_create_ipc_connections(space, (AssetIpcConnectionCreateParams){
         .server_handle = create->server_handle,
         .flags = create->flags,
     }));
@@ -412,7 +430,7 @@ core::Result<size_t> ksyscall_send(SyscallIpcSend* send)
     
 
 
-    auto res = try$(server_send_message(ipc_connection, send->message, send->expect_reply));
+    auto res = try$(server_send_message(ipc_connection, try$( syscall_check_ptr( send->message)), send->expect_reply));
 
     send->returned_msg_handle = res;
     return core::Result<size_t>::success((size_t)res);
@@ -484,7 +502,7 @@ core::Result<size_t> ksyscall_server_receive(SyscallIpcServerReceive* receive)
     }
 
     receive->returned_msg_handle = received_message.uid;
-    receive->returned_message = received_message.message_sended.server;
+    *try$(syscall_check_ptr(receive->returned_message)) = received_message.message_sended.to_server();
     receive->contain_response = true;
     
     return core::Result<size_t>::success((size_t)received_message.uid);
@@ -541,7 +559,9 @@ core::Result<size_t> ksyscall_client_receive_reply(SyscallIpcClientReceiveReply*
     }
 
     //receive->returned_msg_handle = received_message.uid;
-    receive->returned_message = received_message.message_responded.client;
+    
+    * try$(syscall_check_ptr( receive->returned_message) )= received_message.message_responded.to_client();
+    
     receive->contain_response = true;
 
     return core::Result<size_t>::success((size_t)received_message.uid);
@@ -589,7 +609,7 @@ core::Result<size_t> ksyscall_ipc_call(SyscallIpcCall* call)
 
     auto received_message = res.unwrap();
 
-    call->returned_message = received_message;
+    *try$(syscall_check_ptr(call->returned_message)) = core::move(received_message);
     call->has_reply = true;
     //call->returned_msg_handle = received_message.uid;
     
@@ -678,7 +698,7 @@ core::Result<size_t> ksyscall_ipc_server_reply(SyscallIpcReply* reply)
         return core::Result<size_t>::error("connection is not accepted");
     }
 
-    auto res = server_reply_message(ipc_connection, reply->message_handle, reply->message);
+    auto res = server_reply_message(ipc_connection, reply->message_handle, try$(syscall_check_ptr(reply->message)));
 
     if(res.is_error())
     {

@@ -93,4 +93,26 @@ concept IsIntegral = __is_integral(T);
 template <class T>
 concept IsIdentityIntegral = __is_integral(RemoveReference<T>);
 
+
+
+template<bool condition, class TrueType, class FalseType>
+struct Conditional
+{
+    using type = TrueType;
+};
+
+template<class TrueType, class FalseType>
+struct Conditional<false, TrueType, FalseType>
+{
+    using type = FalseType;
+};
+
+template<bool condition, class TrueType, class FalseType>
+using ConditionalType = typename Conditional<condition, TrueType, FalseType>::type;
+
+template<typename T>
+ T declval() noexcept
+{
+    static_assert(false, "declval not allowed in an evaluated context");
+}
 } // namespace core

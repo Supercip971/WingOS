@@ -5,7 +5,7 @@
 
 #include "libcore/alloc/alloc.hpp"
 #include "libcore/ds/array.hpp"
-#include "libcore/fmt/log.hpp"
+#include <stdlib.h>
 #include "libcore/logic.hpp"
 namespace core
 {
@@ -160,7 +160,7 @@ public:
             return core::move(_data[_count]);
         }
 
-        log::err$("error: pop on empty vec");
+        //abort();
         return core::move(_data[0]);
     }
 
@@ -168,7 +168,7 @@ public:
     {
         if (id >= _count)
         {
-            log::err$("error: pop on empty vec or out of range {}", id);
+          //  abort();
             return core::move(_data[0]);
         }
 
@@ -211,6 +211,18 @@ public:
     constexpr const T *end() const
     {
         return _data + _count;
+    }
+
+    constexpr bool contain(const T &value) const
+    {
+        for (size_t i = 0; i < _count; i++)
+        {
+            if (_data[i] == value)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 };
 

@@ -1,4 +1,5 @@
 #include "numa.hpp"
+#include <libcore/fmt/log.hpp>
 
 core::Result<CpuTreeNode *> _initialize_cpu_tree_impl()
 {

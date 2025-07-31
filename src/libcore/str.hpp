@@ -3,6 +3,7 @@
 #include <libcore/mem/view.hpp>
 #include <libcore/type-utils.hpp>
 #include <stddef.h>
+#include "libcore/ds/vec.hpp"
 
 namespace core
 {
@@ -100,6 +101,54 @@ public:
             }
         }
         return true;
+    }
+
+    core::Vec<Str> split(char c) const
+    {
+        core::Vec<Str> result;
+        size_t start = 0;
+
+        for (size_t i = 0; i < _len; i++)
+        {
+            if (_data[i] == c)
+            {
+                if (i > start)
+                {
+                    result.push(Str(_data + start, i - start));
+                }
+                start = i + 1;
+            }
+        }
+
+        if (start < _len)
+        {
+            result.push(Str(_data + start, _len - start));
+        }
+
+        return result;
+    }
+
+    constexpr Str trimmed() const
+    {
+        size_t start = 0;
+        size_t end = _len;
+
+        while (start < end && (_data[start] == ' ' || _data[start] == '\t' || _data[start] == '\n'))
+        {
+            start++;
+        }
+
+        while (end > start && (_data[end - 1] == ' ' || _data[end - 1] == '\t' || _data[end - 1] == '\n'))
+        {
+            end--;
+        }
+
+        return Str(_data + start, end - start);
+    }
+
+    constexpr bool is_empty() const
+    {
+        return _len == 0;
     }
 };
 

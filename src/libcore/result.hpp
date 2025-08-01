@@ -13,14 +13,15 @@ template <typename ValT, typename ErrT = const char *>
 struct Result : public NoCopy
 {
 
+    using ErrorType = RemoveReference<ErrT>;
+    using ValueType = RemoveReference<ValT>;
 private:
     // FIXME: introduce either type
+
     Optional<ValT> _value;
 
 public:
     Optional<ErrT> _error;
-    using ErrorType = RemoveReference<ErrT>;
-    using ValueType = RemoveReference<ValT>;
     constexpr Result() : _value(), _error() {}
 
     constexpr ~Result()
@@ -29,13 +30,13 @@ public:
         _error.~Optional();
     }
 
-    constexpr Result(const ValT &value) : _value(value), _error() {}
+    constexpr Result(const ValueType &value) : _value(value), _error() {}
 
-    constexpr Result(ValT &&value) : _value(core::move(value)), _error() {}
+    constexpr Result(ValueType&&value) : _value(core::move(value)), _error() {}
 
-    constexpr Result(const ErrT &error) : _value(), _error(error) {}
+    constexpr Result(const ErrorType &error) : _value(), _error(error) {}
 
-    constexpr Result(ErrT &&error) : _value(), _error(core::move(error)) {}
+    constexpr Result(ErrorType &&error) : _value(), _error(core::move(error)) {}
 
     constexpr Result(Result &&other) : _value(core::move(other._value)), _error(core::move(other._error)) {}
 
@@ -45,19 +46,19 @@ public:
         _error = core::move(other._error);
         return *this;
     }
-    static constexpr auto csuccess(ValT val)
+    static constexpr auto csuccess(ValueType val)
     {
         auto res = Result<ValT, ErrT>();
         res._value = core::move(val);
         return core::move(res);
     }
-    static constexpr auto success(ValT &&val)
+    static constexpr auto success(ValueType &&val)
     {
         auto res = Result<ValT, ErrT>();
         res._value = core::move(val);
         return core::move(res);
     }
-    static constexpr auto error(ErrT &&error)
+    static constexpr auto error(ErrorType &&error)
     {
         auto res = Result<ValT, ErrT>();
         res._error = core::move(error);

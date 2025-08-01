@@ -27,6 +27,19 @@ public:
         core::swap(_capacity, other._capacity);
     }
 
+
+    Vec(const Vec &other)
+    {
+        _data = nullptr;
+        _count = 0;
+        _capacity = 0;
+        try$(reserve(other._capacity));
+        for (size_t i = 0; i < other._count; i++)
+        {
+            try$(push(other._data[i]));
+        }
+    }
+
     Vec &operator=(Vec &&other)
     {
         core::swap(_data, other._data);

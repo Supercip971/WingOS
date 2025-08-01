@@ -74,13 +74,15 @@ public:
 template <class T>
 class Optional
 {
-    Storage<T> _value;
+    using Type = Pure<T>;
+public: 
+    Storage<Type> _value;
     bool _contain_value;
 
 public:
     constexpr Optional() : _contain_value(false) {}
-    constexpr Optional(const T &value) : _value(value), _contain_value(true) {}
-    constexpr Optional(T &&value) : _value(core::move(value)), _contain_value(true) {}
+    constexpr Optional(const Type &value) : _value(value), _contain_value(true) {}
+    constexpr Optional(Type &&value) : _value(core::move(value)), _contain_value(true) {}
 
     explicit constexpr Optional([[maybe_unused]] NoneValue v) : _contain_value(false) {};
 
@@ -147,37 +149,37 @@ public:
         return _contain_value;
     }
 
-    constexpr T &value()
+    constexpr Type &value()
     {
         return _value.value();
     }
 
-    constexpr T const &value() const
+    constexpr Type const &value() const
     {
         return _value.value();
     }
 
-    constexpr T &operator*()
+    constexpr Type &operator*()
     {
         return _value.value();
     }
 
-    constexpr const T &operator*() const
+    constexpr const Type &operator*() const
     {
         return _value.value();
     }
 
-    constexpr T *operator->()
+    constexpr Type *operator->()
     {
         return &_value.value();
     }
 
-    constexpr const T *operator->() const
+    constexpr const Type *operator->() const
     {
         return &_value.value();
     }
 
-    constexpr T &&unwrap()
+    constexpr Type &&unwrap()
     {
         _contain_value = false;
         return core::move(_value.retreive());

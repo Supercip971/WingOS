@@ -26,6 +26,8 @@ public:
 
     constexpr Str() : MemView("", 0) {};
 
+    constexpr ~Str() = default;
+
     constexpr Str(Str &&other)
         : MemView(other._data, other._len)
     {

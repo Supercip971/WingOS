@@ -8,11 +8,11 @@ namespace core
 template <class T = uint8_t>
 class MemView
 {
-protected:
+public:
+
     const T *_data;
     size_t _len;
 
-public:
     using Type = const T;
 
     constexpr MemView() : _data(nullptr), _len(0) {}

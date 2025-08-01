@@ -24,6 +24,8 @@ public:
     constexpr Str(const char *str) : MemView(str, Str::compute_len(str)) {};
     constexpr Str(const char *str, int len) : MemView(str, len) {};
 
+    constexpr Str(const MemView<char> &view) : MemView(view._data, view._len) {};
+
     constexpr Str() : MemView("", 0) {};
 
     constexpr ~Str() = default;

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <libcore/io/seekable.hpp>
 #include <libcore/result.hpp>
 #include <stddef.h>
+#include "libcore/io/seekable.hpp"
 
 namespace core
 {
@@ -28,6 +28,14 @@ concept Readable = requires(T *x) {
         x->read((char *)0, 10)
     } -> IsConvertibleToResult<size_t>;
 };
+
+template <typename T>
+concept SeekableReader = requires(T *x) {
+    Readable<T>;
+    Seekable<T>;
+};
+
+
 
 static_assert(Readable<Reader>);
 

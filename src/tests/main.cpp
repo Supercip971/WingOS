@@ -1,6 +1,7 @@
 #include <libcore/fmt/log.hpp>
 
 #include "libcore/grp_tests.hpp"
+#include "tests/parser/parser_test.hpp"
 #include "unit-test-tests/grp_tests.hpp"
 
 #include "libcore/result.hpp"
@@ -10,7 +11,8 @@ TestGroup v = {
     test_grouped_group$(
         "tests",
         libcoreTests,
-        unitTestTests),
+        unitTestTests, 
+        parserTest,),
 
 };
 

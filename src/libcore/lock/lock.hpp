@@ -1,15 +1,14 @@
 #pragma once
 
-#include <stdatomic.h>
-
 #include "arch/generic/instruction.hpp"
 #include "libcore/type-utils.hpp"
+#include <stdatomic.h>
 namespace core
 {
 class Lock
 {
 
-    _Atomic int _locked = false;
+    _Atomic(int) _locked = false;
 
     bool try_acquire()
     {

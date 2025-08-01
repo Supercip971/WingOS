@@ -1,31 +1,31 @@
 
 #include <stdlib.h>
-void *operator new(size_t size)
+__attribute__((weak)) void *operator new(size_t size)
 {
     return malloc(size);
 }
 
-void *operator new[](size_t size)
+__attribute__((weak)) void *operator new[](size_t size)
 {
     return malloc(size);
 }
 
-void operator delete(void *p) noexcept
+__attribute__((weak)) void operator delete(void *p) noexcept
 {
     free(p);
 }
 
-void operator delete[](void *p) noexcept
+__attribute__((weak)) void operator delete[](void *p) noexcept
 {
     free(p);
 }
 
-void operator delete(void *p, size_t) noexcept
+__attribute__((weak)) void operator delete(void *p, size_t) noexcept
 {
     free(p);
 }
 
-void operator delete[](void *p, size_t) noexcept
+__attribute__((weak)) void operator delete[](void *p, size_t) noexcept
 {
     free(p);
 }

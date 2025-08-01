@@ -18,18 +18,23 @@
             "args": [
                 "-Isrc/libc",
                "-fno-stack-protector" ,
+
+                "-ffreestanding",
                "-g", "-fsanitize=address",
-            "-fno-omit-frame-pointer"
+                "-fno-omit-frame-pointer",
+                "-std=gnu23"
             ]
         },
         "cxx": {
             "cmd": "{shell.latest('clang++')}",
             "args": [
                 "-Isrc/libc",
-
                "-fno-stack-protector",
                "-g", "-fsanitize=address",
-            "-fno-omit-frame-pointer"
+                "-fno-omit-frame-pointer",
+                "-std=gnu++26",
+                "-D_NEW",
+                "-Wno-main"
             ]
         },
         "ld": {

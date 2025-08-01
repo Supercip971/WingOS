@@ -3,3 +3,6 @@
 -std=c++2b
 -D__ck_kernel__
 -D_NEW
+-Wall
+-Wextra
+-Werror

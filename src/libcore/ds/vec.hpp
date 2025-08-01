@@ -33,10 +33,10 @@ public:
         _data = nullptr;
         _count = 0;
         _capacity = 0;
-        try$(reserve(other._capacity));
+        (reserve(other._capacity));
         for (size_t i = 0; i < other._count; i++)
         {
-            try$(push(other._data[i]));
+            (push(other._data[i]));
         }
     }
 
@@ -55,10 +55,10 @@ public:
             return *this;
         }
         release();
-        try$(reserve(other._capacity));
+        (reserve(other._capacity));
         for (size_t i = 0; i < other._count; i++)
         {
-            try$(push(other._data[i]));
+            (push(other._data[i]));
         }
         return *this;
     }

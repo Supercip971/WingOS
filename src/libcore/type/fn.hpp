@@ -11,6 +11,8 @@ template<typename X, typename ... Args>
  core::TypeTuple<Args...> function_expand_utils(X(Args...));
 
 
+
+
  
 template<size_t idx, auto T>
 using FunctionArgType = typename decltype(function_expand_utils(T))::template TypeAt<idx>;
@@ -18,14 +20,13 @@ using FunctionArgType = typename decltype(function_expand_utils(T))::template Ty
 
 static inline float _function_test(bool T, int c)
 {
+    (void)T;
+    (void)c;
     return 0;
 }
 
-
 static_assert(core::IsSame<FunctionArgType<0, _function_test>, bool>);
 static_assert(core::IsSame<FunctionArgType<1, _function_test>, int>);
-
-
 
 // function return type 
 template<typename X, typename ... Args>

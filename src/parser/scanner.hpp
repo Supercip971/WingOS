@@ -108,6 +108,22 @@ namespace core
             return false;
         }
 
+        core::Result<bool> skip_spaced(Base value)
+        {
+            skip_spaces();
+            if (ended())
+            {
+                return core::Result<bool>("End of buffer reached");
+            }
+            if (_buffer[_cursor] == value)
+            {
+                _cursor++;
+                return true;
+            }
+            return false;
+        }
+
+ 
         core::Result<bool> skip_string(MemView<Base> str)
         {
             if (_cursor + str.len() > _buffer.len())
@@ -181,6 +197,49 @@ namespace core
             return result;
 
         }
+
+        core::Result<int> skip_int()
+        {
+            if (ended())
+            {
+                return core::Result<int>("End of buffer reached");
+            }
+            size_t origin = _cursor;
+            int value = 0;
+            bool negative = false;
+
+            if (_buffer[_cursor] == '-')
+            {
+                negative = true;
+                _cursor++;
+            }
+            else if (_buffer[_cursor] == '+')
+            {
+                _cursor++;
+            }
+
+            if(_cursor >= _buffer.len() || !(_buffer[_cursor] >= '0' && _buffer[_cursor] <= '9'))
+            {
+                _cursor = origin; // reset cursor
+                return core::Result<int>("Expected digit");
+            }
+
+            while (_cursor < _buffer.len() && _buffer[_cursor] >= '0' && _buffer[_cursor] <= '9')
+            {
+                value = value * 10 + (_buffer[_cursor] - '0');
+                _cursor++;
+            }
+
+            if (negative)
+            {
+                value = -value;
+            }
+
+            return value;
+        }
+
+        
+
         
     };
 };

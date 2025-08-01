@@ -5,6 +5,7 @@
     "description": "WingOS Tests",
     "requires": [
         "libcore", 
-        "libc","iol"
+        "libc","iol",
+        "json"
     ]
 }

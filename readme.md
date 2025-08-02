@@ -50,7 +50,7 @@ For now the kernel is still in development, but it has a few key features:
     - [x] Memory management (virtual) 
     - [x] IPC endpoint 
 - [x] Services and IPC (inter process communication) 
-- [ ] IDL through meta programming or just skip it
+- [x] PCI support (scan, devices, ...) (in userspace)
 - [ ] Nvme disk support
 - [ ] Filesystem support (ext4, fat32, ...) 
 - [ ] Graphics support (VESA, framebuffer, ...)

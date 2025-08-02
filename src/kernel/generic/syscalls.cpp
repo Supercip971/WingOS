@@ -742,8 +742,12 @@ core::Result<size_t> ksyscall_ipc_status(SyscallIpcStatus* status)
     {
         status->returned_is_accepted = false;
     }
+    else 
+    {
 
-    status->returned_is_accepted = true;
+        status->returned_is_accepted = true;
+    }
+
     
     return core::Result<size_t>::success(0);
 }

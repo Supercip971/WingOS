@@ -4,6 +4,7 @@
 
 #include "kernel/generic/ipc.hpp"
 #include "wingos-headers/ipc.h"
+#include "wingos-headers/syscalls.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -196,6 +197,39 @@ static inline SyscallIpcStatus sys$ipc_status(uint64_t space_handle, IpcConnecti
     uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
         (void)result;
     return status;
+}
+
+static inline void sys$ipc_x86_port_out(uint16_t port, uint8_t size, uint32_t data)
+{
+    SyscallIpcX86Port port_data = {
+        .space_handle = 0, // current space
+        .port = port,
+        .size = size,
+        .write = true,
+        .data = data,
+        .read = false,
+        .returned_value = 0
+    };
+    SyscallInterface interface = syscall_ipc_x86_port(&port_data);
+    uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
+    (void)result;
+}
+
+static inline uint64_t sys$ipc_x86_port_in(uint16_t port, uint8_t size)
+{
+    SyscallIpcX86Port port_data = {
+        .space_handle = 0, // current space
+        .port = port,
+        .size = size,
+        .write = false,
+        .data = 0,
+        .read = true,
+        .returned_value = 0
+    };
+    SyscallInterface interface = syscall_ipc_x86_port(&port_data);
+    uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
+    (void)result;
+    return port_data.returned_value;
 }
 
 

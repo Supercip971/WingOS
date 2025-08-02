@@ -4,6 +4,7 @@
 #include "hw/mem/addr_space.hpp"
 
 #include "arch/generic/syscalls.h"
+#include "dev/pci/pci.hpp"
 #include "iol/wingos/space.hpp"
 #include "iol/wingos/syscalls.h"
 #include "json/json.hpp"
@@ -69,6 +70,21 @@ core::Result<size_t> execute_module(elf::ElfLoader loaded)
 
 
 
+void start_from_pci()
+{
+    log::log$("Starting from PCI scan...");
+
+    Wingos::dev::PciController pci_controller;
+    pci_controller.scan_bus(0);
+
+    for (const auto &device : pci_controller.devices)
+    {
+        log::log$("Found PCI Device: Bus {}, Device {}, Function {}, Vendor ID: {}, Device ID: {}, Class: {}, Subclass: {}",
+                  device.bus, device.device, device.function,
+                  device.vendor_id() | fmt::FMT_HEX, device.device_id() | fmt::FMT_HEX,
+                  device.class_code() | fmt::FMT_HEX, device.subclass() | fmt::FMT_HEX);
+    }
+}
 int _main(mcx::MachineContext *context)
 {
 
@@ -171,6 +187,8 @@ int _main(mcx::MachineContext *context)
 
         execute_module(loaded.unwrap()).assert();
     }
+    
+    start_from_pci();
 
 
     while (true)

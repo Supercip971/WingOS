@@ -9,7 +9,8 @@
     },
     "requires": [
         "libcore",
-        "json"
+        "json",
+        "dev-pci"
     ],
     "enableIf": {
         "sys": [

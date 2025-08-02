@@ -433,6 +433,34 @@ static inline SyscallIpcStatus syscall_ipc_status_decode(SyscallInterface interf
     return *status;
 }
 
+// ------- SYSCALL IPC X86 INB ----
+
+#define SYSCALL_IPC_X86 0x10000 
+
+#define SYSCALL_IPC_X86_PORT (SYSCALL_IPC_X86 + 0x1)
+typedef struct SyscallIpcX86Port
+{
+    uint64_t space_handle;
+
+    uint64_t port; // the port to read from
+    size_t size; // 1 = byte, 2 = word, 4 = dword
+    bool write; 
+    uint64_t data;
+
+    bool read;
+    uint64_t returned_value; // the value read from the port
+
+} SyscallIpcX86Port;
+
+static inline SyscallInterface syscall_ipc_x86_port(SyscallIpcX86Port* port)
+{
+    return SyscallInterface{SYSCALL_IPC_X86_PORT, 0, (uintptr_t)port, 0, 0, 0, 0, 0};
+}
+static inline SyscallIpcX86Port syscall_ipc_x86_port_decode(SyscallInterface interface)
+{
+    SyscallIpcX86Port *port = (SyscallIpcX86Port *)interface.arg1;
+    return *port;
+}
 #ifdef __cplusplus
 }
 #endif

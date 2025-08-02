@@ -1,5 +1,6 @@
 #include "syscalls.hpp"
 
+#include "arch/x86/port.hpp"
 #include "arch/x86_64/paging.hpp"
 
 #include "kernel/generic/asset.hpp"
@@ -747,6 +748,66 @@ core::Result<size_t> ksyscall_ipc_status(SyscallIpcStatus* status)
     return core::Result<size_t>::success(0);
 }
 
+core::Result<size_t> ksyscall_ipc_x86_port(SyscallIpcX86Port* port)
+{
+    Space *space = nullptr;
+    if (port->space_handle != 0)
+    {
+        space = try$(Space::space_by_handle(
+            Cpu::current()->currentTask()->space(),
+            port->space_handle));
+    }
+    else
+    {
+        space = Cpu::current()->currentTask()->space();
+    }
+
+    if (space == nullptr)
+    {
+        return core::Result<size_t>::error("no current space");
+    }
+
+    // TODO: do right permissions check
+
+    if (port->read)
+    {
+        switch(port->size)
+        {
+        case 1:
+            port->returned_value = arch::x86::in8(port->port);
+            break;
+        case 2:
+        
+            port->returned_value = arch::x86::in16(port->port);
+            break;
+        case 4:
+            port->returned_value = arch::x86::in32(port->port);
+            break;
+        default:
+            return core::Result<size_t>::error("invalid size");
+        }
+    }
+    else
+    {
+        switch (port->size)
+        {
+        case 1:
+            arch::x86::out8(port->port, (uint8_t)port->data);
+            break;
+        case 2:
+            arch::x86::out16(port->port, (uint16_t)port->data);
+            break;
+        case 4:
+            arch::x86::out32(port->port, (uint32_t)port->data);
+            break;
+        default:
+            return core::Result<size_t>::error("invalid size");
+        }
+    }
+
+    return {};
+}
+
 core::Result<size_t> syscall_handle(SyscallInterface syscall)
 {
     switch (syscall.id)
@@ -840,6 +901,11 @@ core::Result<size_t> syscall_handle(SyscallInterface syscall)
         return ksyscall_ipc_status(status);
     }
     
+    case SYSCALL_IPC_X86_PORT:
+    {
+        SyscallIpcX86Port *port = try$(syscall_check_ptr<SyscallIpcX86Port>(syscall.arg1));
+        return ksyscall_ipc_x86_port(port);
+    }
     
     default:
         return {"Unknown syscall ID"};

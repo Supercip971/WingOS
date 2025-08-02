@@ -21,6 +21,7 @@ class Str : public MemView<char>
     }
 
 public:
+
     constexpr Str(const char *str) : MemView(str, Str::compute_len(str)) {};
     constexpr Str(const char *str, int len) : MemView(str, len) {};
 

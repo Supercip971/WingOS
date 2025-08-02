@@ -102,13 +102,13 @@ namespace wjson
             return core::Result<core::Str>("Not a string");
         }
 
-        core::Result<core::Vec<JsonValue>&> as_array()
+        core::Result<core::Vec<JsonValue>*> as_array()
         {
             if (type == JsonType::Array)
             {
-                return children;
+                return &children;
             }
-            return core::Result<core::Vec<JsonValue>&>("Not an array");
+            return core::Result<core::Vec<JsonValue>*>("Not an array");
         }
 
 

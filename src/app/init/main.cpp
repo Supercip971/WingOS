@@ -6,6 +6,7 @@
 #include "arch/generic/syscalls.h"
 #include "iol/wingos/space.hpp"
 #include "iol/wingos/syscalls.h"
+#include "json/json.hpp"
 #include "kernel/generic/space.hpp"
 #include "libcore/fmt/flags.hpp"
 #include "libcore/fmt/log.hpp"
@@ -87,7 +88,7 @@ int _main(mcx::MachineContext *context)
     {
         auto mod = context->_modules[i];
 
-        if (core::Str(mod.path) == core::Str("/config/init-services.config"))
+        if (core::Str(mod.path) == core::Str("/config/init-services.json"))
         {
             log::log$("found config module: {}", mod.path);
             config_module = mod;
@@ -113,28 +114,28 @@ int _main(mcx::MachineContext *context)
     core::Vec<core::Str> module_service;
     core::Vec<core::Str> disk_service;
 
-    auto line = core::Str((const char*)loaded_config, config_range.len()).split('\n');
+    auto dat = core::Str((const char*)loaded_config, config_range.len());
     
-    for (const auto &l : line)
+    auto jsond = (wjson::Json::parse(dat));
+    if (jsond.is_error())
     {
-        if (l.start_with("module:"))
-        {
-            auto module = l.substr(7).trimmed();
-            if (!module.is_empty())
-            {
-                log::log$("found module service: {}", module);
-                module_service.push(module);
-            }
-        }
-        else if (l.start_with("disk:"))
-        {
-            auto disk = l.substr(5).trimmed();
-            if (!disk.is_empty())
-            {
-                log::log$("found disk service: {}", disk);
-                disk_service.push(disk);
-            }
-        }
+        log::err$("failed to parse config: {}", jsond.error());
+        return 1;
+    }
+
+    auto json = jsond.unwrap();
+
+    auto modules = (json.root().get("modules").unwrap())->as_array().unwrap();
+
+
+
+    for ( auto &l : *modules)
+    {
+        auto name = l["name"]->as_string().unwrap();
+        auto path = l["path"]->as_string().unwrap();
+
+        log::log$("module: {}, path: {}", name, path);
+        module_service.push(core::Str(path));
     }
 
     for (int i = 0; i < context->_modules_count; i++)

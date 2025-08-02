@@ -6,13 +6,15 @@
 
 #include "libcore/result.hpp"
 #include "test.hpp"
+#include "tests/json/json-tests.hpp"
 
 TestGroup v = {
     test_grouped_group$(
         "tests",
         libcoreTests,
         unitTestTests, 
-        parserTest,),
+        parserTest,
+    jsonTests),
 
 };
 

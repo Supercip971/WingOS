@@ -1,0 +1,11 @@
+
+{
+    "modules": [
+        {
+            "name": "hello-world",
+            "path": "/bin/hello-wingos"
+        }
+    ],
+
+    "disk": []
+}

@@ -1,4 +1,3 @@
-
 {
     "modules": [
         {
@@ -6,6 +5,17 @@
             "path": "/bin/hello-wingos"
         }
     ],
+    "drivers": [
+        {
+            "name": "nvme-wingos",
+            "path": "/bin/nvme-wingos",
+            "pci": {
+                "class-code": 1,
+                "subclass-code": 8
+            }
+        }
+    ],
+
 
     "disk": []
 }

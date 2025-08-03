@@ -1,0 +1,18 @@
+{
+    "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
+    "id": "nvme-wingos",
+    "type": "exe",
+    "description": "WingOS nvme drive service",
+    
+    "props": {
+        "exported": true
+    },
+    "requires": [
+        "libcore"
+    ],
+    "enableIf": {
+        "sys": [
+            "wingos"
+        ]
+    }
+}

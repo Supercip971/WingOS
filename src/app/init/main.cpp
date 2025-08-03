@@ -4,6 +4,7 @@
 #include "hw/mem/addr_space.hpp"
 
 #include "arch/generic/syscalls.h"
+#include "dev/pci/classes.hpp"
 #include "dev/pci/pci.hpp"
 #include "iol/wingos/space.hpp"
 #include "iol/wingos/syscalls.h"
@@ -67,40 +68,107 @@ core::Result<size_t> execute_module(elf::ElfLoader loaded)
     return 0ul;
 }
 
+core::Result<size_t> start_service(mcx::MachineContextModule mod)
+{
+
+    log::log$("[INIT] starting module: {}", mod.path);
+
+    auto range = mod.range;
+    range.start(range.start() - 0xffff800000000000);
+    range.end(range.end() - 0xffff800000000000);
+
+    auto self_mapped = Wingos::Space::self().map_physical_memory(range.start(), range.len(), ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);
+
+    auto loaded = elf::ElfLoader::load(VirtRange(
+        range.start() + 0x0000002000000000,
+        range.end() + 0x0000002000000000));
+
+    (void)self_mapped;
+
+    if (loaded.is_error())
+    {
+        log::err$("[INIT] unable to load module {}: {}",  loaded.error());
+        return loaded.error();
+    }
 
 
+    return execute_module(loaded.unwrap());
 
-void start_from_pci()
+}
+
+core::Result<size_t> start_service(mcx::MachineContext *context, core::Str path)
+{
+    for (int i = 0; i < context->_modules_count; i++)
+    {
+        auto mod = context->_modules[i];
+
+        if (core::Str(mod.path) == path)
+        {
+            return start_service(mod);
+        }
+    }
+
+    log::err$("[INIT] no module found with path: {}", path);
+    return core::Result<size_t>::error("module not found");
+    
+}
+void start_from_pci(wjson::JsonValue *json, mcx::MachineContext *context)
 {
     log::log$("Starting from PCI scan...");
 
     Wingos::dev::PciController pci_controller;
     pci_controller.scan_bus(0);
 
+    auto drivers_json = (*json)[("drivers")]->as_array().unwrap();
     for (const auto &device : pci_controller.devices)
     {
         log::log$("Found PCI Device: Bus {}, Device {}, Function {}, Vendor ID: {}, Device ID: {}, Class: {}, Subclass: {}",
                   device.bus, device.device, device.function,
                   device.vendor_id() | fmt::FMT_HEX, device.device_id() | fmt::FMT_HEX,
                   device.class_code() | fmt::FMT_HEX, device.subclass() | fmt::FMT_HEX);
+
+        Wingos::dev::log_dev(device.class_code(), device.subclass());
+        for (auto &driver : *drivers_json)
+        {
+            auto pci_req = driver.get("pci");
+            if (pci_req.is_error())
+            {
+                continue;
+            }
+
+            auto pci_req_obj = pci_req.unwrap();
+
+            if ((*pci_req_obj)["class-code"]->as_number().unwrap() == device.class_code() &&
+                (*pci_req_obj)["subclass-code"]->as_number().unwrap() == device.subclass())
+            {
+                log::log$("Found matching driver for device: {}", driver["name"]->as_string().unwrap());
+
+                auto path = driver["path"]->as_string().unwrap();
+                log::log$("Loading driver from path: {}", path);
+
+                
+
+                start_service(context, path);
+            }
+        }
     }
 }
+
+
 int _main(mcx::MachineContext *context)
 {
 
     auto server = Wingos::Space::self().create_ipc_server(true);
 
     log::log$("created server with handle: {}", server.handle);
-   
+
     for (int i = 0; i < context->_modules_count; i++)
     {
         log::log$("module {}: {}", i, context->_modules[i].path);
     }
 
-
-
     mcx::MachineContextModule config_module = {};
-    for(int i = 0; i < context->_modules_count; i++)
+    for (int i = 0; i < context->_modules_count; i++)
     {
         auto mod = context->_modules[i];
 
@@ -123,15 +191,14 @@ int _main(mcx::MachineContext *context)
     config_range.end(config_range.end() - 0xffff800000000000);
 
     Wingos::Space::self().map_physical_memory(config_range.start(), config_range.len(), ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);
-    
 
-    auto loaded_config = (void*)(config_range.start() + 0x0000002000000000);
-    
+    auto loaded_config = (void *)(config_range.start() + 0x0000002000000000);
+
     core::Vec<core::Str> module_service;
     core::Vec<core::Str> disk_service;
 
-    auto dat = core::Str((const char*)loaded_config, config_range.len());
-    
+    auto dat = core::Str((const char *)loaded_config, config_range.len());
+
     auto jsond = (wjson::Json::parse(dat));
     if (jsond.is_error())
     {
@@ -143,9 +210,7 @@ int _main(mcx::MachineContext *context)
 
     auto modules = (json.root().get("modules").unwrap())->as_array().unwrap();
 
-
-
-    for ( auto &l : *modules)
+    for (auto &l : *modules)
     {
         auto name = l["name"]->as_string().unwrap();
         auto path = l["path"]->as_string().unwrap();
@@ -158,51 +223,30 @@ int _main(mcx::MachineContext *context)
     {
         auto mod = context->_modules[i];
 
-        if(!module_service.contain(core::Str(mod.path)))
+        if (!module_service.contain(core::Str(mod.path)))
         {
             continue;
         }
 
-        log::log$("module {}: {}", i, mod.path);
-
-        auto range = mod.range;
-        range.start(range.start() - 0xffff800000000000);
-        range.end(range.end() - 0xffff800000000000);
-
-        auto self_mapped = Wingos::Space::self().map_physical_memory(range.start(), range.len(), ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);
-
-        auto loaded = elf::ElfLoader::load(VirtRange(
-            range.start() + 0x0000002000000000,
-            range.end() + 0x0000002000000000));
-
-        (void)self_mapped;
-
-        if (loaded.is_error())
-        {
-            log::err$("unable to load module {}: {}", i, loaded.error());
-            continue;
-        }
-
-        log::log$("module {} loaded: {}", i, mod.path);
-
-        execute_module(loaded.unwrap()).assert();
+        log::log$("starting service for module: {}", mod.path);
+        auto res = start_service(mod);
     }
-    
-    start_from_pci();
 
+    auto root = json.root();
+    start_from_pci(&root, context);
 
     while (true)
     {
 
         auto conn = server.accept();
-        if(!conn.is_error())
+        if (!conn.is_error())
         {
             log::log$("(server) accepted connection: {}", conn.unwrap()->handle);
         }
 
         auto received = server.receive();
 
-        if(!received.is_error())
+        if (!received.is_error())
         {
             auto msg = received.unwrap();
             log::log$("(server) received message: {}", msg.received.data[0].data);
@@ -213,7 +257,6 @@ int _main(mcx::MachineContext *context)
 
             server.reply(core::move(msg), reply).assert();
         }
-
     }
     while (true)
     {

@@ -141,6 +141,13 @@ public:
                 entry.cache_disabled(page._cache_disabled);
                 entry.address(addr);
             }
+            else
+            {
+                entry.writeable(page._writeable || entry.writeable());
+                entry.user(page._user || entry.user());
+                entry.write_through(page._write_through || entry.write_through());
+                entry.cache_disabled(page._cache_disabled || entry.cache_disabled());
+            }
             return table_from_addr(vaddr)->map(vaddr, page);
         }
 

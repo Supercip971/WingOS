@@ -12,33 +12,52 @@ def kvmAvailable() -> bool:
 class LimineCfg:
     kernel: builder.ProductScope
     pkgs: list[builder.ProductScope]
+    diskPkgs: list[builder.ProductScope]
     cfg: str
 
     def __init__(self, kernel: str):
         print("LimineCfg")
         print(kernel)
         self.kernel = kernel
-        self.pkgs = []
-        self.cfg = "TIMEOUT=0\n:Mu\nPROTOCOL=limine\nKERNEL_PATH=boot:///boot/kernel.elf\n"
-        self.imageDir = None
+        self.pkgsBoot = []
+        self.pkgsDisk = []
 
-    def append_file(self, pkg: builder.ProductScope):
+
+        self.cfg = "TIMEOUT=0\n:Mu\nPROTOCOL=limine\nKERNEL_PATH=boot:///boot/kernel.elf\n"
+        self.imageDirBoot = None
+        self.imageDirDisk = None
+
+
+
+    def append_file_module(self, pkg: builder.ProductScope):
         if pkg != '.keep':
             self.cfg += f"MODULE_PATH=boot://{pkg}\n"
 
-    def append_component(self, pkg: builder.ProductScope, is_bin=True):
+    def append_component_module(self, pkg: builder.ProductScope, is_bin=True):
         if is_bin:
             self.cfg += f"MODULE_PATH=boot:///bin/{pkg.component.id}\n"
-            self.pkgs.append(pkg)
+            self.pkgsBoot.append(pkg)
         else:
             self.cfg += f"MODULE_PATH=boot://{pkg.component.id}\n"
 
+
+    def append_component(self, pkg: builder.ProductScope, is_bin=True):
+        self.pkgsDisk.append(pkg)
+
+
+        
     def createImage(self) -> Self:
-        self.imageDir = shell.mkdir(
-            os.path.join(const.PROJECT_CK_DIR, "wingos"))
-        efiBootDir = shell.mkdir(os.path.join(self.imageDir, "EFI", "BOOT"))
-        bootDir = shell.mkdir(os.path.join(self.imageDir, "boot"))
-        binDir = shell.mkdir(os.path.join(self.imageDir, "bin"))
+        self.imageDirDisk = shell.mkdir(
+            os.path.join(const.PROJECT_CK_DIR, "wingos-disk"))
+ 
+        self.imageDirBoot = shell.mkdir(
+            os.path.join(const.PROJECT_CK_DIR, "wingos-disk"))
+
+        efiBootDir = shell.mkdir(os.path.join(self.imageDirBoot, "EFI", "BOOT"))
+        bootDir = shell.mkdir(os.path.join(self.imageDirBoot, "boot"))
+        binDirBoot = shell.mkdir(os.path.join(self.imageDirBoot, "bin"))
+        binDirDisk = shell.mkdir(os.path.join(self.imageDirDisk, "bin"))
+
 
         limine = shell.wget(
             "https://raw.githubusercontent.com/limine-bootloader/limine/v4.x-branch-binary/BOOTX64.EFI"
@@ -47,25 +66,45 @@ class LimineCfg:
         shell.cp(limine, os.path.join(efiBootDir, "BOOTX64.EFI"))
         shell.cp(builder.outfile(self.kernel), os.path.join(bootDir, "kernel.elf"))
 
-        for root, _, files in os.walk(os.path.join(const.META_DIR, "sysroot")): 
-            root = root.replace(os.path.join(const.META_DIR, "sysroot"), "")
+        for root, _, files in os.walk(os.path.join(const.META_DIR, "sysroot/boot")): 
+            root = root.replace(os.path.join(const.META_DIR, "sysroot/boot"), "")
             print(f"\n\n root: {root}\n\n")
-            list(map(lambda f: self.append_file(os.path.join(root, f)), files))
+            list(map(lambda f: self.append_file_module(os.path.join(root, f)), files))
 
-        shell.cpTree(os.path.join(const.META_DIR, "sysroot"), self.imageDir)
+
+
+        shell.cpTree(os.path.join(const.META_DIR, "sysroot/boot"), self.imageDirBoot)
+        shell.cpTree(os.path.join(const.META_DIR, "sysroot"), self.imageDirDisk)
+
 
         list(map(lambda pkg: shell.cp(builder.outfile(pkg),
-             os.path.join(binDir, pkg.component.id)), self.pkgs))
+             os.path.join(binDirBoot, pkg.component.id)), self.pkgsBoot))
+
+
+        list(map(lambda pkg: shell.cp(builder.outfile(pkg),
+             os.path.join(binDirDisk, pkg.component.id)), self.pkgsDisk))
 
         with open(os.path.join(bootDir, "limine.cfg"), 'w') as f:
             f.write(self.cfg)
 
         return self
 
+    def createDiskImage(self) -> Self: 
+        if self.imageDirBoot is None:
+            raise ValueError("Image directory not set. Call createImage() first.")
+
+        self.diskImagePath = os.path.join(const.PROJECT_CK_DIR, "disk.hdd")
+
+        print(f"Creating disk image at {self.diskImagePath}")
+
+        shell.exec("bash", const.META_DIR + "/plugins/disk_gen.sh")
+
+        return self
     def run(self):
         ovmf = shell.wget(
             "https://retrage.github.io/edk2-nightly/bin/RELEASEX64_OVMF.fd")
 
+        self.createDiskImage()
         qemuCmd: list[str] = [
             "qemu-system-x86_64",
             "-no-reboot",
@@ -74,13 +113,16 @@ class LimineCfg:
             "-bios", ovmf,
             "-m", "4G",
             "-smp", "4",
-            "-drive",
-
-            f"file=fat:rw:{self.imageDir},media=disk,format=raw",
+            
+            "-device", "nvme,drive=nvm,serial=deadbeef",
+            "-drive", f"file={self.diskImagePath},if=none,id=nvm",
+            "-boot", "c",
+            #  f"file=fat:rw:{self.imageDir},media=disk,format=raw",
           #  "-d", "cpu_reset",
            # "-d", "guest_errors",
           #  "-d", "int"
         ]
+
 
         if kvmAvailable():
             qemuCmd += ["-enable-kvm", "-cpu", "host"]
@@ -148,8 +190,9 @@ def bootFunc(args: model.TargetArgs):
     vt100.p(f'{components}')
     for pkg in filter(lambda m: const.EXTERN_DIR not in m.dirname(), components):
         if pkg.type == model.Kind.EXE and pkg.id != "kernel-loader-limine" and pkg.props.get("exported", False):
-            limine.append_component(build_object(args, pkg.id, "wingos-x86_64"))
-
+            obj = build_object(args, pkg.id, "wingos-x86_64")
+            limine.append_component_module(obj)
+            limine.append_component(obj)
     limine.createImage().run()
 
 

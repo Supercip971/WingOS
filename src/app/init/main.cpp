@@ -61,6 +61,7 @@ core::Result<size_t> execute_module(elf::ElfLoader loaded)
         auto moved_memory = Wingos::Space::self().move_to(subspace, memory);
 
         subspace.map_memory(ph.virt_addr, ph.virt_addr + ph.mem_size, moved_memory, ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);
+        
     }
 
     subspace.launch_task(task_asset);
@@ -92,8 +93,9 @@ core::Result<size_t> start_service(mcx::MachineContextModule mod)
     }
 
 
-    return execute_module(loaded.unwrap());
+    auto v = execute_module(loaded.unwrap());
 
+    return v;
 }
 
 core::Result<size_t> start_service(mcx::MachineContext *context, core::Str path)
@@ -219,6 +221,8 @@ int _main(mcx::MachineContext *context)
         module_service.push(core::Str(path));
     }
 
+    auto root = json.root();
+    start_from_pci(&root, context);
     for (int i = 0; i < context->_modules_count; i++)
     {
         auto mod = context->_modules[i];
@@ -232,8 +236,6 @@ int _main(mcx::MachineContext *context)
         auto res = start_service(mod);
     }
 
-    auto root = json.root();
-    start_from_pci(&root, context);
 
     while (true)
     {
@@ -260,6 +262,7 @@ int _main(mcx::MachineContext *context)
     }
     while (true)
     {
+
         //   log::log$("no Hello, World!");
     }
     return 1;

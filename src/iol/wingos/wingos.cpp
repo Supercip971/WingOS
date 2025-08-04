@@ -34,9 +34,20 @@ public:
     }
 };
 
-extern "C" void _start(mcx::MachineContext *context)
+
+asm(
+    ".global _start \n"
+    "_start: \n"
+    "   and $-16, %rsp \n"
+    "   sub $512, %rsp \n"
+    "   call _entry_point \n"
+    "   \n");
+extern "C" void _entry_point(mcx::MachineContext *context)
 {
+
+    asm volatile("and $-16, %rsp");
     _index = 0;
+
 
     WingosLogger logger;
     log::provide_log_target(&logger);

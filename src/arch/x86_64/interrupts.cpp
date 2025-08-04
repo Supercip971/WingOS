@@ -10,17 +10,23 @@
 #include "kernel/generic/cpu.hpp"
 #include "kernel/generic/scheduler.hpp"
 #include "libcore/encourage.hpp"
+#include "libcore/lock/lock.hpp"
+#include "libcore/lock/rwlock.hpp"
 uint64_t ccount;
 
 bool inside_error = false;
 extern uintptr_t _scheduler_impl(uintptr_t stack);
 
+core::RWLock int_lock;
 void interrupt_release();
 
 extern "C" uintptr_t interrupt_handler(uintptr_t stack)
 {
 
+
     Cpu::current()->interrupt_hold();
+
+    int_lock.read_acquire();
 
     if (Cpu::current()->in_interrupt())
     {
@@ -28,10 +34,13 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
     }
 
     Cpu::current()->in_interrupt(true);
-    arch::amd64::StackFrame volatile *frame = reinterpret_cast<arch::amd64::StackFrame *>(stack);
+    arch::amd64::StackFrame  *frame = reinterpret_cast<arch::amd64::StackFrame *>(stack);
+
 
     if (frame->interrupt_number < 32)
     {
+        int_lock.read_release();
+        int_lock.write_acquire();
         while (inside_error)
         {
             asm volatile("pause");
@@ -59,6 +68,11 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
                      : "=r"(cr2));
         log::log$("cr2: {}", cr2 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
         inside_error = false;
+
+        log::log$("cpu: {}", hw::acpi::Lapic::the().id());
+
+        kernel::dump_all_current_running_tasks(); 
+        int_lock.write_release(); 
         while (true)
         {
             asm volatile("hlt");
@@ -79,5 +93,6 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
     Cpu::current()->in_interrupt(false);
     Cpu::current()->interrupt_release();
 
+    int_lock.read_release();
     return stack;
 }

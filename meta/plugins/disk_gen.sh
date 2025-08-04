@@ -34,7 +34,7 @@ echo "Requiring root privileges to format the disk: $BOOT_DISK_PART"
 echo "Command running: sudo mkfs.fat $BOOT_DISK_PART"
 sudo mkfs.fat $BOOT_DISK_PART
 
-BOOT_DISK_PATH_S="`udisksctl mount -b $BOOT_DISK_PART --no-user-interaction`"
+BOOT_DISK_PATH_S="`udisksctl mount -b $BOOT_DISK_PART`"
 
 BOOT_DISK_PATH=${BOOT_DISK_PATH_S#*at }
 

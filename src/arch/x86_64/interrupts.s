@@ -72,11 +72,8 @@ __interrupt_common:
 
     mov rdi, rsp
     mov rax, rsp
-    and rsp, ~0xF
-    sub rsp, 8      ; Account for return address
     
     call interrupt_handler
-    mov rsp, rax
 
     pop_all
     add rsp, 16 ; pop error code and interrupt number

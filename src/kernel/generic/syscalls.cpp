@@ -97,7 +97,6 @@ core::Result<uintptr_t> ksyscall_map(SyscallMap *map)
     {
         space = try$(Space::space_by_handle(
             Cpu::current()->currentTask()->space(),
-
             map->target_space_handle));
     }
     else
@@ -264,6 +263,7 @@ core::Result<size_t> ksyscall_asset_release(SyscallAssetRelease *release)
 
 core::Result<size_t> ksyscall_task_launch(SyscallTaskLaunch *task_launch)
 {
+ 
     Space *space = nullptr;
     if (task_launch->target_space_handle != 0)
     {
@@ -812,12 +812,14 @@ core::Result<size_t> ksyscall_ipc_x86_port(SyscallIpcX86Port* port)
     return {};
 }
 
+
 core::Result<size_t> syscall_handle(SyscallInterface syscall)
 {
     switch (syscall.id)
     {
     case SYSCALL_DEBUG_LOG_ID:
     {
+        lock_scope$(log_lock);
         auto debug = syscall_debug_decode(syscall);
         log::log("{}", debug.message);
         return core::Result<size_t>::success(0);

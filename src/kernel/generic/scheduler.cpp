@@ -153,7 +153,9 @@ core::Result<void> task_run(TUID task_id, CoreId core)
     SchedulerEntity entity(t, 0);
     t->state(TaskState::TASK_RUNNING);
 
+    scheduler_lock.write_acquire();
     add_entity_to_queue(entity);
+    scheduler_lock.write_release();
     return {};
 }
 
@@ -278,7 +280,7 @@ static void update_runned_tasks()
     }
 }
 
-static core::Result<void> fix_sched_affinity()
+static core::Result<void> fix_sched_affinity() 
 {
     size_t attempt = 0;
     static core::Vec<CoreId> to_fix = {};
@@ -459,7 +461,7 @@ void schedule_other_cpus()
         else if (cpu_runned[i].task->uid() != Cpu::get(i)->currentTask()->uid())
         {
             trigger_reschedule(i);
-        }
+        } 
     }
 }
 
@@ -474,6 +476,8 @@ core::Result<void> dump_all_current_running_tasks()
                       i,
                       (int)cpu_runned[i].task->uid(),
                       (int)cpu_runned[i].task->state());
+            log::log$("CPU: ");
+            cpu_runned[i].task->cpu_context()->dump();
         }
         else
         {
@@ -492,13 +496,12 @@ core::Result<void> reschedule_all()
         try$(schedule_all());
 
         try$(fix_sched_affinity());
-        //  dump_all_current_running_tasks();
     }
     schedule_other_cpus();
     return {};
 }
 
-core::Result<Task *> schedule(Task *current, void volatile *state, CoreId core)
+core::Result<Task *> schedule(Task *current, void *state, CoreId core)
 {
 
     if (core == 0)

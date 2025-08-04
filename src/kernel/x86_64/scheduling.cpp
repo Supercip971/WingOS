@@ -10,7 +10,7 @@ uintptr_t _scheduler_impl(uintptr_t stack)
 {
 
     kernel::scheduler_tick();
-    auto res = kernel::schedule(Cpu::current()->currentTask(), (void volatile *)stack, Cpu::currentId());
+    auto res = kernel::schedule(Cpu::current()->currentTask(), (void *)stack, Cpu::currentId());
 
     if (res.error())
     {

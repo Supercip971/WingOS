@@ -12,7 +12,7 @@ class CpuContextAmd64 : public kernel::CpuContext
 public:
     CpuContextAmd64() = default;
 
-    volatile StackFrame frame;
+    StackFrame frame;
 
     void _user_stack_addr(uintptr_t addr)
     {
@@ -21,12 +21,12 @@ public:
 
     void stackframe(StackFrame nframe)
     {
-        *const_cast<StackFrame *>(&frame) = nframe;
+        frame = nframe;
     }
 
-    StackFrame stackframe() const
+    StackFrame stackframe()  const
     {
-        return *const_cast<StackFrame *>(&frame);
+        return frame;
     }
 };
 } // namespace arch::amd64

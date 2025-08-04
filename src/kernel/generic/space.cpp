@@ -4,7 +4,7 @@
 #include "libcore/ds/vec.hpp"
 #include "libcore/result.hpp"
 
-size_t _space_handle;
+size_t _space_handle = 1;
 
 struct SpacePtr
 {

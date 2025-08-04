@@ -51,7 +51,10 @@ core::Result<void> scheduler_tick();
 
 core::Result<void> task_run(TUID task_id, CoreId core = 0);
 
-core::Result<Task *> schedule(Task *current, void volatile *state, CoreId core);
+core::Result<Task *> schedule(Task *current, void *state, CoreId core);
+
+core::Result<void> dump_all_current_running_tasks();
+
 } // namespace kernel
 // arch implemented
 void trigger_reschedule(CoreId cpu);

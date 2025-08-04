@@ -9,10 +9,12 @@
 #include "kernel/generic/syscalls.hpp"
 #include "libcore/alloc/alloc.hpp"
 #include "libcore/fmt/log.hpp"
+#include "libcore/lock/lock.hpp"
 
 namespace arch::amd64
 {
 
+    core::Lock sys_lock;
 extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *stackframe)
 {
     //  log("syscall", LOG_INFO, "called syscall higher handler in: {} (stack: {})", stackframe->rip, stackframe->rsp);
@@ -36,6 +38,7 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *stackframe)
     {
         stackframe->rax = res.unwrap();
     }
+
     //  log("syscall", LOG_INFO, "exited syscall higher handler with result: {}", ret);
     return res.unwrap();
 }
@@ -63,12 +66,12 @@ core::Result<void> syscall_init_for_current_cpu()
     // kcode + 8: kernel data
     // ucode + 8 : user data
     // ucode + 16 : user code
-    Msr::Write(MsrReg::STAR, ((uint64_t)Gdt::kernel_code_segment_id << 32) | ((uint64_t)(Gdt::kernel_data_segment_id | 3) << 48));
+    Msr::Write(MsrReg::STAR, ((((uint64_t)Gdt::kernel_code_segment_id*8)) << 32) | (((uint64_t)((Gdt::kernel_data_segment_id*8) | 3)) << 48));
     Msr::Write(MsrReg::LSTAR, (uint64_t)syscall_handle);
-    Msr::Write(MsrReg::SYSCALL_FLAG_MASK, (uint64_t)(1 << 9));
+    Msr::Write(MsrReg::SYSCALL_FLAG_MASK, (uint64_t)(1 << 9) | 0xfffffffe);
 
     Cpu::current()->syscall_stack = (void *)((uintptr_t)try$(core::mem_alloc(kernel::kernel_stack_size)) +
-                                             kernel::kernel_stack_size - 1); // allocate a stack for syscall handling
+                                             kernel::kernel_stack_size - 16); // allocate a stack for syscall handling
     return {};
 }
 

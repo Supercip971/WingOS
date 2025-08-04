@@ -37,8 +37,10 @@ public:
     void use_stack_addr(uintptr_t addr);
 
     core::Result<void> prepare(CpuContextLaunch launch);
-    void save_in(void volatile *state);
-    void load_to(void volatile *state);
+    void dump();
+
+    void save_in(void *state);
+    void load_to(void *state);
     void release();
 
     template <typename T>

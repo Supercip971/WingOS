@@ -81,13 +81,13 @@ struct [[gnu::packed]] Gdt
 {
     core::Array<GdtEntry, 5> _entries;
 
+    TssEntry tss;
     static const int kernel_code_segment_id = 1;
     static const int kernel_data_segment_id = 2;
     static const int user_data_segment_id = 3;
     static const int user_code_segment_id = 4;
     static const int tss_segment_id = 5;
 
-    TssEntry tss;
 
     constexpr Gdt() : _entries({
                           GdtEntry::make_entry(0, 0, 0, 0),                      // null segment

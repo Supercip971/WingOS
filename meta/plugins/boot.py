@@ -51,7 +51,7 @@ class LimineCfg:
             os.path.join(const.PROJECT_CK_DIR, "wingos-disk"))
  
         self.imageDirBoot = shell.mkdir(
-            os.path.join(const.PROJECT_CK_DIR, "wingos-disk"))
+            os.path.join(const.PROJECT_CK_DIR, "wingos-boot"))
 
         efiBootDir = shell.mkdir(os.path.join(self.imageDirBoot, "EFI", "BOOT"))
         bootDir = shell.mkdir(os.path.join(self.imageDirBoot, "boot"))

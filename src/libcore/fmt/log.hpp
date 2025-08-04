@@ -35,7 +35,7 @@ constexpr void log(Fmt &&fmt, Args &&...args)
 inline constexpr core::Str file_name(const char *s)
 {
     core::Str str(s);
-    core::Str sub = str.sub_last_char('/');
+    core::Str sub = str.sub_penultimate_char('/');
     if (sub)
     {
         return sub.substr(1);

@@ -5,7 +5,8 @@
     "description": "WingOS nvme drive service",
     
     "props": {
-        "exported": true
+        "exported": true,
+        "pkgname": "nvme"
     },
     "requires": [
         "libcore",

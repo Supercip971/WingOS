@@ -91,6 +91,22 @@ public:
 
         return substr(last);
     }
+    constexpr Str sub_penultimate_char(char v) const
+    {
+        int penultimate = _len + 1;
+        int last = _len + 1;
+
+        for (size_t i = 0; i < _len; i++)
+        {
+            if (_data[i] == v)
+            {
+                penultimate = last;
+                last = i;
+            }
+        }
+
+        return substr(penultimate);
+    }
 
     constexpr bool start_with(const Str &str) const
     {

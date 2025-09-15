@@ -31,15 +31,16 @@ core::Result<VmmSpace> VmmSpace::kernel_initialize(const mcx::MachineContext *ct
         VirtRange entry_virt = toVirtRange(entry_phys);
         VirtRange entry_kernel = toKernelRange(entry_phys);
 
-        log::log$("- mapping[{}]: ({}-{}) -> ({}-{})", i, entry_phys.start()._addr | flags, entry_phys.end()._addr | flags,
+        log::log$("- mapping[{}]: ({}-{}) -> ({}-{}) (mem)", i, entry_phys.start()._addr | flags, entry_phys.end()._addr | flags,
                   entry_virt.start()._addr | flags, entry_virt.end()._addr | flags);
         try$(result.map(entry_virt, entry_phys,
                         PageFlags().present(true).writeable(true).user(false)));
 
+
         //        log::log$("ok");
-        if (entry.type == mcx::MemoryMap::Type::KERNEL_AND_MODULES)
+        if (entry.type == mcx::MemoryMap::Type::KERNEL_AND_MODULES && entry.range.start() < (1ull << 32))
         {
-            log::log$("- mapping[{}]: ({}-{}) -> ({}-{})", i, entry_phys.start()._addr | flags, entry_phys.end()._addr | flags,
+            log::log$("- mapping[{}]: ({}-{}) -> ({}-{}) (module)", i, entry_phys.start()._addr | flags, entry_phys.end()._addr | flags,
                       entry_kernel.start()._addr | flags, entry_kernel.end()._addr | flags);
             try$(result.map(entry_kernel, entry_phys,
                             PageFlags().present(true).writeable(true).user(false)));

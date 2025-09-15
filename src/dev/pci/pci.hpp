@@ -169,6 +169,22 @@ struct PciDevice
         return ((uint64_t)high << 32) | low;
     }
 
+    uint64_t get_bar64_size(uint8_t bar_index)
+    {
+        const uint64_t old_value = get_bar64(bar_index);
+        write_config(bar_index, 0xffffffff);
+        write_config(bar_index+4, 0xffffffff);
+
+        const uint64_t val = get_bar64(bar_index);
+
+        size_t len = ~ val;
+
+        write_config(bar_index, old_value);
+        write_config(bar_index + 4, old_value >> 32);
+
+        return len + 1;
+    }
+
     static inline void write_config(uint8_t bus, uint8_t slot, uint8_t func, uint8_t off, uint32_t value)
     {
         PciConfigReg reg = {off, func, slot, bus, 0, 1};

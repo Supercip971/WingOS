@@ -47,23 +47,23 @@ inline constexpr core::Str file_name(const char *s)
 
 #ifndef NO_LOG_COLOR
 #    define log$(...)                                                \
-        log("\033[95m[{}:{}]:\033[0m ", __LOG_FILENAME__, __LINE__); \
+        log("\033[95m[{}]:\033[0m ", __LOG_FILENAME__); \
         log::log(__VA_ARGS__);                                       \
         log::log("\n")
 
 #    define err$(...)                                                \
-        log("\033[91m[{}:{}]:\033[0m ", __LOG_FILENAME__, __LINE__); \
+        log("\033[91m[{}]:\033[0m ", __LOG_FILENAME__); \
         log::log(__VA_ARGS__);                                       \
         log::log("\n")
 
 #    define warn$(...)                                               \
-        log("\033[93m[{}:{}]:\033[0m ", __LOG_FILENAME__, __LINE__); \
+        log("\033[93m[{}]:\033[0m ", __LOG_FILENAME__); \
         log::log(__VA_ARGS__);                                       \
         log::log("\n")
 
 #else
 #    define log$(...)                                 \
-        log("[{}:{}]: ", __LOG_FILENAME__, __LINE__); \
+        log("[{}]: ", __LOG_FILENAME__); \
         log::log(__VA_ARGS__);                        \
         log::log("\n")
 

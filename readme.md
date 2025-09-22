@@ -8,6 +8,7 @@
 
 WingOS is a small hobbyist 64 bit kernel made with <3 in C++ 
 
+[latest milestone](https://cyp.sh/blog/wingos-milestone-1/) - [blog](https://cyp.sh/blog/) - [old branch](https://github.com/Supercip971/WingOS/tree/old)
 </div>
 
 I am currently working on this rewrite. 
@@ -22,6 +23,10 @@ Please be aware that this rewrite is a work in progress. And due to my current s
 The project is about creating a small hobbyist kernel that is simple, easy to understand, and fun to work on.
 It is not meant to be a production-ready kernel, but it doesn't mean that coding should not be taken seriously.
 Everything should be done with care, and the code should aim to be fast, while being simple and easy to understand.
+
+## Milestones
+
+- [milestone 1 blog post](https://cyp.sh/blog/wingos-milestone-1/)
 
 ## Dependencies
 

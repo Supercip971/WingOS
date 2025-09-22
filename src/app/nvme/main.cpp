@@ -1,5 +1,6 @@
 
 #include <string.h>
+
 #include "dev/pci/pci.hpp"
 #include "iol/wingos/asset.hpp"
 #include "iol/wingos/space.hpp"
@@ -12,7 +13,7 @@
 #include "wingos-headers/asset.h"
 #include "wingos-headers/syscalls.h"
 
-struct [[gnu::packed]] SubmissionQueueEntry 
+struct [[gnu::packed]] SubmissionQueueEntry
 {
     uint8_t opcode;
     uint8_t fused_operation : 2;
@@ -27,7 +28,7 @@ struct [[gnu::packed]] SubmissionQueueEntry
     uint32_t command_specific[6];
 };
 
-struct [[gnu::packed]] CompletionQueueEntry 
+struct [[gnu::packed]] CompletionQueueEntry
 {
     uint32_t cmd_specific;
     uint32_t _reserved;
@@ -40,12 +41,13 @@ struct [[gnu::packed]] CompletionQueueEntry
 
 union [[gnu::packed]] ControllerCap
 {
-    struct [[gnu::packed]]{
-        uint16_t max_queue_entries; 
+    struct [[gnu::packed]]
+    {
+        uint16_t max_queue_entries;
         uint8_t contiguous_queue_req : 1;
         uint8_t arbitration_mechanism : 2;
         uint8_t _reserved : 5;
-        uint8_t timeout; 
+        uint8_t timeout;
         uint8_t stride : 4;
         uint8_t reset_support : 1;
         uint8_t command_set_supported;
@@ -56,18 +58,35 @@ union [[gnu::packed]] ControllerCap
         uint8_t persistent_memory_region_supported : 1;
         uint8_t controller_memory_buffer_supported : 1;
         uint8_t nvm_subsystem_shutdown_supported : 1;
-        uint8_t controller_ready_mode_supported :2;
+        uint8_t controller_ready_mode_supported : 2;
     };
-    
-    struct {
+
+    struct
+    {
         uint32_t raw_value_0;
         uint32_t raw_value_1;
     };
 };
 
+union [[gnu::packed]] NvmeConfig
+{
+    struct [[gnu::packed]]
+    {
+        // name used in figure 78 (3.1.5) of the NVMe spec
+        uint8_t en : 1; // enable
+        uint8_t _reserved : 3;
+        uint8_t css : 3; // IO Command Set Selected
+        uint8_t mps : 4; // memory page size
+        uint16_t ams : 3; // arbitration mechanism selected
 
+        uint8_t shn : 2; // shutdown notification
+        uint8_t iosqes : 4; // I/O Submission Queue Entry Size 
+        uint8_t iocqes : 4; // I/O Completion Queue Entry Size
+   };
+    uint32_t raw_value;
+};
 
-void dump_controller_cap(ControllerCap const& cap)
+void dump_controller_cap(ControllerCap const &cap)
 {
     log::log$("Controller Capability:");
     log::log$("- max queue entries           : {}", cap.max_queue_entries);
@@ -77,27 +96,123 @@ void dump_controller_cap(ControllerCap const& cap)
     log::log$("- mem page size minimum       : {}", cap.memory_page_size_minimum);
     log::log$("- mem page size maximum       : {}", cap.memory_page_size_maximum);
 }
+
+
+struct [[gnu::packed]] NvmeCmdHeader  
+{
+    uint8_t opcode;
+    uint8_t fuse : 2;
+    uint8_t _reserved : 4;
+    uint8_t psdt : 2;
+    uint16_t cid; 
+};
+struct [[gnu::packed]] NvmeCmd 
+{
+    NvmeCmdHeader header;
+
+    uint32_t nsid;
+    uint64_t reserved;
+    uint64_t mptr;
+    uint64_t prp1;
+    uint64_t prp2;
+    union Cmd  {
+        struct [[gnu::packed]] {
+            uint32_t cdw10;
+            uint32_t cdw11;
+            uint32_t cdw12;
+            uint32_t cdw13;
+            uint32_t cdw14;
+            uint32_t cdw15;
+        } raw;
+
+        struct [[gnu::packed]] {
+            uint16_t qid; // queue id 
+            uint16_t qsize; // queue size
+            bool pc : 1;  // physically contiguous
+            bool ien : 1; // interrupt enable
+            uint32_t _reserved : 14;
+            uint16_t iv; // interrupt vector
+        } CreateIoCompletionQueue;
+        // Results: 
+        // 0x1 : Invalid queue identifier
+        // 0x2 : Invalid queue size 
+        // 0x8 : Invalid interrupt vector 
+        struct [[gnu::packed]] {
+            uint16_t qid; // queue id 
+            uint16_t qsize; // queue size
+            bool pc : 1;  // physically contiguous
+            uint8_t qprio : 2; // queue priority 
+            uint32_t _reserved : 14;
+            uint16_t cqid; // Completion queue identifier
+            
+            uint16_t nvmsetid; // nvme set id
+            uint16_t _reserved2;
+        } CreateIoSubmissionQueue;
+        // results:
+        // 0 : Invalid completion queue
+        
+
+        struct [[gnu::packed]] {
+            uint8_t cns; // namspace structure or controller 
+            uint8_t _reserved; 
+            uint16_t cntid; // controller identifier
+            uint16_t nvmsetid; // NVMe set identifier 
+            uint16_t _reserved2;
+            uint8_t uuid_idx : 7;
+            uint32_t _reserved3 : 25;
+        } Identify;
+
+
+        struct [[gnu::packed]] {
+            uint64_t lba;
+            uint16_t nlb; // number of logical block
+            uint16_t _reserved : 4;
+            uint8_t dtype : 4; // directive type (0 for read) 
+            uint8_t _reserved2 : 2;
+            uint8_t prinfo : 4; // protection information
+            uint8_t fua : 1; // force unit access
+            uint8_t lr : 1; // limited retry
+        } ReadWrite;
+
+        // Results:
+        // 0x20 = namespace is write protected
+        // 0x80 = Conflicting attributes
+        // 0x81 = Invalid protection information
+        // 0x82 = Writing a read only
+    };  
+
+
+        
+};
 class NvmeDriver
 {
 
-
     ControllerCap cap;
     uint64_t stride;
-    template<typename T>
-    struct Queue 
+    uint64_t queue_slots;
+
+    //uint64_t uid;
+
+    template <typename T>
+    struct Queue
     {
         uint64_t base_addr;
+        uint64_t physical_addr;
         uint64_t count;
         bool is_completion;
         uint64_t tail;
 
-        core::Result<T*> allocate()
+        bool will_loop()
         {
-            T* res = (T*)(base_addr + tail*sizeof(T));
+            return (tail + 1) >= count;
+        }
+        core::Result<T *> allocate()
+        {
+            T *res = (T *)(base_addr + tail * sizeof(T));
 
-            tail+= 1; 
+            tail += 1;
 
-            if(tail >= count)
+            if (tail >= count)
             {
                 tail = 0;
                 return allocate(); // circular  buffer
@@ -108,26 +223,23 @@ class NvmeDriver
 
         core::Result<Queue<T>> create(size_t count)
         {
-            Queue<T> queue = {}; 
-            
-            size_t len = math::alignUp(count*sizeof(T), 4096ul);
-            
+            Queue<T> queue = {};
 
-            queue.count = math::alignDown(len, sizeof(T))/sizeof(T); 
+            size_t len = math::alignUp(count * sizeof(T), 4096ul);
+
+            queue.count = math::alignDown(len, sizeof(T)) / sizeof(T);
             queue.is_completion = core::IsSame<T, CompletionQueueEntry>;
             queue.tail = 0;
-            
-            
-            
+
             auto memory = Wingos::Space::self().allocate_physical_memory(len, false);
-            if(memory.handle == 0)
+            if (memory.handle == 0)
             {
                 return core::Result<Queue<T>>::error("failed to allocate memory for queue");
             }
             auto mapped = Wingos::Space::self().map_memory(memory, ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);
             queue.base_addr = (uint64_t)mapped.ptr();
-            memset((void*)queue.base_addr, 0, len);
-
+            queue.physical_addr = (uint64_t)mapped.ptr() - USERSPACE_VIRT_BASE; 
+            memset((void *)queue.base_addr, 0, len);
 
             return queue;
         };
@@ -137,14 +249,46 @@ class NvmeDriver
             Wingos::Space::self().release_memory(this->base_addr);
             return {};
         }
-
-
-
     };
 
 
-    Queue<SubmissionQueueEntry> command_queue;
-    Queue<CompletionQueueEntry> complete_queue;
+    
+    template<typename SubmitT = SubmissionQueueEntry, typename CompleteT = CompletionQueueEntry>
+    struct Queues
+    {
+
+        Queue<SubmitT> command_queue;
+        Queue<CompleteT> complete_queue;
+
+        uint64_t id;
+        uint64_t phase;
+    };
+
+
+    template<typename SubmitT = SubmissionQueueEntry, typename CompleteT = CompletionQueueEntry>
+    core::Result<Queues<SubmitT, CompleteT>> create_queues(size_t slots, uint64_t id)
+    {
+
+        Queues<SubmitT, CompleteT> queues;
+
+        auto cmd_queue = try$(Queue<SubmitT>().create(slots));
+        auto cmp_queue = try$(Queue<CompleteT>().create(slots));
+
+        queues.command_queue = cmd_queue;
+        queues.complete_queue = cmp_queue;
+
+
+        queues.phase = 1;
+        queues.id= id;
+
+
+        return queues;
+
+    } 
+   // Queue<SubmissionQueueEntry> io_command_queue;
+   // Queue<CompletionQueueEntry> io_complete_queue;
+
+    Queues<> admin_queues; 
 
     enum NvmeBaseReg
     {
@@ -163,19 +307,18 @@ class NvmeDriver
         NVME_QUEUE_HEAD_DOORBELL_BASE = 0x1000,
     };
 
-
-    // Nvme express command set specification 1.2 - 3.3 NVM Command set Commands 
-    enum NvmeOpcodes 
+    // Nvme express command set specification 1.2 - 3.3 NVM Command set Commands
+    enum NvmeOpcodes
     {
         NVME_OP_FLUSH = 0x0,
         NVME_OP_WRITE = 0x1,
         NVME_OP_READ = 0x2,
         NVME_OP_WRITE_UNCORRECTABLE = 0x4,
-        NVME_OP_COMPARE = 0x5, 
+        NVME_OP_COMPARE = 0x5,
         NVME_OP_WRITE_ZERO = 0x8,
         NVME_OP_CANCEL = 0x18,
-        NVME_OP_COPY = 0x19, 
-        // ... other op in the doc but not really usefull 
+        NVME_OP_COPY = 0x19,
+        // ... other op in the doc but not really usefull
     };
 
     Wingos::VirtualMemoryAsset mapped_nvme_addr_space;
@@ -192,24 +335,23 @@ class NvmeDriver
     }
     uint32_t read(int reg)
     {
-        void* base = mapped_nvme_addr_space.ptr();
+        void *base = mapped_nvme_addr_space.ptr();
 
-        uint32_t volatile* offseted = reinterpret_cast<uint32_t volatile*>((uintptr_t)base + reg);
-        
+        uint32_t volatile *offseted = reinterpret_cast<uint32_t volatile *>((uintptr_t)base + reg);
+
         return *offseted;
     }
 
     void write(int reg, uint32_t val)
     {
-        void* base = mapped_nvme_addr_space.ptr();
+        void *base = mapped_nvme_addr_space.ptr();
 
-        uint32_t volatile* offseted = reinterpret_cast<uint32_t volatile*>((uintptr_t)base + reg);
-        
+        uint32_t volatile *offseted = reinterpret_cast<uint32_t volatile *>((uintptr_t)base + reg);
+
         *offseted = val;
     }
 
-    public:
-
+public:
     static core::Result<NvmeDriver> setup(Wingos::dev::PciDevice &dev)
     {
         NvmeDriver driver;
@@ -222,49 +364,119 @@ class NvmeDriver
 
         driver.stride = (device_addr >> 12) & 0xf;
 
+
+
+
         log::log$("remapped nvme at: {}", ((uint64_t)driver.base_addr) | fmt::FMT_HEX);
 
         driver.cap.raw_value_0 = driver.read(NVME_CAP);
         driver.cap.raw_value_1 = driver.read(NVME_CAP + sizeof(uint32_t));
 
+        NvmeConfig cfg = {};
+        cfg.raw_value = driver.read(NVME_CONTROLLER_CONFIG);
+
+        
+        
+        if(cfg.en)
+        {
+            cfg.en = 0;
+
+            log::log$("Disabling NVMe controller to reset it...");
+            driver.write(NVME_CONTROLLER_CONFIG, cfg.raw_value);
+        }
+        while(driver.read(NVME_CONTROLLER_STATUS) & 1)
+        {
+            asm volatile("pause");
+        }
+        driver.stride =  (driver.cap.stride );
+        driver.queue_slots = driver.cap.max_queue_entries ;
+
+        log::log$("NVMe stride is: {}", driver.stride | fmt::FMT_HEX);
+        log::log$("NVMe queue slots: {}", driver.queue_slots);
+
+        
+
+        driver.admin_queues = try$(driver.create_queues(driver.queue_slots, 0));
+
+        
         dump_controller_cap(driver.cap);
 
-        driver.command_queue = try$(Queue<SubmissionQueueEntry>().create(64));
-        driver.complete_queue = try$(Queue<CompletionQueueEntry>().create(64));
+        driver.write(NVME_ADMIN_QUEUE_ATTRIBUTE, ((driver.queue_slots - 1) << 16) | (driver.queue_slots - 1));
+        //log::log$("Created admin command queue at: {}", driver.admin_command_queue.base_addr | fmt::FMT_HEX);
+        //log::log$("Created admin completion queue at: {}", driver.admin_complete_queue.base_addr | fmt::FMT_HEX);
 
-        log::log$("Created command queue at: {}", driver.command_queue.base_addr | fmt::FMT_HEX);
-        log::log$("Created completion queue at: {}", driver.complete_queue.base_addr | fmt::FMT_HEX);
+
+        driver.write(NVME_ADMIN_QUEUE_SUBMIT, (uint32_t)(driver.admin_queues.command_queue.physical_addr));
+        driver.write(NVME_ADMIN_QUEUE_COMPLETE, (uint32_t)(driver.admin_queues.complete_queue.physical_addr ));
+
+        NvmeConfig new_cfg = {}; 
+        new_cfg.en = 1;
+        new_cfg.iocqes = 4; // 16 bytes
+        new_cfg.iosqes = 6; // 64 bytes
+        new_cfg.shn = 0; // no shutdown notification
+        new_cfg.ams = 0; // 0 = round robin
+        new_cfg.css = 0; // 0 = nvm command set
+
+        driver.write(NVME_CONTROLLER_CONFIG, new_cfg.raw_value);
+
+        while(true)
+        {
+            uint32_t status = driver.read(NVME_CONTROLLER_STATUS);
+            if((status & 1) == 1)
+            {
+                break;
+            }
+
+            if(status & (1 << 1))
+            {
+                log::err$("NVMe controller failed to start, fatal error: {}", status | fmt::FMT_HEX);
+                return core::Result<NvmeDriver>::error("nvme controller failed to start");
+            }
+            asm volatile("pause");
+        }
         return driver;
-
     }
 
-    core::Result<void> execute(uint8_t opcode,uint32_t nsid, uint64_t lba, uint32_t sector_count, void* data)
+    core::Result<void> execute(uint8_t opcode, uint32_t nsid, uint64_t lba, uint32_t sector_count, void *data)
     {
-        [[maybe_unused]] CompletionQueueEntry* completion = try$(complete_queue.allocate()); 
-    
-        SubmissionQueueEntry* submission = try$(command_queue.allocate());
+        (void)nsid;
+        (void)lba;
+        (void)sector_count;
+        (void)data;
+        (void)opcode;
 
-        *submission = (SubmissionQueueEntry){};
-        submission->opcode = opcode;
-        submission->namspace_identifier =  nsid; 
-        submission->command_specific[0] = lba;
-        submission->command_specific[1] = (uint32_t)(lba >> 32);
-        submission->command_specific[2] = (uint16_t)(sector_count-1);
-
-
-        submission->data_pointer[0] = reinterpret_cast<uintptr_t>(data);
-        submission->data_pointer[1] = 0;
-
-
-        write(NVME_QUEUE_TAIL_DOORBELL_BASE + 2 * (4 << cap.stride), command_queue.tail);
-
-        
-        
-        
-
-        
-        return {};
-
+      //  if (command_queue.will_loop())
+      //  {
+      //      this->phase = !this->phase;
+      //  }
+      //  SubmissionQueueEntry *submission = try$(command_queue.allocate());
+//
+      //  CompletionQueueEntry *completion = try$(complete_queue.allocate());
+//
+      //  *submission = (SubmissionQueueEntry){};
+      //  submission->opcode = opcode;
+      //  submission->namspace_identifier = nsid;
+      //  submission->command_specific[0] = lba;
+      //  submission->command_specific[1] = (uint32_t)(lba >> 32);
+      //  submission->command_specific[2] = (uint16_t)(sector_count - 1);
+//
+      //  submission->data_pointer[0] = reinterpret_cast<uintptr_t>(data) - USERSPACE_VIRT_BASE;
+      //  submission->data_pointer[1] = 0;
+      //  submission->command_identifier = this->uid++;
+      //  
+      //  write(NVME_QUEUE_TAIL_DOORBELL_BASE + 2 * (4 << cap.stride), command_queue.tail);
+//
+      //  while (true)
+      //  {
+//
+      //      if ((completion->status & 0x1) == this->phase)
+      //      {
+      //          break;
+      //      }
+      //  }
+//
+      //  write(NVME_QUEUE_TAIL_DOORBELL_BASE + (2 + 1) * (4 << cap.stride), complete_queue.tail);
+       return {};
     }
 };
 
@@ -286,6 +498,15 @@ int _main(mcx::MachineContext *)
             if (!disk.is_error())
             {
                 disks.push(disk.unwrap());
+
+
+
+                auto memory = Wingos::Space::self().allocate_physical_memory(4096, false);
+                auto mapped = Wingos::Space::self().map_memory(memory, ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);
+
+                log::log$("Allocated memory at: {}", (uintptr_t)mapped.ptr() | fmt::FMT_HEX);
+                disks[0].execute(2, 0, 0, 1, mapped.ptr());
+                log::log$("NVMe worked !");
             }
             else
             {

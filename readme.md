@@ -56,8 +56,11 @@ For now the kernel is still in development, but it has a few key features:
     - [x] IPC endpoint 
 - [x] Services and IPC (inter process communication) 
 - [x] PCI support (scan, devices, ...) (in userspace)
-- [ ] Nvme disk support
-- [ ] Filesystem support (ext4, fat32, ...) 
+- [ ] Hello File!
+    - [ ] Nvme disk support
+    - [ ] Partition support (GPT)
+    - [ ] Filesystem support (ext4)
+    - [ ] VFS support
 - [ ] Graphics support (VESA, framebuffer, ...)
 - [ ] Input support (keyboard, mouse, ...)
 - [ ] Port DOOM

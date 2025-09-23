@@ -1,5 +1,6 @@
 
 #include <string.h>
+#include <sys/types.h>
 
 #include "dev/pci/pci.hpp"
 #include "iol/wingos/asset.hpp"
@@ -13,28 +14,15 @@
 #include "wingos-headers/asset.h"
 #include "wingos-headers/syscalls.h"
 
-struct [[gnu::packed]] SubmissionQueueEntry
-{
-    uint8_t opcode;
-    uint8_t fused_operation : 2;
-    uint8_t _reserved : 4;
-    uint8_t prp_select : 2;
-    uint16_t command_identifier;
 
-    uint32_t namspace_identifier;
-    uint64_t _reserved2;
-    uint64_t metadata;
-    uint64_t data_pointer[2];
-    uint32_t command_specific[6];
-};
 
 struct [[gnu::packed]] CompletionQueueEntry
 {
     uint32_t cmd_specific;
     uint32_t _reserved;
-    uint32_t submition_queue_head_ptr;
-    uint32_t submition_queue_identifier;
-    uint32_t cmd_identifier;
+    uint16_t submission_queue_head_ptr;
+    uint16_t submission_queue_identifier;
+    uint16_t cmd_identifier;
     bool phase_bit : 1;
     uint16_t status : 15;
 };
@@ -106,6 +94,10 @@ struct [[gnu::packed]] NvmeCmdHeader
     uint8_t psdt : 2;
     uint16_t cid; 
 };
+
+
+
+
 struct [[gnu::packed]] NvmeCmd 
 {
     NvmeCmdHeader header;
@@ -115,7 +107,7 @@ struct [[gnu::packed]] NvmeCmd
     uint64_t mptr;
     uint64_t prp1;
     uint64_t prp2;
-    union Cmd  {
+    union  {
         struct [[gnu::packed]] {
             uint32_t cdw10;
             uint32_t cdw11;
@@ -184,10 +176,154 @@ struct [[gnu::packed]] NvmeCmd
 
         
 };
+
+union [[gnu::packed]] NvmeIdentifyNamespace
+{
+    struct {
+    uint64_t nsze; // namespace size in logical blocks
+    uint64_t ncap; // namespace capacity in logical blocks
+    uint64_t nuse; // namespace utilization in logical blocks
+    uint8_t thinp : 1; // thin provisioning
+    uint8_t nsabp : 1; // namespace atomic write unit
+    uint8_t dae : 1; // supports deallocated or unwritten logical blocks error support
+    uint8_t uidreuse : 1; // unique identifier reuse 
+    uint8_t optperf : 1; // usage of NPWG, NPWA, NPDG, NPDA, and NOWS or just NOWS
+    uint8_t _reserved : 3;
+    uint8_t nlbaf; // number of lba formats
+    uint8_t flbas; // formatted lba size
+    uint8_t mc; // metadata capabilities
+    uint8_t dpc;
+    uint8_t dps; // data protection capabilities
+    uint8_t nmic; // namespace multi-path I/O and namespace sharing capabilities
+    uint8_t rescap; // reservation capabilities
+    uint8_t fpi; // format progress indicator
+    uint8_t dlfeat; // deallocate logical block features
+    uint16_t nawun; // namespace atomic write unit normal
+    uint16_t nawupf; // namespace atomic write unit power fail
+    uint16_t nacwu; // namespace atomic compare and write unit
+    uint16_t nabsn; // namespace atomic boundary size normal
+    uint16_t nabo; // namespace atomic boundary offset
+    uint16_t nabspf; // namespace atomic boundary size power fail
+    uint16_t noiob; // optimal I/O boundary
+    uint64_t nvmcap[2]; // NVM capacity
+    uint16_t npwg; // namespace preferred write granularity
+    uint16_t npwa; // namespace preferred write alignment
+    uint16_t npdg; // namespace preferred deallocate granularity
+    uint16_t npda; // namespace preferred deallocate alignment
+    uint16_t nows; // namespace optimal write size
+    uint8_t _reserved1[18];
+    uint32_t anagrpid; // ANA group identifier
+    uint8_t _reserved2[3];
+    uint8_t nsattr; // namespace attributes
+    uint16_t nvmsetid; // NVM set identifier
+    uint16_t endgid; // endurance group identifier
+
+    uint64_t nguid[2]; // namespace globally unique identifier
+    uint64_t eui64; // IEEE extended unique identifier
+    uint32_t lbaf[16]; // lba format
+    uint8_t _reserved3[383-191]; // vendor specific
+    };
+
+    uint8_t raw[4096];
+};
+
+union [[gnu::packed]] NvmeIdentifyController 
+{
+    struct [[gnu::packed]]{
+        uint16_t vid; // PCI vendor id
+        uint16_t ssvid; // PCI subsystem vendor id
+        char sn[23-3]; // serial number
+        char mn[63-23]; // model number
+        char fr[71-63]; // firmware revision
+        uint8_t rab; // recommended arbitration burst
+        uint8_t ieee[3]; // ieee oui identifier
+        uint8_t cmic; // controller multi-path I/O and namespace sharing capabilities
+        uint8_t mdts; // maximum data transfer size
+        uint16_t cntlid; // controller identifier
+        uint32_t ver; // version
+        uint32_t rtd3r; // RTD3 resume latency
+        uint32_t rtd3e; // RTD3 entry latency
+        uint32_t oaes; // optional asynchronous events supported
+        uint32_t ctratt; // controller attributes
+        uint16_t rrls; // read recovery levels supported
+
+        uint8_t _reserved[110-101];
+        uint8_t cntrltype;
+        uint64_t fguid[2]; // FRU Globally Unique Identifier
+        uint16_t crdt1; // Command Retry Delay Time 1
+        uint16_t crdt2; // Command Retry Delay Time 2
+        uint16_t crdt3; // Command Retry Delay Time 3
+
+        uint8_t _reserved2[255-133];
+        uint16_t oacs; // optional admin command support
+        uint8_t acl; // abort command limit
+        uint8_t aerl; // asynchronous event request limit
+        uint8_t frmw; // firmware updates
+        uint8_t lpa; // log page attributes
+        uint8_t elpe; // error log page entries
+        uint8_t npss; // number of power states support
+        uint8_t avscc; // admin vendor specific command configuration
+        uint8_t apsta; // autonomous power state transition attributes
+        uint16_t wctemp; // warning composite temperature threshold
+        uint16_t cctemp; // critical composite temperature threshold
+        uint16_t mtfa; // maximum time for firmware activation
+        uint32_t hmpre; // host memory buffer preferred size
+        uint32_t hmmin; // host memory buffer minimum size
+        uint64_t tnvmcap[2]; // total NVM capacity
+        uint64_t unvmcap[2]; // unallocated NVM capacity
+        uint32_t rpmbs; // replay protected memory block support
+        uint16_t edstt; // extended device self-test time
+        uint8_t dsto; // device self-test options
+        uint8_t fwug; // firmware update granularity
+        uint16_t kas; // keep alive support
+        uint16_t hctma; // host controlled thermal management attributes
+        uint16_t mntmt; // minimum thermal management temperature
+        uint16_t mxntmt; // maximum thermal management temperature
+        uint32_t sanicap; 
+        uint32_t hmminds; // host memory buffer minimum descriptor entry size
+        uint16_t hmmaxd; // host memory buffer maximum descriptor entry size
+        uint16_t nsetidmax; // NVM set identifier maximum
+        uint16_t endgidmax; // endurance group identifier maximum
+        uint8_t anatt; // ANA transition time
+        uint8_t anacap; // ANA capabilities
+        uint32_t anagrpmax; // ANA group identifier maximum
+        uint32_t nanagrpid; // number of ANA group identifiers
+        uint32_t pels; // persistent event log size
+        uint8_t _reserved3[511-355];
+
+        uint8_t sqes; // submission queue entry size
+        uint8_t cqes; // completion queue entry size
+        uint16_t maxcmd; // maximum outstanding commands
+        uint32_t nn; // number of namespaces
+        uint16_t oncs; // optional NVM command support
+        uint16_t fuses; // fused operation support
+        uint8_t fna; // format NVM attributes
+        uint8_t vwc;  // volatile write cache
+        uint16_t awun; // atomic write unit normal
+        uint16_t awupf; // atomic write unit power fail
+        uint8_t nvscc; // NVM vendor specific command configuration
+        uint8_t nwpc; // namespace write protection capabilities
+        uint16_t acwu; // atomic compare and write unit
+        uint16_t _reserved4;
+        uint32_t sgls; // SGL support
+        uint32_t mnan; // maximum number of namespaces
+        uint8_t _reserved5[767-543];
+        char subnqn[1023-767]; // NVM Subsystem NVMe Qualified Name (0 terminated)
+        uint8_t _reserved6[4096-1024];
+
+
+    } ;
+
+    uint8_t raw[4096];
+};
+
+
+
 class NvmeDriver
 {
 
     ControllerCap cap;
+    NvmeIdentifyController* identify_controller;
     uint64_t stride;
     uint64_t queue_slots;
 
@@ -253,7 +389,7 @@ class NvmeDriver
 
 
     
-    template<typename SubmitT = SubmissionQueueEntry, typename CompleteT = CompletionQueueEntry>
+    template<typename SubmitT = NvmeCmd, typename CompleteT = CompletionQueueEntry>
     struct Queues
     {
 
@@ -261,11 +397,12 @@ class NvmeDriver
         Queue<CompleteT> complete_queue;
 
         uint64_t id;
+        uint64_t cid;
         uint64_t phase;
     };
 
 
-    template<typename SubmitT = SubmissionQueueEntry, typename CompleteT = CompletionQueueEntry>
+    template<typename SubmitT = NvmeCmd, typename CompleteT = CompletionQueueEntry>
     core::Result<Queues<SubmitT, CompleteT>> create_queues(size_t slots, uint64_t id)
     {
 
@@ -280,6 +417,7 @@ class NvmeDriver
 
         queues.phase = 1;
         queues.id= id;
+        queues.cid = 0;
 
 
         return queues;
@@ -341,6 +479,14 @@ class NvmeDriver
 
         return *offseted;
     }
+    uint64_t read64(int reg)
+    {
+        void *base = mapped_nvme_addr_space.ptr();
+
+        uint64_t volatile *offseted = reinterpret_cast<uint64_t volatile *>((uintptr_t)base + reg);
+
+        return *offseted;
+    }
 
     void write(int reg, uint32_t val)
     {
@@ -350,6 +496,99 @@ class NvmeDriver
 
         *offseted = val;
     }
+    void write64(int reg, uint64_t val)
+    {
+        void *base = mapped_nvme_addr_space.ptr();
+
+        uint64_t volatile *offseted = reinterpret_cast<uint64_t volatile *>((uintptr_t)base + reg);
+
+        *offseted = val;
+    }
+
+    core::Result<void> nvme_await_submit(NvmeCmd const* cmd, Queues<> &queues)
+    {
+        if (queues.complete_queue.will_loop())
+        {
+            // need to toggle phase
+            queues.phase = !queues.phase;
+        }
+
+
+        NvmeCmd *submission = try$(queues.command_queue.allocate());
+        CompletionQueueEntry *completion = try$(queues.complete_queue.allocate());
+    
+        *submission = *cmd; // copy
+        submission->header.cid = queues.cid++;
+
+
+
+        
+        // submit command 
+
+        write(NVME_QUEUE_TAIL_DOORBELL_BASE + (2 * queues.id * (4 << stride)),  queues.command_queue.tail);
+
+        uint16_t status = 0;
+
+        log::log$("waiting for nvme command to complete...");
+        while(true)
+        {
+            if ((completion->phase_bit) == queues.phase)
+            {
+                status = completion->status;
+                break;
+            }
+            asm volatile("pause");
+        }
+
+        log::log$("nvme command completed with status: {}", status | fmt::FMT_HEX);
+
+
+        
+
+        write(NVME_QUEUE_TAIL_DOORBELL_BASE + (2 * queues.id + 1) * (4 << stride), queues.complete_queue.tail);
+        
+        if(status != 0)
+        {
+            log::err$("NVMe command failed with status: {}", status | fmt::FMT_HEX);
+            return "nvme command failed";
+        }
+
+        return {};
+    }
+
+    core::Result<void> identify()
+    {
+        size_t len = math::alignUp(sizeof(NvmeIdentifyController), 4096ul);
+        auto cmd = NvmeCmd{};
+
+
+        auto mem = Wingos::Space::self().allocate_memory(len, false);
+
+
+        cmd.header.opcode = 0x06; // identify
+        cmd.nsid = 0;
+        cmd.Identify.cns = 1; // identify controller
+        cmd.prp1 = (uintptr_t)mem.ptr() - USERSPACE_VIRT_BASE;
+
+
+        len -= 0x1000;
+        if (len > 0)
+        {
+            cmd.prp2 = cmd.prp1 + 0x1000;
+        }
+        else {
+            cmd.prp2 = 0;  
+        }
+        
+        try$(nvme_await_submit(&cmd, admin_queues));
+
+        identify_controller = (NvmeIdentifyController *)mem.ptr();
+        
+
+        return {};
+    };
+
+
 
 public:
     static core::Result<NvmeDriver> setup(Wingos::dev::PciDevice &dev)
@@ -402,12 +641,9 @@ public:
         dump_controller_cap(driver.cap);
 
         driver.write(NVME_ADMIN_QUEUE_ATTRIBUTE, ((driver.queue_slots - 1) << 16) | (driver.queue_slots - 1));
-        //log::log$("Created admin command queue at: {}", driver.admin_command_queue.base_addr | fmt::FMT_HEX);
-        //log::log$("Created admin completion queue at: {}", driver.admin_complete_queue.base_addr | fmt::FMT_HEX);
 
-
-        driver.write(NVME_ADMIN_QUEUE_SUBMIT, (uint32_t)(driver.admin_queues.command_queue.physical_addr));
-        driver.write(NVME_ADMIN_QUEUE_COMPLETE, (uint32_t)(driver.admin_queues.complete_queue.physical_addr ));
+        driver.write64(NVME_ADMIN_QUEUE_SUBMIT, (driver.admin_queues.command_queue.physical_addr));
+        driver.write64(NVME_ADMIN_QUEUE_COMPLETE, (driver.admin_queues.complete_queue.physical_addr ));
 
         NvmeConfig new_cfg = {}; 
         new_cfg.en = 1;
@@ -434,6 +670,27 @@ public:
             }
             asm volatile("pause");
         }
+
+
+
+        log::log$("NVMe controller started successfully!");
+
+        try$(driver.identify());
+
+        log::log$("NVMe Identify Controller:");
+        log::log$("- Vendor ID       : {}", driver.identify_controller->vid | fmt::FMT_HEX);
+        log::log$("- Subsystem VID   : {}", driver.identify_controller->ssvid | fmt::FMT_HEX);
+        log::log$("- Serial Number   : {}", core::Str(driver.identify_controller->sn, 20));
+        log::log$("- Model Number    : {}", core::Str(driver.identify_controller->mn, 40));
+        log::log$("- Firmware Revision : {}", core::Str(driver.identify_controller->fr, 8));
+        log::log$("- Max Data Transfer Size : {}", 1 << driver.identify_controller->mdts);
+        log::log$("- Number of Namespaces : {}", driver.identify_controller->nn);
+        log::log$("- Submission Queue Entry Size : {}", 1 << driver.identify_controller->sqes);
+        log::log$("- Completion Queue Entry Size : {}", 1 << driver.identify_controller->cqes);
+        log::log$("- Max Outstanding Commands : {}", driver.identify_controller->maxcmd + 1);
+        
+
+
         return driver;
     }
 

@@ -17,7 +17,6 @@ struct AssetPtr
     bool write;
     bool read;
     bool share;
-    
 };
 
 struct Space
@@ -32,7 +31,7 @@ struct Space
 
     core::Vec<AssetPtr> assets;
 
-    static core::Result<Space *> space_by_handle(Space* parent, uint64_t handle);
+    static core::Result<Space *> space_by_handle(Space *parent, uint64_t handle);
     static core::Result<Space *> global_space_by_handle(uint64_t handle);
 };
 
@@ -66,11 +65,9 @@ struct Asset
 
         kernel::Task *task;
 
-        KernelIpcServer* ipc_server; // the IPC server that this asset is associated with
+        KernelIpcServer *ipc_server; // the IPC server that this asset is associated with
 
-        IpcConnection* ipc_connection; 
-
-
+        IpcConnection *ipc_connection;
     };
 
     static core::Result<Asset *> by_handle(Space *space, uint64_t handle)
@@ -96,8 +93,6 @@ struct Asset
         }
         return core::Result<AssetPtr>::error("asset not found");
     }
-
-   
 };
 
 core::Result<AssetPtr> space_create(Space *parent, uint64_t flags, uint64_t rights);

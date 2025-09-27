@@ -1,8 +1,8 @@
 #include "syscalls.hpp"
 
-#include "arch/x86/port.hpp"
 #include "arch/x86_64/paging.hpp"
 
+#include "arch/x86/port.hpp"
 #include "kernel/generic/asset.hpp"
 #include "kernel/generic/context.hpp"
 #include "kernel/generic/cpu.hpp"
@@ -13,7 +13,6 @@
 #include "libcore/lock/lock.hpp"
 #include "wingos-headers/asset.h"
 #include "wingos-headers/syscalls.h"
-
 
 core::Lock log_lock;
 template <typename T>
@@ -35,7 +34,7 @@ core::Result<T *> syscall_check_ptr(uintptr_t ptr)
     return reinterpret_cast<T *>(ptr);
 }
 template <typename T>
-core::Result<T *> syscall_check_ptr(T* ptr)
+core::Result<T *> syscall_check_ptr(T *ptr)
 {
     if (ptr == 0)
     {
@@ -263,7 +262,7 @@ core::Result<size_t> ksyscall_asset_release(SyscallAssetRelease *release)
 
 core::Result<size_t> ksyscall_task_launch(SyscallTaskLaunch *task_launch)
 {
- 
+
     Space *space = nullptr;
     if (task_launch->target_space_handle != 0)
     {
@@ -358,8 +357,8 @@ core::Result<size_t> ksyscall_create_server(SyscallIpcCreateServer *create)
     }
 
     auto asset = try$(asset_create_ipc_server(space, {
-        .is_root = create->is_root,
-    }));
+                                                         .is_root = create->is_root,
+                                                     }));
 
     create->returned_addr = asset.asset->ipc_server->handle;
     create->returned_handle = asset.handle;
@@ -387,16 +386,16 @@ core::Result<size_t> ksyscall_create_connection(SyscallIpcConnect *create)
     }
 
     auto asset = try$(asset_create_ipc_connections(space, (AssetIpcConnectionCreateParams){
-        .server_handle = create->server_handle,
-        .flags = create->flags,
-    }));
+                                                              .server_handle = create->server_handle,
+                                                              .flags = create->flags,
+                                                          }));
 
     create->returned_handle = asset.handle;
 
     return core::Result<size_t>::success((uint64_t)asset.handle);
 }
 
-core::Result<size_t> ksyscall_send(SyscallIpcSend* send) 
+core::Result<size_t> ksyscall_send(SyscallIpcSend *send)
 {
     Space *space = nullptr;
     if (send->space_handle != 0)
@@ -424,20 +423,18 @@ core::Result<size_t> ksyscall_send(SyscallIpcSend* send)
 
     auto ipc_connection = connection->ipc_connection;
 
-    if(!ipc_connection->accepted)
+    if (!ipc_connection->accepted)
     {
         return core::Result<size_t>::error("connection is not accepted");
     }
-    
 
-
-    auto res = try$(server_send_message(ipc_connection, try$( syscall_check_ptr( send->message)), send->expect_reply));
+    auto res = try$(server_send_message(ipc_connection, try$(syscall_check_ptr(send->message)), send->expect_reply));
 
     send->returned_msg_handle = res;
     return core::Result<size_t>::success((size_t)res);
 }
 
-core::Result<size_t> ksyscall_server_receive(SyscallIpcServerReceive* receive)
+core::Result<size_t> ksyscall_server_receive(SyscallIpcServerReceive *receive)
 {
     Space *space = nullptr;
     if (receive->space_handle != 0)
@@ -465,7 +462,7 @@ core::Result<size_t> ksyscall_server_receive(SyscallIpcServerReceive* receive)
 
     auto ipc_connection = connection->ipc_connection;
 
-    if(!ipc_connection->accepted)
+    if (!ipc_connection->accepted)
     {
         return core::Result<size_t>::error("connection is not accepted");
     }
@@ -478,23 +475,21 @@ core::Result<size_t> ksyscall_server_receive(SyscallIpcServerReceive* receive)
 
     auto kernel_server = server->ipc_server;
 
-    if(ipc_connection->server_handle != kernel_server->handle)
+    if (ipc_connection->server_handle != kernel_server->handle)
     {
         return core::Result<size_t>::error("connection is not connected to this server");
     }
 
     auto res = (server_receive_message(kernel_server, ipc_connection));
 
-    if(res.is_error())
+    if (res.is_error())
     {
         return core::Result<size_t>(res.error());
     }
 
-    
-
     auto received_message = res.unwrap();
 
-    if(received_message.is_null)
+    if (received_message.is_null)
     {
         receive->returned_msg_handle = 0;
         receive->returned_message = {};
@@ -505,11 +500,11 @@ core::Result<size_t> ksyscall_server_receive(SyscallIpcServerReceive* receive)
     receive->returned_msg_handle = received_message.uid;
     *try$(syscall_check_ptr(receive->returned_message)) = received_message.message_sended.to_server();
     receive->contain_response = true;
-    
+
     return core::Result<size_t>::success((size_t)received_message.uid);
 }
 
-core::Result<size_t> ksyscall_client_receive_reply(SyscallIpcClientReceiveReply* receive)
+core::Result<size_t> ksyscall_client_receive_reply(SyscallIpcClientReceiveReply *receive)
 {
     Space *space = nullptr;
     if (receive->space_handle != 0)
@@ -537,38 +532,38 @@ core::Result<size_t> ksyscall_client_receive_reply(SyscallIpcClientReceiveReply*
 
     auto ipc_connection = connection->ipc_connection;
 
-    if(!ipc_connection->accepted)
+    if (!ipc_connection->accepted)
     {
         return core::Result<size_t>::error("connection is not accepted");
     }
 
     auto res = client_receive_response(ipc_connection, receive->message);
 
-    if(res.is_error())
+    if (res.is_error())
     {
         return core::Result<size_t>(res.error());
     }
 
     auto received_message = res.unwrap();
 
-    if(received_message.is_null)
+    if (received_message.is_null)
     {
-        
+
         receive->returned_message = {};
         receive->contain_response = false;
         return core::Result<size_t>::success(0);
     }
 
-    //receive->returned_msg_handle = received_message.uid;
-    
-    * try$(syscall_check_ptr( receive->returned_message) )= received_message.message_responded.to_client();
-    
+    // receive->returned_msg_handle = received_message.uid;
+
+    *try$(syscall_check_ptr(receive->returned_message)) = received_message.message_responded.to_client();
+
     receive->contain_response = true;
 
     return core::Result<size_t>::success((size_t)received_message.uid);
 }
 
-core::Result<size_t> ksyscall_ipc_call(SyscallIpcCall* call)
+core::Result<size_t> ksyscall_ipc_call(SyscallIpcCall *call)
 {
     Space *space = nullptr;
     if (call->space_handle != 0)
@@ -596,14 +591,14 @@ core::Result<size_t> ksyscall_ipc_call(SyscallIpcCall* call)
 
     auto ipc_connection = connection->ipc_connection;
 
-    if(!ipc_connection->accepted)
+    if (!ipc_connection->accepted)
     {
         return core::Result<size_t>::error("connection is not accepted");
     }
 
     auto res = call_server_and_wait(ipc_connection, call->message);
 
-    if(res.is_error())
+    if (res.is_error())
     {
         return core::Result<size_t>(res.error());
     }
@@ -612,12 +607,12 @@ core::Result<size_t> ksyscall_ipc_call(SyscallIpcCall* call)
 
     *try$(syscall_check_ptr(call->returned_message)) = core::move(received_message);
     call->has_reply = true;
-    //call->returned_msg_handle = received_message.uid;
-    
+    // call->returned_msg_handle = received_message.uid;
+
     return core::Result<size_t>::success((size_t)0);
 }
 
-core::Result<size_t> ksyscall_ipc_accept(SyscallIpcAccept* accept)
+core::Result<size_t> ksyscall_ipc_accept(SyscallIpcAccept *accept)
 {
     Space *space = nullptr;
     if (accept->space_handle != 0)
@@ -645,28 +640,28 @@ core::Result<size_t> ksyscall_ipc_accept(SyscallIpcAccept* accept)
 
     auto kernel_server = server->ipc_server;
 
-    auto res = server_accept_connection( kernel_server);
+    auto res = server_accept_connection(kernel_server);
 
-    if(res.is_error())
+    if (res.is_error())
     {
         accept->accepted_connection = false;
         return core::Result<size_t>::success(0);
     }
-    
+
     auto connection = res.unwrap();
 
-    if(connection.asset == nullptr)
+    if (connection.asset == nullptr)
     {
         accept->accepted_connection = false;
         return core::Result<size_t>::success(0);
     }
     accept->connection_handle = connection.handle;
     accept->accepted_connection = true;
-    
+
     return core::Result<size_t>::success((size_t)connection.handle);
 }
 
-core::Result<size_t> ksyscall_ipc_server_reply(SyscallIpcReply* reply)
+core::Result<size_t> ksyscall_ipc_server_reply(SyscallIpcReply *reply)
 {
     Space *space = nullptr;
     if (reply->space_handle != 0)
@@ -694,14 +689,14 @@ core::Result<size_t> ksyscall_ipc_server_reply(SyscallIpcReply* reply)
 
     auto ipc_connection = connection->ipc_connection;
 
-    if(!ipc_connection->accepted)
+    if (!ipc_connection->accepted)
     {
         return core::Result<size_t>::error("connection is not accepted");
     }
 
     auto res = server_reply_message(ipc_connection, reply->message_handle, try$(syscall_check_ptr(reply->message)));
 
-    if(res.is_error())
+    if (res.is_error())
     {
         return core::Result<size_t>(res.error());
     }
@@ -709,8 +704,7 @@ core::Result<size_t> ksyscall_ipc_server_reply(SyscallIpcReply* reply)
     return core::Result<size_t>::success(0);
 }
 
-
-core::Result<size_t> ksyscall_ipc_status(SyscallIpcStatus* status)
+core::Result<size_t> ksyscall_ipc_status(SyscallIpcStatus *status)
 {
     Space *space = nullptr;
     if (status->space_handle != 0)
@@ -738,21 +732,20 @@ core::Result<size_t> ksyscall_ipc_status(SyscallIpcStatus* status)
 
     auto ipc_connection = connection->ipc_connection;
 
-    if(!ipc_connection->accepted)
+    if (!ipc_connection->accepted)
     {
         status->returned_is_accepted = false;
     }
-    else 
+    else
     {
 
         status->returned_is_accepted = true;
     }
 
-    
     return core::Result<size_t>::success(0);
 }
 
-core::Result<size_t> ksyscall_ipc_x86_port(SyscallIpcX86Port* port)
+core::Result<size_t> ksyscall_ipc_x86_port(SyscallIpcX86Port *port)
 {
     Space *space = nullptr;
     if (port->space_handle != 0)
@@ -775,13 +768,13 @@ core::Result<size_t> ksyscall_ipc_x86_port(SyscallIpcX86Port* port)
 
     if (port->read)
     {
-        switch(port->size)
+        switch (port->size)
         {
         case 1:
             port->returned_value = arch::x86::in8(port->port);
             break;
         case 2:
-        
+
             port->returned_value = arch::x86::in16(port->port);
             break;
         case 4:
@@ -811,7 +804,6 @@ core::Result<size_t> ksyscall_ipc_x86_port(SyscallIpcX86Port* port)
 
     return {};
 }
-
 
 core::Result<size_t> syscall_handle(SyscallInterface syscall)
 {
@@ -906,13 +898,13 @@ core::Result<size_t> syscall_handle(SyscallInterface syscall)
         SyscallIpcStatus *status = try$(syscall_check_ptr<SyscallIpcStatus>(syscall.arg1));
         return ksyscall_ipc_status(status);
     }
-    
+
     case SYSCALL_IPC_X86_PORT:
     {
         SyscallIpcX86Port *port = try$(syscall_check_ptr<SyscallIpcX86Port>(syscall.arg1));
         return ksyscall_ipc_x86_port(port);
     }
-    
+
     default:
         return {"Unknown syscall ID"};
     }

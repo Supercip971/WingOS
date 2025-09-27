@@ -61,7 +61,6 @@ public:
         return this->from_begin_len(aligned_start, aligned_len);
     }
 
-
     constexpr Range<T> growAlign(size_t alignment) const
     {
         auto aligned_start = math::alignDown(_start, alignment);

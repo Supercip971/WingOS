@@ -2,6 +2,7 @@
 
 #include <libcore/result.hpp>
 #include <stddef.h>
+
 #include "libcore/io/seekable.hpp"
 
 namespace core
@@ -34,8 +35,6 @@ concept SeekableReader = requires(T *x) {
     Readable<T>;
     Seekable<T>;
 };
-
-
 
 static_assert(Readable<Reader>);
 

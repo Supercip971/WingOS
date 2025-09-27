@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 #include "../test.hpp"
 #include "libcore/mem/view.hpp"
 #include "parser/scanner.hpp"
@@ -53,10 +53,6 @@ static constexpr TestGroup parserTest = {
                     return "Current character mismatch after seek";
                 }
 
-                
-
-
-                
                 return {};
             }),
         Test(
@@ -95,11 +91,11 @@ static constexpr TestGroup parserTest = {
                 {
                     return "Scanner ended prematurely after skips";
                 }
-                if (scanner.remaining() != 13-8)
+                if (scanner.remaining() != 13 - 8)
                 {
                     return "Remaining size mismatch after skips";
                 }
-                
+
                 return {};
             }),
         Test(
@@ -121,6 +117,4 @@ static constexpr TestGroup parserTest = {
                     return "Tell mismatch after extract";
                 }
                 return {};
-            })
-        )
-};
+            }))};

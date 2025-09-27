@@ -36,7 +36,6 @@ core::Result<VmmSpace> VmmSpace::kernel_initialize(const mcx::MachineContext *ct
         try$(result.map(entry_virt, entry_phys,
                         PageFlags().present(true).writeable(true).user(false)));
 
-
         //        log::log$("ok");
         if (entry.type == mcx::MemoryMap::Type::KERNEL_AND_MODULES && entry.range.start() < (1ull << 32))
         {

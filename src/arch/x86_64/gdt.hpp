@@ -88,7 +88,6 @@ struct [[gnu::packed]] Gdt
     static const int user_code_segment_id = 4;
     static const int tss_segment_id = 5;
 
-
     constexpr Gdt() : _entries({
                           GdtEntry::make_entry(0, 0, 0, 0),                      // null segment
                           GdtEntry::make_entry(0, 0xFFFFFFFF, 0b10, 0b10011010), // code segment

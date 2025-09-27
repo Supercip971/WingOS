@@ -3,6 +3,7 @@
 #include <libcore/mem/view.hpp>
 #include <libcore/type-utils.hpp>
 #include <stddef.h>
+
 #include "libcore/ds/vec.hpp"
 
 namespace core
@@ -21,7 +22,6 @@ class Str : public MemView<char>
     }
 
 public:
-
     constexpr Str(const char *str) : MemView(str, Str::compute_len(str)) {};
     constexpr Str(const char *str, int len) : MemView(str, len) {};
 

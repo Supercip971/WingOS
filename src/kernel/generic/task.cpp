@@ -1,3 +1,4 @@
+#include <libcore/fmt/log.hpp>
 #include <stdint.h>
 
 #include "hw/mem/addr_space.hpp"
@@ -5,7 +6,6 @@
 
 #include "kernel/generic/kernel.hpp"
 #include "kernel/generic/paging.hpp"
-#include <libcore/fmt/log.hpp>
 #include "kernel/generic/task.hpp"
 #include "libcore/lock/rwlock.hpp"
 #include "libcore/result.hpp"

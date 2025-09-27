@@ -15,12 +15,12 @@ struct Result : public NoCopy
 
     using ErrorType = RemoveReference<ErrT>;
     using ValueType = RemoveReference<ValT>;
+
 private:
     // FIXME: introduce either type
 
-    Optional<ValT> _value;
-
 public:
+    Optional<ValT> _value;
     Optional<ErrT> _error;
     constexpr Result() : _value(), _error() {}
 
@@ -32,7 +32,7 @@ public:
 
     constexpr Result(const ValueType &value) : _value(value), _error() {}
 
-    constexpr Result(ValueType&&value) : _value(core::move(value)), _error() {}
+    constexpr Result(ValueType &&value) : _value(core::move(value)), _error() {}
 
     constexpr Result(const ErrorType &error) : _value(), _error(error) {}
 
@@ -152,6 +152,9 @@ using EResult = Result<T, Str>;
 
 extern void debug_provide_info(const char *info, const char *data);
 
+#define STRINGIZE_DETAIL(x) #x
+#define STRINGIZE(x) STRINGIZE_DETAIL(x)
+
 #define try$(expr) ({                                                          \
     auto _result = (expr);                                                     \
     if ((_result._error.has_value())) [[unlikely]]                             \
@@ -160,6 +163,7 @@ extern void debug_provide_info(const char *info, const char *data);
         core::debug_provide_info("at:       ", #expr);                         \
         core::debug_provide_info("function: ", __FUNCTION__);                  \
         core::debug_provide_info("file:     ", __FILE__);                      \
+        core::debug_provide_info("line:     ", STRINGIZE(__LINE__));           \
         return _result.error();                                                \
     }                                                                          \
     _result.unwrap();                                                          \

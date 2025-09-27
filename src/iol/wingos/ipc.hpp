@@ -74,7 +74,7 @@ struct IpcServer : public UAsset
         return core::Result<MessageServerReceived>::error("no connection available to receive message");
     }
 
-    core::Result<void> reply(MessageServerReceived&& to, IpcMessage& message)
+    core::Result<void> reply(MessageServerReceived &&to, IpcMessage &message)
     {
 
         sys$ipc_reply(space_handle, this->handle, to.connection->handle, to.received.message_id, &message);
@@ -124,16 +124,15 @@ struct IpcClient : public UAsset
         return false; // should never reach here
     }
 
-    core::Result<MessageHandle> send(IpcMessage& message, bool expect_reply = false)
+    core::Result<MessageHandle> send(IpcMessage &message, bool expect_reply = false)
     {
 
-        
         SyscallIpcSend send = sys$ipc_send(associated_space_handle, handle, &message, expect_reply);
 
         return core::Result<size_t>::csuccess(send.returned_msg_handle);
     }
 
-    core::Result<IpcMessage> call(IpcMessage& message)
+    core::Result<IpcMessage> call(IpcMessage &message)
     {
         IpcMessage res;
         SyscallIpcCall call = sys$ipc_call(associated_space_handle, handle, &message, &res);

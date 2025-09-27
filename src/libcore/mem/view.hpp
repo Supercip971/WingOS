@@ -9,7 +9,6 @@ template <class T = uint8_t>
 class MemView
 {
 public:
-
     const T *_data;
     size_t _len;
 

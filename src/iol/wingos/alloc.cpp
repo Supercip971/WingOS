@@ -38,7 +38,7 @@ extern "C" int liballoc_unlock()
  */
 extern "C" void *liballoc_alloc(size_t l)
 {
-   return Wingos::Space::self().allocate_memory(l * arch::amd64::PAGE_SIZE).ptr();
+    return Wingos::Space::self().allocate_memory(l * arch::amd64::PAGE_SIZE).ptr();
 }
 
 /** This frees previously allocated memory. The void* parameter passed
@@ -54,6 +54,6 @@ extern "C" int liballoc_free(void *ptr, size_t l)
 
     Wingos::Space::self().release_memory(ptr);
     (void)l;
-    //sys$asset_release_mem(ptr);
+    // sys$asset_release_mem(ptr);
     return 0;
 }

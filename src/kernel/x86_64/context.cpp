@@ -23,7 +23,7 @@ core::Result<CpuContext *> CpuContext::create_empty()
     return data;
 }
 
-void CpuContext::load_to(void  *state)
+void CpuContext::load_to(void *state)
 {
     arch::amd64::CpuContextAmd64 const *data = this->as<arch::amd64::CpuContextAmd64>();
 
@@ -74,11 +74,9 @@ void CpuContext::dump()
     log::log$("  Stack Frame: {}", data->stackframe());
     log::log$("  Await Save: {}", data->await_save);
     log::log$("  Await Load: {}", data->await_load);
-
 }
 
-
-void CpuContext::save_in(void  *state)
+void CpuContext::save_in(void *state)
 {
 
     arch::amd64::CpuContextAmd64 *data = this->as<arch::amd64::CpuContextAmd64>();
@@ -88,9 +86,8 @@ void CpuContext::save_in(void  *state)
 
     {
 
-    lock_scope$(this->lock);
-    this->await_save = false;
-    
+        lock_scope$(this->lock);
+        this->await_save = false;
     }
 }
 
@@ -119,11 +116,9 @@ core::Result<void> CpuContext::prepare(CpuContextLaunch launch)
     auto data = this->as<arch::amd64::CpuContextAmd64>();
 
     data->stack_ptr = try$(core::mem_alloc(kernel::userspace_stack_size));
-    
+
     data->kernel_stack_ptr = try$(core::mem_alloc(kernel::kernel_stack_size));
 
-
-    
     data->stack_top = (void *)((uintptr_t)data->stack_ptr + kernel::userspace_stack_size);
     data->kernel_stack_top = (void *)((uintptr_t)data->kernel_stack_ptr + kernel::kernel_stack_size);
 

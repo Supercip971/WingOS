@@ -34,7 +34,6 @@ public:
     }
 };
 
-
 asm(
     ".global _start \n"
     "_start: \n"
@@ -47,7 +46,6 @@ extern "C" void _entry_point(mcx::MachineContext *context)
 
     asm volatile("and $-16, %rsp");
     _index = 0;
-
 
     WingosLogger logger;
     log::provide_log_target(&logger);

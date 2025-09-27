@@ -46,25 +46,25 @@ inline constexpr core::Str file_name(const char *s)
 #define __LOG_FILENAME__ ([]() {constexpr const char* _s = __FILE__; return log::file_name(_s); })()
 
 #ifndef NO_LOG_COLOR
-#    define log$(...)                                                \
+#    define log$(...)                                   \
         log("\033[95m[{}]:\033[0m ", __LOG_FILENAME__); \
-        log::log(__VA_ARGS__);                                       \
+        log::log(__VA_ARGS__);                          \
         log::log("\n")
 
-#    define err$(...)                                                \
+#    define err$(...)                                   \
         log("\033[91m[{}]:\033[0m ", __LOG_FILENAME__); \
-        log::log(__VA_ARGS__);                                       \
+        log::log(__VA_ARGS__);                          \
         log::log("\n")
 
-#    define warn$(...)                                               \
+#    define warn$(...)                                  \
         log("\033[93m[{}]:\033[0m ", __LOG_FILENAME__); \
-        log::log(__VA_ARGS__);                                       \
+        log::log(__VA_ARGS__);                          \
         log::log("\n")
 
 #else
-#    define log$(...)                                 \
+#    define log$(...)                    \
         log("[{}]: ", __LOG_FILENAME__); \
-        log::log(__VA_ARGS__);                        \
+        log::log(__VA_ARGS__);           \
         log::log("\n")
 
 #endif

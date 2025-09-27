@@ -298,9 +298,8 @@ core::Result<AssetPtr> asset_create_ipc_server(Space *space, AssetIpcServerCreat
         ptr.asset->ipc_server = create_server(space->uid);
     }
 
-    ptr.asset->ipc_server->self = ptr.asset; 
-    
-    
+    ptr.asset->ipc_server->self = ptr.asset;
+
     ptr.asset->lock.release();
     return ptr;
 }
@@ -315,13 +314,12 @@ core::Result<AssetPtr> asset_create_ipc_connections(Space *space, AssetIpcConnec
         log::err$("asset_create_ipc_connection: unable to query server: {}", query_res
                                                                                  .error());
         ptr.asset->lock.release();
- 
+
         asset_release(space, ptr.asset);
         return core::Result<AssetPtr>::error("unable to query server");
     }
 
-
-    auto server= query_res.unwrap();
+    auto server = query_res.unwrap();
 
     ptr.asset->ipc_connection = new IpcConnection();
     *ptr.asset->ipc_connection = {};
@@ -332,15 +330,11 @@ core::Result<AssetPtr> asset_create_ipc_connections(Space *space, AssetIpcConnec
 
     ptr.asset->lock.release();
 
-
-
     auto server_space = Space::global_space_by_handle(server->parent_space).unwrap();
     auto ptr_in_server = try$(asset_copy(space, server_space, ptr));
 
-    
     server->lock.lock();
     server->connections.push(ptr_in_server);
-
 
     server->self->ref_count++;
     server->lock.release();

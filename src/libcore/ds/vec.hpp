@@ -2,10 +2,10 @@
 
 #include <libcore/core.hpp>
 #include <libcore/mem/view.hpp>
+#include <stdlib.h>
 
 #include "libcore/alloc/alloc.hpp"
 #include "libcore/ds/array.hpp"
-#include <stdlib.h>
 #include "libcore/logic.hpp"
 namespace core
 {
@@ -26,7 +26,6 @@ public:
         core::swap(_count, other._count);
         core::swap(_capacity, other._capacity);
     }
-
 
     Vec(const Vec &other)
     {
@@ -173,7 +172,7 @@ public:
             return core::move(_data[_count]);
         }
 
-        //abort();
+        // abort();
         return core::move(_data[0]);
     }
 
@@ -181,7 +180,7 @@ public:
     {
         if (id >= _count)
         {
-          //  abort();
+            //  abort();
             return core::move(_data[0]);
         }
 

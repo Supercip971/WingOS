@@ -1,23 +1,21 @@
-#pragma once 
+#pragma once
 
 #include <stdint.h>
+
 #include "iol/wingos/syscalls.h"
 #include "mcx/mcx.hpp"
 #include "wingos-headers/syscalls.h"
-namespace Wingos 
+namespace Wingos
 {
-    
 
-
-struct UAsset 
+struct UAsset
 {
-    uint64_t handle; 
+    uint64_t handle;
 };
 
-
-
-struct VirtualMemoryAsset : public UAsset 
+struct VirtualMemoryAsset : public UAsset
 {
+
     mcx::MemoryRange memory; // the virtual memory range of the asset
 
     static VirtualMemoryAsset create(uint64_t space_handle, uint64_t start, uint64_t end, uint64_t physical_mem_handle, uint64_t flags)
@@ -28,26 +26,25 @@ struct VirtualMemoryAsset : public UAsset
         return asset;
     }
 
-    void* ptr() const
+    void *ptr() const
     {
-        return (void*)memory.start();
+        return (void *)memory.start();
     }
 };
 
-struct MemoryAsset : public UAsset 
+struct MemoryAsset : public UAsset
 {
 
-
-    mcx::MemoryRange memory; 
+    mcx::MemoryRange memory;
 
     bool allocated; // if true, the memory has been allocated by the kernel
 
-    static MemoryAsset allocate(uint64_t space_handle, uint64_t size, [[maybe_unused]] bool lower_half = false )
+    static MemoryAsset allocate(uint64_t space_handle, uint64_t size, [[maybe_unused]] bool lower_half = false)
     {
         MemoryAsset asset;
-        
+
         size = math::alignUp(size, 4096ul); // align to page size
-        auto phys_mem = sys$mem_own( space_handle, size, 0);
+        auto phys_mem = sys$mem_own(space_handle, size, 0);
 
         asset.memory = mcx::MemoryRange::from_begin_len(phys_mem.addr, size);
         asset.handle = phys_mem.returned_handle;
@@ -65,19 +62,17 @@ struct MemoryAsset : public UAsset
         asset.allocated = false; // will be set to false when the memory is not allocated by the kernel
         return asset;
     }
-
-
 };
-struct TaskAsset : public UAsset 
+struct TaskAsset : public UAsset
 {
-    uint64_t launch_addr; 
+    uint64_t launch_addr;
     uint64_t args[4];
 
     static TaskAsset create(uint64_t space_handle, uint64_t launch_addr, uint64_t args[4])
     {
         TaskAsset asset;
         asset.launch_addr = launch_addr;
-        
+
         asset.args[0] = args[0];
         asset.args[1] = args[1];
         asset.args[2] = args[2];
@@ -86,8 +81,6 @@ struct TaskAsset : public UAsset
         asset.handle = sys$task_create(space_handle, launch_addr, args[0], args[1], args[2], args[3]).returned_handle;
         return asset;
     }
-
-};
-    
 };
 
+}; // namespace Wingos

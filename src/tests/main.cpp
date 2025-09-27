@@ -12,9 +12,9 @@ TestGroup v = {
     test_grouped_group$(
         "tests",
         libcoreTests,
-        unitTestTests, 
+        unitTestTests,
         parserTest,
-    jsonTests),
+        jsonTests),
 
 };
 

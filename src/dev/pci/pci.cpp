@@ -1,4 +1,5 @@
 #include "dev/pci/pci.hpp"
+
 #include "libcore/fmt/flags.hpp"
 #include "libcore/fmt/log.hpp"
 
@@ -34,7 +35,7 @@ void PciController::scan_dev(uint8_t bus, uint8_t dev)
                     .function = i,
                     .irq = -1};
 
-                if(!sub_dev.valid())
+                if (!sub_dev.valid())
                 {
                     continue;
                 }
@@ -62,14 +63,13 @@ void PciController::scan_bus(uint8_t bus)
 
 void PciController::dump()
 {
-    for(const auto& device : devices)
+    for (const auto &device : devices)
     {
         log::log$(
             "PCI Device: Bus {}, Device {}, Function {}, Vendor ID: {}, Device ID: {}, Class: {}, Subclass: {}",
             device.bus, device.device, device.function,
-            device.vendor_id() | fmt::FMT_HEX, device.device_id() | fmt::FMT_HEX ,
-            device.class_code() | fmt::FMT_HEX , device.subclass() | fmt::FMT_HEX 
-        );
+            device.vendor_id() | fmt::FMT_HEX, device.device_id() | fmt::FMT_HEX,
+            device.class_code() | fmt::FMT_HEX, device.subclass() | fmt::FMT_HEX);
     }
 }
 

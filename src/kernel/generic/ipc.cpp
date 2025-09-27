@@ -51,7 +51,7 @@ KernelIpcServer *create_server(uint64_t space_handle)
     return server;
 }
 
-core::Result<KernelIpcServer*> query_server(IpcServerHandle handle)
+core::Result<KernelIpcServer *> query_server(IpcServerHandle handle)
 {
     ipc_server_lock.lock();
     for (size_t i = 0; i < registered_servers.len(); i++)
@@ -65,7 +65,6 @@ core::Result<KernelIpcServer*> query_server(IpcServerHandle handle)
     ipc_server_lock.release();
     return core::Result<KernelIpcServer *>::error("server not found");
 }
-
 
 void unregister_server(IpcServerHandle handle, uint64_t space_handle)
 {
@@ -84,13 +83,13 @@ void unregister_server(IpcServerHandle handle, uint64_t space_handle)
     log::warn$("unregister_server: server not found: {} {}", handle, space_handle);
 }
 
-core::Result<AssetPtr> server_accept_connection( KernelIpcServer *server)
+core::Result<AssetPtr> server_accept_connection(KernelIpcServer *server)
 {
     if (server == nullptr)
     {
         return core::Result<AssetPtr>::error("server is null");
     }
-    
+
     server->lock.lock();
     for (size_t i = 0; i < server->connections.len(); i++)
     {
@@ -108,7 +107,7 @@ core::Result<AssetPtr> server_accept_connection( KernelIpcServer *server)
 }
 
 // send message to the server
-core::Result<MessageHandle> _server_send_message(IpcConnection *connection, IpcMessage* message, bool is_call)
+core::Result<MessageHandle> _server_send_message(IpcConnection *connection, IpcMessage *message, bool is_call)
 {
     if (connection == nullptr)
     {
@@ -119,7 +118,6 @@ core::Result<MessageHandle> _server_send_message(IpcConnection *connection, IpcM
     {
         return core::Result<MessageHandle>("connection is not accepted");
     }
-
 
     ReceivedIpcMessage received_message = {};
     received_message.is_call = is_call; // TODO: set this based on the message
@@ -135,20 +133,19 @@ core::Result<MessageHandle> _server_send_message(IpcConnection *connection, IpcM
     connection->lock.release();
 
     return received_message.uid; // return the unique id of the message
-    
 }
 
-core::Result<MessageHandle> server_send_message(IpcConnection *connection, IpcMessage* message, bool expect_reply)
+core::Result<MessageHandle> server_send_message(IpcConnection *connection, IpcMessage *message, bool expect_reply)
 {
 
-// 
+    //
     return _server_send_message(connection, message, expect_reply);
 }
 
 // for now share the same code, but for later, we will have to differentiate between call and message
-// a call expects a reply and thus we can use some scheduling tricks to directly 
-// handle the reply by jumping onto the server code 
-core::Result<MessageHandle> server_send_call(IpcConnection *connection, IpcMessage* message)
+// a call expects a reply and thus we can use some scheduling tricks to directly
+// handle the reply by jumping onto the server code
+core::Result<MessageHandle> server_send_call(IpcConnection *connection, IpcMessage *message)
 {
     return _server_send_message(connection, message, true);
 }
@@ -253,14 +250,11 @@ core::Result<ReceivedIpcMessage> server_receive_message(KernelIpcServer *server,
             }
             server->lock.release();
             message.is_null = false;
-            
-
 
             message.message_sended.server = try$(update_handle_from_client_to_server(connection, message.message_sended.client));
             return message;
         }
     }
-
 
     server->lock.release();
 
@@ -269,7 +263,7 @@ core::Result<ReceivedIpcMessage> server_receive_message(KernelIpcServer *server,
     return null_message;
 }
 
-core::Result<ReceivedIpcMessage> client_receive_message(IpcConnection* connection)
+core::Result<ReceivedIpcMessage> client_receive_message(IpcConnection *connection)
 {
     if (connection == nullptr)
     {
@@ -297,7 +291,7 @@ core::Result<ReceivedIpcMessage> client_receive_message(IpcConnection* connectio
 
     return core::Result<ReceivedIpcMessage>::error("no message found");
 }
-core::Result<ReceivedIpcMessage> client_receive_response(IpcConnection* connection, MessageHandle handle)
+core::Result<ReceivedIpcMessage> client_receive_response(IpcConnection *connection, MessageHandle handle)
 {
     if (connection == nullptr)
     {
@@ -320,14 +314,12 @@ core::Result<ReceivedIpcMessage> client_receive_response(IpcConnection* connecti
 
     connection->lock.release();
 
-
     ReceivedIpcMessage null_message = {};
     null_message.is_null = true;
     return null_message;
-
 }
 
-core::Result<void> server_reply_message(IpcConnection* connection, MessageHandle from , IpcMessage* message)
+core::Result<void> server_reply_message(IpcConnection *connection, MessageHandle from, IpcMessage *message)
 {
 
     if (connection == nullptr)
@@ -335,16 +327,15 @@ core::Result<void> server_reply_message(IpcConnection* connection, MessageHandle
         return core::Result<void>("connection is null");
     }
 
-
     if (!connection->accepted)
     {
         return core::Result<void>("connection is not accepted");
     }
 
     connection->lock.lock();
-    for(size_t i = 0; i < connection->message_sent.len(); i++)
+    for (size_t i = 0; i < connection->message_sent.len(); i++)
     {
-        auto& from_ref = connection->message_sent[i];
+        auto &from_ref = connection->message_sent[i];
         if (from_ref.uid == from)
         {
             from_ref.has_reply = true;
@@ -357,11 +348,9 @@ core::Result<void> server_reply_message(IpcConnection* connection, MessageHandle
     connection->lock.release();
 
     return core::Result<void>("message not found in connection");
-    
 }
 
-
-core::Result<IpcMessage> call_server_and_wait(IpcConnection* connection, IpcMessage* message)
+core::Result<IpcMessage> call_server_and_wait(IpcConnection *connection, IpcMessage *message)
 {
     if (connection == nullptr)
     {
@@ -372,10 +361,10 @@ core::Result<IpcMessage> call_server_and_wait(IpcConnection* connection, IpcMess
     {
         return core::Result<IpcMessage>::error("connection is not accepted");
     }
-    
+
     auto res = try$(server_send_call(connection, message));
 
     auto msg = try$(client_receive_response(connection, res));
-    
+
     return msg.message_responded.to_client();
 }

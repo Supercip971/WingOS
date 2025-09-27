@@ -75,7 +75,8 @@ template <class T>
 class Optional
 {
     using Type = Pure<T>;
-public: 
+
+public:
     Storage<Type> _value;
     bool _contain_value;
 

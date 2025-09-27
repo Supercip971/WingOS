@@ -102,6 +102,7 @@ core::Result<VmmSpace> VmmSpace::create(bool empty)
     // allocate to lower half because SMP need the pagetable address to be in the lower 4GB
     result._self = toVirt(try$(Pmm::the().allocate(1, IOL_ALLOC_MEMORY_FLAG_LOWER_SPACE))).as<void *>();
 
+    log::log$("VmmSpace::create: new space at {}", (uintptr_t)result._self | fmt::FMT_HEX);
     auto root = as_root(result);
     auto kernel_root = as_root(kernel_space);
     for (size_t i = 0; i < arch::amd64::PAGE_TABLE_SIZE; i++)

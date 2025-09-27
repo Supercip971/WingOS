@@ -45,7 +45,7 @@ core::Result<AssetPtr> space_create(Space *parent, [[maybe_unused]] uint64_t fla
     space_ptr.handle = _space_handle++;
     _spaces.push(space_ptr);
 
-    asset->space->uid = space_ptr.handle;    
+    asset->space->uid = space_ptr.handle;
     space->assets.push({.asset = asset, .handle = 0});
     space->alloc_uid = 16;
     asset->lock.release();
@@ -54,15 +54,15 @@ core::Result<AssetPtr> space_create(Space *parent, [[maybe_unused]] uint64_t fla
 }
 
 // FIXME: this is not safe, because it does not check if the space exists in the parent space
-core::Result<Space *> Space::space_by_handle(Space* parent, uint64_t handle)
+core::Result<Space *> Space::space_by_handle(Space *parent, uint64_t handle)
 {
     for (auto &space_ptr : parent->assets)
     {
         if (space_ptr.handle == handle && space_ptr.asset->kind == OBJECT_KIND_SPACE)
         {
             return core::Result<Space *>::csuccess(space_ptr.asset->space);
-        }   
-     }
+        }
+    }
 
     return core::Result<Space *>::error("space not found");
 }

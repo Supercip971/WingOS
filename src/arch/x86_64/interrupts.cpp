@@ -23,7 +23,6 @@ void interrupt_release();
 extern "C" uintptr_t interrupt_handler(uintptr_t stack)
 {
 
-
     Cpu::current()->interrupt_hold();
 
     int_lock.read_acquire();
@@ -34,8 +33,7 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
     }
 
     Cpu::current()->in_interrupt(true);
-    arch::amd64::StackFrame  *frame = reinterpret_cast<arch::amd64::StackFrame *>(stack);
-
+    arch::amd64::StackFrame *frame = reinterpret_cast<arch::amd64::StackFrame *>(stack);
 
     if (frame->interrupt_number < 32)
     {
@@ -71,8 +69,8 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
 
         log::log$("cpu: {}", hw::acpi::Lapic::the().id());
 
-        kernel::dump_all_current_running_tasks(); 
-        int_lock.write_release(); 
+        kernel::dump_all_current_running_tasks();
+        int_lock.write_release();
         while (true)
         {
             asm volatile("hlt");

@@ -1,16 +1,15 @@
 
 #pragma once
 
-#include "wingos-headers/ipc.h"
 #include "iol/mem_flags.h"
 
+#include "kernel/generic/ipc.hpp"
 #include "kernel/generic/mem.hpp"
 #include "kernel/generic/paging.hpp"
 #include "kernel/generic/pmm.hpp"
 #include "mcx/mcx.hpp"
 #include "space.hpp"
-
-#include "kernel/generic/ipc.hpp"
+#include "wingos-headers/ipc.h"
 core::Result<AssetPtr> _asset_create(Space *space, AssetKind kind);
 
 struct AssetMemoryCreateParams
@@ -51,16 +50,14 @@ core::Result<AssetPtr> asset_create_ipc_server(Space *space, AssetIpcServerCreat
 struct AssetIpcConnectionCreateParams
 {
     IpcServerHandle server_handle; // the handle of the server to connect to
-    uint64_t flags; // flags for the connection
+    uint64_t flags;                // flags for the connection
 };
 
 // <!> create two object: one for the connection and one for the server
-core::Result<AssetPtr> asset_create_ipc_connections(Space *space, AssetIpcConnectionCreateParams params); 
+core::Result<AssetPtr> asset_create_ipc_connections(Space *space, AssetIpcConnectionCreateParams params);
 
-core::Result<AssetPtr> asset_move(Space* from, Space* to, AssetPtr asset);
-core::Result<AssetPtr> asset_copy(Space* from, Space* to, AssetPtr asset);
-
-
+core::Result<AssetPtr> asset_move(Space *from, Space *to, AssetPtr asset);
+core::Result<AssetPtr> asset_copy(Space *from, Space *to, AssetPtr asset);
 
 void asset_own(Asset *asset);
 

@@ -44,7 +44,6 @@ void idle()
 
 core::Result<void> scheduler_init_idle_task()
 {
-
     for (size_t i = 0; i < Cpu::count(); i++)
     {
         auto task = Task::task_create();
@@ -64,10 +63,8 @@ core::Result<void> scheduler_init_idle_task()
         sched_entity.is_idle = true;
         cpu_runned.push(sched_entity);
         Cpu::get(i)->currentTask(nullptr);
-
         //   running_cpu_count++;
     }
-
     return {};
 }
 
@@ -280,7 +277,7 @@ static void update_runned_tasks()
     }
 }
 
-static core::Result<void> fix_sched_affinity() 
+static core::Result<void> fix_sched_affinity()
 {
     size_t attempt = 0;
     static core::Vec<CoreId> to_fix = {};
@@ -461,7 +458,7 @@ void schedule_other_cpus()
         else if (cpu_runned[i].task->uid() != Cpu::get(i)->currentTask()->uid())
         {
             trigger_reschedule(i);
-        } 
+        }
     }
 }
 
@@ -520,11 +517,19 @@ core::Result<Task *> schedule(Task *current, void *state, CoreId core)
     }
 
     scheduler_lock.read_acquire();
-    auto next = try$(next_task_select(core));
+    auto [_next, err] = (next_task_select(core));
+
+    if (err.has_value())
+    {
+        scheduler_lock.read_release();
+        return *err;
+    }
+
+    auto next = _next.unwrap();
 
     if (current != nullptr)
     {
-        if (current->uid() == next->uid())
+        if (current->uid() == (next)->uid())
         {
             scheduler_lock.read_release();
             return next;

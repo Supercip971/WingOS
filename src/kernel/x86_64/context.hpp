@@ -24,7 +24,7 @@ public:
         frame = nframe;
     }
 
-    StackFrame stackframe()  const
+    StackFrame stackframe() const
     {
         return frame;
     }

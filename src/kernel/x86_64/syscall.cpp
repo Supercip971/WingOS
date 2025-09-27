@@ -14,7 +14,7 @@
 namespace arch::amd64
 {
 
-    core::Lock sys_lock;
+core::Lock sys_lock;
 extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *stackframe)
 {
     //  log("syscall", LOG_INFO, "called syscall higher handler in: {} (stack: {})", stackframe->rip, stackframe->rsp);
@@ -66,7 +66,7 @@ core::Result<void> syscall_init_for_current_cpu()
     // kcode + 8: kernel data
     // ucode + 8 : user data
     // ucode + 16 : user code
-    Msr::Write(MsrReg::STAR, ((((uint64_t)Gdt::kernel_code_segment_id*8)) << 32) | (((uint64_t)((Gdt::kernel_data_segment_id*8) | 3)) << 48));
+    Msr::Write(MsrReg::STAR, ((((uint64_t)Gdt::kernel_code_segment_id * 8)) << 32) | (((uint64_t)((Gdt::kernel_data_segment_id * 8) | 3)) << 48));
     Msr::Write(MsrReg::LSTAR, (uint64_t)syscall_handle);
     Msr::Write(MsrReg::SYSCALL_FLAG_MASK, (uint64_t)(1 << 9) | 0xfffffffe);
 

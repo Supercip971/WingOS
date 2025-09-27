@@ -6,18 +6,14 @@
 #include "libcore/lock/lock.hpp"
 #include "wingos-headers/ipc.h"
 
-
-struct IpcMessageContent 
+struct IpcMessageContent
 {
-     uint64_t message_id; // unique id of the message
+    uint64_t message_id; // unique id of the message
     uint64_t flags;      // flags for the message
     IpcData data[8];     // data for the message, can be used for IPC payload
-   
 };
 using IpcMessageServer = IpcMessageContent;
 using IpcMessageClient = IpcMessageContent;
-
-
 
 struct IpcMessagePair
 {
@@ -27,12 +23,12 @@ struct IpcMessagePair
     IpcMessageClient client; // the message from the client's point of view
     IpcMessageServer server; // the message from the server's point of view
 
-    static IpcMessagePair const& from_client(IpcMessage& msg)
+    static IpcMessagePair const &from_client(IpcMessage &msg)
     {
         static IpcMessagePair pair;
         pair.client.message_id = msg.message_id;
         pair.client.flags = msg.flags;
-        
+
         pair.server = {};
         pair.len = msg.len;
         for (size_t i = 0; i < 8; i++)
@@ -45,9 +41,9 @@ struct IpcMessagePair
             pair.data[i] = msg.data[i].data;
         }
         return pair;
-    } 
+    }
 
-    static IpcMessagePair const& from_server(IpcMessage& msg)
+    static IpcMessagePair const &from_server(IpcMessage &msg)
     {
         static IpcMessagePair pair;
         pair.server.message_id = msg.message_id;
@@ -156,10 +152,10 @@ core::Result<KernelIpcServer *> query_server(IpcServerHandle handle);
 
 core::Result<AssetPtr> server_accept_connection(KernelIpcServer *server);
 
-core::Result<MessageHandle> server_send_message(IpcConnection *connection, IpcMessage* message, bool expect_reply = false);
-core::Result<MessageHandle> server_send_call(IpcConnection *connection, IpcMessage* message);
+core::Result<MessageHandle> server_send_message(IpcConnection *connection, IpcMessage *message, bool expect_reply = false);
+core::Result<MessageHandle> server_send_call(IpcConnection *connection, IpcMessage *message);
 
-core::Result<void> server_reply_message(IpcConnection *connection, MessageHandle from, IpcMessage* message);
+core::Result<void> server_reply_message(IpcConnection *connection, MessageHandle from, IpcMessage *message);
 
 core::Result<ReceivedIpcMessage> server_receive_message(KernelIpcServer *server, IpcConnection *connection);
 
@@ -167,4 +163,4 @@ core::Result<ReceivedIpcMessage> client_receive_message(IpcConnection *connectio
 
 core::Result<ReceivedIpcMessage> client_receive_response(IpcConnection *connection, MessageHandle handle);
 
-core::Result<IpcMessage> call_server_and_wait(IpcConnection *connection, IpcMessage* message);
+core::Result<IpcMessage> call_server_and_wait(IpcConnection *connection, IpcMessage *message);

@@ -173,11 +173,11 @@ struct PciDevice
     {
         const uint64_t old_value = get_bar64(bar_index);
         write_config(bar_index, 0xffffffff);
-        write_config(bar_index+4, 0xffffffff);
+        write_config(bar_index + 4, 0xffffffff);
 
         const uint64_t val = get_bar64(bar_index);
 
-        size_t len = ~ val;
+        size_t len = ~val;
 
         write_config(bar_index, old_value);
         write_config(bar_index + 4, old_value >> 32);

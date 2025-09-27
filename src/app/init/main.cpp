@@ -61,7 +61,6 @@ core::Result<size_t> execute_module(elf::ElfLoader loaded)
         auto moved_memory = Wingos::Space::self().move_to(subspace, memory);
 
         subspace.map_memory(ph.virt_addr, ph.virt_addr + ph.mem_size, moved_memory, ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);
-        
     }
 
     subspace.launch_task(task_asset);
@@ -88,10 +87,9 @@ core::Result<size_t> start_service(mcx::MachineContextModule mod)
 
     if (loaded.is_error())
     {
-        log::err$("[INIT] unable to load module {}: {}",  loaded.error());
+        log::err$("[INIT] unable to load module {}: {}", loaded.error());
         return loaded.error();
     }
-
 
     auto v = execute_module(loaded.unwrap());
 
@@ -112,7 +110,6 @@ core::Result<size_t> start_service(mcx::MachineContext *context, core::Str path)
 
     log::err$("[INIT] no module found with path: {}", path);
     return core::Result<size_t>::error("module not found");
-    
 }
 void start_from_pci(wjson::JsonValue *json, mcx::MachineContext *context)
 {
@@ -148,14 +145,11 @@ void start_from_pci(wjson::JsonValue *json, mcx::MachineContext *context)
                 auto path = driver["path"]->as_string().unwrap();
                 log::log$("Loading driver from path: {}", path);
 
-                
-
                 start_service(context, path);
             }
         }
     }
 }
-
 
 int _main(mcx::MachineContext *context)
 {
@@ -235,7 +229,6 @@ int _main(mcx::MachineContext *context)
         log::log$("starting service for module: {}", mod.path);
         auto res = start_service(mod);
     }
-
 
     while (true)
     {

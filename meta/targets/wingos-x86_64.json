@@ -77,11 +77,12 @@
             ]
         },
         "as": {
-            "cmd": "clang",
+            "cmd": 
+                "nasm"
+            ,
             "args": [
-                "-target",
-                "x86_64-none-elf",
-                "-c"
+                "-f",
+                "elf64"
             ]
         }
     }

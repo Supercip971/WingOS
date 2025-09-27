@@ -134,7 +134,7 @@ struct [[gnu::packed]] NvmeCmd
             uint16_t qsize;    // queue size
             bool pc : 1;       // physically contiguous
             uint8_t qprio : 2; // queue priority
-            uint32_t _reserved : 14;
+            uint32_t _reserved : 13;
             uint16_t cqid; // Completion queue identifier
 
             uint16_t nvmsetid; // nvme set id
@@ -181,6 +181,7 @@ struct [[gnu::packed]] NvmeCmd
     };
 };
 
+//static auto v=  offsetof(NvmeCmd, raw.cdw11);
 
 struct [[gnu::packed]] NvmeLBAf 
 {
@@ -422,6 +423,7 @@ class NvmeController
             size_t len = math::alignUp(count * sizeof(T), 4096ul);
 
             queue.count = math::alignDown(len, sizeof(T)) / sizeof(T);
+            log::log$("Creating queue of {} entries ({} bytes)", queue.count, len);
             queue.is_completion = core::IsSame<T, CompletionQueueEntry>;
             queue.tail = 0;
 
@@ -493,7 +495,6 @@ class NvmeController
         NvmeIdentifyNamespace *identify_namespace;
     };
 
-    core::Vec<NvmeDevice> devices;
 
    Wingos::VirtualMemoryAsset mapped_nvme_addr_space;
 
@@ -630,7 +631,7 @@ class NvmeController
 
         dev->io_queues = try$(create_queues(queue_slots, queue_id));
 
-        NvmeCmd cmd_completion;
+        NvmeCmd cmd_completion = {};
         cmd_completion.header.opcode = NVME_AOP_CREATE_COMPLETION_QUEUE;
 
         cmd_completion.CreateIoCompletionQueue.qid = queue_id;
@@ -639,14 +640,13 @@ class NvmeController
         cmd_completion.prp1 = (dev->io_queues.complete_queue.physical_addr);
         try$(nvme_await_submit(&cmd_completion, admin_queues));
 
-        NvmeCmd cmd_submission;
+        NvmeCmd cmd_submission = {};
         cmd_submission.header.opcode = NVME_AOP_CREATE_SUBMISSION_QUEUE;
         cmd_submission.CreateIoSubmissionQueue.qid = queue_id;
         cmd_submission.CreateIoSubmissionQueue.qsize = dev->io_queues.command_queue.count - 1;
         cmd_submission.CreateIoSubmissionQueue.pc = 1; // physically contiguous
-        cmd_submission.CreateIoSubmissionQueue.pc = 2; // high priority
+        cmd_submission.CreateIoSubmissionQueue.qprio = 2;
         cmd_submission.CreateIoSubmissionQueue.cqid = queue_id;
-        cmd_submission.CreateIoSubmissionQueue.qid = queue_id;
         cmd_submission.prp1 = (dev->io_queues.command_queue.physical_addr);
         try$(nvme_await_submit(&cmd_submission, admin_queues));
 
@@ -655,7 +655,47 @@ class NvmeController
 
     }
 
+   core::Result<void> nvme_register_device_namespace(size_t nsid)
+    {
+        NvmeDevice device = {};
+        device.nsid = nsid;
+        device.sys_id = device_uid++;
 
+
+        device.identify_namespace = (NvmeIdentifyNamespace *)Wingos::Space::self().allocate_memory(4096, false).ptr();
+        
+        NvmeCmd idns_cmd = {};
+        idns_cmd.header.opcode = NVME_AOP_IDENTIFY; // identify
+        idns_cmd.nsid = nsid;
+        idns_cmd.Identify.cns = 0; // identify namespace
+        idns_cmd.prp1 = (uintptr_t)device.identify_namespace - USERSPACE_VIRT_BASE;
+        idns_cmd.prp2 = 0;
+        try$(nvme_await_submit(&idns_cmd, admin_queues));
+
+        log::log$(" - Namespace {}: {} blocks of size {}", nsid, device.identify_namespace->nsze, 1 << (device.identify_namespace->lbaf[device.identify_namespace->flbas & 0xf].lbads));
+        
+        
+        uint64_t flba = device.identify_namespace->flbas & 0xf;
+        uint64_t lba_shift = (device.identify_namespace->lbaf[flba].lbads);
+        uint64_t max_lba = (this->max_transfer)/(1 << lba_shift);
+
+        log::log$("   - max transfer size: {} bytes ({} blocks)", this->max_transfer | fmt::FMT_HEX, max_lba | fmt::FMT_HEX);
+
+        device.max_phys_rpgs = max_lba / (1 << (12 + cap.memory_page_size_minimum));
+
+        device.lba_size = 1 << lba_shift;
+
+
+        try$(nvme_create_queues(&device, nsid)); // use nsid as queue id for simplicity
+
+        this->devices.push(device);
+        
+        return {};
+    }
+
+public:
+
+    core::Vec<NvmeDevice> devices;
     core::Result<void> read_write_ptr(NvmeDevice* dev, bool is_write, uint64_t lba, uint16_t nlb, void* buffer, size_t buffer_len)
     {
         if (buffer_len == 0 || buffer == nullptr)
@@ -664,8 +704,6 @@ class NvmeController
         }
 
         size_t len = math::alignUp(buffer_len, 4096ul);
-
-        auto cid = dev->io_queues.cid;
 
         if((nlb * dev->lba_size) > len)
         {
@@ -709,42 +747,7 @@ class NvmeController
         return nvme_await_submit(&cmd, dev->io_queues);
 
     }
-    core::Result<void> nvme_register_device_namespace(size_t nsid)
-    {
-        NvmeDevice device = {};
-        device.nsid = nsid;
-        device.sys_id = device_uid++;
-
-
-        device.identify_namespace = (NvmeIdentifyNamespace *)Wingos::Space::self().allocate_memory(4096, false).ptr();
-        
-        NvmeCmd idns_cmd = {};
-        idns_cmd.header.opcode = NVME_AOP_IDENTIFY; // identify
-        idns_cmd.nsid = nsid;
-        idns_cmd.Identify.cns = 0; // identify namespace
-        idns_cmd.prp1 = (uintptr_t)device.identify_namespace - USERSPACE_VIRT_BASE;
-        idns_cmd.prp2 = 0;
-        try$(nvme_await_submit(&idns_cmd, admin_queues));
-
-        log::log$(" - Namespace {}: {} blocks of size {}", nsid, device.identify_namespace->nsze, 1 << (device.identify_namespace->lbaf[device.identify_namespace->flbas & 0xf].lbads));
-        
-        
-        uint64_t flba = device.identify_namespace->flbas & 0xf;
-        uint64_t lba_shift = (device.identify_namespace->lbaf[flba].lbads);
-        uint64_t max_lba = (this->max_transfer)/(1 << lba_shift);
-
-        log::log$("   - max transfer size: {} bytes ({} blocks)", this->max_transfer | fmt::FMT_HEX, max_lba | fmt::FMT_HEX);
-
-        device.max_phys_rpgs = max_lba / (1 << (12 + cap.memory_page_size_minimum));
-
-        device.lba_size = 1 << lba_shift;
-
-        this->devices.push(device);
-        
-        return {};
-    }
-
-public:
+ 
     static core::Result<NvmeController> setup(Wingos::dev::PciDevice &dev)
     {
         NvmeController driver;
@@ -888,6 +891,11 @@ public:
 
 int _main(mcx::MachineContext *)
 {
+
+    // convert this in gnu format: asm volatile("and rsp, -16");
+
+
+
     log::log$("hello world from nvme!");
     Wingos::dev::PciController pci_controller;
     pci_controller.scan_bus(0);
@@ -907,10 +915,21 @@ int _main(mcx::MachineContext *)
             {
                 disks.push(disk.unwrap());
 
-                auto memory = Wingos::Space::self().allocate_physical_memory(4096, false);
-                auto mapped = Wingos::Space::self().map_memory(memory, ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);
-
+                auto mapped = Wingos::Space::self().allocate_memory(4096, false);
                 log::log$("Allocated memory at: {}", (uintptr_t)mapped.ptr() | fmt::FMT_HEX);
+
+                disks[0].read_write_ptr(&disks[0].devices[0], false, 0, 8, mapped.ptr(), 4096);
+
+
+                for(size_t i = 0; i < 512; i++)
+                {
+                    if(i % 16 == 0)
+                    {
+                        log::log$("\n{}:", i * 8);
+                    }
+                    log::log$(" {}{}", ((uint8_t*)mapped.ptr())[i*2] | fmt::FMT_HEX, ((uint8_t*)mapped.ptr())[i*2 + 1] | fmt::FMT_HEX);
+                }
+                
                 log::log$("NVMe worked !");
             }
             else

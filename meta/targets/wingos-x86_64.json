@@ -44,19 +44,17 @@
                 "-fno-exceptions",
                 "-fno-rtti",
                 "-fno-stack-protector",
-
+                    
                 "-mno-80387",
                 "-mno-mmx",
                 "-mno-3dnow",
                 "-mno-sse",
                 "-mno-sse2",
+                "-mno-avx",
                 "-std=gnu++26",
-                   "-fno-stack-protector",
                 "-fno-c++-static-destructors",
                 "-fno-builtin",
-                "-fno-threadsafe-statics",
-                "-fno-c++-static-destructors"
-              
+                "-fno-threadsafe-statics" 
             ]
         },
         "ld": {

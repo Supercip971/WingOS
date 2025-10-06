@@ -78,7 +78,7 @@ public:
 
     core::Result<void> map(VirtRange virt, PhysRange phys, PageFlags flags);
 
-    core::Result<void> unmap(VirtRange virt);
+    core::Result<void> unmap(VirtRange virt, bool user);
 
     core::Result<void> virtual_map(VirtAddr virt, size_t count, PageFlags flags, size_t object_rid);
 

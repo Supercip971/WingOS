@@ -41,7 +41,7 @@ struct MemoryAsset : public UAsset
 
     static MemoryAsset allocate(uint64_t space_handle, uint64_t size, [[maybe_unused]] bool lower_half = false)
     {
-        MemoryAsset asset;
+        MemoryAsset asset = {};
 
         size = math::alignUp(size, 4096ul); // align to page size
         auto phys_mem = sys$mem_own(space_handle, size, 0);

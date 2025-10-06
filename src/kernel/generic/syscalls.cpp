@@ -199,7 +199,8 @@ core::Result<size_t> ksyscall_mem_release(SyscallAssetRelease *release)
     Asset *virt_mem = nullptr;
     for (size_t i = 0; i < space->assets.len(); i++)
     {
-        if (space->assets[i].asset->kind == OBJECT_KIND_MAPPING && space->assets[i].asset->mapping.start == (uintptr_t)release->addr)
+        if (space->assets[i].asset->kind == OBJECT_KIND_MAPPING && space->assets[i].asset->mapping.start == (uintptr_t)release->addr 
+            && space->assets[i].asset->mapping.end == (size_t)release->end)
         {
 
             virt_mem = space->assets[i].asset;
@@ -207,6 +208,7 @@ core::Result<size_t> ksyscall_mem_release(SyscallAssetRelease *release)
             break;
         }
     }
+
     if (phys_mem == nullptr || virt_mem == nullptr)
     {
         return core::Result<size_t>::error("no memory mapping found for address");
@@ -222,8 +224,8 @@ core::Result<size_t> ksyscall_mem_release(SyscallAssetRelease *release)
         return core::Result<size_t>::error("virtual memory asset is not a mapping asset");
     }
 
-    asset_release(space, phys_mem);
     asset_release(space, virt_mem);
+    asset_release(space, phys_mem);
 
     return core::Result<size_t>::success(0);
 }
@@ -807,6 +809,7 @@ core::Result<size_t> ksyscall_ipc_x86_port(SyscallIpcX86Port *port)
 
 core::Result<size_t> syscall_handle(SyscallInterface syscall)
 {
+    
     switch (syscall.id)
     {
     case SYSCALL_DEBUG_LOG_ID:

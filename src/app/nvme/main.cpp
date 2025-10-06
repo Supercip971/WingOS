@@ -394,6 +394,7 @@ class NvmeController
         uint64_t count;
         bool is_completion;
         uint64_t tail;
+        size_t page_size;
 
         bool will_loop()
         {
@@ -414,7 +415,7 @@ class NvmeController
             return res;
         }
 
-        core::Result<Queue<T>> create(size_t count)
+        static core::Result<Queue<T>> create(size_t count)
         {
             Queue<T> queue = {};
 
@@ -433,6 +434,7 @@ class NvmeController
             auto mapped = Wingos::Space::self().map_memory(memory, ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);
             queue.base_addr = (uint64_t)mapped.ptr();
             queue.physical_addr = (uint64_t)mapped.ptr() - USERSPACE_VIRT_BASE;
+            queue.page_size = len;
             memset((void *)queue.base_addr, 0, len);
 
             return queue;
@@ -440,7 +442,7 @@ class NvmeController
 
         core::Result<void> release()
         {
-            Wingos::Space::self().release_memory(this->base_addr);
+            Wingos::Space::self().release_memory(this->base_addr, this->page_size);
             return {};
         }
     };

@@ -9,7 +9,6 @@
 #include "arch/generic/syscalls.h"
 #include "iol/wingos/space.hpp"
 #include "iol/wingos/syscalls.h"
-#include "kernel/generic/space.hpp"
 #include "libcore/fmt/log.hpp"
 #include "wingos-headers/asset.h"
 
@@ -52,7 +51,7 @@ extern "C" void *liballoc_alloc(size_t l)
 extern "C" int liballoc_free(void *ptr, size_t l)
 {
 
-    Wingos::Space::self().release_memory(ptr);
+    Wingos::Space::self().release_memory(ptr, l * arch::amd64::PAGE_SIZE);
     (void)l;
     // sys$asset_release_mem(ptr);
     return 0;

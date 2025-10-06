@@ -70,7 +70,7 @@ static inline SyscallSpaceCreate sys$space_create(uint64_t parent_space_handle, 
 
 static inline SyscallAssetRelease sys$asset_release(uint64_t space_handle, uint64_t asset_handle)
 {
-    SyscallAssetRelease release = {space_handle, asset_handle, NULL};
+    SyscallAssetRelease release = {space_handle, asset_handle, NULL, NULL};
     SyscallInterface interface = syscall_asset_release_encode(&release);
     uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
         (void)result;
@@ -79,9 +79,9 @@ static inline SyscallAssetRelease sys$asset_release(uint64_t space_handle, uint6
     return release;
 }
 
-static inline SyscallAssetRelease sys$asset_release_mem(void* addr)
+static inline SyscallAssetRelease sys$asset_release_mem(void* addr, void* end)
 {
-    SyscallAssetRelease release = {.space_handle = 0,.asset_handle = 0,.addr = addr};
+    SyscallAssetRelease release = {.space_handle = 0,.asset_handle = 0,.addr = addr, .end = end};
     SyscallInterface interface = syscall_asset_release_encode(&release);
     uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
         (void)result;

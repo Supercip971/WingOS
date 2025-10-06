@@ -76,7 +76,7 @@ core::Result<void> VmmSpace::map(VirtRange virt, PhysRange phys, PageFlags flags
 
     return {};
 }
-core::Result<void> VmmSpace::unmap(VirtRange virt)
+core::Result<void> VmmSpace::unmap(VirtRange virt, bool user)
 {
     auto root = as_root(*this);
 
@@ -90,7 +90,7 @@ core::Result<void> VmmSpace::unmap(VirtRange virt)
     {
         auto virt_addr = virt_begin + i;
 
-        try$(root->unmap(virt_addr));
+        try$(root->unmap(virt_addr, user));
     }
 
     return {};

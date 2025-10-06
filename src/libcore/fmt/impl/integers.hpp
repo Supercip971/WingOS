@@ -67,28 +67,38 @@ constexpr core::Result<int> format_v_hex(Targ &target, T &&v, FormatIntegerFlags
     core::Pure<T> value = v;
     core::Pure<T> digit = value % 16;
 
-    // With an uint64_t, the max value contains 16 hex digits
     constexpr int base = 17;
     char buffer[base];
+
     int i = 0;
-
-    while (value != 0)
+    // With an uint64_t, the max value contains 16 hex digits
+    if (value == 0)
     {
-        if (digit < 10)
-        {
-            char t = '0' + digit;
-            buffer[i] = t;
-        }
-        else
-        {
-            char t = 'a' + digit - 10;
-            buffer[i] = t;
-        }
+        buffer[i] = '0';
         i++;
-        value /= 16;
-        digit = value % 16;
     }
+    else
+    {
 
+
+        while (value != 0)
+        {
+            if (digit < 10)
+            {
+                char t = '0' + digit;
+                buffer[i] = t;
+            }
+            else
+            {
+                char t = 'a' + digit - 10;
+                buffer[i] = t;
+            }
+            i++;
+            value /= 16;
+            digit = value % 16;
+        }
+    }
+    
     if (flags.pad > i)
     {
         for (int v = i; v < flags.pad; v++)

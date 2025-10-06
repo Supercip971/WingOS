@@ -51,10 +51,15 @@
                 "-mno-sse",
                 "-mno-sse2",
                 "-mno-avx",
-                "-std=gnu++26",
+                "-std=c++2c",
                 "-fno-c++-static-destructors",
                 "-fno-builtin",
-                "-fno-threadsafe-statics" 
+                "-fno-threadsafe-statics" ,
+                   "-fno-stack-protector",
+                "-fno-c++-static-destructors",
+                "-fno-builtin",
+                "-fno-threadsafe-statics"
+               
             ]
         },
         "ld": {

@@ -61,7 +61,8 @@
                 "-mno-red-zone",
                 "-mcmodel=kernel",
                 "-Wno-missing-field-initializers",
-                "-std=gnu++26"
+                "-std=c++2c"
+
             ]
         },
         "ld": {

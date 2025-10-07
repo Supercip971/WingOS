@@ -76,7 +76,7 @@ void asset_release(Space *space, Asset *asset)
             {
                 space->vmm_space.unmap(
                     VirtRange(asset->mapping.start,
-                              asset->mapping.end));
+                              asset->mapping.end), true);
             }
         }
         else if (asset->kind == OBJECT_KIND_IPC_CONNECTION)

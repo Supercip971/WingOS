@@ -126,12 +126,12 @@ core::Result<PhysAddr> Pmm::allocate(size_t count, IolAllocMemoryFlag flags)
         }
     }
 
-    for (size_t i = this->_sections_count - 1; i >= 0; i--)
+    for (long i = this->_sections_count - 1; i >= 0; i--)
     {
         auto &section = this->_sections[i];
         auto start = section.bitmap.alloc(count);
 
-        if (start)
+        if (!start.is_error())
         {
             size_t start_addr = start.unwrap();
             auto range = mcx::MemoryRange::from_begin_len(start_addr, count);
@@ -155,7 +155,7 @@ core::Result<void> Pmm::own(PhysAddr addr, size_t count)
         if (section.range.contains(addr))
         {
 
-            auto range = mcx::MemoryRange::from_begin_len(addr - section.range.start(), count);
+            auto range = mcx::MemoryRange::from_begin_len((addr - section.range.start())/page_size_bit, count);
             section.bitmap.fill(true, range);
             return {};
         }
@@ -171,7 +171,7 @@ core::Result<void> Pmm::release(PhysAddr addr, size_t count)
         if (section.range.contains(addr))
         {
 
-            auto range = mcx::MemoryRange::from_begin_len(addr - section.range.start(), count);
+            auto range = mcx::MemoryRange::from_begin_len((addr - section.range.start())/page_size_bit, count);
             try$(section.bitmap.fill_expected_inverse(false, range));
             return {};
         }

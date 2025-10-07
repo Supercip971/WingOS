@@ -75,9 +75,9 @@ struct Space
         return VirtualMemoryAsset::create(handle, mem_asset.memory.start() + USERSPACE_VIRT_BASE, mem_asset.memory.end() + USERSPACE_VIRT_BASE, mem_asset.handle, ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);
     }
 
-    void release_memory(void *ptr)
+    void release_memory(void *ptr, size_t size)
     {
-        sys$asset_release_mem(ptr);
+        sys$asset_release_mem(ptr, (void*)(size + (uintptr_t)ptr));
     }
 
     Space create_space()

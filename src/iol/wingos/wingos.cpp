@@ -9,7 +9,7 @@
 extern int _main(mcx::MachineContext *context);
 
 static char buffer[256];
-static size_t _index = 0;
+static size_t _index;
 class WingosLogger : public core::Writer
 {
 public:
@@ -37,14 +37,14 @@ public:
 asm(
     ".global _start \n"
     "_start: \n"
-    "   and $-16, %rsp \n"
-    "   sub $512, %rsp \n"
+    "   andq $-16, %rsp \n"
+    "   subq $512, %rsp \n"
     "   call _entry_point \n"
     "   \n");
 extern "C" void _entry_point(mcx::MachineContext *context)
 {
 
-    asm volatile("and $-16, %rsp");
+    asm volatile("andq $-16, %%rsp" ::: "rsp");
     _index = 0;
 
     WingosLogger logger;

@@ -154,7 +154,7 @@ public:
         return {};
     }
 
-    core::Result<void> unmap(VirtAddr vaddr)
+    core::Result<void> unmap(VirtAddr vaddr, bool user)
     {
         if constexpr (level == 1)
         {
@@ -167,10 +167,16 @@ public:
             {
                 return "Page not present";
             }
-            try$(table_from_addr(vaddr)->unmap(vaddr));
+
+            if(user && !entry.user())
+            {
+                return "Page not user accessible";
+            }
+            
+            try$(table_from_addr(vaddr)->unmap(vaddr, user));
             for (int i = 0; i < 512; i++)
             {
-                if (table(i)->page(i).present())
+                if (table_from_addr(vaddr)->page(i).present())
                 {
                     return {};
                 }

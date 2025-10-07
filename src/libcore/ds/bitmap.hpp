@@ -78,7 +78,7 @@ public:
     {
         for (size_t i = range.start(); i < range.end(); i++)
         {
-            if (bit(i) == value)
+            if (bit(i) == value) [[unlikely]]
             {
                 return Result<void>("Bitmap: fill_expected_inverse: expected inverse");
             }

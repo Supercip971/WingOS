@@ -19,6 +19,7 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *stackframe)
 {
     //  log("syscall", LOG_INFO, "called syscall higher handler in: {} (stack: {})", stackframe->rip, stackframe->rsp);
 
+    Cpu::current()->debug_saved_syscall_stackframe = stackframe->rbp;
     auto res = syscall_handle({
         .id = (uint32_t)stackframe->rax,
         .arg1 = stackframe->rbx,

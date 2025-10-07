@@ -19,6 +19,28 @@ extern uintptr_t _scheduler_impl(uintptr_t stack);
 
 core::RWLock int_lock;
 void interrupt_release();
+struct stackframe
+{
+    stackframe *rbp;
+    uint64_t rip;
+} __attribute__((packed));
+
+void dump_stackframe(void *rbp)
+{
+
+    stackframe *frame = reinterpret_cast<stackframe *>(rbp);
+    int size = 0;
+    while (frame && size++ < 20)
+    {
+        log::log$("stackframe: {}", frame->rip | fmt::FMT_HEX);
+        frame = frame->rbp;
+    }
+
+    if(size >= 20)
+    {
+        log::log$("... (stackframe too deep)");
+    }
+}
 
 extern "C" uintptr_t interrupt_handler(uintptr_t stack)
 {
@@ -68,6 +90,12 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
         inside_error = false;
 
         log::log$("cpu: {}", hw::acpi::Lapic::the().id());
+
+       // dump_stackframe((void*)Cpu::current()->currentTask()->cpu_context()->);
+       log::log$("kernel stacktrace:"); 
+       dump_stackframe((void *)frame->rbp);
+        log::log$("last syscall stacktrace:");
+        dump_stackframe((void *)Cpu::current()->debug_saved_syscall_stackframe);
 
         kernel::dump_all_current_running_tasks();
         int_lock.write_release();

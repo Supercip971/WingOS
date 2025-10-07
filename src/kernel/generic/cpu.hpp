@@ -14,6 +14,7 @@ class Cpu
 public:
     void *syscall_stack;
     uintptr_t saved_stack; // used to save the stack pointer before syscall
+    uintptr_t debug_saved_syscall_stackframe;
 
 protected:
     //

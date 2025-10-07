@@ -11,9 +11,9 @@
 #include "mcx/mcx.hpp"
 #include "wingos-headers/asset.h"
 
-core::Vec<core::Str> module_service;
-core::Vec<core::Str> disk_service;
-wjson::Json json;
+core::Vec<core::Str> module_service = {};
+core::Vec<core::Str> disk_service = {};
+wjson::Json json = {};
 
 core::Result<size_t> execute_module(elf::ElfLoader loaded)
 {
@@ -52,7 +52,7 @@ core::Result<size_t> execute_module(elf::ElfLoader loaded)
                (void *)((uintptr_t)loaded.range().start() + ph.file_offset),
                ph.file_size);
 
-        log::log$("copied {} bytes from {} to {}", ph.file_size, (uintptr_t)loaded.range().start() + ph.file_offset, (uintptr_t)copied_data);
+        log::log$("copied {} bytes from {} to {}", ph.file_size | fmt::FMT_HEX, (uintptr_t)loaded.range().start() + ph.file_offset | fmt::FMT_HEX, (uintptr_t)copied_data | fmt::FMT_HEX);
 
         auto moved_memory = Wingos::Space::self().move_to(subspace, memory);
 
@@ -141,6 +141,7 @@ void start_from_pci(wjson::JsonValue *json, mcx::MachineContext *context)
                 log::log$("Loading driver from path: {}", path);
 
                 start_service(context, path);
+                log::log$("Driver started: {}", path);
             }
         }
     }

@@ -2,6 +2,7 @@
 
 #include "kernel/generic/asset.hpp"
 #include "kernel/generic/space.hpp"
+#include "math/align.hpp"
 #include "libcore/ds/vec.hpp"
 #include "libcore/lock/lock.hpp"
 #include "wingos-headers/ipc.h"
@@ -36,9 +37,9 @@ struct IpcMessagePair
             pair.data[i] = msg.data[i].data;
         }
 
-        for (size_t i = 0; i < msg.len / sizeof(uint64_t); i++)
+        for (size_t i = 0; i < math::alignUp((uint64_t)msg.len, sizeof(uint64_t)) / sizeof(uint64_t); i++)
         {
-            pair.data[i] = msg.data[i].data;
+            pair.data[i+8] = msg.buffer[i];
         }
         return pair;
     }
@@ -56,9 +57,9 @@ struct IpcMessagePair
             pair.data[i] = msg.data[i].data;
         }
 
-        for (size_t i = 0; i < msg.len / sizeof(uint64_t); i++)
+        for (size_t i = 0; i < math::alignUp((unsigned long)msg.len, sizeof(uint64_t)) / sizeof(uint64_t); i++)
         {
-            pair.data[i] = msg.data[i].data;
+            pair.data[i+8] = msg.buffer[i];
         }
         return pair;
     }
@@ -76,9 +77,9 @@ struct IpcMessagePair
             msg.data[i].is_asset = false; // assuming no assets in this message
         }
 
-        for (size_t i = 0; i < len / sizeof(uint64_t); i++)
+        for (size_t i = 0; i < math::alignUp(len, sizeof(uint64_t)) / sizeof(uint64_t); i++)
         {
-            msg.buffer[i] = data[i];
+            msg.buffer[i] = data[i+8];
         }
 
         return msg;
@@ -97,9 +98,9 @@ struct IpcMessagePair
             msg.data[i].is_asset = false; // assuming no assets in this message
         }
 
-        for (size_t i = 0; i < len / sizeof(uint64_t); i++)
+        for (size_t i = 0; i < math::alignUp(len, sizeof(uint64_t))/ sizeof(uint64_t); i++)
         {
-            msg.buffer[i] = data[i];
+            msg.buffer[i] = data[i+8];
         }
 
         return msg;

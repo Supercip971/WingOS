@@ -57,7 +57,8 @@ For now the kernel is still in development, but it has a few key features:
 - [x] Services and IPC (inter process communication) 
 - [x] PCI support (scan, devices, ...) (in userspace)
 - [ ] Hello File!
-    - [ ] Nvme disk support
+    - [x] Nvme disk support
+    - [ ] service registry
     - [ ] Partition support (GPT)
     - [ ] Filesystem support (ext4)
     - [ ] VFS support

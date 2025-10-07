@@ -3,6 +3,7 @@
 #ifdef __cplusplus
 
 #    include "libcore/type-utils.hpp"
+#include "math/align.hpp"
 extern "C"
 {
 #endif
@@ -47,7 +48,7 @@ typedef uint64_t IpcConnectionHandle;
             {
                 msg.data[i] = other.data[i];
             }
-            for (size_t i = 0; i < other.len / sizeof(uint64_t); i++)
+            for (size_t i = 0; i < math::alignUp((size_t)other.len, sizeof(uint64_t))/ sizeof(uint64_t); i++)
             {
                 msg.buffer[i] = other.buffer[i];
             }
@@ -62,7 +63,13 @@ struct IpcMessage
         IpcData data[8];     // data for the message, can be used for IPC payload
 
         uint16_t len;
-        uint64_t buffer[MAX_IPC_BUFFER_SIZE / sizeof(uint64_t)]; // buffer for the message, used for IPC payload
+
+        union [[gnu::packed]]
+        {
+
+            uint64_t buffer[MAX_IPC_BUFFER_SIZE / sizeof(uint64_t)]; // buffer for the message, used for IPC payload
+            uint8_t raw_buffer[MAX_IPC_BUFFER_SIZE];
+        };
     };
 
 #ifdef __cplusplus

@@ -35,6 +35,23 @@ struct JsonValue
     core::Vec<JsonValue> children;
     core::Vec<core::Str> keys; // for objects
 
+
+    ~JsonValue() {
+        if(type == JsonType::String) {
+            storage.raw = core::Str();
+        }
+        else if(type == JsonType::Array)
+        {
+            children.release();
+        }
+        else if(type == JsonType::Object)
+        {
+            children.release();
+            keys.release();
+        }
+        type = JsonType::Null;
+    }
+
     core::Result<JsonValue *> get(const core::Str &key)
     {
         if (type != JsonType::Object)

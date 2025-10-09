@@ -1,3 +1,4 @@
 ./build/
 .cutekit/
 meta/plugins/__pycache__
+.cache/

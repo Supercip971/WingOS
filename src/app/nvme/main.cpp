@@ -899,6 +899,7 @@ int _main(mcx::MachineContext *)
 
                 disks[0].read_write_ptr(&disks[0].devices[0], false, 0, 8, mapped.ptr(), 4096);
 
+                /*
                 for (size_t i = 0; i < 512; i++)
                 {
                     if (i % 16 == 0)
@@ -906,7 +907,7 @@ int _main(mcx::MachineContext *)
                         log::log$("\n{}:", i * 8);
                     }
                     log::log$(" {}{}", ((uint8_t *)mapped.ptr())[i * 2] | fmt::FMT_HEX, ((uint8_t *)mapped.ptr())[i * 2 + 1] | fmt::FMT_HEX);
-                }
+                }*/
 
                 log::log$("NVMe worked !");
             }

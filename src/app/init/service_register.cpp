@@ -1,5 +1,4 @@
 #include "service_register.hpp"
-#include <stdlib.h>
 
 #include "iol/wingos/ipc.hpp"
 #include "iol/wingos/space.hpp"
@@ -58,6 +57,7 @@ void startup_init_service(Wingos::IpcServer server)
                     service.minor = msg.received.data[3].data;
 
                     registered_services.push(service);
+
 
                     log::log$("(server) registered service: {} ({}.{}) at {}", service.name, service.major, service.minor, service.endpoint);
                     break;

@@ -120,9 +120,9 @@ core::Result<MessageHandle> _server_send_message(IpcConnection *connection, IpcM
     }
 
     ReceivedIpcMessage received_message = {};
-    received_message.is_call = is_call; // TODO: set this based on the message
-    received_message.has_reply = false; // TODO: set this based on the message
-
+    received_message.is_call = is_call; 
+    received_message.has_reply = false;
+   
     received_message.server_id = connection->server_handle; // the space handle of the client that created this connection
     received_message.message_sended = IpcMessagePair::from_client(*message);
 

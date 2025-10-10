@@ -13,47 +13,38 @@ int _main(mcx::MachineContext* )
 
     // attempt connection to server ID 0
   
+
+    auto conn = prot::InitConnection::connect().unwrap();
  
-    auto client = Wingos::Space::self().connect_to_ipc_server(0);
+    
 
-    client.wait_for_accept();
+    log::log$("(client) connected to server with handle: {}", conn.raw_client().handle );
 
-    log::log$("(client) connected to server with handle: {}", client.handle);
 
    // now do a call
-    IpcMessage message = {};
-    message.data[0].data = prot::INIT_REGISTER_SERVER;
-    message.data[1].data = 42; // endpoint
-    message.data[2].data = 1; // major
-    message.data[3].data = 0; // minor
 
-    auto name = "hello-world";
-    size_t i;
-    for(i = 0; i < 80 && name[i] != 0; i++)
-    {
-        message.raw_buffer[i] = name[i];
-    }
-    message.len = i + ; 
+    prot::InitRegisterServer reg = {};
+    core::Str("hello-world").copy_to((char*)reg.name, 80);
 
-    auto sended_message = client.send(message, true);
-    auto message_handle = sended_message.unwrap();
-    if (sended_message.is_error())
-    {
-        log::log$("no message handle returned");
-    }
-    else
-    {
-        log::log$("(client) message sent with handle: {}", message_handle);
-    }
+    reg.major = 1;
+    reg.minor = 0;
+    reg.endpoint = 42;
 
+    conn.register_server(reg).unwrap();
+
+    prot::InitGetServer get = {
+
+        .name = {},
+        .major = 1,
+        .minor = 0,
+    }; 
+
+    core::Str("hello-world").copy_to((char*)get.name, 80);
+    
+    auto g = conn.get_server(get).unwrap();
+    log::log$("(client) got server endpoint: {}, version: {}.{}", g.endpoint, g.major, g.minor);
     while (true)
     {
-        auto received = client.receive_reply(message_handle);
-        if (!received.is_error())
-        {
-            log::log$("(client) received message: {}", received.unwrap().data[0].data);
-            break;
-        }
     }
 
     log::log$("dead...");

@@ -57,6 +57,7 @@ namespace prot
         
         public: 
 
+        Wingos::IpcClient& raw_client() { return connection; }
 
         static core::Result<InitConnection> connect()
         {
@@ -82,13 +83,19 @@ namespace prot
             message.data[1].data= reg.endpoint;
             message.data[2].data = reg.major;
             message.data[3].data = reg.minor;
+            size_t i;
 
-            for (size_t i = 0; i < 80 && reg.name[i] != 0; i++)
+            for (i = 0; i < 80 && reg.name[i] != 0; i++)
             {
                 message.raw_buffer[i] = reg.name[i];
             }
 
-            auto sended_message = connection.send(message, false);
+            message.raw_buffer[i] = 0;
+
+            message.len = i+1;
+
+            auto sended_message = connection.call(message);
+
             auto message_handle = sended_message.unwrap();
             if (sended_message.is_error())
             {

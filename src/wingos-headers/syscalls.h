@@ -144,6 +144,7 @@ typedef struct SyscallAssetRelease
     uint64_t space_handle; // the handle of the space, if null, the asset will be released from the kernel
     uint64_t asset_handle; // the handle of the asset to release
     void* addr; // the address of the asset if it is memory 
+    void* end; // the end address of the asset if it is memory
 } SyscallAssetRelease;
 
 static inline SyscallInterface syscall_asset_release_encode(SyscallAssetRelease* release)

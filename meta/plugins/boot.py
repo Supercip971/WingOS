@@ -175,7 +175,7 @@ def build_object(args: model.TargetArgs, component, target):
     return product
 
 
-@cli.command("s", "boot", "Boot Wingos")
+@cli.command("s", "Boot Wingos")
 def bootFunc(args: model.TargetArgs):
     
     scope = builder.TargetScope.use(args)

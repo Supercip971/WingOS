@@ -171,6 +171,20 @@ public:
     {
         return _len == 0;
     }
+
+    constexpr void copy_to(char *buffer, size_t buffer_len) const
+    {
+        size_t len = _len;
+        if (len >= buffer_len)
+        {
+            len = buffer_len - 1;
+        }
+        for (size_t i = 0; i < len; i++)
+        {
+            buffer[i] = _data[i];
+        }
+        buffer[len] = '\0';
+    }
 };
 
 constexpr char *StrChr(char *str, char c)

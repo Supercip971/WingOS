@@ -923,5 +923,4 @@ int _main(mcx::MachineContext *)
 
         asm volatile("pause");
     }
-    return 1;
 }

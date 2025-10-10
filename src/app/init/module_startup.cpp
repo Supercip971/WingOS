@@ -77,7 +77,7 @@ core::Result<size_t> start_service(mcx::MachineContextModule mod)
 
     auto loaded = elf::ElfLoader::load(VirtRange(
         range.start() + 0x0000002000000000,
-        range.end() + 0x0000002000000000));
+        range.end()   + 0x0000002000000000));
 
     (void)self_mapped;
 
@@ -106,14 +106,14 @@ core::Result<size_t> start_service(mcx::MachineContext *context, core::Str path)
     log::err$("[INIT] no module found with path: {}", path);
     return core::Result<size_t>::error("module not found");
 }
-void start_from_pci(wjson::JsonValue *json, mcx::MachineContext *context)
+void start_from_pci(wjson::JsonValue *pjson, mcx::MachineContext *context)
 {
     log::log$("Starting from PCI scan...");
 
     Wingos::dev::PciController pci_controller;
     pci_controller.scan_bus(0);
 
-    auto drivers_json = (*json)[("drivers")]->as_array().unwrap();
+    auto drivers_json = (*pjson)[("drivers")]->as_array().unwrap();
     for (const auto &device : pci_controller.devices)
     {
         log::log$("Found PCI Device: Bus {}, Device {}, Function {}, Vendor ID: {}, Device ID: {}, Class: {}, Subclass: {}",

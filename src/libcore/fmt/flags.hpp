@@ -84,6 +84,8 @@ constexpr FormatFlags<T> operator|(T &&a, FmtFlag flag)
             .color = Color::NONE,
             .value = core::forward<T>(a),
         };
+    default:
+        break;
     }
     return FormatFlags<T>{
         .is_hex = false,
@@ -108,6 +110,8 @@ constexpr FormatFlags<T> operator|(const FormatFlags<T> &a, FmtFlag flag)
     case FMT_HEX:
         b.is_hex = true;
         break;
+    default: 
+        break;
     }
     return core::forward<FormatFlags<T>>(b);
 }
@@ -128,6 +132,8 @@ constexpr FormatFlags<T> operator|(FormatFlags<T> &&a, FmtFlag flag)
         break;
     case FMT_HEX:
         a.is_hex = true;
+        break;
+    default: 
         break;
     }
     return core::forward<FormatFlags<T>>(a);

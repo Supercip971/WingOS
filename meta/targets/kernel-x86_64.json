@@ -34,7 +34,25 @@
                 "-mno-red-zone",
                 "-mcmodel=kernel",
                 "-Wno-missing-field-initializers",
-                "-std=gnu23"
+                "-std=gnu23" ,
+                "-Wnull-dereference",
+                "-Wstack-protector",
+                "-Wstrict-overflow=3",
+                "-Walloca",
+                "-Wvla",
+                "-Warray-bounds",
+                "-Wtautological-constant-in-range-compare",
+                "-Wloop-analysis",
+                "-Wshadow",
+                "-Wstrict-overflow=4",
+                "-Wstrict-prototypes",
+                "-Wswitch-default",
+                "-Wthread-safety",
+                "-Wunreachable-code-aggressive",
+                "-Widiomatic-parentheses",
+                "-Wfloat-equal",
+                "-Wassign-enum",
+                "-Wcomma"
             ]
         },
         "cxx": {
@@ -61,8 +79,27 @@
                 "-mno-red-zone",
                 "-mcmodel=kernel",
                 "-Wno-missing-field-initializers",
-                "-std=c++2c"
-
+                "-std=c++2c",
+                "-Wnull-dereference",
+                "-Wstack-protector",
+                "-Wstrict-overflow=3",
+                "-Walloca",
+                "-Wvla",
+                "-Warray-bounds",
+                "-Wtautological-constant-in-range-compare",
+                "-Wloop-analysis",
+                "-Wshadow",
+                "-Wstrict-overflow=4",
+                "-Wstrict-prototypes",
+                "-Wswitch-default",
+                "-Wthread-safety",
+                "-Wunreachable-code-aggressive",
+                "-Widiomatic-parentheses",
+                "-Wfloat-equal",
+                "-Wassign-enum",
+                "-Wcomma", 
+                "-Wfor-loop-analysis",
+                "-Wimplicit-fallthrough"
             ]
         },
         "ld": {

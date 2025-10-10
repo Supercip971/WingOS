@@ -46,9 +46,9 @@ constexpr core::Result<int> format_v(Targ &target, T &&v, FormatIntegerFlags fla
         value /= 10;
         digit = value % 10;
     }
-    for (int v = i - 1; v >= 0; v--)
+    for (int vi = i - 1; vi >= 0; vi--)
     {
-        target.write(&buffer[v], 1);
+        target.write(&buffer[vi], 1);
     }
 
     return {};
@@ -101,14 +101,14 @@ constexpr core::Result<int> format_v_hex(Targ &target, T &&v, FormatIntegerFlags
     
     if (flags.pad > i)
     {
-        for (int v = i; v < flags.pad; v++)
+        for (int vi = i; vi < flags.pad; vi++)
         {
             target.write(&flags.pad_char, 1);
         }
     }
-    for (int v = i - 1; v >= 0; v--)
+    for (int vi = i - 1; vi >= 0; vi--)
     {
-        target.write(&buffer[v], 1);
+        target.write(&buffer[vi], 1);
     }
     return {};
 }

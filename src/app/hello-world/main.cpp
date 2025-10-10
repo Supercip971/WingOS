@@ -46,10 +46,4 @@ int _main(mcx::MachineContext* )
     while (true)
     {
     }
-
-    log::log$("dead...");
-    while (true)
-    {
-    }
-    return 1;
 }

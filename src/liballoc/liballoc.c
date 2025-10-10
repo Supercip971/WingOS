@@ -22,16 +22,16 @@
 #define ALIGN( ptr )													\
 		if ( ALIGNMENT > 1 )											\
 		{																\
-			uintptr_t diff;												\
+			uintptr_t _diff;												\
 			ptr = (void*)((uintptr_t)ptr + ALIGN_INFO);					\
-			diff = (uintptr_t)ptr & (ALIGNMENT-1);						\
-			if ( diff != 0 )											\
+			_diff = (uintptr_t)ptr & (ALIGNMENT-1);						\
+			if ( _diff != 0 )											\
 			{															\
-				diff = ALIGNMENT - diff;								\
-				ptr = (void*)((uintptr_t)ptr + diff);					\
+				_diff = ALIGNMENT - _diff;								\
+				ptr = (void*)((uintptr_t)ptr + _diff);					\
 			}															\
 			*((ALIGN_TYPE*)((uintptr_t)ptr - ALIGN_INFO)) = 			\
-				diff + ALIGN_INFO;										\
+				_diff + ALIGN_INFO;										\
 		}															
 
 

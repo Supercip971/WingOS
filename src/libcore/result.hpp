@@ -155,18 +155,24 @@ extern void debug_provide_info(const char *info, const char *data);
 #define STRINGIZE_DETAIL(x) #x
 #define STRINGIZE(x) STRINGIZE_DETAIL(x)
 
-#define try$(expr) ({                                                          \
-    auto _result = (expr);                                                     \
-    if ((_result._error.has_value())) [[unlikely]]                             \
+#define try_v$(expr, vname) ({                                                          \
+    auto vname = (expr);                                                     \
+    if ((vname._error.has_value())) [[unlikely]]                             \
     {                                                                          \
-        core::debug_provide_info("error:    ", (const char *)_result.error()); \
+        core::debug_provide_info("error:    ", (const char *)vname.error()); \
         core::debug_provide_info("at:       ", #expr);                         \
         core::debug_provide_info("function: ", __FUNCTION__);                  \
         core::debug_provide_info("file:     ", __FILE__);                      \
         core::debug_provide_info("line:     ", STRINGIZE(__LINE__));           \
-        return _result.error();                                                \
+        return vname.error();                                                \
     }                                                                          \
-    _result.unwrap();                                                          \
+vname.unwrap();                                                          \
 })
+
+#define CONCAT_IMPL( x, y ) x##y
+#define MACRO_CONCAT( x, y ) CONCAT_IMPL( x, y )
+
+
+#define try$(expr) try_v$(expr, MACRO_CONCAT(_result, __COUNTER__))
 
 } // namespace core

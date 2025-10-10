@@ -84,8 +84,6 @@ core::Result<uintptr_t> ksyscall_mem_own(SyscallMemOwn *mem_own)
     mem_own->returned_handle = asset.handle;
 
     return core::Result<size_t>::success((uint64_t)asset.handle);
-
-    return {};
 }
 
 core::Result<uintptr_t> ksyscall_map(SyscallMap *map)

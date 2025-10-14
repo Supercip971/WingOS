@@ -1,0 +1,16 @@
+#pragma once 
+
+#include <libcore/io/writer.hpp>
+#include <libcore/result.hpp>
+#include <libcore/str_writer.hpp>
+
+namespace fmt 
+{
+    template<typename Fmt, typename... Args>
+    constexpr core::Result<core::WStr> format_str(Fmt &&fmt, Args&&... args)
+    {
+        core::WStr writer;
+        fmt::format(writer, core::Str(fmt), core::forward<Args>(args)...);
+        return writer;
+    }
+}

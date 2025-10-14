@@ -57,7 +57,7 @@ union Storage
         return core::move(*as_ptr());
     }
 
-    static constexpr T &&empty()
+    static constexpr T&& empty()
     {
         return core::move(Storage().retreive());
     }
@@ -180,10 +180,10 @@ public:
         return &_value.value();
     }
 
-    constexpr Type &&unwrap()
+    constexpr Type&& unwrap()
     {
         _contain_value = false;
-        return core::move(_value.retreive());
+        return (_value.retreive());
     }
 
     constexpr ~Optional()

@@ -50,19 +50,19 @@ public:
     {
         auto res = Result<ValT, ErrT>();
         res._value = core::move(val);
-        return core::move(res);
+        return (res);
     }
     static constexpr auto success(ValueType &&val)
     {
         auto res = Result<ValT, ErrT>();
         res._value = core::move(val);
-        return core::move(res);
+        return (res);
     }
     static constexpr auto error(ErrorType &&error)
     {
         auto res = Result<ValT, ErrT>();
         res._error = core::move(error);
-        return core::move(res);
+        return (res);
     }
 
     void assert();

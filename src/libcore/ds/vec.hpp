@@ -203,7 +203,7 @@ public:
         Vec vec;
         try$(vec.reserve(capacity));
 
-        return core::move(vec);
+        return (vec);
     }
 
     constexpr T *begin()

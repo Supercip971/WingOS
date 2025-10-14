@@ -276,7 +276,7 @@ static inline SyscallInterface syscall_ipc_send_encode(SyscallIpcSend* send)
 static inline SyscallIpcSend syscall_ipc_send_decode(SyscallInterface interface)
 {
     SyscallIpcSend *send = (SyscallIpcSend *)interface.arg1;
-    return core::move(*send);
+    return (*send);
 }
 
 // ------- SYSCALL IPC SERVER RECEIVE ----
@@ -307,7 +307,7 @@ static inline SyscallInterface syscall_ipc_server_receive_encode(SyscallIpcServe
 static inline SyscallIpcServerReceive syscall_ipc_server_receive_decode(SyscallInterface interface)
 {
     SyscallIpcServerReceive *receive = (SyscallIpcServerReceive *)interface.arg1;
-    return core::move(*receive);
+    return (*receive);
 }
 // ------- SYSCALL IPC CLIENT RECEIVE REPLY ----
 
@@ -336,7 +336,7 @@ static inline SyscallInterface syscall_ipc_receive_client_reply_encode(SyscallIp
 static inline SyscallIpcClientReceiveReply syscall_ipc_receive_client_reply_decode(SyscallInterface interface)
 {
     SyscallIpcClientReceiveReply *receive = (SyscallIpcClientReceiveReply *)interface.arg1;
-    return core::move(*receive);
+    return (*receive);
 }
 
 // ------- SYSCALL IPC CALL ----
@@ -361,7 +361,7 @@ static inline SyscallInterface syscall_ipc_call_encode(SyscallIpcCall* call)
 static inline SyscallIpcCall syscall_ipc_call_decode(SyscallInterface interface)
 {
     SyscallIpcCall *call = (SyscallIpcCall *)interface.arg1;
-    return core::move(*call);
+    return (*call);
 }
 
 // ------- SYSCALL IPC ACCEPT ----
@@ -410,7 +410,7 @@ static inline SyscallInterface syscall_ipc_reply_encode(SyscallIpcReply* reply)
 static inline SyscallIpcReply syscall_ipc_reply_decode(SyscallInterface interface)
 {
     SyscallIpcReply *reply = (SyscallIpcReply *)interface.arg1;
-    return core::move(*reply);
+    return (*reply);
 }
 
 // ------- SYSCALL IPC STATUS ----

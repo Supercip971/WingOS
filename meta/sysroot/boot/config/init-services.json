@@ -1,6 +1,10 @@
 {
     "modules": [
         {
+            "name": "vfs-wingos",
+            "path": "/bin/vfs-wingos"
+        },
+        {
             "name": "hello-world",
             "path": "/bin/hello-wingos"
         }

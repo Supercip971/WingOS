@@ -11,7 +11,7 @@ struct KernelIpcServerRegistered
     KernelIpcServer *server;
 };
 
-uint64_t next_free_ipc_server_handle = 1;
+uint64_t next_free_ipc_server_handle = 16;
 
 core::Lock ipc_server_lock;
 core::Vec<KernelIpcServerRegistered> registered_servers = {};
@@ -21,6 +21,7 @@ KernelIpcServer *register_server(IpcServerHandle handle, uint64_t space_handle)
     KernelIpcServer *server = new KernelIpcServer();
     *server = {};
     server->handle = handle;
+
     server->parent_space = space_handle;
     server->lock.lock();
     server->connections.clear();

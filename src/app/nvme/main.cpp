@@ -8,7 +8,9 @@
 #include "iol/wingos/syscalls.h"
 #include "libcore/fmt/flags.hpp"
 #include "libcore/fmt/log.hpp"
+#include "protocols/vfs/vfs.hpp"
 #include "libcore/type/trait.hpp"
+#include "libcore/str_writer.hpp"
 #include "math/align.hpp"
 #include "mcx/mcx.hpp"
 #include "wingos-headers/asset.h"
@@ -870,6 +872,16 @@ public:
     }
 };
 
+
+struct ControllerEndpoint 
+{
+    uint32_t uid;
+    core::WStr name; 
+    NvmeController* device;
+    IpcServerHandle handle;
+   Wingos::IpcServer server; 
+};
+
 int _main(mcx::MachineContext *)
 {
 
@@ -882,6 +894,7 @@ int _main(mcx::MachineContext *)
     device_uid = 0;
 
     core::Vec<NvmeController> disks;
+    core::Vec<ControllerEndpoint> endpoints;
     for (auto &dev : pci_controller.devices)
     {
         if (dev.class_code() == 0x01 && dev.subclass() == 0x08) // storage controller, NVMe
@@ -918,6 +931,40 @@ int _main(mcx::MachineContext *)
         }
     }
 
+
+   auto v = prot::VfsConnection::connect();
+
+    if(v.is_error())
+    {
+        log::err$("Failed to connect to VFS: {}", v.error());
+        return 1;
+    }
+
+    auto vfs = v.unwrap();
+
+    for(auto &disk: disks)
+    {
+        for(auto &dev: disk.devices)
+        {
+            ControllerEndpoint ep = {};
+            ep.device = &disk;
+            ep.uid = dev.sys_id;
+            ep.name = (char*)"nvmeX";
+            ep.name[4] = 'a' + (char)dev.sys_id; // nvme0, nvme1, etc
+
+            ep.server = Wingos::Space::self().create_ipc_server();
+            
+            log::log$("Registered endpoint {} with uid {}", ep.name.view(), ep.uid);
+            
+            vfs.register_device(ep.name.view(), ep.server.handle);
+            endpoints.push(core::move(ep));
+
+
+        }
+    }
+
+    
+    
     while (true)
     {
 

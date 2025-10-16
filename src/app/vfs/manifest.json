@@ -1,0 +1,19 @@
+{
+    "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
+    "id": "vfs-wingos",
+    "type": "exe",
+    "description": "WingOS VFS Service",
+    
+    "props": {
+        "exported": true,
+        "pkgname": "vfs-wingos"
+    },
+    "requires": [
+        "libcore"
+    ],
+    "enableIf": {
+        "sys": [
+            "wingos"
+        ]
+    }
+}

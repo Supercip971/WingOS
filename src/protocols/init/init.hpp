@@ -160,5 +160,19 @@ namespace prot
 
             return ("failed to receive get server response");
         }
+
+        core::Result<InitGetServerResponse> get_server(core::Str name, uint64_t major, uint64_t minor)
+        {
+            InitGetServer get = {
+
+                .name = {},
+                .major = major,
+                .minor = minor,
+            };
+
+            name.copy_to((char *)get.name, 80);
+
+            return get_server(get);
+        }
     };
 } // namespace prot

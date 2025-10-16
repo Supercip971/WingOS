@@ -3,7 +3,7 @@
 #include <libcore/io/writer.hpp>
 #include <libcore/result.hpp>
 #include <libcore/str_writer.hpp>
-
+#include <libcore/fmt/fmt.hpp>
 namespace fmt 
 {
     template<typename Fmt, typename... Args>

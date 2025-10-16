@@ -3,6 +3,7 @@
 #include <sys/types.h>
 
 #include "dev/pci/pci.hpp"
+#include "libcore/fmt/fmt_str.hpp"
 #include "iol/wingos/asset.hpp"
 #include "iol/wingos/space.hpp"
 #include "iol/wingos/syscalls.h"
@@ -912,15 +913,7 @@ int _main(mcx::MachineContext *)
 
                 disks[0].read_write_ptr(&disks[0].devices[0], false, 0, 8, mapped.ptr(), 4096);
 
-                /*
-                for (size_t i = 0; i < 512; i++)
-                {
-                    if (i % 16 == 0)
-                    {
-                        log::log$("\n{}:", i * 8);
-                    }
-                    log::log$(" {}{}", ((uint8_t *)mapped.ptr())[i * 2] | fmt::FMT_HEX, ((uint8_t *)mapped.ptr())[i * 2 + 1] | fmt::FMT_HEX);
-                }*/
+              
 
                 log::log$("NVMe worked !");
             }
@@ -949,17 +942,14 @@ int _main(mcx::MachineContext *)
             ControllerEndpoint ep = {};
             ep.device = &disk;
             ep.uid = dev.sys_id;
-            ep.name = (char*)"nvmeX";
-            ep.name[4] = 'a' + (char)dev.sys_id; // nvme0, nvme1, etc
-
+            ep.name = fmt::format_str("nvme{}", (int)dev.sys_id).unwrap();
+            
             ep.server = Wingos::Space::self().create_ipc_server();
             
             log::log$("Registered endpoint {} with uid {}", ep.name.view(), ep.uid);
             
             vfs.register_device(ep.name.view(), ep.server.handle);
             endpoints.push(core::move(ep));
-
-
         }
     }
 

@@ -745,6 +745,53 @@ core::Result<size_t> ksyscall_ipc_status(SyscallIpcStatus *status)
     return core::Result<size_t>::success(0);
 }
 
+core::Result<size_t> ksyscall_ipc_asset_info(SyscallAssetInfo *info)
+{
+    Space *space = nullptr;
+    if (info->space_handle != 0)
+    {
+        space = try$(Space::space_by_handle(
+            Cpu::current()->currentTask()->space(),
+            info->space_handle));
+    }
+    else
+    {
+        space = Cpu::current()->currentTask()->space();
+    }
+
+    if (space == nullptr)
+    {
+        return core::Result<size_t>::error("no current space");
+    }
+
+    auto asset = try$(Asset::by_handle(space, info->asset_handle));
+
+    info->returned_kind = asset->kind;
+    
+    switch(asset->kind)
+    {
+        case OBJECT_KIND_MEMORY:
+        {
+            info->returned_info.memory.addr = asset->memory.addr;
+            info->returned_info.memory.size = asset->memory.size;
+            break;
+        }
+        case OBJECT_KIND_MAPPING:
+        {
+            info->returned_info.mapping.start = asset->mapping.start;
+            info->returned_info.mapping.end = asset->mapping.end;
+            info->returned_info.mapping.writable = asset->mapping.writable;
+            info->returned_info.mapping.executable = asset->mapping.executable;
+            break;
+        }
+        default: 
+            log::warn$("Asset info for kind {} not implemented", asset->kind);
+            break;
+    }
+    
+    return core::Result<size_t>::success(0);
+}
+
 core::Result<size_t> ksyscall_ipc_x86_port(SyscallIpcX86Port *port)
 {
     Space *space = nullptr;
@@ -899,13 +946,18 @@ core::Result<size_t> syscall_handle(SyscallInterface syscall)
         SyscallIpcStatus *status = try$(syscall_check_ptr<SyscallIpcStatus>(syscall.arg1));
         return ksyscall_ipc_status(status);
     }
-
+    case SYSCALL_ASSET_INFO_ID:
+    {
+        SyscallAssetInfo *info = try$(syscall_check_ptr<SyscallAssetInfo>(syscall.arg1));
+        return ksyscall_ipc_asset_info(info);
+    }
     case SYSCALL_IPC_X86_PORT:
     {
         SyscallIpcX86Port *port = try$(syscall_check_ptr<SyscallIpcX86Port>(syscall.arg1));
         return ksyscall_ipc_x86_port(port);
     }
 
+    
     default:
         return {"Unknown syscall ID"};
     }

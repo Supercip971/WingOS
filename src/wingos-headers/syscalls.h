@@ -434,6 +434,47 @@ static inline SyscallIpcStatus syscall_ipc_status_decode(SyscallInterface interf
     return *status;
 }
 
+// ------- SYSCALL OBJ INFO ----
+
+#define SYSCALL_ASSET_INFO_ID 0x00000011
+typedef struct SyscallAssetInfo
+{
+    uint64_t space_handle;
+    uint64_t asset_handle;
+
+    AssetKind returned_kind; // the kind of the asset
+    union {
+        struct {
+            size_t size; 
+            size_t addr; 
+        } memory;
+
+        struct {
+            size_t start; 
+            size_t end;   
+            uint64_t physical_mem_handle; 
+            bool writable;
+            bool executable;
+        } mapping;
+
+        // other asset types can be added here
+    } returned_info;
+} SyscallAssetInfo;
+
+
+
+static inline SyscallInterface syscall_ipc_asset_info_encode(SyscallAssetInfo* status)
+{
+    return SyscallInterface{SYSCALL_ASSET_INFO_ID, 0, (uintptr_t)status, 0, 0, 0, 0, 0};
+}
+
+static inline SyscallAssetInfo syscall_ipc_asset_info_decode(SyscallInterface interface)
+{
+    SyscallAssetInfo *status = (SyscallAssetInfo*)interface.arg1;
+    return *status;
+}
+
+
 // ------- SYSCALL IPC X86 INB ----
 
 #define SYSCALL_IPC_X86 0x10000 

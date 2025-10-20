@@ -53,6 +53,24 @@ struct MemoryAsset : public UAsset
         return asset;
     }
 
+    static MemoryAsset from_handle(uint64_t handle)
+    {
+        MemoryAsset asset = {};
+        asset.handle = handle;
+
+
+        auto v = sys$ipc_asset_info(0, handle);
+
+        if(v.returned_kind != AssetKind::OBJECT_KIND_MEMORY)
+        {
+            log::warn$("Tried to create MemoryAsset from handle {}, but asset kind is {}", handle, v.returned_kind);
+            return asset; // return empty asset
+        }
+        asset.memory = mcx::MemoryRange::from_begin_len(v.returned_info.memory.addr, v.returned_info.memory.size).growAlign(4096);
+
+        return asset;
+    }
+
     static MemoryAsset own(uint64_t space_handle, uint64_t addr, uint64_t size)
     {
         MemoryAsset asset;

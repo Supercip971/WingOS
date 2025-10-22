@@ -19,6 +19,10 @@ core::Result<CpuContext *> CpuContext::create_empty()
 
     arch::amd64::CpuContextAmd64 *data = try$(core::mem_alloc<arch::amd64::CpuContextAmd64>());
 
+    data->lock.release();
+    data->await_load = false;
+
+    data->await_save = false;
     data->stackframe(arch::amd64::StackFrame{});
     return data;
 }

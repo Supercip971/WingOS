@@ -9,7 +9,8 @@
         "pkgname": "vfs-wingos"
     },
     "requires": [
-        "libcore"
+        "libcore",
+        "gpt"
     ],
     "enableIf": {
         "sys": [

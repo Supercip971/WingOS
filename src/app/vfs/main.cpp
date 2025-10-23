@@ -8,7 +8,7 @@
 #include "libcore/fmt/log.hpp"
 #include "mcx/mcx.hpp"
 #include "wingos-headers/syscalls.h"
-
+#include "fs/gpt/gpt.hpp"
 
 
 struct RegisteredDevicePartition 
@@ -80,6 +80,10 @@ int _main(mcx::MachineContext* )
                     check_partition = true;
 
                     log::log$("(server) registered device: {} with endpoint: {}", device.name, device.endpoint);
+
+                    core::Str v = core::Str(device.name);
+                    auto v2 = Wingos::parse_gpt(v).unwrap();
+                    (void)v2;
                     break;
                 }
                 default:

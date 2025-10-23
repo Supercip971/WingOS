@@ -16,7 +16,8 @@
             "pci": {
                 "class-code": 1,
                 "subclass-code": 8
-            }
+            },
+            "requires": ["vfs"]
         }
     ],
 

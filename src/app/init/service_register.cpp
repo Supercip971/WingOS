@@ -18,7 +18,7 @@ struct RegisteredService {
 } ;
 
 
-core::Vec<RegisteredService> registered_services;
+core::Vec<RegisteredService*> registered_services;
 
 void startup_init_service(Wingos::IpcServer server)
 {
@@ -47,19 +47,24 @@ void startup_init_service(Wingos::IpcServer server)
             {
                 case prot::INIT_REGISTER_SERVER:
                 {
-                    RegisteredService service {};
-                    for(size_t i = 0; i < 80 && msg.received.raw_buffer[i] != 0; i++)
+                    RegisteredService *service = new RegisteredService();
+                    size_t i;
+                    for( i = 0; i < 80-1 && i < msg.received.len; i++)
                     {
-                        service.name[i] = msg.received.raw_buffer[i];
+                        service->name[i] = msg.received.raw_buffer[i];
                     }
-                    service.endpoint = msg.received.data[1].data;
-                    service.major = msg.received.data[2].data;
-                    service.minor = msg.received.data[3].data;
+                    service->name[i] = 0;
+                    
+                    service->endpoint = msg.received.data[1].data;
+                    service->major = msg.received.data[2].data;
+                    service->minor = msg.received.data[3].data;
 
                     registered_services.push(service);
 
 
-                    log::log$("(server) registered service: {} ({}.{}) at {}", service.name, service.major, service.minor, service.endpoint);
+                    log::log$("(server) registered service: {} ({}.{}) at {}", service->name, service->major, service->minor, service->endpoint);
+                    
+                    service_startup_callback(service->name);
                     break;
                 }
                 case prot::INIT_UNREGISTER_SERVER:
@@ -71,27 +76,41 @@ void startup_init_service(Wingos::IpcServer server)
                 {
                     prot::InitGetServerResponse resp {};
                     resp.endpoint = 0;
+
+                    core::Str b = core::Str((char*)msg.received.raw_buffer, msg.received.len-1);
                     for(size_t j = 0; j < registered_services.len(); j++)
                     {
                         auto &service = registered_services[j];
                         bool name_match = true;
-                        for(size_t i = 0; i < 80 && msg.received.raw_buffer[i] != 0; i++)
+
+                        core::Str a = core::Str(service->name);
+                        name_match = (a == b);
+                        if(name_match && service->major == msg.received.data[1].data && service->minor >= msg.received.data[2].data)
                         {
-                            if(service.name[i] != msg.received.raw_buffer[i])
-                            {
-                                name_match = false;
-                                break;
-                            }
-                        }
-                        if(name_match && service.major == msg.received.data[1].data && service.minor >= msg.received.data[2].data)
-                        {
-                            resp.endpoint = service.endpoint;
-                            resp.major = service.major;
-                            resp.minor = service.minor;
+                            resp.endpoint = service->endpoint;
+                            resp.major = service->major;
+                            resp.minor = service->minor;
                             break;
                         }    
                     }
-                    log::log$("(server) get server request: {} ({}.{}) -> {}", resp.endpoint == 0 ? "not found" : "found", msg.received.data[1].data, msg.received.data[2].data, resp.endpoint);
+
+                    if(resp.endpoint == 0)
+                    {
+
+                        core::Str v = core::Str((char*)msg.received.raw_buffer, msg.received.len-1);
+                     
+                        log::log$("(server) service not found: {} ( {} . {} )", v, msg.received.data[1].data, msg.received.data[2].data);
+                        
+                        for(size_t j = 0; j < registered_services.len(); j++)
+                        {
+                            auto &service = registered_services[j];
+                            log::log$("(server) available service: {} ({}.{}) at {}", service->name, service->major, service->minor, service->endpoint);
+                        }
+                    }
+                    else
+                    {
+                        log::log$("(server) found get server request: {} ({}.{}) -> {}",b, msg.received.data[1].data, msg.received.data[2].data, resp.endpoint);
+                    }
                     IpcMessage reply = {};
                     reply.data[0].data = resp.endpoint;
                     reply.data[0].is_asset = false;

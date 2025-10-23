@@ -59,7 +59,7 @@ namespace prot
                 message.raw_buffer[i] = name[i];
             }
             message.raw_buffer[name.len()] = 0;
-            message.len = name.len() + 1;
+            message.len = name.len();
             auto sended_message = connection.send(message, false);
             auto message_handle = sended_message.unwrap();
             if (sended_message.is_error())

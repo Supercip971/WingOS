@@ -19,6 +19,8 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *stackframe)
 {
     //  log("syscall", LOG_INFO, "called syscall higher handler in: {} (stack: {})", stackframe->rip, stackframe->rsp);
 
+    
+    sys_lock.lock();
     Cpu::current()->debug_saved_syscall_stackframe = stackframe->rbp;
     auto res = syscall_handle({
         .id = (uint32_t)stackframe->rax,
@@ -30,10 +32,13 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *stackframe)
         .arg6 = stackframe->r9,
     });
 
+    sys_lock.release();
     if (res.is_error())
     {
+
         log::err$("syscall error: {}", res.error());
         stackframe->rax = -1;
+        return -1;
     }
     else
     {
@@ -69,7 +74,7 @@ core::Result<void> syscall_init_for_current_cpu()
     // ucode + 16 : user code
     Msr::Write(MsrReg::STAR, ((((uint64_t)Gdt::kernel_code_segment_id * 8)) << 32) | (((uint64_t)((Gdt::kernel_data_segment_id * 8) | 3)) << 48));
     Msr::Write(MsrReg::LSTAR, (uint64_t)syscall_handle);
-    Msr::Write(MsrReg::SYSCALL_FLAG_MASK, (uint64_t)(1 << 9) | 0xfffffffe);
+    Msr::Write(MsrReg::SYSCALL_FLAG_MASK, (uint64_t)(1<< 9) |  0xfffffffe);
 
     Cpu::current()->syscall_stack = (void *)((uintptr_t)try$(core::mem_alloc(kernel::kernel_stack_size)) +
                                              kernel::kernel_stack_size - 16); // allocate a stack for syscall handling

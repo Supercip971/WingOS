@@ -22,7 +22,7 @@ namespace prot
         // wingos/disk
         // init
     
-        const char name[80]; 
+        char name[80]; 
         uint64_t major; 
         uint64_t minor;
         MessageHandle endpoint;   
@@ -31,12 +31,12 @@ namespace prot
 
     struct InitUnregisterServer 
     {
-        const char name[80]; 
+         char name[80]; 
     };
 
     struct InitGetServer 
     {
-        const char name[80]; 
+        char name[80]; 
         uint64_t major;
         uint64_t minor;
     };
@@ -131,12 +131,15 @@ namespace prot
             message.data[0].data = INIT_GET_SERVER;
             message.data[1].data = reg.major;
             message.data[2].data = reg.minor;
-
-            for (size_t i = 0; i < 80 && reg.name[i] != 0; i++)
+            size_t i;
+            for ( i = 0; i < 80 && reg.name[i] != 0; i++)
             {
                 message.raw_buffer[i] = reg.name[i];
             }
 
+            message.raw_buffer[i] = 0;
+            message.len = i+1;
+            
             auto sended_message = connection.send(message, true);
             auto message_handle = sended_message.unwrap();
             if (sended_message.is_error())
@@ -152,6 +155,11 @@ namespace prot
                     auto msg = received.unwrap();
                     InitGetServerResponse resp {};
                     resp.endpoint = msg.data[0].data;
+
+                    if(resp.endpoint == 0)
+                    {
+                        return ("server not found");
+                    }
                     resp.major = msg.data[1].data;
                     resp.minor = msg.data[2].data;
                     return (resp);

@@ -23,7 +23,6 @@ KernelIpcServer *register_server(IpcServerHandle handle, uint64_t space_handle)
     server->handle = handle;
 
     server->parent_space = space_handle;
-    server->lock.lock();
     server->connections.clear();
     server->self = nullptr; // will be set later when the asset is created
     server->lock.release();
@@ -37,10 +36,8 @@ KernelIpcServer *register_server(IpcServerHandle handle, uint64_t space_handle)
 KernelIpcServer *create_server(uint64_t space_handle)
 {
     KernelIpcServer *server = new KernelIpcServer();
-    *server = {};
     server->handle = next_free_ipc_server_handle++;
     server->parent_space = space_handle;
-    server->lock.lock();
     server->connections.clear();
     server->self = nullptr; // will be set later when the asset is created
     server->lock.release();
@@ -57,19 +54,24 @@ core::Result<KernelIpcServer *> query_server(IpcServerHandle handle)
     ipc_server_lock.lock();
     for (size_t i = 0; i < registered_servers.len(); i++)
     {
+        log::log$("query_server:- {} {}", handle, registered_servers[i].handle);
         if (registered_servers[i].handle == handle)
         {
+            KernelIpcServer *server = registered_servers[i].server;
             ipc_server_lock.release();
-            return registered_servers[i].server;
+            return server;
         }
     }
     ipc_server_lock.release();
+
+
     return core::Result<KernelIpcServer *>::error("server not found");
 }
 
 void unregister_server(IpcServerHandle handle, uint64_t space_handle)
 {
     ipc_server_lock.lock();
+    log::log$("unregister_server:- {} {}", handle, space_handle);
     for (size_t i = 0; i < registered_servers.len(); i++)
     {
         if (registered_servers[i].handle == handle && registered_servers[i].server->parent_space == space_handle)
@@ -177,7 +179,7 @@ core::Result<IpcMessageServer> update_handle_from_client_to_server(IpcConnection
             auto asset_ptr_res = Asset::by_handle_ptr(client_space, asset_handle);
             if (asset_ptr_res.is_error())
             {
-                return core::Result<IpcMessageServer>::error("asset not found in server space");
+                return core::Result<IpcMessageServer>::error("asset not found in client space");
             }
 
             auto asset_ptr = asset_ptr_res.unwrap();

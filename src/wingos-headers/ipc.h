@@ -47,6 +47,8 @@ typedef uint64_t IpcConnectionHandle;
             for (size_t i = 0; i < 8; i++)
             {
                 msg.data[i] = other.data[i];
+                msg.data[i].is_asset = other.data[i].is_asset;
+                msg.data[i].data = other.data[i].data;
             }
             for (size_t i = 0; i < math::alignUp((size_t)other.len, sizeof(uint64_t))/ sizeof(uint64_t); i++)
             {

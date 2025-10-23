@@ -18,15 +18,15 @@ using IpcMessageClient = IpcMessageContent;
 
 struct IpcMessagePair
 {
-    uint64_t data[MAX_IPC_DATA_SIZE / sizeof(uint64_t)];
+    uint64_t buffer[MAX_IPC_BUFFER_SIZE / sizeof(uint64_t)];
     uint64_t len;
 
     IpcMessageClient client; // the message from the client's point of view
     IpcMessageServer server; // the message from the server's point of view
 
-    static IpcMessagePair const &from_client(IpcMessage &msg)
+    static IpcMessagePair from_client(IpcMessage &msg)
     {
-        static IpcMessagePair pair;
+        IpcMessagePair pair;
         pair.client.message_id = msg.message_id;
         pair.client.flags = msg.flags;
 
@@ -34,19 +34,19 @@ struct IpcMessagePair
         pair.len = msg.len;
         for (size_t i = 0; i < 8; i++)
         {
-            pair.data[i] = msg.data[i].data;
+            pair.client.data[i] = msg.data[i];
         }
 
         for (size_t i = 0; i < math::alignUp((uint64_t)msg.len, sizeof(uint64_t)) / sizeof(uint64_t); i++)
         {
-            pair.data[i+8] = msg.buffer[i];
+            pair.buffer[i] = msg.buffer[i];
         }
         return pair;
     }
 
-    static IpcMessagePair const &from_server(IpcMessage &msg)
+    static IpcMessagePair from_server(IpcMessage &msg)
     {
-        static IpcMessagePair pair;
+        IpcMessagePair pair;
         pair.server.message_id = msg.message_id;
         pair.server.flags = msg.flags;
 
@@ -54,12 +54,12 @@ struct IpcMessagePair
         pair.len = msg.len;
         for (size_t i = 0; i < 8; i++)
         {
-            pair.data[i] = msg.data[i].data;
+            pair.server.data[i] = msg.data[i];
         }
 
         for (size_t i = 0; i < math::alignUp((unsigned long)msg.len, sizeof(uint64_t)) / sizeof(uint64_t); i++)
         {
-            pair.data[i+8] = msg.buffer[i];
+            pair.buffer[i] = msg.buffer[i];
         }
         return pair;
     }
@@ -73,13 +73,12 @@ struct IpcMessagePair
 
         for (size_t i = 0; i < 8; i++)
         {
-            msg.data[i].data = data[i];
-            msg.data[i].is_asset = false; // assuming no assets in this message
+            msg.data[i] = client.data[i];
         }
 
         for (size_t i = 0; i < math::alignUp(len, sizeof(uint64_t)) / sizeof(uint64_t); i++)
         {
-            msg.buffer[i] = data[i+8];
+            msg.buffer[i] = buffer[i];
         }
 
         return msg;
@@ -94,13 +93,12 @@ struct IpcMessagePair
 
         for (size_t i = 0; i < 8; i++)
         {
-            msg.data[i].data = data[i];
-            msg.data[i].is_asset = false; // assuming no assets in this message
+            msg.data[i] = server.data[i];
         }
 
         for (size_t i = 0; i < math::alignUp(len, sizeof(uint64_t))/ sizeof(uint64_t); i++)
         {
-            msg.buffer[i] = data[i+8];
+            msg.buffer[i] = buffer[i];
         }
 
         return msg;
@@ -123,6 +121,8 @@ struct IpcConnection
 {
     uint64_t message_alloc_id;
     core::Lock lock;
+
+    // FIXME: store maybe space as ptr for performance ?
     uint64_t client_space_handle; // the space handle of the client that created this connection
     uint64_t server_space_handle; // the space handle of the server that created this connection
 

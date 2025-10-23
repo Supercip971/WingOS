@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include "libcore/type-utils.hpp"
 #include "wingos-headers/ipc.h"
+#include "wingos-headers/asset.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -59,7 +59,7 @@ For now the kernel is still in development, but it has a few key features:
 - [ ] Hello File!
     - [x] Nvme disk support
     - [x] service registry
-    - [ ] (WIP) Partition support (GPT)
+    - [x] Partition support (GPT)
     - [ ] Filesystem support (ext4)
     - [ ] VFS support
 - [ ] Graphics support (VESA, framebuffer, ...)

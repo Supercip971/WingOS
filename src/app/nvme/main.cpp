@@ -2,19 +2,20 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include "dev/pci/pci.hpp"
 #include "libcore/fmt/fmt_str.hpp"
+#include "libcore/str_writer.hpp"
+
+#include "dev/pci/pci.hpp"
 #include "iol/wingos/asset.hpp"
 #include "iol/wingos/space.hpp"
 #include "iol/wingos/syscalls.h"
 #include "libcore/fmt/flags.hpp"
 #include "libcore/fmt/log.hpp"
-#include "protocols/vfs/vfs.hpp"
 #include "libcore/type/trait.hpp"
-#include "libcore/str_writer.hpp"
-#include "protocols/disk/disk.hpp"
 #include "math/align.hpp"
 #include "mcx/mcx.hpp"
+#include "protocols/disk/disk.hpp"
+#include "protocols/vfs/vfs.hpp"
 #include "spec.hpp"
 #include "wingos-headers/asset.h"
 #include "wingos-headers/syscalls.h"
@@ -520,16 +521,15 @@ public:
     }
 };
 
-
-struct ControllerEndpoint 
+struct ControllerEndpoint
 {
     uint32_t uid;
-    core::WStr name; 
-    NvmeController* controller;
+    core::WStr name;
+    NvmeController *controller;
     uint64_t device_id;
     IpcServerHandle handle;
-   Wingos::IpcServer server; 
-   core::Vec<Wingos::IpcConnection*> connections;
+    Wingos::IpcServer server;
+    core::Vec<Wingos::IpcConnection *> connections;
 };
 
 int _main(mcx::MachineContext *)
@@ -560,8 +560,6 @@ int _main(mcx::MachineContext *)
 
                 disks[0].read_write_ptr(&disks[0].devices[0], false, 0, 8, mapped.ptr(), 4096);
 
-              
-
                 log::log$("NVMe worked !");
             }
             else
@@ -571,10 +569,9 @@ int _main(mcx::MachineContext *)
         }
     }
 
+    auto v = prot::VfsConnection::connect();
 
-   auto v = prot::VfsConnection::connect();
-
-    if(v.is_error())
+    if (v.is_error())
     {
         log::err$("Failed to connect to VFS: {}", v.error());
         return 1;
@@ -582,23 +579,21 @@ int _main(mcx::MachineContext *)
 
     auto vfs = v.unwrap();
 
-    for(auto &disk: disks)
+    for (auto &disk : disks)
     {
-        for(auto &dev: disk.devices)
+        for (auto &dev : disk.devices)
         {
             ControllerEndpoint ep = {};
             ep.controller = &disk;
             ep.uid = dev.sys_id;
             ep.name = fmt::format_str("nvme{}", (int)dev.sys_id).unwrap();
-            
+
             ep.server = Wingos::Space::self().create_ipc_server();
-            
+
             log::log$("Registered endpoint {} with uid {} (ip: {})", ep.name.view(), ep.uid, ep.server.addr);
 
-
-
             auto init = prot::InitConnection::connect();
-            if(init.is_error())
+            if (init.is_error())
             {
                 log::err$("Failed to connect to init for registering nvme endpoint: {}", init.error());
                 continue;
@@ -607,7 +602,7 @@ int _main(mcx::MachineContext *)
             auto init_conn = init.unwrap();
 
             prot::InitRegisterServer sreg = {
-                
+
             };
             sreg.major = 1;
             sreg.minor = 0;
@@ -615,42 +610,40 @@ int _main(mcx::MachineContext *)
             ep.name.view().copy_to(sreg.name, 80);
 
             auto r = init_conn.register_server(sreg);
-            if(r.is_error())
+            if (r.is_error())
             {
                 log::err$("Failed to register nvme endpoint {} with init: {}", ep.name.view(), r.error());
                 continue;
             }
-            
-            
-            
+
             vfs.register_device(ep.name.view(), ep.server.addr);
             endpoints.push(core::move(ep));
         }
     }
 
-
     log::log$("Entering main NVMe IPC loop");
-    
-    while(true){
-    for(auto& ep : endpoints)
+
+    while (true)
     {
-        auto conn = ep.server.accept();
-        if(!conn.is_error())
+        for (auto &ep : endpoints)
         {
-            log::log$("Accepted connection on endpoint {}", ep.name.view());
-            ep.connections.push(conn.unwrap());
-        }
+            auto conn = ep.server.accept();
+            if (!conn.is_error())
+            {
+                log::log$("Accepted connection on endpoint {}", ep.name.view());
+                ep.connections.push(conn.unwrap());
+            }
 
-        auto received = ep.server.receive();
-        if(received.is_error())
-        {
-            continue;   
-        }   
+            auto received = ep.server.receive();
+            if (received.is_error())
+            {
+                continue;
+            }
 
-        auto msg = received.unwrap();
+            auto msg = received.unwrap();
 
-        switch(msg.received.data[0].data)
-        {
+            switch (msg.received.data[0].data)
+            {
             case prot::DISK_READ_SECTORS:
             {
                 uint64_t lba = msg.received.data[1].data;
@@ -659,17 +652,31 @@ int _main(mcx::MachineContext *)
                 auto asset = Wingos::MemoryAsset::from_handle(asset_handle);
 
                 uintptr_t buffer_ptr = asset.memory.start();
-                log::log$("Received read sectors request: lba {}, nlb {}, buffer ptr {}", lba, size, buffer_ptr | fmt::FMT_HEX);
-                auto& dev = ep.controller->devices[ep.device_id]; // for simplicity only first device
-                auto res = ep.controller->read_write_ptr(&dev, false, lba, size / 512, (void*)(buffer_ptr + USERSPACE_VIRT_BASE), size);
+                auto &dev = ep.controller->devices[ep.device_id]; // for simplicity only first device
 
-                if(res.is_error())
+                if (size >= 512)
                 {
-                    log::err$("Failed to read sectors: {}", res.error());
+                    for (size_t i = 0; i < size; i += 512)
+                    {
+               
+                        auto res = ep.controller->read_write_ptr(&dev, false, lba + (i / 512), 1, (void *)(buffer_ptr + USERSPACE_VIRT_BASE + i  ), 512);
+
+                        if (res.is_error())
+                        {
+                            log::err$("Failed to read sectors: {}", res.error());
+                            break;
+                        }
+                    }
                 }
-                else
+                else 
                 {
-                    log::log$("Read sectors successful");
+                    auto res = ep.controller->read_write_ptr(&dev, false, lba, size/512, (void *)(buffer_ptr + USERSPACE_VIRT_BASE), size);
+
+                    if (res.is_error())
+                    {
+                        log::err$("Failed to read sectors: {}", res.error());
+                        break;
+                    }
                 }
 
                 IpcMessage reply = {};
@@ -678,7 +685,7 @@ int _main(mcx::MachineContext *)
                 reply.data[1].is_asset = true;
                 reply.data[1].asset_handle = asset.handle;
 
-                ep.server.reply(core::move(msg), reply);
+                ep.server.reply(core::move(msg), reply).assert();
                 break;
             }
             case prot::DISK_WRITE_SECTORS:
@@ -689,11 +696,10 @@ int _main(mcx::MachineContext *)
                 auto asset = Wingos::MemoryAsset::from_handle(asset_handle);
 
                 uintptr_t buffer_ptr = asset.memory.start();
-                log::log$("Received write sectors request: lba {}, nlb {}, buffer ptr {}", lba, size, buffer_ptr | fmt::FMT_HEX);
-                auto& dev = ep.controller->devices[ep.device_id]; // for simplicity only first device
-                auto res = ep.controller->read_write_ptr(&dev, true, lba, size, (void*)(buffer_ptr + USERSPACE_VIRT_BASE), size);
+                auto &dev = ep.controller->devices[ep.device_id]; // for simplicity only first device
+                auto res = ep.controller->read_write_ptr(&dev, true, lba, size, (void *)(buffer_ptr + USERSPACE_VIRT_BASE), size);
 
-                if(res.is_error())
+                if (res.is_error())
                 {
                     log::err$("Failed to write sectors: {}", res.error());
                 }
@@ -706,15 +712,14 @@ int _main(mcx::MachineContext *)
                 reply.data[0].data = size; // number of sectors written
                 reply.data[0].is_asset = false;
 
-                ep.server.reply(core::move(msg), reply);
+                ep.server.reply(core::move(msg), reply).assert();
                 break;
-         }
+            }
 
             default:
                 log::warn$("Unknown IPC command received: {}", msg.received.data[0].data | fmt::FMT_HEX);
                 break;
+            }
         }
-
     }
-}
 }

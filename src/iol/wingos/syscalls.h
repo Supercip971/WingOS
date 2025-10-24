@@ -201,7 +201,7 @@ static inline SyscallIpcStatus sys$ipc_status(uint64_t space_handle, IpcConnecti
 
 static inline SyscallAssetInfo sys$ipc_asset_info(uint64_t space_handle, uint64_t asset_handle)
 {
-    SyscallAssetInfo info = {space_handle, asset_handle, AssetKind::OBJECT_KIND_UNKNOWN, {0}};
+    SyscallAssetInfo info = {space_handle, asset_handle, AssetKind::OBJECT_KIND_UNKNOWN, {}};
     SyscallInterface interface = syscall_ipc_asset_info_encode(&info);
     uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
         (void)result;

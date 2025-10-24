@@ -14,8 +14,8 @@ class Vec
 {
 
     T *_data = nullptr;
-    size_t _count = 0;
-    size_t _capacity = 0;
+    long _count = 0;
+    long _capacity = 0;
 
 public:
     using Type = T;
@@ -33,7 +33,7 @@ public:
         _count = 0;
         _capacity = 0;
         (reserve(other._capacity));
-        for (size_t i = 0; i < other._count; i++)
+        for (long i = 0; i < other._count; i++)
         {
             (push(other._data[i]));
         }
@@ -55,7 +55,7 @@ public:
         }
         release();
         (reserve(other._capacity));
-        for (size_t i = 0; i < other._count; i++)
+        for (long i = 0; i < other._count; i++)
         {
             (push(other._data[i]));
         }
@@ -75,7 +75,7 @@ public:
 
     void clear()
     {
-        for (size_t i = 0; i < _count; i++)
+        for (long i = 0; i < _count; i++)
         {
             _data[i].~T();
         }
@@ -84,11 +84,11 @@ public:
 
     Result<void> reserve(size_t capacity)
     {
-        size_t ncap = core::max(capacity, 16ul);
+        long ncap = core::max(capacity, 16ul);
         if (ncap > _capacity)
         {
 
-            T *new_data = try$(core::mem_realloc<T>(_data, ncap * 2));
+            T *new_data = try$(core::mem_realloc<T>(_data, ncap));
             _data = new_data;
             _capacity = ncap;
         }
@@ -115,7 +115,7 @@ public:
     Result<void> push(Vec<T> &&arr)
     {
         try$(reserve(_count + arr.len()));
-        for (size_t i = 0; i < arr.len(); i++)
+        for (long i = 0; i < arr.len(); i++)
         {
             new (&_data[_count + i]) T(core::move(arr[i]));
         }
@@ -178,14 +178,13 @@ public:
 
     T &&pop(size_t id)
     {
-        if (id >= _count)
+        if (id >= (size_t)_count)
         {
-            //  abort();
             return core::move(_data[0]);
         }
 
         T &&value = core::move(_data[id]);
-        for (size_t i = id; i < _count - 1; i++)
+        for (long i = id; i < _count - 1; i++)
         {
             _data[i] = core::move(_data[i + 1]);
         }
@@ -227,7 +226,7 @@ public:
 
     constexpr bool contain(const T &value) const
     {
-        for (size_t i = 0; i < _count; i++)
+        for (long i = 0; i < _count; i++)
         {
             if (_data[i] == value)
             {

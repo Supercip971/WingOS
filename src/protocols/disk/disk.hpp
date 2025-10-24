@@ -34,7 +34,7 @@ public:
         message.data[0].data = DISK_READ_SMALL;
         message.data[1].data = lba;
         message.data[2].data = len;
-        auto sended_message = connection.send(message);
+        auto sended_message = connection.send(message, true);
         auto message_handle = sended_message.unwrap();
         if (sended_message.is_error())
         {

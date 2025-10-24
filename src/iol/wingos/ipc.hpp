@@ -51,10 +51,12 @@ struct IpcServer : public UAsset
         auto res = sys$ipc_receive_server(block, space_handle, this->handle, connection_handle, &res_message);
         if (res.contain_response)
         {
+
             MessageServerReceived msg;
             msg.received = core::move(res_message);
             msg.connection = new IpcConnection();
             msg.connection->handle = res.connection_handle;
+            msg.received.message_id = res.returned_msg_handle;
             return core::Result<MessageServerReceived>::success(core::move(msg));
         }
         return core::Result<MessageServerReceived>::error("failed to receive message");
@@ -77,7 +79,7 @@ struct IpcServer : public UAsset
     core::Result<void> reply(MessageServerReceived &&to, IpcMessage &message)
     {
 
-        sys$ipc_reply(space_handle, this->handle, to.connection->handle, to.received.message_id, &message);
+        sys$ipc_reply(space_handle, this->addr, to.connection->handle, to.received.message_id, &message);
         return {};
     }
 };
@@ -85,7 +87,10 @@ struct IpcServer : public UAsset
 struct IpcClient : public UAsset
 {
 
+    public:
     uint64_t associated_space_handle; // the space the client belongs to
+
+
 
     static IpcClient connect(uint64_t space_handle, uint64_t server_address, bool block = false, uint64_t flags = 0)
     {
@@ -115,6 +120,22 @@ struct IpcClient : public UAsset
     {
         while (true)
         {
+     //       log::log$("waiting for accept... {}", associated_space_handle);
+            // dump stack trace
+
+           // void * rbp = __builtin_frame_address(0);
+/*            log::log$("stack trace:");
+            for (size_t i = 0; i < 10; i++)
+            {
+                if (rbp == nullptr)
+                {
+                    break;
+                }
+                uintptr_t ret_addr = *((uintptr_t *)rbp + 1);
+                log::log$("  frame {}: {}", i, ret_addr | fmt::FMT_HEX);
+                rbp = *((void **)rbp);
+            }*/
+            
             auto res = sys$ipc_status(associated_space_handle, handle);
             if (res.returned_is_accepted)
             {
@@ -147,6 +168,7 @@ struct IpcClient : public UAsset
     {
         IpcMessage res;
         SyscallIpcClientReceiveReply receive = sys$ipc_receive_reply_client(block, associated_space_handle, handle, message_handle, &res);
+        
         if (receive.contain_response)
         {
             return core::Result<IpcMessage>::success(core::move(res));
@@ -154,4 +176,5 @@ struct IpcClient : public UAsset
         return core::Result<IpcMessage>::error("failed to receive reply");
     }
 };
+
 } // namespace Wingos

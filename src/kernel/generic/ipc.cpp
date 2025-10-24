@@ -36,6 +36,7 @@ KernelIpcServer *register_server(IpcServerHandle handle, uint64_t space_handle)
 KernelIpcServer *create_server(uint64_t space_handle)
 {
     KernelIpcServer *server = new KernelIpcServer();
+    *server = {};
     server->handle = next_free_ipc_server_handle++;
     server->parent_space = space_handle;
     server->connections.clear();
@@ -54,7 +55,6 @@ core::Result<KernelIpcServer *> query_server(IpcServerHandle handle)
     ipc_server_lock.lock();
     for (size_t i = 0; i < registered_servers.len(); i++)
     {
-        log::log$("query_server:- {} {}", handle, registered_servers[i].handle);
         if (registered_servers[i].handle == handle)
         {
             KernelIpcServer *server = registered_servers[i].server;
@@ -63,7 +63,6 @@ core::Result<KernelIpcServer *> query_server(IpcServerHandle handle)
         }
     }
     ipc_server_lock.release();
-
 
     return core::Result<KernelIpcServer *>::error("server not found");
 }
@@ -123,19 +122,20 @@ core::Result<MessageHandle> _server_send_message(IpcConnection *connection, IpcM
     }
 
     ReceivedIpcMessage received_message = {};
-    received_message.is_call = is_call; 
+    received_message.is_call = is_call;
     received_message.has_reply = false;
-   
+
     received_message.server_id = connection->server_handle; // the space handle of the client that created this connection
     received_message.message_sended = IpcMessagePair::from_client(*message);
 
     connection->lock.lock();
     received_message.uid = connection->message_alloc_id++; // TODO: set this to a unique id
 
+    auto uid = received_message.uid;
     connection->message_sent.push(received_message);
     connection->lock.release();
 
-    return received_message.uid; // return the unique id of the message
+    return uid; // return the unique id of the message
 }
 
 core::Result<MessageHandle> server_send_message(IpcConnection *connection, IpcMessage *message, bool expect_reply)
@@ -279,8 +279,9 @@ core::Result<ReceivedIpcMessage> client_receive_message(IpcConnection *connectio
         if (connection->message_sent[i].has_reply)
         {
             auto message = connection->message_sent[i];
-            if (!connection->message_sent[i].is_call)
+            if (connection->message_sent[i].is_call)
             {
+
                 connection->message_sent.pop(i);
             }
             connection->lock.release();
@@ -306,8 +307,7 @@ core::Result<ReceivedIpcMessage> client_receive_response(IpcConnection *connecti
     {
         if (connection->message_sent[i].uid == handle && connection->message_sent[i].has_reply)
         {
-            auto message = connection->message_sent[i];
-            connection->message_sent.pop(i);
+            auto message = connection->message_sent.pop(i);
             connection->lock.release();
 
             message.message_responded.client = try$(update_handle_from_server_to_client(connection, message.message_responded.server));
@@ -339,6 +339,7 @@ core::Result<void> server_reply_message(IpcConnection *connection, MessageHandle
     for (size_t i = 0; i < connection->message_sent.len(); i++)
     {
         auto &from_ref = connection->message_sent[i];
+
         if (from_ref.uid == from)
         {
             from_ref.has_reply = true;

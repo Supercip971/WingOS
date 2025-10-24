@@ -21,6 +21,7 @@ struct IpcMessagePair
     uint64_t buffer[MAX_IPC_BUFFER_SIZE / sizeof(uint64_t)];
     uint64_t len;
 
+
     IpcMessageClient client; // the message from the client's point of view
     IpcMessageServer server; // the message from the server's point of view
 

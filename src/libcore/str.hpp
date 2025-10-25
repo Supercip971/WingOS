@@ -4,10 +4,14 @@
 #include <libcore/type-utils.hpp>
 #include <stddef.h>
 
+
 #include "libcore/ds/vec.hpp"
+
+
 
 namespace core
 {
+
 class Str : public MemView<char>
 {
 
@@ -91,6 +95,23 @@ public:
 
         return substr(last);
     }
+
+
+    constexpr Str remove_after(char v) const
+    {
+        int last = _len;
+
+        for (size_t i = 0; i < _len; i++)
+        {
+            if (_data[i] == v)
+            {
+                last = i;
+                break;
+            }
+        }
+
+        return substr(0, last);
+    }
     constexpr Str sub_penultimate_char(char v) const
     {
         int penultimate = _len + 1;
@@ -124,6 +145,7 @@ public:
         return true;
     }
 
+
     core::Vec<Str> split(char c) const
     {
         core::Vec<Str> result;
@@ -147,7 +169,7 @@ public:
         }
 
         return result;
-    }
+    };
 
     constexpr Str trimmed() const
     {
@@ -177,7 +199,7 @@ public:
         size_t len = _len;
         if (len >= buffer_len)
         {
-            len = buffer_len - 1;
+            len = buffer_len-1;
         }
         for (size_t i = 0; i < len; i++)
         {

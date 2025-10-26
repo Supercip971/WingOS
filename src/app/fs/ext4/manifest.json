@@ -1,0 +1,19 @@
+{
+    "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
+    "id": "ext4-wingos",
+    "type": "exe",
+    "description": "WingOS App",
+    
+    "props": {
+        "exported": true,
+        "pkgname": "ext4"
+    },
+    "requires": [
+        "libcore"
+    ],
+    "enableIf": {
+        "sys": [
+            "wingos"
+        ]
+    }
+}

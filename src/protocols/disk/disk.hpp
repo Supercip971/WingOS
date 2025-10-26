@@ -162,5 +162,15 @@ public:
         log::log$("Connected to disk server at address: {} ({})", v.endpoint, conn.connection.associated_space_handle);
         return conn;
     }
+
+    static core::Result<DiskConnection> connect(IpcServerHandle disk_endpoint)
+    {
+        DiskConnection conn;
+        conn.connection = Wingos::Space::self().connect_to_ipc_server(disk_endpoint);
+
+        conn.connection.wait_for_accept();
+        log::log$("Connected to disk server at address: {} ({})", disk_endpoint, conn.connection.associated_space_handle);
+        return conn;
+    }
 };
 } // namespace prot

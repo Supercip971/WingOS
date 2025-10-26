@@ -1,42 +1,88 @@
 #include "arch/generic/syscalls.h"
+#include "fs/gpt/gpt.hpp"
 #include "iol/wingos/space.hpp"
-#include "protocols/vfs/vfs.hpp"
-#include "protocols/init/init.hpp"
-
-
 #include "iol/wingos/syscalls.h"
 #include "libcore/fmt/log.hpp"
 #include "mcx/mcx.hpp"
+#include "protocols/init/init.hpp"
+#include "libcore/fmt/fmt_str.hpp"
+#include "protocols/vfs/vfs.hpp"
 #include "wingos-headers/syscalls.h"
-#include "fs/gpt/gpt.hpp"
-
-
-struct RegisteredDevicePartition 
+#include "protocols/vfs/fsManager.hpp"
+struct RegisteredDevicePartition
 {
+    size_t begin;
+    size_t end;
+
+
     uint64_t id;
     IpcServerHandle endpoint;
-    char name[80];
+    core::WStr part_name;
+    core::WStr part_dev_name;
+    bool has_fs;
+    core::WStr fs_name;
+    IpcServerHandle fs_endpoint;
 };
 
-struct RegisteredDevice {
+struct RegisteredDevice
+{
     char name[80];
-    IpcServerHandle endpoint;   
+    IpcServerHandle endpoint;
     bool has_partitions;
     core::Vec<RegisteredDevicePartition> partitions;
 };
 
-int _main(mcx::MachineContext* )
+struct RegisteredFs
+{
+    char name[80];
+    prot::DiskFsManagerConnection endpoint;
+};
+core::Vec<Wingos::IpcConnection *> connections;
+core::Vec<RegisteredDevice> registered_services;
+core::Vec<RegisteredFs> registered_fs;
+
+void try_create_disk_endpoint()
+{
+    log::log$("rechecking mounted filesystems...");
+    for (auto &device : registered_services)
+    {
+
+        for (auto &part : device.partitions)
+        {
+            if (part.has_fs)
+            {
+                continue;
+            }
+
+            for (auto &fs : registered_fs)
+            {
+
+                log::log$("trying to mount partition {} of device {} with fs {} on {}", part.part_name.view(), part.part_dev_name.view(), core::Str(fs.name), device.endpoint);
+
+                auto res = fs.endpoint.mount_if_device_valid(core::Str(device.name), device.endpoint, part.begin, part.end, part.id).unwrap();
+
+                if(res.success)
+                {
+                    part.has_fs = true;
+                    part.fs_endpoint = res.fs_endpoint;
+                    part.fs_name = core::WStr::copy(core::Str(fs.name));
+                    log::log$("detected partition {} of device {} with fs {}", part.part_name.view(), part.part_dev_name.view(), part.fs_name.view());
+                    break;
+                }
+            }
+        }
+    }
+}
+int _main(mcx::MachineContext *)
 {
 
     // attempt connection to server ID 0
-  
 
     auto iconn = prot::InitConnection::connect().unwrap();
- 
 
     prot::InitRegisterServer reg = {};
-    auto server= Wingos::Space::self().create_ipc_server(false);
-    core::Str("vfs").copy_to((char*)reg.name, 80);
+    auto server = Wingos::Space::self().create_ipc_server(false);
+    core::Str("vfs").copy_to((char *)reg.name, 80);
 
     reg.major = 1;
     reg.minor = 0;
@@ -44,11 +90,12 @@ int _main(mcx::MachineContext* )
 
     iconn.register_server(reg).unwrap();
 
-    core::Vec<Wingos::IpcConnection *> connections;
-    core::Vec<RegisteredDevice> registered_services;
+    connections = core::Vec<Wingos::IpcConnection *>();
+    registered_services = core::Vec<RegisteredDevice>();
+    registered_fs = core::Vec<RegisteredFs>();
 
-
-    while(true){ 
+    while (true)
+    {
         auto conn = server.accept();
         if (!conn.is_error())
         {
@@ -58,46 +105,85 @@ int _main(mcx::MachineContext* )
 
         auto received = server.receive();
 
-        
         if (!received.is_error())
         {
             auto msg = received.unwrap();
-            
-            bool check_partition = false;
-            switch(msg.received.data[0].data)
+
+            bool recheck_mount = false;
+            switch (msg.received.data[0].data)
             {
-                case prot::VFS_REGISTER:
+            case prot::VFS_REGISTER:
+            {
+                
+                RegisteredDevice device{};
+                for (size_t i = 0; i < 80 && msg.received.raw_buffer[i] != 0; i++)
                 {
-                    RegisteredDevice device {};
-                    for(size_t i = 0; i < 80 && msg.received.raw_buffer[i] != 0; i++)
-                    {
-                        device.name[i] = msg.received.raw_buffer[i];
-                    }
-                    device.endpoint = msg.received.data[1].data;
-                    device.has_partitions = false;
-
-                    registered_services.push(device);
-                    check_partition = true;
-
-                    log::log$("(server) registered device: {} with endpoint: {}", device.name, device.endpoint);
-
-                    core::Str v = core::Str(device.name);
-                    auto v2 = Wingos::parse_gpt(v).unwrap();
-                    (void)v2;
-                    break;
+                    device.name[i] = msg.received.raw_buffer[i];
                 }
-                default:
+                device.endpoint = msg.received.data[1].data;
+                device.has_partitions = false;
+
+                recheck_mount = true;
+
+                log::log$("(server) registered device: {} with endpoint: {}", device.name, device.endpoint);
+
+                core::Str v = core::Str(device.name);
+                auto v2 = Wingos::parse_gpt(v).unwrap();
+
+
+                size_t part_id = 0;
+                for(auto& entry : v2.entries)
                 {
-                    log::log$("(server) unknown message type: {}", msg.received.data[0].data);
-                    break;
+                    RegisteredDevicePartition part{};
+                    part.id = part_id++;   
+                    part.endpoint = device.endpoint;
+                    core::WStr part_name = fmt::format_str("{}-{}", device.name, part.id).unwrap();
+                    part.part_dev_name = core::WStr::copy(part_name.view());
+                    part.part_name = core::WStr::copy(entry.name.view());
+                    part.has_fs = false;
+                    part.begin = entry.entry->lba_start;
+                    part.end = entry.entry->lba_end;
+                    
+
+
+                    log::log$("(server) detected partition: {} -> (LBA {} - {})", part.part_name.view(), part.part_dev_name.view(),  part.begin, part.end);
+
+                    device.partitions.push(core::move(part));
                 }
+
+                registered_services.push(core::move(device));
+                (void)v2;
+
+                recheck_mount = true;
+                break;
+            }
+            case prot::VFS_REGISTER_FS:
+            {
+                RegisteredFs filesystem{};
+                for (size_t i = 0; i < msg.received.len; i++)
+                {
+                    filesystem.name[i] = msg.received.raw_buffer[i];
+                }
+                filesystem.endpoint = prot::DiskFsManagerConnection::connect(msg.received.data[1].data).unwrap();
+
+                registered_fs.push(filesystem);
+
+                log::log$("(server) registered filesystem: {} with endpoint: {}", core::Str(filesystem.name), msg.received.data[1].data);
+
+                recheck_mount = true;
+                break;
+            }
+            default:
+            {
+                log::log$("(server) unknown message type: {}", msg.received.data[0].data);
+                break;
+            }
             }
 
-            if(check_partition)
+            if (recheck_mount)
             {
-                log::log$("(server) checking partitions for device: {}", registered_services[registered_services.len() - 1].name);
+                try_create_disk_endpoint();
             }
         }
     }
-
 }

@@ -63,7 +63,7 @@ inline consteval core::Str color_from_filename(const char *s)
     size_t hash = 0;
     for (size_t i = 0; i < str3.len(); i++)
     {
-        hash = hash * 31 + str3[i];
+        hash = hash * 31 + (str3[i] - 'a' + 1);
     }
     const char *colors[] = {
         "2", "3", "4",  "6", "9", "10", "11", "12", "13", "14",

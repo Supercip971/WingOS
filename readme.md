@@ -60,6 +60,7 @@ For now the kernel is still in development, but it has a few key features:
     - [x] Nvme disk support
     - [x] service registry
     - [x] Partition support (GPT)
+    - [x] Detect filesystems, and load corresponding filesystem drivers
     - [ ] Filesystem support (ext4)
     - [ ] VFS support
 - [ ] Graphics support (VESA, framebuffer, ...)

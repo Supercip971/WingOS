@@ -11,7 +11,6 @@ core::Result<Wingos::GPTDiskParseResult> Wingos::parse_gpt(core::Str& device)
 
     Wingos::MemoryAsset header_asset = (Wingos::Space::self().allocate_physical_memory(4096));
 
-
     
     auto read_res = connection.read(header_asset, 1, 512);
 
@@ -66,6 +65,12 @@ core::Result<Wingos::GPTDiskParseResult> Wingos::parse_gpt(core::Str& device)
             part_name.append(core::Str((char*)&(entry->name[j]), 1)); // convert char16_t to char
         }
         log::log$("Found partition: {} (LBA {} - {})", part_name.view(), entry->lba_start, entry->lba_end);
+
+        GPTDiskParseEntry parse_entry = {};
+        parse_entry.name = core::move(part_name);
+        parse_entry.entry = entry;
+        result.entries.push(core::move(parse_entry));
+        
     }
 
 

@@ -7,6 +7,11 @@
         {
             "name": "hello-world",
             "path": "/bin/hello-wingos"
+        },
+        {
+            "name": "ext4-wingos",
+            "path": "/bin/ext4-wingos",
+            "requires": ["vfs"]
         }
     ],
     "drivers": [

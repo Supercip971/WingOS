@@ -21,6 +21,7 @@ namespace prot
         VFS_RENAME = 10,
         VFS_GET_INFO = 11,
         VFS_SET_INFO = 12,
+        VFS_REGISTER_FS = 13,
     };
 
 
@@ -28,6 +29,12 @@ namespace prot
     {
         core::Str device_name; 
         IpcServerHandle device_endpoint;
+    };
+
+    struct VfsRegisterFs 
+    {
+        core::Str fs_name; 
+        IpcServerHandle fs_endpoint;
     };
 
     struct VfsMount 
@@ -84,6 +91,33 @@ namespace prot
             vfs_conn.connection =  Wingos::Space::self().connect_to_ipc_server(handle);
             vfs_conn.connection.wait_for_accept();
             return core::Result<VfsConnection>::success(core::move(vfs_conn));
+        }
+
+
+        core::Result<void> register_fs(core::Str name, IpcServerHandle endpoint)
+        {
+            IpcMessage message = {};
+            message.data[0].data = VFS_REGISTER_FS;
+            message.data[1].data = endpoint;
+
+            if(name.len() > 80) {
+                return ("fs name too long");
+            }
+
+            for (size_t i = 0; i < name.len(); i++)
+            {
+                message.raw_buffer[i] = name[i];
+            }
+            message.raw_buffer[name.len()] = 0;
+            message.len = name.len();
+            auto sended_message = connection.send(message, false);
+
+            if (sended_message.is_error())
+            {
+                return "failed to send register fs message";
+            }
+            
+            return {};
         }
     };
 

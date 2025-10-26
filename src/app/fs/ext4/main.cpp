@@ -8,7 +8,7 @@
 #include "protocols/vfs/fsManager.hpp"
 #include "protocols/vfs/vfs.hpp"
 #include "wingos-headers/syscalls.h"
-core::Vec<Wingos::IpcConnection *> connections;
+#include "protocols/server_helper.hpp"
 
 bool is_ext4_filesystem(uint8_t *data)
 {
@@ -17,40 +17,21 @@ bool is_ext4_filesystem(uint8_t *data)
     uint16_t magic = *(uint16_t *)(data + 0x38);
     return magic == 0xEF53;
 }
+
 int _main(mcx::MachineContext *)
 {
-
-    // attempt connection to server ID 0
-
-    auto serv = Wingos::Space::self().create_ipc_server();
-
-    auto conn = prot::InitConnection::connect().unwrap();
-
-    // now do a call
-
-    prot::InitRegisterServer reg = {};
-    core::Str("fs:ext4:manager").copy_to((char *)reg.name, 80);
-
-    reg.major = 1;
-    reg.minor = 0;
-    reg.endpoint = serv.addr;
-
-    conn.register_server(reg).unwrap();
+    auto serv = prot::ManagedServer::create_registered_server("fs:ext4:manager", 1, 0).unwrap();
 
     prot::VfsConnection vfs = prot::VfsConnection::connect().unwrap();
 
-    vfs.register_fs(core::Str("ext4"), serv.addr).unwrap();
+    vfs.register_fs(core::Str("ext4"), serv.addr()).unwrap();
     log::log$("ext4: registered fs manager with vfs");
     while (true)
     {
-        auto c = serv.accept();
-        if (!c.is_error())
-        {
-            log::log$("(server) accepted connection: {}", c.unwrap()->handle);
-            connections.push(c.unwrap());
-        }
+        serv.accept_connection();
+        
 
-        auto received = serv.receive();
+        auto received = serv.try_receive();
         if (received.is_error())
         {
             continue;
@@ -104,6 +85,7 @@ int _main(mcx::MachineContext *)
 
                 IpcMessage reply = {};
                 reply.data[0].data = 0; // mount failed
+                
                 serv.reply(core::move(msg), reply).assert();
 
                 break;

@@ -8,7 +8,7 @@
 
 extern int _main(mcx::MachineContext *context);
 
-static char buffer[256];
+static char buffer[512];
 static size_t _index;
 class WingosLogger : public core::Writer
 {

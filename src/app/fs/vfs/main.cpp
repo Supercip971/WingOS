@@ -9,6 +9,7 @@
 #include "protocols/vfs/vfs.hpp"
 #include "wingos-headers/syscalls.h"
 #include "protocols/vfs/fsManager.hpp"
+#include "protocols/server_helper.hpp"
 struct RegisteredDevicePartition
 {
     size_t begin;
@@ -37,7 +38,6 @@ struct RegisteredFs
     char name[80];
     prot::DiskFsManagerConnection endpoint;
 };
-core::Vec<Wingos::IpcConnection *> connections;
 core::Vec<RegisteredDevice> registered_services;
 core::Vec<RegisteredFs> registered_fs;
 
@@ -78,32 +78,18 @@ int _main(mcx::MachineContext *)
 
     // attempt connection to server ID 0
 
-    auto iconn = prot::InitConnection::connect().unwrap();
 
-    prot::InitRegisterServer reg = {};
-    auto server = Wingos::Space::self().create_ipc_server(false);
-    core::Str("vfs").copy_to((char *)reg.name, 80);
-
-    reg.major = 1;
-    reg.minor = 0;
-    reg.endpoint = server.addr;
-
-    iconn.register_server(reg).unwrap();
-
-    connections = core::Vec<Wingos::IpcConnection *>();
+    auto server = prot::ManagedServer::create_registered_server("vfs").unwrap();
+    
     registered_services = core::Vec<RegisteredDevice>();
     registered_fs = core::Vec<RegisteredFs>();
 
     while (true)
     {
-        auto conn = server.accept();
-        if (!conn.is_error())
-        {
-            log::log$("(server) accepted connection: {}", conn.unwrap()->handle);
-            connections.push(conn.unwrap());
-        }
+        server.accept_connection();
+       
 
-        auto received = server.receive();
+        auto received = server.try_receive();
 
         if (!received.is_error())
         {

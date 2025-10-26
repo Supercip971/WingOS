@@ -19,6 +19,7 @@
 #include "spec.hpp"
 #include "wingos-headers/asset.h"
 #include "wingos-headers/syscalls.h"
+#include "protocols/server_helper.hpp"
 
 uint64_t device_uid;
 
@@ -527,9 +528,8 @@ struct ControllerEndpoint
     core::WStr name;
     NvmeController *controller;
     uint64_t device_id;
-    IpcServerHandle handle;
-    Wingos::IpcServer server;
-    core::Vec<Wingos::IpcConnection *> connections;
+
+    prot::ManagedServer server;
 };
 
 int _main(mcx::MachineContext *)
@@ -588,35 +588,11 @@ int _main(mcx::MachineContext *)
             ep.uid = dev.sys_id;
             ep.name = fmt::format_str("nvme{}", (int)dev.sys_id).unwrap();
 
-            ep.server = Wingos::Space::self().create_ipc_server();
+            ep.server = prot::ManagedServer::create_registered_server(ep.name.view(), 1, 0).unwrap();
 
-            log::log$("Registered endpoint {} with uid {} (ip: {})", ep.name.view(), ep.uid, ep.server.addr);
+            log::log$("Registered endpoint {} with uid {} (ip: {})", ep.name.view(), ep.uid, ep.server.addr());
 
-            auto init = prot::InitConnection::connect();
-            if (init.is_error())
-            {
-                log::err$("Failed to connect to init for registering nvme endpoint: {}", init.error());
-                continue;
-            }
-
-            auto init_conn = init.unwrap();
-
-            prot::InitRegisterServer sreg = {
-
-            };
-            sreg.major = 1;
-            sreg.minor = 0;
-            sreg.endpoint = ep.server.addr;
-            ep.name.view().copy_to(sreg.name, 80);
-
-            auto r = init_conn.register_server(sreg);
-            if (r.is_error())
-            {
-                log::err$("Failed to register nvme endpoint {} with init: {}", ep.name.view(), r.error());
-                continue;
-            }
-
-            vfs.register_device(ep.name.view(), ep.server.addr);
+            vfs.register_device(ep.name.view(), ep.server.addr()).assert();
             endpoints.push(core::move(ep));
         }
     }
@@ -627,14 +603,9 @@ int _main(mcx::MachineContext *)
     {
         for (auto &ep : endpoints)
         {
-            auto conn = ep.server.accept();
-            if (!conn.is_error())
-            {
-                log::log$("Accepted connection on endpoint {}", ep.name.view());
-                ep.connections.push(conn.unwrap());
-            }
+            ep.server.accept_connection();
 
-            auto received = ep.server.receive();
+            auto received = ep.server.try_receive();
             if (received.is_error())
             {
                 continue;

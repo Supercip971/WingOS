@@ -28,6 +28,7 @@ struct IpcServer : public UAsset
         auto res = sys$ipc_create_server(space_handle, is_root);
         server.handle = res.returned_handle;
         server.addr = res.returned_addr;
+        server.space_handle = space_handle;
         return server;
     }
 

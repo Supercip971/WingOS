@@ -1,6 +1,7 @@
 #include "syscalls.hpp"
 
 #include "arch/x86_64/paging.hpp"
+#include "libcore/fmt/impl/asset_kind.hpp"
 
 #include "arch/x86/port.hpp"
 #include "kernel/generic/asset.hpp"
@@ -361,6 +362,7 @@ core::Result<size_t> ksyscall_create_server(SyscallIpcCreateServer *create)
                                                      }));
 
     create->returned_addr = asset.asset->ipc_server->handle;
+    log::log$("Created IPC server with handle {}", create->returned_addr);
     create->returned_handle = asset.handle;
 
     return core::Result<size_t>::success((uint64_t)asset.handle);
@@ -481,6 +483,8 @@ core::Result<size_t> ksyscall_server_receive(SyscallIpcServerReceive *receive)
     }
 
     auto res = (server_receive_message(kernel_server, ipc_connection));
+
+    
 
     if (res.is_error())
     {
@@ -707,6 +711,8 @@ core::Result<size_t> ksyscall_ipc_server_reply(SyscallIpcReply *reply)
 core::Result<size_t> ksyscall_ipc_status(SyscallIpcStatus *status)
 {
     Space *space = nullptr;
+
+    status->returned_is_accepted = false;
     if (status->space_handle != 0)
     {
         space = try$(Space::space_by_handle(

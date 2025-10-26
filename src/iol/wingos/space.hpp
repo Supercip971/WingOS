@@ -80,6 +80,11 @@ struct Space
         sys$asset_release_mem(ptr, (void*)(size + (uintptr_t)ptr));
     }
 
+    void release_asset(UAsset asset)
+    {
+        sys$asset_release(handle, asset.handle);
+    }
+
     Space create_space()
     {
         auto space_res = sys$space_create(handle, 0, 0);

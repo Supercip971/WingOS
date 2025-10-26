@@ -97,6 +97,27 @@ public:
         return {};
     }
 
+
+    core::Result<Wingos::VirtualMemoryAsset> read_buf(uint64_t lba, uint64_t count)
+    {
+
+        Wingos::MemoryAsset asset = Wingos::Space::self().allocate_physical_memory(math::alignUp<size_t>(count, 4096), false);
+
+        auto read_res = read(asset, lba, math::alignUp<size_t>(count, 512));
+
+
+        if (read_res.is_error())
+        {
+            Wingos::Space::self().release_asset(asset);
+            return read_res.error();
+        }
+
+        Wingos::VirtualMemoryAsset vasset = Wingos::Space::self().map_memory(asset, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
+
+        return vasset;
+    }
+    
+
     core::Result<void> write_small(void *buffer, uint64_t lba, uint64_t len)
     {
         if (len > MAX_IPC_BUFFER_SIZE)

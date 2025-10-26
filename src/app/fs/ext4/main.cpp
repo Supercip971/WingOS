@@ -9,6 +9,7 @@
 #include "protocols/vfs/vfs.hpp"
 #include "wingos-headers/syscalls.h"
 #include "protocols/server_helper.hpp"
+#include "ext4.hpp"
 
 bool is_ext4_filesystem(uint8_t *data)
 {
@@ -69,30 +70,24 @@ int _main(mcx::MachineContext *)
 
             // check quickly if ext4 is present
 
-            Wingos::MemoryAsset asset = Wingos::Space::self().allocate_physical_memory(4096);
 
-            auto read_res = disk_conn.read(asset, (begin_lba) + 0x400 / 512, 512);
-            if (read_res.is_error())
+            auto dfs = Ext4Filesystem::initialize(disk_conn, begin_lba, end_lba);
+            if (dfs.is_error())
             {
-                log::err$("ext4: failed to read from disk: {}", read_res.error());
-                break;
-            }
-
-            Wingos::VirtualMemoryAsset vasset = Wingos::Space::self().map_memory(asset, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
-            if (!is_ext4_filesystem((uint8_t *)asset.memory.start() + USERSPACE_VIRT_BASE))
-            {
-                log::log$("ext4: not an ext4 filesystem on device {}", name.view());
-
-                IpcMessage reply = {};
-                reply.data[0].data = 0; // mount failed
+                log::err$("ext4: failed to initialize ext4 filesystem on device {}: {}", name.view(), dfs.error());
                 
-                serv.reply(core::move(msg), reply).assert();
+                IpcMessage reply = {};
+                reply.data[0].data = 0; // fs endpoint 0 means failure
+                auto send_res = serv.reply(core::move(msg), reply);
+                if (send_res.is_error())
+                {
+                    log::err$("ext4: failed to send mount failure reply: {}", send_res.error());
+                }
 
                 break;
             }
 
             (void)end_lba;
-            (void)vasset;
             log::log$("ext4: ext4 filesystem detected on device {}, mounting...", name.view());
 
             while (true)

@@ -39,6 +39,10 @@ For now the kernel is still in development, but it has a few key features:
 - is 64 bit 
 - is SMP capable (multiple CPU support)
 - has a basic scheduler with SMP support, priority, and CPU affinity support (and support cpu tree for NUMA systems)
+- Nvme (NVMe) disk support (in userspace)
+- Ext4 filesystem support (in userspace)
+- VFS support (in userspace)
+
 
 ## Roadmap 
 
@@ -61,8 +65,12 @@ For now the kernel is still in development, but it has a few key features:
     - [x] service registry
     - [x] Partition support (GPT)
     - [x] Detect filesystems, and load corresponding filesystem drivers
-    - [ ] Filesystem support (ext4)
+    - [x] Filesystem support (ext4)
     - [ ] VFS support
+       - [x] Mount filesystems
+       - [x] Open file descriptor
+       - [ ] Directories support/traversal
+       - [ ] Read/write files
 - [ ] Graphics support (VESA, framebuffer, ...)
 - [ ] Input support (keyboard, mouse, ...)
 - [ ] Port DOOM

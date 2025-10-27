@@ -6,7 +6,8 @@
         },
         {
             "name": "hello-world",
-            "path": "/bin/hello-wingos"
+            "path": "/bin/hello-wingos",
+            "requires": ["@fs"]
         },
         {
             "name": "ext4-wingos",

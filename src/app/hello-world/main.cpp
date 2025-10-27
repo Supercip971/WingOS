@@ -7,43 +7,22 @@
 #include "libcore/fmt/log.hpp"
 #include "mcx/mcx.hpp"
 #include "wingos-headers/syscalls.h"
+#include "protocols/vfs/vfs.hpp"
 
 int _main(mcx::MachineContext* )
 {
 
-    // attempt connection to server ID 0
-  
+    // attempt connection to open root file
 
-    auto conn = prot::InitConnection::connect().unwrap();
- 
+    auto conn = prot::VfsConnection::connect().unwrap();
     
+    auto fd = conn.open_root().unwrap();
 
-    log::log$("(client) connected to server with handle: {}", conn.raw_client().handle );
+    (void)fd;
 
+    log::log$("hello world from vfs app!");
 
-   // now do a call
-
-    prot::InitRegisterServer reg = {};
-    core::Str("hello-world").copy_to((char*)reg.name, 80);
-
-    reg.major = 1;
-    reg.minor = 0;
-    reg.endpoint = 42;
-
-    conn.register_server(reg).unwrap();
-
-    prot::InitGetServer get = {
-
-        .name = {},
-        .major = 1,
-        .minor = 0,
-    }; 
-
-    core::Str("hello-world").copy_to((char*)get.name, 80);
-    
-    auto g = conn.get_server(get).unwrap();
-    log::log$("(client) got server endpoint: {}, version: {}.{}", g.endpoint, g.major, g.minor);
-    while (true)
+   while (true)
     {
     }
 }

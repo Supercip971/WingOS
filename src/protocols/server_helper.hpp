@@ -16,6 +16,7 @@ class ManagedServer : public core::NoCopy
 public:
     auto addr() const { return self_endpoint; }
 
+    size_t connection_count() const { return connections.len(); }
     static core::Result<ManagedServer> create_registered_server(core::Str name, uint64_t major = 1, uint64_t minor = 0)
     {
        ManagedServer server = {};

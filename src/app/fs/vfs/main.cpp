@@ -1,20 +1,22 @@
+#include "libcore/fmt/fmt_str.hpp"
+#include "protocols/server_helper.hpp"
+
 #include "arch/generic/syscalls.h"
+#include "file.hpp"
 #include "fs/gpt/gpt.hpp"
 #include "iol/wingos/space.hpp"
 #include "iol/wingos/syscalls.h"
 #include "libcore/fmt/log.hpp"
 #include "mcx/mcx.hpp"
 #include "protocols/init/init.hpp"
-#include "libcore/fmt/fmt_str.hpp"
+#include "protocols/vfs/fsManager.hpp"
 #include "protocols/vfs/vfs.hpp"
 #include "wingos-headers/syscalls.h"
-#include "protocols/vfs/fsManager.hpp"
-#include "protocols/server_helper.hpp"
+
 struct RegisteredDevicePartition
 {
     size_t begin;
     size_t end;
-
 
     uint64_t id;
     IpcServerHandle endpoint;
@@ -33,6 +35,12 @@ struct RegisteredDevice
     core::Vec<RegisteredDevicePartition> partitions;
 };
 
+struct MountedDevice
+{
+    IpcServerHandle endpoint;
+    core::WStr path;
+};
+
 struct RegisteredFs
 {
     char name[80];
@@ -40,6 +48,7 @@ struct RegisteredFs
 };
 core::Vec<RegisteredDevice> registered_services;
 core::Vec<RegisteredFs> registered_fs;
+size_t mounted_devices_count = 0;
 
 void try_create_disk_endpoint()
 {
@@ -61,11 +70,27 @@ void try_create_disk_endpoint()
 
                 auto res = fs.endpoint.mount_if_device_valid(core::Str(device.name), device.endpoint, part.begin, part.end, part.id).unwrap();
 
-                if(res.success)
+                if (res.success)
                 {
                     part.has_fs = true;
                     part.fs_endpoint = res.fs_endpoint;
                     part.fs_name = core::WStr::copy(core::Str(fs.name));
+
+                    MountedDevice mdev{};
+                    mdev.endpoint = res.fs_endpoint;
+                    if (mounted_devices_count == 0)
+                    {
+                        mdev.path = core::WStr::copy(core::Str("/"));
+                    }
+                    else
+                    {
+                        mdev.path = core::WStr::copy(core::Str("/mnt/") + device.name);
+                    }
+
+                    mounted_devices_count++;
+
+                    mount_fs(mdev.endpoint, core::move(mdev.path)).unwrap();
+
                     log::log$("detected partition {} of device {} with fs {}", part.part_name.view(), part.part_dev_name.view(), part.fs_name.view());
                     break;
                 }
@@ -73,24 +98,24 @@ void try_create_disk_endpoint()
         }
     }
 }
+
 int _main(mcx::MachineContext *)
 {
 
     // attempt connection to server ID 0
 
-
     auto server = prot::ManagedServer::create_registered_server("vfs").unwrap();
-    
+
     registered_services = core::Vec<RegisteredDevice>();
     registered_fs = core::Vec<RegisteredFs>();
 
     while (true)
     {
         server.accept_connection();
-       
 
         auto received = server.try_receive();
 
+        update_all_endpoints();
         if (!received.is_error())
         {
             auto msg = received.unwrap();
@@ -100,7 +125,7 @@ int _main(mcx::MachineContext *)
             {
             case prot::VFS_REGISTER:
             {
-                
+
                 RegisteredDevice device{};
                 for (size_t i = 0; i < 80 && msg.received.raw_buffer[i] != 0; i++)
                 {
@@ -116,12 +141,11 @@ int _main(mcx::MachineContext *)
                 core::Str v = core::Str(device.name);
                 auto v2 = Wingos::parse_gpt(v).unwrap();
 
-
                 size_t part_id = 0;
-                for(auto& entry : v2.entries)
+                for (auto &entry : v2.entries)
                 {
                     RegisteredDevicePartition part{};
-                    part.id = part_id++;   
+                    part.id = part_id++;
                     part.endpoint = device.endpoint;
                     core::WStr part_name = fmt::format_str("{}-{}", device.name, part.id).unwrap();
                     part.part_dev_name = core::WStr::copy(part_name.view());
@@ -129,10 +153,8 @@ int _main(mcx::MachineContext *)
                     part.has_fs = false;
                     part.begin = entry.entry->lba_start;
                     part.end = entry.entry->lba_end;
-                    
 
-
-                    log::log$("(server) detected partition: {} -> (LBA {} - {})", part.part_name.view(), part.part_dev_name.view(),  part.begin, part.end);
+                    log::log$("(server) detected partition: {} -> (LBA {} - {})", part.part_name.view(), part.part_dev_name.view(), part.begin, part.end);
 
                     device.partitions.push(core::move(part));
                 }
@@ -159,6 +181,44 @@ int _main(mcx::MachineContext *)
                 recheck_mount = true;
                 break;
             }
+
+            case prot::VFS_ROOT_ACCESS:
+            {
+                log::log$("(server) root access requested");
+                IpcMessage reply = {};
+                if (mounted_devices_count > 0)
+                {
+                    reply.data[0].data = 1; // success
+
+                    auto root_endpoint = VfsFileEndpoint::open_root();
+                    if (root_endpoint.is_error())
+                    {
+
+                        reply.data[0].data = 0; // failure
+                        reply.data[1].data = 0;
+                        break;
+                    }
+
+                    auto root_res = root_endpoint.unwrap();
+                    reply.data[1].data = root_res->server.addr();
+
+                    log::log$("(server) provided root access with endpoint: {}", reply.data[1].data);
+                }
+                else
+                {
+                    log::err$("(server) no filesystems mounted, cannot provide root access");
+                    reply.data[0].data = 0; // failure
+                    reply.data[1].data = 0;
+                }
+
+                auto send_res = server.reply(core::move(msg), reply);
+                if (send_res.is_error())
+                {
+                    log::err$("(server) failed to send root access reply: {}", send_res.error());
+                }
+
+                break;
+            }
             default:
             {
                 log::log$("(server) unknown message type: {}", msg.received.data[0].data);
@@ -170,6 +230,8 @@ int _main(mcx::MachineContext *)
             {
                 try_create_disk_endpoint();
             }
+
+            // check for all mounted filesystems updates
         }
     }
 }

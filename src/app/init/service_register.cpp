@@ -118,6 +118,12 @@ void startup_init_service(Wingos::IpcServer server)
                     server.reply(core::move(msg), reply).assert();
                     break;
                 }
+                case prot::INIT_SIGNAL_FS_AVAILABLE:
+                {
+                    log::log$("(server) received signal fs available");
+                    service_startup_callback("@fs");
+                    break;
+                }
                 default:
                 {
                     log::log$("(server) unknown message type: {}", msg.received.data[0].data);

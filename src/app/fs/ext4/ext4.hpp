@@ -176,7 +176,6 @@ struct Ext4InodeRef
     Ext4Inode inode; // 
 };
 class Ext4Filesystem
-
 {
     prot::DiskConnection disk;
     size_t start_lba;
@@ -193,6 +192,7 @@ class Ext4Filesystem
     Wingos::MemoryAsset disk_asset;
     Wingos::VirtualMemoryAsset mapped_disk_asset;
 
+public:
 
     // use temp buffer
     core::Result<void*> read_block_tmp(size_t block_num); 
@@ -217,6 +217,7 @@ class Ext4Filesystem
 
 
     core::Result<void> dump_subdir(Ext4InodeRef const& dir_inode, int depth);
+
 
 
 
@@ -250,10 +251,9 @@ class Ext4Filesystem
     core::Result<void> write_blockgroup_descriptor(BlockGroupId bg_id, Ext4BlockGroupDescriptor const &bgd);
 
 
-    core::Result<Ext4Inode> read_inode(InodeId inode);
+    core::Result<Ext4InodeRef> read_inode(InodeId inode);
     core::Result<void> write_inode(InodeId inode, Ext4Inode const &data);
 
-public:
     static core::Result<Ext4Filesystem> initialize(prot::DiskConnection disk_conn, size_t start_lba, size_t end_lba)
     {
         log::log$("ext4: initializing ext4 filesystem...");
@@ -310,16 +310,20 @@ public:
 
         auto v = try$(fs.read_inode(2));
 
-        log::log$("ext4: root inode has {} blocks", v.blocks_lo);
-        log::log$("ext4: root inode size: {}", (uint64_t)v.size_lo);
-        log::log$("ext4: root inode first block pointer: {}", v.block[0]);
-        log::log$("ext4: root inode type: {}", (uint16_t)v.file_type);
+        log::log$("ext4: root inode has {} blocks", v.inode.blocks_lo);
+        log::log$("ext4: root inode size: {}", (uint64_t)v.inode.size_lo);
+        log::log$("ext4: root inode first block pointer: {}", v.inode.block[0]);
+        log::log$("ext4: root inode type: {}", (uint16_t)v.inode.file_type);
 
 
-        fs.dump_subdir(Ext4InodeRef{2, v}, 0);
+        fs.dump_subdir(v, 0);
 
         return fs;
     }
+
+    core::Result<Ext4InodeRef> get_subdir(Ext4InodeRef const& dir_inode, core::Str const & name);
+
+
 
     
 };

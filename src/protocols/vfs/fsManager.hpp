@@ -10,7 +10,7 @@ namespace prot
     {
 
         DISK_FS_ATTEMPT_INITIALIZE_DISK = 1, // mount a fs associated with a device, create a new endpoint for it 
-        DISK_FS_UNMOUNT = 2,
+        DISK_FS_UNMOUNT = 2,  
     };
 
     struct MountedDiskResult 
@@ -92,7 +92,7 @@ namespace prot
                 {
                     auto msg = recv_res.unwrap();
                     MountedDiskResult result {};
-                    result.fs_endpoint = msg.data[0].data;
+                    result.fs_endpoint = msg.data[1].data;
                     result.success = msg.data[0].data != 0;
                     return {result};
                 }

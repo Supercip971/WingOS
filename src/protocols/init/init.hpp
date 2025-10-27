@@ -16,6 +16,7 @@ namespace prot
         INIT_UNREGISTER_SERVER = 2,
         INIT_GET_SERVER = 3,
         INIT_GET_SERVER_RESPONSE = 4,
+        INIT_SIGNAL_FS_AVAILABLE = 5,
     };
     struct InitRegisterServer 
     {
@@ -181,6 +182,22 @@ namespace prot
             name.copy_to((char *)get.name, 80);
 
             return get_server(get);
+        }
+
+        core::Result<void> signal_fs_available()
+        {
+            IpcMessage message = {};
+            message.data[0].data = INIT_SIGNAL_FS_AVAILABLE;
+
+            auto sended_message = connection.send(message, false);
+            auto message_handle = sended_message.unwrap();
+            if (sended_message.is_error())
+            {
+                return ("failed to send signal fs available message");
+            }
+            (void)message_handle;
+
+            return {};
         }
     };
 } // namespace prot

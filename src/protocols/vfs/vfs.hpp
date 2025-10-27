@@ -4,6 +4,7 @@
 #include "iol/wingos/ipc.hpp"
 #include "protocols/init/init.hpp"
 
+#include "protocols/vfs/file.hpp"
 namespace prot 
 {
     enum VfsMessageType 
@@ -11,16 +12,8 @@ namespace prot
         VFS_REGISTER = 0,
         VFS_MOUNT = 1,
         VFS_UNMOUNT = 2,
-        VFS_OPEN = 3,
-        VFS_CLOSE = 4,
-        VFS_READ = 5,
-        VFS_WRITE = 6,
-        VFS_LIST_DIR = 7,
-        VFS_CREATE_DIR = 8,
-        VFS_DELETE = 9,
-        VFS_RENAME = 10,
-        VFS_GET_INFO = 11,
-        VFS_SET_INFO = 12,
+        VFS_ROOT_ACCESS = 3,
+        VFS_PWD_ACCESS = 4,
         VFS_REGISTER_FS = 13,
     };
 
@@ -118,6 +111,41 @@ namespace prot
             }
             
             return {};
+        }
+
+
+        core::Result<FsFile> open_root()
+        {
+            IpcMessage message = {};
+            message.data[0].data = VFS_ROOT_ACCESS;
+            auto sended_message = connection.send(message, true);
+            auto message_handle = sended_message.unwrap();
+            if (sended_message.is_error())
+            {
+                return ("failed to send open root message");
+            }
+
+            while(true)
+            {
+                auto received = connection.receive_reply(message_handle);
+                if (!received.is_error())
+                {
+                    auto msg = received.unwrap();
+
+                    if(msg.data[0].data == 0)
+                    {
+                        return ("failed to obtain root access");
+                    }
+                    IpcServerHandle file_endpoint = msg.data[1].data;
+                    auto file_res = FsFile::connect(file_endpoint);
+                    if(file_res.is_error())
+                    {
+                        return file_res.error();
+                    }
+                    return file_res.unwrap();
+
+                }
+            }
         }
     };
 

@@ -46,7 +46,7 @@ core::Result<Ext4BlockGroupDescriptor> Ext4Filesystem::read_blockgroup_descripto
     return *(Ext4BlockGroupDescriptor *)bgd_ptr;
 }
 
-core::Result<Ext4Inode> Ext4Filesystem::read_inode(InodeId inode)
+core::Result<Ext4InodeRef> Ext4Filesystem::read_inode(InodeId inode)
 {
     auto bg_id = blockgroup_from_inode(inode);
     auto bgd_res = try$(read_blockgroup_descriptor(bg_id));
@@ -60,7 +60,11 @@ core::Result<Ext4Inode> Ext4Filesystem::read_inode(InodeId inode)
     auto inode_ptr = (uint8_t *)inode_block_res;
     inode_ptr += local_block_offset;
 
-    return *(Ext4Inode *)inode_ptr;
+
+    Ext4InodeRef inode_ref;
+    inode_ref.inode_id = inode;
+    inode_ref.inode = *(Ext4Inode *)inode_ptr;
+    return inode_ref;
 }
 core::Result<uint64_t> Ext4Filesystem::inode_find_block(Ext4InodeRef const &inode, size_t block)
 {
@@ -300,11 +304,10 @@ core::Result<void> Ext4Filesystem::dump_subdir(Ext4InodeRef const &dir_inode, in
             Ext4DirEntry *entry = (Ext4DirEntry *)entry_ptr;
 
             bytes_processed += entry->rec_len;
-            if(entry->inode == 0)
+            if (entry->inode == 0)
             {
                 continue;
             }
-
 
             core::WStr name = {};
             core::WStr raw_name = {};
@@ -326,7 +329,7 @@ core::Result<void> Ext4Filesystem::dump_subdir(Ext4InodeRef const &dir_inode, in
 
             if (entry->file_type == 2 && raw_name.view() != core::Str(".") && raw_name.view() != core::Str(".."))
             {
-                dump_subdir(Ext4InodeRef{entry->inode, try$(read_inode(entry->inode))}, depth + 1);
+                dump_subdir(try$(read_inode(entry->inode)), depth + 1);
             }
         }
     }
@@ -357,5 +360,41 @@ core::Result<void *> Ext4Filesystem::inode_read_tmp(Ext4InodeRef const &inode, s
     auto block_data_res = try$(read_block_tmp(block_num_res));
     return block_data_res;
 }
+
+core::Result<Ext4InodeRef> Ext4Filesystem::get_subdir(Ext4InodeRef const &dir_inode, core::Str const &name)
+{
+    size_t block_size_ = block_size();
+    size_t dir_size = dir_inode.inode.size_lo;
+    size_t total_blocks = (dir_size + block_size_ - 1) / block_size_;
+
+    for (size_t b = 0; b < total_blocks; b++)
+    {
+        size_t bytes_processed = 0;
+        while (bytes_processed < block_size_)
+        {
+            auto block_data_res = try$(inode_read_tmp(dir_inode, b));
+
+            auto entry_ptr = (uint8_t *)block_data_res + bytes_processed;
+
+            Ext4DirEntry *entry = (Ext4DirEntry *)entry_ptr;
+
+            bytes_processed += entry->rec_len;
+            if (entry->inode == 0)
+            {
+                continue;
+            }
+
+            core::Str ename = core::Str(entry->name, entry->name_len);
+
+            if (ename == name)
+            {
+                return try$(read_inode(entry->inode));
+            }
+        }
+    }
+
+    return "directory entry not found";
+}
+
 //  core::Result<void> Ext4Filesystem::inode_write(InodeId inode, Wingos::MemoryAsset& out, size_t len, size_t block);
 // core::Result<void> Ext4Filesystem::inode_write_tmp(InodeId inode, size_t block, void* data);

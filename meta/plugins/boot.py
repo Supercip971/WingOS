@@ -2,7 +2,7 @@
 import os
 import shutil
 
-from cutekit import builder,  const, shell, model, cli, vt100
+from cutekit import builder,  const, shell, model, cli, vt100, jexpr
 from typing_extensions import Self
 
 
@@ -117,6 +117,9 @@ class LimineCfg:
             "-device", "nvme,drive=nvm,serial=deadbeef",
             "-drive", f"file={self.diskImagePath},if=none,id=nvm",
             "-boot", "c",
+            "-s", 
+            "-S",
+            
             #  f"file=fat:rw:{self.imageDir},media=disk,format=raw",
           #  "-d", "cpu_reset",
            # "-d", "guest_errors",
@@ -150,6 +153,20 @@ def _(args: TargetArgs):
 """
 
 
+@jexpr.exposed("wingos.target")
+def wingos_target() -> str:
+
+    # out the current building target
+    # query the ENV
+    
+    target = os.getenv("CK_TARGET", "wingos-x86_64")
+    vt100.title(f"Wingos target: {target}")
+
+    # print all env
+
+    return target
+
+
 def build_object(args: model.TargetArgs, component, target):
 
     vt100.title(f"building: {component} with target {target}")
@@ -157,7 +174,9 @@ def build_object(args: model.TargetArgs, component, target):
     if target != "": 
         args.target = target
 
+
     scope = builder.TargetScope.use(args)
+    
     registry = model.Registry.use(args)
    # components = list(registry.iter(model.Component))
 #    targets = builder.TargetScope(args)

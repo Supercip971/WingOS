@@ -156,10 +156,25 @@ struct [[gnu::packed]] Ext4Inode
     // more fields may follow
 };
 
+
+struct [[gnu::packed]] Ext4DirEntry
+{
+    uint32_t inode;
+    uint16_t rec_len;
+    uint8_t name_len;
+    uint8_t file_type;
+    char name[];
+};
 using BlockGroupId = uint64_t;
 using InodeId = uint64_t;
 using Blockid = uint64_t;
 
+
+struct Ext4InodeRef 
+{
+    InodeId inode_id;
+    Ext4Inode inode; // 
+};
 class Ext4Filesystem
 
 {
@@ -180,27 +195,40 @@ class Ext4Filesystem
 
 
     // use temp buffer
-    core::Result<void*> read_block_tmp(size_t block_num)
-    {
-        try$(disk.read(disk_asset, start_lba + (block_num * (1024 << superblock.log_block_size)) / disk_block_size, (1024 << superblock.log_block_size) ));
+    core::Result<void*> read_block_tmp(size_t block_num); 
+    core::Result<void> write_block_tmp(size_t block_num, void* data);
 
-        return mapped_disk_asset.ptr();
-    }
+    core::Result<void> inode_read(Ext4InodeRef const &inode, Wingos::MemoryAsset& out, size_t len, size_t block);
+    core::Result<void*> inode_read_tmp(Ext4InodeRef const &inode, size_t block);
+
+
+    core::Result<void> inode_write(Ext4InodeRef& inode, Wingos::MemoryAsset& out, size_t len, size_t block);
+    core::Result<void> inode_write_tmp(Ext4InodeRef& inode, size_t block, void* data);
+
+
+    core::Result<BlockGroupId> find_available_group_for_alloc(BlockGroupId start_from);
+
+    core::Result<uint64_t> allocate_block(BlockGroupId bg_id);
+
+    core::Result<void> inode_add_block(Ext4InodeRef& inode);
+
+
+    core::Result<uint64_t> inode_find_block(Ext4InodeRef const& inode, size_t block);
+
+
+    core::Result<void> dump_subdir(Ext4InodeRef const& dir_inode, int depth);
+
+
 
 
     size_t block_size () const {
         return (1024 << superblock.log_block_size);
     }
     // use temp buffer
-    core::Result<void> write_block_tmp(size_t block_num, void* data)
-    {
-        memcpy(mapped_disk_asset.ptr(), data, (1024 << superblock.log_block_size));
-        try$(disk.write(disk_asset, start_lba + (block_num * (1024 << superblock.log_block_size)) / disk_block_size, (1024 << superblock.log_block_size) ));
-        return {};
-    }
+    
 
     
-    BlockGroupId blockgroup_from_inode(InodeId inode) const
+    BlockGroupId blockgroup_from_inode(InodeId inode) const 
     {
         return (inode - 1) / superblock.inodes_per_group;
     }
@@ -217,40 +245,18 @@ class Ext4Filesystem
     }    
 
 
-    core::Result<Ext4BlockGroupDescriptor> read_blockgroup_descriptor(BlockGroupId bg_id)
-    {
+    core::Result<Ext4BlockGroupDescriptor> read_blockgroup_descriptor(BlockGroupId bg_id);
 
-        size_t block_group_entry_size = this->block_desc_size;
-        size_t local_block_offset = (bg_id * block_group_entry_size) % block_size();
-        size_t disk_sector = (bg_id * block_group_entry_size) / block_size();
-        auto bgd_block_res = try$(read_block_tmp(bgd_table_start_block + disk_sector));
-        auto bgd_ptr = (uint8_t *)bgd_block_res;
+    core::Result<void> write_blockgroup_descriptor(BlockGroupId bg_id, Ext4BlockGroupDescriptor const &bgd);
 
-        bgd_ptr += local_block_offset;
-        return *(Ext4BlockGroupDescriptor *)bgd_ptr;
-    }
 
-    core::Result<Ext4Inode> read_inode(InodeId inode)
-    {
-        auto bg_id = blockgroup_from_inode(inode);
-        auto bgd_res = try$(read_blockgroup_descriptor(bg_id));
-
-        size_t inode_table_block = bgd_res.inode_table;
-        size_t inode_index = blockgroup_inode_index(inode);
-        size_t local_block_offset = (inode_index * superblock.inode_size) % block_size();
-        size_t disk_sector = (inode_index * superblock.inode_size) / block_size();
-
-        auto inode_block_res = try$(read_block_tmp(inode_table_block + disk_sector));
-        auto inode_ptr = (uint8_t*)inode_block_res;
-        inode_ptr += local_block_offset;
-
-        return *(Ext4Inode *)inode_ptr;
-    }
-
+    core::Result<Ext4Inode> read_inode(InodeId inode);
+    core::Result<void> write_inode(InodeId inode, Ext4Inode const &data);
 
 public:
     static core::Result<Ext4Filesystem> initialize(prot::DiskConnection disk_conn, size_t start_lba, size_t end_lba)
     {
+        log::log$("ext4: initializing ext4 filesystem...");
         Ext4Filesystem fs;
         fs.disk = (disk_conn);
         fs.start_lba = start_lba;
@@ -302,7 +308,7 @@ public:
 
         
 
-        auto v = try$(fs.read_inode(fs.superblock.first_ino));
+        auto v = try$(fs.read_inode(2));
 
         log::log$("ext4: root inode has {} blocks", v.blocks_lo);
         log::log$("ext4: root inode size: {}", (uint64_t)v.size_lo);
@@ -310,6 +316,7 @@ public:
         log::log$("ext4: root inode type: {}", (uint16_t)v.file_type);
 
 
+        fs.dump_subdir(Ext4InodeRef{2, v}, 0);
 
         return fs;
     }

@@ -24,7 +24,7 @@ struct IpcServer : public UAsset
 
     static IpcServer create(uint64_t space_handle, bool is_root = false)
     {
-        IpcServer server;
+        IpcServer server = {};
         auto res = sys$ipc_create_server(space_handle, is_root);
         server.handle = res.returned_handle;
         server.addr = res.returned_addr;
@@ -48,15 +48,13 @@ struct IpcServer : public UAsset
     core::Result<MessageServerReceived> receive(IpcConnectionHandle connection_handle, bool block = false)
 
     {
-        IpcMessage res_message;
+        IpcMessage res_message = {};
         auto res = sys$ipc_receive_server(block, space_handle, this->handle, connection_handle, &res_message);
         if (res.contain_response)
         {
 
             MessageServerReceived msg;
             msg.received = core::move(res_message);
-            msg.connection = new IpcConnection();
-            msg.connection->handle = res.connection_handle;
             msg.received.message_id = res.returned_msg_handle;
             return core::Result<MessageServerReceived>::success(core::move(msg));
         }
@@ -72,7 +70,9 @@ struct IpcServer : public UAsset
             {
                 continue; // try next connection
             }
-            return res;
+            auto v = res.unwrap();
+            v.connection = connection;
+            return v;
         }
         return core::Result<MessageServerReceived>::error("no connection available to receive message");
     }

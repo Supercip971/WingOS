@@ -25,6 +25,7 @@ void startup_init_service(Wingos::IpcServer server)
 
     log::log$("created init server with handle: {}", server.handle);
 
+    registered_services = {};
     
     while (true)
     {

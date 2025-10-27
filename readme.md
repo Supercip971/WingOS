@@ -66,11 +66,11 @@ For now the kernel is still in development, but it has a few key features:
     - [x] Partition support (GPT)
     - [x] Detect filesystems, and load corresponding filesystem drivers
     - [x] Filesystem support (ext4)
-    - [ ] VFS support
+    - [x] VFS support
        - [x] Mount filesystems
        - [x] Open file descriptor
-       - [ ] Directories support/traversal
-       - [ ] Read/write files
+       - [x] Directories support/traversal
+       - [x] Read files
 - [ ] Graphics support (VESA, framebuffer, ...)
 - [ ] Input support (keyboard, mouse, ...)
 - [ ] Port DOOM

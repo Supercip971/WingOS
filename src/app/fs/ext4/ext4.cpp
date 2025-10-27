@@ -5,6 +5,7 @@ core::Result<void *> Ext4Filesystem::read_block_tmp(size_t block_num)
 {
     try$(disk.read(disk_asset, start_lba + (block_num * (1024 << superblock.log_block_size)) / disk_block_size, (1024 << superblock.log_block_size)));
 
+
     return mapped_disk_asset.ptr();
 }
 
@@ -82,7 +83,7 @@ core::Result<uint64_t> Ext4Filesystem::inode_find_block(Ext4InodeRef const &inod
     {
         // single indirect
         size_t indirect_block_index = block - 12;
-        auto indirect_block_res = try$(inode_read_tmp(inode, inode.inode.block[12]));
+        auto indirect_block_res = try$(read_block_tmp( inode.inode.block[12]));
         auto block_entries = (uint32_t *)indirect_block_res;
 
         return block_entries[indirect_block_index];
@@ -94,10 +95,10 @@ core::Result<uint64_t> Ext4Filesystem::inode_find_block(Ext4InodeRef const &inod
         size_t first_level_index = double_indirect_index / (block_size() / sizeof(uint32_t));
         size_t second_level_index = double_indirect_index % (block_size() / sizeof(uint32_t));
 
-        auto first_level_block_res = try$(inode_read_tmp(inode, inode.inode.block[13]));
+        auto first_level_block_res = try$(read_block_tmp( inode.inode.block[13]));
         auto first_level_entries = (uint32_t *)first_level_block_res;
 
-        auto second_level_block_res = try$(inode_read_tmp(inode, first_level_entries[first_level_index]));
+        auto second_level_block_res = try$(read_block_tmp( first_level_entries[first_level_index]));
         auto second_level_entries = (uint8_t *)second_level_block_res;
 
         return second_level_entries[second_level_index];
@@ -108,8 +109,12 @@ core::Result<uint64_t> Ext4Filesystem::inode_find_block(Ext4InodeRef const &inod
     }
 }
 
-core::Result<void> Ext4Filesystem::inode_read(Ext4InodeRef const &inode, Wingos::MemoryAsset &out, size_t off, size_t len)
+core::Result<size_t> Ext4Filesystem::inode_read(Ext4InodeRef const &inode, Wingos::MemoryAsset &out, size_t off, size_t len)
 {
+
+    log::log$("ext4: inode_read inode {} off {} len {}", inode.inode_id, off, len);
+    log::log$("ext4: inode size_lo {}", inode.inode.size_lo);
+    len = core::max(core::min<long>(len, (long)(inode.inode.size_lo) - (long)off), 0);
     size_t block_size_ = block_size();
     size_t start_block = off / block_size_;
     size_t end_block = (off + len) / block_size_;
@@ -150,7 +155,7 @@ core::Result<void> Ext4Filesystem::inode_read(Ext4InodeRef const &inode, Wingos:
     }
 
     Wingos::Space::self().release_asset(vfile);
-    return {};
+    return len;
 }
 core::Result<BlockGroupId> Ext4Filesystem::find_available_group_for_alloc(BlockGroupId start_from)
 {
@@ -366,12 +371,17 @@ core::Result<Ext4InodeRef> Ext4Filesystem::get_subdir(Ext4InodeRef const &dir_in
     size_t block_size_ = block_size();
     size_t dir_size = dir_inode.inode.size_lo;
     size_t total_blocks = (dir_size + block_size_ - 1) / block_size_;
+    log::log$("ext4: searching for entry '{}' in directory inode {}", name.view(), dir_inode.inode_id);
+
 
     for (size_t b = 0; b < total_blocks; b++)
     {
+        log::log$("ext4: searching in block {}", b);
         size_t bytes_processed = 0;
         while (bytes_processed < block_size_)
         {
+
+            log::log$("ext4 pmm handle {} vmm handle: {}", disk_asset.handle, mapped_disk_asset.handle);
             auto block_data_res = try$(inode_read_tmp(dir_inode, b));
 
             auto entry_ptr = (uint8_t *)block_data_res + bytes_processed;
@@ -384,8 +394,11 @@ core::Result<Ext4InodeRef> Ext4Filesystem::get_subdir(Ext4InodeRef const &dir_in
                 continue;
             }
 
+            
+
             core::Str ename = core::Str(entry->name, entry->name_len);
 
+            log::log$("ext4: found directory entry '{}'", ename.view());
             if (ename == name)
             {
                 return try$(read_inode(entry->inode));

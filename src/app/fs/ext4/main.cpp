@@ -62,11 +62,13 @@ bool update_endpoint(Ext4FileEndpoint *endpoint)
         auto file_res = endpoint->attached_fs->get_subdir(
             endpoint->inode, path);
 
+        log::log$("ext4: get_subdir result for path {}: {}", path.view(), file_res.is_error() ? file_res.error() : "success");
         if (file_res.is_error())
         {
             log::err$("ext4: failed to open file {}: {}", path.view(), file_res.error());
             reply.data[0].data = 0; // failure
             reply.data[1].data = 0;
+            endpoint->root_server.reply(core::move(msg), reply);
         }
         else
         {
@@ -81,11 +83,15 @@ bool update_endpoint(Ext4FileEndpoint *endpoint)
             });
 
             reply.data[0].data = 1; // success
-
             reply.data[1].data = ext4_file_endpoints[ext4_file_endpoints.len() - 1]->root_server.addr();
 
+            endpoint->root_server.reply(core::move(msg), reply);   
+            
+            log::log$("ext4: provided file endpoint {} for file {}", reply.data[1].data, path.view());
             return true;
         }
+
+
 
         break;
     }
@@ -97,15 +103,24 @@ bool update_endpoint(Ext4FileEndpoint *endpoint)
         log::log$("ext4: read request for inode {} offset {} len {}", endpoint->inode.inode_id, offset, len);
 
         auto mem_asset = Wingos::MemoryAsset::from_handle(msg.received.data[3].asset_handle);
-        endpoint->attached_fs->inode_read(
+        auto r = endpoint->attached_fs->inode_read(
             endpoint->inode,
             mem_asset,
-            len,
-            offset / endpoint->attached_fs->block_size());
+            offset,
+            len);
 
+
+        if(r.is_error())
+        {
+            log::err$("ext4: failed to read inode {}: {}", endpoint->inode.inode_id, r.error());
+
+            IpcMessage reply = {};
+            reply.data[0].data = 0; // failure
+            endpoint->root_server.reply(core::move(msg), reply);
+        }
         IpcMessage reply = {};
         reply.data[0].data = 1; // success
-        reply.data[1].data = len;
+        reply.data[1].data = r.unwrap();
         reply.data[2].asset_handle = mem_asset.handle;
         reply.data[2].is_asset = true;
         endpoint->root_server.reply(core::move(msg), reply);
@@ -213,7 +228,7 @@ int _main(mcx::MachineContext *)
 
                 .inode = dfs_res.read_inode(2).unwrap(),
                 .root_server = prot::ManagedServer::create_server().unwrap(),
-                .attached_fs = new Ext4Filesystem(dfs.unwrap())});
+                .attached_fs = new Ext4Filesystem(dfs_res)});
 
             IpcMessage reply = {};
             reply.data[0].data = 1; // success

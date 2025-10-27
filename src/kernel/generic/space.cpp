@@ -64,7 +64,9 @@ core::Result<Space *> Space::space_by_handle(Space *parent, uint64_t handle)
         }
     }
 
-    return core::Result<Space *>::error("space not found");
+    log::err$("Space::space_by_handle: space not found: {}", handle);
+
+   return core::Result<Space *>::error("space not found");
 }
 // FIXME: this is not safe, because it does not check if the space exists in the parent space
 core::Result<Space *> Space::global_space_by_handle(uint64_t handle)

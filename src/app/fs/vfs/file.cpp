@@ -15,8 +15,7 @@ core::Result<void> mount_fs(IpcServerHandle device_name, core::WStr &&mount_path
         }
     }
 
-
-    if(mount_path.view() == core::Str("/"))
+    if (mount_path.view() == core::Str("/"))
     {
         log::log$("VFS: signaled init that root fs is available");
         prot::InitConnection init_conn = prot::InitConnection::connect().unwrap();
@@ -70,7 +69,7 @@ void update_all_endpoints()
             case prot::FS_OPEN_FILE:
             {
                 IpcMessage reply = {};
-                size_t filename_len = msg.received.data[1].data;
+                size_t filename_len = msg.received.len;
                 core::WStr filename = {};
                 for (size_t i = 0; i < filename_len; i++)
                 {
@@ -79,28 +78,47 @@ void update_all_endpoints()
 
                 // TODO: check for path traversal mounted point
 
-                auto file_res = endpoint->connection_to_fs.open_file(core::move(filename));
+                auto file_res = endpoint->connection_to_fs.open_file(filename.view());
                 if (file_res.is_error())
                 {
                     reply.data[0].data = 0; // failure
                     reply.data[1].data = 0;
+                    log::err$("VfsFileEndpoint: failed to open file {}: {}", filename.view(), file_res.error());
+                    endpoint->server.reply(core::move(msg), reply);
                 }
+                else
+                {
+                    VfsFileEndpoint *nendpoint = new VfsFileEndpoint();
+
+                    nendpoint->connection_to_fs = file_res.unwrap();
+                    nendpoint->server = prot::ManagedServer::create_server().unwrap();
+                    reply.data[0].data = 1; // success
+                    reply.data[1].data = nendpoint->server.addr();
+
+
+                    log::log$("VfsFileEndpoint: open file {}", filename.view());
+                    endpoint->server.reply(core::move(msg), reply);
+                    opened_file_endpoints.push(nendpoint);
+                                       // early return because we loop over endpoints that we pushed
+                    return;
+                }
+
                 break;
             }
-            // else forward to filesystem
+                // else forward to filesystem
 
             case prot::FS_GET_INFO:
             case prot::FS_READ:
             case prot::FS_WRITE:
             case prot::FS_CLOSE:
-            case prot::FS_LIST_DIR: 
+            case prot::FS_LIST_DIR:
             {
 
                 auto forward_res = endpoint->connection_to_fs.raw_client().send(msg.received, true);
                 if (forward_res.is_error())
                 {
                     log::err$("VfsFileEndpoint: failed to forward message to filesystem: {}", forward_res.error());
-                    }
+                }
 
                 auto forward_handle = forward_res.unwrap();
                 while (true)

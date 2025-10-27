@@ -419,15 +419,19 @@ core::Result<size_t> ksyscall_send(SyscallIpcSend *send)
     auto connection = try$(Asset::by_handle(space, send->connection_handle));
 
     if (connection->kind != OBJECT_KIND_IPC_CONNECTION)
+
+
     {
-        return core::Result<size_t>::error("connection is not an IPC connection");
+        log::log$("in space({}), handle {}", send->space_handle, send->connection_handle);
+        log::err$("Connection kind is {}", connection->kind);
+        return core::Result<size_t>::error("SEND: connection is not an IPC connection");
     }
 
     auto ipc_connection = connection->ipc_connection;
 
     if (!ipc_connection->accepted)
     {
-        return core::Result<size_t>::error("connection is not accepted");
+        return core::Result<size_t>::error("SEND: connection is not accepted");
     }
 
     auto res = try$(server_send_message(ipc_connection, try$(syscall_check_ptr(send->message)), send->expect_reply));
@@ -459,7 +463,10 @@ core::Result<size_t> ksyscall_server_receive(SyscallIpcServerReceive *receive)
 
     if (connection->kind != OBJECT_KIND_IPC_CONNECTION)
     {
-        return core::Result<size_t>::error("connection is not an IPC connection");
+    log::log$("in space({}), handle {}", receive->space_handle, receive->connection_handle);
+        log::err$("Connection kind is {}", connection->kind);
+     
+        return core::Result<size_t>::error("RECEIVE: connection is not an IPC connection");
     }
 
     auto ipc_connection = connection->ipc_connection;
@@ -531,7 +538,10 @@ core::Result<size_t> ksyscall_client_receive_reply(SyscallIpcClientReceiveReply 
 
     if (connection->kind != OBJECT_KIND_IPC_CONNECTION)
     {
-        return core::Result<size_t>::error("connection is not an IPC connection");
+        log::log$("in space({}), handle {}", receive->space_handle, receive->connection_handle);
+        log::err$("Connection kind is {}", connection->kind);
+     
+        return core::Result<size_t>::error("CLIENT RECEIVE: connection is not an IPC connection");
     }
 
     auto ipc_connection = connection->ipc_connection;
@@ -590,7 +600,10 @@ core::Result<size_t> ksyscall_ipc_call(SyscallIpcCall *call)
 
     if (connection->kind != OBJECT_KIND_IPC_CONNECTION)
     {
-        return core::Result<size_t>::error("connection is not an IPC connection");
+log::log$("in space({}), handle {}", call->space_handle, call->connection_handle);
+        log::err$("Connection kind is {}", connection->kind);
+     
+        return core::Result<size_t>::error("CALL: connection is not an IPC connection");
     }
 
     auto ipc_connection = connection->ipc_connection;
@@ -688,7 +701,9 @@ core::Result<size_t> ksyscall_ipc_server_reply(SyscallIpcReply *reply)
 
     if (connection->kind != OBJECT_KIND_IPC_CONNECTION)
     {
-        return core::Result<size_t>::error("connection is not an IPC connection");
+        log::log$("in space({}), handle {}", reply->space_handle, reply->connection_handle);
+        log::err$("Connection kind is {}", connection->kind);
+        return core::Result<size_t>::error("SERVER REPLY: connection is not an IPC connection");
     }
 
     auto ipc_connection = connection->ipc_connection;
@@ -733,7 +748,11 @@ core::Result<size_t> ksyscall_ipc_status(SyscallIpcStatus *status)
 
     if (connection->kind != OBJECT_KIND_IPC_CONNECTION)
     {
-        return core::Result<size_t>::error("connection is not an IPC connection");
+
+        log::log$("in space({}), handle {}", status->space_handle, status->connection_handle);
+        log::err$("Connection kind is {}", connection->kind);
+     
+        return core::Result<size_t>::error("STATUS: connection is not an IPC connection");
     }
 
     auto ipc_connection = connection->ipc_connection;

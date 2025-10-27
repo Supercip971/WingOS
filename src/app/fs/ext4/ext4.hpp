@@ -198,7 +198,7 @@ public:
     core::Result<void*> read_block_tmp(size_t block_num); 
     core::Result<void> write_block_tmp(size_t block_num, void* data);
 
-    core::Result<void> inode_read(Ext4InodeRef const &inode, Wingos::MemoryAsset& out, size_t len, size_t block);
+    core::Result<size_t> inode_read(Ext4InodeRef const &inode, Wingos::MemoryAsset& out, size_t len, size_t block);
     core::Result<void*> inode_read_tmp(Ext4InodeRef const &inode, size_t block);
 
 

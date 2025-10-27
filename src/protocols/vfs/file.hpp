@@ -249,7 +249,7 @@ public:
     }
 
 
-    core::Result<FsFile> open_file(core::WStr path)
+    core::Result<FsFile> open_file(core::Str path)
     {
         IpcMessage message = {};
         message.data[0].data = FS_OPEN_FILE;
@@ -277,6 +277,11 @@ public:
             if (!received.is_error())
             {
                 auto msg = received.unwrap();
+
+                if(msg.data[0].data == 0)
+                {
+                    return ("failed to open file");
+                }
 
                 IpcServerHandle file_endpoint = msg.data[1].data;
                 auto file_res = FsFile::connect(file_endpoint);

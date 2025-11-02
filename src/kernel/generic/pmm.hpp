@@ -15,6 +15,7 @@
 #include "math/align.hpp"
 #include "math/range.hpp"
 #include "mem.hpp"
+#include "libcore/lock/lock.hpp"
 struct PmmSection
 {
     math::Range<uintptr_t> range;
@@ -28,6 +29,7 @@ struct Pmm
 
     mcx::MemoryRange _range;
     PmmSection *_sections;
+    core::Lock pmm_lock;
     mcx::MemoryMapIdx _section_location;
     size_t _sections_count;
 

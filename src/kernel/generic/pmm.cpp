@@ -3,7 +3,7 @@
 
 #include "kernel/generic/mem.hpp"
 #include "mcx/mcx.hpp"
-static Pmm instance;
+static Pmm instance = {};
 Pmm &Pmm::the()
 {
     return instance;
@@ -109,6 +109,7 @@ core::Result<void> Pmm::_fill(const mcx::MachineContext *context)
 core::Result<PhysAddr> Pmm::allocate(size_t count, IolAllocMemoryFlag flags)
 {
 
+    lock_scope$(pmm_lock);
     if (flags & IolAllocMemoryFlag::IOL_ALLOC_MEMORY_FLAG_LOWER_SPACE)
     {
         for (size_t i = 0; i < this->_sections_count; i++)
@@ -187,7 +188,9 @@ core::Result<Pmm> Pmm::create(const mcx::MachineContext *context)
     try$(pmm._fill(context));
 
     // own the first 16 (64Ko) pages. We will use the lower 16bit adress space for SMP initialization
-    pmm.own(0, 16);
+    pmm.own( pmm._range.start(), (pmm._range.len() / page_size_bit) + 16);
+    pmm.own( 0,  16);
+
 
     return pmm;
 }

@@ -99,7 +99,7 @@ core::Result<uint64_t> Ext4Filesystem::inode_find_block(Ext4InodeRef const &inod
         auto first_level_entries = (uint32_t *)first_level_block_res;
 
         auto second_level_block_res = try$(read_block_tmp( first_level_entries[first_level_index]));
-        auto second_level_entries = (uint8_t *)second_level_block_res;
+        auto second_level_entries = (uint32_t *)second_level_block_res;
 
         return second_level_entries[second_level_index];
     }

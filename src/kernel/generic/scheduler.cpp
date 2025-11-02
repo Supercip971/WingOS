@@ -243,7 +243,7 @@ static void update_runned_tasks()
     if (count != 0)
     {
 
-        long avg_sleep_time = (sum + count - 1) / count; // integer ceil (TODO: check)
+        long avg_sleep_time = (sum + count - 1) / count; // integer ceiling division
         for (size_t i = 0; i < TASK_QUEUE_COUNT; i++)
         {
             for (auto task = task_queues[i].begin(); task != task_queues[i].end(); ++task)
@@ -337,7 +337,7 @@ static core::Result<void> fix_sched_affinity()
 void run_task_queued(CoreId cpu, size_t queue_id, size_t queue_offset)
 {
     auto task = task_queues[queue_id].remove(queue_offset);
-    cached_scheduled_task_count--;
+    // No change to cached_scheduled_task_count: task moves from queue to cpu_runned
 
     task.tick();
     task.cpu_affinity = cpu;

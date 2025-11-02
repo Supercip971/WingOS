@@ -129,7 +129,7 @@ core::Result<MessageHandle> _server_send_message(IpcConnection *connection, IpcM
     received_message.message_sended = IpcMessagePair::from_client(*message);
 
     connection->lock.lock();
-    received_message.uid = connection->message_alloc_id++; // TODO: set this to a unique id
+    received_message.uid = connection->message_alloc_id++; // Assign unique message ID per connection
 
     auto uid = received_message.uid;
     connection->message_sent.push(received_message);

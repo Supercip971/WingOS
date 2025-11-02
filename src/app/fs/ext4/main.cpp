@@ -42,7 +42,7 @@ bool update_endpoint(Ext4FileEndpoint *endpoint)
         return false;
     }
 
-    auto msg = received.unwrap();
+    auto msg = received.take();
 
     switch (msg.received.data[0].data)
     {
@@ -75,10 +75,21 @@ bool update_endpoint(Ext4FileEndpoint *endpoint)
             auto file_inode = file_res.unwrap();
             log::log$("ext4: opened file {} with inode {}", path.view(), file_inode.inode_id);
             // create new endpoint for this file
+
+            auto serv = prot::ManagedServer::create_server();
+
+            if(serv.is_error())
+            {
+                log::err$("ext4: failed to create file endpoint for file {}: {}", path.view(), serv.error());
+                reply.data[0].data = 0; // failure
+                reply.data[1].data = 0;
+                endpoint->root_server.reply(core::move(msg), reply);
+                return true;
+            }
             ext4_file_endpoints.push(new Ext4FileEndpoint{
 
                 .inode = file_inode,
-                .root_server = prot::ManagedServer::create_server().unwrap(),
+                .root_server = serv.take(),
                 .attached_fs = endpoint->attached_fs,
             });
 
@@ -156,7 +167,14 @@ void update_endpoints()
 
 int _main(mcx::MachineContext *)
 {
-    auto serv = prot::ManagedServer::create_registered_server("fs:ext4:manager", 1, 0).unwrap();
+    auto serv_r = prot::ManagedServer::create_registered_server("fs:ext4:manager", 1, 0);
+    if (serv_r.is_error())
+    {
+        log::err$("ext4: failed to create registered server: {}", serv_r.error());
+        return 1;
+    }
+
+    prot::ManagedServer serv = serv_r.take();
 
     prot::VfsConnection vfs = prot::VfsConnection::connect().unwrap();
 
@@ -174,7 +192,7 @@ int _main(mcx::MachineContext *)
             continue;
         }
 
-        auto msg = received.unwrap();
+        auto msg = core::move(received.unwrap());
 
         switch (msg.received.data[0].data)
         {
@@ -224,10 +242,11 @@ int _main(mcx::MachineContext *)
 
             auto dfs_res = dfs.unwrap();
 
+            auto ms = prot::ManagedServer::create_server();
             ext4_file_endpoints.push(new Ext4FileEndpoint{
 
                 .inode = dfs_res.read_inode(2).unwrap(),
-                .root_server = prot::ManagedServer::create_server().unwrap(),
+                .root_server = ms.take(),
                 .attached_fs = new Ext4Filesystem(dfs_res)});
 
             IpcMessage reply = {};

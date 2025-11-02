@@ -130,7 +130,7 @@ namespace prot
                 auto received = connection.receive_reply(message_handle);
                 if (!received.is_error())
                 {
-                    auto msg = received.unwrap();
+                    auto msg = received.take();
 
                     if(msg.data[0].data == 0)
                     {

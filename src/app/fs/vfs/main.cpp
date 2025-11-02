@@ -46,8 +46,8 @@ struct RegisteredFs
     char name[80];
     prot::DiskFsManagerConnection endpoint;
 };
-core::Vec<RegisteredDevice> registered_services;
-core::Vec<RegisteredFs> registered_fs;
+core::Vec<RegisteredDevice> registered_services {};
+core::Vec<RegisteredFs> registered_fs {};
 size_t mounted_devices_count = 0;
 
 void try_create_disk_endpoint()
@@ -104,7 +104,14 @@ int _main(mcx::MachineContext *)
 
     // attempt connection to server ID 0
 
-    auto server = prot::ManagedServer::create_registered_server("vfs").unwrap();
+    auto server_r = prot::ManagedServer::create_registered_server("vfs", 1, 0);
+    if (server_r.is_error())
+    {
+        log::err$("failed to create registered vfs server: {}", server_r.error());
+        return 1;
+    }
+
+    auto server = server_r.take();
 
     registered_services = core::Vec<RegisteredDevice>();
     registered_fs = core::Vec<RegisteredFs>();
@@ -118,7 +125,7 @@ int _main(mcx::MachineContext *)
         update_all_endpoints();
         if (!received.is_error())
         {
-            auto msg = received.unwrap();
+            auto msg = core::move(received.unwrap());
 
             bool recheck_mount = false;
             switch (msg.received.data[0].data)
@@ -139,15 +146,17 @@ int _main(mcx::MachineContext *)
                 log::log$("(server) registered device: {} with endpoint: {}", device.name, device.endpoint);
 
                 core::Str v = core::Str(device.name);
-                auto v2 = Wingos::parse_gpt(v).unwrap();
+                auto v2_res = Wingos::parse_gpt(v);
+                auto v2 = v2_res.take();
 
+                
                 size_t part_id = 0;
                 for (auto &entry : v2.entries)
                 {
                     RegisteredDevicePartition part{};
                     part.id = part_id++;
                     part.endpoint = device.endpoint;
-                    core::WStr part_name = fmt::format_str("{}-{}", device.name, part.id).unwrap();
+                    core::WStr part_name = core::move(fmt::format_str("{}-{}", device.name, part.id).unwrap());
                     part.part_dev_name = core::WStr::copy(part_name.view());
                     part.part_name = core::WStr::copy(entry.name.view());
                     part.has_fs = false;

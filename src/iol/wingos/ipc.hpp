@@ -29,6 +29,7 @@ struct IpcServer : public UAsset
         server.handle = res.returned_handle;
         server.addr = res.returned_addr;
         server.space_handle = space_handle;
+        server.connections = {};
         return server;
     }
 
@@ -40,7 +41,7 @@ struct IpcServer : public UAsset
             IpcConnection *connection = new IpcConnection();
             connection->handle = res.connection_handle;
             connections.push(connection);
-            return core::Result<IpcConnection *>::csuccess(connection);
+            return core::Result<IpcConnection *>::success(connection);
         }
         return core::Result<IpcConnection *>::error("failed to accept connection");
     }
@@ -70,7 +71,7 @@ struct IpcServer : public UAsset
             {
                 continue; // try next connection
             }
-            auto v = res.unwrap();
+            auto v = core::move(res.unwrap());
             v.connection = connection;
             return v;
         }
@@ -79,7 +80,6 @@ struct IpcServer : public UAsset
 
     core::Result<void> reply(MessageServerReceived &&to, IpcMessage &message)
     {
-
         sys$ipc_reply(space_handle, this->addr, to.connection->handle, to.received.message_id, &message);
         return {};
     }
@@ -151,7 +151,7 @@ struct IpcClient : public UAsset
 
         SyscallIpcSend send = sys$ipc_send(associated_space_handle, handle, &message, expect_reply);
 
-        return core::Result<size_t>::csuccess(send.returned_msg_handle);
+        return core::Result<size_t>::success(send.returned_msg_handle);
     }
 
     core::Result<IpcMessage> call(IpcMessage &message)

@@ -22,9 +22,9 @@ class VfsFileEndpoint
 {
     public: 
 
-    prot::FsFile connection_to_fs;
+    prot::FsFile connection_to_fs = {};
 
-    prot::ManagedServer server;
+    prot::ManagedServer server = {};
     static core::Result<VfsFileEndpoint*> open_root();    
 
 };

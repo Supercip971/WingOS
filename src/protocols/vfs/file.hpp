@@ -90,7 +90,7 @@ public:
             auto received = connection.receive_reply(message_handle);
             if (!received.is_error())
             {
-                auto msg = received.unwrap();
+                auto msg = core::move(received.unwrap());
                 size_t received_len = msg.data[1].data;
                 asset = Wingos::MemoryAsset::from_handle(msg.data[2].asset_handle);
                 return received_len;
@@ -118,7 +118,7 @@ public:
             auto received = connection.receive_reply(message_handle);
             if (!received.is_error())
             {
-                auto msg = received.unwrap();
+                auto msg = core::move(received.unwrap());
                 size_t received_len = msg.data[1].data;
                 return received_len;
             }
@@ -157,7 +157,7 @@ public:
             auto received = connection.receive_reply(message_handle);
             if (!received.is_error())
             {
-                auto msg = received.unwrap();
+                auto msg = core::move(received.unwrap());
 
 
                 FileInfo info;
@@ -200,7 +200,7 @@ public:
             auto received = connection.receive_reply(message_handle);
             if (!received.is_error())
             {
-                auto msg = received.unwrap();
+                auto msg = core::move(received.unwrap());
 
                 DirListEntry entry;
                 size_t name_len = msg.len;
@@ -227,7 +227,7 @@ public:
             return l.error();
         }
 
-        FileInfo info = l.unwrap();
+        FileInfo info = core::move(l.unwrap());
         if(!info.is_directory)
         {
             return ("not a directory");
@@ -242,7 +242,7 @@ public:
             {
                 break;
             }
-            dir_list.entries.push(entry_res.unwrap());
+            dir_list.entries.push(core::move(entry_res.unwrap()));
         }
 
         return dir_list;
@@ -276,7 +276,7 @@ public:
             auto received = connection.receive_reply(message_handle);
             if (!received.is_error())
             {
-                auto msg = received.unwrap();
+                auto msg = core::move(received.unwrap());
 
                 if(msg.data[0].data == 0)
                 {

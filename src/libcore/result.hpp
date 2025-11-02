@@ -1,5 +1,6 @@
 #pragma once
 
+#include <libcore/bound.hpp>
 #include <libcore/optional.hpp>
 #include <libcore/type-utils.hpp>
 
@@ -20,8 +21,8 @@ private:
     // FIXME: introduce either type
 
 public:
-    Optional<ValT> _value;
-    Optional<ErrT> _error;
+    Optional<ValueType> _value;
+    Optional<ErrorType> _error;
     constexpr Result() : _value(), _error() {}
 
     constexpr ~Result()
@@ -46,31 +47,43 @@ public:
         _error = core::move(other._error);
         return *this;
     }
-    static constexpr auto csuccess(ValueType val)
+    template <typename U>
+    static constexpr Result<ValT, ErrT> success(U val bounded$)
+        requires core::IsConvertibleTo<U, ValueType>
     {
-        auto res = Result<ValT, ErrT>();
-        res._value = core::move(val);
-        return (res);
+        Result<ValT, ErrT> res;
+        res._value = (core::forward<U>(val));
+        return res;
     }
-    static constexpr auto success(ValueType &&val)
+    
+    template <typename E>
+    static constexpr Result<ValT, ErrT> error(E err bounded$)
+        requires core::IsConvertibleTo<E, ErrorType>
     {
-        auto res = Result<ValT, ErrT>();
-        res._value = core::move(val);
-        return (res);
+        Result<ValT, ErrT> res;
+        res._error = (core::forward<E>(err));
+        return res;
     }
-    static constexpr auto error(ErrorType &&error)
-    {
-        auto res = Result<ValT, ErrT>();
-        res._error = core::move(error);
-        return (res);
-    }
-
     void assert();
+    ValT& unwrap() & bounded$ 
+    {
+        assert();
+        return (_value.unwrap());
+    }
 
-    ValT &&unwrap()
+    ValT&& unwrap() && 
     {
         assert();
         return core::move(_value.unwrap());
+    }
+
+
+
+    ValT take() && = delete;
+    ValT take() & bounded$ 
+    {
+        assert();
+        return core::move(_value.take());
     }
 
     explicit constexpr operator bool() const
@@ -82,7 +95,7 @@ public:
     {
         return _error.value();
     }
-    constexpr ErrT &error()
+    constexpr ErrT &error() bounded$
     {
         return _error.value();
     }
@@ -104,6 +117,8 @@ public:
     constexpr Result() : _error() {}
 
     constexpr Result(const ErrT &error) : _error(error) {}
+
+    constexpr Result(Result const &other) : _error(other._error) {}
 
     constexpr Result(ErrT &&error) : _error(core::move(error)) {}
 
@@ -132,6 +147,8 @@ public:
         return _error.value();
     }
 
+    constexpr void take() const {};
+
     constexpr ~Result()
     {
         _error.~Optional();
@@ -155,23 +172,22 @@ extern void debug_provide_info(const char *info, const char *data);
 #define STRINGIZE_DETAIL(x) #x
 #define STRINGIZE(x) STRINGIZE_DETAIL(x)
 
-#define try_v$(expr, vname) ({                                                          \
+#define try_v$(expr, vname) ({                                               \
     auto vname = (expr);                                                     \
     if ((vname._error.has_value())) [[unlikely]]                             \
-    {                                                                          \
+    {                                                                        \
         core::debug_provide_info("error:    ", (const char *)vname.error()); \
-        core::debug_provide_info("at:       ", #expr);                         \
-        core::debug_provide_info("function: ", __FUNCTION__);                  \
-        core::debug_provide_info("file:     ", __FILE__);                      \
-        core::debug_provide_info("line:     ", STRINGIZE(__LINE__));           \
+        core::debug_provide_info("at:       ", #expr);                       \
+        core::debug_provide_info("function: ", __FUNCTION__);                \
+        core::debug_provide_info("file:     ", __FILE__);                    \
+        core::debug_provide_info("line:     ", STRINGIZE(__LINE__));         \
         return vname.error();                                                \
-    }                                                                          \
-vname.unwrap();                                                          \
+    }                                                                        \
+    vname.take();                                                          \
 })
 
-#define CONCAT_IMPL( x, y ) x##y
-#define MACRO_CONCAT( x, y ) CONCAT_IMPL( x, y )
-
+#define CONCAT_IMPL(x, y) x##y
+#define MACRO_CONCAT(x, y) CONCAT_IMPL(x, y)
 
 #define try$(expr) try_v$(expr, MACRO_CONCAT(_result, __COUNTER__))
 

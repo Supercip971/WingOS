@@ -30,7 +30,7 @@ constexpr core::Result<int> format_v(Targ &target, T &&v, FormatIntegerFlags fla
     if (value == 0)
     {
         target.write("0", 1);
-        return {};
+        return 0;
     }
 
     // With an uint64_t, the max value contains 20 digits
@@ -51,7 +51,7 @@ constexpr core::Result<int> format_v(Targ &target, T &&v, FormatIntegerFlags fla
         target.write(&buffer[vi], 1);
     }
 
-    return {};
+    return 0;
 }
 
 template <core::IsIdentityIntegral T, core::Writable Targ>

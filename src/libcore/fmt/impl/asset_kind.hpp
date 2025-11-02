@@ -34,8 +34,6 @@ constexpr core::Result<void> format_v(Targ &target, C &&value) requires (core::I
     default:
         return format_v(target, core::Str("UNKNOWN_ASSET_KIND"));
     }
-   
-    return {};
 }
 template <typename C,  core::Writable Targ>
 constexpr core::Result<void> format_v(Targ &target, fmt::FormatFlags<C> flagged) requires (core::IsSame<AssetKind, core::RemoveReference<C>>)

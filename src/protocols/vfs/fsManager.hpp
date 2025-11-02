@@ -90,7 +90,7 @@ namespace prot
                 auto recv_res = connection.receive_reply(send_res.unwrap());
                 if (!recv_res.is_error())
                 {
-                    auto msg = recv_res.unwrap();
+                    auto msg = recv_res.take();
                     MountedDiskResult result {};
                     result.fs_endpoint = msg.data[1].data;
                     result.success = msg.data[0].data != 0;

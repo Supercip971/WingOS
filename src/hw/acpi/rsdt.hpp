@@ -94,7 +94,7 @@ core::Result<K *> SdtFind(T *table)
             return reinterpret_cast<K *>(entry_header);
     }
 
-    return "Not found";
+    return core::Result<K*>::error("Not found");
 }
 
 template <SdtEntry K>

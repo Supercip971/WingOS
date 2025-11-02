@@ -7,7 +7,7 @@
 namespace fmt 
 {
     template<typename Fmt, typename... Args>
-    constexpr core::Result<core::WStr> format_str(Fmt &&fmt, Args&&... args)
+    constexpr core::Result<core::WStr> format_str( Fmt fmt, Args... args)
     {
         core::WStr writer;
         fmt::format(writer, core::Str(fmt), core::forward<Args>(args)...);

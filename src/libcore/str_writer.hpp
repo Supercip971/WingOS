@@ -136,7 +136,6 @@ namespace core
             this->_len += 1;
             return true;
         }
-
         bool append(core::Str const& str)
         {
             if(str.len() == 0)

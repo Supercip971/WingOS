@@ -553,7 +553,7 @@ int _main(mcx::MachineContext *)
             auto disk = NvmeController::setup(dev);
             if (!disk.is_error())
             {
-                disks.push(disk.unwrap());
+                disks.push(disk.take());
 
                 auto mapped = Wingos::Space::self().allocate_memory(4096, false);
                 log::log$("Allocated memory at: {}", (uintptr_t)mapped.ptr() | fmt::FMT_HEX);
@@ -577,7 +577,7 @@ int _main(mcx::MachineContext *)
         return 1;
     }
 
-    auto vfs = v.unwrap();
+    auto vfs = v.take();
 
     for (auto &disk : disks)
     {
@@ -586,9 +586,13 @@ int _main(mcx::MachineContext *)
             ControllerEndpoint ep = {};
             ep.controller = &disk;
             ep.uid = dev.sys_id;
-            ep.name = fmt::format_str("nvme{}", (int)dev.sys_id).unwrap();
 
-            ep.server = prot::ManagedServer::create_registered_server(ep.name.view(), 1, 0).unwrap();
+            auto fmt_str_res = fmt::format_str("nvme{}", (int)dev.sys_id);
+            ep.name = (fmt_str_res.take());
+
+
+            auto srv = prot::ManagedServer::create_registered_server(ep.name.view(), 1, 0);
+            ep.server = srv.take();
 
             log::log$("Registered endpoint {} with uid {} (ip: {})", ep.name.view(), ep.uid, ep.server.addr());
 
@@ -611,7 +615,7 @@ int _main(mcx::MachineContext *)
                 continue;
             }
 
-            auto msg = received.unwrap();
+            auto msg = (received.take());
 
             switch (msg.received.data[0].data)
             {

@@ -54,7 +54,7 @@ static constexpr TestGroup fmtTestWStr = {
                 if (r.is_error()) {
                     return "format_str returned error";
                 }
-                auto writer = r.unwrap();
+                auto writer = r.take();
                 if (writer.view() != core::Str("Value: 42 - test")) {
                     return "format_str result mismatch";
                 }

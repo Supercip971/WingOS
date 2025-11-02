@@ -40,7 +40,7 @@ core::Result<VfsFileEndpoint *> VfsFileEndpoint::open_root()
 
             log::log$("VFS: opening root filesystem endpoint: {}", mounted_filesystems[i].endpoint);
             endpoint->connection_to_fs = prot::FsFile::connect(mounted_filesystems[i].endpoint).unwrap();
-            endpoint->server = prot::ManagedServer::create_server().unwrap();
+            endpoint->server = core::move(prot::ManagedServer::create_server().unwrap());
             opened_file_endpoints.push(endpoint);
             return endpoint;
         }
@@ -62,7 +62,7 @@ void update_all_endpoints()
         auto received = endpoint->server.try_receive();
         if (!received.is_error())
         {
-            auto msg = received.unwrap();
+            auto msg = core::move(received.unwrap());
 
             switch (msg.received.data[0].data)
             {
@@ -91,7 +91,7 @@ void update_all_endpoints()
                     VfsFileEndpoint *nendpoint = new VfsFileEndpoint();
 
                     nendpoint->connection_to_fs = file_res.unwrap();
-                    nendpoint->server = prot::ManagedServer::create_server().unwrap();
+                    nendpoint->server = core::move(prot::ManagedServer::create_server().unwrap());
                     reply.data[0].data = 1; // success
                     reply.data[1].data = nendpoint->server.addr();
 
@@ -126,7 +126,7 @@ void update_all_endpoints()
                     auto received_fs = endpoint->connection_to_fs.raw_client().receive_reply(forward_handle);
                     if (!received_fs.is_error())
                     {
-                        auto fs_msg = received_fs.unwrap();
+                        auto fs_msg = core::move(received_fs.unwrap());
                         auto reply_res = endpoint->server.reply(core::move(msg), fs_msg);
                         if (reply_res.is_error())
                         {

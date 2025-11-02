@@ -95,7 +95,7 @@ namespace prot
 
             message.len = i+1;
 
-            auto sended_message = connection.call(message);
+            auto sended_message = connection.send(message, false);
 
             auto message_handle = sended_message.unwrap();
             if (sended_message.is_error())
@@ -141,7 +141,7 @@ namespace prot
             message.raw_buffer[i] = 0;
             message.len = i+1;
             
-            auto sended_message = connection.send(message, true);
+           auto sended_message = connection.send(message, true);
             auto message_handle = sended_message.unwrap();
             if (sended_message.is_error())
             {
@@ -153,7 +153,7 @@ namespace prot
                 auto received = connection.receive_reply(message_handle);
                 if (!received.is_error())
                 {
-                    auto msg = received.unwrap();
+                    auto msg = received.take();
                     InitGetServerResponse resp {};
                     resp.endpoint = msg.data[0].data;
 
@@ -167,8 +167,24 @@ namespace prot
                 }
             }
 
+            /*
+            auto res = connection.call(message);
+            if (!res.is_error())
+            {
+                auto msg = res.unwrap();
+                InitGetServerResponse resp {};
+                resp.endpoint = msg.data[0].data;
+                if(resp.endpoint == 0)
+                {
+                    return ("server not found");
+                }
+                resp.major = msg.data[1].data;
+                resp.minor = msg.data[2].data;
+                return (resp);
+            }
+
             return ("failed to receive get server response");
-        }
+       */ }
 
         core::Result<InitGetServerResponse> get_server(core::Str name, uint64_t major, uint64_t minor)
         {

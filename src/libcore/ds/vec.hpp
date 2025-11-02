@@ -115,12 +115,12 @@ public:
     Result<void> push(Vec<T> &&arr)
     {
         try$(reserve(_count + arr.len()));
-        for (long i = 0; i < arr.len(); i++)
+        for (size_t i = 0; i < arr.len(); i++)
         {
             new (&_data[_count + i]) T(core::move(arr[i]));
         }
         _count += arr.len();
-        return {};
+        return Result<void>{};
     }
 
     T &operator[](size_t index)
@@ -164,7 +164,7 @@ public:
         return _data;
     }
 
-    T &&pop()
+    T pop()
     {
         if (_count > 0)
         {
@@ -176,14 +176,14 @@ public:
         return core::move(_data[0]);
     }
 
-    T &&pop(size_t id)
+    T pop(size_t id)
     {
         if (id >= (size_t)_count)
         {
             return core::move(_data[0]);
         }
 
-        T &&value = core::move(_data[id]);
+        T value = core::move(_data[id]);
         for (long i = id; i < _count - 1; i++)
         {
             _data[i] = core::move(_data[i + 1]);

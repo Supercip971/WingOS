@@ -36,7 +36,7 @@ static inline Result<T *> mem_alloc(size_t count)
 template <typename T>
 static inline Result<T *> mem_alloc()
 {
-    return static_cast<T *>(try$(mem_alloc(sizeof(T))));
+    return Result<T*>::success(static_cast<T *>(try$(mem_alloc(sizeof(T)))));
 }
 
 static inline void mem_free(void *addr)

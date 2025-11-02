@@ -74,5 +74,5 @@ core::Result<Wingos::GPTDiskParseResult> Wingos::parse_gpt(core::Str& device)
     }
 
 
-    return result;
+    return core::move(result);
 }

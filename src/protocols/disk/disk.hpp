@@ -45,7 +45,7 @@ public:
             auto received = connection.receive_reply(message_handle);
             if (!received.is_error())
             {
-                auto msg = received.unwrap();
+                auto msg = received.take();
                 for (size_t i = 0; i < len; i++)
                 {
                     ((uint8_t *)buffer)[i] = msg.raw_buffer[i];
@@ -85,7 +85,7 @@ public:
             auto received = connection.receive_reply(message_handle);
             if (!received.is_error())
             {
-                auto msg = received.unwrap();
+                auto msg = received.take();
                 asset = Wingos::MemoryAsset::from_handle(msg.data[1].asset_handle);
 
                 return {};

@@ -52,7 +52,9 @@
                 "-Widiomatic-parentheses",
                 "-Wfloat-equal",
                 "-Wassign-enum",
-                "-Wcomma"
+                "-Wcomma",
+                "-Wexperimental-lifetime-safety"
+
             ]
         },
         "cxx": {
@@ -99,7 +101,11 @@
                 "-Wassign-enum",
                 "-Wcomma", 
                 "-Wfor-loop-analysis",
-                "-Wimplicit-fallthrough"
+                "-Wimplicit-fallthrough",
+                "-Wexperimental-lifetime-safety",
+                "-Wdangling-gsl",
+
+                "-O3"
             ]
         },
         "ld": {

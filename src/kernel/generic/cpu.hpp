@@ -2,12 +2,11 @@
 #pragma once
 
 // generally used by implementation
-#include "kernel/generic/space.hpp"
 #include "kernel/generic/task.hpp"
 
 using CoreId = int;
 static constexpr CoreId CpuCoreNone = -1;
-class Cpu
+class [[gnu::packed]] Cpu 
 {
 
     // used for syscall handling -- <!> ORDER IS IMPORTANT FOR ASM CODE <!>
@@ -26,11 +25,19 @@ protected:
 
     kernel::Task *_current_task = nullptr;
 
+    
+
 public:
+
     bool in_interrupt()
     {
         return _in_interrupt;
     }
+
+    // apply after every syscall information required are retrieved
+    static bool enter_syscall_safe_mode();
+    static bool exit_syscall_safe_mode();
+    static bool end_syscall();
 
     void in_interrupt(bool val)
     {
@@ -53,9 +60,10 @@ public:
     static size_t count();
 
     kernel::Task *currentTask() const { return _current_task; }
-    void currentTask(kernel::Task *task) { _current_task = task; }
+    void currentTask(kernel::Task *task) { _current_task = task; 
+    }
 
     void interrupt_hold();
 
-    void interrupt_release();
+    void interrupt_release(bool re_enable_int = true);
 };

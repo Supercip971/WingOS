@@ -10,18 +10,39 @@
 #include "libcore/lock/rwlock.hpp"
 #include "libcore/result.hpp"
 
-static core::LinkedList<kernel::Task> task_list = {};
-static kernel::TUID next_uid = 1;
-static core::RWLock _task_lock = {};
+core::LinkedList<kernel::Task> task_list = {};
+bool loaded = false;
+kernel::TUID next_uid = 1;
+core::RWLock _task_lock = {};
 
-kernel::Task *_task_allocate()
+kernel::Task *kernel::Task::_task_allocate()
 {
+    if(!loaded)
+    {
+        task_list = {};
+        next_uid = 1;
+        _task_lock.full_reset();
+
+        loaded = true;
+    }
     core::lock_scope_writer$(_task_lock);
 
-    kernel::Task task(next_uid++);
+    kernel::Task task {}; 
+    
+    task.uid(next_uid++);
     task.state(kernel::TaskState::TASK_EMBRYO);
 
-    return task_list.push(task);
+    task_list.push(task);
+
+    for (auto b = task_list.begin(); b != task_list.end(); ++b)
+    {
+        log::log$("added task: {}", (*b).uid());
+    }
+
+
+    return task_list.last();
+    
+
 }
 
 kernel::Task *kernel::Task::by_id_unsafe(kernel::TUID uid)
@@ -53,26 +74,25 @@ core::Result<kernel::Task *> kernel::Task::by_id(kernel::TUID uid)
 
 core::Result<kernel::Task *> kernel::Task::task_create()
 {
-    kernel::Task *task = _task_allocate();
+    kernel::Task *task = kernel::Task::_task_allocate();
     if (task == nullptr)
     {
-        return "unable to allocate task";
+        return core::Result<kernel::Task*>::error("unable to allocate task");
     }
 
     task->_cpu_context = try$(kernel::CpuContext::create_empty());
 
-    return task;
+    log::log$("created task with id: {}", task->uid());
+    return core::Result<kernel::Task*>::success(task);
 }
 
 core::Result<void> kernel::Task::_initialize(CpuContextLaunch params, VmmSpace *target_vspace)
 {
-    auto task = this;
+    _cpu_context->prepare(params);
 
-    task->_cpu_context->prepare(params);
+    _state = kernel::TaskState::TASK_IDLE;
 
-    task->_state = kernel::TaskState::TASK_IDLE;
-
-    task->_cpu_context->_vmm_space = target_vspace;
+    _cpu_context->_vmm_space = target_vspace;
 
     if (params.user)
     {
@@ -81,17 +101,17 @@ core::Result<void> kernel::Task::_initialize(CpuContextLaunch params, VmmSpace *
             userspace_stack_base};
 
         PhysRange phys_userspace_stack = PhysRange(
-            toPhys(addrOf(task->_cpu_context->stack_ptr)),
-            toPhys(addrOf(task->_cpu_context->stack_top)));
+            toPhys(addrOf(_cpu_context->stack_ptr)),
+            toPhys(addrOf(_cpu_context->stack_top)));
 
-        task->vmm_space().map(userspace_stack, phys_userspace_stack,
+        vmm_space().map(userspace_stack, phys_userspace_stack,
                               PageFlags()
                                   .user(true)
                                   .executable(false)
                                   .present(true)
                                   .writeable(true));
 
-        task->_cpu_context->use_stack_addr(userspace_stack_base);
+        _cpu_context->use_stack_addr(userspace_stack_base);
     }
 
     return {};

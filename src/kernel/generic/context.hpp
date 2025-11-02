@@ -22,9 +22,13 @@ class CpuContext
 public:
     void *stack_ptr;
     void *kernel_stack_ptr;
+    void * syscall_stack_ptr;
 
     void *stack_top;
     void *kernel_stack_top;
+    void * syscall_stack_top;
+
+    uintptr_t saved_syscall_stack;
 
     core::Lock lock;
     volatile bool await_save;

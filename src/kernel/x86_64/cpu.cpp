@@ -10,7 +10,7 @@
 #include "kernel/generic/cpu.hpp"
 #include "libcore/ds/array.hpp"
 #include "libcore/result.hpp"
-core::Array<arch::amd64::CpuImpl, arch::amd64::max_cpu> cpus;
+core::Array<arch::amd64::CpuImpl, arch::amd64::max_cpu> cpus = {};
 
 static int initialized_count = 0;
 size_t Cpu::count()
@@ -26,10 +26,46 @@ void Cpu::interrupt_hold()
     }
     this->interrupt_depth++;
 }
-void Cpu::interrupt_release()
+
+
+core::Lock cpu_sys_lock;
+
+bool Cpu::enter_syscall_safe_mode()
 {
+    asm volatile(
+        "cli\n"
+    );
+
+    cpu_sys_lock.lock();
+    return true;
+}
+
+bool Cpu::exit_syscall_safe_mode()
+{
+
+    cpu_sys_lock.release();
+    asm volatile(
+        "sti\n"
+    );
+
+    return true;
+}
+
+bool Cpu::end_syscall()
+{
+    cpu_sys_lock.release();
+    return true;
+}
+void Cpu::interrupt_release(bool re_enable_int)
+{
+    if(this->interrupt_depth == 0)
+    {
+        log::err$("cpu: {} interrupt_release called with depth 0", this->id());
+        return;
+    }
     this->interrupt_depth--;
-    if (this->interrupt_depth == 0)
+    
+    if (this->interrupt_depth == 0 && re_enable_int)
     {
         asm volatile("sti");
     }
@@ -118,4 +154,9 @@ CoreId Cpu::currentId()
         return 0;
     }
     return hw::acpi::Lapic::the().id();
+}
+
+void reschedule_self()
+{
+    hw::acpi::Lapic::the().send_interrupt(Cpu::currentId(), 101);
 }

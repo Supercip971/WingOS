@@ -13,7 +13,6 @@ public:
     CpuContextAmd64() = default;
 
     StackFrame frame;
-
     void _user_stack_addr(uintptr_t addr)
     {
         frame.rsp = addr;

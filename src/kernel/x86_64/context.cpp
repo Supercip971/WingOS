@@ -17,14 +17,15 @@ namespace kernel
 core::Result<CpuContext *> CpuContext::create_empty()
 {
 
-    arch::amd64::CpuContextAmd64 *data = try$(core::mem_alloc<arch::amd64::CpuContextAmd64>());
+    arch::amd64::CpuContextAmd64 *data = new arch::amd64::CpuContextAmd64{};
 
     data->lock.release();
     data->await_load = false;
 
     data->await_save = false;
     data->stackframe(arch::amd64::StackFrame{});
-    return data;
+ 
+    return (CpuContext*)data;
 }
 
 void CpuContext::load_to(void *state)
@@ -45,8 +46,7 @@ void CpuContext::load_to(void *state)
     // Validate segment selectors
     if (stored_frame.cs == 0 || stored_frame.ss == 0)
     {
-        log::err$("Invalid segment selectors: CS={}, SS={}", stored_frame.cs, stored_frame.ss);
-        return;
+     //   log::log$("schedule in ring 0: CS={}, SS={}", stored_frame.cs, stored_frame.ss);
     }
 
     // Validate stack pointer
@@ -57,6 +57,10 @@ void CpuContext::load_to(void *state)
     }
 
     *frame = stored_frame;
+
+    Cpu::current()->syscall_stack = data->syscall_stack_top;
+    Cpu::current()->saved_stack = data->saved_syscall_stack;
+
 
     this->_vmm_space->use();
 
@@ -83,15 +87,21 @@ void CpuContext::dump()
 void CpuContext::save_in(void *state)
 {
 
+
     arch::amd64::CpuContextAmd64 *data = this->as<arch::amd64::CpuContextAmd64>();
 
     arch::amd64::StackFrame *frame = (arch::amd64::StackFrame *)state;
+
     data->stackframe(*frame);
+
+    this->syscall_stack_top = Cpu::current()->syscall_stack;
+    this->saved_syscall_stack = Cpu::current()->saved_stack;
 
     {
 
         lock_scope$(this->lock);
         this->await_save = false;
+
     }
 }
 
@@ -123,9 +133,15 @@ core::Result<void> CpuContext::prepare(CpuContextLaunch launch)
 
     data->kernel_stack_ptr = try$(core::mem_alloc(kernel::kernel_stack_size));
 
+    data->syscall_stack_ptr = try$(core::mem_alloc(kernel::kernel_stack_size)); // allocate a stack for syscall handling
+
     data->stack_top = (void *)((uintptr_t)data->stack_ptr + kernel::userspace_stack_size);
     data->kernel_stack_top = (void *)((uintptr_t)data->kernel_stack_ptr + kernel::kernel_stack_size);
+    data->syscall_stack_top = (void *)((uintptr_t)data->syscall_stack_ptr + kernel::kernel_stack_size - 16);
 
+    data->saved_syscall_stack = 0;
+
+ 
     auto frame = arch::amd64::StackFrame();
 
     frame.rsp = (uint64_t)data->stack_top;

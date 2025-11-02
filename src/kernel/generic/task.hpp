@@ -39,9 +39,12 @@ class Task
 {
     TUID _uid = 0;
     TaskState _state = TaskState::TASK_NONE;
-    CpuContext *_cpu_context;
+    CpuContext *_cpu_context = nullptr;
 
+    Task() = default;
+    static Task* _task_allocate();
 public:
+
     Space *_space_owner;
 
     Space *space()
@@ -52,7 +55,6 @@ public:
     TaskState state() const { return _state; }
     void state(TaskState state) { _state = state; }
 
-    Task() = default;
     Task(TUID uid) : _uid(uid) {};
 
     core::Result<void> _initialize(CpuContextLaunch params, VmmSpace *target_vspace);
@@ -60,6 +62,8 @@ public:
     virtual ~Task() = default;
 
     TUID uid() const { return _uid; }
+
+    void uid(TUID uid) { _uid = uid; }
 
     // task current is obtained through cpu::current()->task()
     // static Task *current();

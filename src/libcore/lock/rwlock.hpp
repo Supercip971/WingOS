@@ -23,6 +23,14 @@ class RWLock
 public:
     RWLock() = default;
 
+
+    void full_reset()
+    {
+        _readers = 0;
+        _waiters = 0;
+        _writers= 0;
+        _access_lock.release();
+    }
     bool write_acquire()
     {
         bool success = false;

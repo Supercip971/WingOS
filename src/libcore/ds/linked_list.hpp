@@ -53,12 +53,20 @@ public:
         Iterator &operator++()
         {
 
+            if(_ptr == nullptr) [[unlikely]]
+            {
+                return *this;
+            }
             this->_ptr = this->_ptr->next;
             return *this;
         }
 
         Iterator operator++(int)
         {
+            if(_ptr == nullptr) [[unlikely]]
+            {
+                return *this;
+            }
             Iterator res = *this;
             this->_ptr = this->_ptr->next;
             return res;
@@ -85,14 +93,11 @@ public:
 
     LinkedList &operator+=(LinkedList &&other)
     {
-        // for (auto &v : other)
-        //{
-        //     try$(push(v));
-        // }
         if (tail != nullptr)
         {
             tail->next = other.head;
             _count += other._count;
+            tail = other.tail;
         }
         else
         {
@@ -154,7 +159,7 @@ public:
         return tail->data.as_ptr();
     }
 
-    T &&pop_front()
+    T pop_front()
     {
         if (head == nullptr) [[unlikely]]
         {
@@ -162,7 +167,7 @@ public:
             return Storage<T>::empty();
         }
 
-        auto res = core::move(head->data.retreive());
+        auto res = (head->data.retreive());
         auto next = head->next;
 
         if (tail == head)
@@ -172,14 +177,14 @@ public:
         free(head);
         head = next;
         _count--;
-        return core::move(res);
+        return (res);
     }
 
-    T &&remove(size_t idx)
+    T remove(size_t idx)
     {
         if (idx == 0)
         {
-            return core::move(pop_front());
+            return (pop_front());
         }
         auto prev = head;
 
@@ -198,10 +203,10 @@ public:
         }
 
         auto node_to_delete = prev->next;
-        auto res = core::move(node_to_delete->data.retreive());
+        T res = (node_to_delete->data.retreive());
 
         prev->next = node_to_delete->next;
-        ;
+        
 
         if (node_to_delete == tail)
         {
@@ -212,7 +217,7 @@ public:
         free(node_to_delete);
         _count--;
 
-        return core::move(res);
+        return (res);
     }
 
     LinkedList &operator=(const LinkedList &other)
@@ -229,10 +234,22 @@ public:
         return *this;
     }
 
+
+    auto first()
+    {
+        return head->data.as_ptr();
+    }
+
+    auto last()
+    {
+        return tail->data.as_ptr();
+    }
+
     Iterator begin()
     {
         return Iterator(head);
     }
+
 
     Iterator end()
     {

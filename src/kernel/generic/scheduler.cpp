@@ -32,6 +32,9 @@ bool is_scheduler_running = false;
 
 size_t tick = 0;
 
+// Cache the scheduled task count to avoid recalculating it every time
+size_t cached_scheduled_task_count = 0;
+
 namespace kernel
 {
 void idle()
@@ -78,6 +81,9 @@ core::Result<void> scheduler_init([[maybe_unused]] int cpu_count)
     {
         task_queues[i] = TaskQueue();
     }
+
+    // Initialize cached task count
+    cached_scheduled_task_count = 0;
 
     // Ensure cpu_runned has enough space
     try$(cpu_runned.reserve(running_cpu_count));
@@ -134,6 +140,7 @@ static inline void add_entity_to_queue(SchedulerEntity task)
         return;
     }
     task_queues[task.queue()].push(task);
+    // Don't increment cache here as it's updated elsewhere
 }
 
 core::Result<void> task_run(TUID task_id, CoreId core)
@@ -152,28 +159,15 @@ core::Result<void> task_run(TUID task_id, CoreId core)
 
     scheduler_lock.write_acquire();
     add_entity_to_queue(entity);
+    cached_scheduled_task_count++; // New task added to system
     scheduler_lock.write_release();
     return {};
 }
 
-// FIXME: store it as a global variable instead of recalculating it
+// Use cached value for performance instead of recalculating
 static inline size_t scheduled_task_count()
 {
-    size_t count = 0;
-    for (size_t i = 0; i < TASK_QUEUE_COUNT; i++)
-    {
-        count += task_queues[i].count();
-    }
-
-    for (size_t i = 0; i < running_cpu_count; i++)
-    {
-        if (!cpu_runned[i].is_idle)
-        {
-            count++;
-        }
-    }
-
-    return count;
+    return cached_scheduled_task_count;
 }
 
 static core::Result<int> query_nearest_task(size_t queue_id, CoreId core, bool consider_siblings = false)
@@ -282,7 +276,8 @@ static core::Result<void> fix_sched_affinity()
     size_t attempt = 0;
     static core::Vec<CoreId> to_fix = {};
 
-    // technically, should be allocated once
+    // Clear at the start and reuse the allocated capacity
+    to_fix.clear();
     for (size_t i = 0; i < running_cpu_count; i++)
     {
         to_fix.push(i);
@@ -329,7 +324,6 @@ static core::Result<void> fix_sched_affinity()
         to_fix.push(old_cpu);
     }
 
-    to_fix.clear();
     if (attempt >= max_attempt)
     {
         log::err$("unable to fix affinity, attempt limit reached");
@@ -343,6 +337,7 @@ static core::Result<void> fix_sched_affinity()
 void run_task_queued(CoreId cpu, size_t queue_id, size_t queue_offset)
 {
     auto task = task_queues[queue_id].remove(queue_offset);
+    cached_scheduled_task_count--;
 
     task.tick();
     task.cpu_affinity = cpu;
@@ -406,14 +401,8 @@ core::Result<void> schedule_all()
             run_task_queued(cpu, i, 0);
         }
 
-        // we retry for task with a lower priority by swapping the retried task,
-
-        //        core::swap(choosen_ptr, retried_ptr);
-        choosen_ptr->clear();
-        for (size_t j = 0; j < retried_ptr->len(); j++)
-        {
-            choosen_ptr->push((*retried_ptr)[j]);
-        }
+        // Swap the pointers for the next queue level (more efficient than copying)
+        core::swap(choosen_ptr, retried_ptr);
     }
 
     for (size_t i = 0; i < choosen_ptr->len(); i++)

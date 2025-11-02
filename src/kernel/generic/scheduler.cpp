@@ -33,6 +33,8 @@ bool is_scheduler_running = false;
 size_t tick = 0;
 
 // Cache the scheduled task count to avoid recalculating it every time
+// NOTE: This cache assumes tasks are never deleted from the system once created.
+// If task deletion is implemented in the future, the cache must be decremented.
 size_t cached_scheduled_task_count = 0;
 
 namespace kernel

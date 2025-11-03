@@ -11,8 +11,8 @@ class [[gnu::packed]] Cpu
 
     // used for syscall handling -- <!> ORDER IS IMPORTANT FOR ASM CODE <!>
 public:
-    void *syscall_stack;
-    uintptr_t saved_stack; // used to save the stack pointer before syscall
+    void * volatile syscall_stack;
+    volatile uintptr_t saved_stack; // used to save the stack pointer before syscall
     uintptr_t debug_saved_syscall_stackframe;
 
 protected:

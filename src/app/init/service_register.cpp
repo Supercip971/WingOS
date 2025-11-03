@@ -42,7 +42,7 @@ void startup_init_service(Wingos::IpcServer server)
         
         if (!received.is_error())
         {
-            auto msg = received.unwrap();
+            auto msg = received.take();
             
             switch(msg.received.data[0].data)
             {

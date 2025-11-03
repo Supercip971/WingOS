@@ -40,12 +40,12 @@ core::Result<AssetPtr> space_create(Space *parent, [[maybe_unused]] uint64_t fla
 
     space->vmm_space = vspace.unwrap();
 
-    SpacePtr space_ptr;
+    SpacePtr space_ptr = {};
     space_ptr.space = space;
     space_ptr.handle = _space_handle++;
     _spaces.push(space_ptr);
 
-    asset->space->uid = space_ptr.handle;
+    space->uid = space_ptr.handle;
     space->assets.push({.asset = asset, .handle = 0});
     space->alloc_uid = 16;
     asset->lock.release();
@@ -60,7 +60,7 @@ core::Result<Space *> Space::space_by_handle(Space *parent, uint64_t handle)
     {
         if (space_ptr.handle == handle && space_ptr.asset->kind == OBJECT_KIND_SPACE)
         {
-            return core::Result<Space *>::csuccess(space_ptr.asset->space);
+            return core::Result<Space *>::success(space_ptr.asset->space);
         }
     }
 
@@ -75,7 +75,7 @@ core::Result<Space *> Space::global_space_by_handle(uint64_t handle)
     {
         if (space_ptr.handle == handle)
         {
-            return core::Result<Space *>::csuccess(space_ptr.space);
+            return core::Result<Space *>::success(space_ptr.space);
         }
     }
 

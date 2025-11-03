@@ -34,10 +34,7 @@ kernel::Task *kernel::Task::_task_allocate()
 
     task_list.push(task);
 
-    for (auto b = task_list.begin(); b != task_list.end(); ++b)
-    {
-        log::log$("added task: {}", (*b).uid());
-    }
+    
 
 
     return task_list.last();

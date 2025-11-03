@@ -19,7 +19,7 @@ core::Result<AssetPtr> _asset_create(Space *space, AssetKind kind)
 
     asset->ref_count = 1;
 
-    AssetPtr ptr;
+    AssetPtr ptr = {};
     ptr.asset = asset;
     ptr.handle = 0;
     if (space != nullptr)
@@ -76,7 +76,8 @@ void asset_release(Space *space, Asset *asset)
             {
                 space->vmm_space.unmap(
                     VirtRange(asset->mapping.start,
-                              asset->mapping.end), true);
+                              asset->mapping.end),
+                    true);
             }
         }
         else if (asset->kind == OBJECT_KIND_IPC_CONNECTION)
@@ -212,14 +213,9 @@ core::Result<AssetPtr> asset_create_task(Space *space, AssetTaskCreateParams par
 {
     AssetPtr ptr = try$(_asset_create(space, OBJECT_KIND_TASK));
     ptr.asset->task = kernel::Task::task_create().unwrap();
+    
 
-    ptr.asset->task->_space_owner = space;
-    if (ptr.asset->task == nullptr)
-    {
-        ptr.asset->lock.release();
-        asset_release(space, ptr.asset);
-        return core::Result<AssetPtr>::error("unable to create task asset");
-    }
+    ptr.asset->task->_space_owner = space; 
 
     if (ptr.asset->task->_initialize(params.launch, &space->vmm_space).is_error())
     {
@@ -311,8 +307,8 @@ core::Result<AssetPtr> asset_create_ipc_connections(Space *space, AssetIpcConnec
     auto query_res = query_server(params.server_handle);
     if (query_res.is_error())
     {
-        log::err$("asset_create_ipc_connection: unable to query server: {}", query_res
-                                                                                 .error());
+        log::err$("asset_create_ipc_connection: unable to query server: {} for {}", query_res.error(), params.server_handle);
+
         ptr.asset->lock.release();
 
         asset_release(space, ptr.asset);
@@ -330,10 +326,12 @@ core::Result<AssetPtr> asset_create_ipc_connections(Space *space, AssetIpcConnec
 
     ptr.asset->lock.release();
 
+
+    server->lock.lock();
+
     auto server_space = Space::global_space_by_handle(server->parent_space).unwrap();
     auto ptr_in_server = try$(asset_copy(space, server_space, ptr));
 
-    server->lock.lock();
     server->connections.push(ptr_in_server);
 
     server->self->ref_count++;

@@ -10,18 +10,20 @@
 #include "libcore/alloc/alloc.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/lock/lock.hpp"
+#include "wingos-headers/asset.h"
+#include "kernel/generic/space.hpp"
 
 namespace arch::amd64
 {
 
-core::Lock sys_lock;
 extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *stackframe)
 {
     //  log("syscall", LOG_INFO, "called syscall higher handler in: {} (stack: {})", stackframe->rip, stackframe->rsp);
 
     
-    sys_lock.lock();
+    Cpu::enter_syscall_safe_mode();
     Cpu::current()->debug_saved_syscall_stackframe = stackframe->rbp;
+
     auto res = syscall_handle({
         .id = (uint32_t)stackframe->rax,
         .arg1 = stackframe->rbx,
@@ -32,20 +34,37 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *stackframe)
         .arg6 = stackframe->r9,
     });
 
-    sys_lock.release();
+
+
     if (res.is_error())
     {
 
+        Cpu::end_syscall(); // early end syscall mode, 
         log::err$("syscall error: {}", res.error());
-        stackframe->rax = -1;
-        return -1;
+        log::log$("syscall id: {}", stackframe->rax);
+        log::log$("syscall args: {}, {}, {}, {}, {}, {}", stackframe->rbx, stackframe->rdx, stackframe->rsi, stackframe->rdi, stackframe->r8, stackframe->r9);
+        log::log$("task: {}", Cpu::current()->currentTask() ? Cpu::current()->currentTask()->uid() : -1);
+        
+
+        log::log$("task space({}) dump:", Cpu::current()->currentTask()->space()->uid);
+
+    
+        auto space = Cpu::current()->currentTask()->space();
+        for(size_t i = 0; i < space->assets.len(); i++)
+        {
+            log::log$("  Asset[{}]: handle={}, kind={}", i, space->assets[i].handle, assetKind2Str(space->assets[i].asset->kind));
+        }
+        while(true)
+        {}
     }
     else
     {
         stackframe->rax = res.unwrap();
     }
+    asm volatile("cli");
 
-    //  log("syscall", LOG_INFO, "exited syscall higher handler with result: {}", ret);
+
+    //log::log$("syscall: {} ", stackframe->rax);
     return res.unwrap();
 }
 
@@ -74,11 +93,13 @@ core::Result<void> syscall_init_for_current_cpu()
     // ucode + 16 : user code
     Msr::Write(MsrReg::STAR, ((((uint64_t)Gdt::kernel_code_segment_id * 8)) << 32) | (((uint64_t)((Gdt::kernel_data_segment_id * 8) | 3)) << 48));
     Msr::Write(MsrReg::LSTAR, (uint64_t)syscall_handle);
-    Msr::Write(MsrReg::SYSCALL_FLAG_MASK, (uint64_t)(1<< 9) |  0xfffffffe);
+    Msr::Write(MsrReg::SYSCALL_FLAG_MASK, ((uint32_t)(RFLAGS_INTERRUPT_ENABLE)) |  0xfffffffe);
 
     Cpu::current()->syscall_stack = (void *)((uintptr_t)try$(core::mem_alloc(kernel::kernel_stack_size)) +
                                              kernel::kernel_stack_size - 16); // allocate a stack for syscall handling
-    return {};
+    
+                                             
+                                             return {};
 }
 
 } // namespace arch::amd64

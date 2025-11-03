@@ -28,15 +28,16 @@ void Cpu::interrupt_hold()
 }
 
 
-core::Lock cpu_sys_lock;
+core::Lock cpu_sys_lock = {};
 
 bool Cpu::enter_syscall_safe_mode()
 {
+
+    cpu_sys_lock.lock();
     asm volatile(
         "cli\n"
     );
 
-    cpu_sys_lock.lock();
     return true;
 }
 

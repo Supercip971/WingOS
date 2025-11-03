@@ -149,7 +149,6 @@ core::Result<size_t> ksyscall_task_create(SyscallTaskCreate *task_create)
         space = Cpu::current()->currentTask()->space();
     }
 
-    Cpu::exit_syscall_safe_mode();
     if (space == nullptr)
     {
         return core::Result<size_t>::error("no current space");
@@ -165,6 +164,8 @@ core::Result<size_t> ksyscall_task_create(SyscallTaskCreate *task_create)
                                                }));
 
     task_create->returned_handle = asset.handle;
+
+    Cpu::exit_syscall_safe_mode();
     return core::Result<size_t>::success((uint64_t)asset.handle);
 }
 
@@ -291,7 +292,6 @@ core::Result<size_t> ksyscall_task_launch(SyscallTaskLaunch *task_launch)
         space = Cpu::current()->currentTask()->space();
     }
 
-    Cpu::exit_syscall_safe_mode();
     if (space == nullptr)
     {
         return core::Result<size_t>::error("no current space");
@@ -311,6 +311,7 @@ core::Result<size_t> ksyscall_task_launch(SyscallTaskLaunch *task_launch)
 
     try$(kernel::task_run(task->uid()));
 
+    Cpu::exit_syscall_safe_mode();
     return core::Result<size_t>::success(0);
 }
 
@@ -936,10 +937,12 @@ core::Result<size_t> syscall_handle(SyscallInterface syscall)
     {
     case SYSCALL_DEBUG_LOG_ID:
     {
-        lock_scope$(log_lock);
+
         auto debug = syscall_debug_decode(syscall);
         log::log("{}", Cpu::current()->currentTask()->uid());
         log::log("{}", debug.message);
+
+        Cpu::exit_syscall_safe_mode();
         return core::Result<size_t>::success(0);
     }
     case SYSCALL_PHYSICAL_MEM_OWN_ID:

@@ -26,6 +26,7 @@ Everything should be done with care, and the code should aim to be fast, while b
 
 ## Milestones
 
+- [milestone 2 blog post](https://cyp.sh/blog/wingos-milestone-2/)
 - [milestone 1 blog post](https://cyp.sh/blog/wingos-milestone-1/)
 
 ## Dependencies
@@ -60,7 +61,7 @@ For now the kernel is still in development, but it has a few key features:
     - [x] IPC endpoint 
 - [x] Services and IPC (inter process communication) 
 - [x] PCI support (scan, devices, ...) (in userspace)
-- [ ] Hello File!
+- [x] Hello File!
     - [x] Nvme disk support
     - [x] service registry
     - [x] Partition support (GPT)
@@ -71,10 +72,10 @@ For now the kernel is still in development, but it has a few key features:
        - [x] Open file descriptor
        - [x] Directories support/traversal
        - [x] Read files
+- [x] Blocking IPC
 - [ ] Graphics support (VESA, framebuffer, ...)
 - [ ] Input support (keyboard, mouse, ...)
 - [ ] Port DOOM
-- [ ] Implement blocking IPC 
 - [ ] Create a shell 
 - [ ] Above and beyond 
 

@@ -43,10 +43,12 @@ void Com::putc(char value)
 
 core::Result<void> Com::write(const char *str, size_t size)
 {
+    _lock.lock();
     for (size_t i = 0; i < size; i++)
     {
         putc(str[i]);
     }
+    _lock.release();
     return {};
 }
 

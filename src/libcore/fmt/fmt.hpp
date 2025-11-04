@@ -28,11 +28,7 @@ constexpr core::Result<void> format_impl(Targ &target, core::Str fmt, int _c)
 {
     size_t c = _c;
 
-    while (c < fmt.len())
-    {
-        target.write(&fmt[c], 1);
-        c++;
-    }
+    target.write(fmt.data() + c, fmt.len() - c);
     return {};
 }
 
@@ -42,9 +38,9 @@ constexpr core::Result<void> format_impl(Targ &target, core::Str fmt, int _c, Ar
     size_t c = _c;
     while (c < fmt.len() && fmt[c] != '{')
     {
-        target.write(&fmt[c], 1);
         c++;
     }
+    target.write(fmt.begin() + _c, c - _c);
     if (c >= fmt.len())
     {
         return {};
@@ -71,11 +67,12 @@ constexpr core::Result<void> format_impl(Targ &target, core::Str fmt, int _c, Ar
     {
         return format_v(target, core::Str("{null}"));
     }
+    
     while (c < fmt.len() && fmt[c] != '{')
     {
-        target.write(fmt.begin() + c, 1);
         c++;
     }
+    target.write(fmt.begin() + _c, c - _c);
     if (c >= fmt.len())
     {
         return {};

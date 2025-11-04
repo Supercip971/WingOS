@@ -20,9 +20,17 @@ class Lock
     }
 
 public:
+
+
+
     bool try_lock()
     {
         return try_acquire();
+    }
+
+    bool view_locked()
+    {
+        return atomic_load_explicit(&_locked, memory_order_acquire);
     }
 
     void lock()

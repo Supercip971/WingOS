@@ -4,12 +4,14 @@
 #include <libcore/enum-op.hpp>
 #include <libcore/io/writer.hpp>
 #include <libcore/result.hpp>
+#include <libcore/lock/lock.hpp>
 #include <stdint.h>
 namespace arch::x86
 {
 
 class Com : public core::Writer
 {
+    core::Lock _lock = {};
 public:
     enum class Port : uint16_t
     {
@@ -96,7 +98,10 @@ public:
     constexpr core::Result<void> write(T view)
         requires(core::Viewable<T>)
     {
-        return write(view.data(), view.len());
+        _lock.lock();
+        auto res = write(view.data(), view.len());
+        _lock.release();
+        return res;
     }
 
     ~Com()

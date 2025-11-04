@@ -13,8 +13,10 @@ union Storage
 {
 
     using T = Pure<_T>;
+
     [[gnu::aligned(alignof(T))]] uint8_t _data[sizeof(T)];
 
+    T _val;
     constexpr const T *as_ptr() const
     {
         return (T const *)(_data);
@@ -27,18 +29,31 @@ union Storage
 
 
     constexpr Storage(Storage const &other bounded$) 
+        : _val(other.value())
     {
-        new (_data) T(other.value());
     }
 
     constexpr Storage() {}
     constexpr Storage(const T &value)
+        : _val(value)
     {
-        new (_data) T((value));
     }
     constexpr Storage(T &&value bounded$)
+        : _val(core::move(value))
     {
-        new (_data) T(core::move(value));
+    }
+
+
+    constexpr Storage &operator=(const Storage &other ) 
+    {
+        this->value() = other.value();
+        return *this;
+    }
+
+    constexpr Storage &operator=(Storage &&other )
+    {
+        this->value() = core::move(other.value());
+        return *this;
     }
 
     constexpr void destruct()

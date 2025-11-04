@@ -31,6 +31,47 @@ public:
         _writers= 0;
         _access_lock.release();
     }
+
+    bool try_write_acquire()
+    {
+        bool success = false;
+
+        _access_lock.lock();
+        _waiters += 1;
+        _access_lock.release();
+        int retry = 5;
+        while (true)
+        {
+            _access_lock.lock();
+            if (_readers == 0 && _writers == 0)
+            {
+                _writers += 1;
+                success = true;
+                _waiters -= 1;
+                _access_lock.release();
+                atomic_thread_fence(memory_order_seq_cst);
+                break;
+            }
+            _access_lock.release();
+            atomic_thread_fence(memory_order_seq_cst);
+
+            arch::pause();
+            retry--;
+            if(retry==0)
+            {
+                _access_lock.lock();
+                _waiters -= 1;
+                _access_lock.release();
+                atomic_thread_fence(memory_order_seq_cst);
+
+
+                return false;
+            }
+            
+        }
+        return success;
+ 
+    }
     bool write_acquire()
     {
         bool success = false;
@@ -47,6 +88,7 @@ public:
                 success = true;
                 _waiters -= 1;
                 _access_lock.release();
+                atomic_thread_fence(memory_order_seq_cst);
                 break;
             }
             _access_lock.release();

@@ -1,10 +1,12 @@
 #pragma once
 
+#include "kernel/generic/blocker.hpp"
 #include "kernel/generic/asset.hpp"
 #include "kernel/generic/space.hpp"
 #include "math/align.hpp"
 #include "libcore/ds/vec.hpp"
 #include "libcore/lock/lock.hpp"
+#include "scheduler.hpp"
 #include "wingos-headers/ipc.h"
 
 struct IpcMessageContent
@@ -118,6 +120,7 @@ struct ReceivedIpcMessage
     IpcMessagePair message_responded; // the message from the pov of the server (handle are different)
 };
 
+
 struct IpcConnection
 {
     uint64_t message_alloc_id;
@@ -130,6 +133,8 @@ struct IpcConnection
     bool accepted;
     IpcServerHandle server_handle; // the handle of the server that this connection is connected to
 
+    kernel::BlockMutex client_mutex;
+    kernel::BlockMutex server_mutex;
     core::Vec<ReceivedIpcMessage> message_sent;
 };
 

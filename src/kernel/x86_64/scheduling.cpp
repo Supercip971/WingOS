@@ -20,8 +20,22 @@ uintptr_t _scheduler_impl(uintptr_t stack)
     return stack;
 }
 
-void trigger_reschedule(CoreId cpu)
+uintptr_t _scheduler_impl_soft(uintptr_t stack)
+{
 
+    auto res = kernel::schedule(Cpu::current()->currentTask(), (void *)stack, Cpu::currentId(), true);
+
+    if (res.error())
+    {
+        return stack;
+    }
+
+    return stack;
+}
+
+
+
+void trigger_reschedule(CoreId cpu)
 {
     hw::acpi::Lapic::the().send_interrupt(cpu, 100);
 }

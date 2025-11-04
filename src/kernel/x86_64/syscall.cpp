@@ -16,22 +16,23 @@
 namespace arch::amd64
 {
 
-extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *stackframe)
+extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
 {
     //  log("syscall", LOG_INFO, "called syscall higher handler in: {} (stack: {})", stackframe->rip, stackframe->rsp);
 
+    SyscallStackFrame stackframe = *sf;
     
     Cpu::enter_syscall_safe_mode();
-    Cpu::current()->debug_saved_syscall_stackframe = stackframe->rbp;
+    Cpu::current()->debug_saved_syscall_stackframe = stackframe.rbp;
 
     auto res = syscall_handle({
-        .id = (uint32_t)stackframe->rax,
-        .arg1 = stackframe->rbx,
-        .arg2 = stackframe->rdx,
-        .arg3 = stackframe->rsi,
-        .arg4 = stackframe->rdi,
-        .arg5 = stackframe->r8,
-        .arg6 = stackframe->r9,
+        .id = (uint32_t)stackframe.rax,
+        .arg1 = stackframe.rbx,
+        .arg2 = stackframe.rdx,
+        .arg3 = stackframe.rsi,
+        .arg4 = stackframe.rdi,
+        .arg5 = stackframe.r8,
+        .arg6 = stackframe.r9,
     });
 
 
@@ -41,8 +42,8 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *stackframe)
 
         Cpu::end_syscall(); // early end syscall mode, 
         log::err$("syscall error: {}", res.error());
-        log::log$("syscall id: {}", stackframe->rax);
-        log::log$("syscall args: {}, {}, {}, {}, {}, {}", stackframe->rbx, stackframe->rdx, stackframe->rsi, stackframe->rdi, stackframe->r8, stackframe->r9);
+        log::log$("syscall id: {}", stackframe.rax);
+        log::log$("syscall args: {}, {}, {}, {}, {}, {}", stackframe.rbx, stackframe.rdx, stackframe.rsi, stackframe.rdi, stackframe.r8, stackframe.r9);
         log::log$("task: {}", Cpu::current()->currentTask() ? Cpu::current()->currentTask()->uid() : -1);
         
 
@@ -59,7 +60,7 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *stackframe)
     }
     else
     {
-        stackframe->rax = res.unwrap();
+        sf->rax = res.unwrap();
     }
     asm volatile("cli");
 

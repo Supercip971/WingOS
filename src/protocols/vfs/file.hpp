@@ -65,7 +65,7 @@ public:
         FsFile file = {};
         file.connection = Wingos::Space::self().connect_to_ipc_server(fs_endpoint);
         file.connection.wait_for_accept();
-        return core::Result<FsFile>::success(core::move(file));
+        return (file);
     }
 
 

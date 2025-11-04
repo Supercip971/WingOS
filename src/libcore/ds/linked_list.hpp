@@ -167,7 +167,7 @@ public:
             return Storage<T>::empty();
         }
 
-        auto res = (head->data.retreive());
+        T res = (head->data.retreive());
         auto next = head->next;
 
         if (tail == head)

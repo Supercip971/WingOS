@@ -141,15 +141,16 @@ namespace prot
             message.raw_buffer[i] = 0;
             message.len = i+1;
             
-           auto sended_message = connection.send(message, true);
-            auto message_handle = sended_message.unwrap();
-            if (sended_message.is_error())
-            {
-                return ("failed to send get server message");
-            }
-
+        //   auto sended_message = connection.send(message, true);
+            //auto message_handle = sended_message.unwrap();
+          //  if (sended_message.is_error())
+          //  {
+          //      return ("failed to send get server message");
+          //  }
+/*
             while (true)
             {
+                
                 auto received = connection.receive_reply(message_handle);
                 if (!received.is_error())
                 {
@@ -166,12 +167,12 @@ namespace prot
                     return (resp);
                 }
             }
-
-            /*
+*/
+            
             auto res = connection.call(message);
             if (!res.is_error())
             {
-                auto msg = res.unwrap();
+                auto msg = res.take();
                 InitGetServerResponse resp {};
                 resp.endpoint = msg.data[0].data;
                 if(resp.endpoint == 0)
@@ -180,11 +181,14 @@ namespace prot
                 }
                 resp.major = msg.data[1].data;
                 resp.minor = msg.data[2].data;
-                return (resp);
+                log::log$("got server response: endpoint={}, major={}, minor={}", resp.endpoint, resp.major, resp.minor);
+                return core::move(resp);
             }
+            log::log$("failed to get server response");
+
 
             return ("failed to receive get server response");
-       */ }
+        }
 
         core::Result<InitGetServerResponse> get_server(core::Str name, uint64_t major, uint64_t minor)
         {

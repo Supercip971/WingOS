@@ -2,7 +2,6 @@
 
 #include <arch/generic/syscalls.h>
 
-#include "kernel/generic/ipc.hpp"
 #include "wingos-headers/ipc.h"
 #include "wingos-headers/syscalls.h"
 
@@ -165,7 +164,15 @@ static inline SyscallIpcClientReceiveReply sys$ipc_receive_reply_client(bool blo
 
 static inline SyscallIpcServerReceive sys$ipc_receive_server (bool block, uint64_t space_handle,uint64_t server_asset_handle, IpcConnectionHandle connection_handle, IpcMessage* returned_message)
 {
-    SyscallIpcServerReceive receive = {block, false, space_handle, server_asset_handle, false, connection_handle, 0, returned_message};
+    SyscallIpcServerReceive receive = {
+        block, 
+        false, 
+        space_handle, 
+        server_asset_handle, 
+        false, 
+        connection_handle, 
+        0, 
+        returned_message};
     SyscallInterface interface = syscall_ipc_server_receive_encode(&receive);
     uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
         (void)result;

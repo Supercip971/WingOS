@@ -156,11 +156,11 @@ struct IpcClient : public UAsset
 
     core::Result<IpcMessage> call(IpcMessage &message)
     {
-        IpcMessage res;
+        IpcMessage res = {};
         SyscallIpcCall call = sys$ipc_call(associated_space_handle, handle, &message, &res);
         if (call.has_reply)
         {
-            return core::Result<IpcMessage>::success(core::move(res));
+            return res;
         }
         return core::Result<IpcMessage>::error("failed to call server");
     }
@@ -172,7 +172,7 @@ struct IpcClient : public UAsset
         
         if (receive.contain_response)
         {
-            return core::Result<IpcMessage>::success(core::move(res));
+            return res;
         }
         return core::Result<IpcMessage>::error("failed to receive reply");
     }

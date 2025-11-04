@@ -1,5 +1,6 @@
 #pragma once
 
+#include "kernel/generic/cpu.hpp"
 #include <stdint.h>
 #include <wingos-headers/asset.h>
 
@@ -7,6 +8,9 @@
 #include "kernel/generic/task.hpp"
 #include "libcore/ds/vec.hpp"
 #include "libcore/lock/lock.hpp"
+#include "libcore/fmt/log.hpp"
+#include "kernel/generic/context.hpp"
+
 
 struct Asset;
 
@@ -70,27 +74,48 @@ struct Asset
         IpcConnection *ipc_connection;
     };
 
-    static core::Result<Asset *> by_handle(Space *space, uint64_t handle)
+   static core::Result<Asset *> by_handle(Space *space, uint64_t handle)
     {
+
+        space->self->lock.lock();
         for (size_t i = 0; i < space->assets.len(); i++)
         {
             if (space->assets[i].handle == handle)
             {
+                space->self->lock.release();
                 return space->assets[i].asset;
             }
+        }
+        space->self->lock.release();
+
+        log::log$("Asset not found in space({}) -> {} for handle {}", space->space_handle, space->uid, handle);
+       
+        log::log$("task: {}", Cpu::current()->currentTask()->uid());
+
+        log::log$("Assets in space {}:", space->assets.len());
+
+        for(size_t i = 0; i < space->assets.len(); i++)
+        {
+            log::log$("  Asset[{}]: handle={}, kind={}", i, space->assets[i].handle, assetKind2Str(space->assets[i].asset->kind));
         }
         return core::Result<Asset *>::error("asset not found");
     }
 
     static core::Result<AssetPtr> by_handle_ptr(Space *space, uint64_t handle)
     {
+        space->self->lock.lock();
+
         for (size_t i = 0; i < space->assets.len(); i++)
         {
             if (space->assets[i].handle == handle)
             {
+                space->self->lock.release();
+
                 return space->assets[i];
             }
         }
+        space->self->lock.release();
+
         return core::Result<AssetPtr>::error("asset not found");
     }
 };

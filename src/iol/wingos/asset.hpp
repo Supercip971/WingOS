@@ -5,6 +5,8 @@
 #include "iol/wingos/syscalls.h"
 #include "mcx/mcx.hpp"
 #include "wingos-headers/syscalls.h"
+
+#include <libcore/fmt/log.hpp>
 namespace Wingos
 {
 

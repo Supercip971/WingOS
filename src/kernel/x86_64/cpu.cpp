@@ -32,7 +32,11 @@ core::Lock cpu_sys_lock = {};
 
 bool Cpu::enter_syscall_safe_mode()
 {
+    
 
+    asm volatile(
+        "sti\n"
+    );
     cpu_sys_lock.lock();
     asm volatile(
         "cli\n"
@@ -159,5 +163,9 @@ CoreId Cpu::currentId()
 
 void reschedule_self()
 {
-    hw::acpi::Lapic::the().send_interrupt(Cpu::currentId(), 101);
+
+    asm volatile("sti");
+
+    asm volatile("int $101");
+    //hw::acpi::Lapic::the().send_interrupt(Cpu::currentId(), 101);
 }

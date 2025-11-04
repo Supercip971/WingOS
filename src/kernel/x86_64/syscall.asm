@@ -34,6 +34,7 @@
     pop rdx
     pop rcx
     pop rbx
+    pop rax
 
 %endmacro
 
@@ -55,12 +56,15 @@ syscall_handle:
     push_all                ; push every register
 
     mov rdi, rsp            ; put the stackframe as the syscall argument
-    mov rbp, 0
+
     call syscall_higher_handler ; jump to beautiful higher level code
 
     pop_all_syscall         ; pop every register except RAX as we use it for the return value
 
-    mov rsp, [gs:0x8]
+    pop rcx                ; pop return RIP
+    add rsp, 8           ; pop return CS
+    pop r11               ; pop return RFLAGS
+    pop rsp              ; pop return RSP
+    
     swapgs
-    sti
     o64 sysret

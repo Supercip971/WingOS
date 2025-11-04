@@ -50,9 +50,10 @@ void CpuContext::load_to(void *state)
     }
 
     // Validate stack pointer
-    if (stored_frame.rsp == 0)
+    if (stored_frame.rsp == 0 || stored_frame.rip == 0)
     {
         log::err$("Invalid stack pointer: RSP={}", stored_frame.rsp);
+        log::err$("Invalid instruction pointer: RIP={}", stored_frame.rip);
         return;
     }
 
@@ -139,6 +140,7 @@ core::Result<void> CpuContext::prepare(CpuContextLaunch launch)
     data->kernel_stack_top = (void *)((uintptr_t)data->kernel_stack_ptr + kernel::kernel_stack_size);
     data->syscall_stack_top = (void *)((uintptr_t)data->syscall_stack_ptr + kernel::kernel_stack_size - 16);
 
+    
     data->saved_syscall_stack = 0;
 
  

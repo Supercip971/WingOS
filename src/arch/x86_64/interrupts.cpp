@@ -13,11 +13,12 @@
 #include "libcore/lock/lock.hpp"
 #include "libcore/lock/rwlock.hpp"
 uint64_t ccount;
-
-bool inside_error = false;
+volatile bool inside_error = false;
 extern uintptr_t _scheduler_impl(uintptr_t stack);
+extern uintptr_t _scheduler_impl_soft(uintptr_t stack);
 
-core::RWLock int_lock;
+
+core::RWLock int_lock = {};
 void interrupt_release();
 struct stackframe
 {
@@ -60,7 +61,13 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
     if (frame->interrupt_number < 32)
     {
         int_lock.read_release();
-        int_lock.write_acquire();
+
+
+        if(!Cpu::current()->in_interrupt())
+        {
+
+            int_lock.write_acquire();
+        }
         while (inside_error)
         {
             asm volatile("pause");
@@ -87,7 +94,6 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
         asm volatile("mov %%cr2, %0"
                      : "=r"(cr2));
         log::log$("cr2: {}", cr2 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
-        inside_error = false;
 
         log::log$("cpu: {}", hw::acpi::Lapic::the().id());
 
@@ -95,9 +101,16 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
        log::log$("kernel stacktrace:"); 
        dump_stackframe((void *)frame->rbp);
         log::log$("last syscall stacktrace:");
-        dump_stackframe((void *)Cpu::current()->debug_saved_syscall_stackframe);
+
+        if(Cpu::current()->debug_saved_syscall_stackframe != 0)
+        {
+
+            dump_stackframe((void *)Cpu::current()->debug_saved_syscall_stackframe);
+        }
 
         kernel::dump_all_current_running_tasks();
+
+        inside_error = false;
         int_lock.write_release();
         while (true)
         {
@@ -113,11 +126,19 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
         // log::log$("rescheduling on cpu {}", hw::acpi::Lapic::the().id());
         _scheduler_impl(stack);
     }
+    else if (frame->interrupt_number == 101)
+    {
+  
+        //log::log$("soft rescheduling on cpu {}", hw::acpi::Lapic::the().id());
+       
+        _scheduler_impl_soft(stack);
+    }
 
-    hw::acpi::Lapic::the().eoi();
 
     Cpu::current()->in_interrupt(false);
-    Cpu::current()->interrupt_release();
+    hw::acpi::Lapic::the().eoi();
+
+    Cpu::current()->interrupt_release(false);
 
     int_lock.read_release();
     return stack;

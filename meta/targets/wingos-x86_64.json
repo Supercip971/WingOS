@@ -51,7 +51,9 @@
                 "-Wassign-enum",
                 "-Wcomma", 
                 "-Wfor-loop-analysis",
-                "-Wimplicit-fallthrough"
+                "-Wimplicit-fallthrough",
+                "-Wexperimental-lifetime-safety",
+                "-Wdangling-gsl"
             ]
         },
         "cxx": {
@@ -100,7 +102,10 @@
                 "-Wassign-enum",
                 "-Wcomma", 
                 "-Wfor-loop-analysis",
-                "-Wimplicit-fallthrough"
+                "-Wimplicit-fallthrough",
+                "-Wexperimental-lifetime-safety",
+                "-Wdangling-gsl"
+    
             ]
         },
         "ld": {

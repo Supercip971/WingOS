@@ -4,9 +4,14 @@
 #include "kernel/generic/task.hpp"
 #include "libcore/logic.hpp"
 #include "libcore/result.hpp"
+#include <kernel/generic/blocker.hpp>
 
 namespace kernel
 {
+
+
+    struct SchedulerEntity;
+
 
 struct SchedulerEntity
 {
@@ -15,6 +20,8 @@ struct SchedulerEntity
     CoreId cpu_affinity = CpuCoreNone;
     CoreId old_cpu_affinity = CpuCoreNone;
     size_t total_cycles = 0;
+    BlockEvent block_event = {};
+    BlockEvent incoming_block_event = {};
 
     // note that running and sleeping are not counted in terms of ticks but rather are weighted
     long running = 0;
@@ -51,10 +58,18 @@ core::Result<void> scheduler_tick();
 
 core::Result<void> task_run(TUID task_id, CoreId core = 0);
 
-core::Result<Task *> schedule(Task *current, void *state, CoreId core);
+core::Result<Task *> schedule(Task *current, void *state, CoreId core, bool soft = false);
 
 core::Result<void> dump_all_current_running_tasks();
+
+core::Result<void> block_current_task(BlockEvent event);
+
+core::Result<void> resolve_blocked_tasks();
+
+void schedule_if_task_blocked();
 
 } // namespace kernel
 // arch implemented
 void trigger_reschedule(CoreId cpu);
+
+void reschedule_self();

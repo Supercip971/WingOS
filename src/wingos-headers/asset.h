@@ -17,6 +17,7 @@ typedef enum {
 
 } AssetKind;
 
+
 typedef enum 
 {
     ASSET_MAPPING_FLAG_READ = 1 << 0, // if the mapping is readable
@@ -26,4 +27,21 @@ typedef enum
 
 #ifdef __cplusplus
 }
+
+
+static inline const char* assetKind2Str(AssetKind kind)
+{
+    switch(kind)
+    {
+        case OBJECT_KIND_UNKNOWN: return "UNKNOWN";
+        case OBJECT_KIND_MEMORY: return "MEMORY";
+        case OBJECT_KIND_MAPPING: return "MAPPING";
+        case OBJECT_KIND_SPACE: return "SPACE";
+        case OBJECT_KIND_TASK: return "TASK";
+        case OBJECT_KIND_IPC_SERVER: return "IPC_SERVER";
+        case OBJECT_KIND_IPC_CONNECTION: return "IPC_CONNECTION";
+        default: return "INVALID_KIND";
+    }
+} 
+
 #endif

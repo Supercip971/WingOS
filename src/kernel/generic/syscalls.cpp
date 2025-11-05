@@ -629,6 +629,8 @@ core::Result<size_t> ksyscall_ipc_call(SyscallIpcCall *call)
     {
         space = Cpu::current()->currentTask()->space();
     }
+    log::log$("start of ipc call on: {}", Cpu::current()->currentTask()->uid());
+    
     Cpu::exit_syscall_safe_mode();
 
     if (space == nullptr)
@@ -653,21 +655,24 @@ core::Result<size_t> ksyscall_ipc_call(SyscallIpcCall *call)
     {
         return core::Result<size_t>::error("connection is not accepted");
     }
-
+    
     auto res = call_server_and_wait(ipc_connection, call->message);
 
+    
     if (res.is_error())
     {
         return core::Result<size_t>(res.error());
     }
 
-    auto received_message = core::move(res.unwrap());
-
+    auto received_message = (res.take());
+    Cpu::enter_syscall_safe_mode();
+    
     *try$(syscall_check_ptr(call->returned_message)) = core::move(received_message);
     call->has_reply = true;
+    Cpu::exit_syscall_safe_mode();
     // call->returned_msg_handle = received_message.uid;
 
-    log::log$("end of ipc call on: {}", Cpu::current()->id());
+    log::log$("end of ipc call on: {}", Cpu::current()->currentTask()->uid());
     return core::Result<size_t>::success((size_t)0);
 }
 
@@ -740,6 +745,9 @@ core::Result<size_t> ksyscall_ipc_server_reply(SyscallIpcReply *reply)
     {
         return core::Result<size_t>::error("no current space");
     }
+
+
+    auto msg = try$(syscall_check_ptr(reply->message));
     Cpu::exit_syscall_safe_mode();
 
 
@@ -759,7 +767,7 @@ core::Result<size_t> ksyscall_ipc_server_reply(SyscallIpcReply *reply)
         return core::Result<size_t>::error("connection is not accepted");
     }
 
-    auto res = server_reply_message(ipc_connection, reply->message_handle, try$(syscall_check_ptr(reply->message)));
+    auto res = server_reply_message(ipc_connection, reply->message_handle, msg);
 
     if (res.is_error())
     {

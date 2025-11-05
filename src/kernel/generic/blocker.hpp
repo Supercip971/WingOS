@@ -60,7 +60,7 @@ namespace kernel
             BlockMutex* mtx;
         };
 
-        bool is_liberated_async()
+        bool liberated()
         {
             switch(type)
             {
@@ -85,28 +85,7 @@ namespace kernel
             }
  
         }
-        bool is_liberated()
-        {
-            switch(type)
-            {
-                case Type::MUTEX:
-                {
-                    if(mtx->mutex_value())
-                    {
-                        return false;
-                    }
-                    return true;
-                }
-                case Type::NONE:
-                {
-                    return true;
-                }
-                default: 
-                {
-                    return false;
-                }
-            }
-        }
+        
     };
     BlockEvent create_block(BlockEvent::Type type, uintptr_t data=  0);
 

@@ -3,7 +3,7 @@
 #ifdef __cplusplus
 
 #    include "libcore/type-utils.hpp"
-#include "math/align.hpp"
+#    include "math/align.hpp"
 extern "C"
 {
 #endif
@@ -11,9 +11,9 @@ extern "C"
 #include <stddef.h>
 #include <stdint.h>
 
-typedef uint64_t  MessageHandle;
-typedef uint64_t IpcServerHandle;
-typedef uint64_t IpcConnectionHandle;
+    typedef uint64_t MessageHandle;
+    typedef uint64_t IpcServerHandle;
+    typedef uint64_t IpcConnectionHandle;
 
 // first IPC server manager,
 // each server is a string and a handle and
@@ -23,7 +23,7 @@ typedef uint64_t IpcConnectionHandle;
 
 #define MAX_IPC_DATA_SIZE 8
 
-#define MAX_IPC_BUFFER_SIZE 110
+#define MAX_IPC_BUFFER_SIZE 112
 
     struct IpcData
     {
@@ -38,6 +38,48 @@ typedef uint64_t IpcConnectionHandle;
 #ifdef __cplusplus
     struct IpcMessage : public core::NoCopy
     {
+        IpcMessage() : message_id(0), flags(0), data{}, len(0)
+        {
+        }
+
+        constexpr IpcMessage(IpcMessage && other) noexcept
+            : message_id(other.message_id), flags(other.flags), len(other.len)
+        {
+
+            for (size_t i = 0; i < 8; i++)
+            {
+                data[i] = other.data[i];
+                data[i].is_asset = other.data[i].is_asset;
+                data[i].data = other.data[i].data;
+            }
+            for (size_t i = 0; i < math::alignUp((size_t)other.len, sizeof(uint64_t)) / sizeof(uint64_t); i++)
+            {
+                buffer[i] = other.buffer[i];
+            }
+        }
+
+
+        constexpr IpcMessage &operator=(IpcMessage &&other) noexcept
+        {
+            if (this != &other)
+            {
+                message_id = other.message_id;
+                flags = other.flags;
+                len = other.len;
+
+                for (size_t i = 0; i < 8; i++)
+                {
+                    data[i] = other.data[i];
+                    data[i].is_asset = other.data[i].is_asset;
+                    data[i].data = other.data[i].data;
+                }
+                for (size_t i = 0; i < math::alignUp((size_t)other.len, sizeof(uint64_t)) / sizeof(uint64_t); i++)
+                {
+                    buffer[i] = other.buffer[i];
+                }
+            }
+            return *this;
+        }
         constexpr static IpcMessage copy(const IpcMessage &other)
         {
             IpcMessage msg;
@@ -50,7 +92,7 @@ typedef uint64_t IpcConnectionHandle;
                 msg.data[i].is_asset = other.data[i].is_asset;
                 msg.data[i].data = other.data[i].data;
             }
-            for (size_t i = 0; i < math::alignUp((size_t)other.len, sizeof(uint64_t))/ sizeof(uint64_t); i++)
+            for (size_t i = 0; i < math::alignUp((size_t)other.len, sizeof(uint64_t)) / sizeof(uint64_t); i++)
             {
                 msg.buffer[i] = other.buffer[i];
             }

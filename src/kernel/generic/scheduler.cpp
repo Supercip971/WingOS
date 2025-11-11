@@ -194,7 +194,7 @@ static inline size_t scheduled_task_count()
     return count;
 }
 
-static core::Result<int> query_nearest_task(size_t queue_id, CoreId core, bool consider_siblings = false)
+static core::Result<size_t> query_nearest_task(size_t queue_id, CoreId core, bool consider_siblings = false)
 {
     // For tasks in the given queue, choose the one whose CPU affinity is either unset,
     // already matching the given CPU, or whose affinity is “close” (i.e. sibling) to the given CPU.
@@ -221,7 +221,7 @@ static core::Result<int> query_nearest_task(size_t queue_id, CoreId core, bool c
         off++;
     }
 
-    return {-1};
+    return "no task found";
 }
 
 static long summed_weights()
@@ -377,6 +377,8 @@ static core::Result<void> fix_sched_affinity()
     }
 
     to_fix.clear();
+
+   // log::log$("fix affinity attempts: {}", attempt);
     if (attempt >= max_attempt)
     {
         log::err$("unable to fix affinity, attempt limit reached");
@@ -442,10 +444,6 @@ core::Result<void> schedule_one(CoreId cpu)
             continue;
         }
         auto val = task.unwrap();
-        if (val == -1)
-        {
-            continue;
-        }
 
 
 
@@ -503,11 +501,7 @@ core::Result<void> schedule_all()
                 continue;
             }
             auto val = task.unwrap();
-            if (val == -1)
-            {
-                retried_ptr->push(cpu);
-                continue;
-            }
+            
 
             run_task_queued(cpu, i, val);
         }
@@ -521,12 +515,9 @@ core::Result<void> schedule_all()
 
         // we retry for task with a lower priority by swapping the retried task,
 
-        //        core::swap(choosen_ptr, retried_ptr);
-        choosen_ptr->clear();
-        for (size_t j = 0; j < retried_ptr->len(); j++)
-        {
-            choosen_ptr->push((*retried_ptr)[j]);
-        }
+        core::swap(choosen_ptr, retried_ptr);
+        retried_ptr->clear();
+        
     }
 
     for (size_t i = 0; i < choosen_ptr->len(); i++)
@@ -635,12 +626,11 @@ core::Result<void> reschedule_all()
         try$(fix_sched_affinity());
     }
     schedule_other_cpus();
+
     return {};
 }
 core::Result<void> resolve_blocked_tasks_scheduler()
 {
-    // Cpu::current()->interrupt_hold();
-
     for (auto &cpu : cpu_runned)
     {
 
@@ -648,7 +638,7 @@ core::Result<void> resolve_blocked_tasks_scheduler()
         {
             continue;
         }
-        if (cpu.block_event.is_liberated_async())
+        if (cpu.block_event.liberated())
         {
             log::log$("unblocking: {}", cpu.task->uid());
 
@@ -662,8 +652,7 @@ core::Result<void> resolve_blocked_tasks_scheduler()
         size_t i = 0;
         for (auto &task : blocked_tasks)
         {
-            log::log$("checking blocked task: {}", task.task->uid());
-            if (task.block_event.is_liberated_async())
+            if (task.block_event.liberated())
             {
                 task.block_event = {};
 
@@ -672,9 +661,6 @@ core::Result<void> resolve_blocked_tasks_scheduler()
 
                 blocked_tasks.remove(i);
                 removed = true;
-
-                // scheduler_lock.write_release();
-                //  Cpu::current()->interrupt_release();
 
                 break;
             }
@@ -819,14 +805,24 @@ core::Result<void> block_current_task(BlockEvent event)
     // funny don't need to lock the scheduler because this is always true
 
     scheduler_lock.write_acquire();
-    Cpu::current()->interrupt_hold();
+
+    asm volatile("cli");
+//    Cpu::current()->interrupt_hold();
 
     cpu_runned[Cpu::currentId()].block_event = event;
 
     scheduler_lock.write_release();
 
     asm volatile("int $101");
-    Cpu::current()->interrupt_release();
+    asm volatile("sti");
+
+    // Here we can have a schedule, then we are back onto another CPU 
+    // So this cpu has no idea about the interrupt state
+    // So Cpu[0]::current()->interrupt_hold(); 
+    // = SCHEDULE 
+    // Now Cpu[0]::current() is another CPU
+    // Cpu[1]::current()->interrupt_release(); errror ! 
+
 
 
     // FIXME: here there is a small world where I have an interrupt between releasing the lock and rescheduling myself

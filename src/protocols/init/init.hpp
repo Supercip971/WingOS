@@ -44,7 +44,7 @@ namespace prot
 
     struct InitGetServerResponse 
     {
-        MessageHandle endpoint; 
+        IpcServerHandle endpoint; 
         uint64_t major;
         uint64_t minor;
     };

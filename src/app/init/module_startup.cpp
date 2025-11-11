@@ -1,5 +1,6 @@
-#include "module_startup.hpp"
 #include <string.h>
+
+#include "module_startup.hpp"
 
 #include "dev/pci/classes.hpp"
 #include "dev/pci/pci.hpp"
@@ -10,7 +11,6 @@
 #include "libelf/elf.hpp"
 #include "mcx/mcx.hpp"
 #include "wingos-headers/asset.h"
-
 core::Vec<core::Str> module_service = {};
 core::Vec<core::Str> disk_service = {};
 
@@ -21,77 +21,24 @@ struct ModuleLaunch
 };
 core::Vec<ModuleLaunch> module_to_launch = {};
 core::Vec<core::Str> started_modules = {};
-
 core::Vec<core::Str> started_services = {};
 wjson::Json json = {};
 
-core::Result<size_t> execute_module(elf::ElfLoader loaded)
+VirtRange map_mcx_address(mcx::MemoryRange range)
 {
-
-    auto subspace = Wingos::Space::self().create_space();
-
-    auto task_asset = subspace.create_task((uintptr_t)loaded.entry_point());
-
-    if (task_asset.handle == 0)
-    {
-        log::err$("failed to create task asset: {}", task_asset.handle);
-        return core::Result<size_t>::error("failed to create task asset");
-    }
-
-    for (size_t i = 0; i < loaded.program_count(); i++)
-    {
-
-        auto ph = try$(loaded.program_header(i));
-        if (ph.type != core::underlying_value(ElfProgramHeaderType::HEADER_LOAD))
-        {
-            log::warn$("skipping program header {}: type is not LOAD but {}", i, ph.type);
-            continue;
-        }
-
-        //  log::log$("section[{}]: type: {}, flags: {}, virt_addr: {}, file_offset: {}, file_size: {}, mem_size: {}",
-        //            i, ph.type | fmt::FMT_HEX, ph.flags | fmt::FMT_HEX, ph.virt_addr | fmt::FMT_HEX, ph.file_offset | fmt::FMT_HEX, ph.file_size | fmt::FMT_HEX,
-        //          ph.mem_size | fmt::FMT_HEX);
-        //
-        auto memory = Wingos::Space::self().allocate_physical_memory(ph.mem_size, false);
-
-        auto mapped_self = Wingos::Space::self().map_memory(memory, ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);
-
-        void *copied_data = (void *)((uintptr_t)mapped_self.ptr());
-        memset(copied_data, 0, ph.mem_size);
-        memcpy(copied_data,
-               (void *)((uintptr_t)loaded.range().start() + ph.file_offset),
-               ph.file_size);
-
-        //   log::log$("copied {} bytes from {} to {}", ph.file_size | fmt::FMT_HEX, (uintptr_t)loaded.range().start() + ph.file_offset | fmt::FMT_HEX, (uintptr_t)copied_data | fmt::FMT_HEX);
-
-        auto moved_memory = Wingos::Space::self().move_to(subspace, memory);
-
-        subspace.map_memory(ph.virt_addr, ph.virt_addr + ph.mem_size, moved_memory, ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);
-    }
-
-    subspace.launch_task(task_asset);
-
-    log::log$("[INIT] launched module");
-
-    return 0ul;
-}
-
-core::Result<size_t> start_service(mcx::MachineContextModule mod)
-{
-
-    log::log$("[INIT] starting module: {}", mod.path);
-
-    auto range = mod.range;
     range.start(range.start() - 0xffff800000000000);
     range.end(range.end() - 0xffff800000000000);
 
-    auto self_mapped = Wingos::Space::self().map_physical_memory(range.start(), range.len(), ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);
+    Wingos::Space::self().map_physical_memory(range.start(), range.len(), ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);
 
-    auto loaded = elf::ElfLoader::load(VirtRange(
-        range.start() + 0x0000002000000000,
-        range.end() + 0x0000002000000000));
+    void *mem = (void *)(range.start() + 0x0000002000000000);
 
-    (void)self_mapped;
+    return VirtRange((uintptr_t)mem, (uintptr_t)mem + range.len());
+}
+core::Result<size_t> start_service(mcx::MachineContextModule mod)
+{
+    auto vrange = map_mcx_address(mod.range);
+    auto loaded = elf::ElfLoader::load(vrange);
 
     if (loaded.is_error())
     {
@@ -101,8 +48,19 @@ core::Result<size_t> start_service(mcx::MachineContextModule mod)
 
     auto v = execute_module(loaded.unwrap());
 
+    log::log$("[INIT] started boot module: {}", mod.path);
     return v;
 }
+
+core::Result<size_t> start_service_fs(core::Str const &path)
+{
+
+    log::log$("[INIT] starting module from fs: {}", path);
+    log::warn$("[INIT] starting module from fs is not implemented yet");
+
+    return core::Result<size_t>::error("not implemented");
+}
+
 core::Result<size_t> start_service(mcx::MachineContext *context, core::Str path)
 {
     for (int i = 0; i < context->_modules_count; i++)
@@ -115,9 +73,11 @@ core::Result<size_t> start_service(mcx::MachineContext *context, core::Str path)
         }
     }
 
-    log::err$("[INIT] no module found with path: {}", path);
-    return core::Result<size_t>::error("module not found");
+    log::warn$("[INIT] no module found with path: {}", path);
+
+    return start_service_fs(path);
 }
+
 void start_from_pci(wjson::JsonValue *pjson)
 {
     log::log$("Starting from PCI scan...");
@@ -165,8 +125,6 @@ void start_from_pci(wjson::JsonValue *pjson)
                     }
                 }
                 module_to_launch.push(ml);
-                //                start_service(context, path);
-                //                log::log$("Driver started: {}", path);
             }
         }
     }
@@ -200,13 +158,8 @@ core::Result<void> load_module_config(mcx::MachineContext *context)
         return "no config module found, cannot continue";
     }
 
-    auto config_range = config_module.range;
-    config_range.start(config_range.start() - 0xffff800000000000);
-    config_range.end(config_range.end() - 0xffff800000000000);
-
-    Wingos::Space::self().map_physical_memory(config_range.start(), config_range.len(), ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);
-
-    auto loaded_config = (void *)(config_range.start() + 0x0000002000000000);
+    auto config_range = map_mcx_address(config_module.range);
+    auto loaded_config = (void *)(config_range.start());
 
     auto dat = core::Str((const char *)loaded_config, config_range.len());
 
@@ -246,47 +199,42 @@ core::Result<void> load_module_config(mcx::MachineContext *context)
     return {};
 }
 
+core::Result<bool> try_startup_modules_cycle_one(mcx::MachineContext *context)
+{
+    for (size_t i = 0; i < module_to_launch.len(); i++)
+    {
+        auto &mod = module_to_launch[i];
+
+        bool can_start = true;
+        for (size_t d = 0; d < mod.deps.len(); d++)
+        {
+            if (!started_services.contain(mod.deps[d]))
+            {
+                can_start = false;
+                break;
+            }
+        }
+
+        if (!can_start)
+        {
+            continue;
+        }
+        try$(start_service(context, mod.name));
+
+        started_modules.push(mod.name);
+        module_to_launch.pop(i);
+
+        return true;
+    }
+
+    return false;
+}
 core::Result<void> try_startup_modules_cycle(mcx::MachineContext *context)
 {
-    bool started_one = true;
 
-    while (started_one)
+    while (try$(try_startup_modules_cycle_one(context)))
     {
-        started_one = false;
-        for (size_t i = 0; i < module_to_launch.len(); i++)
-        {
-            auto &mod = module_to_launch[i];
-
-            bool can_start = true;
-            for (size_t d = 0; d < mod.deps.len(); d++)
-            {
-                log::log$("module {} depends on {}, checking... against: {}", mod.name, mod.deps[d]);
-                if (!started_services.contain(mod.deps[d]))
-                {
-
-                    can_start = false;
-                    break;
-                }
-            }
-
-            if (!can_start)
-            {
-                continue;
-            }
-            log::log$("checking module {} for startup, can_start: {}", mod.name, can_start);
-
-            auto res = start_service(context, mod.name);
-            if (res.is_error())
-            {
-                log::err$("failed to start module {}: {}", mod.name, res.error());
-                return res.error();
-            }
-            started_modules.push(mod.name);
-            started_one = true;
-            module_to_launch.pop(i);
-            break;
-        }
-    }
+    };
 
     return {};
 }
@@ -295,8 +243,6 @@ mcx::MachineContext *gmcx = nullptr;
 
 core::Result<void> startup_module(mcx::MachineContext *context)
 {
-    log::log$("starting modules...");
-
     gmcx = context;
 
     load_module_config(context);

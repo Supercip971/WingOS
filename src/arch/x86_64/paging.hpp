@@ -213,7 +213,6 @@ public:
         }
         else
         {
-
             return table_from_addr(addr)->_verify(addr);
         }
     }

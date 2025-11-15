@@ -1,17 +1,17 @@
 #pragma once
 #include <stdint.h>
-
+#include "scheduler.hpp"
 #include "arch/x86_64/context.hpp"
 
 #include "kernel/generic/context.hpp"
 #include "kernel/generic/paging.hpp"
 #include "libcore/lock/lock.hpp"
+
 #include "libcore/result.hpp"
 
 struct Space;
 namespace kernel
 {
-using TUID = uint64_t;
 
 enum class TaskState
 {
@@ -33,18 +33,29 @@ enum TaskPriority : uint32_t
     TASK_PRIORITY_COUNT,
 };
 
-static constexpr size_t TASK_QUEUE_COUNT = 128;
 
+struct SchedulerControlBlock;
 class Task
 {
     TUID _uid = 0;
     TaskState _state = TaskState::TASK_NONE;
     CpuContext *_cpu_context = nullptr;
+    SchedulerControlBlock _scheduler_block;
 
     Task() = default;
     static Task* _task_allocate();
 public:
 
+
+    bool should_run() const
+    {
+        return !_scheduler_block.is_idle;
+    }
+
+    SchedulerControlBlock &sched() bounded$
+    {
+        return _scheduler_block;
+    }
     Space *_space_owner;
 
     Space *space()

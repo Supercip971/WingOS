@@ -2,10 +2,16 @@
 #pragma once
 
 // generally used by implementation
-#include "kernel/generic/task.hpp"
-
+#include <stdint.h>
+#include <stddef.h>
+#include <libcore/lock/lock.hpp>
 using CoreId = int;
 static constexpr CoreId CpuCoreNone = -1;
+
+
+namespace kernel {
+    class Task;
+};
 class [[gnu::packed]] Cpu 
 {
 

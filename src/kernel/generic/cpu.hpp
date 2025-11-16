@@ -9,6 +9,7 @@ using CoreId = int;
 static constexpr CoreId CpuCoreNone = -1;
 
 
+
 namespace kernel {
     class Task;
 };
@@ -28,10 +29,6 @@ protected:
     size_t interrupt_depth = 0;
     bool _in_interrupt = false;
     bool _present;
-
-    kernel::Task *_current_task = nullptr;
-
-    
 
 public:
 
@@ -65,9 +62,7 @@ public:
 
     static size_t count();
 
-    kernel::Task *currentTask() const { return _current_task; }
-    void currentTask(kernel::Task *task) { _current_task = task; 
-    }
+    kernel::Task *currentTask() const;
 
     void interrupt_hold();
 

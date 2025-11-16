@@ -12,7 +12,7 @@ struct SpacePtr
     uint64_t handle; // the handle of the space in the space
 };
 
-core::Vec<SpacePtr> _spaces;
+core::Vec<SpacePtr> _spaces = {};
 
 core::Result<AssetPtr> space_create(Space *parent, [[maybe_unused]] uint64_t flags, [[maybe_unused]] uint64_t rights)
 {

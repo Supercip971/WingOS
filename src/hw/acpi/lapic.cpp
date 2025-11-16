@@ -11,7 +11,7 @@
 #include "libcore/fmt/log.hpp"
 #include "libcore/result.hpp"
 
-static hw::acpi::Lapic main_lapic;
+static hw::acpi::Lapic main_lapic = {};
 namespace hw::acpi
 {
 
@@ -90,12 +90,12 @@ core::Result<void> Lapic::send_sipi(LCpuId id, PhysAddr jump_addr)
     return {};
 }
 
-size_t Lapic::_timer_tick_in_10ms()
+size_t Lapic::_timer_tick_in_16ms()
 {
     write(LAPICReg::TIMER_INITIAL_COUNT, 0xFFFFFFFF);
 
     // wait for 10ms
-    hpet::hpet_sleep(10);
+    hpet::hpet_sleep(16);
 
     LAPICLocalVectorTable lvt = {0};
     lvt.val.mask = 1;
@@ -107,9 +107,13 @@ size_t Lapic::_timer_tick_in_10ms()
 core::Result<void> Lapic::timer_initialize()
 {
     write(LAPICReg::TIMER_DIVIDE_CONFIGURATION, LAPIC_TIMER_DIVIDE_BY_16);
-    auto ticks = _timer_tick_in_10ms();
+    auto ticks = _timer_tick_in_16ms(); // ticks in 16ms
+    // ticks = a / 16 
+    // (ticks * 16 / 10)
+    // we want ticks in 0.1ms
+    // so ticks = a / 0.1 = a * 10 / 16
 
-    log::log$("LAPIC ticks in 10ms: {}", ticks);
+    log::log$("LAPIC ticks in 16ms: {}", ticks);
 
     LAPICLocalVectorTable lvt = {0};
     lvt.val.mask = 0;
@@ -118,14 +122,14 @@ core::Result<void> Lapic::timer_initialize()
     write(LAPICReg::LVT_TIMER, lvt.raw);
     log::log$("LVT_TIMER: {}", lvt.raw);
     write(LAPICReg::TIMER_DIVIDE_CONFIGURATION, LAPIC_TIMER_DIVIDE_BY_16);
-    write(LAPICReg::TIMER_INITIAL_COUNT, ticks / 10); // 0.1 ms per switch
+    write(LAPICReg::TIMER_INITIAL_COUNT, (ticks/16)*10); // 10 ms per switch
 
     return {};
 }
 void Lapic::send_interrupt(LCpuId cpu, uint8_t vector)
 {
     write(LAPICReg::INTERRUPT_COMMAND_START_2, (static_cast<uint64_t>(cpu) << 24));
-    write(LAPICReg::INTERRUPT_COMMAND_START, vector | LAPIC_INTERRUPT_CMD_SET_INIT_DEASSERT);
+    write(LAPICReg::INTERRUPT_COMMAND_START, vector | LAPIC_INTERRUPT_CMD_SET_INIT_DEASSERT); 
 }
 
 }; // namespace hw::acpi

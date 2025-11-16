@@ -62,7 +62,7 @@ public:
         return false;
     }
 
-    core::Vec<CpuTreeNode *> _children;
+    core::Vec<CpuTreeNode *> _children = {};
     Cpu *_cpu;
 
     static CpuTreeNode const *root();

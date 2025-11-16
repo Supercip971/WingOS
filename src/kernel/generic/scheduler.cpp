@@ -42,6 +42,15 @@ namespace kernel
 static inline void add_entity_to_queue(Task* task)
 {
 
+    if(task == nullptr)
+    {
+        return;
+    }
+
+    if(task->sched().is_idle)
+    {
+        return;
+    }
     if (!task->should_run())
     {
         return;
@@ -124,8 +133,7 @@ core::Result<void> scheduler_init(int cpu_count)
     scheduler_lock.write_release();
     for (size_t i = 0; i < running_cpu_count; i++)
     {
-        Cpu::get(i)->currentTask(nullptr);
-        
+ 
         cpu_runned[i] = scheduler_idles[i];
         cpu_runned[i]->sched().is_idle = true;
         cpu_running[i] = cpu_runned[i];
@@ -153,7 +161,8 @@ core::Result<kernel::Task *> next_task_select(CoreId core)
         return core::Result<kernel::Task *>::error("invalid core id");
     }
 
-    if (cpu_runned[core] == nullptr)
+    auto task = cpu_runned[core];
+    if (task == nullptr)
     {
         if ((size_t)core < scheduler_idles.len())
         {
@@ -162,7 +171,7 @@ core::Result<kernel::Task *> next_task_select(CoreId core)
         return core::Result<kernel::Task *>::error("no idle task available for core");
     }
 
-    return cpu_runned[core];
+    return task;
 }
 
 core::Result<void> task_run(TUID task_id, CoreId core)
@@ -266,7 +275,6 @@ static void update_runned_task_for_cpu(CoreId cpu)
     sched_block.running += 1;
     sched_block.old_cpu_affinity = cpu;
 
-    add_entity_to_queue(cpu_runned[cpu]);
 
     // FIX: Clear the CPU slot after moving task to queue
     cpu_runned[cpu] = scheduler_idles[cpu];
@@ -329,7 +337,7 @@ static void update_runned_tasks()
         auto& sched_block = cpu_runned[i]->sched();  
         sched_block.running += 1;
         sched_block.old_cpu_affinity = i;
-        add_entity_to_queue(cpu_runned[i]);
+    //    add_entity_to_queue(cpu_runned[i]);
 
         // FIX: Clear the CPU slot after moving task to queue
         cpu_runned[i] = scheduler_idles[i];
@@ -388,8 +396,8 @@ static core::Result<void> fix_sched_affinity()
     }
 
     to_fix.clear();
-
-   // log::log$("fix affinity attempts: {}", attempt);
+    
+    // log::log$("fix affinity attempts: {}", attempt);
     if (attempt >= max_attempt)
     {
         log::err$("unable to fix affinity, attempt limit reached");
@@ -696,21 +704,20 @@ core::Result<Task *> schedule_self(Task *current, void *state, CoreId core)
         scheduler_lock.write_release();
         return {};
     }
- 
- 
-    auto [_next, err] = (next_task_select(core));
 
-    if (err.has_value())
+    auto next_res = next_task_select(core);
+    if (next_res.is_error())
     {
+        log::err$("unable to select next task on core {}", core);
         scheduler_lock.write_release();
-        return *err;
+        return next_res.error();
     }
 
-    auto next = _next.unwrap();
+    auto next = next_res.unwrap();
 
     if (current != nullptr)
     {
-        if (current->uid() == (next)->uid())
+        if (current->uid() == next->uid())
         {
             scheduler_lock.write_release();
             return next;
@@ -718,25 +725,25 @@ core::Result<Task *> schedule_self(Task *current, void *state, CoreId core)
         current->cpu_context()->save_in(state);
     }
 
-
-    // if the next task is swapped between two cpus, wait
-    // for it to save to load it
-    
-
     next->cpu_context()->load_to(state);
 
-    Cpu::current()->currentTask(next);
-
+    add_entity_to_queue(cpu_running[core]);
     cpu_running[Cpu::currentId()] = cpu_runned[Cpu::currentId()];
 
     scheduler_lock.write_release();
     return next;
- 
 }
 
 core::Result<Task *> schedule(Task *current, void *state, CoreId core, bool soft)
 {
 
+    CoreId cur = Cpu::currentId();
+    if (cur != core)
+    {
+        log::err$("attempt to schedule on core {} from core {}", core, cur);
+        return "cannot schedule on another core";
+    }
+ 
     if (soft)
     {
         return schedule_self(current, state, core);
@@ -744,10 +751,7 @@ core::Result<Task *> schedule(Task *current, void *state, CoreId core, bool soft
     else if (core == 0)
     {
 
-        if (!scheduler_lock.try_write_acquire())
-        {
-            return current;
-        }
+        scheduler_lock.write_acquire();
         auto v = reschedule_all();
         if (v.is_error())
         {
@@ -757,34 +761,41 @@ core::Result<Task *> schedule(Task *current, void *state, CoreId core, bool soft
             scheduler_lock.write_release();
             return {};
         }
+
+     //   arch::invalidate(cpu_runned.data());
         scheduler_lock.write_release();
     }
 
     scheduler_lock.read_acquire();
-    auto [_next, err] = (next_task_select(core));
+    auto next_res = next_task_select(core);
 
-    if (err.has_value())
+    if (next_res.is_error())
     {
+        log::err$("unable to select next task on core {}", core);
         scheduler_lock.read_release();
-        return *err;
+        return next_res.error();
     }
 
-    auto next = _next.unwrap();
+    kernel::Task* next = next_res.unwrap();
 
     if (current != nullptr)
     {
-        if (current->uid() == (next)->uid())
+        if (current->uid() == next->uid())
         {
+            current->cpu_context()->await_load = false;
+            current->cpu_context()->await_save = false;
+
             scheduler_lock.read_release();
+
             return next;
         }
         current->cpu_context()->save_in(state);
     }
 
-    scheduler_lock.read_release();
+   // scheduler_lock.read_release();
 
-    // if the next task is swapped between two cpus, wait
-    // for it to save to load it
+
+    // if swapping from another cpu, wait for the other cpu to save its context
     while (true)
     {
         next->cpu_context()->lock.lock();
@@ -800,16 +811,20 @@ core::Result<Task *> schedule(Task *current, void *state, CoreId core, bool soft
         asm volatile("pause");
     }
 
-    scheduler_lock.read_acquire();
     next->cpu_context()->load_to(state);
 
-    Cpu::current()->currentTask(next);
+
+    // FIXME: maybe use a write lock here ?
+    add_entity_to_queue(cpu_running[core]);
     cpu_running[Cpu::currentId()] = cpu_runned[Cpu::currentId()];
 
 
     scheduler_lock.read_release();
     return next;
 }
+
+
+
 
 core::Result<void> block_current_task(BlockEvent event)
 {
@@ -836,7 +851,7 @@ core::Result<void> block_current_task(BlockEvent event)
     // So Cpu[0]::current()->interrupt_hold(); 
     // = SCHEDULE 
     // Now Cpu[0]::current() is another CPU
-    // Cpu[1]::current()->interrupt_release(); errror ! 
+    // Cpu[1]::current()->interrupt_release(); error ! 
 
 
 
@@ -859,3 +874,8 @@ core::Result<void> resolve_blocked_tasks()
 }
 
 } // namespace kernel
+
+kernel::Task* Cpu::currentTask() const
+{
+    return cpu_running[_id];
+}

@@ -393,14 +393,9 @@ core::Result<IpcMessage> call_server_and_wait(IpcConnection *connection, IpcMess
     if(connection->server_mutex.mutex_release())
     {
        kernel::resolve_blocked_tasks();
-    }
-
-
-    asm volatile("pause");
+    } 
 
     kernel::block_current_task(block);
-
-    asm volatile("pause");
 
     auto msg = try$(client_receive_response(connection, res));
 

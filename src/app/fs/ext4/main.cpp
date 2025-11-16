@@ -27,8 +27,8 @@ struct Ext4FileEndpoint
     Ext4Filesystem *attached_fs;
 };
 
-core::Vec<Ext4FileEndpoint *> ext4_file_roots;
-core::Vec<Ext4FileEndpoint *> ext4_file_endpoints;
+core::Vec<Ext4FileEndpoint *> ext4_file_roots = {};
+core::Vec<Ext4FileEndpoint *> ext4_file_endpoints = {};
 
 bool update_endpoint(Ext4FileEndpoint *endpoint)
 {

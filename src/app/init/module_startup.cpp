@@ -26,14 +26,15 @@ wjson::Json json = {};
 
 VirtRange map_mcx_address(mcx::MemoryRange range)
 {
-    range.start(range.start() - 0xffff800000000000);
-    range.end(range.end() - 0xffff800000000000);
+    mcx::MemoryRange phys;
+    phys.start(range.start() - 0xffff800000000000);
+    phys.end(range.end() - 0xffff800000000000);
 
-    Wingos::Space::self().map_physical_memory(range.start(), range.len(), ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);
+    Wingos::Space::self().map_physical_memory(phys.start(), phys.len(), ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);
 
-    void *mem = (void *)(range.start() + 0x0000002000000000);
+    void *mem = (void *)(phys.start() + 0x0000002000000000);
 
-    return VirtRange((uintptr_t)mem, (uintptr_t)mem + range.len());
+    return VirtRange((uintptr_t)mem, (uintptr_t)mem + phys.len());
 }
 core::Result<size_t> start_service(mcx::MachineContextModule mod)
 {

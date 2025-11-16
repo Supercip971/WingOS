@@ -19,7 +19,7 @@ struct IpcServer : public UAsset
 {
 
     uint64_t space_handle; // the space the server belongs to
-    core::Vec<IpcConnection *> connections;
+    core::Vec<IpcConnection *> connections  = {};
     IpcServerHandle addr; // the adress of the server
 
     static IpcServer create(uint64_t space_handle, bool is_root = false)

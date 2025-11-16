@@ -44,8 +44,64 @@ bool update_endpoint(Ext4FileEndpoint *endpoint)
 
     auto msg = received.take();
 
+    if (msg.received.flags & IPC_MESSAGE_FLAG_DISCONNECT)
+    {
+        log::log$("ext4: disconnecting endpoint for inode {}", endpoint->inode.inode_id);
+        // remove from list
+        for (size_t i = 0; i < ext4_file_endpoints.len(); i++)
+        {
+            
+            if (ext4_file_endpoints[i] == endpoint)
+            {
+                ext4_file_endpoints.pop(i);
+                break;
+            }
+        }
+        for (size_t i = 0; i < ext4_file_roots.len(); i++)
+        {
+            if (ext4_file_roots[i] == endpoint)
+            {
+                ext4_file_roots.pop(i);
+                break;
+            }
+        }
+
+        endpoint->root_server.raw_server().disconnect(msg.connection);
+
+        endpoint->root_server.close();
+        delete endpoint;
+        return true;
+    }
     switch (msg.received.data[0].data)
     {
+    case prot::FS_CLOSE:
+    {
+        log::log$("ext4: closing file endpoint for inode {}", endpoint->inode.inode_id);
+        // remove from list
+        for (size_t i = 0; i < ext4_file_endpoints.len(); i++)
+        {
+            if (ext4_file_endpoints[i] == endpoint)
+            {
+                ext4_file_endpoints.pop(i);
+                break;
+            }
+            
+        }
+        for (size_t i = 0; i < ext4_file_roots.len(); i++)
+        {
+            if (ext4_file_roots[i] == endpoint)
+            {
+                ext4_file_roots.pop(i);
+                break;
+            }
+        }
+
+        endpoint->root_server.raw_server().disconnect(msg.connection);
+
+        endpoint->root_server.close();
+        delete endpoint;
+        return true;
+    }
     case prot::FS_OPEN_FILE:
     {
 
@@ -78,7 +134,7 @@ bool update_endpoint(Ext4FileEndpoint *endpoint)
 
             auto serv = prot::ManagedServer::create_server();
 
-            if(serv.is_error())
+            if (serv.is_error())
             {
                 log::err$("ext4: failed to create file endpoint for file {}: {}", path.view(), serv.error());
                 reply.data[0].data = 0; // failure
@@ -96,13 +152,11 @@ bool update_endpoint(Ext4FileEndpoint *endpoint)
             reply.data[0].data = 1; // success
             reply.data[1].data = ext4_file_endpoints[ext4_file_endpoints.len() - 1]->root_server.addr();
 
-            endpoint->root_server.reply(core::move(msg), reply);   
-            
+            endpoint->root_server.reply(core::move(msg), reply);
+
             log::log$("ext4: provided file endpoint {} for file {}", reply.data[1].data, path.view());
             return true;
         }
-
-
 
         break;
     }
@@ -120,8 +174,7 @@ bool update_endpoint(Ext4FileEndpoint *endpoint)
             offset,
             len);
 
-
-        if(r.is_error())
+        if (r.is_error())
         {
             log::err$("ext4: failed to read inode {}: {}", endpoint->inode.inode_id, r.error());
 
@@ -140,7 +193,7 @@ bool update_endpoint(Ext4FileEndpoint *endpoint)
     }
     default:
     {
-        log::warn$("ext4: unknown message type received: {}", msg.received.data[0].data);
+        log::warn$("ext4: unknown message type received (endpoint): {}", msg.received.data[0].data);
         break;
     }
     }
@@ -193,7 +246,12 @@ int _main(mcx::MachineContext *)
         }
 
         auto msg = core::move(received.unwrap());
-
+        if (msg.received.flags & IPC_MESSAGE_FLAG_DISCONNECT)
+        {
+            log::log$("ext4: disconnecting from vfs");
+            serv.raw_server().disconnect(msg.connection);
+            continue;
+        }
         switch (msg.received.data[0].data)
         {
         case prot::DISK_FS_ATTEMPT_INITIALIZE_DISK:
@@ -269,6 +327,5 @@ int _main(mcx::MachineContext *)
             break;
         }
         }
-
     }
 }

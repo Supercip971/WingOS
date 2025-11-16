@@ -18,6 +18,7 @@ core::Result<void> Ext4Filesystem::write_block_tmp(size_t block_num, void *data)
     try$(disk.write(disk_asset, start_lba + (block_num * (1024 << superblock.log_block_size)) / disk_block_size, (1024 << superblock.log_block_size)));
     return {};
 }
+
 core::Result<void> Ext4Filesystem::write_blockgroup_descriptor(BlockGroupId bg_id, Ext4BlockGroupDescriptor const &bgd)
 {
 
@@ -376,12 +377,10 @@ core::Result<Ext4InodeRef> Ext4Filesystem::get_subdir(Ext4InodeRef const &dir_in
 
     for (size_t b = 0; b < total_blocks; b++)
     {
-        log::log$("ext4: searching in block {}", b);
         size_t bytes_processed = 0;
         while (bytes_processed < block_size_)
         {
 
-            log::log$("ext4 pmm handle {} vmm handle: {}", disk_asset.handle, mapped_disk_asset.handle);
             auto block_data_res = try$(inode_read_tmp(dir_inode, b));
 
             auto entry_ptr = (uint8_t *)block_data_res + bytes_processed;
@@ -398,7 +397,6 @@ core::Result<Ext4InodeRef> Ext4Filesystem::get_subdir(Ext4InodeRef const &dir_in
 
             core::Str ename = core::Str(entry->name, entry->name_len);
 
-            log::log$("ext4: found directory entry '{}'", ename.view());
             if (ename == name)
             {
                 return try$(read_inode(entry->inode));

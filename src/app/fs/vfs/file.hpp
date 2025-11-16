@@ -16,7 +16,6 @@ struct MountedFs
 
 core::Result<void> mount_fs(IpcServerHandle device_name, core::WStr&& mount_path);
 
-
 // app -> server -> connection to fs -> ext2
 class VfsFileEndpoint
 {

@@ -17,10 +17,12 @@ int _main(mcx::MachineContext *)
     auto fd = conn.open_root().unwrap();
 
     auto b = fd.open_file(core::Str("boot")).unwrap();
+    fd.close();
 
     auto b2 = b.open_file(core::Str("config")).unwrap();
+    b.close();
     auto b3 = b2.open_file(core::Str("init-services.json")).unwrap();
-
+    b2.close();
     auto data_asset = Wingos::Space::self().allocate_physical_memory(4096);
 
     size_t res = b3.read(data_asset, 0, 4096).unwrap();

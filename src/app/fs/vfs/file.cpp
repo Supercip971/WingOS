@@ -40,8 +40,10 @@ core::Result<VfsFileEndpoint *> VfsFileEndpoint::open_root()
 
             log::log$("VFS: opening root filesystem endpoint: {}", mounted_filesystems[i].endpoint);
             endpoint->connection_to_fs = prot::FsFile::connect(mounted_filesystems[i].endpoint).unwrap();
+          
             endpoint->server = core::move(prot::ManagedServer::create_server().unwrap());
             opened_file_endpoints.push(endpoint);
+          
             return endpoint;
         }
     }
@@ -51,7 +53,7 @@ core::Result<VfsFileEndpoint *> VfsFileEndpoint::open_root()
 
 void update_all_endpoints()
 {
-    for (auto &endpoint : opened_file_endpoints)
+    for (auto endpoint : opened_file_endpoints)
     {
         if (endpoint->server.connection_count() < 1)
         {
@@ -110,7 +112,6 @@ void update_all_endpoints()
             case prot::FS_GET_INFO:
             case prot::FS_READ:
             case prot::FS_WRITE:
-            case prot::FS_CLOSE:
             case prot::FS_LIST_DIR:
             {
 
@@ -135,6 +136,33 @@ void update_all_endpoints()
                         break;
                     }
                 }
+                
+                break;
+            }
+            case prot::FS_CLOSE:
+            {
+
+                auto forward_res = endpoint->connection_to_fs.raw_client().send(msg.received, false);
+                if (forward_res.is_error())
+                {
+                    log::err$("VfsFileEndpoint: failed to forward message(close) to filesystem: {}", forward_res.error());
+                }
+
+                // now disconnect to the client
+                for (size_t i = 0; i < opened_file_endpoints.len(); i++)
+                {
+                    if (opened_file_endpoints[i] == endpoint)
+                    {
+                        opened_file_endpoints.pop(i);
+
+                        endpoint->connection_to_fs.close().unwrap();
+                        endpoint->connection_to_fs.raw_client().disconnect();
+                        endpoint->server.close();
+                        delete endpoint;
+                        return;
+                    }
+                }
+               
                 break;
             }
             default:

@@ -262,7 +262,6 @@ core::Result<size_t> ksyscall_asset_release(SyscallAssetRelease *release)
         space = Cpu::current()->currentTask()->space();
     }
 
-    Cpu::exit_syscall_safe_mode();
     if (space == nullptr)
     {
         return core::Result<size_t>::error("no current space");
@@ -274,6 +273,7 @@ core::Result<size_t> ksyscall_asset_release(SyscallAssetRelease *release)
 
     asset_release(space, asset);
 
+    Cpu::exit_syscall_safe_mode();
     return core::Result<size_t>::success(0);
 }
 
@@ -534,6 +534,15 @@ core::Result<size_t> ksyscall_server_receive(SyscallIpcServerReceive *receive)
         receive->returned_msg_handle = 0;
         receive->returned_message = {};
         receive->contain_response = false;
+        return core::Result<size_t>::success(0);
+    }
+
+
+    if(received_message.is_disconnect)
+    {
+        receive->returned_msg_handle = 0;
+        receive->returned_message = {};
+        receive->is_disconnect = true;
         return core::Result<size_t>::success(0);
     }
 

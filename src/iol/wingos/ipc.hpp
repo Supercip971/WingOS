@@ -22,6 +22,20 @@ struct IpcServer : public UAsset
     core::Vec<IpcConnection *> connections  = {};
     IpcServerHandle addr; // the adress of the server
 
+
+    void disconnect(IpcConnection* connection)
+    {
+        for(size_t i = 0; i < connections.len(); i++)
+        {
+            if(connections[i]->handle == connection->handle)
+            {
+                connections.pop(i);
+                sys$asset_release(space_handle, connection->handle);
+                delete connection;
+                return;
+            }
+        }
+    }
     static IpcServer create(uint64_t space_handle, bool is_root = false)
     {
         IpcServer server = {};
@@ -59,7 +73,25 @@ struct IpcServer : public UAsset
             msg.received.message_id = res.returned_msg_handle;
             return core::Result<MessageServerReceived>::success(core::move(msg));
         }
+
+        if(res.is_disconnect)
+        {
+            MessageServerReceived msg = {};
+            msg.received.flags |= IPC_MESSAGE_FLAG_DISCONNECT;
+            
+            return core::Result<MessageServerReceived>::success(core::move(msg));
+        }
         return core::Result<MessageServerReceived>::error("failed to receive message");
+    }
+
+    void remove()
+    {
+        for(size_t i = 0; i < connections.len(); i++)
+        {
+            sys$asset_release(space_handle, connections[i]->handle);
+            delete connections[i];
+        }
+        sys$asset_release(space_handle, this->handle);
     }
 
     core::Result<MessageServerReceived> receive(bool block = false)
@@ -107,6 +139,11 @@ struct IpcClient : public UAsset
         return client;
     }
 
+    void disconnect()
+    {
+        sys$asset_release(associated_space_handle, handle);
+    }
+
     bool status()
     {
         SyscallIpcStatus status = sys$ipc_status(associated_space_handle, handle);
@@ -120,23 +157,7 @@ struct IpcClient : public UAsset
     bool wait_for_accept()
     {
         while (true)
-        {
-     //       log::log$("waiting for accept... {}", associated_space_handle);
-            // dump stack trace
-
-           // void * rbp = __builtin_frame_address(0);
-/*            log::log$("stack trace:");
-            for (size_t i = 0; i < 10; i++)
-            {
-                if (rbp == nullptr)
-                {
-                    break;
-                }
-                uintptr_t ret_addr = *((uintptr_t *)rbp + 1);
-                log::log$("  frame {}: {}", i, ret_addr | fmt::FMT_HEX);
-                rbp = *((void **)rbp);
-            }*/
-            
+        {   
             auto res = sys$ipc_status(associated_space_handle, handle);
             if (res.returned_is_accepted)
             {

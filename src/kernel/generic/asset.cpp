@@ -59,6 +59,39 @@ void asset_release(Space *space, Asset *asset)
     }
 
     asset->lock.lock();
+
+    if (asset->ref_count == 0)
+    {
+        asset->lock.release();
+        return;
+    }
+
+    // FIXME: support disconnect from the server side
+    if (asset->kind == OBJECT_KIND_IPC_CONNECTION)
+    {
+        if (asset->ipc_connection->closed_status == IPC_STILL_OPEN)
+        {
+            asset->ipc_connection->closed_status = IPC_CLOSED;
+        }
+
+        asset->ipc_connection->lock.release();
+    }
+
+
+    if(asset->kind == OBJECT_KIND_IPC_SERVER)
+    {
+
+        unregister_server(asset->ipc_server->handle, asset->ipc_server->parent_space);
+
+        core::Vec<AssetPtr> connections_copy = asset->ipc_server->connections;
+        for( size_t i = 0; i < connections_copy.len(); i++)
+        {
+            asset_release(space, connections_copy[i].asset);
+        }
+
+        connections_copy.release();
+    }
+
     asset->ref_count--;
 
     if (asset->ref_count == 0)
@@ -82,11 +115,57 @@ void asset_release(Space *space, Asset *asset)
         }
         else if (asset->kind == OBJECT_KIND_IPC_CONNECTION)
         {
-            log::warn$("asset_release: ipc asset is not supported yet");
+
+            asset->ipc_connection->message_sent.release();
+
+            if (asset->ipc_connection->server_mutex.mutex_value())
+            {
+                asset->ipc_connection->server_mutex.mutex_release();
+               // kernel::resolve_blocked_tasks(); // release blocked tasks
+            }
+            if (asset->ipc_connection->client_mutex.mutex_value())
+            {
+                asset->ipc_connection->client_mutex.mutex_release();
+              //  kernel::resolve_blocked_tasks(); // release blocked tasks
+            }
+
+            auto kernel_server = asset->ipc_connection->server_asset;
+
+            kernel_server->lock.lock();
+            for (size_t i = 0; i < kernel_server->connections.len(); i++)
+            {
+                if (kernel_server->connections[i].asset == asset)
+                {
+                    kernel_server->connections.pop(i);
+                    break;
+                }
+            }
+
+            kernel_server->self->ref_count--;
+           // asset_release(space, asset->ipc_connection->server_asset->self);
+            if(kernel_server->connections.len() == 0)
+            {
+
+                kernel_server->lock.release();
+                auto parent_space = Space::global_space_by_handle(kernel_server->parent_space).unwrap();
+                asset_release(parent_space, kernel_server->self);
+
+                
+            }
+            kernel_server->lock.release();
+                
+            
+
+            delete asset->ipc_connection;
         }
+
         else if (asset->kind == OBJECT_KIND_IPC_SERVER)
         {
-            log::warn$("asset_release: ipc asset is not supported yet");
+            asset->ipc_server->lock.lock();
+            asset->ipc_server->connections.release();
+            asset->ipc_server->lock.release();
+
+            delete asset->ipc_server;
         }
         else if (asset->kind == OBJECT_KIND_SPACE)
         {
@@ -213,9 +292,8 @@ core::Result<AssetPtr> asset_create_task(Space *space, AssetTaskCreateParams par
 {
     AssetPtr ptr = try$(_asset_create(space, OBJECT_KIND_TASK));
     ptr.asset->task = kernel::Task::task_create().unwrap();
-    
 
-    ptr.asset->task->_space_owner = space; 
+    ptr.asset->task->_space_owner = space;
 
     if (ptr.asset->task->_initialize(params.launch, &space->vmm_space).is_error())
     {
@@ -323,9 +401,9 @@ core::Result<AssetPtr> asset_create_ipc_connections(Space *space, AssetIpcConnec
     ptr.asset->ipc_connection->server_handle = params.server_handle;
     ptr.asset->ipc_connection->server_space_handle = server->parent_space;
     ptr.asset->ipc_connection->client_space_handle = space->uid;
+    ptr.asset->ipc_connection->server_asset = server;
 
     ptr.asset->lock.release();
-
 
     server->lock.lock();
 

@@ -81,6 +81,22 @@ public:
 
     Wingos::IpcServer &raw_server() { return ipc_server; }
 
+
+    void close()
+    {
+        if(!loaded)
+        {
+            log::err$("ManagedServer: close called before server was fully initialized");
+            return;
+        }
+
+        for(size_t i = 0; i < connections.len(); i++)
+        {
+            delete connections[i];
+        }
+        ipc_server.remove();
+    }
+
     core::Result<Wingos::MessageServerReceived> try_receive()
     {
 

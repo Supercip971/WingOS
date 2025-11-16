@@ -1,16 +1,15 @@
 #pragma once
 
-#include "kernel/generic/cpu.hpp"
 #include <stdint.h>
 #include <wingos-headers/asset.h>
 
+#include "kernel/generic/context.hpp"
+#include "kernel/generic/cpu.hpp"
 #include "kernel/generic/paging.hpp"
 #include "kernel/generic/task.hpp"
 #include "libcore/ds/vec.hpp"
-#include "libcore/lock/lock.hpp"
 #include "libcore/fmt/log.hpp"
-#include "kernel/generic/context.hpp"
-
+#include "libcore/lock/lock.hpp"
 
 struct Asset;
 
@@ -74,7 +73,17 @@ struct Asset
         IpcConnection *ipc_connection;
     };
 
-   static core::Result<Asset *> by_handle(Space *space, uint64_t handle)
+    static void dump_assets(Space *space)
+    {
+        space->self->lock.lock();
+        log::log$("Assets in space {}:", space->uid);
+        for (size_t i = 0; i < space->assets.len(); i++)
+        {
+            log::log$("  Asset[{}]: handle={}, kind={}", i, space->assets[i].handle, assetKind2Str(space->assets[i].asset->kind));
+        }
+        space->self->lock.release();
+    }
+    static core::Result<Asset *> by_handle(Space *space, uint64_t handle)
     {
 
         space->self->lock.lock();
@@ -89,12 +98,12 @@ struct Asset
         space->self->lock.release();
 
         log::log$("Asset not found in space({}) -> {} for handle {}", space->space_handle, space->uid, handle);
-       
+
         log::log$("task: {}", Cpu::current()->currentTask()->uid());
 
         log::log$("Assets in space {}:", space->assets.len());
 
-        for(size_t i = 0; i < space->assets.len(); i++)
+        for (size_t i = 0; i < space->assets.len(); i++)
         {
             log::log$("  Asset[{}]: handle={}, kind={}", i, space->assets[i].handle, assetKind2Str(space->assets[i].asset->kind));
         }

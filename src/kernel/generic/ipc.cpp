@@ -3,8 +3,8 @@
 #include "kernel/generic/asset.hpp"
 #include "kernel/generic/space.hpp"
 #include "libcore/ds/vec.hpp"
-#include "wingos-headers/ipc.h"
 #include "scheduler.hpp"
+#include "wingos-headers/ipc.h"
 struct KernelIpcServerRegistered
 {
     IpcServerHandle handle;
@@ -69,8 +69,9 @@ core::Result<KernelIpcServer *> query_server(IpcServerHandle handle)
 
 void unregister_server(IpcServerHandle handle, uint64_t space_handle)
 {
+
     ipc_server_lock.lock();
-    log::log$("unregister_server:- {} {}", handle, space_handle);
+   // log::log$("unregister_server:- {} {}", handle, space_handle);
     for (size_t i = 0; i < registered_servers.len(); i++)
     {
         if (registered_servers[i].handle == handle && registered_servers[i].server->parent_space == space_handle)
@@ -78,6 +79,7 @@ void unregister_server(IpcServerHandle handle, uint64_t space_handle)
             delete registered_servers[i].server;
             registered_servers.pop(i);
             ipc_server_lock.release();
+
             return;
         }
     }
@@ -99,6 +101,7 @@ core::Result<AssetPtr> server_accept_connection(KernelIpcServer *server)
         {
             server->connections[i].asset->ipc_connection->accepted = true;
             server->connections[i].asset->ref_count++;
+            server->self->ref_count++;
             server->lock.release();
             return server->connections[i];
         }
@@ -121,6 +124,12 @@ core::Result<MessageHandle> _server_send_message(IpcConnection *connection, IpcM
         return core::Result<MessageHandle>("connection is not accepted");
     }
 
+    if (connection->closed_status != IPC_STILL_OPEN)
+    {
+        // can't send message on closed connection
+        return core::Result<MessageHandle>("connection is closed");
+    }
+
     ReceivedIpcMessage received_message = {};
     received_message.is_call = is_call;
     received_message.has_reply = false;
@@ -128,14 +137,12 @@ core::Result<MessageHandle> _server_send_message(IpcConnection *connection, IpcM
     received_message.server_id = connection->server_handle; // the space handle of the client that created this connection
     received_message.message_sended = IpcMessagePair::from_client(*message);
 
-
     connection->lock.lock();
     received_message.uid = connection->message_alloc_id++; // TODO: set this to a unique id
 
     auto uid = received_message.uid;
     connection->message_sent.push(received_message);
 
-    
     connection->lock.release();
 
     return uid; // return the unique id of the message
@@ -243,6 +250,13 @@ core::Result<ReceivedIpcMessage> server_receive_message(KernelIpcServer *server,
         return core::Result<ReceivedIpcMessage>::error("connection is not connected to this server");
     }
 
+    if (connection->closed_status != IPC_STILL_OPEN)
+    {
+        ReceivedIpcMessage null_message = {};
+        null_message.is_disconnect = true;
+        return null_message;
+    }
+
     server->lock.lock();
     for (size_t i = 0; i < connection->message_sent.len(); i++)
     {
@@ -278,22 +292,28 @@ core::Result<ReceivedIpcMessage> client_receive_message(IpcConnection *connectio
         return core::Result<ReceivedIpcMessage>::error("connection is null");
     }
 
+    if (connection->closed_status != IPC_STILL_OPEN)
+    {
+        ReceivedIpcMessage null_message = {};
+        null_message.is_disconnect = true;
+        null_message.message_sended.client.flags |= IPC_MESSAGE_FLAG_DISCONNECT;
+        return null_message;
+    }
+
     connection->lock.lock();
     for (size_t i = 0; i < connection->message_sent.len(); i++)
     {
         if (connection->message_sent[i].has_reply)
         {
             auto message = connection->message_sent[i];
-            
+
             if (connection->message_sent[i].is_call)
             {
 
                 connection->message_sent.pop(i);
-
             }
             connection->lock.release();
 
-            
             message.message_sended.client = try$(update_handle_from_server_to_client(connection, message.message_sended.server));
             return message;
         }
@@ -310,6 +330,13 @@ core::Result<ReceivedIpcMessage> client_receive_response(IpcConnection *connecti
         return core::Result<ReceivedIpcMessage>::error("connection is null");
     }
 
+    if (connection->closed_status != IPC_STILL_OPEN)
+    {
+        ReceivedIpcMessage null_message = {};
+        null_message.is_disconnect = true;
+        null_message.message_responded.client.flags |= IPC_MESSAGE_FLAG_DISCONNECT;
+        return null_message;
+    }
     connection->lock.lock();
     for (size_t i = 0; i < connection->message_sent.len(); i++)
     {
@@ -343,6 +370,11 @@ core::Result<void> server_reply_message(IpcConnection *connection, MessageHandle
         return core::Result<void>("connection is not accepted");
     }
 
+    if (connection->closed_status != IPC_STILL_OPEN)
+    {
+        return core::Result<void>("connection is closed");
+    }
+
     connection->lock.lock();
     for (size_t i = 0; i < connection->message_sent.len(); i++)
     {
@@ -354,7 +386,7 @@ core::Result<void> server_reply_message(IpcConnection *connection, MessageHandle
             from_ref.message_responded = IpcMessagePair::from_server(*message);
             from_ref.has_been_received = true;
 
-            if(connection->client_mutex.mutex_release())
+            if (connection->client_mutex.mutex_release())
             {
                 kernel::resolve_blocked_tasks();
             }
@@ -380,32 +412,32 @@ core::Result<IpcMessage> call_server_and_wait(IpcConnection *connection, IpcMess
         return core::Result<IpcMessage>::error("connection is not accepted");
     }
 
+    if (connection->closed_status != IPC_STILL_OPEN)
+    {
+        IpcMessage null_message = {};
+        null_message.flags |= IPC_MESSAGE_FLAG_DISCONNECT;
+        return null_message;
+    }
 
-
-    
     connection->client_mutex.mutex_acquire();
     auto block = kernel::create_mutex_block(&connection->client_mutex);
-    
-    
+
     auto res = try$(server_send_call(connection, message));
 
-
-    if(connection->server_mutex.mutex_release())
+    if (connection->server_mutex.mutex_release())
     {
-       kernel::resolve_blocked_tasks();
-    } 
+        kernel::resolve_blocked_tasks();
+    }
 
     kernel::block_current_task(block);
 
     auto msg = try$(client_receive_response(connection, res));
 
-    while(msg.is_null)
+    while (msg.is_null)
     {
-        
+
         msg = try$(client_receive_response(connection, res));
     }
-
-
 
     return msg.message_responded.to_client();
 }

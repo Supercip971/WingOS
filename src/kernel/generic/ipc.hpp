@@ -112,6 +112,7 @@ struct ReceivedIpcMessage
 {
     bool is_null;
     bool is_call;
+    bool is_disconnect;
     bool has_reply; // if true, the message has a reply
     bool has_been_received;
     uint64_t server_id;
@@ -120,6 +121,12 @@ struct ReceivedIpcMessage
     IpcMessagePair message_responded; // the message from the pov of the server (handle are different)
 };
 
+
+typedef enum 
+{
+    IPC_STILL_OPEN = 0,
+    IPC_CLOSED = 1 << 1,
+} IpcConnectionClosedStatus;
 
 struct IpcConnection
 {
@@ -131,11 +138,14 @@ struct IpcConnection
     uint64_t server_space_handle; // the space handle of the server that created this connection
 
     bool accepted;
+    IpcConnectionClosedStatus closed_status;
     IpcServerHandle server_handle; // the handle of the server that this connection is connected to
-
+    
     kernel::BlockMutex client_mutex;
     kernel::BlockMutex server_mutex;
     core::Vec<ReceivedIpcMessage> message_sent;
+
+    KernelIpcServer* server_asset;
 };
 
 struct KernelIpcServer

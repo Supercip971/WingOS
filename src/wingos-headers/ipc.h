@@ -19,6 +19,9 @@ extern "C"
 // each server is a string and a handle and
 // either need to register or unregister
 // and the handle is used to connect to the server
+
+#define IPC_MESSAGE_FLAG_NONE 0x0
+#define IPC_MESSAGE_FLAG_DISCONNECT 0x1
 #define IPC_SERVER_HANDLE_INIT 0
 
 #define MAX_IPC_DATA_SIZE 8

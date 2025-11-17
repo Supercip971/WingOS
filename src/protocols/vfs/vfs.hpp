@@ -84,6 +84,9 @@ public:
         return vfs_conn;
     }
 
+
+
+
     core::Result<void> register_fs(core::Str name, IpcServerHandle endpoint)
     {
         IpcMessage message = {};
@@ -128,6 +131,27 @@ public:
             return file_res.error();
         }
         return file_res.unwrap();
+    }
+
+
+    core::Result<FsFile> open_path(core::Str const & path)
+    {
+        if(path[0] != '/')
+        {
+            return ("only absolute paths are supported");
+        }
+
+        auto root_res = try$(open_root());
+        auto current_dir = core::move(root_res);
+        auto components = path.substr(1).split('/');
+        for(size_t i = 0; i < components.len(); i++)
+        {
+            auto next_dir_res = try$(current_dir.open_file(components[i]));
+            current_dir.close();
+            current_dir = core::move(next_dir_res);
+        }
+
+        return current_dir;
     }
 };
 

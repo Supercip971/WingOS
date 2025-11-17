@@ -14,15 +14,10 @@ int _main(mcx::MachineContext *)
 
     auto conn = prot::VfsConnection::connect().unwrap();
 
-    auto fd = conn.open_root().unwrap();
 
-    auto b = fd.open_file(core::Str("boot")).unwrap();
-    fd.close();
 
-    auto b2 = b.open_file(core::Str("config")).unwrap();
-    b.close();
-    auto b3 = b2.open_file(core::Str("init-services.json")).unwrap();
-    b2.close();
+    auto b3 = conn.open_path(core::Str("/boot/config/init-services.json")).unwrap();
+
     auto data_asset = Wingos::Space::self().allocate_physical_memory(4096);
 
     size_t res = b3.read(data_asset, 0, 4096).unwrap();
@@ -32,8 +27,6 @@ int _main(mcx::MachineContext *)
     log::log$("read {} bytes from /boot/config/init-services.json:", res);
 
     log::log$("{}", core::Str((const char *)data_ptr.ptr(), res));
-
-    (void)fd;
 
     log::log$("hello world from vfs app!");
 

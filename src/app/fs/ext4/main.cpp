@@ -8,6 +8,7 @@
 #include "mcx/mcx.hpp"
 #include "protocols/disk/disk.hpp"
 #include "protocols/init/init.hpp"
+#include "protocols/vfs/file.hpp"
 #include "protocols/vfs/fsManager.hpp"
 #include "protocols/vfs/vfs.hpp"
 #include "wingos-headers/syscalls.h"
@@ -48,6 +49,7 @@ bool update_endpoint(Ext4FileEndpoint *endpoint)
     {
         log::log$("ext4: disconnecting endpoint for inode {}", endpoint->inode.inode_id);
         // remove from list
+        bool is_root = false;
         for (size_t i = 0; i < ext4_file_endpoints.len(); i++)
         {
             
@@ -61,23 +63,44 @@ bool update_endpoint(Ext4FileEndpoint *endpoint)
         {
             if (ext4_file_roots[i] == endpoint)
             {
-                ext4_file_roots.pop(i);
+                log::log$("ext4: closed root endpoint for inode {}", endpoint->inode.inode_id);
+                is_root= true;
                 break;
             }
         }
 
         endpoint->root_server.raw_server().disconnect(msg.connection);
 
-        endpoint->root_server.close();
-        delete endpoint;
+
+        if(!is_root)
+        {
+            endpoint->root_server.close();
+            delete endpoint;
+        }
         return true;
     }
     switch (msg.received.data[0].data)
     {
+        case prot::FS_GET_INFO:
+        {
+            log::log$("ext4: get_info request for inode {}", endpoint->inode.inode_id);
+
+            IpcMessage reply = {};
+            reply.data[0].data = 1; // success
+            reply.data[1].data = endpoint->inode.inode.size_lo;
+            reply.data[2].data = endpoint->inode.inode.ctime;
+            reply.data[3].data = endpoint->inode.inode.mtime;
+            reply.data[4].data = endpoint->inode.inode.atime;
+            reply.data[5].data = (endpoint->inode.inode.file_type);
+            endpoint->root_server.reply(core::move(msg), reply);
+            return true;
+        }
     case prot::FS_CLOSE:
     {
         log::log$("ext4: closing file endpoint for inode {}", endpoint->inode.inode_id);
         // remove from list
+
+        bool is_root = false;
         for (size_t i = 0; i < ext4_file_endpoints.len(); i++)
         {
             if (ext4_file_endpoints[i] == endpoint)
@@ -91,15 +114,27 @@ bool update_endpoint(Ext4FileEndpoint *endpoint)
         {
             if (ext4_file_roots[i] == endpoint)
             {
-                ext4_file_roots.pop(i);
+                is_root = true;
+
+                if(is_root)
+                {
+                    log::log$("ext4: closed root endpoint for inode {}", endpoint->inode.inode_id);
+                }
+                //ext4_file_roots.pop(i);
                 break;
             }
         }
 
+
+
         endpoint->root_server.raw_server().disconnect(msg.connection);
 
-        endpoint->root_server.close();
-        delete endpoint;
+        if(!is_root)
+        {
+            endpoint->root_server.close();
+
+            delete endpoint;
+        }
         return true;
     }
     case prot::FS_OPEN_FILE:
@@ -301,7 +336,7 @@ int _main(mcx::MachineContext *)
             auto dfs_res = dfs.unwrap();
 
             auto ms = prot::ManagedServer::create_server();
-            ext4_file_endpoints.push(new Ext4FileEndpoint{
+            ext4_file_roots.push(new Ext4FileEndpoint{
 
                 .inode = dfs_res.read_inode(2).unwrap(),
                 .root_server = ms.take(),
@@ -310,7 +345,7 @@ int _main(mcx::MachineContext *)
             IpcMessage reply = {};
             reply.data[0].data = 1; // success
 
-            reply.data[1].data = ext4_file_endpoints[ext4_file_endpoints.len() - 1]->root_server.addr();
+            reply.data[1].data = ext4_file_roots[ext4_file_roots.len() - 1]->root_server.addr();
             (void)end_lba;
             log::log$("ext4: ext4 filesystem detected on device {}, mounting...", name.view());
 

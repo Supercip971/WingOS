@@ -40,15 +40,41 @@ core::Result<VfsFileEndpoint *> VfsFileEndpoint::open_root()
 
             log::log$("VFS: opening root filesystem endpoint: {}", mounted_filesystems[i].endpoint);
             endpoint->connection_to_fs = prot::FsFile::connect(mounted_filesystems[i].endpoint).unwrap();
-          
+
+            log::log$("client: {}", endpoint->connection_to_fs.raw_client().handle);
+
             endpoint->server = core::move(prot::ManagedServer::create_server().unwrap());
             opened_file_endpoints.push(endpoint);
-          
+
             return endpoint;
         }
     }
 
     return core::Result<VfsFileEndpoint *>::error("no root filesystem mounted");
+}
+
+void close_endpoint(VfsFileEndpoint *endpoint)
+{
+
+    IpcMessage message = {};
+    message.data[0].data = prot::FS_CLOSE;
+    // don't forward if endpoint is root
+
+ 
+
+    // now disconnect to the client
+    for (size_t i = 0; i < opened_file_endpoints.len(); i++)
+    {
+        if (opened_file_endpoints[i] == endpoint)
+        {
+            opened_file_endpoints.pop(i);
+
+            endpoint->connection_to_fs.close().unwrap();
+            endpoint->server.close();
+            delete endpoint;
+            return;
+        }
+    }
 }
 
 void update_all_endpoints()
@@ -62,9 +88,18 @@ void update_all_endpoints()
         }
 
         auto received = endpoint->server.try_receive();
+
         if (!received.is_error())
         {
             auto msg = core::move(received.unwrap());
+
+            if (msg.received.flags & IPC_MESSAGE_FLAG_DISCONNECT)
+            {
+
+                close_endpoint(endpoint);
+
+                break;
+            }
 
             switch (msg.received.data[0].data)
             {
@@ -97,11 +132,10 @@ void update_all_endpoints()
                     reply.data[0].data = 1; // success
                     reply.data[1].data = nendpoint->server.addr();
 
-
                     log::log$("VfsFileEndpoint: open file {}", filename.view());
                     endpoint->server.reply(core::move(msg), reply);
                     opened_file_endpoints.push(nendpoint);
-                                       // early return because we loop over endpoints that we pushed
+                    // early return because we loop over endpoints that we pushed
                     return;
                 }
 
@@ -136,33 +170,14 @@ void update_all_endpoints()
                         break;
                     }
                 }
-                
+
                 break;
             }
             case prot::FS_CLOSE:
             {
 
-                auto forward_res = endpoint->connection_to_fs.raw_client().send(msg.received, false);
-                if (forward_res.is_error())
-                {
-                    log::err$("VfsFileEndpoint: failed to forward message(close) to filesystem: {}", forward_res.error());
-                }
+                close_endpoint(endpoint);
 
-                // now disconnect to the client
-                for (size_t i = 0; i < opened_file_endpoints.len(); i++)
-                {
-                    if (opened_file_endpoints[i] == endpoint)
-                    {
-                        opened_file_endpoints.pop(i);
-
-                        endpoint->connection_to_fs.close().unwrap();
-                        endpoint->connection_to_fs.raw_client().disconnect();
-                        endpoint->server.close();
-                        delete endpoint;
-                        return;
-                    }
-                }
-               
                 break;
             }
             default:

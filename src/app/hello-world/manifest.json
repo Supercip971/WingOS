@@ -5,7 +5,6 @@
     "description": "WingOS App",
     
     "props": {
-        "exported": true,
         "pkgname": "hello-world"
     },
     "requires": [

@@ -1,5 +1,6 @@
 #include <string.h>
 
+#include "app/init/service_register.hpp"
 #include "module_startup.hpp"
 
 #include "dev/pci/classes.hpp"
@@ -9,7 +10,9 @@
 #include "libcore/fmt/flags.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libelf/elf.hpp"
+#include "math/align.hpp"
 #include "mcx/mcx.hpp"
+#include "protocols/vfs/vfs.hpp"
 #include "wingos-headers/asset.h"
 core::Vec<core::Str> module_service = {};
 core::Vec<core::Str> disk_service = {};
@@ -57,9 +60,37 @@ core::Result<size_t> start_service_fs(core::Str const &path)
 {
 
     log::log$("[INIT] starting module from fs: {}", path);
-    log::warn$("[INIT] starting module from fs is not implemented yet");
 
-    return core::Result<size_t>::error("not implemented");
+
+    auto vfs_endpoint = try$(service_get("vfs"));
+
+    auto vfs_service = prot::VfsConnection::connect(vfs_endpoint).unwrap();
+
+    auto file = try$(vfs_service.open_path(path));
+
+
+    auto d = try$(file.get_info());
+
+
+    auto aligned_size = math::alignUp<size_t>(d.size, 4096);
+    
+    auto mem = Wingos::Space::self().allocate_physical_memory(aligned_size, false);
+
+    try$(file.read(mem, 0, d.size));
+    auto mapped = Wingos::Space::self().map_memory(mem, ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);  
+    
+    auto loaded = elf::ElfLoader::load(VirtRange((uintptr_t)mapped.ptr(), (uintptr_t)mapped.ptr() + aligned_size));
+    if (loaded.is_error())
+    {
+        log::err$("[INIT] unable to load module {}: {}", loaded.error());
+        return loaded.error();
+    }
+
+    auto v = execute_module(loaded.unwrap());
+
+    log::log$("[INIT] started fs module: {}", path);
+
+    return 0ul;
 }
 
 core::Result<size_t> start_service(mcx::MachineContext *context, core::Str path)
@@ -232,7 +263,6 @@ core::Result<bool> try_startup_modules_cycle_one(mcx::MachineContext *context)
 }
 core::Result<void> try_startup_modules_cycle(mcx::MachineContext *context)
 {
-
     while (try$(try_startup_modules_cycle_one(context)))
     {
     };

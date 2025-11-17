@@ -4,6 +4,7 @@
 #include "libcore/str.hpp"
 #include "protocols/init/init.hpp"
 #include "protocols/vfs/file.hpp"
+#include "wingos-headers/ipc.h"
 namespace prot
 {
 enum VfsMessageType
@@ -68,6 +69,14 @@ public:
 
         return {};
     }
+    static core::Result<VfsConnection> connect(IpcServerHandle handle)
+    {
+        VfsConnection vfs_conn;
+        vfs_conn.connection = Wingos::Space::self().connect_to_ipc_server(handle);
+        vfs_conn.connection.wait_for_accept();
+        return vfs_conn;
+    }
+
 
     static core::Result<VfsConnection> connect()
     {
@@ -144,6 +153,11 @@ public:
         auto root_res = try$(open_root());
         auto current_dir = core::move(root_res);
         auto components = path.substr(1).split('/');
+
+        for(size_t i = 0; i < components.len(); i++)
+        {
+            log::log$("path component {}: {}", i, components[i].view());
+        }
         for(size_t i = 0; i < components.len(); i++)
         {
             auto next_dir_res = try$(current_dir.open_file(components[i]));

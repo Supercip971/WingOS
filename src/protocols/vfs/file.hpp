@@ -53,14 +53,16 @@ enum FsFileMessageType
 class FsFile
 {
     Wingos::IpcClient connection;
+    bool keep_alive = false;
 
 public:
     Wingos::IpcClient &raw_client() { return connection; }
 
-    static core::Result<FsFile> connect(IpcServerHandle fs_endpoint)
+    static core::Result<FsFile> connect(IpcServerHandle fs_endpoint, bool keep_alive = false)
     {
         FsFile file = {};
         file.connection = Wingos::Space::self().connect_to_ipc_server(fs_endpoint);
+        file.keep_alive = keep_alive;
         file.connection.wait_for_accept();
         return (file);
     }
@@ -94,15 +96,18 @@ public:
 
     core::Result<void> close()
     {
+
+
         IpcMessage message = {};
         message.data[0].data = FS_CLOSE;
         auto sended_message = connection.send(message, false);
-        auto message_handle = sended_message.unwrap();
         if (sended_message.is_error())
         {
             return ("failed to send close file message");
         }
 
+        auto message_handle = sended_message.unwrap();
+        connection.disconnect();
         (void)message_handle;
         return {};
     }

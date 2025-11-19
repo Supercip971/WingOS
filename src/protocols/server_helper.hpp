@@ -19,7 +19,7 @@ public:
     size_t connection_count() const { return connections.len(); }
     static core::Result<ManagedServer> create_registered_server(core::Str name, uint64_t major = 1, uint64_t minor = 0)
     {
-       ManagedServer server = {};
+        ManagedServer server = {};
         auto init_conn = InitConnection::connect();
         if (init_conn.is_error())
         {

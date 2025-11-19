@@ -1,0 +1,19 @@
+{
+    "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
+    "id": "sys-compositor",
+    "type": "exe",
+    "description": "WingOS compositor",
+    
+    "props": {
+        "pkgname": "compositor",
+        "exported": "disk"
+    },
+    "requires": [
+        "libcore"
+    ],
+    "enableIf": {
+        "sys": [
+            "wingos"
+        ]
+    }
+}

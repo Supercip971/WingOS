@@ -17,6 +17,7 @@ namespace prot
         INIT_GET_SERVER = 3,
         INIT_GET_SERVER_RESPONSE = 4,
         INIT_SIGNAL_FS_AVAILABLE = 5,
+        INIT_QUERY_FB = 6,
     };
     struct InitRegisterServer 
     {
@@ -47,6 +48,14 @@ namespace prot
         IpcServerHandle endpoint; 
         uint64_t major;
         uint64_t minor;
+    };
+
+
+    struct InitQueryFbResponse 
+    {
+        uintptr_t framebuffer_addr;
+        size_t framebuffer_width;
+        size_t framebuffer_height;
     };
 
 
@@ -182,7 +191,7 @@ namespace prot
                 resp.major = msg.data[1].data;
                 resp.minor = msg.data[2].data;
                 log::log$("got server response: endpoint={}, major={}, minor={}", resp.endpoint, resp.major, resp.minor);
-                return core::move(resp);
+                return (resp);
             }
             log::log$("failed to get server response");
 
@@ -218,6 +227,25 @@ namespace prot
             (void)message_handle;
 
             return {};
+        }
+
+
+        core::Result<InitQueryFbResponse> query_framebuffer()
+        {
+            IpcMessage message = {};
+            message.data[0].data = INIT_QUERY_FB;
+
+            auto res = connection.call(message);
+            if (!res.is_error())
+            {
+                auto msg = res.take();
+                InitQueryFbResponse resp {};
+                resp.framebuffer_addr = msg.data[0].data;
+                resp.framebuffer_width = msg.data[1].data;
+                resp.framebuffer_height = msg.data[2].data;
+                return (resp);
+            }
+            return ("failed to receive framebuffer info");
         }
     };
 } // namespace prot

@@ -119,6 +119,7 @@ void arch::amd64::other_cpu_entry()
     Cpu::current()->interrupt_release();
     while (true)
     {
+        asm volatile("sti");
         asm volatile("hlt");
     };
 }

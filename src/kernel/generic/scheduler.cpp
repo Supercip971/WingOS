@@ -212,6 +212,8 @@ static inline size_t scheduled_task_count()
         }
     }
 
+    count += blocked_tasks.count();
+
     return count;
 }
 
@@ -258,6 +260,12 @@ static long summed_weights()
         }
     }
 
+
+  //  for (auto &task : blocked_tasks)
+  //  {
+  //      sum += task->sched().weight();
+  //  }
+
     return sum;
 }
 static void update_runned_task_for_cpu(CoreId cpu)
@@ -272,11 +280,13 @@ static void update_runned_task_for_cpu(CoreId cpu)
     {
         return;
     }
-    sched_block.running += 1;
+   // sched_block.running += 1;
     sched_block.old_cpu_affinity = cpu;
 
 
     // FIX: Clear the CPU slot after moving task to queue
+    add_entity_to_queue(cpu_runned[cpu]);
+
     cpu_runned[cpu] = scheduler_idles[cpu];
     cpu_runned[cpu]->sched().cpu_affinity = CpuCoreNone;
     cpu_runned[cpu]->sched().old_cpu_affinity = CpuCoreNone;
@@ -340,6 +350,8 @@ static void update_runned_tasks()
     //    add_entity_to_queue(cpu_runned[i]);
 
         // FIX: Clear the CPU slot after moving task to queue
+        add_entity_to_queue(cpu_runned[i]);
+
         cpu_runned[i] = scheduler_idles[i];
     }
 }
@@ -463,12 +475,10 @@ core::Result<void> schedule_one(CoreId cpu)
         }
         auto val = task.unwrap();
 
-
-
         run_task_queued(cpu, i, val);
 
         found_task = true;
-            break;
+        break;
     }
 
     if (!found_task)
@@ -605,14 +615,14 @@ core::Result<void> dump_all_current_running_tasks()
     log::log$("Dumping all current running tasks:");
     for (size_t i = 0; i < running_cpu_count; i++)
     {
-        if (cpu_runned[i] != nullptr)
+        if (cpu_running[i] != nullptr)
         {
             log::log$("CPU[{}] = Task UID: {}, State: {}",
                       i,
-                      (int)cpu_runned[i]->uid(),
-                      (int)cpu_runned[i]->state());
+                      (int)cpu_running[i]->uid(),
+                      (int)cpu_running[i]->state());
             log::log$("CPU: ");
-            cpu_runned[i]->cpu_context()->dump();
+            cpu_running[i]->cpu_context()->dump();
         }
         else
         {
@@ -656,7 +666,6 @@ core::Result<void> resolve_blocked_tasks_scheduler()
         }
         if (cpu->sched().block_event.liberated())
         {
-            log::log$("unblocking: {}", cpu->uid());
 
             cpu->sched().block_event = {};
         }
@@ -672,7 +681,6 @@ core::Result<void> resolve_blocked_tasks_scheduler()
             {
                 task->sched().block_event = {};
 
-                log::log$("unblocking: {}", task->uid());
                 add_entity_to_queue(task);
 
                 blocked_tasks.remove(i);
@@ -727,7 +735,7 @@ core::Result<Task *> schedule_self(Task *current, void *state, CoreId core)
 
     next->cpu_context()->load_to(state);
 
-    add_entity_to_queue(cpu_running[core]);
+  //  add_entity_to_queue(cpu_running[core]);
     cpu_running[Cpu::currentId()] = cpu_runned[Cpu::currentId()];
 
     scheduler_lock.write_release();
@@ -814,12 +822,16 @@ core::Result<Task *> schedule(Task *current, void *state, CoreId core, bool soft
     next->cpu_context()->load_to(state);
 
 
-    // FIXME: maybe use a write lock here ?
-    add_entity_to_queue(cpu_running[core]);
-    cpu_running[Cpu::currentId()] = cpu_runned[Cpu::currentId()];
 
-
+    cpu_running[Cpu::currentId()] = next;
     scheduler_lock.read_release();
+
+
+
+    // cpu_running[Cpu::currentId()] = cpu_runned[Cpu::currentId()];
+
+
+
     return next;
 }
 
@@ -864,8 +876,8 @@ core::Result<void> resolve_blocked_tasks()
 {
     // Cpu::current()->interrupt_hold();
 
-    scheduler_lock.write_acquire();
     Cpu::current()->interrupt_hold();
+    scheduler_lock.write_acquire();
     resolve_blocked_tasks_scheduler().assert();
     scheduler_lock.write_release();
     Cpu::current()->interrupt_release();

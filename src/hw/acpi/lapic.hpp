@@ -8,6 +8,7 @@
 #include "libcore/enum-op.hpp"
 #include "libcore/result.hpp"
 #include "libcore/type/trait.hpp"
+#include "arch/x86_64/msr.hpp"
 namespace hw::acpi
 {
 
@@ -128,7 +129,7 @@ class Lapic
     VirtAddr mapped_registers;
     Lapic(VirtAddr lapic_addr) : mapped_registers(lapic_addr) {}
 
-    size_t _timer_tick_in_10ms();
+    size_t _timer_tick_in_16ms();
     bool loaded = false;
 
 public:
@@ -153,7 +154,8 @@ public:
 
     LCpuId id() const
     {
-        return read(LAPICReg::ID) >> 24;
+       // return arch::amd64::Msr::Read(arch::amd64::MsrReg::LAPIC_CPU_ID);
+        return read(LAPICReg::ID) >> 24 & 0xff;
     }
 
     static core::Result<void> initialize(Madt *madt);

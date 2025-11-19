@@ -6,6 +6,7 @@
 #include "iol/mem_flags.h"
 
 #include "kernel/generic/ipc.hpp"
+#include "kernel/generic/space.hpp"
 #include "math/align.hpp"
 #include "wingos-headers/asset.h"
 
@@ -148,9 +149,7 @@ void asset_release(Space *space, Asset *asset)
 
                 kernel_server->lock.release();
                 auto parent_space = Space::global_space_by_handle(kernel_server->parent_space).unwrap();
-                asset_release(parent_space, kernel_server->self);
-
-                
+                asset_release(parent_space, kernel_server->self);                
             }
             kernel_server->lock.release();
                 
@@ -233,7 +232,6 @@ core::Result<AssetPtr> asset_create_memory(Space *space, AssetMemoryCreateParams
     ptr.asset->lock.release();
     return ptr;
 }
-
 core::Result<AssetPtr> asset_create_mapping(Space *space, AssetMappingCreateParams params)
 {
     AssetPtr ptr = try$(_asset_create(space, OBJECT_KIND_MAPPING));
@@ -348,14 +346,16 @@ core::Result<AssetPtr> asset_copy(Space *from, Space *to, AssetPtr asset)
         return core::Result<AssetPtr>::error("asset is null");
     }
 
+    to->self->lock.lock();
     // Check if the asset exists in the from space
-    AssetPtr copied_asset;
+    AssetPtr copied_asset = {};
     copied_asset.asset = asset.asset;
     copied_asset.handle = to->alloc_uid++;
     asset.asset->ref_count++;
 
     to->assets.push(copied_asset);
-
+    to->self->lock.release();
+    
     return copied_asset;
 }
 
@@ -409,6 +409,8 @@ core::Result<AssetPtr> asset_create_ipc_connections(Space *space, AssetIpcConnec
 
     auto server_space = Space::global_space_by_handle(server->parent_space).unwrap();
     auto ptr_in_server = try$(asset_copy(space, server_space, ptr));
+
+
 
     server->connections.push(ptr_in_server);
 

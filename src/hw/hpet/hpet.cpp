@@ -40,7 +40,7 @@ core::Result<void> hw::hpet::hpet_initialize(hw::acpi::Rsdp *rsdp)
 void hw::hpet::hpet_sleep(uint64_t ms)
 {
     // 1 ms => 1000000000000 femtoseconds
-    uint64_t target = _hpet_read(HPET_MAIN_COUNTER) + (ms * 1000000000000) / hpet_tick;
+    uint64_t target = _hpet_read(HPET_MAIN_COUNTER) + (ms * 1'000'000'000'000) / hpet_tick;
 
     while (_hpet_read(HPET_MAIN_COUNTER) <= target)
     {

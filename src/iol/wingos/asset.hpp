@@ -27,6 +27,26 @@ struct VirtualMemoryAsset : public UAsset
         asset.handle = sys$map_create(space_handle, asset.memory.start(), asset.memory.end(), physical_mem_handle, flags).returned_handle;
         return asset;
     }
+    
+    
+    static core::Result<VirtualMemoryAsset> from_handle(uint64_t handle)
+    {
+        VirtualMemoryAsset asset = {};
+        asset.handle = handle;
+
+
+        auto v = sys$ipc_asset_info(0, handle);
+
+        if(v.returned_kind != AssetKind::OBJECT_KIND_MAPPING)
+        {
+            log::warn$("Tried to create MemoryAsset from handle {}, but asset kind is {}", handle, v.returned_kind);
+            return "asset kind is not mapping";
+        }
+        asset.memory = mcx::MemoryRange(v.returned_info.mapping.start, v.returned_info.mapping.end).growAlign(4096);
+
+        
+        return asset;
+    }
 
     void *ptr() const
     {

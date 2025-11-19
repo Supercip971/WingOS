@@ -18,7 +18,13 @@
 #include "wingos-headers/ipc.h"
 
 
-void startup_init_service(Wingos::IpcServer server);
+struct MachineContextShared 
+{
+    uintptr_t framebuffer_addr;
+    size_t framebuffer_width;
+    size_t framebuffer_height;
+};
+void startup_init_service(Wingos::IpcServer server, MachineContextShared shared);
 
 core::Result<IpcServerHandle> service_get(core::Str const & name, uint64_t major = 1, uint64_t minor = 0);
 

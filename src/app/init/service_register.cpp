@@ -6,7 +6,7 @@
 #include "protocols/init/init.hpp"
 #include "wingos-headers/ipc.h"
 
-core::Vec<Wingos::IpcConnection *> connections;
+core::Vec<Wingos::IpcConnection *> connections = {};
 
 struct RegisteredService
 {
@@ -17,7 +17,7 @@ struct RegisteredService
     uint64_t endpoint;
 };
 
-core::Vec<RegisteredService *> registered_services;
+core::Vec<RegisteredService *> registered_services = {};
 
 core::Result<void> service_register(uint64_t endpoint, core::Str const &name, uint64_t major, uint64_t minor)
 
@@ -63,7 +63,7 @@ core::Result<IpcServerHandle> service_get(core::Str const &name, uint64_t major,
     return ("service not found");
 }
 
-void startup_init_service(Wingos::IpcServer server)
+void startup_init_service(Wingos::IpcServer server, MachineContextShared shared)
 {
 
     log::log$("created init server with handle: {}", server.handle);
@@ -135,6 +135,21 @@ void startup_init_service(Wingos::IpcServer server)
             {
                 log::log$("(server) received signal fs available");
                 service_startup_callback("@fs");
+                break;
+            }
+
+            case prot::INIT_QUERY_FB:
+            {
+                prot::InitQueryFbResponse resp{};
+                resp.framebuffer_addr = shared.framebuffer_addr;
+                resp.framebuffer_width = shared.framebuffer_width;
+                resp.framebuffer_height = shared.framebuffer_height;
+
+                IpcMessage reply = {};
+                reply.data[0].data = resp.framebuffer_addr;
+                reply.data[1].data = resp.framebuffer_width;
+                reply.data[2].data = resp.framebuffer_height;
+                server.reply(core::move(msg), reply).assert();
                 break;
             }
             default:

@@ -638,7 +638,6 @@ core::Result<size_t> ksyscall_ipc_call(SyscallIpcCall *call)
     {
         space = Cpu::current()->currentTask()->space();
     }
-    log::log$("start of ipc call on: {}", Cpu::current()->currentTask()->uid());
     
     Cpu::exit_syscall_safe_mode();
 
@@ -681,7 +680,6 @@ core::Result<size_t> ksyscall_ipc_call(SyscallIpcCall *call)
     Cpu::exit_syscall_safe_mode();
     // call->returned_msg_handle = received_message.uid;
 
-    log::log$("end of ipc call on: {}", Cpu::current()->currentTask()->uid());
     return core::Result<size_t>::success((size_t)0);
 }
 

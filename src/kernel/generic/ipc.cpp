@@ -4,6 +4,7 @@
 #include "kernel/generic/space.hpp"
 #include "libcore/ds/vec.hpp"
 #include "scheduler.hpp"
+#include "wingos-headers/asset.h"
 #include "wingos-headers/ipc.h"
 struct KernelIpcServerRegistered
 {
@@ -95,8 +96,18 @@ core::Result<AssetPtr> server_accept_connection(KernelIpcServer *server)
     }
 
     server->lock.lock();
+    
+
+    
     for (size_t i = 0; i < server->connections.len(); i++)
     {
+
+        if(server->connections[i].asset->kind != OBJECT_KIND_IPC_CONNECTION) 
+        {
+            log::err$("server_accept_connection: invalid asset kind in connection: {}", (uint64_t)server->connections[i].asset->kind);
+             server->lock.release();
+            continue;
+        }
         if (server->connections[i].asset->ipc_connection->accepted == false)
         {
             server->connections[i].asset->ipc_connection->accepted = true;
@@ -160,7 +171,6 @@ core::Result<MessageHandle> server_send_message(IpcConnection *connection, IpcMe
 // handle the reply by jumping onto the server code
 core::Result<MessageHandle> server_send_call(IpcConnection *connection, IpcMessage *message)
 {
-    log::log$("server_send_call");
     return _server_send_message(connection, message, true);
 }
 
@@ -195,7 +205,16 @@ core::Result<IpcMessageServer> update_handle_from_client_to_server(IpcConnection
 
             auto asset_ptr = asset_ptr_res.unwrap();
 
-            message.data[i].asset_handle = try$(asset_move(client_space, server_space, asset_ptr)).handle;
+
+            if(!message.data[i].copy_asset)
+            {
+
+                message.data[i].asset_handle = try$(asset_move(client_space, server_space, asset_ptr)).handle;
+            }
+            else  
+            {
+                message.data[i].asset_handle = try$(asset_copy(client_space, server_space, asset_ptr)).handle;
+            }
         }
     }
 
@@ -231,7 +250,16 @@ core::Result<IpcMessageClient> update_handle_from_server_to_client(IpcConnection
 
             auto asset_ptr = asset_ptr_res.unwrap();
 
-            message.data[i].asset_handle = try$(asset_move(server_space, client_space, asset_ptr)).handle;
+
+            if(!message.data[i].copy_asset)
+            {
+
+                message.data[i].asset_handle = try$(asset_move(server_space, client_space, asset_ptr)).handle;
+            }
+            else  
+            {
+                message.data[i].asset_handle = try$(asset_copy(server_space, client_space, asset_ptr)).handle;
+            }
         }
     }
 
@@ -274,6 +302,7 @@ core::Result<ReceivedIpcMessage> server_receive_message(KernelIpcServer *server,
 
             message.message_sended.server = try$(update_handle_from_client_to_server(connection, message.message_sended.client));
 
+
             return message;
         }
     }
@@ -282,7 +311,7 @@ core::Result<ReceivedIpcMessage> server_receive_message(KernelIpcServer *server,
 
     ReceivedIpcMessage null_message = {};
     null_message.is_null = true;
-    return core::move(null_message);
+    return (null_message);
 }
 
 core::Result<ReceivedIpcMessage> client_receive_message(IpcConnection *connection)
@@ -312,6 +341,7 @@ core::Result<ReceivedIpcMessage> client_receive_message(IpcConnection *connectio
 
                 connection->message_sent.pop(i);
             }
+
             connection->lock.release();
 
             message.message_sended.client = try$(update_handle_from_server_to_client(connection, message.message_sended.server));
@@ -346,6 +376,7 @@ core::Result<ReceivedIpcMessage> client_receive_response(IpcConnection *connecti
             connection->lock.release();
 
             message.message_responded.client = try$(update_handle_from_server_to_client(connection, message.message_responded.server));
+
             return message;
         }
     }

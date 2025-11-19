@@ -30,7 +30,14 @@ extern "C"
 
     struct IpcData
     {
-        bool is_asset;
+
+        struct [[gnu::packed]] {
+
+        bool is_asset : 1;
+        bool copy_asset : 1;
+        bool _reserved_is_mapping : 1; // only used by the kernel 
+
+        };
         union
         {
             uint64_t data;         // the data for the IPC message

@@ -8,7 +8,7 @@ DISK="./.cutekit/disk.hdd"
 MNT_PATH="./mnt"
 
 rm -rf $DISK
-dd if=/dev/zero of=$DISK bs=1M count=512
+dd if=/dev/zero of=$DISK bs=1M count=256
 
 # CREATING PARTITION 1 (boot)
 sgdisk $DISK -g -n 1:0:+100M -t 1:EF00 -c 1:"EFI System Partition" 
@@ -55,11 +55,13 @@ MAIN_DISK_PART="${LOOP_DISK}p2"
 echo "Requiring root privileges to format the disk: $MAIN_DISK_PART"
 echo "Command running: sudo mke2fs $MAIN_DISK_PART"
 sudo mke2fs -E root_perms=777  $MAIN_DISK_PART
+sync 
 MAIN_DISK_PATH_S="`udisksctl mount -b $MAIN_DISK_PART --no-user-interaction`"
 MAIN_DISK_PATH=${MAIN_DISK_PATH_S#*at }
 echo "Mounting system partition at $MAIN_DISK_PATH"
 mkdir -p $MAIN_DISK_PATH
 cp -r .cutekit/wingos-disk/* $MAIN_DISK_PATH
+
 echo "Unmounting system partition $MAIN_DISK_PART"
 udisksctl unmount -b $MAIN_DISK_PART
 if [ $? -ne 0 ]; then

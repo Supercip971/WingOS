@@ -5,7 +5,8 @@
     "description": "WingOS App",
     
     "props": {
-        "pkgname": "hello-world"
+        "pkgname": "hello-world",
+        "exported": "disk"
     },
     "requires": [
         "libcore"

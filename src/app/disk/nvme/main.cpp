@@ -541,8 +541,8 @@ int _main(mcx::MachineContext *)
 
     device_uid = 0;
 
-    core::Vec<NvmeController> disks;
-    core::Vec<ControllerEndpoint> endpoints;
+    core::Vec<NvmeController> disks = {};
+    core::Vec<ControllerEndpoint> endpoints = {};
     for (auto &dev : pci_controller.devices)
     {
         if (dev.class_code() == 0x01 && dev.subclass() == 0x08) // storage controller, NVMe

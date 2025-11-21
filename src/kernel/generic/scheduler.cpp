@@ -15,7 +15,7 @@
 #include "libcore/result.hpp"
 #include "libcore/type-utils.hpp"
 
-using TaskQueue = core::LinkedList<kernel::Task*>;
+using TaskQueue = core::Vec<kernel::Task*>;
 
 core::Vec<size_t> _choosen = {};
 core::Vec<size_t> _retried = {};
@@ -51,16 +51,17 @@ static inline void add_entity_to_queue(Task* task)
     {
         return;
     }
-    if (!task->should_run())
-    {
-        return;
-    }
 
     if (task->sched().block_event.type != BlockEvent::Type::NONE)
     {
         blocked_tasks.push(task);
         return;
     }
+    if (!task->should_run())
+    {
+        return;
+    }
+
     task_queues[task->sched().queue()].push(task);
 }
 
@@ -201,7 +202,7 @@ static inline size_t scheduled_task_count()
     size_t count = 0;
     for (size_t i = 0; i < TASK_QUEUE_COUNT; i++)
     {
-        count += task_queues[i].count();
+        count += task_queues[i].len();
     }
 
     for (size_t i = 0; i < running_cpu_count; i++)
@@ -212,7 +213,7 @@ static inline size_t scheduled_task_count()
         }
     }
 
-    count += blocked_tasks.count();
+    count += blocked_tasks.len();
 
     return count;
 }
@@ -309,7 +310,7 @@ static void update_runned_tasks()
         }
     }
 
-    task_queues[TASK_QUEUE_COUNT - 1].release();
+    task_queues[TASK_QUEUE_COUNT - 1].clear();
 
     // technically we should be able to do this in one iteration, and this is a bit of a waste
     // but for now, I prefer having readable code rather than optimized one
@@ -422,7 +423,7 @@ static core::Result<void> fix_sched_affinity()
 
 void run_task_queued(CoreId cpu, size_t queue_id, size_t queue_offset)
 {
-    auto task = (task_queues[queue_id].remove(queue_offset));
+    auto task = (task_queues[queue_id].pop(queue_offset));
 
     if (task == nullptr)
     {
@@ -449,7 +450,7 @@ core::Result<void> schedule_one(CoreId cpu)
 
     for (size_t i = 0; i < TASK_QUEUE_COUNT; i++)
     {
-        if (task_queues[i].count() == 0)
+        if (task_queues[i].len() == 0)
         {
             continue;
         }
@@ -460,7 +461,7 @@ core::Result<void> schedule_one(CoreId cpu)
 
         if (task.is_error())
         {
-            if (!found_task && task_queues[i].count() > 0)
+            if (!found_task && task_queues[i].len() > 0)
             {
                 run_task_queued(cpu, i, 0);
                 found_task = true;
@@ -510,7 +511,7 @@ core::Result<void> schedule_all()
     {
         retried_ptr->clear(); // make sure retry is fresh for this queue level
 
-        if (task_queues[i].count() == 0)
+        if (task_queues[i].len() == 0)
         {
             continue;
         }
@@ -534,7 +535,7 @@ core::Result<void> schedule_all()
         }
 
         // Second pass: if tasks remain in the queue, assign them regardless of affinity.
-        while (retried_ptr->len() != 0 && task_queues[i].count() > 0)
+        while (retried_ptr->len() != 0 && task_queues[i].len() > 0)
         {
             auto cpu = retried_ptr->pop();
             run_task_queued(cpu, i, 0);
@@ -683,7 +684,7 @@ core::Result<void> resolve_blocked_tasks_scheduler()
 
                 add_entity_to_queue(task);
 
-                blocked_tasks.remove(i);
+                blocked_tasks.pop(i);
                 removed = true;
 
                 break;

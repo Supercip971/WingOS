@@ -167,7 +167,7 @@ public:
             return Storage<T>::empty();
         }
 
-        T res = (head->data.retreive());
+        T res = core::move(head->data.value());
         auto next = head->next;
 
         if (tail == head)
@@ -203,7 +203,7 @@ public:
         }
 
         auto node_to_delete = prev->next;
-        T res = (node_to_delete->data.retreive());
+        T res = core::move(node_to_delete->data.value());
 
         prev->next = node_to_delete->next;
         

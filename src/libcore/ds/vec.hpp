@@ -47,6 +47,33 @@ public:
         return *this;
     }
 
+
+    Vec& operator+= (const Vec &other)
+    {
+        try$(reserve(_count + other._count));
+        for (long i = 0; i < other._count; i++)
+        {
+            push(other._data[i]);
+        }
+
+        
+        return *this;
+    }
+
+    Vec& operator+= (Vec &&other)
+    {
+
+        reserve(_count + other._count);
+        for (long i = 0; i < other._count; i++)
+        {
+            push(core::move(other._data[i]));
+        }
+
+        
+
+        return *this;
+    }
+
     Vec &operator=(const Vec &other)
     {
         if (this == &other)
@@ -169,18 +196,20 @@ public:
         if (_count > 0)
         {
             _count--;
-            return core::move(_data[_count]);
+            return (_data[_count]);
         }
-
+        
+        while(true){};
         // abort();
-        return core::move(_data[0]);
     }
 
     T pop(size_t id)
     {
+
+
         if (id >= (size_t)_count)
         {
-            return core::move(_data[0]);
+            while(true){};
         }
 
         T value = core::move(_data[id]);

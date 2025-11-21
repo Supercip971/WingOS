@@ -233,7 +233,7 @@ core::Result<AssetPtr> asset_create_memory(Space *space, AssetMemoryCreateParams
     AssetPtr ptr = try$(_asset_create(space, OBJECT_KIND_MEMORY));
     ptr.asset->memory.size = params.size;
     ptr.asset->memory.addr = params.addr;
-    core::Result<PhysAddr> res = {};
+    core::Result<PhysAddr> res(PhysAddr{0});
     if (params.addr == 0)
     {
         if (params.lower_half)

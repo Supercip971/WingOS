@@ -20,31 +20,56 @@ struct Result : public NoCopy
 private:
     // FIXME: introduce either type
 
+
 public:
-    Optional<ValueType> _value;
-    Optional<ErrorType> _error;
-    constexpr Result() : _value(), _error() {}
+    union {
+        ValueType _value; 
+        ErrorType _error;
+    };
+
+    bool _is_error = false;
+    constexpr Result() : _error("empty result"), _is_error(true) {}
 
     constexpr ~Result()
     {
-        _value.~Optional();
-        _error.~Optional();
+        if(_is_error)
+        {
+            _error.~ErrorType();
+        }
+        else
+        {
+            _value.~ValueType();
+        }
     }
 
-    constexpr Result(const ValueType &value) : _value(value), _error() {}
+    constexpr Result(const ValueType &value) : _value(value), _is_error(false){}
 
-    constexpr Result(ValueType &&value) : _value(core::move(value)), _error() {}
+    constexpr Result(ValueType &&value) : _value(core::move(value)), _is_error(false) {}
 
-    constexpr Result(const ErrorType &error) : _value(), _error(error) {}
+    constexpr Result(const ErrorType &error) : _error(error), _is_error(true) {}
 
-    constexpr Result(ErrorType &&error) : _value(), _error(core::move(error)) {}
+    constexpr Result(ErrorType &&error) :_error(core::move(error)), _is_error(true) {}
 
-    constexpr Result(Result &&other) : _value(core::move(other._value)), _error(core::move(other._error)) {}
-
+    constexpr Result(Result &&other) : _is_error(other._is_error)  {
+        if(_is_error)
+        {
+            _error = core::move(other._error);
+        }
+        else
+        {
+            _value = core::move(other._value);
+        }
+    }
     constexpr Result &operator=(Result &&other)
     {
+        _is_error = other._is_error;
+        if(_is_error)
+        {
+            _error = core::move(other._error);
+            return *this;
+        }
+        
         _value = core::move(other._value);
-        _error = core::move(other._error);
         return *this;
     }
     template <typename U>
@@ -52,6 +77,7 @@ public:
         requires core::IsConvertibleTo<U, ValueType>
     {
         Result<ValT, ErrT> res;
+        res._is_error = false;
         res._value = (core::forward<U>(val));
         return res;
     }
@@ -61,6 +87,7 @@ public:
         requires core::IsConvertibleTo<E, ErrorType>
     {
         Result<ValT, ErrT> res;
+        res._is_error = true;
         res._error = (core::forward<E>(err));
         return res;
     }
@@ -68,41 +95,39 @@ public:
     ValT& unwrap() & bounded$ 
     {
         assert();
-        return (_value.unwrap());
+        return _value;
     }
 
-    ValT&& unwrap() && 
+    ValT&& unwrap() && bounded$ 
     {
         assert();
-        return core::move(_value.unwrap());
+        return core::move(_value);
     }
-
-
 
     ValT take() && = delete;
     ValT take() & bounded$ 
     {
         assert();
-        return core::move(_value.take());
+        return core::move(_value);
     }
 
     explicit constexpr operator bool() const
     {
-        return _value.has_value();
+        return !_is_error;
     }
 
     constexpr ErrT &error() const
     {
-        return _error.value();
+        return _error;
     }
     constexpr ErrT &error() bounded$
     {
-        return _error.value();
+        return _error;
     }
 
     constexpr bool is_error() const
     {
-        return _error.has_value();
+        return _is_error;
     }
 };
 
@@ -111,21 +136,27 @@ struct Result<void, ErrT> : public NoCopy
 {
 private:
 public:
-    Optional<ErrT> _error;
+    union {
+
+    ErrT _error;
+
+    };
+    bool _is_error;
     using ErrorType = RemoveReference<ErrT>;
     using ValueType = void;
-    constexpr Result() : _error() {}
+    constexpr Result() : _error("empty result"), _is_error(false) {}
 
-    constexpr Result(const ErrT &error) : _error(error) {}
+    constexpr Result(const ErrT &error) : _error(error), _is_error(true) {}
 
-    constexpr Result(Result const &other) : _error(other._error) {}
+    constexpr Result(Result const &other) : _error(other._error), _is_error(other._is_error) {}
 
-    constexpr Result(ErrT &&error) : _error(core::move(error)) {}
+    constexpr Result(ErrT &&error) : _error(core::move(error)), _is_error(true){}
 
-    constexpr Result(Result &&other) : _error(core::move(other._error)) {}
+    constexpr Result(Result &&other) : _error(core::move(other._error)), _is_error(other._is_error) {}
 
     constexpr Result &operator=(Result &&other)
     {
+        _is_error = other._is_error;
         _error = core::move(other._error);
         return *this;
     }
@@ -139,24 +170,27 @@ public:
 
     explicit constexpr operator bool() const
     {
-        return !_error.has_value();
+        return !_is_error;
     }
 
     constexpr ErrT error() const
     {
-        return _error.value();
+        return _error;
     }
 
     constexpr void take() const {};
 
     constexpr ~Result()
     {
-        _error.~Optional();
+        if(_is_error)
+        {
+            _error.~ErrT();
+        }
     }
 
     constexpr bool is_error() const
     {
-        return _error.has_value();
+        return _is_error;
     }
 };
 
@@ -174,7 +208,7 @@ extern void debug_provide_info(const char *info, const char *data);
 
 #define try_v$(expr, vname) ({                                               \
     auto vname = (expr);                                                     \
-    if ((vname._error.has_value())) [[unlikely]]                             \
+    if ((vname.is_error())) [[unlikely]]                             \
     {                                                                        \
         core::debug_provide_info("error:    ", (const char *)vname.error()); \
         core::debug_provide_info("at:       ", #expr);                       \

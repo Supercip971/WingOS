@@ -942,7 +942,7 @@ core::Result<size_t> ksyscall_ipc_x86_port(SyscallIpcX86Port *port)
         }
     }
 
-    return {};
+    return 0ul;
 }
 
 core::Result<size_t> syscall_handle(SyscallInterface syscall)

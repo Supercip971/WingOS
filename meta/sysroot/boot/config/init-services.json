@@ -7,12 +7,17 @@
         {
             "name": "hello-world",
             "path": "/bin/hello-wingos",
-            "requires": ["@fs"]
+            "requires": ["compositor"]
         },
         {
             "name": "ext4-wingos",
             "path": "/bin/ext4-wingos",
             "requires": ["vfs"]
+        },
+        {
+            "name": "compositor",
+            "path": "/bin/sys-compositor",
+            "requires": ["@fs"]
         }
     ],
     "drivers": [

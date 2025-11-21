@@ -30,7 +30,6 @@ constexpr void log_impl(S &&arg, Args &&...args)
 template <typename Fmt, typename... Args>
 constexpr void log(Fmt &&fmt, Args &&...args)
 {
-
     fmt::format(*log_target(), (fmt), core::forward<Args>(args)...);
 }
 
@@ -128,10 +127,10 @@ inline consteval core::Str color_from_filename(const char *s)
 template <typename ValT, typename ErrT>
 inline void core::Result<ValT, ErrT>::assert()
 {
-    if (_error.has_value())
+    if (is_error())
     {
 
-        log::log("Result assert failed: {}", _error.unwrap());
+        log::log("Result assert failed: {}", _error);
 
         while (true)
         {
@@ -141,10 +140,10 @@ inline void core::Result<ValT, ErrT>::assert()
 template <typename ErrT>
 inline void core::Result<void, ErrT>::assert()
 {
-    if (_error.has_value())
+    if (is_error())
     {
 
-        log::log("Result assert failed: {}", _error.unwrap());
+        log::log("Result assert failed: {}", _error);
 
         while (true)
         {

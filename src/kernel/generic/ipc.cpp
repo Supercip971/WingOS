@@ -3,6 +3,7 @@
 #include "kernel/generic/asset.hpp"
 #include "kernel/generic/space.hpp"
 #include "libcore/ds/vec.hpp"
+#include "libcore/fmt/flags.hpp"
 #include "scheduler.hpp"
 #include "wingos-headers/asset.h"
 #include "wingos-headers/ipc.h"
@@ -22,7 +23,7 @@ KernelIpcServer *register_server(IpcServerHandle handle, uint64_t space_handle)
     KernelIpcServer *server = new KernelIpcServer();
     *server = {};
     server->handle = handle;
-
+    server->destroyed = false;
     server->parent_space = space_handle;
     server->connections.clear();
     server->self = nullptr; // will be set later when the asset is created
@@ -104,9 +105,25 @@ core::Result<AssetPtr> server_accept_connection(KernelIpcServer *server)
 
         if(server->connections[i].asset->kind != OBJECT_KIND_IPC_CONNECTION) 
         {
-            log::err$("server_accept_connection: invalid asset kind in connection: {}", (uint64_t)server->connections[i].asset->kind);
-             server->lock.release();
-            continue;
+
+            for(size_t z = 0; z < 20; z++)
+            {
+
+                log::log$("is server destroyed? {}", server->destroyed);
+                log::log$("server: {}", server->handle);
+                log::log$("connection {} kind: {}", i, (uint64_t)server->connections[i].asset->kind);
+                
+                log::err$("server_accept_connection: invalid asset kind in connection: {}", (uint64_t)server->connections[i].asset->kind);
+                log::log$("asset ptr: {}", (uint64_t)server->connections[i].asset | fmt::FMT_HEX);
+                auto space = Space::global_space_by_handle(server->parent_space);
+                Asset::dump_assets(space.unwrap()->self->space);
+                for(size_t j = 0; j < server->connections.len(); j++)
+                {
+                    log::err$("  connection {} kind: {}", j, (uint64_t)server->connections[j].asset->kind);
+                }
+
+            }
+            while(true){};
         }
         if (server->connections[i].asset->ipc_connection->accepted == false)
         {

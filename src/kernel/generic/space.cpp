@@ -14,6 +14,32 @@ struct SpacePtr
 
 core::Vec<SpacePtr> _spaces = {};
 
+void Asset::dump_assets(Space *space)
+{
+        space->self->lock.lock();
+        log::log$("Assets in space {}:", space->uid);
+        for (size_t i = 0; i < space->assets.len(); i++)
+        {
+            log::log$("  Asset[{}]: handle={}, kind={}", i, space->assets[i].handle, assetKind2Str(space->assets[i].asset->kind));
+            if(space->assets[i].asset->kind == OBJECT_KIND_IPC_SERVER)
+            {
+                log::log$("    IPC Server parent space: {}", space->assets[i].asset->ipc_server->parent_space);
+                log::log$("    IPC Server handle: {}", space->assets[i].asset->ipc_server->handle);
+                log::log$("    IPC Server connections: {}", space->assets[i].asset->ipc_server->connections.len());
+            }
+
+            if(space->assets[i].asset->kind == OBJECT_KIND_IPC_CONNECTION)
+            {
+                log::log$("    IPC Connection accepted: {}", space->assets[i].asset->ipc_connection->accepted);
+                 log::log$("    IPC Connection closed: {}", (int)space->assets[i].asset->ipc_connection->closed_status);
+
+                 log::log$("    IPC Connected: {}", (int)space->assets[i].asset->ipc_connection->server_asset->handle);
+                
+            }
+        
+        }
+        space->self->lock.release();
+    }
 core::Result<AssetPtr> space_create(Space *parent, [[maybe_unused]] uint64_t flags, [[maybe_unused]] uint64_t rights)
 {
 

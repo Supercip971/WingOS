@@ -73,16 +73,10 @@ struct Asset
         IpcConnection *ipc_connection;
     };
 
-    static void dump_assets(Space *space)
-    {
-        space->self->lock.lock();
-        log::log$("Assets in space {}:", space->uid);
-        for (size_t i = 0; i < space->assets.len(); i++)
-        {
-            log::log$("  Asset[{}]: handle={}, kind={}", i, space->assets[i].handle, assetKind2Str(space->assets[i].asset->kind));
-        }
-        space->self->lock.release();
-    }
+    static void dump_assets(Space *space); 
+
+
+    
     static core::Result<Asset *> by_handle(Space *space, uint64_t handle)
     {
 

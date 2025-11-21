@@ -156,6 +156,7 @@ struct KernelIpcServer
     uint64_t parent_space;
     Asset *self;                     // the asset that represents this server
     core::Vec<AssetPtr> connections; // the connections to this server
+    bool destroyed;
 };
 
 KernelIpcServer *register_server(IpcServerHandle handle, uint64_t space_handle);

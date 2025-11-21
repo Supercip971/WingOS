@@ -44,30 +44,37 @@ void asset_own(Asset *asset)
     asset->lock.release();
 }
 
-void asset_release(Space *space, Asset *asset)
+void asset_remove_from_space(Space *space, Asset *asset)
 {
-
-    if (space != nullptr)
+    if (space == nullptr || asset == nullptr)
     {
-        for (size_t i = 0; i < space->assets.len(); i++)
+        return;
+    }
+
+    asset->lock.lock();
+    for (size_t i = 0; i < space->assets.len(); i++)
+    {
+        if (space->assets[i].asset == asset)
         {
-            if (space->assets[i].asset == asset)
-            {
-                space->assets.pop(i);
-                break;
-            }
+            space->assets.pop(i);
+            break;
         }
     }
+    asset->lock.release();
+}
+
+void asset_release(Space *space, Asset *asset)
+{
 
     asset->lock.lock();
 
     if (asset->ref_count == 0)
     {
         asset->lock.release();
+        asset_remove_from_space(space, asset);   
         return;
     }
 
-    // FIXME: support disconnect from the server side
     if (asset->kind == OBJECT_KIND_IPC_CONNECTION)
     {
         if (asset->ipc_connection->closed_status == IPC_STILL_OPEN)
@@ -75,22 +82,61 @@ void asset_release(Space *space, Asset *asset)
             asset->ipc_connection->closed_status = IPC_CLOSED;
         }
 
+        auto kernel_server = asset->ipc_connection->server_asset;
+        
+        if(!kernel_server->destroyed)
+        {
+            kernel_server->lock.lock();
+            for(size_t i = 0; i < kernel_server->connections.len(); i++)
+            {
+                if(kernel_server->connections[i].asset == asset)
+                {
+                    kernel_server->connections.pop(i);
+                    break;
+                }
+            }
+            kernel_server->lock.release();
+        }
+
+        if(space->space_handle == asset->ipc_connection->server_space_handle)
+        {
+            asset->ipc_connection->server_mutex.mutex_release();
+        }
+        
         asset->ipc_connection->lock.release();
     }
 
 
     if(asset->kind == OBJECT_KIND_IPC_SERVER)
     {
+        log::log$("Releasing IPC server asset {}", asset->ipc_server->handle);
+        asset->ipc_server->destroyed = true;
+        asset->ipc_server->lock.lock();
 
         unregister_server(asset->ipc_server->handle, asset->ipc_server->parent_space);
 
+        // Mark server as destroyed first, then close all connections
         core::Vec<AssetPtr> connections_copy = asset->ipc_server->connections;
+        
+        asset->ipc_server->connections.clear();
+        asset->ipc_server->lock.release();
+
+        // Now release each connection
         for( size_t i = 0; i < connections_copy.len(); i++)
         {
+            // Mark the connection as closed from server side
+            if(connections_copy[i].asset->kind == OBJECT_KIND_IPC_CONNECTION)
+            {
+                connections_copy[i].asset->ipc_connection->closed_status = IPC_CLOSED;
+                asset->ref_count--;
+            }
             asset_release(space, connections_copy[i].asset);
         }
 
         connections_copy.release();
+        Asset::dump_assets(space);
+
+
     }
 
     asset->ref_count--;
@@ -116,7 +162,6 @@ void asset_release(Space *space, Asset *asset)
         }
         else if (asset->kind == OBJECT_KIND_IPC_CONNECTION)
         {
-
             asset->ipc_connection->message_sent.release();
 
             if (asset->ipc_connection->server_mutex.mutex_value())
@@ -131,39 +176,25 @@ void asset_release(Space *space, Asset *asset)
             }
 
             auto kernel_server = asset->ipc_connection->server_asset;
-
-            kernel_server->lock.lock();
-            for (size_t i = 0; i < kernel_server->connections.len(); i++)
+            
+            // Note: removal from server's connections list already happened above
+            // before ref_count was decremented, to prevent dangling pointers
+            
+            // Check if we should auto-release the server when last connection is gone
+            if(!kernel_server->destroyed && kernel_server->connections.len() == 0 && kernel_server->self->ref_count == 1)
             {
-                if (kernel_server->connections[i].asset == asset)
-                {
-                    kernel_server->connections.pop(i);
-                    break;
-                }
-            }
-
-            kernel_server->self->ref_count--;
-           // asset_release(space, asset->ipc_connection->server_asset->self);
-            if(kernel_server->connections.len() == 0)
-            {
-
-                kernel_server->lock.release();
+                kernel_server->destroyed = true;
                 auto parent_space = Space::global_space_by_handle(kernel_server->parent_space).unwrap();
                 asset_release(parent_space, kernel_server->self);                
             }
-            kernel_server->lock.release();
-                
-            
 
             delete asset->ipc_connection;
         }
 
         else if (asset->kind == OBJECT_KIND_IPC_SERVER)
         {
-            asset->ipc_server->lock.lock();
-            asset->ipc_server->connections.release();
-            asset->ipc_server->lock.release();
-
+            // Connections list was already cleared and released above
+            // Just delete the server structure
             delete asset->ipc_server;
         }
         else if (asset->kind == OBJECT_KIND_SPACE)
@@ -182,6 +213,7 @@ void asset_release(Space *space, Asset *asset)
     }
     asset->lock.release();
 
+    asset_remove_from_space(space, asset);
     delete asset;
 }
 
@@ -373,6 +405,7 @@ core::Result<AssetPtr> asset_create_ipc_server(Space *space, AssetIpcServerCreat
     }
 
     ptr.asset->ipc_server->self = ptr.asset;
+
 
     ptr.asset->lock.release();
     return ptr;

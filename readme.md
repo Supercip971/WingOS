@@ -73,7 +73,7 @@ For now the kernel is still in development, but it has a few key features:
        - [x] Directories support/traversal
        - [x] Read files
 - [x] Blocking IPC
-- [ ] Graphics support (VESA, framebuffer, ...)
+- [x] Graphics support (VESA, framebuffer, ...)
 - [ ] Input support (keyboard, mouse, ...)
 - [ ] Port DOOM
 - [ ] Create a shell 

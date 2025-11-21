@@ -1,6 +1,7 @@
 #include "arch/generic/syscalls.h"
 #include "iol/wingos/space.hpp"
 #include "iol/wingos/syscalls.h"
+#include "libcore/alive.hpp"
 #include "libcore/fmt/log.hpp"
 #include "mcx/mcx.hpp"
 #include "protocols/compositor/compositor.hpp"
@@ -11,6 +12,8 @@
 
 int _main(mcx::MachineContext *)
 {
+    core::Alive alive {"hello-world"};
+
 
     // attempt connection to open root file
 
@@ -46,6 +49,8 @@ int _main(mcx::MachineContext *)
     size_t frame = 0;
     while (true)
     {
+
+        alive.tick();
         uint32_t r = frame % 256;
         uint32_t g = (frame / 256) % 256;
         uint32_t b = (frame / (256 * 256)) % 256;

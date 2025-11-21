@@ -3,8 +3,10 @@
 
 #include "arch/generic/syscalls.h"
 #include "iol/wingos/asset.hpp"
+#include "iol/wingos/ipc.hpp"
 #include "iol/wingos/space.hpp"
 #include "iol/wingos/syscalls.h"
+#include "libcore/alive.hpp"
 #include "libcore/ds/vec.hpp"
 #include "libcore/fmt/log.hpp"
 #include "mcx/mcx.hpp"
@@ -12,6 +14,7 @@
 #include "protocols/compositor/window.hpp"
 #include "protocols/init/init.hpp"
 #include "protocols/vfs/vfs.hpp"
+#include "wingos-headers/ipc.h"
 #include "wingos-headers/syscalls.h"
 
 
@@ -55,6 +58,8 @@ bool update_window(Window &window)
         return false;
     }
 
+    core::Vec<Wingos::MessageServerReceived> msgs = {};
+
     auto received = window.server.try_receive();
 
     if (received.is_error()) 
@@ -71,6 +76,8 @@ bool update_window(Window &window)
         return true;
     }
 
+
+ 
     switch (msg.received.data[0].data) 
     {
         case prot::WINDOW_GET_ATTRIBUTE_SIZE: 
@@ -98,8 +105,9 @@ bool update_window(Window &window)
         }
         case prot::WINDOW_SWAP_BUFFERS:
         {
-
+            IpcMessage reply = {}; // ack message
             memcpy((void *)framebuffer_mapped, (void *)window.framebuffer_mapped.ptr(), window.width * window.height * 4);
+            window.server.reply(core::move(msg), reply).unwrap();
             break;
         }
         default:
@@ -113,6 +121,7 @@ bool update_window(Window &window)
 }
 int _main(mcx::MachineContext *)
 {
+    core::Alive alive {"compositor"};
 
     auto serv_g = prot::ManagedServer::create_registered_server("compositor", 1, 0);
 
@@ -136,6 +145,7 @@ int _main(mcx::MachineContext *)
     }
     while (true)
     {
+        alive.tick();
         size_t idx = 0;
         for(auto &window : windows) 
         {

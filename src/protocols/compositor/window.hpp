@@ -3,6 +3,7 @@
 #include "iol/wingos/ipc.hpp"
 #include "iol/wingos/space.hpp"
 #include "protocols/compositor/compositor.hpp"
+#include "wingos-headers/ipc.h"
 
 
 namespace prot 
@@ -22,6 +23,8 @@ namespace prot
 
     class WindowConnection 
     {
+        bool has_swap;
+        MessageHandle last_swap_handle;
         Wingos::IpcClient connection;
 
         Wingos::MemoryAsset mem_asset = {};
@@ -79,10 +82,24 @@ namespace prot
 
         core::Result<void> swap_buffers()
         {
+
+            if(has_swap)
+            {
+                // wait for last swap to complete
+                auto res = connection.receive_reply(last_swap_handle, true);
+                if (res.is_error())
+                {
+                    return {};
+                }
+                has_swap = false;
+            }
             IpcMessage message = {};
             message.data[0].data = WINDOW_SWAP_BUFFERS;
 
-            auto sended_message = connection.send(message, false);
+            auto sended_message = connection.send(message, true);
+
+            last_swap_handle = sended_message.unwrap();
+            has_swap = true;
             return {};
         }
     };

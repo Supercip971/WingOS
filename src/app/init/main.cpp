@@ -5,9 +5,15 @@
 #include "app/init/service_register.hpp"
 
 #include "mcx/mcx.hpp"
+#include "wingos-headers/startup.hpp"
 
-int _main(mcx::MachineContext *context)
+
+
+int main(int , char** ){while(true){}};
+int _main(StartupInfo *info)
 {
+
+    mcx::MachineContext *context = &info->machine_context_optional;
     log::log$("hello world from init!");
 
     auto server = Wingos::Space::self().create_ipc_server(true);

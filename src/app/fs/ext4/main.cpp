@@ -253,7 +253,7 @@ void update_endpoints()
     }
 }
 
-int _main(mcx::MachineContext *)
+int main(int, char**)
 {
     auto serv_r = prot::ManagedServer::create_registered_server("fs:ext4:manager", 1, 0);
     if (serv_r.is_error())

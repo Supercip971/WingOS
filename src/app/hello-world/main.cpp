@@ -10,7 +10,7 @@
 #include "protocols/vfs/vfs.hpp"
 #include "wingos-headers/syscalls.h"
 
-int _main(mcx::MachineContext *)
+int main(int , char** )
 {
     core::Alive alive {"hello-world"};
 
@@ -50,7 +50,7 @@ int _main(mcx::MachineContext *)
     while (true)
     {
 
-        alive.tick();
+       // alive.tick();
         uint32_t r = frame % 256;
         uint32_t g = (frame / 256) % 256;
         uint32_t b = (frame / (256 * 256)) % 256;

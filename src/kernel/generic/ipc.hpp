@@ -128,6 +128,7 @@ typedef enum
     IPC_CLOSED = 1 << 1,
 } IpcConnectionClosedStatus;
 
+struct KernelIpcServer;
 struct IpcConnection
 {
     uint64_t message_alloc_id;

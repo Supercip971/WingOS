@@ -17,6 +17,7 @@
 #include "libelf/elf.hpp"
 #include "math/align.hpp"
 #include "mcx/mcx.hpp"
+#include "wingos-headers/startup.hpp"
 
 core::Result<void> start_module_execution(elf::ElfLoader loaded, mcx::MachineContext const *context)
 {
@@ -29,7 +30,7 @@ core::Result<void> start_module_execution(elf::ElfLoader loaded, mcx::MachineCon
     if (context)
     {
         auto mem_asset_res = asset_create_memory(root_space, {
-                                                                 .size = math::alignUp(sizeof(mcx::MachineContext), 4096ul),
+                                                                 .size = math::alignUp(sizeof(StartupInfo), 4096ul),
                                                              });
         if (mem_asset_res.is_error())
         {
@@ -45,7 +46,7 @@ core::Result<void> start_module_execution(elf::ElfLoader loaded, mcx::MachineCon
         memcpy(copied_data, context, sizeof(mcx::MachineContext));
         if (asset_create_mapping(root_space, (AssetMappingCreateParams){
                                                  .start = mem.addr,
-                                                 .end = math::alignUp(mem.addr + sizeof(mcx::MachineContext), 4096ul),
+                                                 .end = math::alignUp(mem.addr + sizeof(StartupInfo), 4096ul),
                                                  .physical_mem = mem_asset,
                                                  .writable = true,
                                              })

@@ -5,8 +5,15 @@
 
 #include "iol/wingos/syscalls.h"
 #include "mcx/mcx.hpp"
+#include "wingos-headers/startup.hpp"
 
-extern int _main(mcx::MachineContext *context);
+extern int main(int argc, char** argv);
+
+__attribute__((weak))
+int _main(StartupInfo *context)
+{
+    return main(context->argc, context->argv);
+}
 
 static char buffer[512];
 static size_t _index;
@@ -41,7 +48,12 @@ asm(
     "   subq $512, %rsp \n"
     "   call _entry_point \n"
     "   \n");
-extern "C" void _entry_point(mcx::MachineContext *context)
+
+
+
+
+    __attribute__((weak))
+extern "C" void _entry_point(StartupInfo *context)
 {
 
     asm volatile("andq $-16, %%rsp" ::: "rsp");

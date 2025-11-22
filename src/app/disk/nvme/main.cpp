@@ -532,7 +532,7 @@ struct ControllerEndpoint
     prot::ManagedServer server;
 };
 
-int _main(mcx::MachineContext *)
+int main(int, char**)
 {
 
     log::log$("hello world from nvme!");

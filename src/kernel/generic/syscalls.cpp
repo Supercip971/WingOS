@@ -159,6 +159,12 @@ core::Result<size_t> ksyscall_task_create(SyscallTaskCreate *task_create)
     auto asset = try$(asset_create_task(space, (AssetTaskCreateParams){
                                                    .launch = {
                                                        .entry = (void *)task_create->launch,
+                                                       .args = {
+                                                           task_create->args[0],
+                                                           task_create->args[1],
+                                                           task_create->args[2],
+                                                           task_create->args[3],
+                                                       },
                                                        .user = true,
                                                    },
                                                }));
@@ -304,6 +310,7 @@ core::Result<size_t> ksyscall_task_launch(SyscallTaskLaunch *task_launch)
         return core::Result<size_t>::error("task asset is not a task");
     }
     auto task = task_asset->task;
+
     if (task == nullptr)
     {
         return core::Result<size_t>::error("task asset has no task");

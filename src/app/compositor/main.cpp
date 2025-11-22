@@ -75,8 +75,6 @@ bool update_window(Window &window)
         window.server.raw_server().disconnect(msg.connection);
         return true;
     }
-
-
  
     switch (msg.received.data[0].data) 
     {
@@ -119,7 +117,7 @@ bool update_window(Window &window)
 
     return false;
 }
-int _main(mcx::MachineContext *)
+int main(int, char**)
 {
     core::Alive alive {"compositor"};
 
@@ -145,7 +143,7 @@ int _main(mcx::MachineContext *)
     }
     while (true)
     {
-        alive.tick();
+       // alive.tick();
         size_t idx = 0;
         for(auto &window : windows) 
         {

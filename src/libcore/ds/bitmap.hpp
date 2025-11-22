@@ -5,6 +5,7 @@
 #include <math/range.hpp>
 #include <stddef.h>
 #include <stdint.h>
+#include "libcore/fmt/log.hpp"
 
 namespace core
 {

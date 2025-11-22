@@ -99,7 +99,7 @@ void try_create_disk_endpoint()
     }
 }
 
-int _main(mcx::MachineContext *)
+int main(int, char**)
 {
 
     // attempt connection to server ID 0

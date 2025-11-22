@@ -11,13 +11,25 @@
 #include "libelf/elf.hpp"
 #include "mcx/mcx.hpp"
 #include "wingos-headers/asset.h"
+#include "wingos-headers/startup.hpp"
 
 core::Result<size_t> execute_module(elf::ElfLoader loaded)
 {
 
     auto subspace = Wingos::Space::self().create_space();
 
-    auto task_asset = subspace.create_task((uintptr_t)loaded.entry_point());
+    auto startup_info_mem = Wingos::Space::self().allocate_physical_memory(sizeof(StartupInfo));
+
+    auto startup_info_mapped = Wingos::Space::self().map_memory(startup_info_mem, ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_READ);
+
+    StartupInfo* ptr = (StartupInfo*)startup_info_mapped.ptr();
+
+    *ptr = {};
+
+    auto moved_startup_info = Wingos::Space::self().move_to(subspace, startup_info_mem);
+
+    auto vasset = subspace.map_memory(moved_startup_info, ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_READ);
+    auto task_asset = subspace.create_task((uintptr_t)loaded.entry_point(), (uintptr_t)vasset.ptr());
 
     if (task_asset.handle == 0)
     {

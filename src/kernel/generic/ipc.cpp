@@ -283,17 +283,9 @@ core::Result<IpcMessageClient> update_handle_from_server_to_client(IpcConnection
     return core::Result<IpcMessageClient>::success(message);
 }
 
-core::Result<ReceivedIpcMessage> server_receive_message(KernelIpcServer *server, IpcConnection *connection)
+core::Result<ReceivedIpcMessage> server_receive_message( IpcConnection *connection)
 {
-    if (server == nullptr)
-    {
-        return core::Result<ReceivedIpcMessage>::error("server is null");
-    }
-
-    if (connection->server_handle != server->handle)
-    {
-        return core::Result<ReceivedIpcMessage>::error("connection is not connected to this server");
-    }
+    
 
     if (connection->closed_status != IPC_STILL_OPEN)
     {
@@ -302,7 +294,6 @@ core::Result<ReceivedIpcMessage> server_receive_message(KernelIpcServer *server,
         return null_message;
     }
 
-    server->lock.lock();
     for (size_t i = 0; i < connection->message_sent.len(); i++)
     {
         if (!connection->message_sent[i].has_been_received)
@@ -314,7 +305,6 @@ core::Result<ReceivedIpcMessage> server_receive_message(KernelIpcServer *server,
             {
                 connection->message_sent.pop(i);
             }
-            server->lock.release();
             message.is_null = false;
 
             message.message_sended.server = try$(update_handle_from_client_to_server(connection, message.message_sended.client));
@@ -324,7 +314,6 @@ core::Result<ReceivedIpcMessage> server_receive_message(KernelIpcServer *server,
         }
     }
 
-    server->lock.release();
 
     ReceivedIpcMessage null_message = {};
     null_message.is_null = true;

@@ -452,3 +452,35 @@ core::Result<AssetPtr> asset_create_ipc_connections(Space *space, AssetIpcConnec
 
     return ptr;
 }
+
+core::Result<AssetIpcConnectionPipeCreateResult> asset_create_ipc_connections(
+    Space *space_sender, Space* space_receiver, AssetIpcConnectionPipeCreateParams params)
+{
+
+    (void)params;
+    AssetPtr send_ptr = try$(_asset_create(space_sender, OBJECT_KIND_IPC_CONNECTION));
+
+
+    send_ptr.asset->ipc_connection = new IpcConnection();
+
+    send_ptr.asset->ipc_connection->accepted = true;
+
+    send_ptr.asset->ipc_connection->closed_status = IPC_STILL_OPEN;
+    
+    send_ptr.asset->ipc_connection->server_handle = 0;
+
+    send_ptr.asset->ipc_connection->server_space_handle = space_receiver->uid;
+    send_ptr.asset->ipc_connection->client_space_handle = space_sender->uid;
+
+    send_ptr.asset->ipc_connection->server_asset = nullptr; // No server for pipe connections
+
+
+    send_ptr.asset->lock.release();
+
+    AssetPtr recv_ptr = try$(asset_copy(space_sender, space_receiver, send_ptr));
+
+    return AssetIpcConnectionPipeCreateResult{
+        .sender_connection = send_ptr,
+        .receiver_connection = recv_ptr,
+    };
+}

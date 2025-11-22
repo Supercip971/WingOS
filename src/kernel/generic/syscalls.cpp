@@ -396,15 +396,69 @@ core::Result<size_t> ksyscall_create_server(SyscallIpcCreateServer *create)
 
     return core::Result<size_t>::success((uint64_t)asset.handle);
 }
+core::Result<size_t> ksyscall_create_pipe_connection(SyscallIpcConnect *create)
+{
+    
+    Space *space_sender = nullptr;
+    Space *space_receiver = nullptr;
+
+    if (create->sender_space_handle != 0)
+    {
+        space_sender = try$(Space::space_by_handle(
+            Cpu::current()->currentTask()->space(),
+            create->sender_space_handle));
+    }
+    else
+    {
+        space_sender = Cpu::current()->currentTask()->space();
+    }
+    if (create->receiver_space_handle != 0)
+    {
+        space_receiver = try$(Space::space_by_handle(
+            Cpu::current()->currentTask()->space(),
+            create->receiver_space_handle));
+    }
+    else
+    {
+        space_receiver = Cpu::current()->currentTask()->space();
+    }
+
+    Cpu::exit_syscall_safe_mode();
+
+    if (space_sender == nullptr || space_receiver == nullptr)
+    {
+        return core::Result<size_t>::error("no current space");
+    }
+
+    auto assetptr = try$(asset_create_ipc_connections(
+        space_sender,
+        space_receiver,
+        (AssetIpcConnectionPipeCreateParams){
+            .flags = create->flags,
+        }));
+
+    create->returned_handle_sender = assetptr.sender_connection.handle;
+    create->returned_handle_receiver = assetptr.receiver_connection.handle;
+
+    return {0ul};
+    
+}
+
 
 core::Result<size_t> ksyscall_create_connection(SyscallIpcConnect *create)
 {
+
+
+    if(create->flags & IPC_CONNECTION_FLAG_PIPE)
+    {
+        return ksyscall_create_pipe_connection((SyscallIpcConnect *)create);
+    }
     Space *space = nullptr;
-    if (create->space_handle != 0)
+    if (create->sender_space_handle != 0)
     {
         space = try$(Space::space_by_handle(
             Cpu::current()->currentTask()->space(),
-            create->space_handle));
+            create->sender_space_handle));
     }
     else
     {
@@ -412,6 +466,9 @@ core::Result<size_t> ksyscall_create_connection(SyscallIpcConnect *create)
     }
 
     Cpu::exit_syscall_safe_mode();
+
+
+    
 
 
     if (space == nullptr)
@@ -424,7 +481,7 @@ core::Result<size_t> ksyscall_create_connection(SyscallIpcConnect *create)
                                                               .flags = create->flags,
                                                           }));
 
-    create->returned_handle = asset.handle;
+    create->returned_handle_sender = asset.handle;
 
     return core::Result<size_t>::success((uint64_t)asset.handle);
 }
@@ -511,23 +568,7 @@ core::Result<size_t> ksyscall_server_receive(SyscallIpcServerReceive *receive)
     {
         return core::Result<size_t>::error("connection is not accepted");
     }
-
-    auto server = try$(Asset::by_handle(space, receive->server_handle));
-    if (server->kind != OBJECT_KIND_IPC_SERVER)
-    {
-        return core::Result<size_t>::error("RECEIVE: server is not an IPC server");
-    }
-
-    auto kernel_server = server->ipc_server;
-
-    if (ipc_connection->server_handle != kernel_server->handle)
-    {
-        return core::Result<size_t>::error("connection is not connected to this server");
-    }
-
-    auto res = (server_receive_message(kernel_server, ipc_connection));
-
-    
+    auto res = (server_receive_message(ipc_connection));
 
     if (res.is_error())
     {

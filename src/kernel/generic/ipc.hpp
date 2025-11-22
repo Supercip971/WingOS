@@ -176,7 +176,7 @@ core::Result<MessageHandle> server_send_call(IpcConnection *connection, IpcMessa
 
 core::Result<void> server_reply_message(IpcConnection *connection, MessageHandle from, IpcMessage *message);
 
-core::Result<ReceivedIpcMessage> server_receive_message(KernelIpcServer *server, IpcConnection *connection);
+core::Result<ReceivedIpcMessage> server_receive_message( IpcConnection *connection);
 
 core::Result<ReceivedIpcMessage> client_receive_message(IpcConnection *connection);
 

@@ -1,7 +1,9 @@
 #pragma once
 
 #include "asset.hpp"
+#include "iol/wingos/syscalls.h"
 #include "wingos-headers/ipc.h"
+#include "wingos-headers/syscalls.h"
 namespace Wingos
 
 {
@@ -117,27 +119,57 @@ struct IpcServer : public UAsset
     }
 };
 
+    
+ 
 struct IpcClient : public UAsset
 {
 
     public:
     uint64_t associated_space_handle; // the space the client belongs to
-
-
-
-    static IpcClient connect(uint64_t space_handle, uint64_t server_address, bool block = false, uint64_t flags = 0)
+   
+   static IpcClient connect(uint64_t space_handle, uint64_t server_address, bool block = false, uint64_t flags = 0)
     {
         IpcClient client;
         auto res = sys$ipc_connect(block, space_handle, server_address, flags);
-        if (res.returned_handle == 0)
+        if (res.returned_handle_sender == 0)
         {
-            log::err$("failed to connect to server: {}", res.returned_handle);
+            log::err$("failed to connect to server: {}", res.returned_handle_sender);
             return client;
         }
-        client.handle = res.returned_handle;
+        client.handle = res.returned_handle_sender;
         client.associated_space_handle = space_handle;
         return client;
     }
+    static core::Result<void> pipe_create(uint64_t sender_space, IpcClient& sender, uint64_t receiver_space, IpcClient& receiver, uint64_t flags = 0)
+    {
+
+        SyscallIpcConnect conn = {
+            .block = false, 
+            .sender_space_handle = sender_space,
+            .server_handle = 0,
+            .flags = IPC_CONNECTION_FLAG_PIPE | flags,
+            .returned_handle_sender = 0,
+            .returned_handle_receiver = 0,
+            .receiver_space_handle = receiver_space,
+
+        };
+        
+        auto res = sys$ipc_connect_raw(conn);
+        
+        if (res.returned_handle_sender == 0)
+        {
+            log::err$("failed to create pipe: {}", res.returned_handle_sender);
+            return {};
+        }
+
+        sender.handle = res.returned_handle_sender;
+        sender.associated_space_handle = sender_space;
+        receiver.handle = res.returned_handle_receiver;
+        receiver.associated_space_handle = receiver_space;
+        return {};
+    }
+
+
 
     void disconnect()
     {
@@ -173,6 +205,30 @@ struct IpcClient : public UAsset
         SyscallIpcSend send = sys$ipc_send(associated_space_handle, handle, &message, expect_reply);
 
         return core::Result<size_t>::success(send.returned_msg_handle);
+    }
+
+
+    core::Result<MessageServerReceived> receive( bool block = false)
+    {
+        IpcMessage res_message = {};
+        auto res = sys$ipc_receive_server(block, associated_space_handle, 0, handle, &res_message);
+        if (res.contain_response)
+        {
+
+            MessageServerReceived msg;
+            msg.received = core::move(res_message);
+            msg.received.message_id = res.returned_msg_handle;
+            return core::Result<MessageServerReceived>::success(core::move(msg));
+        }
+
+        if(res.is_disconnect)
+        {
+            MessageServerReceived msg = {};
+            msg.received.flags |= IPC_MESSAGE_FLAG_DISCONNECT;
+            
+            return core::Result<MessageServerReceived>::success(core::move(msg));
+        }
+        return core::Result<MessageServerReceived>::error("failed to receive message");
     }
 
     core::Result<IpcMessage> call(IpcMessage &message)

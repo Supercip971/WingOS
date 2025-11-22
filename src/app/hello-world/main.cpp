@@ -1,3 +1,4 @@
+#include "libcore/result.hpp"
 #include "arch/generic/syscalls.h"
 #include "iol/wingos/space.hpp"
 #include "iol/wingos/syscalls.h"
@@ -7,13 +8,40 @@
 #include "protocols/compositor/compositor.hpp"
 #include "protocols/compositor/window.hpp"
 #include "protocols/init/init.hpp"
+#include "protocols/pipe/pipe.hpp"
 #include "protocols/vfs/vfs.hpp"
 #include "wingos-headers/syscalls.h"
 
 int main(int , char** )
 {
-    core::Alive alive {"hello-world"};
 
+    log::log$("Starting pipe test...");
+
+    prot::Duplex pipes = (prot::Duplex::create(
+        Wingos::Space::self(),
+        Wingos::Space::self(),
+        0)
+    .unwrap());
+
+    log::log$("Pipe created successfully.");
+
+
+
+
+    auto sender_pipe = (prot::SenderPipe::from(core::move(pipes.connection_sender))
+.unwrap());
+    auto receiver_pipe = (prot::ReceiverPipe::from(core::move(pipes.connection_receiver))
+.unwrap());
+
+
+    log::log$("Sending message through pipe...");
+    sender_pipe.send("Hello through pipe!", 20);
+
+    log::log$("Message sent. Waiting to receive...");
+    uint8_t buffer[64] = {};
+    (receiver_pipe.receive(buffer, 64)).unwrap();
+
+    log::log$("Received {} bytes through pipe: {}", 0, core::Str((const char*)buffer));
 
     // attempt connection to open root file
 

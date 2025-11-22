@@ -56,6 +56,22 @@ struct AssetIpcConnectionCreateParams
 // <!> create two object: one for the connection and one for the server
 core::Result<AssetPtr> asset_create_ipc_connections(Space *space, AssetIpcConnectionCreateParams params);
 
+struct AssetIpcConnectionPipeCreateParams
+{
+    uint64_t flags;                // flags for the connection
+};
+
+struct AssetIpcConnectionPipeCreateResult
+{
+    AssetPtr sender_connection;
+    AssetPtr receiver_connection;
+};
+
+// <!> create two object: one for the sender connection and one for the receiver connection
+core::Result<AssetIpcConnectionPipeCreateResult> asset_create_ipc_connections(
+    Space *space_sender, Space* space_receiver, AssetIpcConnectionPipeCreateParams params);
+
+
 core::Result<AssetPtr> asset_move(Space *from, Space *to, AssetPtr asset);
 core::Result<AssetPtr> asset_copy(Space *from, Space *to, AssetPtr asset);
 

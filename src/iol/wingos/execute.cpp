@@ -1,6 +1,5 @@
 #include <string.h>
-
-#include "module_startup.hpp"
+#include "hw/mem/addr_space.hpp"
 
 #include "dev/pci/classes.hpp"
 #include "dev/pci/pci.hpp"
@@ -10,20 +9,21 @@
 #include "libcore/fmt/log.hpp"
 #include "libelf/elf.hpp"
 #include "mcx/mcx.hpp"
+#include "execute.hpp"
+#include "protocols/vfs/vfs.hpp"
 #include "wingos-headers/asset.h"
 #include "wingos-headers/startup.hpp"
 
-core::Result<size_t> execute_module(elf::ElfLoader loaded)
-{
-    auto subspace = Wingos::Space::self().create_space();
 
+core::Result<size_t> execute_program_from_mem(Wingos::Space &subspace, elf::ElfLoader loaded, StartupInfo const & args)
+{
     auto startup_info_mem = Wingos::Space::self().allocate_physical_memory(sizeof(StartupInfo));
 
     auto startup_info_mapped = Wingos::Space::self().map_memory(startup_info_mem, ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_READ);
 
-    StartupInfo* ptr = (StartupInfo*)startup_info_mapped.ptr();
+    StartupInfo *ptr = (StartupInfo *)startup_info_mapped.ptr();
 
-    *ptr = {};
+    memcpy(ptr, &args, sizeof(StartupInfo));
 
     auto moved_startup_info = Wingos::Space::self().move_to(subspace, startup_info_mem);
 
@@ -64,4 +64,23 @@ core::Result<size_t> execute_module(elf::ElfLoader loaded)
     subspace.launch_task(task_asset);
 
     return 0ul;
+}
+
+core::Result<size_t> execute_program_from_path(Wingos::Space& subspace, const core::Str & path, StartupInfo const & args)
+{
+    auto file_asset = prot::VfsConnection::connect().unwrap().open_path(path).unwrap();
+
+    auto file_size = file_asset.get_info().unwrap().size;
+    auto mem_size = math::alignUp(file_size, 4096ul);
+
+    auto data_asset = Wingos::Space::self().allocate_physical_memory(mem_size);
+    size_t read_bytes = try$(file_asset.read(data_asset, 0, file_size)); 
+    
+    auto file_mapped = Wingos::Space::self().map_memory(data_asset, ASSET_MAPPING_FLAG_READ);
+
+    auto range = VirtRange((uintptr_t)file_mapped.ptr(), (uintptr_t)file_mapped.ptr() + read_bytes);
+    elf::ElfLoader prog = try$(elf::ElfLoader::load(range)); 
+
+    return execute_program_from_mem(subspace, core::move(prog), args);
+    
 }

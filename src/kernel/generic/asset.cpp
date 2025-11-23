@@ -109,7 +109,7 @@ void asset_release(Space *space, Asset *asset)
 
     if(asset->kind == OBJECT_KIND_IPC_SERVER)
     {
-        log::log$("Releasing IPC server asset {}", asset->ipc_server->handle);
+        //log::log$("Releasing IPC server asset {}", asset->ipc_server->handle);
         asset->ipc_server->destroyed = true;
         asset->ipc_server->lock.lock();
 
@@ -134,7 +134,7 @@ void asset_release(Space *space, Asset *asset)
         }
 
         connections_copy.release();
-        Asset::dump_assets(space);
+       // Asset::dump_assets(space);
 
 
     }

@@ -15,33 +15,9 @@
 int main(int , char** )
 {
 
-    log::log$("Starting pipe test...");
+    log::log$("Hello world from an application !");
+    log::log$("Wingos is a microkernel based OS! made with <3");
 
-    prot::Duplex pipes = (prot::Duplex::create(
-        Wingos::Space::self(),
-        Wingos::Space::self(),
-        0)
-    .unwrap());
-
-    log::log$("Pipe created successfully.");
-
-
-
-
-    auto sender_pipe = (prot::SenderPipe::from(core::move(pipes.connection_sender))
-.unwrap());
-    auto receiver_pipe = (prot::ReceiverPipe::from(core::move(pipes.connection_receiver))
-.unwrap());
-
-
-    log::log$("Sending message through pipe...");
-    sender_pipe.send("Hello through pipe!", 20);
-
-    log::log$("Message sent. Waiting to receive...");
-    uint8_t buffer[64] = {};
-    (receiver_pipe.receive(buffer, 64)).unwrap();
-
-    log::log$("Received {} bytes through pipe: {}", 0, core::Str((const char*)buffer));
 
     // attempt connection to open root file
 
@@ -62,42 +38,7 @@ int main(int , char** )
 
     log::log$("{}", core::Str((const char *)data_ptr.ptr(), res));
 */
-    log::log$("hello world from vfs app!");
 
-    auto wdw = prot::WindowConnection::create(true).unwrap();
-
-    auto asset = wdw.get_framebuffer().unwrap();
-
-    void *fb = asset.ptr();
-
-    auto size = wdw.get_attribute_size().unwrap();
-
-    log::log$("window size: {}x{}", size.width, size.height);
-
-    size_t frame = 0;
-    while (true)
-    {
-
-       // alive.tick();
-        uint32_t r = frame % 256;
-        uint32_t g = (frame / 256) % 256;
-        uint32_t b = (frame / (256 * 256)) % 256;
-
-        for (size_t i = 0; i < size.width * size.height; i++)
-        {
-
-            size_t x = (i % size.width) + frame ;
-            size_t y = (i / size.width) + frame;
-            b = x ^ y;
-            r = (y * 2) ^ (x * 2);
-            g = (y * 4) ^ (x * 4);
-
-            ((uint32_t *)fb)[i] = 0xff000000 |
-                                  (r << 16) | (g << 8) | (b);
-        }
-        wdw.swap_buffers();
-        frame++;
-
-    //    log::log$("swapped buffers: {}", frame);
-    }
+    while(true){};
+    
 }

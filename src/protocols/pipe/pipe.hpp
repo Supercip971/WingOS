@@ -70,7 +70,7 @@ class ReceiverPipe
         pipe._connection = core::move(connection);
         return core::Result<ReceiverPipe>::success(core::move(pipe));
     }
-    core::Result<void> receive(void *buffer, size_t len)
+    core::Result<size_t> receive(void *buffer, size_t len)
     {
         if (len > MAX_IPC_BUFFER_SIZE)
         {
@@ -94,7 +94,7 @@ class ReceiverPipe
 
         memcpy(buffer, (uint8_t *)received_message.raw_buffer, mlen);
 
-        return {};
+        return {mlen};
     }
 private:
     Wingos::IpcClient _connection;

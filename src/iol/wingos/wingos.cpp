@@ -72,6 +72,10 @@ __attribute__((weak)) extern "C" void _entry_point(StartupInfo *context)
     asm volatile("andq $-16, %%rsp" ::: "rsp");
     _index = 0;
 
+    WingosLogger logger;
+    log::provide_log_target(&logger);
+
+
     if (context->stdout_handle != 0)
     {
         _stdout_pipe = (prot::SenderPipe::from(
@@ -100,9 +104,6 @@ __attribute__((weak)) extern "C" void _entry_point(StartupInfo *context)
                                context->stdin_handle)))
                           .unwrap();
     }
-
-    WingosLogger logger;
-    log::provide_log_target(&logger);
 
     // Initialize the kernel
     if (_main(context) != 0)

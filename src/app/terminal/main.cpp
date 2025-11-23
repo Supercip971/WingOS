@@ -1,4 +1,7 @@
+#include <stddef.h>
 #include <string.h>
+
+#include "libcore/fmt/fmt_str.hpp"
 #include "libcore/str_writer.hpp"
 
 #include "arch/generic/syscalls.h"
@@ -16,8 +19,77 @@
 #define ASCII_FONT_IMPLEMENTATION
 #include "ascii_font.h"
 
+size_t cursor_y = 0;
+size_t cursor_x = 0;
+char display[78][22] = {};
+
+void add_str(core::Str const &str)
+{
+
+    for (size_t i = 0; i < str.len(); i++)
+    {
+        if (str[i] == '\n')
+        {
+            cursor_y++;
+            cursor_x = 0;
+        }
+        else
+
+        {
+            display[cursor_x][cursor_y] = str[i];
+            cursor_x++;
+            if (cursor_x >= 78)
+            {
+                cursor_x = 0;
+                cursor_y++;
+            }
+        }
+        if (cursor_y >= 22)
+        {
+            // scroll up
+            for (size_t y = 1; y < 22; y++)
+            {
+                for (size_t x = 0; x < 78; x++)
+                {
+                    display[x][y - 1] = display[x][y];
+                }
+            }
+            // clear last line
+            for (size_t x = 0; x < 78; x++)
+            {
+                display[x][21] = ' ';
+            }
+            cursor_y = 21;
+        }
+    }
+}
+
+void draw_char(void *fb, size_t x, size_t y, char c, size_t window_width)
+{
+    for (size_t cy = 0; cy < ASCII_FONT_HEIGHT; cy++)
+    {
+        for (size_t cx = 0; cx < ASCII_FONT_WIDTH; cx++)
+        {
+            size_t px = x + cx;
+            size_t py = y + cy;
+
+            uint32_t pixel_on = (ascii_font[(int)c][cy][cx]);
+            ((uint32_t *)fb)[py * window_width + px] =
+                0xff000000 | (pixel_on << 16) | (pixel_on << 8) | (pixel_on);
+        }
+    }
+}
 int main(int, char **)
 {
+    cursor_x = 0;
+    cursor_y = 0;
+    for (size_t i = 0; i < 22; i++)
+    {
+        for (size_t j = 0; j < 78; j++)
+        {
+            display[j][i] = ' ';
+        }
+    }
     log::log$("hello world from vfs app!");
 
     auto wdw = prot::WindowConnection::create(true).unwrap();
@@ -32,50 +104,23 @@ int main(int, char **)
 
     log::log$("window size: {}x{}", size.width, size.height);
 
-
-    core::WStr wstr;
+    core::WStr wstr = {};
 
     size_t frame = 0;
+
+    wstr = core::WStr::own((char *)malloc(256), 0, 256);
+
     while (true)
     {
-
-        uint32_t r = frame % 256;
-        uint32_t g = (frame / 256) % 256;
-        uint32_t b = (frame / (256 * 256)) % 256;
-
-        for (size_t i = 0; i < size.width * size.height; i++)
-        {
-
-            size_t x = (i % size.width) + frame;
-            size_t y = (i / size.width) + frame;
-            b = x ^ y;
-            r = (y * 2) ^ (x * 2);
-            g = (y * 4) ^ (x * 4);
-
-            ((uint32_t *)fb)[i] = 0xff000000 | (r << 16) | (g << 8) | (b);
-        }
+        memset(fb, 0, size.width * size.height * 4);
 
         // draw some text
-        
-        wstr.release();
-        size_t text_len = core::Str(text).len();
 
-        for (size_t i = 0; i < text_len; i++)
+        for (size_t i = 0; i < 22; i++)
         {
-            char c = text[i];
-            for (size_t cy = 0; cy < ASCII_FONT_HEIGHT; cy++)
+            for (size_t j = 0; j < 78; j++)
             {
-                for (size_t cx = 0; cx < ASCII_FONT_WIDTH; cx++)
-                {
-                    size_t px = 50 + i * ASCII_FONT_WIDTH + cx;
-                    size_t py = 50 + cy;
-                    if (px >= size.width || py >= size.height)
-                        continue;
-
-                    uint32_t pixel_on = (ascii_font[(int)c][cy][cx]);
-                    ((uint32_t *)fb)[py * size.width + px] =
-                        0xff000000 | (pixel_on << 16) | (pixel_on << 8) | (pixel_on);
-                }
+                draw_char(fb, (j+1) * (ASCII_FONT_WIDTH), (i+1) * (ASCII_FONT_HEIGHT), display[j][i], size.width);
             }
         }
 
@@ -83,6 +128,11 @@ int main(int, char **)
         wdw.swap_buffers();
         frame++;
 
+        fmt::format_to_str(wstr, "uwu Terminal App - Frame {} (Hello world <3 !)\n", frame);
+
+        add_str(wstr.view());
+
+        wstr.clear();
         //    log::log$("swapped buffers: {}", frame);
     }
 }

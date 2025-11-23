@@ -13,4 +13,10 @@ namespace fmt
         fmt::format(writer, core::Str(fmt), core::forward<Args>(args)...);
         return writer;
     }
+    template<typename Fmt, typename... Args>
+    constexpr core::Result<void> format_to_str(core::WStr& writer,  Fmt fmt, Args... args)
+    {
+        fmt::format(writer, core::Str(fmt), core::forward<Args>(args)...);
+        return {};
+    }
 }

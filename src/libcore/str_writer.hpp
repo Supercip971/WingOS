@@ -174,6 +174,12 @@ namespace core
             return write(str.data(), str.len());
         }
 
+        void clear() 
+        {
+            
+            _len = 0;
+        }
+
         void release()
         {
             if(_data != nullptr)

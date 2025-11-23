@@ -53,7 +53,8 @@
                 "-Wfor-loop-analysis",
                 "-Wimplicit-fallthrough",
                 "-Wexperimental-lifetime-safety",
-                "-Wdangling-gsl"
+                "-Wdangling-gsl",
+                "-O3"
             ]
         },
         "cxx": {

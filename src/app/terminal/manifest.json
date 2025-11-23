@@ -1,0 +1,19 @@
+{
+    "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
+    "id": "terminal",
+    "type": "exe",
+    "description": "Terminal App",
+    
+    "props": {
+        "pkgname": "terminal",
+        "exported": "disk"
+    },
+    "requires": [
+        "libcore"
+    ],
+    "enableIf": {
+        "sys": [
+            "wingos"
+        ]
+    }
+}

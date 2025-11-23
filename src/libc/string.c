@@ -1,6 +1,6 @@
 #include "string.h"
 
-void *memcpy(void *dest, const void *src, size_t n)
+void *memcpy(void * __restrict dest, const void * __restrict src, size_t n)
 {
     char *d = (char *)dest;
     const char *s = (const char *)src;

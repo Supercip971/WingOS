@@ -234,14 +234,20 @@ static inline SyscallIpcCreateServer syscall_ipc_create_server_decode(SyscallInt
 
 #define SYSCALL_IPC_CONNECT_ID 0x00000009
 
+#define IPC_CONNECTION_FLAG_PIPE 0x1
 typedef struct SyscallIpcConnect
 {
     bool block; // wait for the connection to be established
-    uint64_t space_handle;
+    uint64_t sender_space_handle;
     
-    IpcServerHandle server_handle; // the handle of the server to connect to
+    IpcServerHandle server_handle; // the handle of the server to connect to, if 0 create a pipe
     uint64_t flags; // flags for the connection
-    uint64_t returned_handle; // the handle of the connection
+    uint64_t returned_handle_sender; // the handle of the connection (sending)
+
+    // ONLY USED FOR PIPE CONNECTIONS
+    uint64_t returned_handle_receiver; // the handle of the connection (receiving)
+    uint64_t receiver_space_handle; 
+
 } SyscallIpcConnect;
 
 static inline SyscallInterface syscall_ipc_connect_encode(SyscallIpcConnect* connect)

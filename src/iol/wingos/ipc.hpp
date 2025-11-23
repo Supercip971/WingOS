@@ -21,15 +21,14 @@ struct IpcServer : public UAsset
 {
 
     uint64_t space_handle; // the space the server belongs to
-    core::Vec<IpcConnection *> connections  = {};
+    core::Vec<IpcConnection *> connections = {};
     IpcServerHandle addr; // the adress of the server
 
-
-    void disconnect(IpcConnection* connection)
+    void disconnect(IpcConnection *connection)
     {
-        for(size_t i = 0; i < connections.len(); i++)
+        for (size_t i = 0; i < connections.len(); i++)
         {
-            if(connections[i]->handle == connection->handle)
+            if (connections[i]->handle == connection->handle)
             {
                 connections.pop(i);
                 sys$asset_release(space_handle, connection->handle);
@@ -76,11 +75,11 @@ struct IpcServer : public UAsset
             return core::Result<MessageServerReceived>::success(core::move(msg));
         }
 
-        if(res.is_disconnect)
+        if (res.is_disconnect)
         {
             MessageServerReceived msg = {};
             msg.received.flags |= IPC_MESSAGE_FLAG_DISCONNECT;
-            
+
             return core::Result<MessageServerReceived>::success(core::move(msg));
         }
         return core::Result<MessageServerReceived>::error("failed to receive message");
@@ -88,7 +87,7 @@ struct IpcServer : public UAsset
 
     void remove()
     {
-        for(size_t i = 0; i < connections.len(); i++)
+        for (size_t i = 0; i < connections.len(); i++)
         {
             sys$asset_release(space_handle, connections[i]->handle);
             delete connections[i];
@@ -119,15 +118,21 @@ struct IpcServer : public UAsset
     }
 };
 
-    
- 
 struct IpcClient : public UAsset
 {
 
-    public:
+public:
     uint64_t associated_space_handle; // the space the client belongs to
-   
-   static IpcClient connect(uint64_t space_handle, uint64_t server_address, bool block = false, uint64_t flags = 0)
+
+    static IpcClient from(uint64_t space_handle, uint64_t connection)
+    {
+        IpcClient client; 
+        client.handle = connection;
+        client.associated_space_handle = space_handle;
+        return client;
+    }
+
+    static IpcClient connect(uint64_t space_handle, uint64_t server_address, bool block = false, uint64_t flags = 0)
     {
         IpcClient client;
         auto res = sys$ipc_connect(block, space_handle, server_address, flags);
@@ -140,22 +145,21 @@ struct IpcClient : public UAsset
         client.associated_space_handle = space_handle;
         return client;
     }
-    static core::Result<void> pipe_create(uint64_t sender_space, IpcClient& sender, uint64_t receiver_space, IpcClient& receiver, uint64_t flags = 0)
-    {
 
+    static core::Result<void> pipe_create(uint64_t sender_space, IpcClient &sender, uint64_t receiver_space, IpcClient &receiver, uint64_t flags = 0)
+    {
         SyscallIpcConnect conn = {
-            .block = false, 
+            .block = false,
             .sender_space_handle = sender_space,
             .server_handle = 0,
             .flags = IPC_CONNECTION_FLAG_PIPE | flags,
             .returned_handle_sender = 0,
             .returned_handle_receiver = 0,
             .receiver_space_handle = receiver_space,
-
         };
-        
+
         auto res = sys$ipc_connect_raw(conn);
-        
+
         if (res.returned_handle_sender == 0)
         {
             log::err$("failed to create pipe: {}", res.returned_handle_sender);
@@ -168,8 +172,6 @@ struct IpcClient : public UAsset
         receiver.associated_space_handle = receiver_space;
         return {};
     }
-
-
 
     void disconnect()
     {
@@ -189,7 +191,7 @@ struct IpcClient : public UAsset
     bool wait_for_accept()
     {
         while (true)
-        {   
+        {
             auto res = sys$ipc_status(associated_space_handle, handle);
             if (res.returned_is_accepted)
             {
@@ -207,8 +209,7 @@ struct IpcClient : public UAsset
         return core::Result<size_t>::success(send.returned_msg_handle);
     }
 
-
-    core::Result<MessageServerReceived> receive( bool block = false)
+    core::Result<MessageServerReceived> receive(bool block = false)
     {
         IpcMessage res_message = {};
         auto res = sys$ipc_receive_server(block, associated_space_handle, 0, handle, &res_message);
@@ -221,11 +222,11 @@ struct IpcClient : public UAsset
             return core::Result<MessageServerReceived>::success(core::move(msg));
         }
 
-        if(res.is_disconnect)
+        if (res.is_disconnect)
         {
             MessageServerReceived msg = {};
             msg.received.flags |= IPC_MESSAGE_FLAG_DISCONNECT;
-            
+
             return core::Result<MessageServerReceived>::success(core::move(msg));
         }
         return core::Result<MessageServerReceived>::error("failed to receive message");
@@ -246,7 +247,7 @@ struct IpcClient : public UAsset
     {
         IpcMessage res;
         SyscallIpcClientReceiveReply receive = sys$ipc_receive_reply_client(block, associated_space_handle, handle, message_handle, &res);
-        
+
         if (receive.contain_response)
         {
             return res;

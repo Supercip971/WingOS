@@ -2,3 +2,14 @@
 .cutekit/
 meta/plugins/__pycache__
 .cache/
+meta/build/cross/bin/
+meta/build/cross/src/gcc-*/
+meta/build/cross/src/binutils-*/
+meta/build/cross/share 
+meta/build/cross/lib
+meta/build/cross/build
+meta/build/cross/libexec
+meta/build/cross/x86_64-pc-wingos
+meta/build/sysroot/lib 
+meta/build/cross/src 
+meta/build/builded

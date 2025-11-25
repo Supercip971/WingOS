@@ -21,14 +21,14 @@ constexpr void log_impl(S &&arg)
 }
 
 template <typename S, typename... Args>
-constexpr void log_impl(S &&arg, Args &&...args)
+constexpr void log_impl(S &&arg,  Args &&...args)
 {
     log_target()->write(core::Str(arg));
     log_impl((args)...);
 }
 
 template <typename Fmt, typename... Args>
-constexpr void log(Fmt &&fmt, Args &&...args)
+constexpr void log(Fmt &&fmt,  Args &&...args)
 {
     fmt::format(*log_target(), (fmt), core::forward<Args>(args)...);
 }

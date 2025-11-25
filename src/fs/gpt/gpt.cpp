@@ -20,11 +20,11 @@ core::Result<Wingos::GPTDiskParseResult> Wingos::parse_gpt(core::Str& device)
     GPT* gpt_header = (GPT*)header_mapping.ptr();
     // dump: 
     log::log$("GPT Signature: {}", core::Str(gpt_header->signature, 8));
-    log::log$("GPT Revision: {}", gpt_header->revision);
-    log::log$("GPT Size: {}", gpt_header->size);
-    log::log$("GPT Partition Entry LBA: {}", gpt_header->lba_start_guid_partition_entry);
-    log::log$("GPT Partition Count: {}", gpt_header->partition_count);
-    log::log$("GPT Partition Entry Size: {}", gpt_header->partition_entry_size);
+    log::log$("GPT Revision: {}", core::copy(gpt_header->revision));
+    log::log$("GPT Size: {}", core::copy(gpt_header->size));
+    log::log$("GPT Partition Entry LBA: {}", core::copy(gpt_header->lba_start_guid_partition_entry));
+    log::log$("GPT Partition Count: {}", core::copy(gpt_header->partition_count));
+    log::log$("GPT Partition Entry Size: {}", core::copy(gpt_header->partition_entry_size));
 
     result.header = *gpt_header;
 
@@ -64,7 +64,7 @@ core::Result<Wingos::GPTDiskParseResult> Wingos::parse_gpt(core::Str& device)
             }
             part_name.append(core::Str((char*)&(entry->name[j]), 1)); // convert char16_t to char
         }
-        log::log$("Found partition: {} (LBA {} - {})", part_name.view(), entry->lba_start, entry->lba_end);
+        log::log$("Found partition: {} (LBA {} - {})", part_name.view(), core::copy(entry->lba_start), core::copy(entry->lba_end));
 
         GPTDiskParseEntry parse_entry = {};
         parse_entry.name = core::move(part_name);

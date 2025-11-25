@@ -16,8 +16,8 @@ struct Duplex
     static core::Result<Duplex> create(Wingos::Space  const &sender_space, Wingos::Space const  &receiver_space, uint64_t flags = 0)
     {
 
-        Wingos::IpcClient client_sender;
-        Wingos::IpcClient client_receiver;
+        Wingos::IpcClient client_sender = {};
+        Wingos::IpcClient client_receiver = {};
         try$(Wingos::IpcClient::pipe_create(sender_space.handle, client_sender, receiver_space.handle, client_receiver, flags));
 
          Duplex result = {};

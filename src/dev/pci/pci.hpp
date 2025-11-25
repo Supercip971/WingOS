@@ -2,7 +2,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <sys/types.h>
 
 #include "iol/ports.hpp"
 #include "libcore/ds/vec.hpp"
@@ -113,6 +112,14 @@ struct [[gnu::packed]] PciBridgeRegMemBaseStat
     uint16_t mem_limit; // 0x24
 };
 
+
+template <typename T>
+concept IsCastableToUint32 = requires(
+    T value
+){
+    sizeof(T) == 4;
+};
+
 struct PciDevice
 {
     uint8_t bus;
@@ -123,7 +130,14 @@ struct PciDevice
     static inline uint32_t read_config(uint8_t bus, uint8_t slot, uint8_t func, uint8_t off)
     {
         PciConfigReg reg = {off, func, slot, bus, 0, 1};
-        uint32_t address = *(uint32_t *)&reg;
+
+        union {
+            PciConfigReg reg;
+            uint32_t as_uint32;
+        } u;
+        u.reg = reg;
+        uint32_t address = u.as_uint32;
+
 
         // Write the address to the CONFIG_ADDRESS port
 
@@ -188,7 +202,13 @@ struct PciDevice
     static inline void write_config(uint8_t bus, uint8_t slot, uint8_t func, uint8_t off, uint32_t value)
     {
         PciConfigReg reg = {off, func, slot, bus, 0, 1};
-        uint32_t address = *(uint32_t *)&reg;
+
+        union {
+            PciConfigReg reg;
+            uint32_t as_uint32;
+        } u;
+        u.reg = reg;
+        uint32_t address = u.as_uint32;
 
         // Write the address to the CONFIG_ADDRESS port
         iol::outl(CONFIG_ADDRESS, address);
@@ -201,20 +221,31 @@ struct PciDevice
         write_config(bus, device, function, off, value);
     }
 
-    template <typename T>
-    T read_config(size_t reg) const
+    template <IsCastableToUint32 T>
+    
+    T read_config(size_t reg) const 
     {
-        static_assert(sizeof(T) <= 4, "Only 32-bit reads are supported");
         uint32_t value = read_config(reg);
-        return *(T *)&value;
+        union {
+            uint32_t as_uint32;
+            T as_type;
+        } u;
+        u.as_uint32 = value;
+
+        return u.as_type;
     }
 
-    template <typename T>
+    template <IsCastableToUint32 T>
     T read_config(size_t reg, size_t func) const
     {
-        static_assert(sizeof(T) <= 4, "Only 32-bit reads are supported");
         uint32_t value = read_config(reg, func);
-        return *(T *)&value;
+        union {
+            uint32_t as_uint32;
+            T as_type;
+        } u;
+
+        u.as_uint32 = value;
+        return u.as_type;
     }
 
     uint16_t device_id() const

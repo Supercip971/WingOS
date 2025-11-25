@@ -2,7 +2,7 @@
 import os
 import shutil
 
-from cutekit import builder,  const, shell, model, cli, vt100, jexpr
+from cutekit import builder,  const, shell, model, cli, vt100, jexpr, rules
 from typing_extensions import Self
 
 
@@ -151,6 +151,10 @@ def _(args: TargetArgs):
         print(vt100.p(", ".join(map(lambda m: m.id, targets))))
     print()
 """
+
+rules.rules["cc"].args.remove("-fcolor-diagnostics")
+rules.rules["cxx"].args.remove("-fcolor-diagnostics")
+rules.rules["cxx"].args.remove("-fmodules-reduced-bmi")
 
 
 @jexpr.exposed("wingos.target")

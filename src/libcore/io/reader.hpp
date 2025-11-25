@@ -32,8 +32,8 @@ concept Readable = requires(T *x) {
 
 template <typename T>
 concept SeekableReader = requires(T *x) {
-    Readable<T>;
-    Seekable<T>;
+    requires Readable<T>;
+    requires Seekable<T>;
 };
 
 static_assert(Readable<Reader>);

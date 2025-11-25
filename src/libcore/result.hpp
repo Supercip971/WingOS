@@ -14,14 +14,15 @@ template <typename ValT, typename ErrT = const char *>
 struct Result : public NoCopy
 {
 
-    using ErrorType = RemoveReference<ErrT>;
-    using ValueType = RemoveReference<ValT>;
-
 private:
     // FIXME: introduce either type
 
 
 public:
+    using ErrorType = RemoveReference<ErrT>;
+    using ValueType = RemoveReference<ValT>;
+
+
     union {
         ValueType _value; 
         ErrorType _error;

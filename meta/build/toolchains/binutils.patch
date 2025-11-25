@@ -1,5 +1,5 @@
 diff --git a/bfd/config.bfd b/bfd/config.bfd
-index 4e5a838fe4e..8288c457173 100644
+index 4e5a838fe4e..17cccff6101 100644
 --- a/bfd/config.bfd
 +++ b/bfd/config.bfd
 @@ -236,7 +236,17 @@ esac
@@ -25,7 +25,7 @@ index 4e5a838fe4e..8288c457173 100644
      want64=true
      ;;
 -  aarch64-*-linux* | aarch64-*-netbsd* | aarch64-*-nto* | aarch64-*-gnu*)
-+  aarch64-*-linux* | aarch64-*-netbsd* | aarch64-*-nto* | aarch64-*-gnu* | aarch64-*-wingos*)
++  aarch64-*-linux* | aarch64-*-netbsd* | aarch64-*-nto* | aarch64-*-gnu* )
      targ_defvec=aarch64_elf64_le_vec
      targ_selvecs="aarch64_elf64_be_vec aarch64_elf32_le_vec aarch64_elf32_be_vec arm_elf32_le_vec arm_elf32_be_vec aarch64_pei_le_vec aarch64_pe_le_vec"
      want64=true
@@ -62,20 +62,19 @@ index 5a1bffe6018..30935d1ae71 100644
  dnl Test for the exact version when AC_INIT is expanded.
  dnl This allows one to update the tree in steps (for testing)
 diff --git a/gas/configure.tgt b/gas/configure.tgt
-index 7c81bffa16b..973bfcb13a1 100644
+index 7c81bffa16b..3b677df9c0e 100644
 --- a/gas/configure.tgt
 +++ b/gas/configure.tgt
-@@ -135,6 +135,9 @@ case ${generic_target} in
+@@ -135,6 +135,8 @@ case ${generic_target} in
        aarch64*-linux-gnu_ilp32)		arch=aarch64:32 ;;
      esac ;;
    aarch64*-*-gnu*)			fmt=elf em=gnu ;;
-+  aarch64*-*-wingos*)			fmt=elf em=gnu;;
 +
 +
    aarch64*-*-netbsd*)			fmt=elf em=nbsd;;
    aarch64*-*-nto*)			fmt=elf;;
    aarch64*-*-openbsd*)			fmt=elf;;
-@@ -144,6 +147,7 @@ case ${generic_target} in
+@@ -144,6 +146,7 @@ case ${generic_target} in
    alpha-*-linux*ecoff*)			fmt=ecoff ;;
    alpha-*-linux-*)			fmt=elf em=linux ;;
    alpha-*-netbsd* | alpha-*-openbsd*)	fmt=elf em=nbsd ;;
@@ -83,7 +82,7 @@ index 7c81bffa16b..973bfcb13a1 100644
  
    arc-*-elf*)				fmt=elf ;;
    arc*-*-linux*)			fmt=elf bfd_gas=yes ;;
-@@ -237,6 +241,9 @@ case ${generic_target} in
+@@ -237,6 +240,9 @@ case ${generic_target} in
    i386-*-knetbsd*-gnu | \
    i386-*-netbsd* | \
    i386-*-openbsd*)			fmt=elf em=nbsd ;;
@@ -18985,7 +18984,7 @@ index 78b54b39eb2..9f69bf1bffa 100755
  fi
 +
 diff --git a/ld/configure.tgt b/ld/configure.tgt
-index ea01ccf9a1b..d86fe031954 100644
+index ea01ccf9a1b..6a26198e549 100644
 --- a/ld/configure.tgt
 +++ b/ld/configure.tgt
 @@ -98,6 +98,7 @@ aarch64-*-freebsd*)	targ_emul=aarch64fbsd
@@ -18996,37 +18995,31 @@ index ea01ccf9a1b..d86fe031954 100644
  aarch64_be-*-linux-gnu_ilp32)
  			targ_emul=aarch64linux32b
  			targ_extra_libpath="aarch64linuxb aarch64linux aarch64linux32 armelfb_linux_eabi armelf_linux_eabi"
-@@ -116,6 +117,11 @@ aarch64-*-linux*)	targ_emul=aarch64linux
+@@ -116,6 +117,8 @@ aarch64-*-linux*)	targ_emul=aarch64linux
  			targ_extra_libpath="aarch64linuxb aarch64linux32 aarch64linux32b armelfb_linux_eabi armelf_linux_eabi"
  			targ_extra_emuls="aarch64elf aarch64elf32 aarch64elf32b aarch64elfb armelf armelfb $targ_extra_libpath"
  			;;
-+aarch64-*-wingos*)	targ_emul=aarch64elf
-+			targ_extra_emuls="aarch64elfb armelf armelfb"
-+			;;
 +
 +
  # This has to come after aarch64-*-linux* for aarch64-*-linux-gnu to hit the Linux branch.
  aarch64-*-gnu*)
  			targ_emul=aarch64gnu
-@@ -254,6 +260,12 @@ arm*-*-conix*)		targ_emul=armelf
+@@ -254,6 +257,9 @@ arm*-*-conix*)		targ_emul=armelf
  arm*-*-fuchsia*)	targ_emul=armelf_fuchsia
  			targ_extra_emuls="armelfb_fuchsia armelf armelfb"
  			;;
 +
-+arm*-*-wingos*)		targ_emul=armelf_wingos
-+			targ_extra_emuls="armelfb_wingos armelf armelfb"
-+			;;
 +
 +
  arm*-*-haiku*)		targ_emul=armelf_haiku
  			targ_extra_emuls=armelf
  			;;
-@@ -448,6 +460,12 @@ i[3-7]86-*-haiku*)	targ_emul=elf_i386_haiku
+@@ -448,6 +454,12 @@ i[3-7]86-*-haiku*)	targ_emul=elf_i386_haiku
  			;;
  i[3-7]86-*-vxworks*)	targ_emul=elf_i386_vxworks
  			;;
 +
-+i[3-7]86-*-wingos*)	targ_emul=elf_i386_wingos
++i[3-7]86-*-wingos*)	targ_emul=elf_i386
 +			targ_extra_emuls=elf_i386
 +			targ64_extra_emuls="elf_x86_64_wingos elf_x86_64"
 +			;;
@@ -19034,7 +19027,7 @@ index ea01ccf9a1b..d86fe031954 100644
  i[3-7]86-*-chaos)	targ_emul=elf_i386_chaos
  			;;
  ia16-*-elf*)		targ_emul=elf_i386
-@@ -1065,6 +1083,12 @@ x86_64-*-mingw*)	targ_emul=i386pep ;
+@@ -1065,6 +1077,12 @@ x86_64-*-mingw*)	targ_emul=i386pep ;
  			targ_extra_emuls=i386pe
  			targ_extra_ofiles="deffilep.o pdb.o pep-dll.o pe-dll.o"
  			;;
@@ -19047,7 +19040,7 @@ index ea01ccf9a1b..d86fe031954 100644
  x86_64-*-gnu*)		targ_emul=elf_x86_64
  			targ_extra_emuls="elf32_x86_64 elf_iamcu elf_i386"
  			targ_extra_libpath="elf_i386 elf32_x86_64"
-@@ -1116,6 +1140,10 @@ hppa*64*-*-hpux11*)
+@@ -1116,6 +1134,10 @@ hppa*64*-*-hpux11*)
    NATIVE_LIB_DIRS=/usr/lib/pa20_64
    ;;
  

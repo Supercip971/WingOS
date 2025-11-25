@@ -10,6 +10,6 @@ namespace kernel
 {
 constexpr uintptr_t userspace_stack_base = (0xcc0000000);
 constexpr size_t kernel_stack_size = (16384);
-constexpr size_t userspace_stack_size = (16384);
+constexpr size_t userspace_stack_size = (16384*4);
 
-} // namespace kernel
+} // namespace kerne0xcbfffc000l

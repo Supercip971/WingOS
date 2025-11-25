@@ -56,8 +56,6 @@ core::Result<VfsFileEndpoint *> VfsFileEndpoint::open_root()
 void close_endpoint(VfsFileEndpoint *endpoint)
 {
 
-    IpcMessage message = {};
-    message.data[0].data = prot::FS_CLOSE;
     // don't forward if endpoint is root
 
  

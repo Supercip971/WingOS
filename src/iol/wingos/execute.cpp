@@ -42,7 +42,7 @@ core::Result<size_t> execute_program_from_mem(Wingos::Space &subspace, elf::ElfL
         auto ph = try$(loaded.program_header(i));
         if (ph.type != core::underlying_value(ElfProgramHeaderType::HEADER_LOAD))
         {
-            log::warn$("skipping program header {}: type is not LOAD but {}", i, ph.type);
+            log::warn$("skipping program header {}: type is not LOAD but {}", i, (uint32_t)ph.type);
             continue;
         }
 

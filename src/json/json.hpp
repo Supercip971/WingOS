@@ -128,7 +128,8 @@ struct JsonValue
         {
             return &children[index];
         }
-        return nullptr; // or throw an error
+        while(true){};
+        return &children[0];
     }
     JsonValue *operator[](const core::Str &key)
     {
@@ -139,7 +140,8 @@ struct JsonValue
                 return &children[i];
             }
         }
-        return nullptr; // or throw an error
+        while(true){};
+        return &children[0]; // or throw an error
     }
 };
 

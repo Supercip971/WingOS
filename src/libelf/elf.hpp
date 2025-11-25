@@ -1,7 +1,6 @@
 #pragma once
 
 #include <stdint.h>
-#include <sys/types.h>
 
 #include "hw/mem/addr_space.hpp"
 

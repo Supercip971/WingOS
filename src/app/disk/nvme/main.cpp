@@ -1,6 +1,5 @@
 
 #include <string.h>
-#include <sys/types.h>
 
 #include "libcore/fmt/fmt_str.hpp"
 #include "libcore/str_writer.hpp"
@@ -93,7 +92,7 @@ class NvmeController
 
         core::Result<void> release()
         {
-            Wingos::Space::self().release_memory(this->base_addr, this->page_size);
+            Wingos::Space::self().release_memory((void*)this->base_addr, this->page_size);
             return {};
         }
     };
@@ -318,7 +317,7 @@ class NvmeController
         idns_cmd.prp2 = 0;
         try$(nvme_await_submit(&idns_cmd, admin_queues));
 
-        log::log$(" - Namespace {}: {} blocks of size {}", nsid, device.identify_namespace->nsze, 1 << (device.identify_namespace->lbaf[device.identify_namespace->flbas & 0xf].lbads));
+        log::log$(" - Namespace {}: {} blocks of size {}", nsid, core::copy(device.identify_namespace->nsze), 1 << (device.identify_namespace->lbaf[device.identify_namespace->flbas & 0xf].lbads));
 
         uint64_t flba = device.identify_namespace->flbas & 0xf;
         uint64_t lba_shift = (device.identify_namespace->lbaf[flba].lbads);
@@ -464,13 +463,13 @@ public:
         try$(driver.identify());
 
         log::log$("NVMe Identify Controller:");
-        log::log$("- Vendor ID       : {}", driver.identify_controller->vid | fmt::FMT_HEX);
-        log::log$("- Subsystem VID   : {}", driver.identify_controller->ssvid | fmt::FMT_HEX);
+        log::log$("- Vendor ID       : {}", core::copy(driver.identify_controller->vid) | fmt::FMT_HEX);
+        log::log$("- Subsystem VID   : {}", core::copy(driver.identify_controller->ssvid) | fmt::FMT_HEX);
         log::log$("- Serial Number   : {}", core::Str(driver.identify_controller->sn, 20));
         log::log$("- Model Number    : {}", core::Str(driver.identify_controller->mn, 40));
         log::log$("- Firmware Revision : {}", core::Str(driver.identify_controller->fr, 8));
         log::log$("- Max Data Transfer Size : {}", 1 << driver.identify_controller->mdts);
-        log::log$("- Number of Namespaces : {}", driver.identify_controller->nn);
+        log::log$("- Number of Namespaces : {}", core::copy(driver.identify_controller->nn));
         log::log$("- Submission Queue Entry Size : {}", 1 << driver.identify_controller->sqes);
         log::log$("- Completion Queue Entry Size : {}", 1 << driver.identify_controller->cqes);
         log::log$("- Max Outstanding Commands : {}", driver.identify_controller->maxcmd + 1);
@@ -501,7 +500,7 @@ public:
             driver.max_transfer = 1 << 20; // 1 MB
         }
 
-        log::log$("Found {} namespaces:", driver.identify_controller->nn);
+        log::log$("Found {} namespaces:", core::copy(driver.identify_controller->nn));
 
         try$(driver.nvme_set_queue_count(4));
         for (uint32_t i = 0; i < driver.identify_controller->nn; i++)
@@ -511,10 +510,10 @@ public:
 
             if (driver.nsids[i] > driver.identify_controller->mnan && driver.identify_controller->mnan != 0)
             {
-                log::err$("Namespace ID {} is greater than maximum number of namespaces {}", driver.nsids[i], driver.identify_controller->mnan);
+                log::err$("Namespace ID {} is greater than maximum number of namespaces {}", core::copy(driver.nsids[i]), core::copy(driver.identify_controller->mnan));
                 continue;
             }
-            log::log$("- Namespace ID: {}", driver.nsids[i]);
+            log::log$("- Namespace ID: {}", core::copy(driver.nsids[i]));
             try$(driver.nvme_register_device_namespace(driver.nsids[i]));
         }
 

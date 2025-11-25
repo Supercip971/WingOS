@@ -60,7 +60,7 @@ union [[gnu::packed]] NvmeConfig
     uint32_t raw_value;
 };
 
-void dump_controller_cap(ControllerCap const &cap)
+static inline void dump_controller_cap(ControllerCap const &cap)
 {
     log::log$("Controller Capability:");
     log::log$("- max queue entries           : {}", cap.max_queue_entries);

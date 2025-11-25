@@ -3,7 +3,7 @@
     "id": "wingos-x86_64",
     "type": "target",
     "props": {
-        "toolchain": "clang",
+        "toolchain": "gcc",
         "arch": "x86_64",
         "bits": "64",
         "sys": "wingos",
@@ -14,15 +14,14 @@
     },
     "tools": {
         "cc": {
-            "cmd": "{shell.latest('clang')}",
+            "cmd": "meta/build/cross/bin/x86_64-pc-wingos-gcc",
+
             "args": [
                 "-g",
                 "-Isrc/libc",
-                "-target",
-                "x86_64-none-elf",
-                "-ffreestanding",
                 "-fno-exceptions",
-                "-fno-rtti",
+                
+                "-Wno-builtin-declaration-mismatch",
                 "-fno-stack-protector",
 
                 "-mno-80387",
@@ -34,40 +33,27 @@
 
                 "-Wnull-dereference",
                 "-Wstack-protector",
-                "-Wstrict-overflow=3",
                 "-Walloca",
                 "-Wvla",
                 "-Warray-bounds",
-                "-Wtautological-constant-in-range-compare",
-                "-Wloop-analysis",
                 "-Wshadow",
-                "-Wstrict-overflow=4",
-                "-Wstrict-prototypes",
                 "-Wswitch-default",
-                "-Wthread-safety",
-                "-Wunreachable-code-aggressive",
-                "-Widiomatic-parentheses",
                 "-Wfloat-equal",
-                "-Wassign-enum",
-                "-Wcomma", 
-                "-Wfor-loop-analysis",
                 "-Wimplicit-fallthrough",
-                "-Wexperimental-lifetime-safety",
-                "-Wdangling-gsl",
                 "-O3"
             ]
         },
         "cxx": {
-            "cmd": "{shell.latest('clang++')}",
+            "cmd": "meta/build/cross/bin/x86_64-pc-wingos-g++",
+
+
             "args": [
                 "-g",
                 "-Isrc/libc",
-                "-target",
-                "x86_64-none-elf",
-                "-ffreestanding",
                 "-fno-exceptions",
                 "-fno-rtti",
                 "-fno-stack-protector",
+                "-Wno-builtin-declaration-mismatch",
                     
                 "-mno-80387",
                 "-mno-mmx",
@@ -75,43 +61,27 @@
                 "-mno-sse",
                 "-mno-sse2",
                 "-mno-avx",
-                "-std=c++2c",
-                "-fno-c++-static-destructors",
-                "-fno-builtin",
+                "-std=c++23",
                 "-fno-threadsafe-statics" ,
                    "-fno-stack-protector",
-                "-fno-c++-static-destructors",
-                "-fno-builtin",
                 "-fno-threadsafe-statics",
                
                 "-Wnull-dereference",
                 "-Wstack-protector",
-                "-Wstrict-overflow=3",
                 "-Walloca",
                 "-Wvla",
                 "-Warray-bounds",
-                "-Wtautological-constant-in-range-compare",
-                "-Wloop-analysis",
                 "-Wshadow",
-                "-Wstrict-overflow=4",
-                "-Wstrict-prototypes",
                 "-Wswitch-default",
-                "-Wthread-safety",
-                "-Wunreachable-code-aggressive",
-                "-Widiomatic-parentheses",
                 "-Wfloat-equal",
-                "-Wassign-enum",
-                "-Wcomma", 
-                "-Wfor-loop-analysis",
                 "-Wimplicit-fallthrough",
-                "-Wexperimental-lifetime-safety",
-                "-Wdangling-gsl",
-                "-O3"
+                "-O3",
+                "-fdiagnostics-color=always"
     
             ]
         },
         "ld": {
-            "cmd": "{shell.latest('ld.lld')}",
+            "cmd": "meta/build/cross/bin/x86_64-pc-wingos-ld",
             "args": [
                 "-m",
                 "elf_x86_64",

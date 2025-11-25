@@ -275,16 +275,16 @@ public:
             return "not an ext4 filesystem (invalid magic)";
         }
 
-        log::log$("ext4: detected ext4 filesystem with {} inodes and {} blocks", fs.superblock.inodes_count, fs.superblock.blocks_count_lo | ((uint64_t)fs.superblock.blocks_count_hi << 32));
+        log::log$("ext4: detected ext4 filesystem with {} inodes and {} blocks", core::copy(fs.superblock.inodes_count), fs.superblock.blocks_count_lo | ((uint64_t)fs.superblock.blocks_count_hi << 32));
 
         log::log$("ext4: block size: {}", 1024 << fs.superblock.log_block_size);
-        log::log$("ext4: inode size: {}", fs.superblock.inode_size);
-        log::log$("ext4: blocks per group: {}", fs.superblock.blocks_per_group);
-        log::log$("ext4: inodes per group: {}", fs.superblock.inodes_per_group);
-        log::log$("ext4: first inode: {}", fs.superblock.first_ino);
-        log::log$("ext4: feature compat: {}", fs.superblock.feature_compat);
-        log::log$("ext4: feature incompat: {}", fs.superblock.feature_incompat);
-        log::log$("ext4: feature ro compat: {}", fs.superblock.feature_ro_compat);
+        log::log$("ext4: inode size: {}", core::copy(fs.superblock.inode_size));
+        log::log$("ext4: blocks per group: {}", core::copy(fs.superblock.blocks_per_group));
+        log::log$("ext4: inodes per group: {}", core::copy(fs.superblock.inodes_per_group));
+        log::log$("ext4: first inode: {}", core::copy(fs.superblock.first_ino));
+        log::log$("ext4: feature compat: {}", core::copy(fs.superblock.feature_compat));
+        log::log$("ext4: feature incompat: {}", core::copy(fs.superblock.feature_incompat));
+        log::log$("ext4: feature ro compat: {}", core::copy(fs.superblock.feature_ro_compat));
 
         fs.disk_asset = Wingos::Space::self().allocate_physical_memory(math::alignUp<size_t>((1024 << fs.superblock.log_block_size), (size_t)4096));
         fs.mapped_disk_asset = Wingos::Space::self().map_memory(fs.disk_asset, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
@@ -310,9 +310,9 @@ public:
 
         auto v = try$(fs.read_inode(2));
 
-        log::log$("ext4: root inode has {} blocks", v.inode.blocks_lo);
+        log::log$("ext4: root inode has {} blocks", core::copy(v.inode.blocks_lo));
         log::log$("ext4: root inode size: {}", (uint64_t)v.inode.size_lo);
-        log::log$("ext4: root inode first block pointer: {}", v.inode.block[0]);
+        log::log$("ext4: root inode first block pointer: {}", core::copy(v.inode.block[0]));
         log::log$("ext4: root inode type: {}", (uint16_t)v.inode.file_type);
 
 

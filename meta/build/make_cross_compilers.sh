@@ -40,8 +40,10 @@ cd ./meta/build/cross/src
 echo "downloading bin_utils"
 download_and_extract "https://ftp.gnu.org/gnu/binutils/$binutils_file" "$binutils_file"
 export binutils_src="$PWD/binutils-$bin_utils_version"
+
 cd $binutils_src
-patch -p1 < "$patch_path/binutils.patch"
+
+patch  -p1 < "$patch_path/binutils.patch"
 cd ..
 
 

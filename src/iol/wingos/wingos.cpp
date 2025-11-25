@@ -66,10 +66,10 @@ asm(
     "   call _entry_point \n"
     "   \n");
 
-__attribute__((weak)) extern "C" void _entry_point(StartupInfo *context)
+extern "C" __attribute__((weak))  void _entry_point(StartupInfo *context)
 {
 
-    asm volatile("andq $-16, %%rsp" ::: "rsp");
+    asm volatile("andq $-16, %rsp");
     _index = 0;
 
     WingosLogger logger;

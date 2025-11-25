@@ -48,7 +48,7 @@ constexpr core::Result<void> format_impl(Targ &target, core::Str fmt, int _c, Ar
     if (c + 1 < fmt.len() && fmt[c] == '{' && fmt[c + 1] == '}')
     {
 
-        format_v(target, a);
+        format_v(target, core::forward<Arg>(a));
         return format_impl(target, fmt, c + 2);
     }
     else
@@ -81,7 +81,7 @@ constexpr core::Result<void> format_impl(Targ &target, core::Str fmt, int _c, Ar
     {
         if constexpr (sizeof...(args) > 0)
         {
-            format_v(target, a);
+            format_v(target, core::forward<Arg>(a));
             return format_impl(target, fmt, c + 2, core::forward<Args>(args)...);
         }
         else
@@ -92,7 +92,7 @@ constexpr core::Result<void> format_impl(Targ &target, core::Str fmt, int _c, Ar
     else
     {
         c++;
-        return format_impl(target, fmt, c, a, core::forward<Args>(args)...);
+        return format_impl(target, fmt, c,core::forward<Arg>(a), core::forward<Args>(args)...);
     }
 }
 

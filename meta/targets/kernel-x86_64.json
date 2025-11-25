@@ -52,7 +52,6 @@
                 "-Widiomatic-parentheses",
                 "-Wfloat-equal",
                 "-Wassign-enum",
-                "-Wcomma",
                 "-Wexperimental-lifetime-safety",
 "-Wdangling-gsl",
                 "-O3"
@@ -100,7 +99,6 @@
                 "-Widiomatic-parentheses",
                 "-Wfloat-equal",
                 "-Wassign-enum",
-                "-Wcomma", 
                 "-Wfor-loop-analysis",
                 "-Wimplicit-fallthrough",
                 "-Wexperimental-lifetime-safety",

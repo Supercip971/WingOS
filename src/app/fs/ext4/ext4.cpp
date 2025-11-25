@@ -113,8 +113,8 @@ core::Result<uint64_t> Ext4Filesystem::inode_find_block(Ext4InodeRef const &inod
 core::Result<size_t> Ext4Filesystem::inode_read(Ext4InodeRef const &inode, Wingos::MemoryAsset &out, size_t off, size_t len)
 {
 
-    log::log$("ext4: inode_read inode {} off {} len {}", inode.inode_id, off, len);
-    log::log$("ext4: inode size_lo {}", inode.inode.size_lo);
+    log::log$("ext4: inode_read inode {} off {} len {}", core::copy(inode.inode_id), off, len);
+    log::log$("ext4: inode size_lo {}", core::copy(inode.inode.size_lo));
     len = core::max(core::min<long>(len, (long)(inode.inode.size_lo) - (long)off), 0);
     size_t block_size_ = block_size();
     size_t start_block = off / block_size_;
@@ -331,7 +331,7 @@ core::Result<void> Ext4Filesystem::dump_subdir(Ext4InodeRef const &dir_inode, in
                 raw_name.put(entry->name[i]);
             }
 
-            log::log$("{} (inode {}) {}", name.view(), entry->inode, entry->file_type);
+            log::log$("{} (inode {}) {}", name.view(), core::copy(entry->inode), core::copy(entry->file_type));
 
             if (entry->file_type == 2 && raw_name.view() != core::Str(".") && raw_name.view() != core::Str(".."))
             {

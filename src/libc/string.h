@@ -8,7 +8,10 @@ extern "C" {
 
 
 void *memcpy(void * __restrict dest, const void * __restrict src, size_t n);
-void *memset(void *s, int c, size_t n);
+void *memset(void *s, int c, size_t n) ;
+
+
+size_t strlen(const char* s);
 
 #ifdef __cplusplus
 }

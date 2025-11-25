@@ -1,5 +1,11 @@
 #include "string.h"
 
+#ifndef __clang__ 
+
+__attribute__((optimize("no-tree-loop-distribute-patterns")))
+#endif  
+
+
 void *memcpy(void * __restrict dest, const void * __restrict src, size_t n)
 {
     char *d = (char *)dest;
@@ -10,7 +16,14 @@ void *memcpy(void * __restrict dest, const void * __restrict src, size_t n)
     }
     return dest;
 }
-void *memset(void *s, int c, size_t n)
+
+
+#ifndef __clang__ 
+
+__attribute__((optimize("no-tree-loop-distribute-patterns")))
+#endif  
+
+void *memset(void *s, int c, size_t n) 
 {
     char *p = (char *)s;
     while (n--)
@@ -41,4 +54,15 @@ void * memmove(void *dest, const void *src, size_t n)
         }
     }
     return dest;
+}
+
+
+size_t strlen(const char* s)
+{
+    size_t len = 0;
+    while(s[len] != '\0') 
+    {
+        len++;
+    }
+    return len;
 }

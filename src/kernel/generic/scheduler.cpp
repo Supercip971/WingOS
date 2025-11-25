@@ -1,4 +1,5 @@
 #include "kernel/generic/scheduler.hpp"
+#include "kernel/generic/space.hpp"
 
 #include "kernel/generic/cpu_tree.hpp"
 #include "libcore/ds/linked_list.hpp"
@@ -611,6 +612,36 @@ void schedule_other_cpus()
     }
 }
 
+core::Result<void> dump_current_running_task()
+{
+    CoreId core = Cpu::currentId();
+    if (cpu_running[core] != nullptr)
+    {
+        log::log$("Current running task on CPU[{}]: Task UID: {}, State: {}",
+                  core,
+                  (int)cpu_running[core]->uid(),
+                  (int)cpu_running[core]->state());
+        log::log$("CPU: ");
+        cpu_running[core]->cpu_context()->dump();
+        log::log$("space of task:");
+
+        if (cpu_running[core]->space() != nullptr)
+        {
+            Asset::dump_assets(cpu_running[core]->space());
+        }
+        else
+        {
+            log::log$("  no space assigned");
+        }
+    }
+    else
+    {
+        log::log$("CPU {}: No task running", core);
+    }
+
+
+    return {};
+}
 core::Result<void> dump_all_current_running_tasks()
 {
     log::log$("Dumping all current running tasks:");

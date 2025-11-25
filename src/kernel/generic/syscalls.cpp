@@ -10,6 +10,7 @@
 #include "kernel/generic/ipc.hpp"
 #include "kernel/generic/scheduler.hpp"
 #include "kernel/generic/task.hpp"
+#include "libcore/fmt/flags.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/lock/lock.hpp"
 #include "wingos-headers/asset.h"
@@ -110,6 +111,7 @@ core::Result<uintptr_t> ksyscall_map(SyscallMap *map)
     {
         return core::Result<size_t>::error("no current space");
     }
+
 
 
 

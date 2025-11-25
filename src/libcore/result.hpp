@@ -4,7 +4,6 @@
 #include <libcore/optional.hpp>
 #include <libcore/type-utils.hpp>
 
-#include "libcore/type/trait.hpp"
 
 namespace core
 {

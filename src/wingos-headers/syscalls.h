@@ -72,8 +72,8 @@ static inline SyscallMemOwn syscall_physical_mem_own_decode(SyscallInterface int
 typedef struct SyscallMap
 {
     uint64_t target_space_handle;
-    size_t start;
-    size_t end;
+    uint64_t start;
+    uint64_t end;
     uint64_t physical_mem_handle; // the handle of the physical memory asset
     uint64_t flags;
     uint64_t returned_handle; // the handle of the created mapping

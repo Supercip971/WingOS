@@ -2,7 +2,9 @@
 
 #include "kernel/generic/asset.hpp"
 #include "libcore/ds/vec.hpp"
+#include "libcore/fmt/flags.hpp"
 #include "libcore/result.hpp"
+#include "wingos-headers/asset.h"
 
 size_t _space_handle = 1;
 
@@ -32,10 +34,24 @@ void Asset::dump_assets(Space *space)
             {
                 log::log$("    IPC Connection accepted: {}", space->assets[i].asset->ipc_connection->accepted);
                  log::log$("    IPC Connection closed: {}", (int)space->assets[i].asset->ipc_connection->closed_status);
-
                  log::log$("    IPC Connected: {}", (int)space->assets[i].asset->ipc_connection->server_asset->handle);
                 
             }
+            if(space->assets[i].asset->kind == OBJECT_KIND_MEMORY)
+            {
+                log::log$("    Memory addr: {}-{}", space->assets[i].asset->memory.addr | fmt::FMT_HEX, 
+                          space->assets[i].asset->memory.addr + space->assets[i].asset->memory.size | fmt::FMT_HEX);
+                log::log$("    Memory allocated: {}", space->assets[i].asset->memory.allocated);
+            }
+
+            if(space->assets[i].asset->kind == OBJECT_KIND_MAPPING)
+            {
+                log::log$("    Mapping: {}-{}", space->assets[i].asset->mapping.start | fmt::FMT_HEX, space->assets[i].asset->mapping.end | fmt::FMT_HEX);
+                log::log$("    Mapping writable: {}", space->assets[i].asset->mapping.writable);
+                log::log$("    Mapping executable: {}", space->assets[i].asset->mapping.executable);
+            }
+
+            
         
         }
         space->self->lock.release();

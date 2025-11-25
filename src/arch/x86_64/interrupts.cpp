@@ -98,8 +98,8 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
         log::log$("cpu: {}", hw::acpi::Lapic::the().id());
 
        // dump_stackframe((void*)Cpu::current()->currentTask()->cpu_context()->);
-       log::log$("kernel stacktrace:"); 
-       dump_stackframe((void *)frame->rbp);
+        log::log$("kernel stacktrace:"); 
+        dump_stackframe((void *)frame->rbp);
         log::log$("last syscall stacktrace:");
 
         if(Cpu::current()->debug_saved_syscall_stackframe != 0)
@@ -108,7 +108,7 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
             dump_stackframe((void *)Cpu::current()->debug_saved_syscall_stackframe);
         }
 
-        kernel::dump_all_current_running_tasks();
+        kernel::dump_current_running_task();
 
         inside_error = false;
         int_lock.write_release();

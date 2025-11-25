@@ -159,6 +159,8 @@ namespace IsConvertibleImpl
 }
 
 
+#ifndef __clang__
+
 template <class From, class To>
 struct IsImplicitlyConvertible
     : 
@@ -170,8 +172,14 @@ struct IsImplicitlyConvertible
                 {
 
                 };
-
 template<class From, class To>
 concept IsConvertibleTo = IsImplicitlyConvertible<From, To>::value;
 
+
+                #else 
+
+template <typename From, typename To>
+concept IsConvertibleTo = __is_convertible_to(From, To);
+#endif
+ 
 } // namespace core

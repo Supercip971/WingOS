@@ -66,7 +66,25 @@ asm(
     "   call _entry_point \n"
     "   \n");
 
-extern "C" __attribute__((weak))  void _entry_point(StartupInfo *context)
+
+// taken from https://github.com/managarm/managarm/
+using InitializerPtr = void (*)();
+
+extern "C"  InitializerPtr __init_array_start[];
+extern "C"  InitializerPtr __init_array_end[];
+
+extern "C" void runConstructors()
+{
+    auto begin = reinterpret_cast<uintptr_t>(__init_array_start);
+    auto end = reinterpret_cast<uintptr_t>(__init_array_end);
+    auto count = (end - begin) / sizeof(InitializerPtr);
+
+    log::log$("Running {} constructors", count);
+    for (size_t i = 0; i < count; ++i)
+        __init_array_start[i]();
+}
+
+extern "C" __attribute__((weak)) void _entry_point(StartupInfo *context)
 {
 
     asm volatile("andq $-16, %rsp");
@@ -75,7 +93,7 @@ extern "C" __attribute__((weak))  void _entry_point(StartupInfo *context)
     WingosLogger logger;
     log::provide_log_target(&logger);
 
-
+    runConstructors();
     if (context->stdout_handle != 0)
     {
         _stdout_pipe = (prot::SenderPipe::from(

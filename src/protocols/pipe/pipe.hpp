@@ -1,7 +1,5 @@
 #pragma once
 
-#include <string.h>
-
 #include "iol/wingos/ipc.hpp"
 #include "iol/wingos/space.hpp"
 #include "iol/wingos/syscalls.h"
@@ -40,8 +38,11 @@ public:
 
         IpcMessage message = {};
 
-        memcpy((uint8_t *)message.raw_buffer, buffer, len);
 
+        for(size_t i = 0; i < len; i++)
+        {
+            message.raw_buffer[i] = (( const uint8_t *)buffer)[i];
+        }
         message.len = len;
         auto sended_message = _connection.send(message);
 
@@ -92,7 +93,12 @@ class ReceiverPipe
             mlen = len;
         }
 
-        memcpy(buffer, (uint8_t *)received_message.raw_buffer, mlen);
+        for(size_t i = 0; i < mlen; i++)
+        {
+            ((uint8_t *)buffer)[i] = received_message.raw_buffer[i];
+        }
+
+//        memcpy(buffer, (uint8_t *)received_message.raw_buffer, mlen);
 
         return {mlen};
     }

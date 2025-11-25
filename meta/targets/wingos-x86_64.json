@@ -76,7 +76,8 @@
                 "-Wfloat-equal",
                 "-Wimplicit-fallthrough",
                 "-O3",
-                "-fdiagnostics-color=always"
+                "-fdiagnostics-color=always",
+                "-Wdangling-reference"
     
             ]
         },

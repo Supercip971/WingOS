@@ -1,0 +1,3 @@
+[submodule "src/ports/dash-wingos"]
+	path = src/ports/dash-wingos
+	url = https://github.com/Supercip971/dash-wingos.git

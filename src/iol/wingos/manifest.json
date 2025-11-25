@@ -6,6 +6,9 @@
     "provides": [
         "iol"
     ],
+    "requires": [
+        "userspace-arch"
+    ],
     "enableIf": {
         "sys": ["wingos"]
     }

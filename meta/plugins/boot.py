@@ -196,8 +196,8 @@ def build_object(args: model.TargetArgs, component, target):
     product = builder.build(scope, fcomponent)[0]
     
     return product
-
-
+            
+    
 @cli.command("s", "Boot Wingos")
 def bootFunc(args: model.TargetArgs):
     

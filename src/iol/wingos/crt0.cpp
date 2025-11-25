@@ -73,17 +73,24 @@ using InitializerPtr = void (*)();
 extern "C"  InitializerPtr __init_array_start[];
 extern "C"  InitializerPtr __init_array_end[];
 
+
 extern "C" void runConstructors()
 {
     auto begin = reinterpret_cast<uintptr_t>(__init_array_start);
     auto end = reinterpret_cast<uintptr_t>(__init_array_end);
     auto count = (end - begin) / sizeof(InitializerPtr);
 
-    log::log$("Running {} constructors", count);
     for (size_t i = 0; i < count; ++i)
         __init_array_start[i]();
 }
 
+
+char* cwd;
+char * iol_get_cwd()
+{
+    return cwd;
+
+}
 extern "C" __attribute__((weak)) void _entry_point(StartupInfo *context)
 {
 
@@ -92,7 +99,7 @@ extern "C" __attribute__((weak)) void _entry_point(StartupInfo *context)
 
     WingosLogger logger;
     log::provide_log_target(&logger);
-
+    cwd = (char*)"fixme";
     runConstructors();
     if (context->stdout_handle != 0)
     {

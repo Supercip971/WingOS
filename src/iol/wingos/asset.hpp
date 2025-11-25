@@ -22,7 +22,8 @@ struct VirtualMemoryAsset : public UAsset
 
     static VirtualMemoryAsset create(uint64_t space_handle, uint64_t start, uint64_t end, uint64_t physical_mem_handle, uint64_t flags)
     {
-        VirtualMemoryAsset asset;
+        VirtualMemoryAsset asset = {};
+      //  log::log$("Creating VirtualMemoryAsset: start={}, end={}, physical_mem_handle={}, flags={}", start | fmt::FMT_HEX, end | fmt::FMT_HEX, physical_mem_handle, flags | fmt::FMT_HEX);
         asset.memory = mcx::MemoryRange(start, end).growAlign(4096);
         asset.handle = sys$map_create(space_handle, asset.memory.start(), asset.memory.end(), physical_mem_handle, flags).returned_handle;
         return asset;

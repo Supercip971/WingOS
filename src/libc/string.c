@@ -1,9 +1,10 @@
 #include "string.h"
-
+#include <signal.h>
 #ifndef __clang__ 
 
 __attribute__((optimize("no-tree-loop-distribute-patterns")))
 #endif  
+
 
 
 void *memcpy(void * __restrict dest, const void * __restrict src, size_t n)
@@ -16,6 +17,7 @@ void *memcpy(void * __restrict dest, const void * __restrict src, size_t n)
     }
     return dest;
 }
+
 
 
 #ifndef __clang__ 
@@ -65,4 +67,26 @@ size_t strlen(const char* s)
         len++;
     }
     return len;
+}
+
+char* strchr(const char* s, int c)
+{
+    while (*s)
+    {
+        if (*s == (char)c)
+        {
+            return (char *)s;
+        }
+        s++;
+    }
+    if (c == '\0')
+    {
+        return (char *)s;
+    }
+    return NULL;
+}
+char * strerror(int errnum)
+{
+    (void)errnum;
+    return "Unknown error";
 }

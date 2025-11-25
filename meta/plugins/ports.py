@@ -86,6 +86,11 @@ def portFunc(args: model.TargetArgs):
     
     shell.rmrf(os.path.join(SYSROOT_LIB_PATH, "libc.a"))
     
+    # copy every file from src/libc to sysroot/lib
+    LIBC_SRC_PATH = os.path.join(const.SRC_DIR, "libc")
+    
+    shell_run(["cp", "-r", LIBC_SRC_PATH + "/.", SYSROOT_LIB_PATH])
+   
     shell_run([os.path.join("meta/build/cross/bin/x86_64-pc-wingos-ar"), "crsT", 
                  os.path.join(SYSROOT_LIB_PATH, "libc.a"), 
                  os.path.join(SYSROOT_LIB_PATH, "libc_libc.a"), 

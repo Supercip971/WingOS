@@ -4,6 +4,7 @@ import shutil
 from cutekit import builder,  const, shell, model, cli, vt100, jexpr, rules
 from typing_extensions import Self
 import importlib.util as importlib
+import json
 import sys 
 def load_module(source, module_name=None):
     """
@@ -107,8 +108,20 @@ def portFunc(args: model.TargetArgs):
     
     # list all python files in src/ports and run them and export the component 
     portsDir = os.path.join(const.SRC_DIR, "ports")
+    
+    portConfig = os.path.join(portsDir, "config.json")
+    if not os.path.exists(portConfig):
+        vt100.error(f"Ports config not found at {portConfig}")
+        return
+    
+    with open(portConfig, "r", encoding="utf8") as f:
+        
+        portConfigData = json.loads(f.read())
+    portList = portConfigData.get("ports", [])
+    
     for file in os.listdir(portsDir):
-        if file.endswith(".py"):
+        if file.endswith(".py") and file[:-3] in portList:
+            
             path = os.path.join(portsDir, file)
             vt100.title(f"Running port script: {path}")
             # get the returned component:

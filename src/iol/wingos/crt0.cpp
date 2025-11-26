@@ -3,10 +3,14 @@
 #include <libcore/fmt/log.hpp>
 #include <string.h>
 
+#include "libcore/str_writer.hpp"
+
 #include "iol/wingos/ipc.hpp"
 #include "iol/wingos/syscalls.h"
 #include "mcx/mcx.hpp"
 #include "protocols/pipe/pipe.hpp"
+#include "protocols/vfs/file.hpp"
+#include "protocols/vfs/vfs.hpp"
 #include "wingos-headers/startup.hpp"
 
 extern int main(int argc, char **argv);
@@ -24,6 +28,8 @@ static bool use_stdout = false;
 static prot::SenderPipe _stdout_pipe;
 static prot::SenderPipe _stderr_pipe;
 static prot::ReceiverPipe _stdin_pipe;
+
+static prot::FsFile _pwd;
 
 class WingosLogger : public core::Writer
 {
@@ -66,13 +72,11 @@ asm(
     "   call _entry_point \n"
     "   \n");
 
-
 // taken from https://github.com/managarm/managarm/
 using InitializerPtr = void (*)();
 
-extern "C"  InitializerPtr __init_array_start[];
-extern "C"  InitializerPtr __init_array_end[];
-
+extern "C" InitializerPtr __init_array_start[];
+extern "C" InitializerPtr __init_array_end[];
 
 extern "C" void runConstructors()
 {
@@ -84,13 +88,53 @@ extern "C" void runConstructors()
         __init_array_start[i]();
 }
 
-
-char* cwd;
-char * iol_get_cwd()
+core::WStr cwd;
+char *iol_get_cwd()
 {
-    return cwd;
-
+    return (char *)cwd.view().data();
 }
+
+int iol_change_cwd(const char *path)
+{
+
+    if (path == NULL)
+    {
+        return -1;
+    }
+
+    if (path[0] == '/')
+    {
+        _pwd.close();
+        _pwd = prot::VfsConnection::connect().unwrap().open_root().unwrap();
+        cwd = "/";
+        path++;
+    }
+
+    cwd.append(core::Str(path));
+    core::Str p = path;
+    auto r = p.split('/');
+    for (auto &part : r)
+    {
+        auto &old = _pwd;
+        auto n = old.open_file(part);
+
+        if (n.is_error())
+        {
+            return -1;
+        }
+        auto new_f = n.unwrap();
+
+        core::swap(new_f, _pwd);
+
+        new_f.close();
+
+    }
+
+    // relative path
+
+    return 0;
+}
+
 extern "C" __attribute__((weak)) void _entry_point(StartupInfo *context)
 {
 
@@ -99,7 +143,7 @@ extern "C" __attribute__((weak)) void _entry_point(StartupInfo *context)
 
     WingosLogger logger;
     log::provide_log_target(&logger);
-    cwd = (char*)"fixme";
+    cwd = (char *)"fixme";
     runConstructors();
     if (context->stdout_handle != 0)
     {

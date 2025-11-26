@@ -20,3 +20,8 @@ extern "C" char *getcwd(
     return buf;
 
 }
+int chdir(const char* path)
+{
+    int res = iol_change_cwd(path);
+    return res;
+}

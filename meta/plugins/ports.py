@@ -115,8 +115,8 @@ def portFunc(args: model.TargetArgs):
         return
     
     with open(portConfig, "r", encoding="utf8") as f:
-        
         portConfigData = json.loads(f.read())
+        
     portList = portConfigData.get("ports", [])
     
     for file in os.listdir(portsDir):

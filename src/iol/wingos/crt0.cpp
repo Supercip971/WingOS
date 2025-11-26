@@ -7,6 +7,7 @@
 
 #include "iol/wingos/ipc.hpp"
 #include "iol/wingos/syscalls.h"
+#include "libcore/fmt/flags.hpp"
 #include "mcx/mcx.hpp"
 #include "protocols/pipe/pipe.hpp"
 #include "protocols/vfs/file.hpp"
@@ -78,7 +79,7 @@ using InitializerPtr = void (*)();
 extern "C" InitializerPtr __init_array_start[];
 extern "C" InitializerPtr __init_array_end[];
 
-extern "C" void runConstructors()
+extern "C" void run_constructors()
 {
     auto begin = reinterpret_cast<uintptr_t>(__init_array_start);
     auto end = reinterpret_cast<uintptr_t>(__init_array_end);
@@ -88,11 +89,12 @@ extern "C" void runConstructors()
         __init_array_start[i]();
 }
 
-core::WStr cwd;
+static core::WStr* cwd;
 char *iol_get_cwd()
 {
-    return (char *)cwd.view().data();
+    return (char *)cwd->view().data();
 }
+
 
 int iol_change_cwd(const char *path)
 {
@@ -106,11 +108,11 @@ int iol_change_cwd(const char *path)
     {
         _pwd.close();
         _pwd = prot::VfsConnection::connect().unwrap().open_root().unwrap();
-        cwd = "/";
+        *cwd = "/";
         path++;
     }
 
-    cwd.append(core::Str(path));
+    cwd->append(core::Str(path));
     core::Str p = path;
     auto r = p.split('/');
     for (auto &part : r)
@@ -143,8 +145,10 @@ extern "C" __attribute__((weak)) void _entry_point(StartupInfo *context)
 
     WingosLogger logger;
     log::provide_log_target(&logger);
-    cwd = (char *)"fixme";
-    runConstructors();
+
+    run_constructors();
+    cwd = new core::WStr();
+
     if (context->stdout_handle != 0)
     {
         _stdout_pipe = (prot::SenderPipe::from(

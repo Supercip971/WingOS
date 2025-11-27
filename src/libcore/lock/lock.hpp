@@ -2,16 +2,19 @@
 
 #include "arch/generic/instruction.hpp"
 #include "libcore/type-utils.hpp"
+#include "libcore/type/trait.hpp"
 
 // Use compiler builtins for atomics instead of stdatomic.h
-#ifndef __clang__ 
+#ifndef __clang__
 
-#define memory_order_relaxed __ATOMIC_RELAXED
-#define memory_order_acquire __ATOMIC_ACQUIRE
-#define memory_order_release __ATOMIC_RELEASE
-#else 
+#    define memory_order_relaxed __ATOMIC_RELAXED
+#    define memory_order_acquire __ATOMIC_ACQUIRE
+#    define memory_order_release __ATOMIC_RELEASE
+#else
 
-#include <stdatomic.h>
+
+
+
 
 #endif
 
@@ -22,7 +25,6 @@ namespace core
 class Lock
 {
 
-    
     int _locked = 0;
 
     bool try_acquire()
@@ -34,9 +36,6 @@ class Lock
     }
 
 public:
-
-
-
     bool try_lock()
     {
         return try_acquire();
@@ -77,12 +76,14 @@ public:
     }
 };
 
-#else 
 
-#include <stdatomic.h>
+#else
 
-#include "arch/generic/instruction.hpp"
-#include "libcore/type-utils.hpp"
+
+#    include <stdatomic.h>
+
+#    include "arch/generic/instruction.hpp"
+#    include "libcore/type-utils.hpp"
 namespace core
 {
 class Lock
@@ -99,9 +100,6 @@ class Lock
     }
 
 public:
-
-
-
     bool try_lock()
     {
         return try_acquire();

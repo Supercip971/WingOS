@@ -1,7 +1,9 @@
 -Isrc/
 -std=c++2b
 -D__ck_kernel__
+-D__LSP
 -D_NEW
 -Wall
 -Wextra
 -Werror
+-ffreestanding

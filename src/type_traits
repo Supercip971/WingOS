@@ -2,6 +2,9 @@
 
 
 
+#ifdef __LSP
+#include_next <type_traits>
+#else 
 namespace std {
   template<typename _Tp, bool = __is_enum(_Tp)>
     struct __underlying_type_impl
@@ -19,4 +22,8 @@ namespace std {
     struct underlying_type
     : public __underlying_type_impl<_Tp>
     { };
+
+  
 }
+#endif
+

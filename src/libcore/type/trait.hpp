@@ -1,12 +1,7 @@
 #pragma once
 
-#ifndef __clang__ 
-
-
-
 #include <type_traits>
 
-#endif 
 namespace core
 {
 
@@ -85,15 +80,9 @@ using RemoveConst = typename RemoveConst_I<T>::type;
 template <class T>
 using Pure = RemoveConst<RemoveReference<T>>;
 
-
-#ifdef __clang__ 
+// Use compiler builtin for underlying type - supported by both GCC and Clang
 template <class T>
-using UnderlyingType = __underlying_type(T);
-#else 
-
-template <class T>
-using UnderlyingType = typename std::underlying_type<T>::type;
-#endif
+using UnderlyingType = std::underlying_type<T>::type;
 
 
 //template <typename From, typename To>

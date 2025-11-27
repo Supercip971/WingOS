@@ -184,7 +184,7 @@ int main(int, char **)
         }
 
 
-        wstr.clear();
+        //wstr.clear();
         //    log::log$("swapped buffers: {}", frame);
     }
 }

@@ -18,6 +18,11 @@
             "name": "compositor",
             "path": "/bin/sys-compositor",
             "requires": ["@fs"]
+        },
+        {
+            "name": "ps2",
+            "path": "/bin/ps2",
+            "requires": ["compositor"]
         }
     ],
     "drivers": [

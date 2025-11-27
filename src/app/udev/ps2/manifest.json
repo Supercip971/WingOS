@@ -1,0 +1,19 @@
+{
+    "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
+    "id": "ps2",
+    "type": "exe",
+    "description": "PS2 mouse/keyboard driver",
+    
+    "props": {
+        "pkgname": "ps2",
+        "exported": "disk"
+    },
+    "requires": [
+        "libcore"
+    ],
+    "enableIf": {
+        "sys": [
+            "wingos"
+        ]
+    }
+}

@@ -1,9 +1,9 @@
-#include "libcore/result.hpp"
 #include "arch/generic/syscalls.h"
 #include "iol/wingos/space.hpp"
 #include "iol/wingos/syscalls.h"
 #include "libcore/alive.hpp"
 #include "libcore/fmt/log.hpp"
+#include "libcore/result.hpp"
 #include "mcx/mcx.hpp"
 #include "protocols/compositor/compositor.hpp"
 #include "protocols/compositor/window.hpp"
@@ -12,12 +12,11 @@
 #include "protocols/vfs/vfs.hpp"
 #include "wingos-headers/syscalls.h"
 
-int main(int , char** )
+int main(int, char **)
 {
 
     log::log$("Hello world from an application !");
     log::log$("Wingos is a microkernel based OS! made with <3");
-
 
     // attempt connection to open root file
 
@@ -39,6 +38,10 @@ int main(int , char** )
     log::log$("{}", core::Str((const char *)data_ptr.ptr(), res));
 */
 
-    while(true){};
-    
+    size_t u = 0;
+    while (true)
+    {
+        log::log$("Application alive !: {}", u);
+        u++;
+    };
 }

@@ -122,7 +122,7 @@ core::Result<void> Lapic::timer_initialize()
     write(LAPICReg::LVT_TIMER, lvt.raw);
     log::log$("LVT_TIMER: {}", lvt.raw);
     write(LAPICReg::TIMER_DIVIDE_CONFIGURATION, LAPIC_TIMER_DIVIDE_BY_16);
-    write(LAPICReg::TIMER_INITIAL_COUNT, (ticks/16)*10); // 10 ms per switch
+    write(LAPICReg::TIMER_INITIAL_COUNT, (ticks*10)/16); // 10 ms per switch
 
     return {};
 }

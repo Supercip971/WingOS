@@ -294,14 +294,17 @@ core::Result<ReceivedIpcMessage> server_receive_message( IpcConnection *connecti
         return null_message;
     }
 
+    connection->lock.lock();
+
     for (size_t i = 0; i < connection->message_sent.len(); i++)
     {
         if (!connection->message_sent[i].has_been_received)
         {
             connection->message_sent[i].has_been_received = true;
 
-            auto message = connection->message_sent[i];
-            if (!connection->message_sent[i].is_call)
+            ReceivedIpcMessage message = core::move(connection->message_sent[i]);
+
+            if (!message.is_call)
             {
                 connection->message_sent.pop(i);
             }
@@ -309,10 +312,11 @@ core::Result<ReceivedIpcMessage> server_receive_message( IpcConnection *connecti
 
             message.message_sended.server = try$(update_handle_from_client_to_server(connection, message.message_sended.client));
 
-
+            connection->lock.release();
             return message;
         }
     }
+    connection->lock.release();
 
 
     ReceivedIpcMessage null_message = {};
@@ -340,9 +344,9 @@ core::Result<ReceivedIpcMessage> client_receive_message(IpcConnection *connectio
     {
         if (connection->message_sent[i].has_reply)
         {
-            auto message = connection->message_sent[i];
+            ReceivedIpcMessage message = core::move(connection->message_sent[i]);
 
-            if (connection->message_sent[i].is_call)
+            if (message.is_call)
             {
 
                 connection->message_sent.pop(i);

@@ -1,5 +1,4 @@
 #include "kernel/generic/scheduler.hpp"
-#include "kernel/generic/space.hpp"
 
 #include "kernel/generic/cpu_tree.hpp"
 #include "libcore/ds/linked_list.hpp"
@@ -7,6 +6,7 @@
 #include "kernel/generic/context.hpp"
 #include "kernel/generic/cpu.hpp"
 #include "kernel/generic/paging.hpp"
+#include "kernel/generic/space.hpp"
 #include "kernel/generic/task.hpp"
 #include "libcore/atomic.hpp"
 #include "libcore/ds/array.hpp"
@@ -16,14 +16,15 @@
 #include "libcore/result.hpp"
 #include "libcore/type-utils.hpp"
 
-using TaskQueue = core::Vec<kernel::Task*>;
+using TaskQueue = core::Vec<kernel::Task *>;
 
 core::Vec<size_t> _choosen = {};
 core::Vec<size_t> _retried = {};
+core::Vec<CoreId> _blocked_cores_idle_candidates = {};
 
 core::Vec<kernel::Task *> scheduler_idles = {};
-core::Vec<kernel::Task*> cpu_runned = {};
-core::Vec<kernel::Task*> cpu_running = {};
+core::Vec<kernel::Task *> cpu_runned = {};
+core::Vec<kernel::Task *> cpu_running = {};
 
 
 
@@ -40,15 +41,15 @@ size_t tick = 0;
 
 namespace kernel
 {
-static inline void add_entity_to_queue(Task* task)
+static inline void add_entity_to_queue(Task *task)
 {
 
-    if(task == nullptr)
+    if (task == nullptr)
     {
         return;
     }
 
-    if(task->sched().is_idle)
+    if (task->sched().is_idle)
     {
         return;
     }
@@ -66,15 +67,13 @@ static inline void add_entity_to_queue(Task* task)
     task_queues[task->sched().queue()].push(task);
 }
 
-
 void idle()
 {
     while (true)
     {
 
-
         asm volatile("sti");
-        
+
         asm volatile("hlt");
     }
 }
@@ -98,7 +97,6 @@ core::Result<void> scheduler_init_idle_task()
         t->sched() = SchedulerControlBlock(0);
         t->sched().is_idle = true;
         scheduler_idles.push(t);
-        
 
         cpu_runned.push(t);
         cpu_running.push(t);
@@ -130,18 +128,18 @@ core::Result<void> scheduler_init(int cpu_count)
     cpu_runned.clear();
     cpu_running.clear();
 
-
     try$(scheduler_init_idle_task());
     scheduler_lock.write_release();
     for (size_t i = 0; i < running_cpu_count; i++)
     {
- 
+
         cpu_runned[i] = scheduler_idles[i];
         cpu_runned[i]->sched().is_idle = true;
         cpu_running[i] = cpu_runned[i];
     }
     _choosen = try$(core::Vec<size_t>::with_capacity(running_cpu_count));
     _retried = try$(core::Vec<size_t>::with_capacity(running_cpu_count));
+    _blocked_cores_idle_candidates = try$(core::Vec<CoreId>::with_capacity(running_cpu_count));
 
     return {};
 }
@@ -206,14 +204,13 @@ static inline size_t scheduled_task_count()
         count += task_queues[i].len();
     }
 
-    for (size_t i = 0; i < running_cpu_count; i++)
+    for (size_t i = 0; i < cpu_running.len(); i++)
     {
-        if (!cpu_runned[i]->sched().is_idle)
+        if (cpu_running[i] != nullptr && !cpu_running[i]->sched().is_idle)
         {
-            count++;
+            count += 1;
         }
     }
-
     count += blocked_tasks.len();
 
     return count;
@@ -258,15 +255,23 @@ static long summed_weights()
     {
         for (auto task = task_queues[i].begin(); task != task_queues[i].end(); ++task)
         {
-            sum += (*task)->sched().weight();
+            auto w =  (*task)->sched().weight();
+            if(w > 0)
+            {
+                sum += w;
+            }
+
         }
     }
 
-
-  //  for (auto &task : blocked_tasks)
-  //  {
-  //      sum += task->sched().weight();
-  //  }
+    for (auto &task : blocked_tasks)
+    {
+        auto w = task->sched().weight();
+        if(w > 0)
+        {
+            sum += w;
+        }
+    }
 
     return sum;
 }
@@ -277,14 +282,13 @@ static void update_runned_task_for_cpu(CoreId cpu)
     // but for now, I prefer having readable code rather than optimized one
     // - say the guy who spend too much time optimizing a scheduler algorithm before having a userspace
 
-    auto& sched_block = cpu_runned[cpu]->sched();
+    auto &sched_block = cpu_runned[cpu]->sched();
     if (sched_block.is_idle)
     {
         return;
     }
-   // sched_block.running += 1;
+    // sched_block.running += 1;
     sched_block.old_cpu_affinity = cpu;
-
 
     // FIX: Clear the CPU slot after moving task to queue
     add_entity_to_queue(cpu_runned[cpu]);
@@ -313,29 +317,35 @@ static void update_runned_tasks()
 
     task_queues[TASK_QUEUE_COUNT - 1].clear();
 
-    // technically we should be able to do this in one iteration, and this is a bit of a waste
-    // but for now, I prefer having readable code rather than optimized one
-    // - say the guy who spend too much time optimizing a scheduler algorithm before having a userspace
+    // for(size_t i = 0; i < running_cpu_count; i++)
+    //{
+    //     log::log$("cpu: {} task[{}] weight: {}", i, cpu_runned[i]->uid(), cpu_runned[i]->sched().weight());
+    // }
+    //  technically we should be able to do this in one iteration, and this is a bit of a waste
+    //  but for now, I prefer having readable code rather than optimized one
+    //  - say the guy who spend too much time optimizing a scheduler algorithm before having a userspace
 
     auto sum = summed_weights();
-    auto count = scheduled_task_count();
+
+    long count = scheduled_task_count();
 
     if (count != 0)
     {
 
-        long avg_sleep_time = (sum + count - 1) / count; // integer ceil (TODO: check)
+        long avg_sleep_time = sum / count; // integer ceil (TODO: check)
         for (size_t i = 0; i < TASK_QUEUE_COUNT; i++)
         {
-            for (auto task = task_queues[i].begin(); task != task_queues[i].end(); ++task)
+            for (size_t j = 0; j < task_queues[i].len(); j++)
             {
-                (*task)->sched().sleeping += avg_sleep_time;
+                auto &task = task_queues[i][j];
+                task->sched().sleeping += avg_sleep_time;
             }
         }
 
-        for (auto &task : blocked_tasks)
-        {
-            task->sched().sleeping += avg_sleep_time;
-        }
+     //   for (auto &task : blocked_tasks)
+     //   {
+           // task->sched().sleeping += avg_sleep_time;
+     //   }
     }
 
     for (size_t i = 0; i < running_cpu_count; i++)
@@ -345,11 +355,10 @@ static void update_runned_tasks()
             continue;
         }
 
-
-        auto& sched_block = cpu_runned[i]->sched();  
+        auto &sched_block = cpu_runned[i]->sched();
         sched_block.running += 1;
         sched_block.old_cpu_affinity = i;
-    //    add_entity_to_queue(cpu_runned[i]);
+        //    add_entity_to_queue(cpu_runned[i]);
 
         // FIX: Clear the CPU slot after moving task to queue
         add_entity_to_queue(cpu_runned[i]);
@@ -410,7 +419,7 @@ static core::Result<void> fix_sched_affinity()
     }
 
     to_fix.clear();
-    
+
     // log::log$("fix affinity attempts: {}", attempt);
     if (attempt >= max_attempt)
     {
@@ -530,7 +539,6 @@ core::Result<void> schedule_all()
                 continue;
             }
             auto val = task.unwrap();
-            
 
             run_task_queued(cpu, i, val);
         }
@@ -546,7 +554,6 @@ core::Result<void> schedule_all()
 
         core::swap(choosen_ptr, retried_ptr);
         retried_ptr->clear();
-        
     }
 
     for (size_t i = 0; i < choosen_ptr->len(); i++)
@@ -639,7 +646,6 @@ core::Result<void> dump_current_running_task()
         log::log$("CPU {}: No task running", core);
     }
 
-
     return {};
 }
 core::Result<void> dump_all_current_running_tasks()
@@ -689,9 +695,19 @@ core::Result<void> reschedule_all()
 }
 core::Result<void> resolve_blocked_tasks_scheduler()
 {
+    // FIXME: schedule the task if we have an idle core
+
+
+
+    _blocked_cores_idle_candidates.clear();
+
+    CoreId cur = 0;
     for (auto &cpu : cpu_runned)
     {
-
+        if(cpu->sched().is_idle)
+        {
+            _blocked_cores_idle_candidates.push(cur);
+        }
         if (cpu->sched().block_event.type == BlockEvent::Type::NONE)
         {
             continue;
@@ -701,35 +717,42 @@ core::Result<void> resolve_blocked_tasks_scheduler()
 
             cpu->sched().block_event = {};
         }
+
+        
     }
-    while (true)
+    size_t i = 0;
+
+    size_t unblock_count = 0;
+
+    while (i < blocked_tasks.len())
     {
 
-        bool removed = false;
-        size_t i = 0;
-        for (auto &task : blocked_tasks)
+        auto &task = blocked_tasks[i];
+
+        if (task->sched().block_event.liberated())
         {
-            if (task->sched().block_event.liberated())
-            {
-                task->sched().block_event = {};
+            task->sched().block_event = {};
 
-                add_entity_to_queue(task);
+            add_entity_to_queue(task);
+            unblock_count++;
+            
+            blocked_tasks.pop(i);
+            continue;
 
-                blocked_tasks.pop(i);
-                removed = true;
-
-                break;
-            }
-            i++;
         }
-
-        if (!removed)
-        {
-            break;
-        }
+        i++;
     }
 
 
+    for( i = 0; i < unblock_count && i < _blocked_cores_idle_candidates.len(); i++)
+    {
+        auto core = _blocked_cores_idle_candidates[i];
+
+        if(cpu_runned[core]->sched().is_idle)
+        {
+            try$(schedule_one(core));
+        }
+    }
     return {};
 }
 core::Result<Task *> schedule_self(Task *current, void *state, CoreId core)
@@ -767,7 +790,7 @@ core::Result<Task *> schedule_self(Task *current, void *state, CoreId core)
 
     next->cpu_context()->load_to(state);
 
-  //  add_entity_to_queue(cpu_running[core]);
+    //  add_entity_to_queue(cpu_running[core]);
     cpu_running[Cpu::currentId()] = cpu_runned[Cpu::currentId()];
 
     scheduler_lock.write_release();
@@ -783,7 +806,7 @@ core::Result<Task *> schedule(Task *current, void *state, CoreId core, bool soft
         log::err$("attempt to schedule on core {} from core {}", core, cur);
         return "cannot schedule on another core";
     }
- 
+
     if (soft)
     {
         return schedule_self(current, state, core);
@@ -802,7 +825,7 @@ core::Result<Task *> schedule(Task *current, void *state, CoreId core, bool soft
             return {};
         }
 
-     //   arch::invalidate(cpu_runned.data());
+        //   arch::invalidate(cpu_runned.data());
         scheduler_lock.write_release();
     }
 
@@ -816,7 +839,7 @@ core::Result<Task *> schedule(Task *current, void *state, CoreId core, bool soft
         return next_res.error();
     }
 
-    kernel::Task* next = next_res.unwrap();
+    kernel::Task *next = next_res.unwrap();
 
     if (current != nullptr)
     {
@@ -832,8 +855,7 @@ core::Result<Task *> schedule(Task *current, void *state, CoreId core, bool soft
         current->cpu_context()->save_in(state);
     }
 
-   // scheduler_lock.read_release();
-
+    // scheduler_lock.read_release();
 
     // if swapping from another cpu, wait for the other cpu to save its context
     while (true)
@@ -853,22 +875,13 @@ core::Result<Task *> schedule(Task *current, void *state, CoreId core, bool soft
 
     next->cpu_context()->load_to(state);
 
-
-
     cpu_running[Cpu::currentId()] = next;
     scheduler_lock.read_release();
 
-
-
     // cpu_running[Cpu::currentId()] = cpu_runned[Cpu::currentId()];
-
-
 
     return next;
 }
-
-
-
 
 core::Result<void> block_current_task(BlockEvent event)
 {
@@ -876,11 +889,11 @@ core::Result<void> block_current_task(BlockEvent event)
     // find the scheduler entity for the current task
     // funny don't need to lock the scheduler because this is always true
 
-    // start a scheduling ONO ! 
+    // start a scheduling ONO !
     scheduler_lock.write_acquire();
 
     asm volatile("cli");
-//    Cpu::current()->interrupt_hold();
+    //    Cpu::current()->interrupt_hold();
 
     // cpu_runned is the NEXT task
     cpu_running[Cpu::currentId()]->sched().block_event = event;
@@ -890,14 +903,12 @@ core::Result<void> block_current_task(BlockEvent event)
     asm volatile("int $101");
     asm volatile("sti");
 
-    // Here we can have a schedule, then we are back onto another CPU 
+    // Here we can have a schedule, then we are back onto another CPU
     // So this cpu has no idea about the interrupt state
-    // So Cpu[0]::current()->interrupt_hold(); 
-    // = SCHEDULE 
+    // So Cpu[0]::current()->interrupt_hold();
+    // = SCHEDULE
     // Now Cpu[0]::current() is another CPU
-    // Cpu[1]::current()->interrupt_release(); error ! 
-
-
+    // Cpu[1]::current()->interrupt_release(); error !
 
     // FIXME: here there is a small world where I have an interrupt between releasing the lock and rescheduling myself
 
@@ -919,7 +930,7 @@ core::Result<void> resolve_blocked_tasks()
 
 } // namespace kernel
 
-kernel::Task* Cpu::currentTask() const
+kernel::Task *Cpu::currentTask() const
 {
     return cpu_running[_id];
 }

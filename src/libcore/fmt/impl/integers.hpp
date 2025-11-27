@@ -26,6 +26,21 @@ constexpr core::Result<int> format_v(Targ &target, T v, FormatIntegerFlags flags
     (void)flags;
 
     core::Pure<T> value = v;
+
+#ifndef __clang__
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wbool-compare"
+
+#endif
+    if ((core::Pure<T>)v < 0)
+    {
+        target.write("-", 1);
+        value = -value;
+    }
+
+#ifndef __clang__
+#    pragma GCC diagnostic pop
+#endif
     core::Pure<T> digit = value % 10;
     if (value == 0)
     {
@@ -65,6 +80,21 @@ constexpr core::Result<int> format_v_hex(Targ &target, T v, FormatIntegerFlags f
 {
 
     core::Pure<T> value = v;
+
+#ifndef __clang__
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wbool-compare"
+
+#endif
+    if ((core::Pure<T>)v < 0)
+    {
+        target.write("-", 1);
+        value = -value;
+    }
+
+#ifndef __clang__
+#    pragma GCC diagnostic pop
+#endif
     core::Pure<T> digit = value % 16;
 
     constexpr int base = 17;
@@ -79,7 +109,6 @@ constexpr core::Result<int> format_v_hex(Targ &target, T v, FormatIntegerFlags f
     }
     else
     {
-
 
         while (value != 0)
         {
@@ -98,7 +127,7 @@ constexpr core::Result<int> format_v_hex(Targ &target, T v, FormatIntegerFlags f
             digit = value % 16;
         }
     }
-    
+
     if (flags.pad > i)
     {
         for (int vi = i; vi < flags.pad; vi++)

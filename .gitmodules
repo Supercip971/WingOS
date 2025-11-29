@@ -1,3 +1,9 @@
 [submodule "src/ports/dash-wingos"]
 	path = src/ports/dash-wingos
 	url = https://github.com/Supercip971/dash-wingos.git
+[submodule "src/ports/doomgeneric"]
+	path = src/ports/doomgeneric
+	url = https://github.com/ozkl/doomgeneric.git
+[submodule "src/ports/wingos-doomgeneric"]
+	path = src/ports/wingos-doomgeneric
+	url = https://github.com/Supercip971/wingos-doomgeneric.git

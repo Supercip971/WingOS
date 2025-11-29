@@ -1,8 +1,9 @@
 #pragma once
 
 #include "libcore/str_writer.hpp"
-
+#include <string.h>
 #include "iol/wingos/ipc.hpp"
+#include "iol/wingos/space.hpp"
 #include "libcore/str.hpp"
 #include "protocols/init/init.hpp"
 namespace prot
@@ -81,6 +82,20 @@ public:
         return received_len;
     }
 
+    core::Result<size_t> read(void* buffer, size_t offset, size_t len)
+    {
+        Wingos::MemoryAsset masset = Wingos::Space::self().allocate_physical_memory(len);
+
+
+        auto res = try$(this->read(masset, offset, len));
+        
+        Wingos::VirtualMemoryAsset mapped = Wingos::Space::self().map_memory(masset, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
+        memcpy(buffer, mapped.ptr(), res);
+        Wingos::Space::self().release_asset(mapped);
+        Wingos::Space::self().release_asset(masset);
+        return res;
+    }
+
     core::Result<size_t> write(Wingos::MemoryAsset &asset, size_t offset, size_t len)
     {
         IpcMessage message = {};
@@ -92,6 +107,20 @@ public:
         auto msg = try$(connection.call(message));
         size_t received_len = msg.data[1].data;
         return received_len;
+    }
+
+
+    core::Result<size_t> write(void* buffer, size_t offset, size_t len)
+    {
+        Wingos::MemoryAsset masset = Wingos::Space::self().allocate_physical_memory(len);
+
+        Wingos::VirtualMemoryAsset mapped = Wingos::Space::self().map_memory(masset, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
+
+        memcpy(mapped.ptr(), buffer, len);
+        auto res = try$(this->write(masset, offset, len));
+        Wingos::Space::self().release_asset(mapped);
+        Wingos::Space::self().release_asset(masset);
+        return res;
     }
 
     core::Result<void> close()

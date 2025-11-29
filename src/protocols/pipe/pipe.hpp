@@ -71,6 +71,20 @@ class ReceiverPipe
         pipe._connection = core::move(connection);
         return core::Result<ReceiverPipe>::success(core::move(pipe));
     }
+
+
+    core::Result<IpcMessage> receive_message()
+    {
+        auto res = _connection.receive(false);
+
+        if (res.is_error())
+        {
+            return "failed to receive message";
+        }
+
+        return core::Result<IpcMessage>::success(core::move(res.unwrap().received));
+    }
+
     core::Result<size_t> receive(void *buffer, size_t len)
     {
         if (len > MAX_IPC_BUFFER_SIZE)
@@ -93,9 +107,9 @@ class ReceiverPipe
             mlen = len;
         }
 
-        for(size_t i = 0; i < mlen; i++)
+        for(size_t i = 0; i < math::alignUp(mlen, sizeof(uint64_t)) / sizeof(uint64_t); i++)
         {
-            ((uint8_t *)buffer)[i] = received_message.raw_buffer[i];
+            (( uint64_t *)buffer)[i] = received_message.buffer[i];
         }
 
 //        memcpy(buffer, (uint8_t *)received_message.raw_buffer, mlen);

@@ -27,6 +27,56 @@ struct IpcMessagePair
     IpcMessageClient client; // the message from the client's point of view
     IpcMessageServer server; // the message from the server's point of view
 
+    IpcMessagePair() : len(0)
+    {
+    }
+
+    IpcMessagePair(const IpcMessagePair &other) {
+        len = other.len;
+        client = other.client;
+        server = other.server;
+        for (size_t i = 0; i < math::alignUp((uint64_t)other.len, sizeof(uint64_t)) / sizeof(uint64_t); i++)
+        {
+            buffer[i] = other.buffer[i];
+        }
+    }
+
+    IpcMessagePair &operator=(const IpcMessagePair &other) {
+        if (this != &other) {
+            len = other.len;
+            client = other.client;
+            server = other.server;
+            for (size_t i = 0; i < math::alignUp((uint64_t)other.len, sizeof(uint64_t)) / sizeof(uint64_t); i++)
+            {
+                buffer[i] = other.buffer[i];
+            }
+        }
+        return *this;
+    }
+
+    IpcMessagePair(IpcMessagePair &&other) noexcept {
+        len = other.len;
+        client = other.client;
+        server = other.server;
+        for (size_t i = 0; i < math::alignUp((uint64_t)other.len, sizeof(uint64_t)) / sizeof(uint64_t); i++)
+        {
+            buffer[i] = other.buffer[i];
+        }
+    }
+    
+    IpcMessagePair &operator=(IpcMessagePair &&other) noexcept {
+        if (this != &other) {
+            len = other.len;
+            client = other.client;
+            server = other.server;
+            for (size_t i = 0; i < math::alignUp((uint64_t)other.len, sizeof(uint64_t)) / sizeof(uint64_t); i++)
+            {
+                buffer[i] = other.buffer[i];
+            }
+        }
+        return *this;
+    }
+
     static IpcMessagePair from_client(IpcMessage &msg)
     {
         IpcMessagePair pair;

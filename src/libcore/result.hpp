@@ -53,30 +53,44 @@ public:
     constexpr Result(Result &&other) : _is_error(other._is_error)  {
         if(_is_error)
         {
-            _error = core::move(other._error);
+            new (&_error) ErrorType(core::move(other._error));
         }
         else
         {
-            _value = core::move(other._value);
+            new (&_value) ValueType(core::move(other._value));
         }
     }
     constexpr Result &operator=(Result &&other)
     {
+        if (this == &other) return *this;
+        
+        // Destroy current value
+        if(_is_error)
+        {
+            _error.~ErrorType();
+        }
+        else
+        {
+            _value.~ValueType();
+        }
+        
+        // Construct new value
         _is_error = other._is_error;
         if(_is_error)
         {
-            _error = core::move(other._error);
-            return *this;
+            new (&_error) ErrorType(core::move(other._error));
         }
-        
-        _value = core::move(other._value);
+        else
+        {
+            new (&_value) ValueType(core::move(other._value));
+        }
         return *this;
     }
     template <typename U>
     static constexpr Result<ValT, ErrT> success(U val bounded$)
         requires core::IsConvertibleTo<U, ValueType>
     {
-        Result<ValT, ErrT> res;
+        Result<ValT, ErrT> res {};
         res._is_error = false;
         res._value = (core::forward<U>(val));
         return res;
@@ -86,7 +100,7 @@ public:
     static constexpr Result<ValT, ErrT> error(E err bounded$)
         requires core::IsConvertibleTo<E, ErrorType>
     {
-        Result<ValT, ErrT> res;
+        Result<ValT, ErrT> res {};
         res._is_error = true;
         res._error = (core::forward<E>(err));
         return res;
@@ -207,8 +221,8 @@ extern void debug_provide_info(const char *info, const char *data);
 #define STRINGIZE(x) STRINGIZE_DETAIL(x)
 
 #define try_v$(expr, vname) ({                                               \
-    auto vname = (expr);                                                     \
-    if ((vname.is_error())) [[unlikely]]                             \
+    auto vname = core::move(expr);                                                     \
+    if (vname.is_error()) [[unlikely]]                             \
     {                                                                        \
         core::debug_provide_info("error:    ", (const char *)vname.error()); \
         core::debug_provide_info("at:       ", #expr);                       \
@@ -217,12 +231,12 @@ extern void debug_provide_info(const char *info, const char *data);
         core::debug_provide_info("line:     ", STRINGIZE(__LINE__));         \
         return vname.error();                                                \
     }                                                                        \
-    vname.take();                                                          \
+    vname.take();                                             \
 })
 
 #define CONCAT_IMPL(x, y) x##y
 #define MACRO_CONCAT(x, y) CONCAT_IMPL(x, y)
 
-#define try$(expr) try_v$(expr, MACRO_CONCAT(_result, __COUNTER__))
+#define try$(expr) try_v$((expr), MACRO_CONCAT(_result, __COUNTER__))
 
 } // namespace core

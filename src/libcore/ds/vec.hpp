@@ -19,23 +19,36 @@ class Vec
 
 public:
     using Type = T;
-    Vec() = default;
+    Vec() : _data(nullptr), _count(0), _capacity(0) {}
+
     Vec(Vec &&other)
+        : _data(other._data),
+          _count(other._count),
+          _capacity(other._capacity)
     {
-        core::swap(_data, other._data);
-        core::swap(_count, other._count);
-        core::swap(_capacity, other._capacity);
+        other._data = nullptr;
+        other._count = 0;
+        other._capacity = 0;
     }
 
     Vec(const Vec &other)
     {
-        _data = nullptr;
-        _count = 0;
-        _capacity = 0;
-        (reserve(other._capacity));
-        for (long i = 0; i < other._count; i++)
+
+        _count = other._count;
+        _capacity = other._capacity;
+
+        if (_count != 0)
         {
-            (push(other._data[i]));
+            _data = core::mem_alloc<T>(_capacity).unwrap();
+            for (long i = 0; i < other._count; i++)
+            {
+                _data[i] = other._data[i];
+            }
+        }
+        else
+        {
+            _capacity = 0;
+            _data = nullptr;
         }
     }
 
@@ -47,29 +60,28 @@ public:
         return *this;
     }
 
-
-    Vec& operator+= (const Vec &other)
-    {
-        try$(reserve(_count + other._count));
-        for (long i = 0; i < other._count; i++)
-        {
-            push(other._data[i]);
-        }
-
-        
-        return *this;
-    }
-
-    Vec& operator+= (Vec &&other)
+    Vec &operator+=(const Vec &other)
     {
 
         reserve(_count + other._count);
         for (long i = 0; i < other._count; i++)
         {
-            push(core::move(other._data[i]));
+            _data[_count + i] = other._data[i];
         }
+        _count += other._count;
 
-        
+        return *this;
+    }
+
+    Vec &operator+=(Vec &&other)
+    {
+
+        reserve(_count + other._count);
+        for (long i = 0; i < other._count; i++)
+        {
+            _data[_count + i] = core::move(other._data[i]);
+        }
+        _count += other._count;
 
         return *this;
     }
@@ -80,18 +92,26 @@ public:
         {
             return *this;
         }
-        release();
-        (reserve(other._capacity));
+        clear();
+        if (other._count == 0)
+        {
+
+            _count = 0;
+            return *this;
+        }
+
+        reserve(other._count);
+        _count = other._count;
         for (long i = 0; i < other._count; i++)
         {
-            (push(other._data[i]));
+            _data[i] = other._data[i];
         }
         return *this;
     }
 
     void release()
     {
-        if (_data != nullptr)
+        if (_data != nullptr && _capacity != 0)
         {
             clear();
             core::mem_free(_data);
@@ -111,13 +131,19 @@ public:
 
     Result<void> reserve(size_t capacity)
     {
-        long ncap = core::max(capacity, 16ul);
+        long ncap = core::max(capacity, 8ul);
+
+        if (_capacity == 0 && ncap > 0)
+        {
+            _data = try$(core::mem_alloc<T>(ncap * 2));
+            _capacity = ncap * 2;
+            return {};
+        }
         if (ncap > _capacity)
         {
-
-            T *new_data = try$(core::mem_realloc<T>(_data, ncap));
+            T *new_data = try$(core::mem_realloc<T>(_data, ncap * 2));
             _data = new_data;
-            _capacity = ncap;
+            _capacity = ncap * 2;
         }
 
         return {};
@@ -198,18 +224,21 @@ public:
             _count--;
             return (_data[_count]);
         }
-        
-        while(true){};
+
+        while (true)
+        {
+        };
         // abort();
     }
 
     T pop(size_t id)
     {
 
-
         if (id >= (size_t)_count)
         {
-            while(true){};
+            while (true)
+            {
+            };
         }
 
         T value = core::move(_data[id]);

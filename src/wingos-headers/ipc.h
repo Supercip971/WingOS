@@ -48,7 +48,7 @@ extern "C"
 #ifdef __cplusplus
     struct IpcMessage : public core::NoCopy
     {
-        IpcMessage() : message_id(0), flags(0), data{}, len(0)
+        constexpr IpcMessage() : message_id(0), flags(0), data{}, len(0)
         {
         }
 
@@ -118,7 +118,7 @@ struct IpcMessage
 
         uint16_t len;
 
-        union [[gnu::packed]]
+        union 
         {
 
             uint64_t buffer[MAX_IPC_BUFFER_SIZE / sizeof(uint64_t)]; // buffer for the message, used for IPC payload

@@ -14,18 +14,18 @@
 #include "mcx/mcx.hpp"
 #include "protocols/vfs/vfs.hpp"
 #include "wingos-headers/asset.h"
-core::Vec<core::Str> module_service = {};
-core::Vec<core::Str> disk_service = {};
+static core::Vec<core::Str> module_service = {};
+static core::Vec<core::Str> disk_service = {};
 
 struct ModuleLaunch
 {
     core::Str name;
     core::Vec<core::Str> deps;
 };
-core::Vec<ModuleLaunch> module_to_launch = {};
-core::Vec<core::Str> started_modules = {};
-core::Vec<core::Str> started_services = {};
-wjson::Json json = {};
+static core::Vec<ModuleLaunch> module_to_launch = {};
+static core::Vec<core::Str> started_modules = {};
+static core::Vec<core::Str> started_services = {};
+static wjson::Json json = {};
 
 VirtRange map_mcx_address(mcx::MemoryRange range)
 {
@@ -144,7 +144,7 @@ void start_from_pci(wjson::JsonValue *pjson)
                 auto path = driver["path"]->as_string().unwrap();
                 log::log$("Loading driver from path: {}", path);
 
-                ModuleLaunch ml;
+                ModuleLaunch ml = {};
                 ml.name = path;
                 auto deps_json = driver.get("requires");
                 if (!deps_json.is_error())
@@ -202,7 +202,7 @@ core::Result<void> load_module_config(mcx::MachineContext *context)
         return jsond.error();
     }
 
-    json = jsond.unwrap();
+    json = core::move(jsond.unwrap());
 
     auto modules = (json.root().get("modules").unwrap())->as_array().unwrap();
 
@@ -212,7 +212,7 @@ core::Result<void> load_module_config(mcx::MachineContext *context)
         auto path = l["path"]->as_string().unwrap();
 
         log::log$("module: {}, path: {}", name, path);
-        ModuleLaunch ml;
+        ModuleLaunch ml = {};
         ml.name = path;
         auto deps_json = l.get("requires");
         if (!deps_json.is_error())

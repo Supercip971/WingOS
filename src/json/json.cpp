@@ -6,15 +6,14 @@ namespace wjson
 
 core::Result<JsonValue> parse_json_value(core::Scanner<char> &scanner)
 {
-    JsonValue result;
-
+    JsonValue result {};
     if (scanner.skip_spaced('{').unwrap())
     {
 
         result.type = JsonType::Object;
         if (scanner.skip_spaced('}').unwrap())
         {
-            return core::Result<JsonValue>(JsonValue{JsonType::Object, JsonStorage{}, {}, {}});
+            return result;
         }
 
         // parse object
@@ -24,24 +23,24 @@ core::Result<JsonValue> parse_json_value(core::Scanner<char> &scanner)
             scanner.skip_spaces();
             if (!try$(scanner.skip_spaced('"')))
             {
-                return core::Result<JsonValue>("Expected '\"' at the start of key");
+                return core::Result<JsonValue>::error("Expected '\"' at the start of key");
             }
             auto key = try$(scanner.read_until('"'));
             if (!try$(scanner.skip_spaced('"')))
             {
-                return core::Result<JsonValue>("Expected '\"' at the end of key");
+                return core::Result<JsonValue>::error("Expected '\"' at the end of key");
             }
             scanner.skip_spaces();
 
             if (!try$(scanner.skip_spaced(':')))
             {
-                return core::Result<JsonValue>("Expected ':' after key");
+                return core::Result<JsonValue>::error("Expected ':' after key");
             }
 
             auto val = try$(parse_json_value(scanner));
 
-            result.keys.push(core::Str(key));
-            result.children.push(core::move(val));
+            result.storage.childs.keys.push(core::Str(key));
+            result.storage.childs.values.push(core::move(val));
 
             if (!try$(scanner.skip_spaced(',')))
             {
@@ -53,7 +52,7 @@ core::Result<JsonValue> parse_json_value(core::Scanner<char> &scanner)
         if (!try$(scanner.skip('}')))
         {
 
-            return core::Result<JsonValue>("Expected '}' at the end of object");
+            return core::Result<JsonValue>::error("Expected '}' at the end of object");
         }
         return result;
     }
@@ -61,7 +60,11 @@ core::Result<JsonValue> parse_json_value(core::Scanner<char> &scanner)
     {
         if (scanner.skip_spaced(']').unwrap())
         {
-            return core::Result<JsonValue>(JsonValue{JsonType::Array, JsonStorage{}, {}, {}});
+
+            JsonValue empty_array = {};
+            empty_array.type = JsonType::Array;
+
+            return core::Result<JsonValue>(empty_array);
         }
         // parse array
         while (!scanner.ended())
@@ -72,7 +75,7 @@ core::Result<JsonValue> parse_json_value(core::Scanner<char> &scanner)
             auto val = try$(parse_json_value(scanner));
             scanner.skip_spaces();
 
-            result.children.push(core::move(val));
+            result.storage.childs.values.push(core::move(val));
 
             if (!scanner.skip_spaced(',').unwrap())
             {
@@ -130,7 +133,7 @@ core::Result<JsonValue> parse_json_value(core::Scanner<char> &scanner)
 core::Result<Json> Json::parse(core::MemView<char> reader)
 {
 
-    Json json;
+    Json json {};
 
     core::Scanner<char> scanner(reader);
     json._root = try$(parse_json_value(scanner));

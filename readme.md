@@ -61,21 +61,30 @@ For now the kernel is still in development, but it has a few key features:
     - [x] IPC endpoint 
 - [x] Services and IPC (inter process communication) 
 - [x] PCI support (scan, devices, ...) (in userspace)
-- [x] Hello File!
+- [x] Hello File! 
     - [x] Nvme disk support
-    - [x] service registry
     - [x] Partition support (GPT)
-    - [x] Detect filesystems, and load corresponding filesystem drivers
     - [x] Filesystem support (ext4)
     - [x] VFS support
-       - [x] Mount filesystems
-       - [x] Open file descriptor
-       - [x] Directories support/traversal
-       - [x] Read files
 - [x] Blocking IPC
 - [x] Graphics support (VESA, framebuffer, ...)
 - [ ] Input support (keyboard, mouse, ...)
+    - [ ] Interrupt handling in userspace 
 - [ ] Port DOOM
+- [ ] Signals 
 - [ ] Create a shell 
 - [ ] Above and beyond 
+
+## Building the project
+
+For now I don't have a complete dependency list, but you will need:
+- [cutekit](https://github.com/cute-engineering/cutekit/tree/stable)
+- Clang cross compiler for x86_64 
+- Everything needed to build a cross compiler 
+
+Run `bash meta/build/make_cross_compiler.sh` to build the Wingos specific version of gcc.
+
+Now do `ck s` to start the build and run.
+
+Do `ck p` to build ports (now no ports are buildable, do a git clone recursive to get all ports).
 

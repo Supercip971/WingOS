@@ -18,12 +18,102 @@ enum class JsonType : uint8_t
     Object
 };
 
+struct JsonValue;
+
+struct JsonChilds
+{
+
+    core::Vec<JsonValue> values;
+    core::Vec<core::Str> keys; // for objects
+
+    JsonChilds() : values(), keys() {};
+
+    JsonChilds(JsonChilds&& other) noexcept
+        : values(core::move(other.values)), keys(core::move(other.keys))
+    {
+    }
+
+    JsonChilds(const JsonChilds& other)
+        : values(other.values), keys(other.keys)
+    {
+    }
+
+    JsonChilds& operator=(JsonChilds&& other) noexcept
+    {
+        if (this != &other)
+        {
+            values = core::move(other.values);
+            keys = core::move(other.keys);
+        }
+        return *this;
+    }
+
+    // Copy assignment
+    JsonChilds& operator=(const JsonChilds& other)
+    {
+        if (this != &other)
+        {
+            values = other.values;
+            keys = other.keys;
+        }
+        return *this;
+    }
+};
 struct JsonStorage
 {
     core::Str raw;
-    bool boolean = false;
-    double number = 0.0;
+    bool boolean;
+    double number;
     int integer;
+    JsonChilds childs;
+
+    JsonStorage() : raw(""), boolean(false), number(0), integer(0), childs() {}
+
+    JsonStorage(JsonStorage&& other) noexcept
+        : raw(core::move(other.raw)), 
+          boolean(other.boolean),
+          number(other.number),
+          integer(other.integer),
+          childs(core::move(other.childs))
+    {
+    }
+
+    JsonStorage(const JsonStorage& other)
+        : raw(other.raw),
+          boolean(other.boolean),
+          number(other.number),
+          integer(other.integer),
+          childs(other.childs)
+    {
+    }
+
+    // Move assignment
+    JsonStorage& operator=(JsonStorage&& other) noexcept
+    {
+        if (this != &other)
+        {
+            raw = core::move(other.raw);
+            boolean = other.boolean;
+            number = other.number;
+            integer = other.integer;
+            childs = core::move(other.childs);
+        }
+        return *this;
+    }
+
+    // Copy assignment
+    JsonStorage& operator=(const JsonStorage& other)
+    {
+        if (this != &other)
+        {
+            raw = other.raw;
+            boolean = other.boolean;
+            number = other.number;
+            integer = other.integer;
+            childs = other.childs;
+        }
+        return *this;
+    }
 };
 
 struct JsonValue
@@ -32,23 +122,45 @@ struct JsonValue
     JsonType type;
 
     JsonStorage storage;
-    core::Vec<JsonValue> children;
-    core::Vec<core::Str> keys; // for objects
+    JsonValue() : type(JsonType::Null), storage() {};
 
+    JsonValue(JsonValue&& other) noexcept
+        : type(other.type), storage(core::move(other.storage))
+    {
+        other.type = JsonType::Null;
+    }
 
-    ~JsonValue() {
-        if(type == JsonType::String) {
-            storage.raw = core::Str();
-        }
-        else if(type == JsonType::Array)
+    JsonValue(const JsonValue& other)
+        : type(other.type), storage(other.storage)
+    {
+    }
+
+    JsonValue& operator=(JsonValue&& other) noexcept
+    {
+        if (this != &other)
         {
-            children.release();
+            type = other.type;
+            storage = core::move(other.storage);
+            other.type = JsonType::Null;
         }
-        else if(type == JsonType::Object)
+        return *this;
+    }
+
+    // Copy assignment
+    JsonValue& operator=(const JsonValue& other)
+    {
+        if (this != &other)
         {
-            children.release();
-            keys.release();
+            type = other.type;
+            storage = other.storage;
         }
+        return *this;
+    }
+
+    ~JsonValue()
+    {
+        // Storage members have their own destructors that will be called automatically
+        // Vec and Str destructors handle cleanup properly
         type = JsonType::Null;
     }
 
@@ -56,29 +168,29 @@ struct JsonValue
     {
         if (type != JsonType::Object)
         {
-            return core::Result<JsonValue *>(("Not an object"));
+            return core::Result<JsonValue *>::error(("Not an object"));
         }
-        for (size_t i = 0; i < keys.len(); i++)
+        for (size_t i = 0; i < storage.childs.keys.len(); i++)
         {
-            if (keys[i] == key)
+            if (storage.childs.keys[i] == key)
             {
-                return &children[i];
+                return &storage.childs.values[i];
             }
         }
-        return core::Result<JsonValue *>(("Key not found"));
+        return core::Result<JsonValue *>::error(("Key not found"));
     }
 
     core::Result<JsonValue *> get(size_t index)
     {
         if (type != JsonType::Array)
         {
-            return core::Result<JsonValue *>(("Not an array"));
+            return core::Result<JsonValue *>::error(("Not an array"));
         }
-        if (index < children.len())
+        if (index < storage.childs.values.len())
         {
-            return &children[index];
+            return &storage.childs.values[index];
         }
-        return core::Result<JsonValue *>(("Index out of bounds"));
+        return core::Result<JsonValue *>::error(("Index out of bounds"));
     }
 
     bool is_null()
@@ -92,7 +204,7 @@ struct JsonValue
         {
             return storage.boolean;
         }
-        return core::Result<bool>("Not a boolean");
+        return core::Result<bool>::error("Not a boolean");
     }
 
     core::Result<int> as_number()
@@ -101,7 +213,7 @@ struct JsonValue
         {
             return storage.integer;
         }
-        return core::Result<int>("Not a number");
+        return core::Result<int>::error("Not a number");
     }
 
     core::Result<core::Str> as_string()
@@ -110,45 +222,50 @@ struct JsonValue
         {
             return storage.raw;
         }
-        return core::Result<core::Str>("Not a string");
+        return core::Result<core::Str>::error("Not a string");
     }
 
     core::Result<core::Vec<JsonValue> *> as_array()
     {
         if (type == JsonType::Array)
         {
-            return &children;
+            return &storage.childs.values;
         }
-        return core::Result<core::Vec<JsonValue> *>("Not an array");
+        return core::Result<core::Vec<JsonValue> *>::error("Not an array");
     }
 
     JsonValue *operator[](size_t index)
     {
-        if (index < children.len())
+
+        if (index < storage.childs.values.len())
         {
-            return &children[index];
+            return &storage.childs.values[index];
         }
-        while(true){};
-        return &children[0];
+        while (true)
+        {
+        };
+        return &storage.childs.values[0];
     }
     JsonValue *operator[](const core::Str &key)
     {
-        for (size_t i = 0; i < keys.len(); i++)
+        for (size_t i = 0; i < storage.childs.keys.len(); i++)
         {
-            if (keys[i] == key)
+            if (storage.childs.keys[i] == key)
             {
-                return &children[i];
+                return &storage.childs.values[i];
             }
         }
-        while(true){};
-        return &children[0]; // or throw an error
+        while (true)
+        {
+        };
+        return &storage.childs.values[0]; // or throw an error
     }
 };
 
 class Json
 {
 
-    JsonValue _root;
+    JsonValue _root = {};
     core::MemView<char> data;
 
 public:

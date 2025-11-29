@@ -11,6 +11,12 @@ extern "C"
     void *memset(void *s, int c, size_t n);
 
     char *strchr(const char *s, int c);
+    char *strrchr(const char *s, int c);
+
+    char* strncpy( char * __restrict dest, const char * __restrict src, size_t n);
+
+    char* strdup(const char* s);
+    int strcmp(const char* s1, const char* s2);
 
     size_t strlen(const char *s);
 
@@ -22,6 +28,11 @@ extern "C"
 
 
     char *strpbrk(const char *s, const char *accept);
+
+
+    void * memmove(void* dest, const void* str, size_t n);
+
+
 
 #ifdef __cplusplus
 }

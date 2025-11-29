@@ -31,3 +31,11 @@ __attribute__((weak)) void operator delete[](void *p, size_t) noexcept
 {
     free(p);
 }
+extern "C" void exit(int code)
+{
+    (void)code;
+    while(true)
+    {
+
+    }
+}

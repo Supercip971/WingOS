@@ -144,3 +144,8 @@ long long strtoll(const char *nptr, char **endptr, int base)
     return sign * result;
 
 }
+
+int atoi(const char* str)
+{
+    return (int)strtol(str, NULL, 10);
+}

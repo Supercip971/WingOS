@@ -3,6 +3,7 @@
 #include <libcore/fmt/log.hpp>
 #include <string.h>
 
+#include "libc/stdio_fs.hpp"
 #include "libcore/str_writer.hpp"
 
 #include "iol/wingos/ipc.hpp"
@@ -13,6 +14,29 @@
 #include "protocols/vfs/file.hpp"
 #include "protocols/vfs/vfs.hpp"
 #include "wingos-headers/startup.hpp"
+
+FILE *stdin;
+FILE *stdout;
+FILE *stderr;
+void set_stdout_pipe(prot::SenderPipe *pipe)
+{
+    stdout = new FILE();
+    stdout->kind = FILE_KIND_OUT;
+    stdout->output = pipe;
+}
+
+void set_stderr_pipe(prot::SenderPipe *pipe)
+{
+    stderr = new FILE();
+    stderr->kind = FILE_KIND_OUT;
+    stderr->output = pipe;
+}
+void set_stdin_pipe(prot::ReceiverPipe *pipe)
+{
+    stdin = new FILE();
+    stdin->kind = FILE_KIND_IN;
+    stdin->input = pipe;
+}
 
 extern int main(int argc, char **argv);
 
@@ -89,12 +113,11 @@ extern "C" void run_constructors()
         __init_array_start[i]();
 }
 
-static core::WStr* cwd;
+static core::WStr *cwd;
 char *iol_get_cwd()
 {
     return (char *)cwd->view().data();
 }
-
 
 int iol_change_cwd(const char *path)
 {
@@ -129,7 +152,6 @@ int iol_change_cwd(const char *path)
         core::swap(new_f, _pwd);
 
         new_f.close();
-
     }
 
     // relative path
@@ -157,6 +179,7 @@ extern "C" __attribute__((weak)) void _entry_point(StartupInfo *context)
                                 context->stdout_handle)))
                            .unwrap();
         use_stdout = true;
+        set_stdout_pipe(&_stdout_pipe);
     }
 
     if (context->stderr_handle != 0)
@@ -166,6 +189,7 @@ extern "C" __attribute__((weak)) void _entry_point(StartupInfo *context)
                                 Wingos::Space::self().handle,
                                 context->stderr_handle)))
                            .unwrap();
+        set_stderr_pipe(&_stderr_pipe);
     }
 
     if (context->stdin_handle != 0)
@@ -176,6 +200,7 @@ extern "C" __attribute__((weak)) void _entry_point(StartupInfo *context)
                                Wingos::Space::self().handle,
                                context->stdin_handle)))
                           .unwrap();
+        set_stdin_pipe(&_stdin_pipe);
     }
 
     // Initialize the kernel

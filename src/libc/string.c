@@ -1,4 +1,5 @@
 #include "string.h"
+#include <stdlib.h>
 #include <signal.h>
 #ifndef __clang__
 
@@ -80,6 +81,24 @@ char *strchr(const char *s, int c)
     }
     return NULL;
 }
+char *strrchr(const char *s, int c)
+{
+    const char *last = NULL;
+    while (*s)
+    {
+        if (*s == (char)c)
+        {
+            last = s;
+        }
+        s++;
+    }
+    if (c == '\0')
+    {
+        return (char *)s;
+    }
+    return (char *)last;
+}
+
 char *strerror(int errnum)
 {
     (void)errnum;
@@ -161,3 +180,38 @@ char *strpbrk(const char *s, const char *accept)
 
     return NULL;
 }
+char* strncpy( char * __restrict dest, const char * __restrict src, size_t n)
+{
+    size_t i;
+    for (i = 0; i < n && src[i] != '\0'; i++)
+    {
+        dest[i] = src[i];
+    }
+    for ( ; i < n; i++)
+    {
+        dest[i] = '\0';
+    }
+    return dest;
+}
+char* strdup(const char* s)
+{
+    size_t len = strlen(s);
+    char* dup = (char*)malloc(len + 1);
+    if (dup == NULL)
+    {
+        return NULL;
+    }
+    memcpy(dup, s, len + 1);
+    return dup;
+}
+int strcmp(const char* s1, const char* s2)
+{
+    while(*s1 && (*s1 == *s2))
+    {
+        s1++;
+        s2++;
+    }
+    return (*s1 - *s2);
+}
+
+

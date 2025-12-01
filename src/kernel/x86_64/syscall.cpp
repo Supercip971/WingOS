@@ -15,6 +15,30 @@
 
 namespace arch::amd64
 {
+struct stackframe
+{
+    stackframe *rbp;
+    uint64_t rip;
+} __attribute__((packed));
+
+
+void dump_stackframe(void *rbp)
+{
+
+    stackframe *frame = reinterpret_cast<stackframe *>(rbp);
+    int size = 0;
+    while (frame && size++ < 20)
+    {
+        log::log$("stackframe: {}", frame->rip | fmt::FMT_HEX);
+        frame = frame->rbp;
+    }
+
+    if(size >= 20)
+    {
+        log::log$("... (stackframe too deep)");
+    }
+}
+
 
 extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
 {
@@ -47,6 +71,10 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
         log::log$("task: {}", Cpu::current()->currentTask() ? Cpu::current()->currentTask()->uid() : -1);
         
 
+        log::log$("task stacktrace dump:");
+        dump_stackframe((void *)stackframe->rbp);
+            
+            
         log::log$("task space({}) dump:", Cpu::current()->currentTask()->space()->uid);
 
     

@@ -245,6 +245,17 @@ core::Result<AssetPtr> asset_create_memory(Space *space, AssetMemoryCreateParams
             res = Pmm::the().allocate(math::alignUp<size_t>(params.size, arch::amd64::PAGE_SIZE) / arch::amd64::PAGE_SIZE);
         }
 
+        if(res.is_error())
+        {
+
+            log::log$("asked size: {} (page count)", math::alignUp<size_t>(params.size, arch::amd64::PAGE_SIZE) / arch::amd64::PAGE_SIZE);
+            log::err$("asset_create_memory: unable to allocate memory: {}", res.error());
+
+            ptr.asset->lock.release();
+            asset_release(space, ptr.asset);
+            return core::Result<AssetPtr>::error("unable to allocate memory");
+        }
+
         ptr.asset->memory.addr = res.unwrap()._addr;
     }
     else
@@ -351,13 +362,19 @@ core::Result<AssetPtr> asset_move(Space *from, Space *to, AssetPtr asset)
     // Check if the asset exists in the from space
     for (size_t i = 0; i < from->assets.len(); i++)
     {
-        if (from->assets[i].asset == asset.asset)
+        if (from->assets[i].handle == asset.handle)
         {
+
+            from->self->lock.lock();
             // Move the asset to the new space
-            AssetPtr moved_asset = from->assets[i];
+            to->self->lock.lock();
+            AssetPtr moved_asset = asset;
             moved_asset.handle = to->alloc_uid++;
             to->assets.push(moved_asset);
+
+            to->self->lock.release();
             from->assets.pop(i);
+            from->self->lock.release();
             return moved_asset;
         }
     }

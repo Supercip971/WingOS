@@ -1,3 +1,4 @@
+#include "protocols/hi/human_interface.hpp"
 #include "arch/generic/syscalls.h"
 #include "iol/wingos/space.hpp"
 #include "iol/wingos/syscalls.h"
@@ -38,10 +39,32 @@ int main(int, char **)
     log::log$("{}", core::Str((const char *)data_ptr.ptr(), res));
 */
 
-    size_t u = 0;
+    prot::HIConnection hi_conn = prot::HIConnection::connect().unwrap();
+    hi_conn.start_listen().unwrap();
+
+
+
+
     while (true)
     {
-        log::log$("Application alive !: {}", u);
-        u++;
+        hi_conn.event_queue().update_event();
+        core::Result<prot::HIEvent> event_res = hi_conn.event_queue().poll_event();
+        while (!event_res.is_error())
+        {
+            prot::HIEvent event = event_res.unwrap();
+            switch (event.type)
+            {
+            case prot::HI_EVENT_TYPE_MOUSE:
+                log::log$("mouse event: dx={} dy={} buttons={}", event.mouse.dx, event.mouse.dy, event.mouse.buttons);
+                break;
+            case prot::HI_EVENT_TYPE_KEYBOARD:
+                log::log$("keyboard event: key={} pressed={}", event.keyboard.keycode, event.keyboard.pressed);
+                break;
+            default:
+                log::log$("unknown event type: {}", (int)event.type);
+                break;
+            }
+            event_res = hi_conn.event_queue().poll_event();
+        }
     };
 }

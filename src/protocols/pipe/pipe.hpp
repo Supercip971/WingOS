@@ -18,7 +18,7 @@ struct Duplex
         Wingos::IpcClient client_receiver = {};
         try$(Wingos::IpcClient::pipe_create(sender_space.handle, client_sender, receiver_space.handle, client_receiver, flags));
 
-         Duplex result = {};
+        Duplex result = {};
         result.connection_sender = core::move(client_sender);
         result.connection_receiver = core::move(client_receiver);
         return core::Result<Duplex>::success(result);
@@ -28,6 +28,8 @@ struct Duplex
 class SenderPipe
 {
 public:
+
+    Wingos::IpcClient &raw_connection() { return _connection; }
     core::Result<void> send(const void *buffer, size_t len)
     {
         if (len > MAX_IPC_BUFFER_SIZE)
@@ -55,6 +57,11 @@ public:
         pipe._connection = core::move(connection);
         return core::Result<SenderPipe>::success(core::move(pipe));
     }
+
+    SenderPipe() = default;
+    SenderPipe(Wingos::IpcClient &&connection) : _connection(core::move(connection))
+    {
+    }
 private:
     Wingos::IpcClient _connection;
 
@@ -65,6 +72,12 @@ class ReceiverPipe
 
     public:
     
+    static core::Result<ReceiverPipe> from(Wingos::Space const &space, uint64_t handle)
+    {
+        ReceiverPipe pipe;
+        pipe._connection = Wingos::IpcClient::from(space.handle, handle);
+        return core::Result<ReceiverPipe>::success(core::move(pipe));
+    }
     static core::Result<ReceiverPipe> from(Wingos::IpcClient connection)
     {
         ReceiverPipe pipe;

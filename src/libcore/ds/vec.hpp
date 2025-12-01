@@ -257,7 +257,7 @@ public:
 
     static Result<Vec> with_capacity(size_t capacity)
     {
-        Vec vec;
+        Vec vec = {};
         try$(vec.reserve(capacity));
 
         return (vec);

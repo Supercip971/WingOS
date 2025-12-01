@@ -32,27 +32,25 @@ void add_str(core::Str const &str)
 
     for (size_t i = 0; i < str.len(); i++)
     {
-        
-        if(str[i] == 0)
+
+        if (str[i] == 0)
         {
             continue;
         }
-        if(str[i] == 'm' && skip_command)
+        if (str[i] == 'm' && skip_command)
         {
             skip_command = false;
             continue;
         }
-        if(str[i] == '\033')
+        if (str[i] == '\033')
         {
             skip_command = true;
             continue;
         }
-        if(skip_command)
+        if (skip_command)
         {
             continue;
         }
-
-
 
         if (str[i] == '\n')
         {
@@ -107,7 +105,7 @@ void draw_char(void *fb, size_t x, size_t y, char c, size_t window_width)
 }
 int main(int, char **)
 {
-    
+
     cursor_x = 0;
     cursor_y = 0;
     for (size_t i = 0; i < 22; i++)
@@ -133,25 +131,23 @@ int main(int, char **)
 
     core::WStr wstr = {};
 
-    //size_t frame = 0;
+    // size_t frame = 0;
 
     Wingos::Space space = Wingos::Space::self().create_space();
 
     prot::Duplex pipes = (prot::Duplex::create(
-        space, 
-        Wingos::Space::self(),
-        0)
-                                 .unwrap());
+                              space,
+                              Wingos::Space::self(),
+                              0)
+                              .unwrap());
 
     auto receiver_pipe = (prot::ReceiverPipe::from(core::move(pipes.connection_receiver))
-                             .unwrap());
-    
+                              .unwrap());
 
     StartupInfo args = {};
     args.stdout_handle = pipes.connection_sender.handle;
     execute_program_from_path(space, "/bin/hello-wingos", args);
 
-    
     wstr = core::WStr::own((char *)malloc(256), 0, 256);
 
     while (true)
@@ -164,27 +160,33 @@ int main(int, char **)
         {
             for (size_t j = 0; j < 78; j++)
             {
-                draw_char(fb, (j+1) * (ASCII_FONT_WIDTH), (i+1) * (ASCII_FONT_HEIGHT), display[j][i], size.width);
+                draw_char(fb, (j + 1) * (ASCII_FONT_WIDTH), (i + 1) * (ASCII_FONT_HEIGHT), display[j][i], size.width);
             }
         }
 
         memcpy(bb, fb, size.width * size.height * 4);
         wdw.swap_buffers();
 
-
-//        fmt::format_to_str(wstr, "uwu Terminal App - Frame {} (Hello world <3 !)\n", frame);
+        //        fmt::format_to_str(wstr, "uwu Terminal App - Frame {} (Hello world <3 !)\n", frame);
 
         // try receive from pipe
-        uint8_t buffer[100] = {};
-        auto res = receiver_pipe.receive(buffer, 100);
-        if (!res.is_error())
+
+        while (true)
         {
-            core::Str str((const char *)buffer, res.unwrap());
-            add_str(str);
+
+            auto res = receiver_pipe.receive_message();
+            if (!res.is_error())
+            {
+
+                add_str(core::Str((const char *)res.unwrap().raw_buffer, res.unwrap().len));
+            }
+            else
+            {
+                break;
+            }
         }
 
-
-        //wstr.clear();
-        //    log::log$("swapped buffers: {}", frame);
+        // wstr.clear();
+        //     log::log$("swapped buffers: {}", frame);
     }
 }

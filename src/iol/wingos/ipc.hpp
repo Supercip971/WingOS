@@ -56,6 +56,7 @@ struct IpcServer : public UAsset
             IpcConnection *connection = new IpcConnection();
             connection->handle = res.connection_handle;
             connections.push(connection);
+            
             return core::Result<IpcConnection *>::success(connection);
         }
         return core::Result<IpcConnection *>::error("failed to accept connection");
@@ -211,12 +212,13 @@ public:
 
     core::Result<MessageServerReceived> receive(bool block = false)
     {
+
+        MessageServerReceived msg = {};
         IpcMessage res_message = {};
         auto res = sys$ipc_receive_server(block, associated_space_handle, 0, handle, &res_message);
         if (res.contain_response)
         {
 
-            MessageServerReceived msg;
             msg.received = core::move(res_message);
             msg.received.message_id = res.returned_msg_handle;
             return core::Result<MessageServerReceived>::success(core::move(msg));
@@ -224,7 +226,6 @@ public:
 
         if (res.is_disconnect)
         {
-            MessageServerReceived msg = {};
             msg.received.flags |= IPC_MESSAGE_FLAG_DISCONNECT;
 
             return core::Result<MessageServerReceived>::success(core::move(msg));

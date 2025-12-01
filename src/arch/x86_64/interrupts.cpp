@@ -17,7 +17,6 @@ volatile bool inside_error = false;
 extern uintptr_t _scheduler_impl(uintptr_t stack);
 extern uintptr_t _scheduler_impl_soft(uintptr_t stack);
 
-
 core::RWLock int_lock = {};
 void interrupt_release();
 struct stackframe
@@ -37,7 +36,7 @@ void dump_stackframe(void *rbp)
         frame = frame->rbp;
     }
 
-    if(size >= 20)
+    if (size >= 20)
     {
         log::log$("... (stackframe too deep)");
     }
@@ -62,8 +61,7 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
     {
         int_lock.read_release();
 
-
-        if(!Cpu::current()->in_interrupt())
+        if (!Cpu::current()->in_interrupt())
         {
 
             int_lock.write_acquire();
@@ -97,12 +95,12 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
 
         log::log$("cpu: {}", hw::acpi::Lapic::the().id());
 
-       // dump_stackframe((void*)Cpu::current()->currentTask()->cpu_context()->);
-        log::log$("kernel stacktrace:"); 
+        // dump_stackframe((void*)Cpu::current()->currentTask()->cpu_context()->);
+        log::log$("kernel stacktrace:");
         dump_stackframe((void *)frame->rbp);
         log::log$("last syscall stacktrace:");
 
-        if(Cpu::current()->debug_saved_syscall_stackframe != 0)
+        if (Cpu::current()->debug_saved_syscall_stackframe != 0)
         {
 
             dump_stackframe((void *)Cpu::current()->debug_saved_syscall_stackframe);
@@ -128,12 +126,11 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
     }
     else if (frame->interrupt_number == 101)
     {
-  
-        //log::log$("soft rescheduling on cpu {}", hw::acpi::Lapic::the().id());
-       
+
+        // log::log$("soft rescheduling on cpu {}", hw::acpi::Lapic::the().id());
+
         _scheduler_impl_soft(stack);
     }
-
 
     Cpu::current()->in_interrupt(false);
     hw::acpi::Lapic::the().eoi();

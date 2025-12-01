@@ -17,12 +17,12 @@
         {
             "name": "compositor",
             "path": "/bin/sys-compositor",
-            "requires": ["@fs"]
+            "requires": ["@fs", "human-interface"]
         },
         {
             "name": "ps2",
             "path": "/bin/ps2",
-            "requires": ["compositor"]
+            "requires": ["@fs"]
         }
     ],
     "drivers": [

@@ -9,7 +9,8 @@
     "requires": [
         "iol",
         "userspace-arch",
-        "liballoc"
+        "liballoc",
+        "libmath"
     ],
     "provides": ["libc"]
 }

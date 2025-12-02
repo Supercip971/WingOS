@@ -145,6 +145,63 @@ long long strtoll(const char *nptr, char **endptr, int base)
 
 }
 
+#ifndef __ck_kernel__
+// FIXME: support exponent
+double strtod(const char* nptr, char** endptr)
+{
+    const char* s = nptr;
+    while (isspace((unsigned char)*s))
+        s++;
+
+    int sign = 1;
+    if (*s == '-')
+    {
+        sign = -1;
+        s++;
+    }
+    else if (*s == '+')
+    {
+        s++;
+    }
+
+    double result = 0.0;
+    while (*s >= '0' && *s <= '9')
+    {
+        result = result * 10.0 + (*s - '0');
+        s++;
+    }
+
+    if (*s == '.')
+    {
+        s++;
+        double frac = 0.0;
+        double base = 0.1;
+        while (*s >= '0' && *s <= '9')
+        {
+            frac += (*s - '0') * base;
+            base *= 0.1;
+            s++;
+        }
+        result += frac;
+    }
+
+    if (endptr)
+    {
+        *endptr = (char *)s;
+    }
+
+    return sign * result;
+}
+
+
+double atof(const char* str)
+{
+    char* endptr;
+    double val = strtod(str, &endptr);
+    return val;
+}
+
+#endif 
 int atoi(const char* str)
 {
     return (int)strtol(str, NULL, 10);

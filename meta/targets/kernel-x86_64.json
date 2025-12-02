@@ -54,7 +54,7 @@
                 "-Wassign-enum",
                 "-Wexperimental-lifetime-safety",
 "-Wdangling-gsl",
-                "-O3"
+                "-Og"
             ]
         },
         "cxx": {

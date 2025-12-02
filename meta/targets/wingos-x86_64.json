@@ -10,7 +10,8 @@
         "abi": "sysv",
         "encoding": "utf8",
         "freestanding": false,
-        "host": false
+        "host": false,
+        "kernel": false
     },
     "tools": {
         "cc": {
@@ -22,7 +23,6 @@
                 "-fno-exceptions",
                 "-Wno-builtin-declaration-mismatch",
                 "-fno-stack-protector",
-
                 "-std=c11",
                 "-mavx",
                 "-Wnull-dereference",
@@ -31,8 +31,6 @@
                 "-Wvla",
                 "-Warray-bounds",
                 "-Wshadow",
-                "-Wswitch-default",
-                "-Wfloat-equal",
                 "-Wimplicit-fallthrough",
                 "-O3"
             ]

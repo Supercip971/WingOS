@@ -1,0 +1,15 @@
+{
+    "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
+    "type": "lib",
+    "id": "libmath-userspace",
+    "enableIf": {
+        "host": [false],
+        "kernel": [false]
+    },
+    "description": "Core C standard math library",
+    "requires": [
+    ],
+    "provides": [
+        "libmath"
+    ]
+}

@@ -23,13 +23,8 @@
                 "-Wno-builtin-declaration-mismatch",
                 "-fno-stack-protector",
 
-                "-mno-80387",
-                "-mno-mmx",
-                "-mno-3dnow",
-                "-mno-sse",
-                "-mno-sse2",
-                "-std=gnu23",
-
+                "-std=c11",
+                "-mavx",
                 "-Wnull-dereference",
                 "-Wstack-protector",
                 "-Walloca",
@@ -54,16 +49,10 @@
                 "-fno-stack-protector",
                 "-Wno-builtin-declaration-mismatch",
                     
-                "-mno-80387",
-                "-mno-mmx",
-                "-mno-3dnow",
-                "-mno-sse",
-                "-mno-sse2",
-                "-mno-avx",
                 "-std=c++23",
                 "-fno-threadsafe-statics" ,
                    "-fno-stack-protector",
-               
+               "-mavx",
                 "-Wnull-dereference",
                 "-Wstack-protector",
                 "-Walloca",

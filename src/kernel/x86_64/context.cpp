@@ -61,7 +61,7 @@ void CpuContext::load_to(void *state)
 
     Cpu::current()->syscall_stack = data->syscall_stack_top;
     Cpu::current()->saved_stack = data->saved_syscall_stack;
-
+    data->simd_context.load();
 
     this->_vmm_space->use();
 
@@ -97,7 +97,7 @@ void CpuContext::save_in(void *state)
 
     this->syscall_stack_top = Cpu::current()->syscall_stack;
     this->saved_syscall_stack = Cpu::current()->saved_stack;
-
+    data->simd_context.save();
     {
 
         lock_scope$(this->lock);
@@ -114,6 +114,8 @@ void CpuContext::release()
         core::mem_free(data->stack_ptr);
     if (data->kernel_stack_ptr != nullptr)
         core::mem_free(data->kernel_stack_ptr);
+
+    data->simd_context.release();
 
     data->kernel_stack_ptr = nullptr;
     data->stack_ptr = nullptr;
@@ -139,7 +141,7 @@ core::Result<void> CpuContext::prepare(CpuContextLaunch launch)
     data->stack_top = (void *)((uintptr_t)data->stack_ptr + kernel::userspace_stack_size);
     data->kernel_stack_top = (void *)((uintptr_t)data->kernel_stack_ptr + kernel::kernel_stack_size);
     data->syscall_stack_top = (void *)((uintptr_t)data->syscall_stack_ptr + kernel::kernel_stack_size - 16);
-
+    data->simd_context = try$(arch::x86_64::SimdContext::create());
     
     data->saved_syscall_stack = 0;
 

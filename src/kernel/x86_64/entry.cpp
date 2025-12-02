@@ -16,6 +16,7 @@
 #include <mcx/mcx.hpp>
 
 #include "arch/x86_64/idt.hpp"
+#include "arch/x86_64/simd.hpp"
 #include "iol/mem_flags.h"
 #include "kernel/generic/cpu_tree.hpp"
 #include "kernel/x86_64/numa.hpp"
@@ -72,6 +73,8 @@ void arch_entry(const mcx::MachineContext *context)
 
     hw::acpi::Lapic::the().timer_initialize().assert();
 
+    arch::x86_64::SimdContext::initialize_cpu().assert();
+
     log::log$("cpu count: {}", hw::acpi::apic_cpu_count());
     arch::amd64::smp_initialize().assert();
 
@@ -108,9 +111,12 @@ void arch::amd64::other_cpu_entry()
     arch::amd64::gdt_use();
 
     arch::amd64::setup_ist();
+
     arch::amd64::syscall_init_for_current_cpu();
     arch::amd64::setup_entry_gs();
 
+
+    arch::x86_64::SimdContext::initialize_cpu().assert();
     while (_running_cpu_count < CpuImpl::count())
     {
         asm volatile("pause");

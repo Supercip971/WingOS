@@ -1,6 +1,7 @@
 #include "stdio.h"
 #include <stdarg.h>
 #include <string.h>
+#include <stdbool.h>
 
 typedef struct PrintTarget
 {

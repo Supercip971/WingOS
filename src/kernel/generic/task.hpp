@@ -41,6 +41,7 @@ class Task
     TaskState _state = TaskState::TASK_NONE;
     CpuContext *_cpu_context = nullptr;
     SchedulerControlBlock _scheduler_block;
+    
 
     Task() = default;
     static Task* _task_allocate();

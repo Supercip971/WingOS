@@ -23,6 +23,9 @@ size_t fread(void* __restrict ptr, size_t size, size_t n, FILE* __restrict file 
 int remove(const char* filename);
 int rename(const char* old_filename, const char* new_filename);
 
+int mkdir(const char* pathname, unsigned int mode);
+
+
 void fflush(FILE* stream);
 
 int puts(const char* str);
@@ -34,6 +37,7 @@ int fprintf(FILE *__restrict stream, const char *__restrict format, ...);
 int printf( const char *__restrict format, ...);
 
 int vfprintf(FILE *__restrict stream, const char *__restrict format, va_list arg);
+int vsnprintf(char * __restrict s, size_t n, const char * __restrict format, va_list arg);
 
 
 FILE* fopen(const char* filename, const char* mode);

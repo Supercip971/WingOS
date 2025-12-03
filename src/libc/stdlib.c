@@ -1,4 +1,5 @@
 #include "stdlib.h"
+#include <string.h>
 #include "liballoc/liballoc.h"
 #include "ctype.h"
 
@@ -13,6 +14,16 @@ void free(void *ptr)
 void *realloc(void *ptr, size_t size)
 {
     return krealloc(ptr, size);
+}
+void *calloc(size_t nmemb, size_t size)
+{
+    size_t total_size = nmemb * size;
+    void* ptr = malloc(total_size);
+    if (ptr)
+    {
+        memset(ptr, 0, total_size);
+    }
+    return ptr;
 }
 
 long strtol(const char *nptr, char **endptr, int base)

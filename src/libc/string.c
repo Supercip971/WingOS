@@ -215,3 +215,52 @@ int strcmp(const char* s1, const char* s2)
 }
 
 
+int strncmp(const char* s1, const char* s2, size_t n)
+{
+    size_t i;
+    for (i = 0; i < n; i++)
+    {
+        if (s1[i] != s2[i])
+        {
+            return (unsigned char)s1[i] - (unsigned char)s2[i];
+        }
+        if (s1[i] == '\0')
+        {
+            return 0;
+        }
+    }
+    return 0;
+}    
+
+
+const char* strstr(const char* haystack, const char* needle)
+{
+    if (*needle == '\0')
+    {
+        return 0;
+    }
+
+    const char* h = haystack;
+    const char* n = needle;
+
+    while (*h)
+    {
+        const char* h_sub = h;
+        n = needle;
+
+        while (*h_sub && *n && (*h_sub == *n))
+        {
+            h_sub++;
+            n++;
+        }
+
+        if (*n == '\0')
+        {
+            return h;
+        }
+
+        h++;
+    }
+
+    return NULL;
+}

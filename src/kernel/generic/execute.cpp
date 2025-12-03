@@ -6,6 +6,7 @@
 #include "hw/mem/addr_space.hpp"
 
 #include "kernel/generic/asset.hpp"
+#include "kernel/generic/kernel.hpp"
 #include "kernel/generic/pmm.hpp"
 #include "kernel/generic/scheduler.hpp"
 #include "kernel/generic/space.hpp"
@@ -43,7 +44,9 @@ core::Result<void> start_module_execution(elf::ElfLoader loaded, mcx::MachineCon
         auto mem_asset = mem_asset_ptr.asset;
         auto mem = mem_asset->memory;
         void *copied_data = (void *)toVirt(mem.addr);
+        memset(copied_data, 0, sizeof(StartupInfo));
         memcpy(copied_data, context, sizeof(mcx::MachineContext));
+
         if (asset_create_mapping(root_space, (AssetMappingCreateParams){
                                                  .start = mem.addr,
                                                  .end = math::alignUp(mem.addr + sizeof(StartupInfo), 4096ul),

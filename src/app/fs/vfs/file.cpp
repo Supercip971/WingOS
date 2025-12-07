@@ -58,8 +58,6 @@ void close_endpoint(VfsFileEndpoint *endpoint)
 
     // don't forward if endpoint is root
 
- 
-
     // now disconnect to the client
     for (size_t i = 0; i < opened_file_endpoints.len(); i++)
     {
@@ -96,7 +94,8 @@ void update_all_endpoints()
 
                 close_endpoint(endpoint);
 
-                break;
+                return;
+
             }
 
             switch (msg.received.data[0].data)
@@ -173,9 +172,10 @@ void update_all_endpoints()
             }
             case prot::FS_CLOSE:
             {
-
-                close_endpoint(endpoint);
-
+                // Note: FS_CLOSE is no longer sent by FsFile::close() - it just disconnects.
+                // This code path should not be reached anymore, but keeping it for safety.
+                // The actual cleanup happens when IPC_MESSAGE_FLAG_DISCONNECT is received above.
+                log::log$("VfsFileEndpoint: received explicit FS_CLOSE (deprecated path)");
                 break;
             }
             default:

@@ -175,9 +175,18 @@ struct Ext4InodeRef
     InodeId inode_id;
     Ext4Inode inode; // 
 };
+
+struct Ext4CacheNode
+{
+    size_t block_num;
+    void * data;   
+    size_t score;
+
+};
 class Ext4Filesystem
 {
-    prot::DiskConnection disk;
+    core::Vec<Ext4CacheNode> cache_nodes;    
+   prot::DiskConnection disk;
     size_t start_lba;
 
     size_t block_desc_size;
@@ -196,10 +205,16 @@ public:
 
     // use temp buffer
     core::Result<void*> read_block_tmp(size_t block_num); 
-    core::Result<void> write_block_tmp(size_t block_num, void* data);
+    core::Result<void*> read_block_tmp(Wingos::MemoryAsset& target, size_t block_num, size_t mem_asset_off); 
 
-    core::Result<size_t> inode_read(Ext4InodeRef const &inode, Wingos::MemoryAsset& out, size_t len, size_t block);
+
+    core::Result<void> write_block_tmp(size_t block_num, void* data);
+ 
+    core::Result<size_t> inode_read(Ext4InodeRef const &inode, Wingos::MemoryAsset &out, size_t off, size_t len,  size_t mem_asset_off);
+
     core::Result<void*> inode_read_tmp(Ext4InodeRef const &inode, size_t block);
+    core::Result<void*> inode_read_blck_off(Ext4InodeRef const &inode, Wingos::MemoryAsset& out, size_t off, size_t mem_asset_off);
+
 
 
     core::Result<void> inode_write(Ext4InodeRef& inode, Wingos::MemoryAsset& out, size_t len, size_t block);

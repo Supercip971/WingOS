@@ -69,8 +69,7 @@ bool update_endpoint(Ext4FileEndpoint *endpoint)
             }
         }
 
-        endpoint->root_server.raw_server().disconnect(msg.connection);
-
+        endpoint->root_server.disconnect(msg.connection);
 
         if(!is_root)
         {
@@ -97,44 +96,11 @@ bool update_endpoint(Ext4FileEndpoint *endpoint)
         }
     case prot::FS_CLOSE:
     {
-        log::log$("ext4: closing file endpoint for inode {}", endpoint->inode.inode_id);
-        // remove from list
-
-        bool is_root = false;
-        for (size_t i = 0; i < ext4_file_endpoints.len(); i++)
-        {
-            if (ext4_file_endpoints[i] == endpoint)
-            {
-                ext4_file_endpoints.pop(i);
-                break;
-            }
-            
-        }
-        for (size_t i = 0; i < ext4_file_roots.len(); i++)
-        {
-            if (ext4_file_roots[i] == endpoint)
-            {
-                is_root = true;
-
-                if(is_root)
-                {
-                    log::log$("ext4: closed root endpoint for inode {}", endpoint->inode.inode_id);
-                }
-                //ext4_file_roots.pop(i);
-                break;
-            }
-        }
-
-
-
-        endpoint->root_server.raw_server().disconnect(msg.connection);
-
-        if(!is_root)
-        {
-            endpoint->root_server.close();
-
-            delete endpoint;
-        }
+        // Note: FS_CLOSE is no longer sent by FsFile::close() - it just disconnects.
+        // This code path should not be reached anymore, but keeping it for safety.
+        // The actual cleanup happens when IPC_MESSAGE_FLAG_DISCONNECT is received.
+        log::log$("ext4: received explicit FS_CLOSE for inode {} (deprecated path)", endpoint->inode.inode_id);
+        // Don't do cleanup here - let the IPC disconnect handler do it to avoid double-cleanup races
         return true;
     }
     case prot::FS_OPEN_FILE:
@@ -206,16 +172,19 @@ bool update_endpoint(Ext4FileEndpoint *endpoint)
         auto r = endpoint->attached_fs->inode_read(
             endpoint->inode,
             mem_asset,
-            offset,
-            len);
+            offset, 
+            len,
+            0
+        );
 
         if (r.is_error())
         {
             log::err$("ext4: failed to read inode {}: {}", endpoint->inode.inode_id, r.error());
-
+            while(true){};
             IpcMessage reply = {};
             reply.data[0].data = 0; // failure
             endpoint->root_server.reply(core::move(msg), reply);
+            break;
         }
         IpcMessage reply = {};
         reply.data[0].data = 1; // success
@@ -284,7 +253,7 @@ int main(int, char**)
         if (msg.received.flags & IPC_MESSAGE_FLAG_DISCONNECT)
         {
             log::log$("ext4: disconnecting from vfs");
-            serv.raw_server().disconnect(msg.connection);
+            serv.disconnect(msg.connection);
             continue;
         }
         switch (msg.received.data[0].data)

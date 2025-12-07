@@ -54,7 +54,7 @@ public:
             }
         }
     }
-    core::Result<void> read(Wingos::MemoryAsset &asset, uint64_t lba, uint64_t len)
+    core::Result<size_t> read(Wingos::MemoryAsset &asset,  uint64_t lba, uint64_t len, uint64_t asset_start = 0)
     {
         if (len < MAX_IPC_BUFFER_SIZE)
         {
@@ -70,8 +70,10 @@ public:
         message.data[0].data = DISK_READ_SECTORS;
         message.data[1].data = lba;
         message.data[2].data = len;
+        
         message.data[3].is_asset = true;
         message.data[3].asset_handle = asset.handle;
+        message.data[4].data = asset_start;
         auto sended_message = connection.send(message, true);
         auto message_handle = sended_message.unwrap();
 
@@ -86,25 +88,31 @@ public:
             if (!received.is_error())
             {
                 auto msg = received.take();
-                asset = Wingos::MemoryAsset::from_handle(msg.data[1].asset_handle);
-
-                return {};
+                size_t bytes_read = msg.data[0].data;
+                if (len > 0 && bytes_read == 0)
+                {
+                    return "disk read returned no data";
+                }
+                if (msg.data[1].is_asset)
+                {
+                    asset = Wingos::MemoryAsset::from_handle(msg.data[1].asset_handle);
+                }
+                return bytes_read;
 
             }
         }
         // swap back
                (void)message_handle;
-        return {};
+        return core::Result<size_t>::success(0);
     }
-
 
     core::Result<Wingos::VirtualMemoryAsset> read_buf(uint64_t lba, uint64_t count)
     {
 
         Wingos::MemoryAsset asset = Wingos::Space::self().allocate_physical_memory(math::alignUp<size_t>(count, 4096), false);
 
-        auto read_res = read(asset, lba, math::alignUp<size_t>(count, 512));
-
+        size_t aligned_len = math::alignUp<size_t>(count, 512);
+        auto read_res = read(asset, lba, aligned_len);
 
         if (read_res.is_error())
         {
@@ -112,11 +120,17 @@ public:
             return read_res.error();
         }
 
+        size_t bytes_read = read_res.unwrap();
+        if (bytes_read < aligned_len)
+        {
+            Wingos::Space::self().release_asset(asset);
+            return core::Result<Wingos::VirtualMemoryAsset>::error("disk read returned too few bytes");
+        }
+
         Wingos::VirtualMemoryAsset vasset = Wingos::Space::self().map_memory(asset, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
 
         return vasset;
     }
-    
 
     core::Result<void> write_small(void *buffer, uint64_t lba, uint64_t len)
     {

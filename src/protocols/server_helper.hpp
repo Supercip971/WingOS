@@ -81,6 +81,20 @@ public:
 
     Wingos::IpcServer &raw_server() { return ipc_server; }
 
+    void disconnect(Wingos::IpcConnection *connection)
+    {
+        // Remove from ManagedServer's connections list first
+        for (size_t i = 0; i < connections.len(); i++)
+        {
+            if (connections[i] == connection)
+            {
+                connections.pop(i);
+                break;
+            }
+        }
+        // Then disconnect from the raw server (which will delete the connection)
+        ipc_server.disconnect(connection);
+    }
 
     void close()
     {

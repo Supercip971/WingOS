@@ -76,6 +76,7 @@ public:
         message.data[2].data = len;
         message.data[3].is_asset = true;
         message.data[3].asset_handle = asset.handle;
+        message.data[4].data = 0;
         auto msg = try$(connection.call(message));
         size_t received_len = msg.data[1].data;
         asset = Wingos::MemoryAsset::from_handle(msg.data[2].asset_handle);
@@ -84,6 +85,11 @@ public:
 
     core::Result<size_t> read(void* buffer, size_t offset, size_t len)
     {
+        if (len == 0)
+        {
+            return core::Result<size_t>::success(0);
+        }
+
         Wingos::MemoryAsset masset = Wingos::Space::self().allocate_physical_memory(len);
 
 
@@ -104,6 +110,7 @@ public:
         message.data[2].data = len;
         message.data[3].is_asset = true;
         message.data[3].asset_handle = asset.handle;
+        message.data[4].data = 0;
         auto msg = try$(connection.call(message));
         size_t received_len = msg.data[1].data;
         return received_len;
@@ -112,6 +119,11 @@ public:
 
     core::Result<size_t> write(void* buffer, size_t offset, size_t len)
     {
+        if (len == 0)
+        {
+            return core::Result<size_t>::success(0);
+        }
+
         Wingos::MemoryAsset masset = Wingos::Space::self().allocate_physical_memory(len);
 
         Wingos::VirtualMemoryAsset mapped = Wingos::Space::self().map_memory(masset, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
@@ -125,19 +137,10 @@ public:
 
     core::Result<void> close()
     {
-
-
-        IpcMessage message = {};
-        message.data[0].data = FS_CLOSE;
-        auto sended_message = connection.send(message, false);
-        if (sended_message.is_error())
-        {
-            return ("failed to send close file message");
-        }
-
-        auto message_handle = sended_message.unwrap();
+        // Just disconnect - the IPC disconnect notification will tell the server to clean up.
+        // Don't send FS_CLOSE AND disconnect as this creates a race condition where the server
+        // might receive both FS_CLOSE and IPC_MESSAGE_FLAG_DISCONNECT and try to clean up twice.
         connection.disconnect();
-        (void)message_handle;
         return {};
     }
 

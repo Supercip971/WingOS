@@ -54,6 +54,7 @@ void Asset::dump_assets(Space *space)
             
         
         }
+
         space->self->lock.release();
     }
 core::Result<AssetPtr> space_create(Space *parent, [[maybe_unused]] uint64_t flags, [[maybe_unused]] uint64_t rights)

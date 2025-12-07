@@ -39,3 +39,7 @@ void trigger_reschedule(CoreId cpu)
 {
     hw::acpi::Lapic::the().send_interrupt(cpu, 100);
 }
+void trigger_reschedule_unblocked(CoreId cpu)
+{
+    hw::acpi::Lapic::the().send_interrupt(cpu, 101);
+}

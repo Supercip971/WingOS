@@ -73,5 +73,7 @@ void schedule_if_task_blocked();
 } // namespace kernel
 // arch implemented
 void trigger_reschedule(CoreId cpu);
+void trigger_reschedule_unblocked(CoreId cpu);
+
 
 void reschedule_self();

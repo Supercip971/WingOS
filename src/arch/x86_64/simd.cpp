@@ -1,8 +1,10 @@
 #include <string.h>
+#include "arch/x86_64/paging.hpp"
 #include "arch/x86_64/registers.hpp"
 #include <arch/x86_64/simd.hpp>
 
 #include "arch/x86/cpuid.hpp"
+#include "kernel/generic/pmm.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/lock/lock.hpp"
 
@@ -17,16 +19,21 @@ namespace arch::x86_64
 
 void SimdContext::save()
 {
+    if (_data == nullptr)
+    {
+        return;
+    }
+
     if (_use_xsave)
     {
-        asm volatile("xsave %0" : :"m"(*_data),  "a"(~(uintptr_t)0), "d"(~(uintptr_t)0)
+        asm volatile("xsave64 %0" :"+m"(*_data):  "a"(~(uintptr_t)0), "d"(~(uintptr_t)0)
                      : "memory");
 
 
     }
     else
     {
-        asm volatile("fxsave %0" : :"m"(*_data)
+        asm volatile("fxsave %0" : "+m"(*_data) :
                      :  "memory");
 
 
@@ -35,9 +42,14 @@ void SimdContext::save()
 
 void SimdContext::load() const
 {
+    if (_data == nullptr)
+    {
+        return;
+    }
+
     if (_use_xsave)
     {
-        asm volatile("xrstor %0" : : "m"(*_data),
+        asm volatile("xrstor64 %0" : : "m"(*_data),
                      "a"(~(uintptr_t)0), "d"(~(uintptr_t)0)
                      : "memory");
     }
@@ -63,9 +75,10 @@ core::Result<SimdContext> SimdContext::create()
         context._data_size = 512; // fxsave size
     }
 
-    context._data = (uint8_t *)try$(core::mem_alloc(context._data_size + 128));
-    context._real_data = context._data;
-    context._data += 64 - ((uintptr_t)context._data % 64);
+    context._real_data = toVirt(try$(Pmm::the().allocate(math::alignUp<uint64_t>(context._data_size, amd64::PAGE_SIZE) / amd64::PAGE_SIZE)));
+    
+    // Align to 64-byte boundary (required for xsave, fxsave only needs 16)
+    context._data = (uint8_t*)context._real_data;
 
     if (!context._data)
     {
@@ -118,13 +131,13 @@ core::Result<void> SimdContext::initialize_cpu()
     if (x86::Cpuid::has_xsave())
     {
         log::log$("context size: {}", x86::Cpuid::xsave_size());
-        asm volatile("xsave %0" : "=m"(*initial_context_data) : "a"(~(uintptr_t)0), "d"(~(uintptr_t)0)
+        asm volatile("xsave64 %0" : "+m"(*initial_context_data) : "a"(~(uintptr_t)0), "d"(~(uintptr_t)0)
                      : "memory");
     }
     else
     {
         log::log$("context size: 512 (fxsave)");
-        asm volatile("fxsave %0" : "=m"(*(uint8_t(*)[512])initial_context_data)
+        asm volatile("fxsave %0" : "+m"(*(uint8_t(*)[512])initial_context_data)
                      : : "memory");
 
     }

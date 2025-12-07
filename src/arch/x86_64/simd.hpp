@@ -12,8 +12,8 @@ namespace arch::x86_64
 
         bool _use_xsave = false;
         size_t _data_size = 0; 
-        void* _real_data;
-        alignas(16) uint8_t* _data; // space for fxsave area
+        void* _real_data = nullptr;
+        uint8_t* _data = nullptr; // space for fxsave/xsave area (64-byte aligned)
 
     public:
 

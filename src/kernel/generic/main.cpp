@@ -108,6 +108,7 @@ void kernel_entry(const mcx::MachineContext *context)
     Cpu::current()->interrupt_release();
     while (true)
     {
+        asm volatile("sti");
         asm volatile("hlt");
     }
 }

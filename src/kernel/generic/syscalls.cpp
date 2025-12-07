@@ -453,7 +453,7 @@ core::Result<size_t> ksyscall_create_connection(SyscallIpcConnect *create)
 
     if(create->flags & IPC_CONNECTION_FLAG_PIPE)
     {
-        return ksyscall_create_pipe_connection((SyscallIpcConnect *)create);
+        return ksyscall_create_pipe_connection(create);
     }
     Space *space = nullptr;
     if (create->sender_space_handle != 0)

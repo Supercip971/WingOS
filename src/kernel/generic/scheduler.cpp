@@ -26,8 +26,6 @@ core::Vec<kernel::Task *> scheduler_idles = {};
 core::Vec<kernel::Task *> cpu_runned = {};
 core::Vec<kernel::Task *> cpu_running = {};
 
-
-
 core::Array<TaskQueue, kernel::TASK_QUEUE_COUNT> task_queues = {};
 TaskQueue blocked_tasks = {};
 
@@ -255,19 +253,18 @@ static long summed_weights()
     {
         for (auto task = task_queues[i].begin(); task != task_queues[i].end(); ++task)
         {
-            auto w =  (*task)->sched().weight();
-            if(w > 0)
+            auto w = (*task)->sched().weight();
+            if (w > 0)
             {
                 sum += w;
             }
-
         }
     }
 
     for (auto &task : blocked_tasks)
     {
         auto w = task->sched().weight();
-        if(w > 0)
+        if (w > 0)
         {
             sum += w;
         }
@@ -342,10 +339,10 @@ static void update_runned_tasks()
             }
         }
 
-     //   for (auto &task : blocked_tasks)
-     //   {
-           // task->sched().sleeping += avg_sleep_time;
-     //   }
+        //   for (auto &task : blocked_tasks)
+        //   {
+        // task->sched().sleeping += avg_sleep_time;
+        //   }
     }
 
     for (size_t i = 0; i < running_cpu_count; i++)
@@ -607,6 +604,7 @@ void schedule_other_cpus()
         if (Cpu::get(i)->currentTask() == nullptr && cpu_runned[i] != nullptr)
         {
             trigger_reschedule(i);
+
         }
         else if (Cpu::get(i)->currentTask() == nullptr && cpu_runned[i] == nullptr)
         {
@@ -695,34 +693,13 @@ core::Result<void> reschedule_all()
 }
 core::Result<void> resolve_blocked_tasks_scheduler()
 {
-    // FIXME: schedule the task if we have an idle core
-
-
-
-    _blocked_cores_idle_candidates.clear();
-
-    CoreId cur = 0;
-    for (auto &cpu : cpu_runned)
+    // Fast path: if no blocked tasks, return immediately
+    if (blocked_tasks.len() == 0)
     {
-        if(cpu->sched().is_idle)
-        {
-            _blocked_cores_idle_candidates.push(cur);
-        }
-        if (cpu->sched().block_event.type == BlockEvent::Type::NONE)
-        {
-            continue;
-        }
-        if (cpu->sched().block_event.liberated())
-        {
-
-            cpu->sched().block_event = {};
-        }
-
-        
+        return {};
     }
-    size_t i = 0;
 
-    size_t unblock_count = 0;
+    size_t i = 0;
 
     while (i < blocked_tasks.len())
     {
@@ -734,25 +711,13 @@ core::Result<void> resolve_blocked_tasks_scheduler()
             task->sched().block_event = {};
 
             add_entity_to_queue(task);
-            unblock_count++;
-            
+
             blocked_tasks.pop(i);
             continue;
-
         }
         i++;
     }
 
-
-    for( i = 0; i < unblock_count && i < _blocked_cores_idle_candidates.len(); i++)
-    {
-        auto core = _blocked_cores_idle_candidates[i];
-
-        if(cpu_runned[core]->sched().is_idle)
-        {
-            try$(schedule_one(core));
-        }
-    }
     return {};
 }
 core::Result<Task *> schedule_self(Task *current, void *state, CoreId core)
@@ -917,7 +882,26 @@ core::Result<void> block_current_task(BlockEvent event)
 
 core::Result<void> resolve_blocked_tasks()
 {
-    // Cpu::current()->interrupt_hold();
+    // Fast path: if no blocked tasks, skip locking entirely
+    if (blocked_tasks.len() == 0)
+    {
+        return {};
+    }
+
+    bool unlocked = false;
+    for(size_t i = 0; i< running_cpu_count; i++)
+    {
+        if(Cpu::get(i)->currentTask()->sched().is_idle)
+        {
+            trigger_reschedule_unblocked(i);
+            unlocked = true;
+        }
+    }
+
+    if(unlocked)
+    {
+        return {};
+    }
 
     Cpu::current()->interrupt_hold();
     scheduler_lock.write_acquire();

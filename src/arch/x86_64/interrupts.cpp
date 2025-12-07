@@ -5,6 +5,7 @@
 #include "arch/x86_64/context.hpp"
 #include "arch/x86_64/idt.hpp"
 #include "arch/x86_64/interrupts.hpp"
+#include "arch/x86_64/registers.hpp"
 
 #include "hw/acpi/lapic.hpp"
 #include "kernel/generic/cpu.hpp"
@@ -92,6 +93,9 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
         asm volatile("mov %%cr2, %0"
                      : "=r"(cr2));
         log::log$("cr2: {}", cr2 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
+
+        uintptr_t cr3 = arch::CpuCr<3>::read();
+        log::log$("cr3: {}", cr3 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
 
         log::log$("cpu: {}", hw::acpi::Lapic::the().id());
 

@@ -446,8 +446,9 @@ core::Result<AssetPtr> asset_create_ipc_connections(Space *space, AssetIpcConnec
     auto server = query_res.unwrap();
 
     ptr.asset->ipc_connection = new IpcConnection();
-    *ptr.asset->ipc_connection = {};
+    ptr.asset->ipc_connection->message_alloc_id = 0;
     ptr.asset->ipc_connection->accepted = false;
+    ptr.asset->ipc_connection->closed_status = IPC_STILL_OPEN;
     ptr.asset->ipc_connection->server_handle = params.server_handle;
     ptr.asset->ipc_connection->server_space_handle = server->parent_space;
     ptr.asset->ipc_connection->client_space_handle = space->uid;
@@ -479,13 +480,11 @@ core::Result<AssetIpcConnectionPipeCreateResult> asset_create_ipc_connections(
 
 
     send_ptr.asset->ipc_connection = new IpcConnection();
-
+    send_ptr.asset->ipc_connection->message_alloc_id = 0;
     send_ptr.asset->ipc_connection->accepted = true;
-
     send_ptr.asset->ipc_connection->closed_status = IPC_STILL_OPEN;
     
-    send_ptr.asset->ipc_connection->server_handle = 0;
-
+    send_ptr.asset->ipc_connection->server_handle = -1;
     send_ptr.asset->ipc_connection->server_space_handle = space_receiver->uid;
     send_ptr.asset->ipc_connection->client_space_handle = space_sender->uid;
 

@@ -12,9 +12,10 @@ class CpuContextAmd64 : public kernel::CpuContext
 {
 public:
     CpuContextAmd64() = default;
-    x86_64::SimdContext simd_context;
 
     StackFrame frame;
+
+    x86_64::SimdContext simd_context;
     void _user_stack_addr(uintptr_t addr)
     {
         frame.rsp = addr;

@@ -27,9 +27,27 @@ LOOP_DISK_ST=${LOOP_DISK_S#*as }
 LOOP_DISK=${LOOP_DISK_ST%*.}
 echo "using loop disk $LOOP_DISK"
 
+# Wait for the kernel to recognize the partitions
+# This fixes the race condition where partition devices aren't ready yet
+sudo partprobe $LOOP_DISK
+
+# Wait for partition device nodes to appear
+BOOT_DISK_PART="${LOOP_DISK}p1"
+for i in $(seq 1 10); do
+    if [ -e "$BOOT_DISK_PART" ]; then
+        break
+    fi
+    echo "Waiting for partition device $BOOT_DISK_PART to appear..."
+    sleep 0.5
+done
+
+if [ ! -e "$BOOT_DISK_PART" ]; then
+    echo "Error: Partition device $BOOT_DISK_PART did not appear"
+    udisksctl loop-delete -b $LOOP_DISK
+    exit 1
+fi
 
 # CREATING BOOT PARTITION
-BOOT_DISK_PART="${LOOP_DISK}p1"
 echo "Requiring root privileges to format the disk: $BOOT_DISK_PART"
 echo "Command running: sudo mkfs.fat $BOOT_DISK_PART"
 sudo mkfs.fat $BOOT_DISK_PART

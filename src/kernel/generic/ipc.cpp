@@ -6,6 +6,7 @@
 #include "libcore/fmt/flags.hpp"
 #include "scheduler.hpp"
 #include "wingos-headers/asset.h"
+#include <arch/x86_64/barrier.hpp>
 #include "wingos-headers/ipc.h"
 struct KernelIpcServerRegistered
 {
@@ -129,9 +130,10 @@ core::Result<AssetPtr> server_accept_connection(KernelIpcServer *server)
         {
             server->connections[i].asset->ipc_connection->accepted = true;
             server->connections[i].asset->ref_count++;
+            auto &conn = server->connections[i];
             server->self->ref_count++;
             server->lock.release();
-            return server->connections[i];
+            return conn;
         }
     }
     server->lock.release();
@@ -159,8 +161,11 @@ core::Result<MessageHandle> _server_send_message(IpcConnection *connection, IpcM
     }
 
     ReceivedIpcMessage received_message = {};
+    received_message.is_null = false;
     received_message.is_call = is_call;
+    received_message.is_disconnect = false;
     received_message.has_reply = false;
+    received_message.has_been_received = false;
 
     received_message.server_id = connection->server_handle; // the space handle of the client that created this connection
     received_message.message_sended = IpcMessagePair::from_client(*message);
@@ -170,6 +175,11 @@ core::Result<MessageHandle> _server_send_message(IpcConnection *connection, IpcM
 
     auto uid = received_message.uid;
     connection->message_sent.push(received_message);
+
+    wmb();
+
+
+
 
     connection->lock.release();
 
@@ -285,7 +295,10 @@ core::Result<IpcMessageClient> update_handle_from_server_to_client(IpcConnection
 
 core::Result<ReceivedIpcMessage> server_receive_message( IpcConnection *connection)
 {
-    
+    if (connection == nullptr)
+    {
+        return core::Result<ReceivedIpcMessage>::error("connection is null");
+    }
 
     if (connection->closed_status != IPC_STILL_OPEN)
     {
@@ -302,6 +315,7 @@ core::Result<ReceivedIpcMessage> server_receive_message( IpcConnection *connecti
         {
             connection->message_sent[i].has_been_received = true;
 
+            rmb();
             ReceivedIpcMessage message = core::move(connection->message_sent[i]);
 
             if (!message.is_call)
@@ -311,6 +325,7 @@ core::Result<ReceivedIpcMessage> server_receive_message( IpcConnection *connecti
             message.is_null = false;
 
             message.message_sended.server = try$(update_handle_from_client_to_server(connection, message.message_sended.client));
+
 
             connection->lock.release();
             return message;
@@ -344,6 +359,7 @@ core::Result<ReceivedIpcMessage> client_receive_message(IpcConnection *connectio
     {
         if (connection->message_sent[i].has_reply)
         {
+            rmb();
             ReceivedIpcMessage message = core::move(connection->message_sent[i]);
 
             if (message.is_call)
@@ -382,8 +398,10 @@ core::Result<ReceivedIpcMessage> client_receive_response(IpcConnection *connecti
     {
         if (connection->message_sent[i].uid == handle && connection->message_sent[i].has_reply)
         {
+            rmb();
             auto message = connection->message_sent.pop(i);
             connection->lock.release();
+
 
             message.message_responded.client = try$(update_handle_from_server_to_client(connection, message.message_responded.server));
 
@@ -425,7 +443,10 @@ core::Result<void> server_reply_message(IpcConnection *connection, MessageHandle
         {
             from_ref.has_reply = true;
             from_ref.message_responded = IpcMessagePair::from_server(*message);
+
             from_ref.has_been_received = true;
+
+            wmb();
 
             if (connection->client_mutex.mutex_release())
             {
@@ -476,7 +497,7 @@ core::Result<IpcMessage> call_server_and_wait(IpcConnection *connection, IpcMess
 
     while (msg.is_null)
     {
-
+        asm volatile("pause"); // CPU hint to reduce power and improve SMT performance
         msg = try$(client_receive_response(connection, res));
     }
 

@@ -3,6 +3,7 @@
 
 #include "libcore/fmt/fmt_str.hpp"
 #include "libcore/str_writer.hpp"
+#include "protocols/server_helper.hpp"
 
 #include "dev/pci/pci.hpp"
 #include "iol/wingos/asset.hpp"
@@ -18,7 +19,6 @@
 #include "spec.hpp"
 #include "wingos-headers/asset.h"
 #include "wingos-headers/syscalls.h"
-#include "protocols/server_helper.hpp"
 
 uint64_t device_uid;
 
@@ -92,7 +92,7 @@ class NvmeController
 
         core::Result<void> release()
         {
-            Wingos::Space::self().release_memory((void*)this->base_addr, this->page_size);
+            Wingos::Space::self().release_memory((void *)this->base_addr, this->page_size);
             return {};
         }
     };
@@ -107,11 +107,11 @@ class NvmeController
         uint64_t id;
         uint64_t cid;
         uint64_t phase;
-        uint64_t *pgs_reg; // indirect memory page size register
+        uintptr_t *pgs_reg; // indirect memory page size register
     };
 
     template <typename SubmitT = NvmeCmd, typename CompleteT = CompletionQueueEntry>
-    core::Result<Queues<SubmitT, CompleteT>> create_queues(size_t slots, uint64_t id)
+    core::Result<Queues<SubmitT, CompleteT>> create_queues(size_t slots, size_t max_pgs_size, uint64_t id)
     {
 
         Queues<SubmitT, CompleteT> queues;
@@ -125,6 +125,12 @@ class NvmeController
         queues.phase = 1;
         queues.id = id;
         queues.cid = 0;
+
+        if (max_pgs_size == 0)
+        {
+            max_pgs_size = 1;
+        }
+        queues.pgs_reg = (uintptr_t *)Wingos::Space::self().allocate_memory(slots * sizeof(uintptr_t) * max_pgs_size, false).ptr();
 
         return queues;
     }
@@ -277,7 +283,7 @@ class NvmeController
     core::Result<void> nvme_create_queues(NvmeDevice *dev, uint16_t queue_id)
     {
 
-        dev->io_queues = try$(create_queues(queue_slots, queue_id));
+        dev->io_queues = try$(create_queues(queue_slots, dev->max_phys_rpgs, queue_id));
 
         NvmeCmd cmd_completion = {};
         cmd_completion.header.opcode = NVME_AOP_CREATE_COMPLETION_QUEUE;
@@ -345,7 +351,7 @@ public:
             return "invalid buffer";
         }
 
-        size_t len = math::alignUp(buffer_len, 4096ul);
+        size_t len = math::alignDown(buffer_len, dev->lba_size);
 
         if ((nlb * dev->lba_size) > len)
         {
@@ -355,20 +361,43 @@ public:
 
         if (nlb * dev->lba_size > max_transfer)
         {
+            log::err$("requested nlb {} blocks of size {} exceeds max transfer {}", nlb, dev->lba_size, max_transfer);
+
             return "requested nlb too large for max transfer";
         }
 
+
+
+
         uintptr_t phys_addr = (uintptr_t)buffer - USERSPACE_VIRT_BASE;
+        uintptr_t phys_addr_page = phys_addr & ~0xFFFULL;
         size_t page_offset = phys_addr & 0xFFF;  // Offset within 4K page
         size_t space_in_first_page = 4096 - page_offset;
         size_t transfer_size = nlb * dev->lba_size;
 
         // Check if data crosses page boundary or is larger than one page
         bool need_prp2 = (transfer_size > space_in_first_page);
+        bool need_prp_list = false;
+        uintptr_t *prp_list_addr;
+
         
         if (need_prp2 && transfer_size > (space_in_first_page + 4096))
         {
-            return "prp list not supported yet (transfer spans more than 2 pages)";
+
+            
+            need_prp2 = false;
+            need_prp_list = true;
+
+            // Create PRP List
+            size_t prp_list_size = math::alignUp(transfer_size - space_in_first_page, 4096ul);
+            size_t prp_count = math::alignUp(prp_list_size, 4096ul) / 4096; 
+
+            prp_list_addr = dev->io_queues.pgs_reg + (dev->io_queues.cid * sizeof(uintptr_t) * dev->max_phys_rpgs);
+            for (size_t i = 0; i < prp_count; i++)
+            {
+                prp_list_addr[i] = phys_addr_page + space_in_first_page + (i * 4096);
+            }
+
         }
 
         NvmeCmd cmd = {};
@@ -381,8 +410,13 @@ public:
         if (need_prp2)
         {
             // PRP2 points to the start of the next page
-            cmd.prp2 = (phys_addr & ~0xFFFULL) + 0x1000;
+            cmd.prp2 = (phys_addr_page) + 0x1000;
         }
+        else if(need_prp_list)
+        {
+            cmd.prp2 = (uintptr_t)prp_list_addr - USERSPACE_VIRT_BASE;
+        }
+        
 
         return nvme_await_submit(&cmd, dev->io_queues);
     }
@@ -424,7 +458,7 @@ public:
         log::log$("NVMe stride is: {}", driver.stride | fmt::FMT_HEX);
         log::log$("NVMe queue slots: {}", driver.queue_slots);
 
-        driver.admin_queues = try$(driver.create_queues(driver.queue_slots, 0));
+        driver.admin_queues = try$(driver.create_queues(driver.queue_slots, 0, 0));
 
         dump_controller_cap(driver.cap);
 
@@ -532,7 +566,7 @@ struct ControllerEndpoint
     prot::ManagedServer server;
 };
 
-int main(int, char**)
+int main(int, char **)
 {
 
     log::log$("hello world from nvme!");
@@ -590,7 +624,6 @@ int main(int, char**)
             auto fmt_str_res = fmt::format_str("nvme{}", (int)dev.sys_id);
             ep.name = (fmt_str_res.take());
 
-
             auto srv = prot::ManagedServer::create_registered_server(ep.name.view(), 1, 0);
             ep.server = srv.take();
 
@@ -622,28 +655,21 @@ int main(int, char**)
             case prot::DISK_READ_SECTORS:
             {
                 uint64_t lba = msg.received.data[1].data;
-                uint16_t size = msg.received.data[2].data;
+                uint64_t size = msg.received.data[2].data;
+
                 uint64_t asset_handle = msg.received.data[3].asset_handle;
                 uint64_t mem_asset_off = msg.received.data[4].data;
-                log::log$("Read sector off: {}", mem_asset_off);
+                //log::log$("Read sector off: {}", mem_asset_off);
                 auto asset = Wingos::MemoryAsset::from_handle(asset_handle);
 
-                uintptr_t buffer_ptr = asset.memory.start();
+                uintptr_t buffer_ptr = asset.memory.start() ;
                 auto &dev = ep.controller->devices[ep.device_id]; // for simplicity only first device
 
                 if (size >= 512)
                 {
-                    for (size_t i = 0; i < size; i += 512)
-                    {
-               
-                        auto res = ep.controller->read_write_ptr(&dev, false, lba + (i / 512), 1, (void *)(buffer_ptr + USERSPACE_VIRT_BASE + i + mem_asset_off  ), 512);
 
-                        if (res.is_error())
-                        {
-                            log::err$("Failed to read sectors: {}", res.error());
-                            break;
-                        }
-                    }
+                    auto res = ep.controller->read_write_ptr(&dev, false, lba, size/512, (void *)(buffer_ptr + USERSPACE_VIRT_BASE + mem_asset_off), size);
+
                 }
                 else 
                 {
@@ -668,7 +694,7 @@ int main(int, char**)
             case prot::DISK_WRITE_SECTORS:
             {
                 uint64_t lba = msg.received.data[1].data;
-                uint16_t size = msg.received.data[2].data;
+                uint64_t size = msg.received.data[2].data;
                 uint64_t asset_handle = msg.received.data[3].asset_handle;
                 auto asset = Wingos::MemoryAsset::from_handle(asset_handle);
 
@@ -686,7 +712,7 @@ int main(int, char**)
                 }
 
                 IpcMessage reply = {};
-                reply.data[0].data = size; // number of sectors written
+                reply.data[0].data = size; // number of bytes written
                 reply.data[0].is_asset = false;
 
                 ep.server.reply(core::move(msg), reply).assert();

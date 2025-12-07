@@ -24,7 +24,7 @@ struct FILE
     int ungetc_buf;  // -1 if empty, otherwise the ungotten char
 
     union {
-        prot::FsFile file;
+        prot::FsFile* file;
         prot::SenderPipe* output; 
         prot::ReceiverPipe* input;
         core::Writer* writer;

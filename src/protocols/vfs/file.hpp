@@ -1,10 +1,14 @@
 #pragma once
 
 #include "libcore/str_writer.hpp"
+#include <stdint.h>
 #include <string.h>
+#include "iol/wingos/asset.hpp"
 #include "iol/wingos/ipc.hpp"
 #include "iol/wingos/space.hpp"
+#include "libcore/ds/vec.hpp"
 #include "libcore/str.hpp"
+#include "math/align.hpp"
 #include "protocols/init/init.hpp"
 namespace prot
 {
@@ -51,12 +55,66 @@ enum FsFileMessageType
 
 };
 
+struct FsFileCacheEntry 
+{
+    uint64_t offset;
+    uint64_t size;
+    Wingos::MemoryAsset asset;
+    Wingos::VirtualMemoryAsset mapped;
+    int score;
+};
 class FsFile
 {
     Wingos::IpcClient connection;
     bool keep_alive = false;
+    core::Vec<FsFileCacheEntry> cache_entries;
+
+    
+    void add_cache_entry(uint64_t offset, uint64_t size, Wingos::MemoryAsset &asset, Wingos::VirtualMemoryAsset &mapped)
+    {
+        FsFileCacheEntry entry = {};
+        entry.offset = offset;
+        entry.size = size;
+        entry.asset = asset;
+        entry.mapped = mapped;
+        entry.score = 1;
+       
+        if(cache_entries.len() > 256)
+        {
+            // evict lowest score
+            size_t lowest_score_index = 0;
+            int lowest_score = cache_entries[0].score;
+
+            for (size_t i = 1; i < cache_entries.len(); i++)
+            {
+                if (cache_entries[i].score < lowest_score)
+                {
+                    lowest_score = cache_entries[i].score;
+                    lowest_score_index = i;
+                }
+            }
+
+            Wingos::Space::self().release_asset( cache_entries[lowest_score_index].mapped);
+            Wingos::Space::self().release_asset( cache_entries[lowest_score_index].asset);
+            cache_entries[lowest_score_index] = entry;
+        }
+        else  
+        {
+
+            cache_entries.push(entry);
+        }
+    }
 
 public:
+
+    ~FsFile () {
+        for(size_t i = 0; i < cache_entries.len(); i++)
+        {
+            Wingos::Space::self().release_asset( cache_entries[i].mapped);
+            Wingos::Space::self().release_asset( cache_entries[i].asset);
+        }
+        cache_entries.clear();
+    }
     Wingos::IpcClient &raw_client() { return connection; }
 
     static core::Result<FsFile> connect(IpcServerHandle fs_endpoint, bool keep_alive = false)
@@ -65,6 +123,7 @@ public:
         file.connection = Wingos::Space::self().connect_to_ipc_server(fs_endpoint);
         file.keep_alive = keep_alive;
         file.connection.wait_for_accept();
+        
         return (file);
     }
 
@@ -83,6 +142,8 @@ public:
         return received_len;
     }
 
+
+    
     core::Result<size_t> read(void* buffer, size_t offset, size_t len)
     {
         if (len == 0)
@@ -90,20 +151,49 @@ public:
             return core::Result<size_t>::success(0);
         }
 
-        Wingos::MemoryAsset masset = Wingos::Space::self().allocate_physical_memory(len);
+        for(size_t i = 0; i < cache_entries.len(); i++)
+        {
+            auto &entry = cache_entries[i];
+            if(offset >= entry.offset && (offset + len) <= (entry.offset + entry.size))
+            {
+                size_t cache_offset = offset - entry.offset;
+                memcpy(buffer, (void *)((uintptr_t)entry.mapped.ptr() + cache_offset), len);
+                entry.score++;
+                return len;
+            }
+        }
+
+        size_t aoffset = math::alignDown(offset, 4096ul);
+
+        size_t alen = math::alignUp(len + offset, 4096ul) - aoffset;
+
+        size_t delta_offset = offset - aoffset;
+        Wingos::MemoryAsset masset = Wingos::Space::self().allocate_physical_memory(alen);
 
 
-        auto res = try$(this->read(masset, offset, len));
+        auto res = try$(this->read(masset, aoffset, alen));
         
         Wingos::VirtualMemoryAsset mapped = Wingos::Space::self().map_memory(masset, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
-        memcpy(buffer, mapped.ptr(), res);
-        Wingos::Space::self().release_asset(mapped);
-        Wingos::Space::self().release_asset(masset);
+        memcpy(buffer, (void *)((uintptr_t)mapped.ptr() + delta_offset), len);
+
+        this->add_cache_entry(aoffset, alen, masset, mapped);
+       // Wingos::Space::self().release_asset(mapped);
+      //  Wingos::Space::self().release_asset(masset);
         return res;
     }
 
     core::Result<size_t> write(Wingos::MemoryAsset &asset, size_t offset, size_t len)
     {
+        for(size_t i = 0; i < cache_entries.len(); i++)
+        {
+            auto &entry = cache_entries[i];
+            if(offset >= entry.offset && (offset + len) <= (entry.offset + entry.size))
+            {
+                size_t cache_offset = offset - entry.offset;
+                memcpy((void *)((uintptr_t)entry.mapped.ptr() + cache_offset), (void *)((uintptr_t)asset.memory.start() + cache_offset), len);
+                entry.score++;
+            }
+        }
         IpcMessage message = {};
         message.data[0].data = FS_WRITE;
         message.data[1].data = offset;

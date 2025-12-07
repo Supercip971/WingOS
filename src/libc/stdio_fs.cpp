@@ -19,7 +19,7 @@ size_t fwrite(void* __restrict ptr, size_t size, size_t n, FILE* __restrict file
     {
         case FILE_KIND_FILE: 
         {
-            file->file.write(ptr, file->cursor, size * n);
+            file->file->write(ptr, file->cursor, size * n);
             file->cursor += size * n;
             return n;
         }
@@ -78,7 +78,7 @@ size_t fread(void* __restrict ptr, size_t size, size_t n, FILE* __restrict file 
     {
         case FILE_KIND_FILE: 
         {
-            file->file.read( ptr, file->cursor, size * n);
+            file->file->read( ptr, file->cursor, size * n);
             file->cursor += size * n;
             return n;
         }
@@ -133,7 +133,7 @@ FILE* fopen(const char* filename, const char* mode)
 {
     (void)mode;
     prot::VfsConnection vfs = prot::VfsConnection::connect().unwrap();
-    prot::FsFile file = vfs.open_path(core::Str(filename)).unwrap();
+    prot::FsFile* file = new prot::FsFile(core::move(vfs.open_path(core::Str(filename)).unwrap()));
     FILE* f = new FILE();
     f->kind = FILE_KIND_FILE;
     f->file = core::move(file);
@@ -179,7 +179,8 @@ int fclose(FILE* stream)
     {
         case FILE_KIND_FILE: 
         {
-            stream->file.close();
+            stream->file->close();
+            delete stream->file;
             delete stream;
             return 0;
         }
@@ -218,7 +219,7 @@ int fseek(FILE* stream, long offset, int origin)
                 }
                 case SEEK_END:
                 {
-                    auto info = stream->file.get_info();
+                    auto info = stream->file->get_info();
                     if (info.is_error())
                     {
                         return -1;

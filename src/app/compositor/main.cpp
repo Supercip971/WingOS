@@ -72,7 +72,7 @@ bool update_window(Window &window)
     if (msg.received.flags & IPC_MESSAGE_FLAG_DISCONNECT) 
     {
         log::log$("compositor: disconnecting window");
-        window.server.raw_server().disconnect(msg.connection);
+        window.server.disconnect(msg.connection);
         return true;
     }
  
@@ -169,7 +169,7 @@ int main(int, char**)
         if (msg.received.flags & IPC_MESSAGE_FLAG_DISCONNECT)
         {
             log::log$("compositor: disconnecting from client");
-            serv.raw_server().disconnect(msg.connection);
+            serv.disconnect(msg.connection);
             continue;
         }
 

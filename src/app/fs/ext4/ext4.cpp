@@ -238,7 +238,7 @@ core::Result<size_t> Ext4Filesystem::inode_read(Ext4InodeRef const &inode, Wingo
     size_t block_offset = off % block_size_;
 
 
-    log::log$("inode_read: inode={}, off={}, len={}, start_block={}, end_block={}, block_offset={}", inode.inode_id, off, len, start_block, end_block, block_offset);
+  //  log::log$("inode_read: inode={}, off={}, len={}, start_block={}, end_block={}, block_offset={}", inode.inode_id, off, len, start_block, end_block, block_offset);
     size_t bytes_read = 0;
 
     auto vfile = Wingos::Space::self().map_memory(out, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
@@ -257,6 +257,8 @@ core::Result<size_t> Ext4Filesystem::inode_read(Ext4InodeRef const &inode, Wingo
     }
 
     // middle blocks
+
+
     for (size_t b = start_block; b < end_block; b++)
     {
         try$(inode_read_blck_off(inode, out, b * block_size_, bytes_read + mem_asset_off ));

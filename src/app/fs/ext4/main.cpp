@@ -166,7 +166,7 @@ bool update_endpoint(Ext4FileEndpoint *endpoint)
         size_t offset = msg.received.data[1].data;
         size_t len = msg.received.data[2].data;
 
-        log::log$("ext4: read request for inode {} offset {} len {}", endpoint->inode.inode_id, offset, len);
+       // log::log$("ext4: read request for inode {} offset {} len {}", endpoint->inode.inode_id, offset, len);
 
         auto mem_asset = Wingos::MemoryAsset::from_handle(msg.received.data[3].asset_handle);
         auto r = endpoint->attached_fs->inode_read(

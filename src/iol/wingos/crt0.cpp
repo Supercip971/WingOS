@@ -54,7 +54,7 @@ static prot::SenderPipe _stdout_pipe;
 static prot::SenderPipe _stderr_pipe;
 static prot::ReceiverPipe _stdin_pipe;
 
-static prot::FsFile _pwd;
+static prot::FsFile* _pwd;
 
 class WingosLogger : public core::Writer
 {
@@ -134,6 +134,12 @@ char *iol_get_cwd()
 int iol_change_cwd(const char *path)
 {
 
+    if(_pwd == nullptr)
+    {
+        log::log$("iol_change_cwd: _pwd is null");
+        return -1;
+    }
+
     if (path == NULL)
     {
         return -1;
@@ -141,8 +147,8 @@ int iol_change_cwd(const char *path)
 
     if (path[0] == '/')
     {
-        _pwd.close();
-        _pwd = prot::VfsConnection::connect().unwrap().open_root().unwrap();
+        _pwd->close();
+        *_pwd = prot::VfsConnection::connect().unwrap().open_root().unwrap();
         *cwd = "/";
         path++;
     }
@@ -153,7 +159,7 @@ int iol_change_cwd(const char *path)
     for (auto &part : r)
     {
         auto &old = _pwd;
-        auto n = old.open_file(part);
+        auto n = old->open_file(part);
 
         if (n.is_error())
         {
@@ -161,7 +167,7 @@ int iol_change_cwd(const char *path)
         }
         auto new_f = n.unwrap();
 
-        core::swap(new_f, _pwd);
+        core::swap(new_f, *_pwd);
 
         new_f.close();
     }

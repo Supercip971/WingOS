@@ -358,14 +358,17 @@ public:
             return "requested nlb too large for max transfer";
         }
 
-        bool use_prp = false;
-        if (nlb * dev->lba_size > 4096)
+        uintptr_t phys_addr = (uintptr_t)buffer - USERSPACE_VIRT_BASE;
+        size_t page_offset = phys_addr & 0xFFF;  // Offset within 4K page
+        size_t space_in_first_page = 4096 - page_offset;
+        size_t transfer_size = nlb * dev->lba_size;
+
+        // Check if data crosses page boundary or is larger than one page
+        bool need_prp2 = (transfer_size > space_in_first_page);
+        
+        if (need_prp2 && transfer_size > (space_in_first_page + 4096))
         {
-            use_prp = true;
-            if (nlb * dev->lba_size > (4096 * 2))
-            {
-                return "prp list not supported yet";
-            }
+            return "prp list not supported yet (transfer spans more than 2 pages)";
         }
 
         NvmeCmd cmd = {};
@@ -374,13 +377,11 @@ public:
         cmd.ReadWrite.lba = lba;
         cmd.ReadWrite.nlb = nlb - 1; // 0's based
 
-        if (use_prp)
+        cmd.prp1 = phys_addr;
+        if (need_prp2)
         {
-            cmd.prp2 = (uintptr_t)buffer - USERSPACE_VIRT_BASE + 0x1000;
-        }
-        else
-        {
-            cmd.prp1 = (uintptr_t)buffer - USERSPACE_VIRT_BASE;
+            // PRP2 points to the start of the next page
+            cmd.prp2 = (phys_addr & ~0xFFFULL) + 0x1000;
         }
 
         return nvme_await_submit(&cmd, dev->io_queues);
@@ -623,6 +624,8 @@ int main(int, char**)
                 uint64_t lba = msg.received.data[1].data;
                 uint16_t size = msg.received.data[2].data;
                 uint64_t asset_handle = msg.received.data[3].asset_handle;
+                uint64_t mem_asset_off = msg.received.data[4].data;
+                log::log$("Read sector off: {}", mem_asset_off);
                 auto asset = Wingos::MemoryAsset::from_handle(asset_handle);
 
                 uintptr_t buffer_ptr = asset.memory.start();
@@ -633,7 +636,7 @@ int main(int, char**)
                     for (size_t i = 0; i < size; i += 512)
                     {
                
-                        auto res = ep.controller->read_write_ptr(&dev, false, lba + (i / 512), 1, (void *)(buffer_ptr + USERSPACE_VIRT_BASE + i  ), 512);
+                        auto res = ep.controller->read_write_ptr(&dev, false, lba + (i / 512), 1, (void *)(buffer_ptr + USERSPACE_VIRT_BASE + i + mem_asset_off  ), 512);
 
                         if (res.is_error())
                         {
@@ -644,7 +647,7 @@ int main(int, char**)
                 }
                 else 
                 {
-                    auto res = ep.controller->read_write_ptr(&dev, false, lba, size/512, (void *)(buffer_ptr + USERSPACE_VIRT_BASE), size);
+                    auto res = ep.controller->read_write_ptr(&dev, false, lba, size/512, (void *)(buffer_ptr + USERSPACE_VIRT_BASE + mem_asset_off), size);
 
                     if (res.is_error())
                     {

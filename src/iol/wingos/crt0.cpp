@@ -45,7 +45,7 @@ __attribute__((weak)) int _main(StartupInfo *context)
     return main(context->argc, context->argv);
 }
 
-static char buffer[100];
+static char _buffer[100];
 static size_t _index;
 
 static bool use_stdout = false;
@@ -65,27 +65,39 @@ public:
         for (size_t i = 0; i < size; i++)
         {
 
-            if (data[i] == '\n' || _index >= sizeof(buffer) - 3)
+            if (data[i] == '\n' || _index >= sizeof(_buffer) - 3)
             {
-                buffer[_index++] = data[i]; // Null-terminate the string
-                buffer[_index++] = '\0';
+                _buffer[_index++] = data[i]; // Null-terminate the string
+                _buffer[_index++] = '\0';
 
                 if (use_stdout)
                 {
-                    _stdout_pipe.send(buffer, _index);
+                    _stdout_pipe.send(_buffer, _index);
                 }
                 else
                 {
-                    sys$debug_log(buffer);
+                    sys$debug_log(_buffer);
                 }
                 _index = 0;
             }
             else
             {
-                buffer[_index++] = data[i];
+                _buffer[_index++] = data[i];
             }
         }
         return {};
+    }
+};
+
+
+class EmptyReader : public core::Reader
+{
+public:
+    virtual core::Result<size_t> read(char* buffer, size_t size) const override
+    {
+        (void)buffer;
+        (void)size;
+        return 0ul;
     }
 };
 
@@ -159,13 +171,14 @@ int iol_change_cwd(const char *path)
     return 0;
 }
 
+static WingosLogger logger;
 extern "C" __attribute__((weak)) void _entry_point(StartupInfo *context)
 {
 
     asm volatile("andq $-16, %rsp");
     _index = 0;
+    logger= {};
 
-    WingosLogger logger;
     log::provide_log_target(&logger);
 
     run_constructors();
@@ -181,7 +194,12 @@ extern "C" __attribute__((weak)) void _entry_point(StartupInfo *context)
         use_stdout = true;
         set_stdout_pipe(&_stdout_pipe);
     }
-
+    else 
+    {
+        stdout = new FILE();
+        stdout->kind = FILE_KIND_WRITER;
+        stdout->writer = &logger;
+    }
     if (context->stderr_handle != 0)
     {
         _stderr_pipe = (prot::SenderPipe::from(
@@ -190,6 +208,13 @@ extern "C" __attribute__((weak)) void _entry_point(StartupInfo *context)
                                 context->stderr_handle)))
                            .unwrap();
         set_stderr_pipe(&_stderr_pipe);
+    }
+    else  
+    {
+        stderr = new FILE();
+        stderr->kind = FILE_KIND_WRITER;
+        stderr->writer = &logger;
+        
     }
 
     if (context->stdin_handle != 0)
@@ -201,6 +226,12 @@ extern "C" __attribute__((weak)) void _entry_point(StartupInfo *context)
                                context->stdin_handle)))
                           .unwrap();
         set_stdin_pipe(&_stdin_pipe);
+    }
+    else 
+    {
+        stdin = new FILE();
+        stdin->kind = FILE_KIND_READER;
+        stdin->reader = new EmptyReader();
     }
 
     // Initialize the kernel

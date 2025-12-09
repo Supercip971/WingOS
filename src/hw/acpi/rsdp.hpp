@@ -28,7 +28,7 @@ struct RsdtRet
     RsdtTypes type;
 
     RsdtRet() = default;
-    RsdtRet(PhysAddr addr, RsdtTypes type) : physical_addr(addr), type(type) {};
+    RsdtRet(PhysAddr addr, RsdtTypes _type) : physical_addr(addr), type(_type) {};
 };
 
 struct [[gnu::packed]] Rsdp

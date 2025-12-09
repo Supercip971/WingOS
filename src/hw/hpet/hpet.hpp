@@ -3,6 +3,8 @@
 #include <hw/acpi/rsdt.hpp>
 
 #include "hw/mem/addr_space.hpp"
+#include "libcore/fmt/log.hpp"
+#include "libcore/time/time.hpp"
 namespace hw::hpet
 {
 
@@ -44,8 +46,9 @@ struct [[gnu::packed]] HPETEntry
     static constexpr core::Str signature = "HPET";
 };
 
-struct [[gnu::packed]] HPETCaps
+union [[gnu::packed]] HPETCaps
 {
+    struct [[gnu::packed]] {
     uint8_t rev_id;
     uint8_t num_time_cap : 5;
     uint8_t count_size_cap : 1;
@@ -53,10 +56,15 @@ struct [[gnu::packed]] HPETCaps
     uint8_t legacy_replacement_cap : 1;
     uint16_t vendor_id;
     uint32_t clock_period;
+    };
+
+    uint64_t value;
 
     static HPETCaps from(uint64_t value)
     {
-        return *(HPETCaps *)&value;
+        HPETCaps caps;
+        caps.value = value;
+        return caps;
     }
 };
 
@@ -69,6 +77,20 @@ enum HPETConfiguration
 
 core::Result<void> hpet_initialize(hw::acpi::Rsdp *rsdp);
 
-void hpet_sleep(uint64_t ms);
+
+template<MappCallbackFn Fn>
+core::Result<void> hpet_prepare_mapping(uintptr_t rsdp_addr, Fn fn)
+{
+    auto hpet = hw::acpi::rsdt_find<hw::hpet::HPETEntry>(toVirt(rsdp_addr).as<hw::acpi::Rsdp>()).unwrap();  
+
+    auto hpet_base = hpet->address.address;
+    try$(fn((uintptr_t)hpet_base, hpet->header.length));
+    return {};
+
+}
+void hpet_sleep(core::Milliseconds ms);
+
+
+core::Milliseconds hpet_clock_read();
 
 } // namespace hw::hpet

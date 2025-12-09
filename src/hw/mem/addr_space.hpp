@@ -152,9 +152,24 @@ constexpr inline VirtRange toVirtRange(PhysRange range)
     return VirtRange(toVirt(range.start()), toVirt(range.end()));
 }
 #else
-
-PhysAddr toPhys(VirtAddr addr);
-VirtAddr toVirt(PhysAddr addr);
-VirtRange toVirtRange(PhysRange range);
+#include <iol/wingos/space.hpp>
+constexpr inline PhysAddr toPhys(VirtAddr addr)
+{
+    // in userspace we assume the mapping is direct for now
+    return PhysAddr(addr._addr - USERSPACE_VIRT_BASE);
+}
+constexpr inline VirtAddr toVirt(PhysAddr addr)
+{
+    return VirtAddr(addr._addr + USERSPACE_VIRT_BASE);
+}
+constexpr inline VirtRange toVirtRange(PhysRange range)
+{
+    return VirtRange(toVirt(range.start()), toVirt(range.end()));
+}
 
 #endif
+
+template <typename Fn>
+concept MappCallbackFn = requires(uintptr_t addr, size_t size, Fn fn) {
+    { fn(addr, size) } -> core::IsConvertibleTo<core::Result<uintptr_t>>;
+};

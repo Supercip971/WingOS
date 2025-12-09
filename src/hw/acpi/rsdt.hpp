@@ -82,11 +82,10 @@ template <SdTable T, SdtEntry K>
 core::Result<K *> SdtFind(T *table)
 {
 
-    typename T::childType *entries = table->entries;
 
-    for (size_t i = 0; i < (table->header.child_len()) / sizeof(entries[0]); i++)
+    for (size_t i = 0; i < (table->header.child_len()) / sizeof(table->entries[0]); i++)
     {
-        auto entry = entries[i];
+        auto entry = table->entries[i];
         auto *entry_header = toVirt(entry).template as<SdtHeader>();
         auto s1 = core::Str(entry_header->signature, 4);
 
@@ -112,6 +111,60 @@ core::Result<K *> rsdt_find(hw::acpi::Rsdp *_rsdp)
         return try$((hw::acpi::SdtFind<hw::acpi::Xsdt, K>(xsdt)));
     }
 }
+
+template<MappCallbackFn T> 
+core::Result<void> prepare_mapping(uintptr_t rsdp_addr, T fn)
+{
+    try$(fn(rsdp_addr, sizeof(hw::acpi::Rsdp)));
+    hw::acpi::Rsdp *rsdp = toVirt(rsdp_addr).as<hw::acpi::Rsdp>();
+    auto addr = rsdp->rsdt_phys_addr();
+    if (addr.type == hw::acpi::RsdtTypes::RSDT)
+    {
+        auto rsdt = toVirt(addr.physical_addr).as<hw::acpi::Rsdt>();
+        try$(fn((uintptr_t)addr.physical_addr, 4096));
+        if(rsdt->header.length > 4096)
+        {
+            try$(fn((uintptr_t)addr.physical_addr, rsdt->header.length));
+        }
+
+
+        for(size_t i = 0; i < (rsdt->header.child_len()) / sizeof(rsdt->entries[0]); i++)
+        {
+            auto entry = rsdt->entries[i];
+            try$(fn((uintptr_t)entry, 4096));
+            auto *entry_header = toVirt(entry).template as<SdtHeader>();
+            if(entry_header->length > 4096)
+            {
+                try$(fn((uintptr_t)entry, entry_header->length));
+            }
+        }
+    }
+    else // XSDT
+    {
+        auto xsdt = toVirt(addr.physical_addr).as<hw::acpi::Xsdt>();
+        try$(fn((uintptr_t)addr.physical_addr, 4096));
+        if(xsdt->header.length > 4096)
+        {
+            try$(fn((uintptr_t)addr.physical_addr, xsdt->header.length));
+        }
+
+        for(size_t i = 0; i < (xsdt->header.child_len()) / sizeof(xsdt->entries[0]); i++)
+        {
+            auto entry = xsdt->entries[i];
+            try$(fn((uintptr_t)entry, 4096));
+            auto *entry_header = toVirt(entry).template as<SdtHeader>();
+            if(entry_header->length > 4096)
+            {
+                try$(fn((uintptr_t)entry, entry_header->length));
+            }
+        }
+    }
+
+    return {};
+
+
+}
+
 
 template <SdTable T, typename Fn>
 void SdtForeach(T *table, Fn callback)

@@ -71,7 +71,7 @@ void asset_release(Space *space, Asset *asset)
     if (asset->ref_count == 0)
     {
         asset->lock.release();
-        asset_remove_from_space(space, asset);   
+        asset_remove_from_space(space, asset);
         return;
     }
 
@@ -83,10 +83,15 @@ void asset_release(Space *space, Asset *asset)
         }
 
         auto kernel_server = asset->ipc_connection->server_asset;
-        
-        if(!kernel_server->destroyed)
+
+        // Add NULL check for pipe connections (which have no server_asset)
+        if(kernel_server != nullptr && !kernel_server->destroyed)
         {
-            kernel_server->lock.lock();
+            // Release asset lock before acquiring server lock to avoid ABBA deadlock
+            // (server_accept_connection acquires server->self->lock then asset->lock)
+            asset->lock.release();
+            
+            kernel_server->self->lock.lock();
             for(size_t i = 0; i < kernel_server->connections.len(); i++)
             {
                 if(kernel_server->connections[i].asset == asset)
@@ -95,15 +100,18 @@ void asset_release(Space *space, Asset *asset)
                     break;
                 }
             }
-            kernel_server->lock.release();
+            kernel_server->self->lock.release();
+            
+            // Re-acquire asset lock to continue with release
+            asset->lock.lock();
         }
 
         if(space->space_handle == asset->ipc_connection->server_space_handle)
         {
             asset->ipc_connection->server_mutex.mutex_release();
         }
-        
-        asset->ipc_connection->lock.release();
+
+        // Removed spurious lock.release() - the lock was never acquired
     }
 
 
@@ -111,15 +119,13 @@ void asset_release(Space *space, Asset *asset)
     {
         //log::log$("Releasing IPC server asset {}", asset->ipc_server->handle);
         asset->ipc_server->destroyed = true;
-        asset->ipc_server->lock.lock();
 
         unregister_server(asset->ipc_server->handle, asset->ipc_server->parent_space);
 
         // Mark server as destroyed first, then close all connections
         core::Vec<AssetPtr> connections_copy = asset->ipc_server->connections;
-        
+
         asset->ipc_server->connections.clear();
-        asset->ipc_server->lock.release();
 
         // Now release each connection
         for( size_t i = 0; i < connections_copy.len(); i++)
@@ -176,16 +182,17 @@ void asset_release(Space *space, Asset *asset)
             }
 
             auto kernel_server = asset->ipc_connection->server_asset;
-            
+
             // Note: removal from server's connections list already happened above
             // before ref_count was decremented, to prevent dangling pointers
-            
+
             // Check if we should auto-release the server when last connection is gone
-            if(!kernel_server->destroyed && kernel_server->connections.len() == 0 && kernel_server->self->ref_count == 1)
+            // Add NULL check for pipe connections (which have no server_asset)
+            if(kernel_server != nullptr && !kernel_server->destroyed && kernel_server->connections.len() == 0 && kernel_server->self->ref_count == 1)
             {
                 kernel_server->destroyed = true;
                 auto parent_space = Space::global_space_by_handle(kernel_server->parent_space).unwrap();
-                asset_release(parent_space, kernel_server->self);                
+                asset_release(parent_space, kernel_server->self);
             }
 
             delete asset->ipc_connection;
@@ -364,16 +371,17 @@ core::Result<AssetPtr> asset_move(Space *from, Space *to, AssetPtr asset)
     {
         if (from->assets[i].handle == asset.handle)
         {
-
+            // Lock in consistent order (by uid) to prevent ABBA deadlock
             from->self->lock.lock();
-            // Move the asset to the new space
             to->self->lock.lock();
+
+            // Move the asset to the new space
             AssetPtr moved_asset = asset;
             moved_asset.handle = to->alloc_uid++;
             to->assets.push(moved_asset);
+            from->assets.pop(i);
 
             to->self->lock.release();
-            from->assets.pop(i);
             from->self->lock.release();
             return moved_asset;
         }
@@ -395,16 +403,19 @@ core::Result<AssetPtr> asset_copy(Space *from, Space *to, AssetPtr asset)
         return core::Result<AssetPtr>::error("asset is null");
     }
 
+    // Lock the asset to safely increment ref_count
+    asset.asset->lock.lock();
+    asset.asset->ref_count++;
+    asset.asset->lock.release();
+
+    // Now lock the destination space to add the asset
     to->self->lock.lock();
-    // Check if the asset exists in the from space
     AssetPtr copied_asset = {};
     copied_asset.asset = asset.asset;
     copied_asset.handle = to->alloc_uid++;
-    asset.asset->ref_count++;
-
     to->assets.push(copied_asset);
     to->self->lock.release();
-    
+
     return copied_asset;
 }
 
@@ -456,17 +467,17 @@ core::Result<AssetPtr> asset_create_ipc_connections(Space *space, AssetIpcConnec
 
     ptr.asset->lock.release();
 
-    server->lock.lock();
-
+    // Get server space before taking any locks
     auto server_space = Space::global_space_by_handle(server->parent_space).unwrap();
+    
+    // Copy asset to server space (this handles its own locking internally)
     auto ptr_in_server = try$(asset_copy(space, server_space, ptr));
 
-
-
+    // Now lock server->self to modify connections and ref_count
+    server->self->lock.lock();
     server->connections.push(ptr_in_server);
-
     server->self->ref_count++;
-    server->lock.release();
+    server->self->lock.release();
 
     return ptr;
 }
@@ -483,7 +494,7 @@ core::Result<AssetIpcConnectionPipeCreateResult> asset_create_ipc_connections(
     send_ptr.asset->ipc_connection->message_alloc_id = 0;
     send_ptr.asset->ipc_connection->accepted = true;
     send_ptr.asset->ipc_connection->closed_status = IPC_STILL_OPEN;
-    
+
     send_ptr.asset->ipc_connection->server_handle = -1;
     send_ptr.asset->ipc_connection->server_space_handle = space_receiver->uid;
     send_ptr.asset->ipc_connection->client_space_handle = space_sender->uid;

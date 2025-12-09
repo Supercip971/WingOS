@@ -77,10 +77,10 @@ void update_all_endpoints()
 {
     for (auto endpoint : opened_file_endpoints)
     {
-        if (endpoint->server.connection_count() < 1)
+        // Always try to accept new connections (there may be multiple pending)
+        while (endpoint->server.accept_connection())
         {
-
-            endpoint->server.accept_connection();
+            // Continue accepting until no more connections are pending
         }
 
         auto received = endpoint->server.try_receive();
@@ -132,6 +132,7 @@ void update_all_endpoints()
                     log::log$("VfsFileEndpoint: open file {}", filename.view());
                     endpoint->server.reply(core::move(msg), reply);
                     opened_file_endpoints.push(nendpoint);
+                   
                     // early return because we loop over endpoints that we pushed
                     return;
                 }

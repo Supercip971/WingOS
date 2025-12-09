@@ -28,12 +28,13 @@ struct IpcServer : public UAsset
     {
         for (size_t i = 0; i < connections.len(); i++)
         {
-            if (connections[i]->handle == connection->handle)
+            if (connections[i] == connection)
             {
+                sys$asset_release(space_handle, connections[i]->handle);
+                delete connections[i];
+
                 connections.pop(i);
-                sys$asset_release(space_handle, connection->handle);
-                delete connection;
-                return;
+                i--;
             }
         }
     }
@@ -127,7 +128,7 @@ public:
 
     static IpcClient from(uint64_t space_handle, uint64_t connection)
     {
-        IpcClient client; 
+        IpcClient client = {}; 
         client.handle = connection;
         client.associated_space_handle = space_handle;
         return client;
@@ -135,7 +136,7 @@ public:
 
     static IpcClient connect(uint64_t space_handle, uint64_t server_address, bool block = false, uint64_t flags = 0)
     {
-        IpcClient client;
+        IpcClient client = {};
         auto res = sys$ipc_connect(block, space_handle, server_address, flags);
         if (res.returned_handle_sender == 0)
         {

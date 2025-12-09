@@ -33,8 +33,11 @@ core::Vec<Ext4FileEndpoint *> ext4_file_endpoints = {};
 
 bool update_endpoint(Ext4FileEndpoint *endpoint)
 {
-
-    endpoint->root_server.accept_connection();
+    // Accept all pending connections (there may be multiple)
+    while (endpoint->root_server.accept_connection())
+    {
+        // Continue accepting until no more connections are pending
+    }
 
     auto received = endpoint->root_server.try_receive();
 
@@ -241,7 +244,11 @@ int main(int, char**)
     {
 
         update_endpoints();
-        serv.accept_connection();
+        // Accept all pending connections
+        while (serv.accept_connection())
+        {
+            // Continue until no more pending
+        }
 
         auto received = serv.try_receive();
         if (received.is_error())

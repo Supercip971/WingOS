@@ -28,7 +28,6 @@ KernelIpcServer *register_server(IpcServerHandle handle, uint64_t space_handle)
     server->parent_space = space_handle;
     server->connections.clear();
     server->self = nullptr; // will be set later when the asset is created
-    server->lock.release();
 
     ipc_server_lock.lock();
     registered_servers.push({server->handle, server});
@@ -44,7 +43,6 @@ KernelIpcServer *create_server(uint64_t space_handle)
     server->parent_space = space_handle;
     server->connections.clear();
     server->self = nullptr; // will be set later when the asset is created
-    server->lock.release();
 
     ipc_server_lock.lock();
     registered_servers.push({server->handle, server});
@@ -97,23 +95,25 @@ core::Result<AssetPtr> server_accept_connection(KernelIpcServer *server)
         return core::Result<AssetPtr>::error("server is null");
     }
 
-    server->lock.lock();
-    
+    server->self->lock.lock();
 
-    
     for (size_t i = 0; i < server->connections.len(); i++)
     {
+        auto asset = server->connections[i].asset;
 
-        if(server->connections[i].asset->kind != OBJECT_KIND_IPC_CONNECTION) 
+        // Try to lock the asset - use try_lock to avoid deadlock
+        asset->lock.lock();
+
+        if(asset->kind != OBJECT_KIND_IPC_CONNECTION)
         {
+            asset->lock.release();
 
             for(size_t z = 0; z < 20; z++)
             {
-
                 log::log$("is server destroyed? {}", server->destroyed);
                 log::log$("server: {}", server->handle);
                 log::log$("connection {} kind: {}", i, (uint64_t)server->connections[i].asset->kind);
-                
+
                 log::err$("server_accept_connection: invalid asset kind in connection: {}", (uint64_t)server->connections[i].asset->kind);
                 log::log$("asset ptr: {}", (uint64_t)server->connections[i].asset | fmt::FMT_HEX);
                 auto space = Space::global_space_by_handle(server->parent_space);
@@ -122,21 +122,29 @@ core::Result<AssetPtr> server_accept_connection(KernelIpcServer *server)
                 {
                     log::err$("  connection {} kind: {}", j, (uint64_t)server->connections[j].asset->kind);
                 }
-
             }
             while(true){};
         }
-        if (server->connections[i].asset->ipc_connection->accepted == false)
+
+        if (asset->ipc_connection->accepted == false)
         {
-            server->connections[i].asset->ipc_connection->accepted = true;
-            server->connections[i].asset->ref_count++;
-            auto &conn = server->connections[i];
+            // Modify under the asset lock we already hold
+            asset->ipc_connection->accepted = true;
+            asset->ref_count++;
+            asset->lock.release();
+
+            // Increment server ref_count (already holding server->self->lock)
             server->self->ref_count++;
-            server->lock.release();
+
+            auto conn = server->connections[i];
+            server->self->lock.release();
             return conn;
         }
+
+        // Release asset lock before continuing to next iteration
+        asset->lock.release();
     }
-    server->lock.release();
+    server->self->lock.release();
 
     return core::Result<AssetPtr>::error("no connection available");
 }
@@ -238,7 +246,7 @@ core::Result<IpcMessageServer> update_handle_from_client_to_server(IpcConnection
 
                 message.data[i].asset_handle = try$(asset_move(client_space, server_space, asset_ptr)).handle;
             }
-            else  
+            else
             {
                 message.data[i].asset_handle = try$(asset_copy(client_space, server_space, asset_ptr)).handle;
             }
@@ -283,7 +291,7 @@ core::Result<IpcMessageClient> update_handle_from_server_to_client(IpcConnection
 
                 message.data[i].asset_handle = try$(asset_move(server_space, client_space, asset_ptr)).handle;
             }
-            else  
+            else
             {
                 message.data[i].asset_handle = try$(asset_copy(server_space, client_space, asset_ptr)).handle;
             }

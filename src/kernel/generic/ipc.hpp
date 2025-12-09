@@ -63,7 +63,7 @@ struct IpcMessagePair
             buffer[i] = other.buffer[i];
         }
     }
-    
+
     IpcMessagePair &operator=(IpcMessagePair &&other) noexcept {
         if (this != &other) {
             len = other.len;
@@ -172,7 +172,7 @@ struct ReceivedIpcMessage
 };
 
 
-typedef enum 
+typedef enum
 {
     IPC_STILL_OPEN = 0,
     IPC_CLOSED = 1 << 1,
@@ -191,7 +191,7 @@ struct IpcConnection
     bool accepted;
     IpcConnectionClosedStatus closed_status;
     IpcServerHandle server_handle; // the handle of the server that this connection is connected to
-    
+
     kernel::BlockMutex client_mutex;
     kernel::BlockMutex server_mutex;
     core::Vec<ReceivedIpcMessage> message_sent;
@@ -202,7 +202,6 @@ struct IpcConnection
 struct KernelIpcServer
 {
 
-    core::Lock lock;
     IpcServerHandle handle;
     uint64_t parent_space;
     Asset *self;                     // the asset that represents this server

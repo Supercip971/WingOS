@@ -5,11 +5,6 @@
             "path": "/bin/vfs-wingos"
         },
         {
-            "name": "terminal",
-            "path": "/bin/terminal",
-            "requires": ["compositor"]
-        },
-        {
             "name": "ext4-wingos",
             "path": "/bin/ext4-wingos",
             "requires": ["vfs"]
@@ -17,11 +12,22 @@
         {
             "name": "compositor",
             "path": "/bin/sys-compositor",
-            "requires": ["@fs", "human-interface"]
+            "requires": ["@fs", "human-interface", "clock"]
         },
         {
+            "name": "doomgeneric",
+            "path": "/bin/doomgeneric",
+            "requires": ["human-interface", "clock", "compositor", "@fs"]
+        },
+        {
+
             "name": "ps2",
             "path": "/bin/ps2",
+            "requires": ["@fs"]
+        },
+        {
+            "name": "wingos-clock",
+            "path": "/bin/wingos-clock",
             "requires": ["@fs"]
         }
     ],

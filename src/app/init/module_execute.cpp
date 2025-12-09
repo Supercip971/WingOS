@@ -13,7 +13,7 @@
 #include "wingos-headers/asset.h"
 #include "wingos-headers/startup.hpp"
 
-core::Result<size_t> execute_module(elf::ElfLoader loaded)
+core::Result<size_t> execute_module(mcx::MachineContext* mcx, elf::ElfLoader loaded)
 {
     auto subspace = Wingos::Space::self().create_space();
 
@@ -24,9 +24,9 @@ core::Result<size_t> execute_module(elf::ElfLoader loaded)
     StartupInfo* ptr = (StartupInfo*)startup_info_mapped.ptr();
 
     *ptr = {};
+    ptr->machine_context_optional = *mcx;
 
     auto moved_startup_info = Wingos::Space::self().move_to(subspace, startup_info_mem);
-
     auto vasset = subspace.map_memory(moved_startup_info, ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_READ);
     auto task_asset = subspace.create_task((uintptr_t)loaded.entry_point(), (uintptr_t)vasset.ptr());
 
@@ -45,13 +45,13 @@ core::Result<size_t> execute_module(elf::ElfLoader loaded)
             log::warn$("skipping program header {}: type is not LOAD but {}", i,core::copy(ph.type));
             continue;
         }
-
         auto memory = Wingos::Space::self().allocate_physical_memory(ph.mem_size, false);
 
         auto mapped_self = Wingos::Space::self().map_memory(memory, ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);
 
         void *copied_data = (void *)((uintptr_t)mapped_self.ptr());
         memset(copied_data, 0, ph.mem_size);
+
         memcpy(copied_data,
                (void *)((uintptr_t)loaded.range().start() + ph.file_offset),
                ph.file_size);

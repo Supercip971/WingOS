@@ -4,7 +4,7 @@
 #include "mcx/mcx.hpp"
 #include "libcore/fmt/log.hpp"
 
-core::Result<size_t> execute_module(elf::ElfLoader loaded);
+core::Result<size_t> execute_module(mcx::MachineContext* ctx, elf::ElfLoader loaded);
 
 core::Result<void> startup_module(mcx::MachineContext *context);
 

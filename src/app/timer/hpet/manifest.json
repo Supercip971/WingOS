@@ -1,0 +1,20 @@
+{
+    "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
+    "id": "wingos-clock",
+    "type": "exe",
+    "description": "HPET (x86) server time implementation",
+    
+    "props": {
+        "pkgname": "wingos-clock",
+        "exported": "disk"
+    },
+    "requires": [
+        "libcore",
+        "hw-hpet"
+    ],
+    "enableIf": {
+        "sys": [
+            "wingos"
+        ]
+    }
+}

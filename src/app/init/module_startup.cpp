@@ -39,7 +39,7 @@ VirtRange map_mcx_address(mcx::MemoryRange range)
 
     return VirtRange((uintptr_t)mem, (uintptr_t)mem + phys.len());
 }
-core::Result<size_t> start_service(mcx::MachineContextModule mod)
+core::Result<size_t> start_service(mcx::MachineContext* context, mcx::MachineContextModule mod)
 {
     auto vrange = map_mcx_address(mod.range);
     auto loaded = elf::ElfLoader::load(vrange);
@@ -50,13 +50,13 @@ core::Result<size_t> start_service(mcx::MachineContextModule mod)
         return loaded.error();
     }
 
-    auto v = execute_module(loaded.unwrap());
+    auto v = execute_module(context, loaded.unwrap());
 
     log::log$("[INIT] started boot module: {}", mod.path);
     return v;
 }
 
-core::Result<size_t> start_service_fs(core::Str const &path)
+core::Result<size_t> start_service_fs(mcx::MachineContext* context, core::Str const &path)
 {
 
     log::log$("[INIT] starting module from fs: {}", path);
@@ -86,7 +86,7 @@ core::Result<size_t> start_service_fs(core::Str const &path)
         return loaded.error();
     }
 
-    auto v = execute_module(loaded.unwrap());
+    auto v = execute_module(context, loaded.unwrap());
 
     log::log$("[INIT] started fs module: {}", path);
 
@@ -101,13 +101,13 @@ core::Result<size_t> start_service(mcx::MachineContext *context, core::Str path)
 
         if (core::Str(mod.path) == path)
         {
-            return start_service(mod);
+            return start_service(context, mod);
         }
     }
 
     log::warn$("[INIT] no module found with path: {}", path);
 
-    return start_service_fs(path);
+    return start_service_fs(context, path);
 }
 
 void start_from_pci(wjson::JsonValue *pjson)

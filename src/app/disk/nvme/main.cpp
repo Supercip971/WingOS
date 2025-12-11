@@ -31,6 +31,7 @@ class NvmeController
     uint64_t queue_slots;
     uint64_t max_transfer;
 
+
     uint32_t *nsids;
     void *base_addr;
 
@@ -331,7 +332,10 @@ class NvmeController
 
         log::log$("   - max transfer size: {} bytes ({} blocks)", this->max_transfer | fmt::FMT_HEX, max_lba | fmt::FMT_HEX);
 
-        device.max_phys_rpgs = max_lba / (1 << (12 + cap.memory_page_size_minimum));
+        //device.max_phys_rpgs = max_lba / (1ull << (12 + cap.memory_page_size_minimum));
+        device.max_phys_rpgs = 512; // 512 entry of pages means that the max transfer size is 512 * 4096 = 2MB
+
+        log::log$(" - max phys rpgs: {} ({} / {})", device.max_phys_rpgs, max_lba, 1ull << (12 + cap.memory_page_size_minimum));
 
         device.lba_size = 1 << lba_shift;
 
@@ -380,24 +384,30 @@ public:
         bool need_prp_list = false;
         uintptr_t *prp_list_addr;
 
-        
+
         if (need_prp2 && transfer_size > (space_in_first_page + 4096))
         {
 
-            
+
             need_prp2 = false;
             need_prp_list = true;
 
             // Create PRP List
             size_t prp_list_size = math::alignUp(transfer_size - space_in_first_page, 4096ul);
-            size_t prp_count = math::alignUp(prp_list_size, 4096ul) / 4096; 
+            size_t prp_count = math::alignUp(prp_list_size, 4096ul) / 4096;
 
-            prp_list_addr = dev->io_queues.pgs_reg + (dev->io_queues.cid * sizeof(uintptr_t) * dev->max_phys_rpgs);
+            // Bounds check: ensure we don't overflow the pgs_reg buffer
+            if (prp_count > dev->max_phys_rpgs)
+            {
+                log::log$("transfer size exceeds max PRP entries: {} > {}", prp_count, dev->max_phys_rpgs);
+                return "transfer size exceeds max PRP entries";
+            }
+
+            prp_list_addr = dev->io_queues.pgs_reg + (dev->io_queues.cid * dev->max_phys_rpgs);
             for (size_t i = 0; i < prp_count; i++)
             {
                 prp_list_addr[i] = phys_addr_page + space_in_first_page + (i * 4096);
             }
-
         }
 
         NvmeCmd cmd = {};
@@ -416,7 +426,7 @@ public:
         {
             cmd.prp2 = (uintptr_t)prp_list_addr - USERSPACE_VIRT_BASE;
         }
-        
+
 
         return nvme_await_submit(&cmd, dev->io_queues);
     }
@@ -671,7 +681,7 @@ int main(int, char **)
                     auto res = ep.controller->read_write_ptr(&dev, false, lba, size/512, (void *)(buffer_ptr + USERSPACE_VIRT_BASE + mem_asset_off), size);
 
                 }
-                else 
+                else
                 {
                     auto res = ep.controller->read_write_ptr(&dev, false, lba, size/512, (void *)(buffer_ptr + USERSPACE_VIRT_BASE + mem_asset_off), size);
 
@@ -700,7 +710,7 @@ int main(int, char **)
 
                 uintptr_t buffer_ptr = asset.memory.start();
                 auto &dev = ep.controller->devices[ep.device_id]; // for simplicity only first device
-                auto res = ep.controller->read_write_ptr(&dev, true, lba, size, (void *)(buffer_ptr + USERSPACE_VIRT_BASE), size);
+                auto res = ep.controller->read_write_ptr(&dev, true, lba, size/512, (void *)(buffer_ptr + USERSPACE_VIRT_BASE), size);
 
                 if (res.is_error())
                 {

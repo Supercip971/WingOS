@@ -7,7 +7,6 @@ namespace prot
 class ManagedServer : public core::NoCopy
 {
 
-    core::Vec<Wingos::IpcConnection *> connections;
     IpcServerHandle self_endpoint;
     Wingos::IpcServer ipc_server;
 
@@ -16,7 +15,7 @@ class ManagedServer : public core::NoCopy
 public:
     auto addr() const { return self_endpoint; }
 
-    size_t connection_count() const { return connections.len(); }
+    size_t connection_count() const { return ipc_server.connections.len(); }
     static core::Result<ManagedServer> create_registered_server(core::Str name, uint64_t major = 1, uint64_t minor = 0)
     {
         ManagedServer server = {};
@@ -71,27 +70,18 @@ public:
 
         auto c = ipc_server.accept();
 
-        if (!c.is_error())
+        if(c.is_error())
         {
-            connections.push(c.unwrap());
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 
     Wingos::IpcServer &raw_server() { return ipc_server; }
 
     void disconnect(Wingos::IpcConnection *connection)
     {
-        // Remove from ManagedServer's connections list first
-        for (size_t i = 0; i < connections.len(); i++)
-        {
-            if (connections[i] == connection)
-            {
-                connections.pop(i);
-                break;
-            }
-        }
+
         // Then disconnect from the raw server (which will delete the connection)
         ipc_server.disconnect(connection);
     }
@@ -104,10 +94,9 @@ public:
             return;
         }
 
-        for(size_t i = 0; i < connections.len(); i++)
-        {
-            delete connections[i];
-        }
+        // Clear our local list but don't delete - ipc_server.remove() will handle
+        // releasing assets and deleting the IpcConnection objects
+
         ipc_server.remove();
     }
 
@@ -121,7 +110,7 @@ public:
             return core::Result<Wingos::MessageServerReceived>::error("no message received");
         }
 
-        return core::Result<Wingos::MessageServerReceived>::success(core::move(msg.unwrap()));
+        return msg;
     }
 
     core::Result<void> reply(Wingos::MessageServerReceived &&to, IpcMessage &message)

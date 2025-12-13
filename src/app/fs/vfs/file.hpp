@@ -6,11 +6,12 @@
 #include "libcore/str.hpp"
 
 #include "protocols/vfs/file.hpp"
+#include "protocols/vfs/fsManager.hpp"
 #include "protocols/server_helper.hpp"
 
 struct MountedFs
 {
-    IpcServerHandle endpoint;
+    prot::DiskFsImplementationConnection endpoint;
     core::WStr path;
 };
 

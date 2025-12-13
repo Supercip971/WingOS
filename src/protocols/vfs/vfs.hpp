@@ -2,6 +2,7 @@
 
 #include "iol/wingos/ipc.hpp"
 #include "libcore/str.hpp"
+#include "libcore/type-utils.hpp"
 #include "protocols/init/init.hpp"
 #include "protocols/vfs/file.hpp"
 #include "wingos-headers/ipc.h"
@@ -35,12 +36,49 @@ struct VfsMount
     core::Str device_name;
 };
 
-class VfsConnection
+class VfsConnection : public core::NoCopy
 {
     Wingos::IpcClient connection;
+    bool connected = false;
 
 public:
     Wingos::IpcClient &raw_client() { return connection; }
+
+    ~VfsConnection()
+    {
+        if (connected)
+        {
+            connection.disconnect();
+            connected = false;
+        }
+    }
+
+    // Disable copy to prevent double-disconnect
+    VfsConnection(const VfsConnection&) = delete;
+    VfsConnection& operator=(const VfsConnection&) = delete;
+
+    // Enable move
+    VfsConnection(VfsConnection&& other) : connection(other.connection), connected(other.connected)
+    {
+
+        other.connected = false;
+    }
+    VfsConnection& operator=(VfsConnection&& other)
+    {
+        if (this != &other)
+        {
+            if (connected)
+            {
+                connection.disconnect();
+            }
+            connection = other.connection;
+            connected = other.connected;
+            other.connected = false;
+        }
+        return *this;
+    }
+
+    VfsConnection() = default;
 
     core::Result<void> register_device(core::Str name, IpcServerHandle endpoint)
     {
@@ -74,6 +112,7 @@ public:
         VfsConnection vfs_conn;
         vfs_conn.connection = Wingos::Space::self().connect_to_ipc_server(handle);
         vfs_conn.connection.wait_for_accept();
+        vfs_conn.connected = true;
         return vfs_conn;
     }
 
@@ -90,6 +129,7 @@ public:
         auto handle = try$(v.get_server(core::Str("vfs"), 1, 0)).endpoint;
         vfs_conn.connection = Wingos::Space::self().connect_to_ipc_server(handle);
         vfs_conn.connection.wait_for_accept();
+        vfs_conn.connected = true;
         return vfs_conn;
     }
 
@@ -135,21 +175,21 @@ public:
         }
         IpcServerHandle file_endpoint = msg.data[1].data;
         auto file_res = FsFile::connect(file_endpoint);
-        if (file_res.is_error())
-        {
-            return file_res.error();
-        }
-        return file_res.unwrap();
+
+        return file_res;
     }
 
 
     core::Result<FsFile> open_path(core::Str const & path)
     {
+        log::log$("VfsConnection::open_path: opening path {}", path.view());
         if(path[0] != '/')
         {
+            log::warn$("FIXME: path must be absolute");
             return ("only absolute paths are supported");
         }
 
+        log::log$("opening path {}", path.view());
         auto root_res = try$(open_root());
         auto current_dir = core::move(root_res);
         auto components = path.substr(1).split('/');

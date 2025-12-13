@@ -11,6 +11,7 @@
 #include "protocols/init/init.hpp"
 #include "protocols/vfs/fsManager.hpp"
 #include "protocols/vfs/vfs.hpp"
+#include "wingos-headers/ipc.h"
 #include "wingos-headers/syscalls.h"
 
 struct RegisteredDevicePartition
@@ -46,8 +47,8 @@ struct RegisteredFs
     char name[80];
     prot::DiskFsManagerConnection endpoint;
 };
-core::Vec<RegisteredDevice> registered_services {};
-core::Vec<RegisteredFs> registered_fs {};
+core::Vec<RegisteredDevice> registered_services{};
+core::Vec<RegisteredFs> registered_fs{};
 size_t mounted_devices_count = 0;
 
 void try_create_disk_endpoint()
@@ -99,7 +100,7 @@ void try_create_disk_endpoint()
     }
 }
 
-int main(int, char**)
+int main(int, char **)
 {
 
     // attempt connection to server ID 0
@@ -123,10 +124,18 @@ int main(int, char**)
         auto received = server.try_receive();
 
         update_all_endpoints();
+
         if (!received.is_error())
         {
             auto msg = core::move(received.unwrap());
 
+            if (msg.received.flags & IPC_MESSAGE_FLAG_DISCONNECT)
+            {
+                log::log$("Received disconnect message");
+
+                server.disconnect(msg.connection);
+                continue;
+            }
             bool recheck_mount = false;
             switch (msg.received.data[0].data)
             {
@@ -149,7 +158,6 @@ int main(int, char**)
                 auto v2_res = Wingos::parse_gpt(v);
                 auto v2 = v2_res.take();
 
-                
                 size_t part_id = 0;
                 for (auto &entry : v2.entries)
                 {
@@ -205,13 +213,15 @@ int main(int, char**)
 
                         reply.data[0].data = 0; // failure
                         reply.data[1].data = 0;
-                        break;
+                        log::err$("(server) failed to open root endpoint: {}", root_endpoint.error());
                     }
+                    else
+                    {
+                        auto root_res = root_endpoint.unwrap();
+                        reply.data[1].data = root_res->server.addr();
 
-                    auto root_res = root_endpoint.unwrap();
-                    reply.data[1].data = root_res->server.addr();
-
-                    log::log$("(server) provided root access with endpoint: {}", reply.data[1].data);
+                        log::log$("(server) provided root access with endpoint: {}", reply.data[1].data);
+                    }
                 }
                 else
                 {

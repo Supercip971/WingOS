@@ -12,6 +12,12 @@ enum DiskFsManagerMessageType
     DISK_FS_UNMOUNT = 2,
 };
 
+
+
+enum DiskImplementationMessageType
+{
+    DISK_CREATE_ROOT_ENDPOINT = 1,
+};
 struct MountedDiskResult
 {
     IpcServerHandle fs_endpoint;
@@ -80,6 +86,34 @@ public:
         result.success = msg.data[0].data != 0;
         return result;
     };
+};
+
+
+class DiskFsImplementationConnection 
+{
+    Wingos::IpcClient connection;
+public:
+    static core::Result<DiskFsImplementationConnection> connect(IpcServerHandle fs_endpoint)
+    {
+        DiskFsImplementationConnection conn;
+        conn.connection = Wingos::Space::self().connect_to_ipc_server(fs_endpoint);
+        conn.connection.wait_for_accept();
+        return core::Result<DiskFsImplementationConnection>::success(core::move(conn)); 
+    }
+
+
+    core::Result<IpcServerHandle> create_root_endpoint()
+    {
+        IpcMessage message = {};
+        message.data[0].data = DISK_CREATE_ROOT_ENDPOINT;
+
+        auto msg = try$(connection.call(message));
+
+        IpcServerHandle endpoint = msg.data[1].data;
+        return endpoint;
+    };
+
+    
 };
 
 }

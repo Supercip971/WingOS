@@ -55,7 +55,7 @@ enum FsFileMessageType
 
 };
 
-struct FsFileCacheEntry 
+struct FsFileCacheEntry
 {
     uint64_t offset;
     uint64_t size;
@@ -69,7 +69,7 @@ class FsFile
     bool keep_alive = false;
     core::Vec<FsFileCacheEntry> cache_entries;
 
-    
+
     void add_cache_entry(uint64_t offset, uint64_t size, Wingos::MemoryAsset &asset, Wingos::VirtualMemoryAsset &mapped)
     {
         FsFileCacheEntry entry = {};
@@ -78,7 +78,7 @@ class FsFile
         entry.asset = asset;
         entry.mapped = mapped;
         entry.score = 1;
-       
+
         if(cache_entries.len() > 256)
         {
             // evict lowest score
@@ -98,7 +98,7 @@ class FsFile
             Wingos::Space::self().release_asset( cache_entries[lowest_score_index].asset);
             cache_entries[lowest_score_index] = entry;
         }
-        else  
+        else
         {
 
             cache_entries.push(entry);
@@ -115,15 +115,53 @@ public:
         }
         cache_entries.clear();
     }
+
+    // Disable copy to prevent double-close issues
+    FsFile(const FsFile&) = delete;
+    FsFile& operator=(const FsFile&) = delete;
+
+    // Enable move
+    FsFile(FsFile&& other)
+        : connection(other.connection)
+        , keep_alive(other.keep_alive)
+        , cache_entries(core::move(other.cache_entries))
+    {
+    }
+
+    FsFile& operator=(FsFile&& other)
+    {
+        if (this != &other)
+        {
+            // Clean up our existing cache entries
+            for(size_t i = 0; i < cache_entries.len(); i++)
+            {
+                Wingos::Space::self().release_asset( cache_entries[i].mapped);
+                Wingos::Space::self().release_asset( cache_entries[i].asset);
+            }
+            cache_entries.clear();
+
+            core::swap(connection, other.connection);
+            core::swap(keep_alive, other.keep_alive);
+
+            cache_entries = core::move(other.cache_entries);
+        }
+        return *this;
+    }
+
+    FsFile() = default;
+
     Wingos::IpcClient &raw_client() { return connection; }
 
     static core::Result<FsFile> connect(IpcServerHandle fs_endpoint, bool keep_alive = false)
     {
+        log::log$("FsFile::connect: connecting to server endpoint {}", fs_endpoint);
         FsFile file = {};
         file.connection = Wingos::Space::self().connect_to_ipc_server(fs_endpoint);
+        log::log$("FsFile::connect: created connection handle {}, waiting for accept...", file.connection.handle);
         file.keep_alive = keep_alive;
         file.connection.wait_for_accept();
-        
+        log::log$("FsFile::connect: connection {} accepted", file.connection.handle);
+
         return (file);
     }
 
@@ -143,7 +181,7 @@ public:
     }
 
 
-    
+
     core::Result<size_t> read(void* buffer, size_t offset, size_t len)
     {
         if (len == 0)
@@ -165,14 +203,14 @@ public:
 
         size_t aoffset = math::alignDown(offset, 4096ul);
 
-        size_t alen = math::alignUp(len + offset, 4096ul) - aoffset;
+        size_t alen = math::alignUp(len*2 + offset, 4096ul) - aoffset;
 
         size_t delta_offset = offset - aoffset;
         Wingos::MemoryAsset masset = Wingos::Space::self().allocate_physical_memory(alen);
 
 
         auto res = try$(this->read(masset, aoffset, alen));
-        
+
         Wingos::VirtualMemoryAsset mapped = Wingos::Space::self().map_memory(masset, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
         memcpy(buffer, (void *)((uintptr_t)mapped.ptr() + delta_offset), len);
 
@@ -335,34 +373,19 @@ public:
         }
         message.len = path_len;
 
-        auto sended_message = connection.send(message, true);
-        auto message_handle = sended_message.unwrap();
-        if (sended_message.is_error())
+        auto received = connection.call(message);
+
+        auto msg = core::move(received.unwrap());
+
+
+        if(msg.data[0].data == 0)
         {
-            return ("failed to send open file message");
+            return ("failed to open file");
         }
 
-        while (true)
-        {
-            auto received = connection.receive_reply(message_handle);
-            if (!received.is_error())
-            {
-                auto msg = core::move(received.unwrap());
-
-                if (msg.data[0].data == 0)
-                {
-                    return ("failed to open file");
-                }
-
-                IpcServerHandle file_endpoint = msg.data[1].data;
-                auto file_res = FsFile::connect(file_endpoint);
-                if (file_res.is_error())
-                {
-                    return file_res.error();
-                }
-                return file_res.unwrap();
-            }
-        }
+        IpcServerHandle file_endpoint = msg.data[1].data;
+        auto file_res = FsFile::connect(file_endpoint);
+        return file_res;
     }
 };
 

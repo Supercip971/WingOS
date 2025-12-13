@@ -7,6 +7,7 @@
 #include "libcore/alloc/alloc.hpp"
 #include "libcore/ds/array.hpp"
 #include "libcore/logic.hpp"
+#include "libcore/result.hpp"
 namespace core
 {
 template <typename T>
@@ -157,6 +158,15 @@ public:
         return Result<void>();
     }
 
+    T& last ()
+    {
+        return _data[_count - 1];
+    }
+
+    T& last () const
+    {
+        return _data[_count - 1];
+    }
     Result<void> push(const T &value)
     {
         try$(reserve(_count + 1));
@@ -222,11 +232,15 @@ public:
         if (_count > 0)
         {
             _count--;
-            return (_data[_count]);
+            return core::move(_data[_count]);
         }
+
+
+        Result<void>("empty").unwrap();
 
         while (true)
         {
+
         };
         // abort();
     }

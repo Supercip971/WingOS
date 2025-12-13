@@ -133,7 +133,7 @@ namespace IsConvertibleImpl
    template<class T> 
    auto test_returnable(int) -> decltype(
     void(static_cast<T(*)()>(nullptr)), TrueType{}    
-); 
+   ); 
 
     template<class> 
     auto test_returnable(...) -> FalseType;
@@ -170,5 +170,9 @@ concept IsConvertibleTo = IsImplicitlyConvertible<From, To>::value;
 template <typename From, typename To>
 concept IsConvertibleTo = __is_convertible_to(From, To);
 #endif
+
+// Check if a type is default constructible
+template <class T>
+concept IsDefaultConstructible = requires { T{}; };
  
 } // namespace core

@@ -83,9 +83,13 @@ union Storage
     {
         new (_data) T(_other.value());
     }
+
+    // Returns a default-constructed T
+    // Note: This requires T to be default-constructible
     static constexpr T empty()
+        requires core::IsDefaultConstructible<T>
     {
-        return (Storage().value());
+        return T{};
     }
 
     // template<typename ...Args>
@@ -117,7 +121,7 @@ public:
     {
         if (_contain_value)
         {
-            _value.value() = other.value();
+            new (&_value) Storage<Type>(other._value);
         }
     }
     constexpr Optional(Optional &&other) : 
@@ -132,15 +136,18 @@ public:
 
     constexpr Optional &operator=(const Optional &other)
     {
+        if (this == &other)
+        {
+            return *this;
+        }
 
         if (other.has_value() && _contain_value)
         {
-            _value.value() = (*other);
+            _value.value() = other._value.value();
         }
         else if (other.has_value() && !_contain_value)
         {
-            _value.value() = core::move(*(other));
-
+            new (&_value) Storage<Type>(other._value);
             _contain_value = true;
         }
         else if (!other.has_value() && _contain_value)
@@ -159,7 +166,7 @@ public:
         }
         else
         {
-            _value.value() = value;
+            new (&_value) Storage<Type>(value);
             _contain_value = true;
         }
         return *this;
@@ -173,7 +180,7 @@ public:
         }
         else
         {
-            _value.value() = core::move(value);
+            new (&_value) Storage<Type>(core::move(value));
             _contain_value = true;
         }
         return *this;
@@ -181,14 +188,19 @@ public:
 
     constexpr Optional &operator=(Optional &&other)
     {
+        if (this == &other)
+        {
+            return *this;
+        }
 
         if (other.has_value() && _contain_value)
         {
-            _value.value() = core::move(other._value.retreive());
+            _value.value() = core::move(other._value.value());
+            other._contain_value = false;
         }
         else if (other.has_value() && !_contain_value)
         {
-            _value.value() = core::move(other._value.retreive());
+            new (&_value) Storage<Type>(core::move(other._value.value()));
             other._contain_value = false;
             _contain_value = true;
         }

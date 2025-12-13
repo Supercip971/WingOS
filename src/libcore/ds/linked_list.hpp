@@ -5,7 +5,6 @@
 #include "libcore/optional.hpp"
 #include "libcore/type-utils.hpp"
 #include "libcore/type/trait.hpp"
-#pragma once
 
 #include <libcore/mem/view.hpp>
 namespace core

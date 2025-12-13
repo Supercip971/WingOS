@@ -23,7 +23,7 @@ public:
 
 
     union {
-        ValueType _value; 
+        ValueType _value;
         ErrorType _error;
     };
 
@@ -63,7 +63,7 @@ public:
     constexpr Result &operator=(Result &&other)
     {
         if (this == &other) return *this;
-        
+
         // Destroy current value
         if(_is_error)
         {
@@ -73,7 +73,7 @@ public:
         {
             _value.~ValueType();
         }
-        
+
         // Construct new value
         _is_error = other._is_error;
         if(_is_error)
@@ -161,8 +161,6 @@ public:
     constexpr Result() : _error("empty result"), _is_error(false) {}
 
     constexpr Result(const ErrT &error) : _error(error), _is_error(true) {}
-
-    constexpr Result(Result const &other) : _error(other._error), _is_error(other._is_error) {}
 
     constexpr Result(ErrT &&error) : _error(core::move(error)), _is_error(true){}
 

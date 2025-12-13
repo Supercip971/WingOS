@@ -26,7 +26,7 @@ struct IpcServer : public UAsset
 
     void disconnect(IpcConnection *connection)
     {
-        for (size_t i = 0; i < connections.len(); i++)
+        for (size_t i = 0; i < connections.len();)
         {
             if (connections[i] == connection)
             {
@@ -34,7 +34,10 @@ struct IpcServer : public UAsset
                 delete connections[i];
 
                 connections.pop(i);
-                i--;
+            }
+            else
+            {
+                i++;
             }
         }
     }
@@ -57,7 +60,7 @@ struct IpcServer : public UAsset
             IpcConnection *connection = new IpcConnection();
             connection->handle = res.connection_handle;
             connections.push(connection);
-            
+
             return core::Result<IpcConnection *>::success(connection);
         }
         return core::Result<IpcConnection *>::error("failed to accept connection");
@@ -70,8 +73,7 @@ struct IpcServer : public UAsset
         auto res = sys$ipc_receive_server(block, space_handle, this->handle, connection_handle, &res_message);
         if (res.contain_response)
         {
-
-            MessageServerReceived msg;
+            MessageServerReceived msg = {};
             msg.received = core::move(res_message);
             msg.received.message_id = res.returned_msg_handle;
             return core::Result<MessageServerReceived>::success(core::move(msg));
@@ -94,6 +96,7 @@ struct IpcServer : public UAsset
             sys$asset_release(space_handle, connections[i]->handle);
             delete connections[i];
         }
+        connections.clear();
         sys$asset_release(space_handle, this->handle);
     }
 
@@ -108,6 +111,7 @@ struct IpcServer : public UAsset
             }
             auto v = core::move(res.unwrap());
             v.connection = connection;
+
             return v;
         }
         return core::Result<MessageServerReceived>::error("no connection available to receive message");
@@ -128,7 +132,7 @@ public:
 
     static IpcClient from(uint64_t space_handle, uint64_t connection)
     {
-        IpcClient client = {}; 
+        IpcClient client = {};
         client.handle = connection;
         client.associated_space_handle = space_handle;
         return client;

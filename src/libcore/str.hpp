@@ -3,11 +3,7 @@
 #include <libcore/mem/view.hpp>
 #include <libcore/type-utils.hpp>
 #include <stddef.h>
-
-
-#include "libcore/ds/vec.hpp"
-
-
+#include <libcore/ds/vec.hpp>
 
 namespace core
 {
@@ -193,7 +189,6 @@ public:
     {
         return _len == 0;
     }
-
     constexpr void copy_to(char *buffer, size_t buffer_len) const
     {
         size_t len = _len;

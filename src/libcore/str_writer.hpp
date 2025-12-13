@@ -75,10 +75,9 @@ namespace core
 
         WStr(WStr &&other)
         {
-
-            this->_data = core::move(other._data);
-            this->_len = core::move(other._len);
-            this->_capacity = core::move(other._capacity);
+            this->_data = other._data;
+            this->_len = other._len;
+            this->_capacity = other._capacity;
             other._data = nullptr;
             other._len = 0;
             other._capacity = 0;

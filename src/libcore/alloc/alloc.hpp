@@ -27,6 +27,8 @@ static inline Result<void *> mem_alloc(size_t bytes)
     return v;
 }
 
+
+
 template <typename T>
 static inline Result<T *> mem_alloc(size_t count)
 {

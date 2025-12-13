@@ -43,6 +43,10 @@ extern "C"
             uint64_t data;         // the data for the IPC message
             uint64_t asset_handle; // the handle of the asset
         };
+
+#ifdef __cplusplus
+        constexpr IpcData() : is_asset(false), copy_asset(false), _reserved_is_mapping(false), data(0) {}
+#endif
     };
 
 #ifdef __cplusplus

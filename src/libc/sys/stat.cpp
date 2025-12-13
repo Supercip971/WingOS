@@ -4,30 +4,35 @@
 
 int stat(const char *__restrict path, struct stat *__restrict buf)
 {
-    auto file_conn = prot::VfsConnection::connect();
+    auto file_conn_res = prot::VfsConnection::connect();
 
-
-
-    if (file_conn.is_error())
+    if (file_conn_res.is_error())
     {
         return -1;
     }
 
-    auto file_res = file_conn.unwrap().open_path((core::Str(path)));
+    auto file_conn = file_conn_res.take();
+
+    auto file_res = file_conn.open_path((core::Str(path)));
 
     if (file_res.is_error())
     {
+        file_conn.raw_client().disconnect();
         return -1;
     }
 
-    auto info_res = file_res.unwrap().get_info();
+    auto file = file_res.take();
+
+    auto info_res = file.get_info();
 
     if (info_res.is_error())
     {
+        file.close();
+        file_conn.raw_client().disconnect();
         return -1;
     }
 
-    auto info = core::move(info_res.unwrap());
+    auto info = info_res.take();
 
     buf->st_dev = 0;
     buf->st_ino = 0;
@@ -43,7 +48,7 @@ int stat(const char *__restrict path, struct stat *__restrict buf)
     buf->st_blksize = 4096;
     buf->st_blocks = (info.size + 511) / 512;
 
-    file_res.unwrap().close();
-    file_conn.unwrap().raw_client().disconnect();
-    return -1;
+    file.close();
+    file_conn.raw_client().disconnect();
+    return 0;
 }

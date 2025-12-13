@@ -68,9 +68,11 @@ core::Result<size_t> execute_program_from_mem(Wingos::Space &subspace, elf::ElfL
 
 core::Result<size_t> execute_program_from_path(Wingos::Space& subspace, const core::Str & path, StartupInfo const & args)
 {
-    auto file_asset = prot::VfsConnection::connect().unwrap().open_path(path).unwrap();
+    auto vfs_conn = try$(prot::VfsConnection::connect());
+    auto file_asset = try$(vfs_conn.open_path(path));
 
-    auto file_size = file_asset.get_info().unwrap().size;
+    auto file_info = try$(file_asset.get_info());
+    auto file_size = file_info.size;
     auto mem_size = math::alignUp(file_size, 4096ul);
 
     auto data_asset = Wingos::Space::self().allocate_physical_memory(mem_size);

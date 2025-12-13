@@ -177,8 +177,8 @@ int main(int, char **)
             auto res = receiver_pipe.receive_message();
             if (!res.is_error())
             {
-
-                add_str(core::Str((const char *)res.unwrap().raw_buffer, res.unwrap().len));
+                auto msg = res.take();
+                add_str(core::Str((const char *)msg.raw_buffer, msg.len));
             }
             else
             {

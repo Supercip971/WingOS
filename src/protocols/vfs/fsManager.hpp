@@ -31,7 +31,7 @@ class DiskFsManagerConnection
 public:
     static core::Result<DiskFsManagerConnection> connect(core::Str fs_name)
     {
-        DiskFsManagerConnection conn;
+        DiskFsManagerConnection conn = {};
         auto reg = InitConnection::connect();
         if (reg.is_error())
         {
@@ -46,7 +46,7 @@ public:
 
     static core::Result<DiskFsManagerConnection> connect(IpcServerHandle fs_endpoint)
     {
-        DiskFsManagerConnection conn;
+        DiskFsManagerConnection conn = {};
         conn.connection = Wingos::Space::self().connect_to_ipc_server(fs_endpoint);
         conn.connection.wait_for_accept();
         return core::Result<DiskFsManagerConnection>::success(core::move(conn));

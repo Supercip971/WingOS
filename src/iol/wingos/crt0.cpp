@@ -148,7 +148,17 @@ int iol_change_cwd(const char *path)
     if (path[0] == '/')
     {
         _pwd->close();
-        *_pwd = prot::VfsConnection::connect().unwrap().open_root().unwrap();
+        auto vfs_conn = prot::VfsConnection::connect();
+        if (vfs_conn.is_error())
+        {
+            return -1;
+        }
+        auto root = vfs_conn.unwrap().open_root();
+        if (root.is_error())
+        {
+            return -1;
+        }
+        *_pwd = root.take();
         *cwd = "/";
         path++;
     }
@@ -165,7 +175,7 @@ int iol_change_cwd(const char *path)
         {
             return -1;
         }
-        auto new_f = n.unwrap();
+        auto new_f = core::move(n.unwrap());
 
         core::swap(new_f, *_pwd);
 
@@ -176,11 +186,20 @@ int iol_change_cwd(const char *path)
 
     return 0;
 }
+ extern "C"
+__attribute__((weak)) int __cxa_atexit(void (*destructor) (void *), void *arg, void *__dso_handle)
+{
+    (void)destructor;
+    (void)arg;
+    (void)__dso_handle;
+    return 0;
+}
+__attribute__((weak)) void* __dso_handle;
+
 
 static WingosLogger logger;
 extern "C" __attribute__((weak)) void _entry_point(StartupInfo *context)
 {
-
     asm volatile("andq $-16, %rsp");
     _index = 0;
     logger= {};
@@ -200,7 +219,7 @@ extern "C" __attribute__((weak)) void _entry_point(StartupInfo *context)
         use_stdout = true;
         set_stdout_pipe(&_stdout_pipe);
     }
-    else 
+    else
     {
         stdout = new FILE();
         stdout->kind = FILE_KIND_WRITER;
@@ -215,12 +234,12 @@ extern "C" __attribute__((weak)) void _entry_point(StartupInfo *context)
                            .unwrap();
         set_stderr_pipe(&_stderr_pipe);
     }
-    else  
+    else
     {
         stderr = new FILE();
         stderr->kind = FILE_KIND_WRITER;
         stderr->writer = &logger;
-        
+
     }
 
     if (context->stdin_handle != 0)
@@ -233,7 +252,7 @@ extern "C" __attribute__((weak)) void _entry_point(StartupInfo *context)
                           .unwrap();
         set_stdin_pipe(&_stdin_pipe);
     }
-    else 
+    else
     {
         stdin = new FILE();
         stdin->kind = FILE_KIND_READER;

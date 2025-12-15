@@ -119,11 +119,11 @@ int main(int, char **)
 
     while (true)
     {
-        server.accept_connection();
-
-        auto received = server.try_receive();
 
         update_all_endpoints();
+        auto received = server.try_receive();
+
+        server.accept_connection();
 
         if (!received.is_error())
         {

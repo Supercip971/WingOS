@@ -13,7 +13,7 @@ enum VfsMessageType
     VFS_REGISTER = 0,
     VFS_MOUNT = 1,
     VFS_UNMOUNT = 2,
-    VFS_ROOT_ACCESS = 3,
+    VFS_ROOT_ACCESS = 255,
     VFS_PWD_ACCESS = 4,
     VFS_REGISTER_FS = 13,
 };
@@ -119,7 +119,7 @@ public:
 
     static core::Result<VfsConnection> connect()
     {
-        VfsConnection vfs_conn;
+        VfsConnection vfs_conn = {};
         auto reg = InitConnection::connect();
         if (reg.is_error())
         {
@@ -127,6 +127,7 @@ public:
         }
         auto v = reg.unwrap();
         auto handle = try$(v.get_server(core::Str("vfs"), 1, 0)).endpoint;
+
         vfs_conn.connection = Wingos::Space::self().connect_to_ipc_server(handle);
         vfs_conn.connection.wait_for_accept();
         vfs_conn.connected = true;

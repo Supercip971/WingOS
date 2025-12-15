@@ -1,11 +1,12 @@
-#pragma once 
+#pragma once
 
 
 
+#include "libcore/str_writer.hpp"
 #include "protocols/pipe/pipe.hpp"
 #include "protocols/vfs/file.hpp"
 
-enum FILEKind 
+enum FILEKind
 {
     FILE_KIND_VOID = 0,
     FILE_KIND_FILE,
@@ -15,17 +16,18 @@ enum FILEKind
     FILE_KIND_READER
 };
 
-struct FILE 
+struct FILE
 {
-    FILEKind kind; 
+    FILEKind kind;
     size_t cursor;
     int eof_flag;
     int error_flag;
     int ungetc_buf;  // -1 if empty, otherwise the ungotten char
+    core::WStr buffer;
 
     union {
         prot::FsFile* file;
-        prot::SenderPipe* output; 
+        prot::SenderPipe* output;
         prot::ReceiverPipe* input;
         core::Writer* writer;
         core::Reader* reader;

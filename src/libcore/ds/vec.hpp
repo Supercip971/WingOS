@@ -83,6 +83,11 @@ public:
             _data[_count + i] = core::move(other._data[i]);
         }
         _count += other._count;
+        core::mem_free(other._data);
+
+        other._capacity = 0;
+        other._data = nullptr;
+        other._count = 0;
 
         return *this;
     }
@@ -163,7 +168,7 @@ public:
         return _data[_count - 1];
     }
 
-    T& last () const
+    T const& last () const
     {
         return _data[_count - 1];
     }

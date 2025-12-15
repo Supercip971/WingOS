@@ -42,10 +42,8 @@ core::Result<VfsFileEndpoint *> VfsFileEndpoint::open_root()
 
 
             auto root_endpoint = try$(mounted_filesystems[i].endpoint.create_root_endpoint());
-            
-            log::log$("VFS: opening root filesystem endpoint: {}", root_endpoint);
-            auto connect_res = prot::FsFile::connect(
-                root_endpoint);
+
+            auto connect_res = prot::FsFile::connect(root_endpoint);
             if (connect_res.is_error())
             {
                 log::err$("VFS: failed to connect to root filesystem: {}", connect_res.error());
@@ -101,7 +99,7 @@ void close_endpoint(VfsFileEndpoint *endpoint)
 
 void update_all_endpoints()
 {
-    for (auto endpoint : opened_file_endpoints)
+    for (auto& endpoint : opened_file_endpoints)
     {
         // Always try to accept new connections (there may be multiple pending)
         while (endpoint->server.accept_connection())
@@ -202,17 +200,7 @@ void update_all_endpoints()
                 // Note: FS_CLOSE is no longer sent by FsFile::close() - it just disconnects.
                 // This code path should not be reached anymore, but keeping it for safety.
                 // The actual cleanup happens when IPC_MESSAGE_FLAG_DISCONNECT is received above.
-                log::err$("VfsFileEndpoint: received explicit FS_CLOSE (deprecated path) - THIS IS A BUG!");
-                log::err$("  message_id: {}", msg.received.message_id);
-                log::err$("  flags: {}", msg.received.flags);
-
-                int a= msg.received.data[0].is_asset;
-
-                int b= msg.received.data[1].is_asset;
-                log::err$("  data[0]: is_asset={}, data={}", a, msg.received.data[0].data);
-                log::err$("  data[1]: is_asset={}, data={}", b, msg.received.data[1].data);
-                log::err$("  len: {}", msg.received.len);
-                log::err$("  connection ptr: {}", (uint64_t)msg.connection);
+                log::warn$("VfsFileEndpoint: received FS_CLOSE message (deprecated path)");
                 break;
             }
             default:

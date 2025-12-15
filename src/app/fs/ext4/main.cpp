@@ -29,7 +29,7 @@ struct Ext4FileEndpoint
 
 
 
-struct Ext4FsEndpoint 
+struct Ext4FsEndpoint
 {
     core::Vec<Ext4FileEndpoint *> ext4_file_endpoints = {};
     Ext4Filesystem *attached_fs;
@@ -237,8 +237,8 @@ core::Result<void> update_endpoints(Ext4FsEndpoint* dev)
         {
             case prot::DISK_CREATE_ROOT_ENDPOINT:
             {
-                /* 
-                
+                /*
+
                 .inode = dfs_res.read_inode(2).unwrap(),
                 .root_server = ms.take(),
                 .attached_fs = new Ext4Filesystem(dfs_res)});
@@ -259,7 +259,7 @@ core::Result<void> update_endpoints(Ext4FsEndpoint* dev)
                 break;
             }
 
-            default: 
+            default:
             {
                 log::warn$("ext4: unknown message type received (root endpoint): {}", msg.received.data[0].data);
                 break;
@@ -275,7 +275,7 @@ core::Result<void> update_endpoints(Ext4FsEndpoint* dev)
             return {};
         }
     }
-    
+
     return {};
 }
 
@@ -374,7 +374,7 @@ int main(int, char **)
             Ext4FsEndpoint* new_fs_endpoint = new Ext4FsEndpoint{
                 .attached_fs = new Ext4Filesystem(dfs_res),
                 .root_server = ms.take(),
-                
+
             };
             ext4_fs_endpoints.push(new_fs_endpoint);
             IpcMessage reply = {};

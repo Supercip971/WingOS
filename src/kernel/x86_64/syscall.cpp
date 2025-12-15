@@ -11,6 +11,7 @@
 #include "libcore/fmt/log.hpp"
 #include "libcore/lock/lock.hpp"
 #include "wingos-headers/asset.h"
+#include "kernel/generic/ipc.hpp"
 #include "kernel/generic/space.hpp"
 
 namespace arch::amd64
@@ -45,9 +46,10 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
     //  log("syscall", LOG_INFO, "called syscall higher handler in: {} (stack: {})", stackframe->rip, stackframe->rsp);
 
     SyscallStackFrame* stackframe = sf;
-    
+
     Cpu::enter_syscall_safe_mode();
     Cpu::current()->debug_saved_syscall_stackframe = stackframe->rbp;
+
 
     auto res = syscall_handle({
         .id = (uint32_t)stackframe->rax,
@@ -64,24 +66,31 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
     if (res.is_error())
     {
 
-        Cpu::end_syscall(); // early end syscall mode, 
+        Cpu::end_syscall(); // early end syscall mode,
         log::err$("syscall error: {}", res.error());
         log::log$("syscall id: {}", stackframe->rax);
         log::log$("syscall args: {}, {}, {}, {}, {}, {}", stackframe->rbx, stackframe->rdx, stackframe->rsi, stackframe->rdi, stackframe->r8, stackframe->r9);
         log::log$("task: {}", Cpu::current()->currentTask() ? Cpu::current()->currentTask()->uid() : -1);
-        
+
 
         log::log$("task stacktrace dump:");
         dump_stackframe((void *)stackframe->rbp);
-            
-            
+
+
         log::log$("task space({}) dump:", Cpu::current()->currentTask()->space()->uid);
 
-    
+
         auto space = Cpu::current()->currentTask()->space();
         for(size_t i = 0; i < space->assets.len(); i++)
         {
             log::log$("  Asset[{}]: handle={}, kind={}", i, space->assets[i].handle, assetKind2Str(space->assets[i].asset->kind));
+
+            if(space->assets[i].asset->kind == OBJECT_KIND_IPC_CONNECTION)
+            {
+                IpcConnection *ipc_conn = space->assets[i].asset->ipc_connection;
+
+                log::log$("    IPC Connection: accepted={}, msg_count={}", ipc_conn->accepted, ipc_conn->message_sent.len());
+            }
         }
         while(true)
         {}

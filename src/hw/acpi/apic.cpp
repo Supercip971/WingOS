@@ -129,7 +129,7 @@ core::Result<void> _raw_redirect_interrupt(LCpuId cpu, uint8_t vector, bool enab
 {
     auto ioapic_index = try$(IOApic::query_from_irq(target_gsi));
 
-    auto &ioapic = IOApic::get(ioapic_index);
+    auto *ioapic = try$(IOApic::get(ioapic_index));
 
     IoapicRedirectionReg final = {0};
 
@@ -155,7 +155,7 @@ core::Result<void> _raw_redirect_interrupt(LCpuId cpu, uint8_t vector, bool enab
 
     final.val.destination = arch_cpu->lapic();
 
-    ioapic.redirect(target_gsi - ioapic.interrupt_base(), final);
+    ioapic->redirect(target_gsi - ioapic->interrupt_base(), final);
 
     return {};
 }

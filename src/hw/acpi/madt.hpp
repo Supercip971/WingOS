@@ -152,7 +152,7 @@ struct [[gnu::packed]] Madt
 
     MadtEntry *end()
     {
-        return reinterpret_cast<MadtEntry *>(reinterpret_cast<uint8_t *>(this) + len());
+        return reinterpret_cast<MadtEntry *>(reinterpret_cast<uint8_t *>(entries) + len());
     }
 
     MadtEntry *next(MadtEntry *entry)

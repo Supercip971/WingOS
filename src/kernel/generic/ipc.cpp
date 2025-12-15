@@ -1,5 +1,6 @@
 #include "ipc.hpp"
 
+#include "iol/wingos/space.hpp"
 #include "kernel/generic/asset.hpp"
 #include "kernel/generic/space.hpp"
 #include "libcore/ds/vec.hpp"
@@ -14,10 +15,10 @@ struct KernelIpcServerRegistered
     KernelIpcServer *server;
 };
 
-uint64_t next_free_ipc_server_handle = 16;
+static uint64_t next_free_ipc_server_handle = 16;
 
-core::Lock ipc_server_lock;
-core::Vec<KernelIpcServerRegistered> registered_servers = {};
+static core::Lock ipc_server_lock;
+static core::Vec<KernelIpcServerRegistered> registered_servers = {};
 
 KernelIpcServer *register_server(IpcServerHandle handle, uint64_t space_handle)
 {
@@ -41,7 +42,6 @@ KernelIpcServer *create_server(uint64_t space_handle)
     *server = {};
     server->handle = next_free_ipc_server_handle++;
     server->parent_space = space_handle;
-    server->connections.clear();
     server->self = nullptr; // will be set later when the asset is created
 
     ipc_server_lock.lock();
@@ -68,19 +68,39 @@ core::Result<KernelIpcServer *> query_server(IpcServerHandle handle)
     return core::Result<KernelIpcServer *>::error("server not found");
 }
 
+// Query server and return with ipc_server_lock HELD.
+// Caller MUST call release_server_lock() after they are done with the server pointer.
+// This prevents the server from being unregistered/deleted while the caller uses it.
+core::Result<KernelIpcServer *> query_server_locked(IpcServerHandle handle)
+{
+    ipc_server_lock.lock();
+    for (size_t i = 0; i < registered_servers.len(); i++)
+    {
+        if (registered_servers[i].handle == handle)
+        {
+            KernelIpcServer *server = registered_servers[i].server;
+            return server;
+        }
+    }
+    ipc_server_lock.release();
+
+    return core::Result<KernelIpcServer *>::error("server not found");
+}
+
+void release_server_lock()
+{
+    ipc_server_lock.release();
+}
+
 void unregister_server(IpcServerHandle handle, uint64_t space_handle)
 {
-
     ipc_server_lock.lock();
-   // log::log$("unregister_server:- {} {}", handle, space_handle);
     for (size_t i = 0; i < registered_servers.len(); i++)
     {
         if (registered_servers[i].handle == handle && registered_servers[i].server->parent_space == space_handle)
         {
-            delete registered_servers[i].server;
             registered_servers.pop(i);
             ipc_server_lock.release();
-
             return;
         }
     }
@@ -97,7 +117,7 @@ core::Result<AssetPtr> server_accept_connection(KernelIpcServer *server)
 
     server->self->lock.lock();
 
-    for (size_t i = 0; i < server->connections.len(); i++)
+    for (size_t i = 0; i < server->connections.len(); /* i incremented in loop */)
     {
         auto asset = server->connections[i].asset;
 
@@ -106,24 +126,37 @@ core::Result<AssetPtr> server_accept_connection(KernelIpcServer *server)
 
         if(asset->kind != OBJECT_KIND_IPC_CONNECTION)
         {
+            log::err$("server_accept_connection: invalid asset kind {} in connection {} of server {}",
+                (uint64_t)asset->kind, i, server->handle);
             asset->lock.release();
+            server->self->lock.release();
+            return core::Result<AssetPtr>::error("invalid asset kind in connection");
+        }
 
-            for(size_t z = 0; z < 20; z++)
-            {
-                log::log$("is server destroyed? {}", server->destroyed);
-                log::log$("server: {}", server->handle);
-                log::log$("connection {} kind: {}", i, (uint64_t)server->connections[i].asset->kind);
+        // WIP debug: Verify this connection actually belongs to this server
+        if (asset->ipc_connection->server_handle != server->handle)
+        {
+            log::err$("[IPC-BUG] Connection in server {}'s list has wrong server_handle {}!",
+                server->handle, asset->ipc_connection->server_handle);
+            log::err$("  This connection was meant for server {}, not this server",
+                asset->ipc_connection->server_handle);
+            log::err$("  Removing misrouted connection from list");
 
-                log::err$("server_accept_connection: invalid asset kind in connection: {}", (uint64_t)server->connections[i].asset->kind);
-                log::log$("asset ptr: {}", (uint64_t)server->connections[i].asset | fmt::FMT_HEX);
-                auto space = Space::global_space_by_handle(server->parent_space);
-                Asset::dump_assets(space.unwrap()->self->space);
-                for(size_t j = 0; j < server->connections.len(); j++)
-                {
-                    log::err$("  connection {} kind: {}", j, (uint64_t)server->connections[j].asset->kind);
-                }
-            }
-            while(true){};
+
+            log::err$("  Client space: {}", asset->ipc_connection->client_space_handle);
+            //log::err$("  Connection handle: {}", asset->ipc_connection.);
+
+
+          //  for(size_t j = 0; j < registered_servers.len(); j++)
+          //  {
+          //      log::err$("  Server[{}] = {}", j, registered_servers[j].handle);
+          //      log::err$("  Server space: {}", registered_servers[j].server->parent_space);
+
+          //  }
+//            log::err$("  Client process: {}", asset->ipc_connection->client_process_handle);
+            i++;
+
+            continue;
         }
 
         if (asset->ipc_connection->accepted == false)
@@ -131,18 +164,19 @@ core::Result<AssetPtr> server_accept_connection(KernelIpcServer *server)
             // Modify under the asset lock we already hold
             asset->ipc_connection->accepted = true;
             asset->ref_count++;
-            asset->lock.release();
 
             // Increment server ref_count (already holding server->self->lock)
             server->self->ref_count++;
 
             auto conn = server->connections[i];
+            conn.asset->lock.release();
             server->self->lock.release();
             return conn;
         }
 
         // Release asset lock before continuing to next iteration
         asset->lock.release();
+        i++;
     }
     server->self->lock.release();
 
@@ -157,13 +191,17 @@ core::Result<MessageHandle> _server_send_message(IpcConnection *connection, IpcM
         return core::Result<MessageHandle>("connection is null");
     }
 
+    connection->lock.lock();
+
     if (connection->accepted == false)
     {
+        connection->lock.release();
         return core::Result<MessageHandle>("connection is not accepted");
     }
 
     if (connection->closed_status != IPC_STILL_OPEN)
     {
+        connection->lock.release();
         // can't send message on closed connection
         return core::Result<MessageHandle>("connection is closed");
     }
@@ -178,7 +216,6 @@ core::Result<MessageHandle> _server_send_message(IpcConnection *connection, IpcM
     received_message.server_id = connection->server_handle; // the space handle of the client that created this connection
     received_message.message_sended = IpcMessagePair::from_client(*message);
 
-    connection->lock.lock();
     received_message.uid = connection->message_alloc_id++; // TODO: set this to a unique id
 
     auto uid = received_message.uid;
@@ -261,6 +298,7 @@ core::Result<IpcMessageClient> update_handle_from_server_to_client(IpcConnection
     {
         return core::Result<IpcMessageClient>::error("server or connection is null");
     }
+
     auto client_space_res = Space::global_space_by_handle(connection->client_space_handle);
     auto server_space_res = Space::global_space_by_handle(connection->server_space_handle);
     if (client_space_res.is_error() || server_space_res.is_error())
@@ -276,7 +314,10 @@ core::Result<IpcMessageClient> update_handle_from_server_to_client(IpcConnection
         {
             auto asset_handle = message.data[i].asset_handle;
 
+
+
             auto asset_ptr_res = Asset::by_handle_ptr(server_space, asset_handle);
+
 
             if (asset_ptr_res.is_error())
             {
@@ -285,6 +326,12 @@ core::Result<IpcMessageClient> update_handle_from_server_to_client(IpcConnection
 
             auto asset_ptr = asset_ptr_res.unwrap();
 
+            if(asset_ptr.asset->kind == OBJECT_KIND_IPC_CONNECTION && asset_ptr.asset->ipc_connection == connection )
+            {
+                log::err$("attempted to move or copy connection asset by itself (self)");
+                log::warn$("currently not supported");
+                continue;
+            }
 
             if(!message.data[i].copy_asset)
             {
@@ -308,14 +355,18 @@ core::Result<ReceivedIpcMessage> server_receive_message( IpcConnection *connecti
         return core::Result<ReceivedIpcMessage>::error("connection is null");
     }
 
+    connection->lock.lock();
+
+    rmb();
+
     if (connection->closed_status != IPC_STILL_OPEN)
     {
+        connection->lock.release();
         ReceivedIpcMessage null_message = {};
         null_message.is_disconnect = true;
+        null_message.message_sended.server.flags = IPC_MESSAGE_FLAG_DISCONNECT;
         return null_message;
     }
-
-    connection->lock.lock();
 
     for (size_t i = 0; i < connection->message_sent.len(); i++)
     {
@@ -323,19 +374,26 @@ core::Result<ReceivedIpcMessage> server_receive_message( IpcConnection *connecti
         {
             connection->message_sent[i].has_been_received = true;
 
-            rmb();
-            ReceivedIpcMessage message = core::move(connection->message_sent[i]);
-
-            if (!message.is_call)
+            ReceivedIpcMessage message = {};
+            if (!connection->message_sent[i].is_call)
             {
-                connection->message_sent.pop(i);
+                message = connection->message_sent.pop(i);
             }
-            message.is_null = false;
-
-            message.message_sended.server = try$(update_handle_from_client_to_server(connection, message.message_sended.client));
-
+            else
+            {
+                // For call messages, we need to keep them in the queue for the reply
+                message = connection->message_sent[i];
+            }
 
             connection->lock.release();
+
+            auto server_msg_result = update_handle_from_client_to_server(connection, message.message_sended.client);
+            if (server_msg_result.is_error())
+            {
+                return core::Result<ReceivedIpcMessage>::error(server_msg_result.error());
+            }
+            message.message_sended.server = server_msg_result.unwrap();
+
             return message;
         }
     }
@@ -354,26 +412,31 @@ core::Result<ReceivedIpcMessage> client_receive_message(IpcConnection *connectio
         return core::Result<ReceivedIpcMessage>::error("connection is null");
     }
 
+    connection->lock.lock();
+
+    rmb();
+
     if (connection->closed_status != IPC_STILL_OPEN)
     {
+        connection->lock.release();
         ReceivedIpcMessage null_message = {};
         null_message.is_disconnect = true;
         null_message.message_sended.client.flags |= IPC_MESSAGE_FLAG_DISCONNECT;
         return null_message;
     }
-
-    connection->lock.lock();
     for (size_t i = 0; i < connection->message_sent.len(); i++)
     {
         if (connection->message_sent[i].has_reply)
         {
-            rmb();
-            ReceivedIpcMessage message = core::move(connection->message_sent[i]);
-
-            if (message.is_call)
+            ReceivedIpcMessage message = {};
+            if (connection->message_sent[i].is_call)
             {
-
-                connection->message_sent.pop(i);
+                message = connection->message_sent.pop(i);
+            }
+            else
+            {
+                // For non-call messages with reply, make a copy
+                message = connection->message_sent[i];
             }
 
             connection->lock.release();
@@ -394,14 +457,17 @@ core::Result<ReceivedIpcMessage> client_receive_response(IpcConnection *connecti
         return core::Result<ReceivedIpcMessage>::error("connection is null");
     }
 
+    connection->lock.lock();
+    rmb();
+
     if (connection->closed_status != IPC_STILL_OPEN)
     {
+        connection->lock.release();
         ReceivedIpcMessage null_message = {};
         null_message.is_disconnect = true;
         null_message.message_responded.client.flags |= IPC_MESSAGE_FLAG_DISCONNECT;
         return null_message;
     }
-    connection->lock.lock();
     for (size_t i = 0; i < connection->message_sent.len(); i++)
     {
         if (connection->message_sent[i].uid == handle && connection->message_sent[i].has_reply)
@@ -432,17 +498,19 @@ core::Result<void> server_reply_message(IpcConnection *connection, MessageHandle
         return core::Result<void>("connection is null");
     }
 
+    connection->lock.lock();
+
     if (!connection->accepted)
     {
+        connection->lock.release();
         return core::Result<void>("connection is not accepted");
     }
 
     if (connection->closed_status != IPC_STILL_OPEN)
     {
+        connection->lock.release();
         return core::Result<void>("connection is closed");
     }
-
-    connection->lock.lock();
     for (size_t i = 0; i < connection->message_sent.len(); i++)
     {
         auto &from_ref = connection->message_sent[i];
@@ -477,17 +545,23 @@ core::Result<IpcMessage> call_server_and_wait(IpcConnection *connection, IpcMess
         return core::Result<IpcMessage>::error("connection is null");
     }
 
+    connection->lock.lock();
+
     if (!connection->accepted)
     {
+        connection->lock.release();
         return core::Result<IpcMessage>::error("connection is not accepted");
     }
 
     if (connection->closed_status != IPC_STILL_OPEN)
     {
+        connection->lock.release();
         IpcMessage null_message = {};
         null_message.flags |= IPC_MESSAGE_FLAG_DISCONNECT;
         return null_message;
     }
+
+    connection->lock.release();
 
     connection->client_mutex.mutex_acquire();
     auto block = kernel::create_mutex_block(&connection->client_mutex);

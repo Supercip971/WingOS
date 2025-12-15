@@ -27,7 +27,7 @@ struct IpcMessagePair
     IpcMessageClient client; // the message from the client's point of view
     IpcMessageServer server; // the message from the server's point of view
 
-    IpcMessagePair() : len(0)
+    IpcMessagePair() : buffer{}, len(0), client{}, server{}
     {
     }
 
@@ -215,6 +215,10 @@ KernelIpcServer *create_server(uint64_t space_handle);
 void unregister_server(IpcServerHandle handle, uint64_t space_handle);
 
 core::Result<KernelIpcServer *> query_server(IpcServerHandle handle);
+
+// This prevents the server from being unregistered/deleted while the caller uses it.
+core::Result<KernelIpcServer *> query_server_locked(IpcServerHandle handle);
+void release_server_lock();
 
 // create a connection object for the server,
 

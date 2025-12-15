@@ -29,7 +29,6 @@ core::Result<void> Lapic::enable()
 
     AMsr::Write(MsrReg::APIC,
                 (AMsr::Read(MsrReg::APIC) | arch::amd64::MsrApicBits::MSR_APIC_ENABLE) & (~(arch::amd64::MsrApicBits::MSR_X2APIC_ENABLE)));
-
     this->write(LAPICReg::SPURIOUS_INTERRUPT_VECTOR,
                 this->read(LAPICReg::SPURIOUS_INTERRUPT_VECTOR) | LAPIC_SPURIOUS_APIC_SOFT_ENABLE |
                     LAPIC_SPURIOUS_VECTOR);
@@ -108,7 +107,7 @@ core::Result<void> Lapic::timer_initialize()
 {
     write(LAPICReg::TIMER_DIVIDE_CONFIGURATION, LAPIC_TIMER_DIVIDE_BY_16);
     auto ticks = _timer_tick_in_16ms(); // ticks in 16ms
-    // ticks = a / 16 
+    // ticks = a / 16
     // (ticks * 16 / 10)
     // we want ticks in 0.1ms
     // so ticks = a / 0.1 = a * 10 / 16
@@ -129,7 +128,7 @@ core::Result<void> Lapic::timer_initialize()
 void Lapic::send_interrupt(LCpuId cpu, uint8_t vector)
 {
     write(LAPICReg::INTERRUPT_COMMAND_START_2, (static_cast<uint64_t>(cpu) << 24));
-    write(LAPICReg::INTERRUPT_COMMAND_START, vector | LAPIC_INTERRUPT_CMD_SET_INIT_DEASSERT); 
+    write(LAPICReg::INTERRUPT_COMMAND_START, vector | LAPIC_INTERRUPT_CMD_SET_INIT_DEASSERT);
 }
 
 }; // namespace hw::acpi

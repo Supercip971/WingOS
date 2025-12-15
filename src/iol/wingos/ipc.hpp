@@ -34,6 +34,7 @@ struct IpcServer : public UAsset
                 delete connections[i];
 
                 connections.pop(i);
+                return;
             }
             else
             {
@@ -67,7 +68,6 @@ struct IpcServer : public UAsset
     }
 
     core::Result<MessageServerReceived> receive(IpcConnectionHandle connection_handle, bool block = false)
-
     {
         IpcMessage res_message = {};
         auto res = sys$ipc_receive_server(block, space_handle, this->handle, connection_handle, &res_message);
@@ -76,7 +76,7 @@ struct IpcServer : public UAsset
             MessageServerReceived msg = {};
             msg.received = core::move(res_message);
             msg.received.message_id = res.returned_msg_handle;
-            return core::Result<MessageServerReceived>::success(core::move(msg));
+            return msg;
         }
 
         if (res.is_disconnect)
@@ -84,7 +84,7 @@ struct IpcServer : public UAsset
             MessageServerReceived msg = {};
             msg.received.flags |= IPC_MESSAGE_FLAG_DISCONNECT;
 
-            return core::Result<MessageServerReceived>::success(core::move(msg));
+            return msg;
         }
         return core::Result<MessageServerReceived>::error("failed to receive message");
     }
@@ -117,7 +117,7 @@ struct IpcServer : public UAsset
         return core::Result<MessageServerReceived>::error("no connection available to receive message");
     }
 
-    core::Result<void> reply(MessageServerReceived &&to, IpcMessage &message)
+    core::Result<void> reply(MessageServerReceived const &to, IpcMessage &message)
     {
         sys$ipc_reply(space_handle, this->addr, to.connection->handle, to.received.message_id, &message);
         return {};

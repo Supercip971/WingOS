@@ -98,7 +98,7 @@ public:
 
     size_t max_redirect() { return (read(IOAPIC_REG_VERSION) & 0x00FF0000) >> 16; }
 
-    static IOApic &get(IOApicIndex index);
+    static core::Result<IOApic*> get(IOApicIndex index);
 
     // in the case of multiple ioapics, we need to select the one
     // that is responsible for the interrupt

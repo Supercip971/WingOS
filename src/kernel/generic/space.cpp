@@ -3,6 +3,7 @@
 #include "kernel/generic/asset.hpp"
 #include "libcore/ds/vec.hpp"
 #include "libcore/fmt/flags.hpp"
+#include "libcore/lock/lock.hpp"
 #include "libcore/result.hpp"
 #include "wingos-headers/asset.h"
 
@@ -15,6 +16,7 @@ struct SpacePtr
 };
 
 core::Vec<SpacePtr> _spaces = {};
+core::Lock _spaces_lock = {};
 
 void Asset::dump_assets(Space *space)
 {
@@ -35,11 +37,11 @@ void Asset::dump_assets(Space *space)
                 log::log$("    IPC Connection accepted: {}", space->assets[i].asset->ipc_connection->accepted);
                  log::log$("    IPC Connection closed: {}", (int)space->assets[i].asset->ipc_connection->closed_status);
                  log::log$("    IPC Connected: {}", (int)space->assets[i].asset->ipc_connection->server_asset->handle);
-                
+
             }
             if(space->assets[i].asset->kind == OBJECT_KIND_MEMORY)
             {
-                log::log$("    Memory addr: {}-{}", space->assets[i].asset->memory.addr | fmt::FMT_HEX, 
+                log::log$("    Memory addr: {}-{}", space->assets[i].asset->memory.addr | fmt::FMT_HEX,
                           space->assets[i].asset->memory.addr + space->assets[i].asset->memory.size | fmt::FMT_HEX);
                 log::log$("    Memory allocated: {}", space->assets[i].asset->memory.allocated);
             }
@@ -51,8 +53,8 @@ void Asset::dump_assets(Space *space)
                 log::log$("    Mapping executable: {}", space->assets[i].asset->mapping.executable);
             }
 
-            
-        
+
+
         }
 
         space->self->lock.release();
@@ -62,7 +64,7 @@ core::Result<AssetPtr> space_create(Space *parent, [[maybe_unused]] uint64_t fla
 
     AssetPtr ptr = try$(_asset_create(parent, OBJECT_KIND_SPACE));
     Asset *asset = ptr.asset;
-    Space *space = new Space();
+    Space *space = new Space;
 
     *space = {};
     asset->space = space;
@@ -86,17 +88,19 @@ core::Result<AssetPtr> space_create(Space *parent, [[maybe_unused]] uint64_t fla
     SpacePtr space_ptr = {};
     space_ptr.space = space;
     space_ptr.handle = _space_handle++;
+    _spaces_lock.lock();
     _spaces.push(space_ptr);
-
+    _spaces_lock.release();
     space->uid = space_ptr.handle;
+    asset->ref_count++; // referencing by itself
     space->assets.push({.asset = asset, .handle = 0});
+
     space->alloc_uid = 16;
     asset->lock.release();
 
     return ptr;
 }
 
-// FIXME: this is not safe, because it does not check if the space exists in the parent space
 core::Result<Space *> Space::space_by_handle(Space *parent, uint64_t handle)
 {
     for (auto &space_ptr : parent->assets)
@@ -114,13 +118,17 @@ core::Result<Space *> Space::space_by_handle(Space *parent, uint64_t handle)
 // FIXME: this is not safe, because it does not check if the space exists in the parent space
 core::Result<Space *> Space::global_space_by_handle(uint64_t handle)
 {
+    _spaces_lock.lock();
     for (auto &space_ptr : _spaces)
     {
         if (space_ptr.handle == handle)
         {
-            return core::Result<Space *>::success(space_ptr.space);
+            auto sp = space_ptr.space;
+            _spaces_lock.release();
+            return sp;
         }
     }
+    _spaces_lock.release();
 
     return core::Result<Space *>::error("space not found");
 }

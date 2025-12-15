@@ -15,14 +15,13 @@ namespace hw::acpi
 constexpr int max_ioapic = 256;
 core::Array<IOApic, max_ioapic> ioapics = {};
 
-IOApic &IOApic::get(IOApicIndex index)
+core::Result<IOApic*> IOApic::get(IOApicIndex index)
 {
     if (index >= max_ioapic)
     {
-        log::warn$("IOApic index {} is out of range", index);
-        return ioapics[0];
+        return "error: IOApic index out of range";
     }
-    return ioapics[index];
+    return &ioapics[index];
 }
 
 core::Result<void> IOApic::initialize(IOApicIndex index, MadtEntryIoapic const *entry)

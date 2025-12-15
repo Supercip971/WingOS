@@ -28,9 +28,16 @@ def port():
 
     
     # run: CC=/home/cyp/project/wingos/meta/build/cross/bin/x86_64-pc-wingos-gcc ./configure --host=x86_64-wingos --prefix=/home/cyp/project/wingos/meta/build/sysroot/
-   
-    shell_run([f"CC={os.path.abspath(cross_compiler)}", "make", f"all"], cwd=os.path.join(MODULE_PATH, "doomgeneric/"))
+    shell_run([f"CC={os.path.abspath(cross_compiler)}",
+               "CXX={}".format(os.path.abspath(cross_compiler).replace("gcc", "g++")),
+               "make", "clean", "-j"], cwd=os.path.join(MODULE_PATH, "doomgeneric/"))
 
 
-    
+    shell_run([f"CC={os.path.abspath(cross_compiler)}",
+               "CXX={}".format(os.path.abspath(cross_compiler).replace("gcc", "g++")),
+               "make", "all", "-j"], cwd=os.path.join(MODULE_PATH, "doomgeneric/"))
+
+
+    shell_run(["cp doomgeneric {}".format(os.path.abspath( os.path.join(const.PROJECT_CK_DIR, "wingos-disk/bin/doomgeneric"))),], cwd=os.path.join(MODULE_PATH, "doomgeneric/"
+                                                                                                        ))
     return "hello"

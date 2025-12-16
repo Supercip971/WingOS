@@ -109,20 +109,29 @@ asm(
     "   call _entry_point \n"
     "   \n");
 
-// taken from https://github.com/managarm/managarm/
+
+// source: https://maskray.me/blog/2021-11-07-init-ctors-init-array
+
 using InitializerPtr = void (*)();
 
-extern "C" InitializerPtr __init_array_start[];
-extern "C" InitializerPtr __init_array_end[];
+static WingosLogger logger = {};
+extern "C" InitializerPtr __init_array_start[] __attribute__((weak, visibility("hidden")));
+extern "C" InitializerPtr __init_array_end[] __attribute__((weak, visibility("hidden")));
+
 
 extern "C" void run_constructors()
 {
-    auto begin = reinterpret_cast<uintptr_t>(__init_array_start);
-    auto end = reinterpret_cast<uintptr_t>(__init_array_end);
-    auto count = (end - begin) / sizeof(InitializerPtr);
+    if(*__init_array_start == nullptr)
+    {
+        return;
+    }
 
-    for (size_t i = 0; i < count; ++i)
-        __init_array_start[i]();
+    for(size_t i = 0; i < (size_t)(__init_array_end - __init_array_start); i++)
+    {
+        log::log$("Running constructor: {}", (uintptr_t)__init_array_start[i] | fmt::FMT_HEX);
+        log::log$("Constructor name: {}", (uintptr_t)(*__init_array_start[i]) | fmt::FMT_HEX);
+        (__init_array_start[i])();
+    }
 }
 
 static core::WStr *cwd;
@@ -197,7 +206,6 @@ __attribute__((weak)) int __cxa_atexit(void (*destructor) (void *), void *arg, v
 __attribute__((weak)) void* __dso_handle;
 
 
-static WingosLogger logger;
 extern "C" __attribute__((weak)) void _entry_point(StartupInfo *context)
 {
     asm volatile("andq $-16, %rsp");

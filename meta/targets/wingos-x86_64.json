@@ -32,7 +32,7 @@
                 "-Warray-bounds",
                 "-Wshadow",
                 "-Wimplicit-fallthrough",
-                "-O3"
+                "-Og"
             ]
         },
         "cxx": {
@@ -46,7 +46,6 @@
                 "-fno-rtti",
                 "-fno-stack-protector",
                 "-Wno-builtin-declaration-mismatch",
-                    
                 "-std=c++23",
                 "-fno-threadsafe-statics" ,
                    "-fno-stack-protector",
@@ -60,7 +59,7 @@
                 "-Wswitch-default",
                 "-Wfloat-equal",
                 "-Wimplicit-fallthrough",
-                "-O3",
+                "-Og",
                 "-fdiagnostics-color=always",
                 "-Wdangling-reference"
     

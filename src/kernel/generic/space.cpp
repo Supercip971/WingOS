@@ -42,7 +42,7 @@ void Asset::dump_assets(Space *space)
             if(space->assets[i].asset->kind == OBJECT_KIND_MEMORY)
             {
                 log::log$("    Memory addr: {}-{}", space->assets[i].asset->memory.addr | fmt::FMT_HEX,
-                          space->assets[i].asset->memory.addr + space->assets[i].asset->memory.size | fmt::FMT_HEX);
+                          (space->assets[i].asset->memory.addr + space->assets[i].asset->memory.size) | fmt::FMT_HEX);
                 log::log$("    Memory allocated: {}", space->assets[i].asset->memory.allocated);
             }
 

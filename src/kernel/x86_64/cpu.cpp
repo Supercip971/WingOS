@@ -32,22 +32,16 @@ core::Lock cpu_sys_lock = {};
 
 bool Cpu::enter_syscall_safe_mode()
 {
-    
 
-    asm volatile(
-        "sti\n"
-    );
+
     cpu_sys_lock.lock();
-    asm volatile(
-        "cli\n"
-    );
+    asm volatile("cli\n");
 
     return true;
 }
 
 bool Cpu::exit_syscall_safe_mode()
 {
-
     cpu_sys_lock.release();
     asm volatile(
         "sti\n"
@@ -69,7 +63,7 @@ void Cpu::interrupt_release(bool re_enable_int)
         return;
     }
     this->interrupt_depth--;
-    
+
     if (this->interrupt_depth == 0 && re_enable_int)
     {
         asm volatile("sti");
@@ -116,7 +110,12 @@ void setup_entry_gs()
 Cpu *Cpu::current()
 {
     auto id = Cpu::currentId();
-    return id == -1 ? nullptr : Cpu::get(id);
+    if(id == -1 || id >= arch::amd64::max_cpu) [[unlikely]]
+    {
+        log::err$("error: cpu id {} is not valid", id);
+        while(true){};
+    }
+    return Cpu::get(id);
 }
 Cpu *Cpu::get(int id)
 {
@@ -154,7 +153,7 @@ arch::amd64::Tss *arch::amd64::CpuImpl::tss()
 
 CoreId Cpu::currentId()
 {
-    if (hw::acpi::Lapic::the().is_loaded() == false)
+    if (hw::acpi::Lapic::the().is_loaded() == false) [[unlikely]]
     {
         return 0;
     }

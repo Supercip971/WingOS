@@ -48,6 +48,13 @@ void hw::hpet::hpet_sleep(core::Milliseconds ms)
         log::log$("sleeping for: {} ms", ms.value());
     #endif
     // 1 ms => 1'000'000'000'000 femtoseconds
+
+    
+    if(hpet_tick == 0)
+    {
+        log::err$("HPET not initialized");
+        return;
+    }
     uint64_t target = _hpet_read(HPET_MAIN_COUNTER) + (ms.value() * 1'000'000'000'000) / hpet_tick;
 
     while (_hpet_read(HPET_MAIN_COUNTER) <= target)
@@ -58,5 +65,5 @@ void hw::hpet::hpet_sleep(core::Milliseconds ms)
 
 core::Milliseconds hw::hpet::hpet_clock_read( )
 {
-    return core::Milliseconds(_hpet_read(HPET_MAIN_COUNTER) * (hpet_tick / 1'000'000)); // in nanoseconds
+    return core::Milliseconds((_hpet_read(HPET_MAIN_COUNTER) * (hpet_tick)) / 1'000'000'000'000); // in nanoseconds
 }

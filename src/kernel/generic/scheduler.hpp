@@ -30,7 +30,7 @@ struct SchedulerControlBlock
     long priority = 0;
 
     SchedulerControlBlock() : priority(0) {}
-    SchedulerControlBlock(size_t priority) : priority(priority) {}
+    SchedulerControlBlock(size_t _priority) : priority(_priority) {}
 
     void tick()
     {

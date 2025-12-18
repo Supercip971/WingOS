@@ -34,6 +34,8 @@ static core::Vec<prot::SenderPipe*> keyboard_pipes = {};
 
 int main(int, char **)
 {
+    mouse_pipes = {};
+    keyboard_pipes = {};
 
     auto server_r = prot::ManagedServer::create_registered_server("human-interface", 1, 0);
 
@@ -57,7 +59,7 @@ int main(int, char **)
     while (true)
     {
 
-        server.accept_connection(); 
+        server.accept_connection();
 
 
         auto received = server.try_receive();
@@ -71,9 +73,9 @@ int main(int, char **)
             {
                 uint32_t event_types = (uint32_t)msg.received.data[1].data;
 
-                
+
                 auto pipe = prot::Duplex::create(Wingos::Space::self(), Wingos::Space::self() );
-                
+
                 if (pipe.is_error())
                 {
                     log::err$("hio: failed to create duplex pipe: {}", pipe.error());
@@ -89,7 +91,7 @@ int main(int, char **)
                 {
                     mouse_pipes.push(sender);
                     log::log$("hio: added mouse pipe: {}", sender->raw_connection().handle);
-                    
+
                 }
 
                 if (event_types & prot::HI_EVENT_TYPE_KEYBOARD)
@@ -117,12 +119,13 @@ int main(int, char **)
             auto ev_res = mouse.poll_event();
             while (!ev_res.is_error())
             {
-                log::log$("mouse event: dx={} dy={}", ev_res.unwrap().offx, ev_res.unwrap().offy);
+                auto mouse_ev = ev_res.take();
+                log::log$("mouse event: dx={} dy={}", mouse_ev.offx, mouse_ev.offy);
                 prot::HIEvent event = {};
                 event.type = prot::HI_EVENT_TYPE_MOUSE;
-                event.mouse.dx = ev_res.unwrap().offx;
-                event.mouse.dy = ev_res.unwrap().offy;
-                event.mouse.buttons = (ev_res.unwrap().left ? 1 : 0) | (ev_res.unwrap().right ? 2 : 0) | (ev_res.unwrap().middle ? 4 : 0);
+                event.mouse.dx = mouse_ev.offx;
+                event.mouse.dy = mouse_ev.offy;
+                event.mouse.buttons = (mouse_ev.left ? 1 : 0) | (mouse_ev.right ? 2 : 0) | (mouse_ev.middle ? 4 : 0);
 
                 for (size_t i = 0; i < mouse_pipes.len(); i++)
                 {
@@ -137,11 +140,12 @@ int main(int, char **)
             auto ev_res = keyboard.poll_event();
             while (!ev_res.is_error())
             {
-                log::log$("keyboard event: key={} down={}", ev_res.unwrap().key, ev_res.unwrap().down);
+                auto kb_ev = ev_res.take();
+                log::log$("keyboard event: key={} down={}", kb_ev.key, kb_ev.down);
                 prot::HIEvent event = {};
                 event.type = prot::HI_EVENT_TYPE_KEYBOARD;
-                event.keyboard.keycode = ev_res.unwrap().key;
-                event.keyboard.pressed = ev_res.unwrap().down;
+                event.keyboard.keycode = kb_ev.key;
+                event.keyboard.pressed = kb_ev.down;
                 for (size_t i = 0; i < keyboard_pipes.len(); i++)
                 {
                     keyboard_pipes[i]->send(&event, sizeof(event));

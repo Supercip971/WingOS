@@ -178,7 +178,9 @@ public:
             handle_packet_group();
             break;
         }
-        default:break;
+        default:
+            cycle = 0;
+            break;
         }
     }
 };

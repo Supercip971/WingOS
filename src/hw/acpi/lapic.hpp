@@ -155,7 +155,7 @@ public:
     LCpuId id() const
     {
        // return arch::amd64::Msr::Read(arch::amd64::MsrReg::LAPIC_CPU_ID);
-        return read(LAPICReg::ID) >> 24 & 0xff;
+        return ((uint64_t)read(LAPICReg::ID) >> 24) & (uint64_t)0xff;
     }
 
     static core::Result<void> initialize(Madt *madt);

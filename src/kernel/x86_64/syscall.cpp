@@ -30,7 +30,8 @@ void dump_stackframe(void *rbp)
     int size = 0;
     while (frame && size++ < 20)
     {
-        log::log$("stackframe: {}", frame->rip | fmt::FMT_HEX);
+        auto rip = frame->rip;
+        log::log$("stackframe: {}", rip | fmt::FMT_HEX);
         frame = frame->rbp;
     }
 
@@ -45,7 +46,7 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
 {
     //  log("syscall", LOG_INFO, "called syscall higher handler in: {} (stack: {})", stackframe->rip, stackframe->rsp);
 
-    SyscallStackFrame* stackframe = sf;
+    SyscallStackFrame *stackframe = sf;
 
     Cpu::enter_syscall_safe_mode();
     Cpu::current()->debug_saved_syscall_stackframe = stackframe->rbp;
@@ -68,8 +69,15 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
 
         Cpu::end_syscall(); // early end syscall mode,
         log::err$("syscall error: {}", res.error());
-        log::log$("syscall id: {}", stackframe->rax);
-        log::log$("syscall args: {}, {}, {}, {}, {}, {}", stackframe->rbx, stackframe->rdx, stackframe->rsi, stackframe->rdi, stackframe->r8, stackframe->r9);
+        auto rax = stackframe->rax;
+        auto rbx = stackframe->rbx;
+        auto rdx = stackframe->rdx;
+        auto rsi = stackframe->rsi;
+        auto rdi = stackframe->rdi;
+        auto r8 = stackframe->r8;
+        auto r9 = stackframe->r9;
+        log::log$("syscall id: {}", rax);
+        log::log$("syscall args: {}, {}, {}, {}, {}, {}", rbx, rdx, rsi, rdi, r8, r9);
         log::log$("task: {}", Cpu::current()->currentTask() ? Cpu::current()->currentTask()->uid() : -1);
 
 
@@ -103,7 +111,7 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
 
 
     //log::log$("syscall: {} ", stackframe->rax);
-    return res.unwrap();
+    return sf->rax;
 }
 
 extern "C" void syscall_handle();
@@ -133,10 +141,11 @@ core::Result<void> syscall_init_for_current_cpu()
     Msr::Write(MsrReg::LSTAR, (uint64_t)syscall_handle);
     Msr::Write(MsrReg::SYSCALL_FLAG_MASK, ((uint32_t)(RFLAGS_INTERRUPT_ENABLE)) |  0xfffffffe);
 
+
     Cpu::current()->syscall_stack = (void *)((uintptr_t)try$(core::mem_alloc(kernel::kernel_stack_size)) +
                                              kernel::kernel_stack_size - 16); // allocate a stack for syscall handling
-    
-                                             
+
+
                                              return {};
 }
 

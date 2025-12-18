@@ -4,6 +4,7 @@
 #include <hw/mem/addr_space.hpp>
 
 #include "hw/acpi/rsdp.hpp"
+#include <string.h>
 #include "libcore/fmt/log.hpp"
 #include "libcore/result.hpp"
 #include "libcore/str.hpp"
@@ -169,7 +170,12 @@ core::Result<void> prepare_mapping(uintptr_t rsdp_addr, T fn)
 template <SdTable T, typename Fn>
 void SdtForeach(T *table, Fn callback)
 {
-    typename T::childType *entries = table->entries;
+    // Avoid address-of-packed-member warning by copying to local array
+    // Use a fixed max count for entries to avoid incomplete type error
+    constexpr size_t max_entries = 256;
+    alignas(alignof(typename T::childType)) typename T::childType entries_copy[max_entries];
+    memcpy(entries_copy, table->entries, sizeof(entries_copy));
+    typename T::childType *entries = entries_copy;
 
     for (size_t i = 0; i < (table->header.child_len()) / sizeof(entries[0]); i++)
     {
@@ -191,7 +197,8 @@ constexpr void dump(T *d)
 
                    log::log$("entry:");
                    log::log$("- signature: {}", s1);
-                   log::log$("- length: {}", entry->length);
+                   auto length = entry->length;
+                   log::log$("- length: {}", length);
                    log::log$("- revision: {}", entry->revision);
                    log::log$("- oem_id: {}", s2);
                    log::log$("- oem_table_id: {}", s3); });

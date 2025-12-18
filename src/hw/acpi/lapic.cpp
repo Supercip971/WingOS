@@ -48,10 +48,12 @@ core::Result<void> Lapic::initialize(Madt *madt)
     madt->foreach_entry<MadtEntryLapicOverride>([&](MadtEntryLapicOverride *entry)
                                                     -> void
                                                 {
-		log::log$("lapic override: {}", entry->local_apic_addr);
+		auto local_apic_addr = entry->local_apic_addr;
+		log::log$("lapic override: {}", local_apic_addr);
 		lapic_addr = entry->local_apic_addr; });
 
-    log::log$("lapic: {}", lapic_addr._addr | fmt::FMT_HEX);
+    auto addr_value = lapic_addr._addr;
+    log::log$("lapic: {}", addr_value | fmt::FMT_HEX);
 
     VirtAddr mapped_registers = toVirt(lapic_addr);
 
@@ -121,7 +123,7 @@ core::Result<void> Lapic::timer_initialize()
     write(LAPICReg::LVT_TIMER, lvt.raw);
     log::log$("LVT_TIMER: {}", lvt.raw);
     write(LAPICReg::TIMER_DIVIDE_CONFIGURATION, LAPIC_TIMER_DIVIDE_BY_16);
-    write(LAPICReg::TIMER_INITIAL_COUNT, (ticks*10)/16); // 10 ms per switch
+    write(LAPICReg::TIMER_INITIAL_COUNT, (ticks*3)/16); // 3 ms per switch
 
     return {};
 }

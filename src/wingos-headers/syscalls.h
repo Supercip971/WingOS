@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 
 
 #include <stddef.h>
@@ -12,7 +12,7 @@ extern "C" {
 #endif
 
 typedef struct SyscallInterface {
-    uint32_t id; 
+    uint32_t id;
     uint32_t _zero; // This is a zero field to align the structure
     uintptr_t arg1;
     uintptr_t arg2;
@@ -25,9 +25,9 @@ typedef struct SyscallInterface {
 
 // ------- SYSCALL DEBUG ----
 
-// cause a no-op in release mode, because it is really unsafe 
+// cause a no-op in release mode, because it is really unsafe
 #define SYSCALL_DEBUG_LOG_ID 0x00000000
-typedef struct SyscallDebug 
+typedef struct SyscallDebug
 {
     char *message;
 } SyscallDebug;
@@ -98,7 +98,7 @@ typedef struct SyscallTaskCreate
 {
     uint64_t target_space_handle;
     uint64_t launch; // the launch parameters for the task
-    
+
     uint64_t args[4]; // the arguments for the task, can be used to pass data to the task
     uint64_t returned_handle;
 } SyscallTaskCreate;
@@ -144,7 +144,7 @@ typedef struct SyscallAssetRelease
 {
     uint64_t space_handle; // the handle of the space, if null, the asset will be released from the kernel
     uint64_t asset_handle; // the handle of the asset to release
-    void* addr; // the address of the asset if it is memory 
+    void* addr; // the address of the asset if it is memory
     void* end; // the end address of the asset if it is memory
 } SyscallAssetRelease;
 
@@ -213,8 +213,8 @@ static inline SyscallAssetMove syscall_asset_move_decode(SyscallInterface interf
 typedef struct SyscallIpcCreateServer
 {
     uint64_t space_handle;
-   
-    bool is_root; 
+
+    bool is_root;
     IpcServerHandle returned_addr; // the handle of the created server
     uint64_t returned_handle; // the handle of the created server asset
 } SyscallIpcCreateServer;
@@ -239,14 +239,14 @@ typedef struct SyscallIpcConnect
 {
     bool block; // wait for the connection to be established
     uint64_t sender_space_handle;
-    
+
     IpcServerHandle server_handle; // the handle of the server to connect to, if 0 create a pipe
     uint64_t flags; // flags for the connection
     uint64_t returned_handle_sender; // the handle of the connection (sending)
 
     // ONLY USED FOR PIPE CONNECTIONS
     uint64_t returned_handle_receiver; // the handle of the connection (receiving)
-    uint64_t receiver_space_handle; 
+    uint64_t receiver_space_handle;
 
 } SyscallIpcConnect;
 
@@ -268,7 +268,7 @@ static inline SyscallIpcConnect syscall_ipc_connect_decode(SyscallInterface inte
 typedef struct SyscallIpcSend
 {
      uint64_t space_handle;
-    
+
      bool expect_reply;
     IpcConnectionHandle connection_handle; // the handle of the connection to send the message to
     IpcMessage* message; // the message to send
@@ -294,13 +294,13 @@ typedef struct SyscallIpcServerReceive
 {
     bool block;
     bool contain_response;
- 
+
     uint64_t space_handle;
-    
+
 
     uint64_t server_handle; // the handle of the server that received the message (asset)
     bool is_disconnect; // if true, the connection will be disconnected after receiving the message
-    
+
     IpcConnectionHandle connection_handle; // the handle of the connection to receive the message from
     MessageHandle returned_msg_handle; // the handle of the message received, in the context of the connection
     IpcMessage* returned_message; // the message received
@@ -325,14 +325,14 @@ typedef struct SyscallIpcClientReceiveReply
     bool block;
     bool contain_response; // if true, the client will wait for a response from the server
     uint64_t space_handle;
-    
-    
+
+
     bool is_disconnect; // if true, the connection will be disconnected after receiving the message
     MessageHandle message; // the message received
-    
+
     IpcConnectionHandle connection_handle; // the handle of the connection to receive the message from
     IpcMessage* returned_message; // the message received
-    
+
 } SyscallIpcClientReceiveReply;
 
 static inline SyscallInterface syscall_ipc_receive_client_reply_encode(SyscallIpcClientReceiveReply* receive)
@@ -354,7 +354,7 @@ typedef struct SyscallIpcCall
 {
     uint64_t space_handle;
     bool has_reply;
-    
+
     IpcConnectionHandle connection_handle; // the handle of the connection to call
     IpcMessage* message; // the message to send
     IpcMessage* returned_message; // the message returned from the call operation, if any
@@ -378,7 +378,7 @@ typedef struct SyscallIpcAccept
 {
     bool block;
     uint64_t space_handle;
-    
+
     bool accepted_connection; // if true, has valid accepted connection, if false no attempt were made
     IpcServerHandle server_handle; // the handle of the server to accept the connection from
     IpcConnectionHandle connection_handle; // the handle of the connection to accept
@@ -452,14 +452,14 @@ typedef struct SyscallAssetInfo
     AssetKind returned_kind; // the kind of the asset
     union {
         struct {
-            size_t size; 
-            size_t addr; 
+            size_t size;
+            size_t addr;
         } memory;
 
         struct {
-            size_t start; 
-            size_t end;   
-            uint64_t physical_mem_handle; 
+            size_t start;
+            size_t end;
+            uint64_t physical_mem_handle;
             bool writable;
             bool executable;
         } mapping;
@@ -484,20 +484,18 @@ static inline SyscallAssetInfo syscall_ipc_asset_info_decode(SyscallInterface in
 
 // ------- SYSCALL IPC X86 INB ----
 
-#define SYSCALL_IPC_X86 0x10000 
+#define SYSCALL_IPC_X86 0x10000
 
 #define SYSCALL_IPC_X86_PORT (SYSCALL_IPC_X86 + 0x1)
 typedef struct SyscallIpcX86Port
 {
     uint64_t space_handle;
-
-    uint64_t port; // the port to read from
-    size_t size; // 1 = byte, 2 = word, 4 = dword
-    bool write; 
-    uint64_t data;
-
-    bool read;
-    uint64_t returned_value; // the value read from the port
+    uint64_t size; // 1 = byte, 2 = word, 4 = dword
+    uint16_t port; // the port to read from
+    uint8_t write;
+    uint8_t read;
+    uint32_t data;
+    uint32_t returned_value; // the value read from the port
 
 } SyscallIpcX86Port;
 

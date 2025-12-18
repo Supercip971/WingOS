@@ -13,17 +13,6 @@ struct Tabbed
 };
 
 template <core::Writable Targ>
-constexpr core::Result<int> format_v(Targ &target, Tabbed &&value)
-{
-
-    for (int i = 0; i < value.tab_count; i++)
-    {
-        target.write(core::Str("\t"));
-    }
-    return {};
-}
-
-template <core::Writable Targ>
 constexpr core::Result<int> format_v(Targ &target, Tabbed value)
 {
 

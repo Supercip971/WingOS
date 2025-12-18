@@ -260,6 +260,12 @@ struct JsonValue
         };
         return &storage.childs.values[0]; // or throw an error
     }
+
+    // Convenience getter for array children
+    core::Vec<JsonValue>& children()
+    {
+        return storage.childs.values;
+    }
 };
 
 class Json

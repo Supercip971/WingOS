@@ -61,19 +61,32 @@ constexpr core::Result<void> format_v(Targ &target, T value)
 
 #define flags fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO
     fmt::format(target, "\n Stackframe: [ \n");
-    fmt::format(target, "  - r15 : {} r14: {} r13: {} \n", value.r15 | flags, value.r14 | flags, value.r13 | flags);
-    fmt::format(target, "  - r12 : {} r11: {} r10: {} \n", value.r12 | flags, value.r11 | flags, value.r10 | flags);
-    fmt::format(target, "  - r9  : {} r8 : {} \n", value.r9 | flags, value.r8 | flags);
-    fmt::format(target, "  - rbp : {} rdi: {} rsi: {} \n", value.rbp | flags, value.rdi | flags, value.rsi | flags);
-    fmt::format(target, "  - rdx : {} rcx: {} rbx: {} \n", value.rdx | flags, value.rcx | flags, value.rbx | flags);
-    fmt::format(target, "  - rax : {} \n", value.rax | flags);
-    fmt::format(target, "  - interrupt n°{} \n", value.interrupt_number | fmt::FMT_CYAN);
-    fmt::format(target, "  - error code: {} \n", value.error_code | flags);
-    fmt::format(target, "  - ip        : {} \n", value.rip | flags);
-    fmt::format(target, "  - cs        : {} \n", value.cs | flags);
-    fmt::format(target, "  - rflags    : {} \n", value.rflags | flags);
-    fmt::format(target, "  - rsp       : {} \n", value.rsp | flags);
-    fmt::format(target, "  - ss        : {} \n", value.ss | flags);
+    auto r15_val = value.r15, r14_val = value.r14, r13_val = value.r13;
+    fmt::format(target, "  - r15 : {} r14: {} r13: {} \n", r15_val | flags, r14_val | flags, r13_val | flags);
+    auto r12_val = value.r12, r11_val = value.r11, r10_val = value.r10;
+    fmt::format(target, "  - r12 : {} r11: {} r10: {} \n", r12_val | flags, r11_val | flags, r10_val | flags);
+    auto r9_val = value.r9, r8_val = value.r8;
+    fmt::format(target, "  - r9  : {} r8 : {} \n", r9_val | flags, r8_val | flags);
+    auto rbp_val = value.rbp, rdi_val = value.rdi, rsi_val = value.rsi;
+    fmt::format(target, "  - rbp : {} rdi: {} rsi: {} \n", rbp_val | flags, rdi_val | flags, rsi_val | flags);
+    auto rdx_val = value.rdx, rcx_val = value.rcx, rbx_val = value.rbx;
+    fmt::format(target, "  - rdx : {} rcx: {} rbx: {} \n", rdx_val | flags, rcx_val | flags, rbx_val | flags);
+    auto rax_val = value.rax;
+    fmt::format(target, "  - rax : {} \n", rax_val | flags);
+    auto interrupt_num = value.interrupt_number;
+    fmt::format(target, "  - interrupt n°{} \n", interrupt_num | fmt::FMT_CYAN);
+    auto error_code = value.error_code;
+    fmt::format(target, "  - error code: {} \n", error_code | flags);
+    auto rip_val = value.rip;
+    fmt::format(target, "  - ip        : {} \n", rip_val | flags);
+    auto cs_val = value.cs;
+    fmt::format(target, "  - cs        : {} \n", cs_val | flags);
+    auto rflags_val = value.rflags;
+    fmt::format(target, "  - rflags    : {} \n", rflags_val | flags);
+    auto rsp_val = value.rsp;
+    fmt::format(target, "  - rsp       : {} \n", rsp_val | flags);
+    auto ss_val = value.ss;
+    fmt::format(target, "  - ss        : {} \n", ss_val | flags);
     fmt::format(target, "] \n");
 
 #undef flags

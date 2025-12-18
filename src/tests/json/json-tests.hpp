@@ -139,7 +139,7 @@ static constexpr TestGroup jsonTests = {
                                 {
                                     return "Expected array type for key-array";
                                 }
-                                auto &arr = val->children;
+                                auto &arr = val->children();
                                 if (arr.len() != 3 || try$(arr[0].as_number()) != 1 || try$(arr[1].as_number()) != 2 || try$(arr[2].as_number()) != 3)
                                 {
 

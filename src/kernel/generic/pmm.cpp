@@ -190,6 +190,7 @@ core::Result<Pmm> Pmm::create(const mcx::MachineContext *context)
     // own the first 16 (64Ko) pages. We will use the lower 16bit adress space for SMP initialization
     pmm.own( pmm._range.start(), (pmm._range.len() / page_size_bit) + 16);
     pmm.own( 0,  16);
+    pmm._context = context;
 
 
     return pmm;

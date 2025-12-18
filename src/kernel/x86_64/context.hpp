@@ -4,7 +4,6 @@
 #include "arch/x86_64/simd.hpp"
 
 #include "kernel/generic/context.hpp"
-#include "libcore/atomic.hpp"
 namespace arch::amd64
 {
 

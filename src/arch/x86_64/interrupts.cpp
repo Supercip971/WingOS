@@ -33,7 +33,8 @@ void dump_stackframe(void *rbp)
     int size = 0;
     while (frame && size++ < 20)
     {
-        log::log$("stackframe: {}", frame->rip | fmt::FMT_HEX);
+        auto rip = frame->rip;
+        log::log$("stackframe: {}", rip | fmt::FMT_HEX);
         frame = frame->rbp;
     }
 
@@ -75,13 +76,18 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
 
         log::log$("cpu: {}", hw::acpi::Lapic::the().id());
         log::log$("stackframe: {}", (uint64_t)frame | fmt::FMT_HEX);
-        log::log$("interrupt error: n°{} - {}", frame->interrupt_number, arch::amd64::interrupts_names[frame->interrupt_number]);
+        auto interrupt_number = frame->interrupt_number;
+        log::log$("interrupt error: n°{} - {}", interrupt_number, arch::amd64::interrupts_names[interrupt_number]);
 
         // fixme: use a real number generator for 'funny' messages instead of this
         {
             ccount *= 2;
             ccount += 3;
-            uint64_t uid = frame->interrupt_number ^ frame->error_code ^ frame->rax ^ frame->rsp ^ frame->rip ^ ccount;
+            auto error_code = frame->error_code;
+            auto rax = frame->rax;
+            auto rsp = frame->rsp;
+            auto rip = frame->rip;
+            uint64_t uid = interrupt_number ^ error_code ^ rax ^ rsp ^ rip ^ ccount;
 
             uid = uid % (sizeof(core::isnt_encouraging_messages) / sizeof(core::isnt_encouraging_messages[0]));
             log::log$("-> '{}'", core::isnt_encouraging_messages[uid]);

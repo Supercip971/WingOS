@@ -1,4 +1,5 @@
-extern"C" int __cxa_atexit(void (*destructor) (void *), void *arg, void *__dso_handle)
+extern "C" {
+int __cxa_atexit(void (*destructor) (void *), void *arg, void *__dso_handle)
 {
     (void)destructor;
     (void)arg;
@@ -7,8 +8,8 @@ extern"C" int __cxa_atexit(void (*destructor) (void *), void *arg, void *__dso_h
 }
 void *__dso_handle;
 
-extern "C" void __cxa_finalize(void *f)
+void __cxa_finalize(void *f)
 {
     (void)f;
 }
-
+}

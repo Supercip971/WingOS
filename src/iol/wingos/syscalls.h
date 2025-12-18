@@ -228,11 +228,11 @@ extern "C"
     {
         SyscallIpcX86Port port_data = {
             .space_handle = 0, // current space
-            .port = port,
             .size = size,
-            .write = true,
+            .port = port,
+            .write = 1,
+            .read = 0,
             .data = data,
-            .read = false,
             .returned_value = 0};
         SyscallInterface interface = syscall_ipc_x86_port(&port_data);
         uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
@@ -243,11 +243,11 @@ extern "C"
     {
         SyscallIpcX86Port port_data = {
             .space_handle = 0, // current space
-            .port = port,
             .size = size,
-            .write = false,
+            .port = port,
+            .write = 0,
+            .read = 1,
             .data = 0,
-            .read = true,
             .returned_value = 0};
         SyscallInterface interface = syscall_ipc_x86_port(&port_data);
         uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);

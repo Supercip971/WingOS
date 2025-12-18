@@ -81,7 +81,7 @@ core::Result<void> hpet_initialize(hw::acpi::Rsdp *rsdp);
 template<MappCallbackFn Fn>
 core::Result<void> hpet_prepare_mapping(uintptr_t rsdp_addr, Fn fn)
 {
-    auto hpet = hw::acpi::rsdt_find<hw::hpet::HPETEntry>(toVirt(rsdp_addr).as<hw::acpi::Rsdp>()).unwrap();  
+    auto hpet = hw::acpi::rsdt_find<hw::hpet::HPETEntry>(toVirt(rsdp_addr).as<hw::acpi::Rsdp>()).unwrap();
 
     auto hpet_base = hpet->address.address;
     try$(fn((uintptr_t)hpet_base, hpet->header.length));

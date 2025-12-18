@@ -23,11 +23,11 @@
 int main(int , char **){return 0;};
 
 
-struct Waiter 
+struct Waiter
 {
     core::Milliseconds start_time;
-    core::Milliseconds end_time; 
-    Wingos::MessageServerReceived msg;  
+    core::Milliseconds end_time;
+    Wingos::MessageServerReceived msg;
 };
 
 
@@ -45,7 +45,7 @@ int _main(StartupInfo*context)
         auto vrange = math::Range<size_t>(addr, addr + size).growAlign(4096);
 
         log::log$("mapping hpet rsdp region: {} - {}", vrange.start() | fmt::FMT_HEX, vrange.end() | fmt::FMT_HEX);
-        
+
         Wingos::Space::self().map_physical_memory(vrange.start(), vrange.len(), ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
         return core::Result<size_t>{
             vrange.start()
@@ -65,7 +65,7 @@ int _main(StartupInfo*context)
     }).unwrap();
 
     hw::hpet::hpet_initialize(toVirt(phys_rsdp).as<hw::acpi::Rsdp>()).unwrap();
-    // map everything 
+    // map everything
 
 
 
@@ -88,7 +88,7 @@ int _main(StartupInfo*context)
 //        hw::hpet::hpet_sleep(core::Seconds(1));
 //        log::log$("tick");
 
-        server.accept_connection(); 
+        server.accept_connection();
 
         for (long i = 0; i < (long)waiters.len(); i++)
         {
@@ -114,8 +114,10 @@ int _main(StartupInfo*context)
             {
             case prot::CLOCK_GET_SYSTEM_TIME:
             {
-                core::Milliseconds ms = hw::hpet::hpet_clock_read();
                 IpcMessage reply = {};
+                core::Milliseconds ms = hw::hpet::hpet_clock_read();
+       //         log::log$("hpet: system time: {}ms", ms.value());
+                reply.data[1].data = ms.value()/1000;
                 reply.data[2].data = ms.value();
                 server.reply(core::move(msg), reply).unwrap();
                 break;
@@ -123,7 +125,7 @@ int _main(StartupInfo*context)
             case prot::CLOCK_SLEEP_MS:
             {
                 core::Milliseconds ms = core::Milliseconds(msg.received.data[1].data);
-               
+
                 auto start = hw::hpet::hpet_clock_read();
                 auto end = start + ms;
 

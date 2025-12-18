@@ -172,8 +172,10 @@ core::Result<void> redirect_interrupt(LCpuId cpu, uint8_t irq, uint8_t vector, b
             log::log$("  found iso: {}", i);
             log::log$("    bus source: {}", entry.bus_source);
             log::log$("    irq source: {}", entry.irq_source);
-            log::log$("    global system interrupt: {}", entry.global_system_interrupt);
-            log::log$("    flags: {}", entry.flags);
+            auto global_sys_int = entry.global_system_interrupt;
+            log::log$("    global system interrupt: {}", global_sys_int);
+            auto flags = entry.flags;
+            log::log$("    flags: {}", flags);
 
             try$(_raw_redirect_interrupt(cpu, vector, enabled, iso[i].global_system_interrupt, entry.flags));
             return {};

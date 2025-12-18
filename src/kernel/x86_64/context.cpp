@@ -52,8 +52,10 @@ void CpuContext::load_to(void *state)
     // Validate stack pointer
     if (stored_frame.rsp == 0 || stored_frame.rip == 0)
     {
-        log::err$("Invalid stack pointer: RSP={}", stored_frame.rsp);
-        log::err$("Invalid instruction pointer: RIP={}", stored_frame.rip);
+        auto rsp_val = stored_frame.rsp;
+        auto rip_val = stored_frame.rip;
+        log::err$("Invalid stack pointer: RSP={}", rsp_val);
+        log::err$("Invalid instruction pointer: RIP={}", rip_val);
         return;
     }
 

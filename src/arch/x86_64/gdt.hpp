@@ -12,7 +12,7 @@ struct Gdtr
     uint16_t limit;
     uint64_t base;
 
-    constexpr Gdtr(uint64_t base, uint16_t limit) : limit(limit), base(base) {}
+    constexpr Gdtr(uint64_t base_addr, uint16_t limit_size) : limit(limit_size), base(base_addr) {}
 
     constexpr Gdtr() : limit(0), base(0) {}
 

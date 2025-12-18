@@ -32,6 +32,7 @@ struct Pmm
     core::Lock pmm_lock;
     mcx::MemoryMapIdx _section_location;
     size_t _sections_count;
+    const mcx::MachineContext *_context;
 
     static size_t pmm_size(const mcx::MachineContext *context)
     {

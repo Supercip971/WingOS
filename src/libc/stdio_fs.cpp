@@ -7,13 +7,20 @@
 #include "stdio_fs.hpp"
 
 extern "C"
-size_t fwrite(void* __restrict ptr, size_t size, size_t n, FILE* __restrict file )
+size_t fwrite(const void* __restrict ptr, size_t size, size_t n, FILE* __restrict file )
 {
-    if(file == nullptr)
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnonnull-compare"
+#endif
+    if(!file)
     {
         log::log$("fwrite: file is null");
         return 0;
     }
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
     if(file->kind == FILE_KIND_VOID)
     {
         log::err$("fwrite: file handle is invalid (use-after-fclose detected!)");
@@ -24,7 +31,7 @@ size_t fwrite(void* __restrict ptr, size_t size, size_t n, FILE* __restrict file
     {
         case FILE_KIND_FILE:
         {
-            file->file->write(ptr, file->cursor, size * n);
+            file->file->write(const_cast<void*>(ptr), file->cursor, size * n);
             file->cursor += size * n;
             return n;
         }
@@ -78,11 +85,18 @@ size_t fwrite(void* __restrict ptr, size_t size, size_t n, FILE* __restrict file
 size_t fread(void* __restrict ptr, size_t size, size_t n, FILE* __restrict file )
 
 {
-    if(file == nullptr)
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnonnull-compare"
+#endif
+    if(!file)
     {
         log::err$("fread: file is null");
         return 0;
     }
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 
     uint8_t* ptr_v = (uint8_t*)ptr;
     switch(file->kind)

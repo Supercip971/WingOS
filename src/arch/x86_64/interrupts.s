@@ -72,7 +72,7 @@ __interrupt_common:
 
     mov rdi, rsp
     mov rax, rsp
-    
+
     call interrupt_handler
 
     pop_all
@@ -128,4 +128,3 @@ __interrupt_vector:
     INTERRUPT_NAME i
 %assign i i+1
 %endrep
-

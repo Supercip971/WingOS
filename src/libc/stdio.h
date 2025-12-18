@@ -16,7 +16,7 @@ extern FILE* stdin;
 extern FILE* stdout;
 extern FILE* stderr;
 
-size_t fwrite(void* __restrict ptr, size_t size, size_t n, FILE* __restrict file );
+size_t fwrite(const void* __restrict ptr, size_t size, size_t n, FILE* __restrict file );
 size_t fread(void* __restrict ptr, size_t size, size_t n, FILE* __restrict file );
 
 // remove and rename

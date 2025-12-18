@@ -91,7 +91,7 @@ struct Asset
         }
         space->self->lock.release();
 
-        log::log$("Asset not found in space({}) -> {} for handle {}", space->space_handle, space->uid, handle);
+        log::log$("Asset not found in space({}) for handle {}", space->uid, handle);
 
         log::log$("task: {}", Cpu::current()->currentTask()->uid());
 

@@ -95,7 +95,7 @@ public:
         res._value = (core::forward<U>(val));
         return res;
     }
-    
+
     template <typename E>
     static constexpr Result<ValT, ErrT> error(E err bounded$)
         requires core::IsConvertibleTo<E, ErrorType>
@@ -106,20 +106,20 @@ public:
         return res;
     }
     void assert();
-    ValT& unwrap() & bounded$ 
+    ValT& unwrap() & bounded$
     {
         assert();
         return _value;
     }
 
-    ValT&& unwrap() && bounded$ 
+    ValT&& unwrap() && bounded$
     {
         assert();
         return core::move(_value);
     }
 
     ValT take() && = delete;
-    ValT take() & bounded$ 
+    ValT take() & bounded$
     {
         assert();
         return core::move(_value);
@@ -219,7 +219,7 @@ extern void debug_provide_info(const char *info, const char *data);
 #define STRINGIZE(x) STRINGIZE_DETAIL(x)
 
 #define try_v$(expr, vname) ({                                               \
-    auto vname = core::move(expr);                                                     \
+    auto vname = (expr);                                                     \
     if (vname.is_error()) [[unlikely]]                             \
     {                                                                        \
         core::debug_provide_info("error:    ", (const char *)vname.error()); \

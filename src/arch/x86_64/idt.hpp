@@ -54,7 +54,7 @@ ENUM_OP$(IDTEntry::Type);
 struct IDT
 {
     static const int _size = 256;
-    core::Array<IDTEntry, _size> _entries;
+    IDTEntry _entries[_size];
 
     constexpr IDT() : _entries{} {};
 

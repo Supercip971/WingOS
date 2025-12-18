@@ -8,7 +8,6 @@
 #include "kernel/generic/paging.hpp"
 #include "kernel/generic/space.hpp"
 #include "kernel/generic/task.hpp"
-#include "libcore/atomic.hpp"
 #include "libcore/ds/array.hpp"
 #include "libcore/ds/vec.hpp"
 #include "libcore/fmt/log.hpp"

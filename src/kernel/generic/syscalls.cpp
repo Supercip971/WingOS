@@ -1,6 +1,7 @@
 #include "syscalls.hpp"
 
 #include "arch/x86_64/paging.hpp"
+#include "hw/mem/addr_space.hpp"
 #include "libcore/fmt/impl/asset_kind.hpp"
 
 #include "arch/x86/port.hpp"
@@ -29,6 +30,12 @@ core::Result<T *> syscall_check_ptr(uintptr_t ptr)
     if (tsk == nullptr)
     {
         return core::Result<T *>::error("no current task");
+    }
+
+
+    if(ptr >= MMAP_IO_BASE)
+    {
+        return core::Result<T *>::error("invalid pointer");
     }
 
     try$(tsk->vmm_space().verify(ptr, sizeof(T)));
@@ -993,13 +1000,14 @@ core::Result<size_t> ksyscall_ipc_x86_port(SyscallIpcX86Port *port)
             port->returned_value = arch::x86::in8(port->port);
             break;
         case 2:
-
             port->returned_value = arch::x86::in16(port->port);
             break;
         case 4:
             port->returned_value = arch::x86::in32(port->port);
             break;
         default:
+            log::err$("Invalid port size: {}", port->size);
+            log::err$("Port: {}", port->port);
             return core::Result<size_t>::error("invalid size");
         }
     }
@@ -1017,6 +1025,9 @@ core::Result<size_t> ksyscall_ipc_x86_port(SyscallIpcX86Port *port)
             arch::x86::out32(port->port, (uint32_t)port->data);
             break;
         default:
+            log::err$("Invalid port size: {}", port->size);
+            log::err$("Port: {}", port->port);
+            log::err$("Data: {}", port->data);
             return core::Result<size_t>::error("invalid size");
         }
     }

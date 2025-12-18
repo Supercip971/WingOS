@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 
 #include "iol/wingos/ipc.hpp"
 #include "iol/wingos/space.hpp"
@@ -7,7 +7,7 @@
 #include "wingos-headers/ipc.h"
 
 
-namespace prot 
+namespace prot
 {
     enum ClockMessageType
     {
@@ -16,13 +16,13 @@ namespace prot
     };
 
 
-    struct ClockTime 
+    struct ClockTime
     {
         uint64_t seconds;
         uint64_t milliseconds;
     };
-    
-    class ClockConnection 
+
+    class ClockConnection
     {
         Wingos::IpcClient connection;
     public:
@@ -52,14 +52,14 @@ namespace prot
                 return ("clock: failed to send get system time message");
             }
 
-            auto msg = core::move(sended_message.unwrap());
+            auto& msg = sended_message.unwrap();
             ClockTime time {};
             time.seconds = msg.data[1].data;
             time.milliseconds = msg.data[2].data;
 
             return time;
         }
-        
+
 
         core::Result<void> sleep_ms(uint64_t ms)
         {

@@ -8,6 +8,7 @@
 #include "kernel/generic/ipc.hpp"
 #include "kernel/generic/space.hpp"
 #include "math/align.hpp"
+#include "mcx/mcx.hpp"
 #include "wingos-headers/asset.h"
 
 core::Result<AssetPtr> _asset_create(Space *space, AssetKind kind)
@@ -138,7 +139,6 @@ void asset_release(Space *space, Asset *asset)
             }
 
             asset->ipc_connection->server_mutex.mutex_release();
-
         }
     }
 
@@ -261,9 +261,7 @@ void asset_release(Space *space, Asset *asset)
     {
         asset->lock.release();
         asset_remove_from_space(space, asset);
-
     }
-
 }
 
 core::Result<AssetPtr> asset_create_memory(Space *space, AssetMemoryCreateParams params)
@@ -309,8 +307,29 @@ core::Result<AssetPtr> asset_create_memory(Space *space, AssetMemoryCreateParams
     }
     else
     {
-        //
+        for (int i = 0; i < Pmm::the()._context->_memory_map_count; i++)
+        {
+            auto &map = Pmm::the()._context->_memory_map[i];
+            auto range = map.range;
+            if (range.start() <= params.addr && range.end() >= params.addr + params.size)
+            {
+                if (map.type == mcx::MemoryMap::Type::FREE)
+                {
+                    Pmm::the().own(PhysAddr{params.addr}, params.size);
+                }
+                else if(map.type != mcx::MemoryMap::Type::FREE)
+                {
+                    log::err$("asset_create_memory: memory range {} is not free ({})", range, (int)map.type);
+                }
+
+                break;
+            }
+        }
+
+        res = PhysAddr{params.addr};
     }
+
+
 
     if (res.is_error())
     {
@@ -346,6 +365,7 @@ core::Result<AssetPtr> asset_create_mapping(Space *space, AssetMappingCreatePara
     ptr.asset->mapping.start = params.start;
     ptr.asset->mapping.end = params.end;
     ptr.asset->mapping.physical_mem = params.physical_mem;
+
     ptr.asset->mapping.writable = params.writable;
     ptr.asset->mapping.executable = params.executable;
 
@@ -514,7 +534,8 @@ core::Result<AssetPtr> asset_create_ipc_connections(Space *space, AssetIpcConnec
 
     // Get server space while holding ipc_server_lock (server can't be deleted)
     auto server_space_res = Space::global_space_by_handle(server->parent_space);
-    if (server_space_res.is_error()) {
+    if (server_space_res.is_error())
+    {
         log::err$("asset_create_ipc_connection: failed to get server space {}", server->parent_space);
         release_server_lock();
         ptr.asset->lock.lock();
@@ -525,7 +546,8 @@ core::Result<AssetPtr> asset_create_ipc_connections(Space *space, AssetIpcConnec
 
     // Copy asset to server space (this handles its own locking internally)
     auto copy_res = asset_copy(space, server_space, ptr);
-    if (copy_res.is_error()) {
+    if (copy_res.is_error())
+    {
         log::err$("asset_create_ipc_connection: failed to copy asset to server space");
         release_server_lock();
         ptr.asset->lock.lock();

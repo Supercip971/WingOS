@@ -172,7 +172,7 @@ public:
             {
                 return "Page not user accessible";
             }
-            
+
             try$(table_from_addr(vaddr)->unmap(vaddr, user));
             for (int i = 0; i < 512; i++)
             {

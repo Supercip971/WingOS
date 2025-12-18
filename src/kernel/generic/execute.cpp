@@ -89,11 +89,17 @@ core::Result<void> start_module_execution(elf::ElfLoader loaded, mcx::MachineCon
         auto ph = try$(loaded.program_header(i));
         if (ph.type != core::underlying_value(ElfProgramHeaderType::HEADER_LOAD))
         {
-            log::warn$("skipping program header {}: type is not LOAD but {}", i, ph.type);
+            auto type_val = ph.type;
+            log::warn$("skipping program header {}: type is not LOAD but {}", i, type_val);
             continue;
         }
+        auto type_val = ph.type;
+        auto flags_val = ph.flags;
+        auto virt_addr_val = ph.virt_addr;
+        auto file_offset_val = ph.file_offset;
+        auto file_size_val = ph.file_size;
         log::log$("section[{}]: type: {}, flags: {}, virt_addr: {}, file_offset: {}, file_size: {}",
-                  i, ph.type, ph.flags, ph.virt_addr, ph.file_offset, ph.file_size);
+                  i, type_val, flags_val, virt_addr_val, file_offset_val, file_size_val);
 
         size_t page_count = math::alignUp(ph.mem_size, 4096ul) / 4096;
         size_t mem_size = page_count * 4096;

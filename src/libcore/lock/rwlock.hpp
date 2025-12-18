@@ -1,7 +1,5 @@
 #pragma once
 
-#include <stdatomic.h>
-
 #include "arch/generic/instruction.hpp"
 #include "libcore/lock/lock.hpp"
 #include "libcore/type-utils.hpp"
@@ -16,9 +14,9 @@ namespace core
 class RWLock
 {
     Lock _access_lock = Lock();
-    _Atomic int _readers = 0;
-    _Atomic int _writers = 0;
-    _Atomic int _waiters = 0;
+    int _readers = 0;
+    int _writers = 0;
+    int _waiters = 0;
 
 public:
     RWLock() = default;
@@ -49,11 +47,11 @@ public:
                 success = true;
                 _waiters -= 1;
                 _access_lock.release();
-                atomic_thread_fence(memory_order_seq_cst);
+                __atomic_thread_fence(__ATOMIC_SEQ_CST);
                 break;
             }
             _access_lock.release();
-            atomic_thread_fence(memory_order_seq_cst);
+            __atomic_thread_fence(__ATOMIC_SEQ_CST);
 
             arch::pause();
             retry--;
@@ -62,7 +60,7 @@ public:
                 _access_lock.lock();
                 _waiters -= 1;
                 _access_lock.release();
-                atomic_thread_fence(memory_order_seq_cst);
+                __atomic_thread_fence(__ATOMIC_SEQ_CST);
 
 
                 return false;
@@ -88,11 +86,11 @@ public:
                 success = true;
                 _waiters -= 1;
                 _access_lock.release();
-                atomic_thread_fence(memory_order_seq_cst);
+                __atomic_thread_fence(__ATOMIC_SEQ_CST);
                 break;
             }
             _access_lock.release();
-            atomic_thread_fence(memory_order_seq_cst);
+            __atomic_thread_fence(__ATOMIC_SEQ_CST);
             arch::pause();
         }
         return success;
@@ -120,7 +118,7 @@ public:
                 break;
             }
             _access_lock.release();
-            atomic_thread_fence(memory_order_seq_cst);
+            __atomic_thread_fence(__ATOMIC_SEQ_CST);
             arch::pause();
         }
         return success;

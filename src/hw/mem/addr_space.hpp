@@ -9,7 +9,7 @@
 /* in a kernel it's just adding an offset */
 struct VirtAddr
 {
-    uintptr_t _addr;
+    uintptr_t _addr = 0;
 
     constexpr VirtAddr() = default;
     constexpr VirtAddr(uintptr_t addr) : _addr(addr) {}
@@ -34,27 +34,28 @@ struct VirtAddr
     // technically it's like a pointer, the pointer is constant
     // but not the value it points to
     template <typename T>
-    void write(T value) const
+    void write(T value) 
     {
-        *as<T>() = value;
+        *((T*)_addr) = value;
     }
 
     template <typename T>
     T read() const
     {
-        return *as<T>();
+        
+        return *((T*)_addr);
     }
 
     template <typename T>
-    void vwrite(T value) const
+    void vwrite(T value) 
     {
-        *as<volatile T>() = value;
+        (*(volatile T*)_addr) = value;
     }
 
     template <typename T>
     T vread() const
     {
-        return *as<volatile T>();
+        return (*(volatile T*)_addr);
     }
 
     VirtAddr offsetted(uintptr_t offset) const

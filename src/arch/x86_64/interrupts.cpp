@@ -131,6 +131,7 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
     }
     else if (frame->interrupt_number == 100)
     {
+
         // log::log$("rescheduling on cpu {}", hw::acpi::Lapic::the().id());
         _scheduler_impl(stack);
     }

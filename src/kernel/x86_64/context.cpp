@@ -3,6 +3,7 @@
 
 #include "arch/x86_64/context.hpp"
 #include "arch/x86_64/gdt.hpp"
+#include "arch/x86_64/msr.hpp"
 #include "kernel/x86_64/context.hpp"
 #include "kernel/x86_64/cpu.hpp"
 
@@ -11,6 +12,7 @@
 #include "kernel/generic/paging.hpp"
 #include "libcore/alloc/alloc.hpp"
 #include "libcore/lock/lock.hpp"
+#include "math/align.hpp"
 
 namespace kernel
 {
@@ -24,7 +26,7 @@ core::Result<CpuContext *> CpuContext::create_empty()
 
     data->await_save = false;
     data->stackframe(arch::amd64::StackFrame{});
- 
+
     return (CpuContext*)data;
 }
 
@@ -61,8 +63,12 @@ void CpuContext::load_to(void *state)
 
     *frame = stored_frame;
 
-    Cpu::current()->syscall_stack = data->syscall_stack_top;
-    Cpu::current()->saved_stack = data->saved_syscall_stack;
+    //Cpu::current()->syscall_stack = data->syscall_stack_top;
+   // Cpu::current()->saved_stack = data->saved_syscall_stack;
+
+   arch::amd64::Msr::Write(arch::amd64::MsrReg::GS_BASE, reinterpret_cast<uintptr_t>(this));
+   arch::amd64::Msr::Write(arch::amd64::MsrReg::KERNEL_GS_BASE, reinterpret_cast<uintptr_t>(this));
+
 
     this->_vmm_space->use();
 
@@ -98,8 +104,8 @@ void CpuContext::save_in(void *state)
 
     data->stackframe(*frame);
 
-    this->syscall_stack_top = Cpu::current()->syscall_stack;
-    this->saved_syscall_stack = Cpu::current()->saved_stack;
+   // this->syscall_stack_top = Cpu::current()->syscall_stack;
+   // this->saved_syscall_stack = Cpu::current()->saved_stack;
     data->simd_context.save();
     {
 
@@ -114,10 +120,13 @@ void CpuContext::release()
     arch::amd64::CpuContextAmd64 *data = this->as<arch::amd64::CpuContextAmd64>();
 
     if (data->stack_ptr != nullptr)
+    {
         core::mem_free(data->stack_ptr);
+    }
     if (data->kernel_stack_ptr != nullptr)
+    {
         core::mem_free(data->kernel_stack_ptr);
-
+    }
     data->simd_context.release();
 
     data->kernel_stack_ptr = nullptr;
@@ -144,10 +153,10 @@ core::Result<void> CpuContext::prepare(CpuContextLaunch launch)
     data->stack_top = (void *)((uintptr_t)data->stack_ptr + kernel::userspace_stack_size);
     data->kernel_stack_top = (void *)((uintptr_t)data->kernel_stack_ptr + kernel::kernel_stack_size);
     data->syscall_stack_top = (void *)((uintptr_t)data->syscall_stack_ptr + kernel::kernel_stack_size - 16);
-    
+
     data->saved_syscall_stack = 0;
 
- 
+
     auto frame = arch::amd64::StackFrame();
 
     frame.rsp = (uint64_t)data->stack_top;

@@ -27,18 +27,18 @@ kernel::Task *kernel::Task::_task_allocate()
     }
     core::lock_scope_writer$(_task_lock);
 
-    kernel::Task task {}; 
-    
+    kernel::Task task {};
+
     task.uid(next_uid++);
     task.state(kernel::TaskState::TASK_EMBRYO);
 
     task_list.push(task);
 
-    
+
 
 
     return task_list.last();
-    
+
 
 }
 

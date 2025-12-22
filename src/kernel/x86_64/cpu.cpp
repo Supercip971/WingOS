@@ -28,13 +28,12 @@ void Cpu::interrupt_hold()
 }
 
 
-core::Lock cpu_sys_lock = {};
+static core::Lock cpu_sys_lock = {};
 
 bool Cpu::enter_syscall_safe_mode()
 {
-
-
     cpu_sys_lock.lock();
+    Cpu::current()->_in_syscall_lock = true;
     asm volatile("cli\n");
 
     return true;
@@ -42,7 +41,11 @@ bool Cpu::enter_syscall_safe_mode()
 
 bool Cpu::exit_syscall_safe_mode()
 {
-    cpu_sys_lock.release();
+    if (Cpu::current()->_in_syscall_lock)
+    {
+        Cpu::current()->_in_syscall_lock = false;
+        cpu_sys_lock.release();
+    }
     asm volatile(
         "sti\n"
     );
@@ -52,7 +55,11 @@ bool Cpu::exit_syscall_safe_mode()
 
 bool Cpu::end_syscall()
 {
-    cpu_sys_lock.release();
+    if (Cpu::current()->_in_syscall_lock)
+    {
+        Cpu::current()->_in_syscall_lock = false;
+        cpu_sys_lock.release();
+    }
     return true;
 }
 void Cpu::interrupt_release(bool re_enable_int)

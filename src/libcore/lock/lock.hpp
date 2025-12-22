@@ -14,7 +14,7 @@ namespace core
 class Lock
 {
 
-    int _locked = 0;
+    volatile int _locked = 0;
 
     bool try_acquire()
     {

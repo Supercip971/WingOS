@@ -58,7 +58,7 @@ void asset_remove_from_space(Space *space, Asset *asset)
         return;
     }
 
-    asset->lock.lock();
+    space->self->lock.lock();
     for (size_t i = 0; i < space->assets.len(); i++)
     {
         if (space->assets[i].asset == asset)
@@ -67,7 +67,7 @@ void asset_remove_from_space(Space *space, Asset *asset)
             break;
         }
     }
-    asset->lock.release();
+    space->self->lock.release();
 }
 
 void asset_release(Space *space, Asset *asset)
@@ -527,7 +527,6 @@ core::Result<AssetPtr> asset_create_ipc_connections(Space *space, AssetIpcConnec
     ptr.asset->ipc_connection->server_handle = params.server_handle;
     ptr.asset->ipc_connection->server_space_handle = server->parent_space;
     ptr.asset->ipc_connection->client_space_handle = space->uid;
-    ptr.asset->ipc_connection->server_asset = server;
     ptr.asset->ipc_connection->message_sent = {};
 
     ptr.asset->lock.release();

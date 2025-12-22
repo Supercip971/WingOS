@@ -42,11 +42,16 @@ void dump_stackframe(void *rbp)
 }
 
 
+core::Lock _syscall_lock;
+
+
 extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
 {
     //  log("syscall", LOG_INFO, "called syscall higher handler in: {} (stack: {})", stackframe->rip, stackframe->rsp);
 
     SyscallStackFrame *stackframe = sf;
+
+
 
     Cpu::enter_syscall_safe_mode();
     Cpu::current()->debug_saved_syscall_stackframe = stackframe->rbp;
@@ -67,7 +72,6 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
     if (res.is_error())
     {
 
-        Cpu::end_syscall(); // early end syscall mode,
         log::err$("syscall error: {}", res.error());
         auto rax = stackframe->rax;
         auto rbx = stackframe->rbx;
@@ -100,6 +104,9 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
                 log::log$("    IPC Connection: accepted={}, msg_count={}", ipc_conn->accepted, ipc_conn->message_sent.len());
             }
         }
+
+
+        Cpu::end_syscall(); // early end syscall mode,
         while(true)
         {}
     }
@@ -107,8 +114,8 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
     {
         sf->rax = res.unwrap();
     }
-    asm volatile("cli");
 
+    Cpu::end_syscall();
 
     //log::log$("syscall: {} ", stackframe->rax);
     return sf->rax;
@@ -142,11 +149,11 @@ core::Result<void> syscall_init_for_current_cpu()
     Msr::Write(MsrReg::SYSCALL_FLAG_MASK, ((uint32_t)(RFLAGS_INTERRUPT_ENABLE)) |  0xfffffffe);
 
 
-    Cpu::current()->syscall_stack = (void *)((uintptr_t)try$(core::mem_alloc(kernel::kernel_stack_size)) +
-                                             kernel::kernel_stack_size - 16); // allocate a stack for syscall handling
+  //  Cpu::current()->syscall_stack = (void *)((uintptr_t)try$(core::mem_alloc(kernel::kernel_stack_size)) +
+  //                                           kernel::kernel_stack_size - 16); // allocate a stack for syscall handling
 
 
-                                             return {};
+  return {};
 }
 
 } // namespace arch::amd64

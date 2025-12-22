@@ -36,7 +36,7 @@ void Asset::dump_assets(Space *space)
             {
                 log::log$("    IPC Connection accepted: {}", space->assets[i].asset->ipc_connection->accepted);
                  log::log$("    IPC Connection closed: {}", (int)space->assets[i].asset->ipc_connection->closed_status);
-                 log::log$("    IPC Connected: {}", (int)space->assets[i].asset->ipc_connection->server_asset->handle);
+                 log::log$("    IPC Connected to server: {}", (int)space->assets[i].asset->ipc_connection->server_handle);
 
             }
             if(space->assets[i].asset->kind == OBJECT_KIND_MEMORY)

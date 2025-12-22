@@ -9,18 +9,15 @@ using CoreId = int;
 static constexpr CoreId CpuCoreNone = -1;
 
 
-
 namespace kernel {
     class Task;
 };
-class [[gnu::packed]] Cpu 
+class [[gnu::packed]] Cpu
 {
 
     // used for syscall handling -- <!> ORDER IS IMPORTANT FOR ASM CODE <!>
 public:
-    void * volatile syscall_stack;
-    volatile uintptr_t saved_stack; // used to save the stack pointer before syscall
-    uintptr_t debug_saved_syscall_stackframe;
+   uintptr_t debug_saved_syscall_stackframe;
 
 protected:
     //
@@ -29,7 +26,7 @@ protected:
     size_t interrupt_depth = 0;
     bool _in_interrupt = false;
     bool _present;
-
+    bool _in_syscall_lock = false;
 public:
 
     bool in_interrupt()
@@ -41,6 +38,11 @@ public:
     static bool enter_syscall_safe_mode();
     static bool exit_syscall_safe_mode();
     static bool end_syscall();
+
+    bool has_syscall_lock() const
+    {
+        return _in_syscall_lock;
+    }
 
     void in_interrupt(bool val)
     {

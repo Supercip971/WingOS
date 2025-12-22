@@ -1047,7 +1047,6 @@ core::Result<size_t> syscall_handle(SyscallInterface syscall)
         log::log("{}", Cpu::current()->currentTask()->uid());
         log::log("{}", debug.message);
 
-        Cpu::exit_syscall_safe_mode();
         return core::Result<size_t>::success(0);
     }
     case SYSCALL_PHYSICAL_MEM_OWN_ID:

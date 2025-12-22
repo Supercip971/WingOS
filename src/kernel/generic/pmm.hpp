@@ -59,6 +59,7 @@ struct Pmm
 
     static Pmm &the();
 
+
     static core::Result<void> initialize(const mcx::MachineContext *context);
 
     static core::Result<Pmm> _allocate_structure(const mcx::MachineContext *context);
@@ -71,6 +72,10 @@ struct Pmm
 
     core::Result<void> own(PhysAddr addr, size_t count);
     core::Result<void> release(PhysAddr addr, size_t count);
+
+
+    core::Result<bool> query_usage(PhysAddr addr);
+
 };
 
 template <core::IsConvertibleTo<Pmm> T, core::Writable Targ>

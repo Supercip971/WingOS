@@ -1,5 +1,6 @@
 #include "pmm.hpp"
 #include <libcore/fmt/log.hpp>
+#include "hw/mem/addr_space.hpp"
 
 #include "kernel/generic/mem.hpp"
 #include "mcx/mcx.hpp"
@@ -13,6 +14,24 @@ core::Result<void> Pmm::initialize(const mcx::MachineContext *context)
     instance = try$(Pmm::create(context));
     return {};
 }
+ core::Result<bool> Pmm::query_usage(PhysAddr addr)
+ {
+    lock_scope$(pmm_lock);
+
+    for (size_t i = 0; i < this->_sections_count; i++)
+    {
+        auto &section = this->_sections[i];
+
+        if (section.range.contains(addr))
+        {
+            size_t page_index = (addr - section.range.start()) / page_size_bit;
+            return section.bitmap.bit(page_index);
+        }
+   }
+
+    return ("Could not query memory usage");
+ }
+
 
 core::Result<Pmm> Pmm::_allocate_structure(const mcx::MachineContext *context)
 {
@@ -92,7 +111,7 @@ core::Result<void> Pmm::_fill(const mcx::MachineContext *context)
         {
             // as the bitmap is represented using bytes and is offsetted by the start of the bitmap
             // we need to offset the range by the start of the bitmap and divide by the page size
-            auto in_bitmap_range = _range.offsettedSub(entry_range.start())
+            auto in_bitmap_range = _range.offsettedSub(entry_range.start()).growAlign(page_size_bit)
                                        .div(page_size_bit);
             section.bitmap.fill(true, in_bitmap_range);
         }
@@ -117,7 +136,7 @@ core::Result<PhysAddr> Pmm::allocate(size_t count, IolAllocMemoryFlag flags)
             auto &section = this->_sections[i];
             auto start = section.bitmap.alloc(count);
 
-            if (start)
+            if (!start.is_error())
             {
 
                 auto range = mcx::MemoryRange::from_begin_len(start.unwrap(), count);
@@ -149,6 +168,7 @@ core::Result<PhysAddr> Pmm::allocate(size_t count, IolAllocMemoryFlag flags)
 
 core::Result<void> Pmm::own(PhysAddr addr, size_t count)
 {
+    lock_scope$(pmm_lock);
 
     for (size_t i = 0; i < this->_sections_count; i++)
     {
@@ -166,6 +186,8 @@ core::Result<void> Pmm::own(PhysAddr addr, size_t count)
 }
 core::Result<void> Pmm::release(PhysAddr addr, size_t count)
 {
+    lock_scope$(pmm_lock);
+
     for (size_t i = 0; i < this->_sections_count; i++)
     {
         auto &section = this->_sections[i];
@@ -188,7 +210,7 @@ core::Result<Pmm> Pmm::create(const mcx::MachineContext *context)
     try$(pmm._fill(context));
 
     // own the first 16 (64Ko) pages. We will use the lower 16bit adress space for SMP initialization
-    pmm.own( pmm._range.start(), (pmm._range.len() / page_size_bit) + 16);
+    pmm.own( pmm._range.start(), pmm._range.len() / page_size_bit);
     pmm.own( 0,  16);
     pmm._context = context;
 

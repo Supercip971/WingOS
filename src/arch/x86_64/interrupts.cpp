@@ -100,8 +100,14 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
                      : "=r"(cr2));
         log::log$("cr2: {}", cr2 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
 
+
+        // dump gs
         uintptr_t cr3 = arch::CpuCr<3>::read();
         log::log$("cr3: {}", cr3 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
+
+        asm volatile("mov %%gs, %0"
+                     : "=r"(cr2));
+        log::log$("gs: {}", cr2 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
 
         log::log$("cpu: {}", hw::acpi::Lapic::the().id());
 
@@ -115,6 +121,16 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
 
             dump_stackframe((void *)Cpu::current()->debug_saved_syscall_stackframe);
         }
+
+        // [gs:0x0] and [gs:0x8]
+        uintptr_t gs0 = 0;
+        uintptr_t gs8 = 0;
+        asm volatile("mov %%gs:0x0, %0"
+                     : "=r"(gs0));
+        asm volatile("mov %%gs:0x8, %0"
+                     : "=r"(gs8));
+        log::log$("gs[0x0]: {}", gs0 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
+        log::log$("gs[0x8]: {}", gs8 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
 
         kernel::dump_current_running_task();
 

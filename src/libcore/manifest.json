@@ -6,7 +6,8 @@
     "requires": [
         "libc",
         "iol",
-        "userspace-arch"
+        "userspace-arch",
+        "liballoc"
     ],
     "subdirs": [
         "ds",

@@ -1,10 +1,14 @@
 {
     "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
     "type": "lib",
-    "id": "kernel-mem-management-linux-x86-64",
-    "description": "Kernel memory space mapping implementation ",
+    "id": "kernel-arch-abstraction-linux-x86-64",
+    "description": "kernel abstraction layer for Linux userspace x86-64 ",
     "provides": [
-        "hw-mem"
+        "kernel-arch"
+    ],
+    "requires": [
+        "libcore",
+        "arch-x86-64"
     ],
     "enableIf": {
         "arch": [

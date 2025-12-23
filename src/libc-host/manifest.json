@@ -6,6 +6,9 @@
     "enableIf": {
         "host": [
             true
+        ],
+        "kernel": [
+            false
         ]
     },
     "provides": [

@@ -3,7 +3,6 @@
     "type": "lib",
     "id": "libmath-kernel",
     "enableIf": {
-        "host": [false],
         "kernel": [true]
     },
     "description": "Core C standard math library",

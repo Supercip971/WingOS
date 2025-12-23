@@ -1,27 +1,26 @@
 {
   "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.target.v1",
-  "id": "kernel-x86_64",
+  "id": "host-kernel-x86_64",
   "type": "target",
   "props": {
     "toolchain": "clang",
     "arch": "x86_64",
     "bits": "64",
-    "sys": "kernel",
+    "sys": "{shell.uname().sysname}",
     "abi": "sysv",
-    "loader": "limine",
+    "loader": "linux",
     "encoding": "utf8",
-    "freestanding": true,
-    "host": false,
+    "freestanding": false,
+    "host": true,
     "kernel": true
   },
   "tools": {
     "cc": {
-      "cmd": "meta/build/cross/bin/x86_64-pc-wingos-gcc",
 
+      "cmd": "{shell.latest('gcc')}",
       "args": [
         "-Isrc/libc",
         "-g",
-        "-ffreestanding",
         "-fno-stack-protector",
         "-mno-80387",
         "-mno-mmx",
@@ -36,10 +35,11 @@
         "-Wnull-dereference",
         "-Wstack-protector",
         "-Wno-strict-overflow",
-        "--param=min-pagesize=0",
+        
         "-Walloca",
         "-Wvla",
         "-Wshadow",
+        "-fno-pie",
         "-Wswitch-default",
         "-Wfloat-equal",
         "-fsanitize-address-use-after-scope",
@@ -47,21 +47,22 @@
       ]
     },
     "cxx": {
-      "cmd": "meta/build/cross/bin/x86_64-pc-wingos-g++",
 
+      "cmd": "{shell.latest('g++')}",
       "args": [
         "-Isrc/libc",
         "-g",
-        "-ffreestanding",
         "-fno-exceptions",
         "-fno-rtti",
         "-D__STRICT_ANSI__",
         "-fno-stack-protector",
         "-fno-builtin",
+        "-D_NEW",
         "-fno-threadsafe-statics",
         "-mno-80387",
         "-mno-mmx",
         "-mno-3dnow",
+        "-fno-pie",
         "-mno-sse",
         "-mno-sse2",
         "-mno-red-zone",
@@ -71,7 +72,7 @@
         "-Wnull-dereference",
         "-Wstack-protector",
         "-Wno-strict-overflow",
-        "--param=min-pagesize=0",
+        
         "-Walloca",
         "-Wvla",
         "-Warray-bounds",
@@ -79,19 +80,14 @@
         "-Wswitch-default",
         "-Wfloat-equal",
         "-Wdangling-reference",
-        "-fsanitize=undefined",
         "-O3"
       ]
     },
     "ld": {
       "cmd": "{shell.latest('ld.lld')}",
       "args": [
-        "-m",
-        "elf_x86_64",
         "-T",
-        "{utils.relpath('kernel-x86_64.ld')}",
-        "-z",
-        "max-page-size=0x1000"
+        "{utils.relpath('kernel-x86_64.ld')}"
       ],
       "files": ["{utils.relpath('kernel-x86_64.ld')}"]
     },

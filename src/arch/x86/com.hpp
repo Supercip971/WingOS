@@ -6,13 +6,17 @@
 #include <libcore/result.hpp>
 #include <libcore/lock/lock.hpp>
 #include <stdint.h>
+#include "libcore/type-utils.hpp"
 namespace arch::x86
 {
 
-class Com : public core::Writer
+class Com : public core::Writer, public core::NoCopy
 {
     core::Lock _lock = {};
 public:
+    Com() = default;
+    Com(Com &&) = default;
+    Com &operator=(Com &&) = default;
     enum class Port : uint16_t
     {
         COM1 = 0x3F8,

@@ -1,4 +1,3 @@
-
 #include <stdlib.h>
 
 __attribute__((weak)) void *operator new(size_t size)

@@ -82,9 +82,16 @@ void _start(void)
     static arch::x86::Com com{};
     asm volatile("cli");
 
-    com = arch::x86::Com::initialize(arch::x86::Com::Port::COM1).unwrap();
 
-    log::provide_log_target(&com);
+    
+    auto c =  arch::x86::Com::initialize(arch::x86::Com::Port::COM1);
+    if (c.is_error())
+    {
+        done();
+    }
+    auto com2 = core::move(c.take());
+
+    log::provide_log_target(&com2);
 
     log::log$("successfully started serial...");
 

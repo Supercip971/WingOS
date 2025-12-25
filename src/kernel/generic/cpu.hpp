@@ -35,8 +35,7 @@ public:
     }
 
     // apply after every syscall information required are retrieved
-    static bool enter_syscall_safe_mode();
-    static bool exit_syscall_safe_mode();
+    static bool begin_syscall();
     static bool end_syscall();
 
     bool has_syscall_lock() const

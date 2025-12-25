@@ -4,6 +4,7 @@
 #include "libcore/enum-op.hpp"
 #include "libcore/result.hpp"
 #include "libcore/str.hpp"
+#include "libcore/type-utils.hpp"
 
 namespace arch::x86
 {
@@ -55,7 +56,7 @@ core::Result<void> Com::write(const char *str, size_t size)
 core::Result<Com> Com::initialize(Com::Port port)
 {
 
-    Com com;
+    Com com = {};
     com._port = port;
 
     com.write_reg(Com::Register::INTERRUPT_IDENTIFICATION, 0);

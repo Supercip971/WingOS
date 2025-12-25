@@ -5,26 +5,43 @@
 #include "libcore/type/trait.hpp"
 
 
+#include <atomic>
+
 
 
 
 namespace core
 {
 
-class Lock
+class Lock : public NoCopy
 {
 
-    volatile int _locked = 0;
+
+public:
+    std::atomic<int> _locked;
+
+
+    Lock() : _locked(0) {}
+
+    Lock(Lock&& v) {
+        _locked.store(v._locked.load(std::memory_order_acquire), std::memory_order_relaxed);
+    }
+
+    Lock& operator=(Lock&& v) {
+        _locked.store(v._locked.load(std::memory_order_acquire), std::memory_order_relaxed);
+        return *this;
+    }
+
+    ~Lock() {
+        _locked.store(0, std::memory_order_relaxed);
+    }
 
     bool try_acquire()
     {
         int expected = 0;
-        return __atomic_compare_exchange_n(
-            &_locked, &expected, 1, false,
-            __ATOMIC_ACQUIRE, __ATOMIC_RELAXED);
+        return _locked.compare_exchange_strong(expected, 1, std::memory_order_acquire, std::memory_order_relaxed);
     }
 
-public:
     bool try_lock()
     {
         return try_acquire();
@@ -32,7 +49,7 @@ public:
 
     bool view_locked()
     {
-        return __atomic_load_n(&_locked, __ATOMIC_ACQUIRE);
+        return _locked.load(std::memory_order_acquire);
     }
 
     void lock()
@@ -45,7 +62,7 @@ public:
 
     void release()
     {
-        __atomic_store_n(&_locked, 0, __ATOMIC_RELEASE);
+        _locked.store(0, std::memory_order_release);
     }
 };
 

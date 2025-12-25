@@ -38,6 +38,10 @@ void setup_ist()
     *cpu->tss() = Tss();
     cpu->tss()->ist[0] = (uintptr_t)core::mem_alloc(kernel::kernel_stack_size).unwrap() + kernel::kernel_stack_size;
     cpu->tss()->ist[1] = (uintptr_t)core::mem_alloc(kernel::kernel_stack_size).unwrap() + kernel::kernel_stack_size;
+    cpu->tss()->ist[2] = (uintptr_t)core::mem_alloc(kernel::kernel_stack_size).unwrap() + kernel::kernel_stack_size;
+    cpu->tss()->ist[3] = (uintptr_t)core::mem_alloc(kernel::kernel_stack_size).unwrap() + kernel::kernel_stack_size;
+
+
     cpu->tss()->rsp[0] = (uintptr_t)core::mem_alloc(kernel::kernel_stack_size).unwrap() + kernel::kernel_stack_size;
 
     cpu->gdt()->tss = TssEntry(cpu->tss());

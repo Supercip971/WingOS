@@ -28,6 +28,10 @@
 #include "cpu.hpp"
 
 volatile size_t _running_cpu_count = 0;
+using InitializerPtr = void (*)();
+
+extern "C" InitializerPtr __init_array_start[] __attribute__((weak, visibility("hidden")));
+extern "C" InitializerPtr __init_array_end[] __attribute__((weak, visibility("hidden")));
 
 static core::Result<void> cpu_detect(const hw::acpi::MadtEntryLapic *lapic)
 {
@@ -36,11 +40,20 @@ static core::Result<void> cpu_detect(const hw::acpi::MadtEntryLapic *lapic)
 
     return {};
 }
+
 void arch_entry(const mcx::MachineContext *context)
 {
     _running_cpu_count = 1;
     log::log$("started kernel arch");
-
+    {
+        if (*__init_array_start != nullptr)
+        {
+            for (size_t i = 0; i < (size_t)(__init_array_end - __init_array_start); i++)
+            {
+                (__init_array_start[i])();
+            }
+        }
+    }
     arch::amd64::load_default_gdt();
     arch::amd64::gdt_use();
     log::log$("loaded kernel gdt");
@@ -114,7 +127,6 @@ void arch::amd64::other_cpu_entry()
 
     arch::amd64::syscall_init_for_current_cpu();
     arch::amd64::setup_entry_gs();
-
 
     arch::x86_64::SimdContext::initialize_cpu().assert();
     while (_running_cpu_count < CpuImpl::count())

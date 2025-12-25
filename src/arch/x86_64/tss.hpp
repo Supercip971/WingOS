@@ -10,10 +10,10 @@ struct Tss
 {
 
     uint32_t _reserved0;
-    core::Array<uint64_t, 3> rsp;
+    uint64_t rsp[3];
     uint64_t _reserved1;
 
-    core::Array<uint64_t, 7> ist;
+    uint64_t ist[7];
     uint32_t _reserved2;
     uint32_t _reserved3;
     uint16_t _reserved4;
@@ -32,7 +32,6 @@ struct Tss
             ._reserved3 = 0,
             ._reserved4 = 0,
             .iopb_offset = 0,
-
         };
     }
 

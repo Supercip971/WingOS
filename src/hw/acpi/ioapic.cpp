@@ -13,7 +13,7 @@ namespace hw::acpi
 {
 // CONFIGURABLE
 constexpr int max_ioapic = 256;
-core::Array<IOApic, max_ioapic> ioapics = {};
+static core::Array<IOApic, max_ioapic> ioapics = {};
 
 core::Result<IOApic*> IOApic::get(IOApicIndex index)
 {

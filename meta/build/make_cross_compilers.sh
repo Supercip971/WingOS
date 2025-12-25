@@ -8,17 +8,20 @@ echo "creating wingOS cross Compiler"
 OK_FILE="$PWD/meta/build/builded"
 bash ./meta/build/make_sysroot.sh
 if [ -e $OK_FILE ]; then
-    echo "cross compiler already builded ! if you want to rebuild the cross compiler please remove the './cross_compiler/builded' file"
+    echo "cross compiler already builded ! if you want to rebuild the cross compiler please remove the 'meta/build/builded' file"
     exit 0
 fi
 
 SYSROOT="$PWD/meta/build/sysroot"
 mkdir -p $SYSROOT
 download_and_extract() {
+    # only do it if the file doesn't exist
+    if [ ! -e "$2" ]; then
         echo "Downloading $2"
         wget -c "$1"
         echo "Extracting $2"
         tar xf "$2"
+    fi
 }
 patch_path="$PWD/meta/build/toolchains"
 
@@ -37,25 +40,34 @@ mkdir -p ./meta/build/cross/src
 
 cd ./meta/build/cross/src
 
-echo "downloading bin_utils"
-download_and_extract "https://ftp.gnu.org/gnu/binutils/$binutils_file" "$binutils_file"
+
 export binutils_src="$PWD/binutils-$bin_utils_version"
 
-cd $binutils_src
 
-patch  -p1 < "$patch_path/binutils.patch"
-cd ..
+if [ ! -e "$binutils_file" ]; then
+
+    echo "downloading bin_utils"
+    download_and_extract "https://ftp.gnu.org/gnu/binutils/$binutils_file" "$binutils_file"
+    cd $binutils_src
 
 
+    patch  -p1 < "$patch_path/binutils.patch"
+    cd ..
 
+fi
 
-echo "downloading gcc"
-download_and_extract "ftp://ftp.gnu.org/gnu/gcc/gcc-$gcc_version/$gcc_file" "$gcc_file"
 
 export gcc_src="$PWD/gcc-$gcc_version"
-cd $gcc_src
-patch -p1 < "$patch_path/gcc.patch"
-cd ..
+if [ ! -e "$gcc_file" ]; then
+
+    echo "downloading gcc"
+    download_and_extract "ftp://ftp.gnu.org/gnu/gcc/gcc-$gcc_version/$gcc_file" "$gcc_file"
+
+    cd $gcc_src
+    patch -p1 < "$patch_path/gcc.patch"
+    cd ..
+
+fi
 
 
 
@@ -73,7 +85,12 @@ cd binutils
         --prefix="$PREFIX" 	\
         --with-sysroot=$SYSROOT		\
         --disable-nls 		\
-        --disable-werror
+        --disable-threads \
+        --disable-gcov \
+        --disable-shared \
+        --disable-werror \
+        --with-newlib \
+        --disable-libstdcxx-pch
 
 make -j$(nproc)
 make install -j$(nproc)
@@ -85,14 +102,21 @@ cd gcc
         --prefix="$PREFIX" 		\
         --disable-nls			\
         --enable-languages=c,c++	\
+        --disable-gcov \
         --with-newlib \
-        --without-headers \
+        --disable-hosted-libstdcxx \
+        --disable-threads \
+        --disable-libstdcxx-pch    \
+        --disable-shared \
         --with-sysroot=$SYSROOT
 
 make all-gcc -j$(nproc)
 make all-target-libgcc -j$(nproc)
+make all-target-libstdc++-v3 -j$(nproc)
 make install-gcc -j$(nproc)
 make install-target-libgcc -j$(nproc)
+make install-target-libstdc++-v3 -j$(nproc)
+
 
 cd ..
 

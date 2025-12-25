@@ -73,6 +73,7 @@
         "-Wno-strict-overflow",
         "--param=min-pagesize=0",
         "-Walloca",
+        "-Wno-template-body",
         "-Wvla",
         "-Warray-bounds",
         "-Wshadow",

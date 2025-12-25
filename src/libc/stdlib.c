@@ -1,4 +1,5 @@
 #include "stdlib.h"
+#include <stdio.h>
 #include <string.h>
 #include "liballoc/liballoc.h"
 #include "ctype.h"
@@ -24,6 +25,13 @@ void *calloc(size_t nmemb, size_t size)
         memset(ptr, 0, total_size);
     }
     return ptr;
+}
+
+[[noreturn]]
+void abort(void)
+{
+    printf("Aborted\n");
+    while (1){};
 }
 
 long strtol(const char *nptr, char **endptr, int base)
@@ -212,7 +220,7 @@ double atof(const char* str)
     return val;
 }
 
-#endif 
+#endif
 int atoi(const char* str)
 {
     return (int)strtol(str, NULL, 10);

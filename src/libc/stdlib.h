@@ -1,9 +1,9 @@
-#pragma once 
+#pragma once
 
 
 #include <stddef.h>
 
-// malloc 
+// malloc
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -27,6 +27,9 @@ void *calloc(size_t nmemb, size_t size);
 [[noreturn]]
 void exit(int code);
 
+[[noreturn]]
+void abort(void);
+
 long strtol(const char *nptr, char **endptr, int base);
 long long strtoll(const char *nptr, char **endptr, int base);
 int atoi(const char* str);
@@ -37,6 +40,3 @@ double atof(const char* str);
 #ifdef __cplusplus
 }
 #endif
-
-
-

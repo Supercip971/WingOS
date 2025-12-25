@@ -30,67 +30,147 @@ echo "using loop disk $LOOP_DISK"
 # Wait for the kernel to recognize the partitions
 # This fixes the race condition where partition devices aren't ready yet
 sudo partprobe $LOOP_DISK
+sync
 
 # Wait for partition device nodes to appear
 BOOT_DISK_PART="${LOOP_DISK}p1"
+MAIN_DISK_PART="${LOOP_DISK}p2"
+
+# Wait up to 10 seconds for partition devices to appear
 for i in $(seq 1 10); do
-    if [ -e "$BOOT_DISK_PART" ]; then
+    if [ -b "$BOOT_DISK_PART" ] && [ -b "$MAIN_DISK_PART" ]; then
+        echo "Partition devices are ready: $BOOT_DISK_PART and $MAIN_DISK_PART"
         break
     fi
-    echo "Waiting for partition device $BOOT_DISK_PART to appear..."
-    sleep 0.5
+    echo "Waiting for partition devices to appear... (attempt $i/10)"
+    sleep 1
 done
 
-if [ ! -e "$BOOT_DISK_PART" ]; then
-    echo "Error: Partition device $BOOT_DISK_PART did not appear"
+# Final check that devices exist
+if [ ! -b "$BOOT_DISK_PART" ]; then
+    echo "Error: Boot partition device $BOOT_DISK_PART not found after waiting"
     udisksctl loop-delete -b $LOOP_DISK
     exit 1
 fi
+
+if [ ! -b "$MAIN_DISK_PART" ]; then
+    echo "Error: Main partition device $MAIN_DISK_PART not found after waiting"
+    udisksctl loop-delete -b $LOOP_DISK
+    exit 1
+fi
+
 
 # CREATING BOOT PARTITION
 echo "Requiring root privileges to format the disk: $BOOT_DISK_PART"
 echo "Command running: sudo mkfs.fat $BOOT_DISK_PART"
 sudo mkfs.fat $BOOT_DISK_PART
+if [ $? -ne 0 ]; then
+    echo "Failed to format boot partition $BOOT_DISK_PART"
+    udisksctl loop-delete -b $LOOP_DISK
+    exit 1
+fi
+sync
 
-BOOT_DISK_PATH_S="`udisksctl mount -b $BOOT_DISK_PART`"
+# Try mounting boot partition with retries
+BOOT_DISK_PATH=""
+for i in $(seq 1 5); do
+    echo "Attempting to mount boot partition... (attempt $i/5)"
+    BOOT_DISK_PATH_S="`udisksctl mount -b $BOOT_DISK_PART 2>&1`"
+    if [ $? -eq 0 ]; then
+        BOOT_DISK_PATH=${BOOT_DISK_PATH_S#*at }
+        BOOT_DISK_PATH=$(echo "$BOOT_DISK_PATH" | tr -d '.')
+        echo "Successfully mounted boot partition at $BOOT_DISK_PATH"
+        break
+    fi
+    echo "Mount failed, retrying..."
+    sleep 1
+done
 
-BOOT_DISK_PATH=${BOOT_DISK_PATH_S#*at }
+if [ -z "$BOOT_DISK_PATH" ]; then
+    echo "Failed to mount boot partition after 5 attempts"
+    udisksctl loop-delete -b $LOOP_DISK
+    exit 1
+fi
 
-echo "Mounting boot partition at $BOOT_DISK_PATH"
 cp -r .cutekit/wingos-boot/* $BOOT_DISK_PATH
+if [ $? -ne 0 ]; then
+    echo "Failed to copy files to boot partition"
+    udisksctl unmount -b $BOOT_DISK_PART
+    udisksctl loop-delete -b $LOOP_DISK
+    exit 1
+fi
+sync
 
+echo "Unmounting boot partition $BOOT_DISK_PART"
 udisksctl unmount -b $BOOT_DISK_PART
 if [ $? -ne 0 ]; then
     echo "Failed to unmount boot partition $BOOT_DISK_PART"
+    udisksctl loop-delete -b $LOOP_DISK
     exit 1
 fi
 
 echo "Successfully unmounted boot partition $BOOT_DISK_PART"
-
+sync
 
 #CREATING SYSTEM PARTITION
-MAIN_DISK_PART="${LOOP_DISK}p2"
 echo "Requiring root privileges to format the disk: $MAIN_DISK_PART"
 echo "Command running: sudo mke2fs $MAIN_DISK_PART"
-sudo mke2fs -E root_perms=777  $MAIN_DISK_PART
+sudo mke2fs -E root_perms=777 $MAIN_DISK_PART
+if [ $? -ne 0 ]; then
+    echo "Failed to format system partition $MAIN_DISK_PART"
+    udisksctl loop-delete -b $LOOP_DISK
+    exit 1
+fi
 sync 
-MAIN_DISK_PATH_S="`udisksctl mount -b $MAIN_DISK_PART --no-user-interaction`"
-MAIN_DISK_PATH=${MAIN_DISK_PATH_S#*at }
-echo "Mounting system partition at $MAIN_DISK_PATH"
-mkdir -p $MAIN_DISK_PATH
+sleep 0.5
+
+# Try mounting system partition with retries
+MAIN_DISK_PATH=""
+for i in $(seq 1 5); do
+    echo "Attempting to mount system partition... (attempt $i/5)"
+    MAIN_DISK_PATH_S="`udisksctl mount -b $MAIN_DISK_PART --no-user-interaction 2>&1`"
+    if [ $? -eq 0 ]; then
+        MAIN_DISK_PATH=${MAIN_DISK_PATH_S#*at }
+        MAIN_DISK_PATH=$(echo "$MAIN_DISK_PATH" | tr -d '.')
+        echo "Successfully mounted system partition at $MAIN_DISK_PATH"
+        break
+    fi
+    echo "Mount failed, retrying..."
+    sleep 1
+done
+
+if [ -z "$MAIN_DISK_PATH" ]; then
+    echo "Failed to mount system partition after 5 attempts"
+    udisksctl loop-delete -b $LOOP_DISK
+    exit 1
+fi
 cp -r .cutekit/wingos-disk/* $MAIN_DISK_PATH
+if [ $? -ne 0 ]; then
+    echo "Failed to copy files to system partition"
+    udisksctl unmount -b $MAIN_DISK_PART
+    udisksctl loop-delete -b $LOOP_DISK
+    exit 1
+fi
+sync
 
 echo "Unmounting system partition $MAIN_DISK_PART"
 udisksctl unmount -b $MAIN_DISK_PART
+
 if [ $? -ne 0 ]; then
     echo "Failed to unmount system partition $MAIN_DISK_PART"
+    udisksctl loop-delete -b $LOOP_DISK
     exit 1
 fi
+
 echo "Successfully unmounted system partition $MAIN_DISK_PART"
 
+sync
+
 echo "Successfully created disk image at $DISK"
-sync 
 
 udisksctl loop-delete -b $LOOP_DISK
+if [ $? -ne 0 ]; then
+    echo "Warning: Failed to delete loop device $LOOP_DISK, but disk image was created successfully"
+fi
 
 exit 0

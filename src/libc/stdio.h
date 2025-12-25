@@ -1,4 +1,6 @@
-#pragma once 
+#pragma once
+
+
 
 
 #ifdef __cplusplus
@@ -9,6 +11,7 @@ extern "C" {
 
 typedef struct FILE FILE;
 
+#define EOF (-1)
 #define SEEK_SET 0
 #define SEEK_CUR 1
 #define SEEK_END 2
@@ -48,6 +51,6 @@ long ftell(FILE* stream);
 
 int snprintf ( char * s, size_t n, const char * format, ... );
 
-#ifdef __cplusplus 
+#ifdef __cplusplus
 }
 #endif

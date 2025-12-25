@@ -44,19 +44,21 @@ void dump_stackframe(void *rbp)
 
 core::Lock _syscall_lock;
 
-
 extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
 {
     //  log("syscall", LOG_INFO, "called syscall higher handler in: {} (stack: {})", stackframe->rip, stackframe->rsp);
 
+    _syscall_lock.lock();
     SyscallStackFrame *stackframe = sf;
 
 
 
-    Cpu::enter_syscall_safe_mode();
+
+   // Cpu::enter_syscall_safe_mode();
     Cpu::current()->debug_saved_syscall_stackframe = stackframe->rbp;
 
-
+    Cpu::begin_syscall();
+    _syscall_lock.release();
     auto res = syscall_handle({
         .id = (uint32_t)stackframe->rax,
         .arg1 = stackframe->rbx,
@@ -83,6 +85,16 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
         log::log$("syscall id: {}", rax);
         log::log$("syscall args: {}, {}, {}, {}, {}, {}", rbx, rdx, rsi, rdi, r8, r9);
         log::log$("task: {}", Cpu::current()->currentTask() ? Cpu::current()->currentTask()->uid() : -1);
+
+        // [gs:0x0] and [gs:0x8]
+        uintptr_t gs0 = 0;
+        uintptr_t gs8 = 0;
+        asm volatile("mov %%gs:0x0, %0"
+                     : "=r"(gs0));
+        asm volatile("mov %%gs:0x8, %0"
+                     : "=r"(gs8));
+        log::log$("gs[0x0]: {}", gs0 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
+        log::log$("gs[0x8]: {}", gs8 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
 
 
         log::log$("task stacktrace dump:");

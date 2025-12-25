@@ -10,6 +10,6 @@
         "syscall \n"
         : "=a"(kernel_return)
         : "a"(id), "b"(arg1), "d"(arg2), "S"(arg3), "D"(arg4), "r"(r8_arg), "r"(r9_arg)
-        : "memory", "rcx", "r11"); // for debugging
+        : "memory", "rcx", "r11", "r12"); // for debugging
     return kernel_return;
 }

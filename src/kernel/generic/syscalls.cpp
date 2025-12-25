@@ -77,7 +77,6 @@ core::Result<uintptr_t> ksyscall_mem_own(SyscallMemOwn *mem_own)
         space = Cpu::current()->currentTask()->space();
     }
 
-    Cpu::exit_syscall_safe_mode();
     if (space == nullptr)
     {
         return core::Result<size_t>::error("no current space");
@@ -113,7 +112,6 @@ core::Result<uintptr_t> ksyscall_map(SyscallMap *map)
         need_invalidate = true;
     }
 
-    Cpu::exit_syscall_safe_mode();
     if (space == nullptr)
     {
         return core::Result<size_t>::error("no current space");
@@ -122,10 +120,29 @@ core::Result<uintptr_t> ksyscall_map(SyscallMap *map)
 
 
 
+    // Detailed logging to diagnose occasional start>=end mapping requests.
+    // This should help pinpoint the caller and whether the SyscallMap struct
+    // was corrupted or simply passed invalid values.
+   if (map->start >= map->end)
+    {
+        log::err$("ksyscall_map: invalid range start>=end (start={}, end={})",
+                  map->start | fmt::FMT_HEX,
+                  map->end | fmt::FMT_HEX);
+    }
+
+    auto phys_asset_res = Asset::by_handle(space, map->physical_mem_handle);
+    if (phys_asset_res.is_error())
+    {
+        log::err$("ksyscall_map: invalid physical_mem_handle={} (error={})", map->physical_mem_handle, phys_asset_res.error());
+        return core::Result<size_t>::error("invalid physical_mem_handle");
+    }
+
+    auto phys_asset = phys_asset_res.unwrap();
+
     auto asset = try$(asset_create_mapping(space, {
                                                       .start = map->start,
                                                       .end = map->end,
-                                                      .physical_mem = try$(Asset::by_handle(space, map->physical_mem_handle)),
+                                                      .physical_mem = phys_asset,
                                                       .writable = (map->flags & ASSET_MAPPING_FLAG_WRITE) != 0,
                                                       .executable = (map->flags & ASSET_MAPPING_FLAG_EXECUTE) != 0,
                                                   }));
@@ -168,7 +185,10 @@ core::Result<size_t> ksyscall_task_create(SyscallTaskCreate *task_create)
     auto asset = try$(asset_create_task(space, (AssetTaskCreateParams){
                                                    .launch = {
                                                        .entry = (void *)task_create->launch,
+                                                       .stack_ptr = nullptr,
+                                                       .kernel_stack_ptr = nullptr,
                                                        .args = {
+
                                                            task_create->args[0],
                                                            task_create->args[1],
                                                            task_create->args[2],
@@ -180,7 +200,6 @@ core::Result<size_t> ksyscall_task_create(SyscallTaskCreate *task_create)
 
     task_create->returned_handle = asset.handle;
 
-    Cpu::exit_syscall_safe_mode();
     return core::Result<size_t>::success((uint64_t)asset.handle);
 }
 
@@ -199,7 +218,6 @@ core::Result<size_t> ksyscall_space_create(SyscallSpaceCreate *args)
         space = Cpu::current()->currentTask()->space();
     }
 
-    Cpu::exit_syscall_safe_mode();
     if (space == nullptr)
     {
         return core::Result<size_t>::error("no current space");
@@ -215,7 +233,6 @@ core::Result<size_t> ksyscall_mem_release(SyscallAssetRelease *release)
 {
 
     auto space = Cpu::current()->currentTask()->space();
-    Cpu::exit_syscall_safe_mode();
     if (space == nullptr)
     {
         return core::Result<size_t>::error("no current space");
@@ -288,7 +305,6 @@ core::Result<size_t> ksyscall_asset_release(SyscallAssetRelease *release)
 
     asset_release(space, asset);
 
-    Cpu::exit_syscall_safe_mode();
     return core::Result<size_t>::success(0);
 }
 
@@ -327,7 +343,6 @@ core::Result<size_t> ksyscall_task_launch(SyscallTaskLaunch *task_launch)
 
     try$(kernel::task_run(task->uid()));
 
-    Cpu::exit_syscall_safe_mode();
     return core::Result<size_t>::success(0);
 }
 
@@ -358,7 +373,6 @@ core::Result<size_t> ksyscall_asset_move(SyscallAssetMove *asset_move_args)
         to_space = Cpu::current()->currentTask()->space();
     }
 
-    Cpu::exit_syscall_safe_mode();
     if (from_space == nullptr || to_space == nullptr)
     {
         return core::Result<size_t>::error("no current space");
@@ -388,7 +402,6 @@ core::Result<size_t> ksyscall_create_server(SyscallIpcCreateServer *create)
         space = Cpu::current()->currentTask()->space();
     }
 
-    Cpu::exit_syscall_safe_mode();
     if (space == nullptr)
     {
         return core::Result<size_t>::error("no current space");
@@ -431,7 +444,6 @@ core::Result<size_t> ksyscall_create_pipe_connection(SyscallIpcConnect *create)
         space_receiver = Cpu::current()->currentTask()->space();
     }
 
-    Cpu::exit_syscall_safe_mode();
 
     if (space_sender == nullptr || space_receiver == nullptr)
     {
@@ -473,7 +485,6 @@ core::Result<size_t> ksyscall_create_connection(SyscallIpcConnect *create)
         space = Cpu::current()->currentTask()->space();
     }
 
-    Cpu::exit_syscall_safe_mode();
 
     if (space == nullptr)
     {
@@ -505,7 +516,6 @@ core::Result<size_t> ksyscall_send(SyscallIpcSend *send)
         space = Cpu::current()->currentTask()->space();
     }
 
-    Cpu::exit_syscall_safe_mode();
     if (space == nullptr)
     {
         return core::Result<size_t>::error("no current space");
@@ -549,7 +559,6 @@ core::Result<size_t> ksyscall_server_receive(SyscallIpcServerReceive *receive)
 
     }
 
-    Cpu::exit_syscall_safe_mode();
     if (space == nullptr)
     {
         return core::Result<size_t>::error("no current space");
@@ -644,7 +653,6 @@ core::Result<size_t> ksyscall_client_receive_reply(SyscallIpcClientReceiveReply 
         space = Cpu::current()->currentTask()->space();
     }
 
-    Cpu::exit_syscall_safe_mode();
     if (space == nullptr)
     {
         return core::Result<size_t>::error("no current space");
@@ -703,9 +711,7 @@ core::Result<size_t> ksyscall_client_receive_reply(SyscallIpcClientReceiveReply 
 
     // receive->returned_msg_handle = received_message.uid;
 
-    Cpu::enter_syscall_safe_mode();
     *try$(syscall_check_ptr(receive->returned_message)) = received_message.message_responded.to_client();
-    Cpu::exit_syscall_safe_mode();
     receive->contain_response = true;
 
     return core::Result<size_t>::success((size_t)received_message.uid);
@@ -725,7 +731,6 @@ core::Result<size_t> ksyscall_ipc_call(SyscallIpcCall *call)
         space = Cpu::current()->currentTask()->space();
     }
 
-    Cpu::exit_syscall_safe_mode();
 
     if (space == nullptr)
     {
@@ -759,11 +764,9 @@ core::Result<size_t> ksyscall_ipc_call(SyscallIpcCall *call)
     }
 
     auto received_message = (res.take());
-    Cpu::enter_syscall_safe_mode();
 
     *try$(syscall_check_ptr(call->returned_message)) = core::move(received_message);
     call->has_reply = true;
-    Cpu::exit_syscall_safe_mode();
     // call->returned_msg_handle = received_message.uid;
 
     return core::Result<size_t>::success((size_t)0);
@@ -782,7 +785,6 @@ core::Result<size_t> ksyscall_ipc_accept(SyscallIpcAccept *accept)
     {
         space = Cpu::current()->currentTask()->space();
     }
-    Cpu::exit_syscall_safe_mode();
 
 
     if (space == nullptr)
@@ -841,7 +843,6 @@ core::Result<size_t> ksyscall_ipc_server_reply(SyscallIpcReply *reply)
 
 
     auto msg = try$(syscall_check_ptr(reply->message));
-    Cpu::exit_syscall_safe_mode();
 
 
     auto connection = try$(Asset::by_handle(space, reply->connection_handle));
@@ -890,7 +891,6 @@ core::Result<size_t> ksyscall_ipc_status(SyscallIpcStatus *status)
     {
         return core::Result<size_t>::error("no current space");
     }
-    Cpu::exit_syscall_safe_mode();
 
 
 
@@ -938,7 +938,6 @@ core::Result<size_t> ksyscall_ipc_asset_info(SyscallAssetInfo *info)
     {
         return core::Result<size_t>::error("no current space");
     }
-    Cpu::exit_syscall_safe_mode();
 
 
     auto asset = try$(Asset::by_handle(space, info->asset_handle));
@@ -982,7 +981,6 @@ core::Result<size_t> ksyscall_ipc_x86_port(SyscallIpcX86Port *port)
     {
         space = Cpu::current()->currentTask()->space();
     }
-    Cpu::exit_syscall_safe_mode();
 
 
     if (space == nullptr)
@@ -1035,6 +1033,7 @@ core::Result<size_t> ksyscall_ipc_x86_port(SyscallIpcX86Port *port)
     return 0ul;
 }
 
+core::Lock _sys_log_lock = {};
 core::Result<size_t> syscall_handle(SyscallInterface syscall)
 {
 
@@ -1042,10 +1041,11 @@ core::Result<size_t> syscall_handle(SyscallInterface syscall)
     {
     case SYSCALL_DEBUG_LOG_ID:
     {
-
+        _sys_log_lock.lock();
         auto debug = syscall_debug_decode(syscall);
         log::log("{}", Cpu::current()->currentTask()->uid());
         log::log("{}", debug.message);
+        _sys_log_lock.release();
 
         return core::Result<size_t>::success(0);
     }

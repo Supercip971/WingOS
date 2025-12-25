@@ -1,5 +1,6 @@
-#include "pmm.hpp"
+
 #include <libcore/fmt/log.hpp>
+#include "pmm.hpp"
 #include "hw/mem/addr_space.hpp"
 
 #include "kernel/generic/mem.hpp"
@@ -195,7 +196,12 @@ core::Result<void> Pmm::release(PhysAddr addr, size_t count)
         {
 
             auto range = mcx::MemoryRange::from_begin_len((addr - section.range.start())/page_size_bit, count);
-            try$(section.bitmap.fill_expected_inverse(false, range));
+            if(section.bitmap.fill_expected_inverse(false, range).is_error())
+            {
+                auto vaddr = addr._addr;
+                log::err$("Pmm: failed to release memory: {}", vaddr);
+                __builtin_trap();
+            }
             return {};
         }
     }

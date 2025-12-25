@@ -260,7 +260,7 @@ void asset_release(Space *space, Asset *asset)
     else
     {
         asset->lock.release();
-        asset_remove_from_space(space, asset);
+        // asset_remove_from_space(space, asset);
     }
 }
 

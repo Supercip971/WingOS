@@ -129,7 +129,8 @@ struct Space
             log::err$("failed to move asset: {}", move_res.returned_handle_in_space);
             return {};
         }
-        UAsset moved_asset = {moved_handle};
+
+        UAsset moved_asset = {};
         moved_asset.handle = move_res.returned_handle_in_space;
         return moved_asset;
     }

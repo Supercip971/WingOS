@@ -37,6 +37,11 @@ extern "C" int liballoc_unlock()
  */
 extern "C" void *liballoc_alloc(size_t l)
 {
+    if(l == 0)
+    {
+        log::log$("Invalid allocation size");
+        return nullptr;
+    }
     return Wingos::Space::self().allocate_memory(l * arch::amd64::PAGE_SIZE).ptr();
 }
 

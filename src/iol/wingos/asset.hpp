@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #include "iol/wingos/syscalls.h"
+#include "math/align.hpp"
 #include "mcx/mcx.hpp"
 #include "wingos-headers/syscalls.h"
 
@@ -23,13 +24,49 @@ struct VirtualMemoryAsset : public UAsset
     static VirtualMemoryAsset create(uint64_t space_handle, uint64_t start, uint64_t end, uint64_t physical_mem_handle, uint64_t flags)
     {
         VirtualMemoryAsset asset = {};
-      //  log::log$("Creating VirtualMemoryAsset: start={}, end={}, physical_mem_handle={}, flags={}", start | fmt::FMT_HEX, end | fmt::FMT_HEX, physical_mem_handle, flags | fmt::FMT_HEX);
+
+        if (start == 0 || end == 0 || start >= end)
+        {
+            log::err$("VirtualMemoryAsset::create: invalid range start={}, end={} (space_handle={}, phys_handle={}, flags={})",
+                      start | fmt::FMT_HEX,
+                      end | fmt::FMT_HEX,
+                      space_handle,
+                      physical_mem_handle,
+                      flags | fmt::FMT_HEX);
+            asset.handle = 0;
+            asset.memory = mcx::MemoryRange(0, 0);
+            return asset;
+        }
+
         asset.memory = mcx::MemoryRange(start, end).growAlign(4096);
+
+        if (asset.memory.start() >= asset.memory.end())
+        {
+            log::err$("VirtualMemoryAsset::create: range became invalid after align start={}, end={} (orig start={}, orig end={})",
+                      asset.memory.start() | fmt::FMT_HEX,
+                      asset.memory.end() | fmt::FMT_HEX,
+                      start | fmt::FMT_HEX,
+                      end | fmt::FMT_HEX);
+            asset.handle = 0;
+            asset.memory = mcx::MemoryRange(0, 0);
+            return asset;
+        }
+
         asset.handle = sys$map_create(space_handle, asset.memory.start(), asset.memory.end(), physical_mem_handle, flags).returned_handle;
+
+        if (asset.handle == 0)
+        {
+            log::err$("VirtualMemoryAsset::create: mapping syscall failed (start={}, end={}, phys_handle={}, flags={})",
+                      asset.memory.start() | fmt::FMT_HEX,
+                      asset.memory.end() | fmt::FMT_HEX,
+                      physical_mem_handle,
+                      flags | fmt::FMT_HEX);
+        }
+
         return asset;
     }
-    
-    
+
+
     static core::Result<VirtualMemoryAsset> from_handle(uint64_t handle)
     {
         VirtualMemoryAsset asset = {};
@@ -45,7 +82,7 @@ struct VirtualMemoryAsset : public UAsset
         }
         asset.memory = mcx::MemoryRange(v.returned_info.mapping.start, v.returned_info.mapping.end).growAlign(4096);
 
-        
+
         return asset;
     }
 
@@ -69,7 +106,7 @@ struct MemoryAsset : public UAsset
         size = math::alignUp(size, 4096ul); // align to page size
         auto phys_mem = sys$mem_own(space_handle, size, 0);
 
-        asset.memory = mcx::MemoryRange::from_begin_len(phys_mem.addr, size);
+        asset.memory = mcx::MemoryRange::from_begin_len(phys_mem.addr, math::alignUp(size, 4096ul));
         asset.handle = phys_mem.returned_handle;
 
         asset.allocated = true; // will be set to true when the memory is allocated

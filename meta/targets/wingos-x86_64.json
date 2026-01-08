@@ -1,95 +1,89 @@
 {
-    "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
-    "id": "wingos-x86_64",
-    "type": "target",
-    "props": {
-        "toolchain": "gcc",
-        "arch": "x86_64",
-        "bits": "64",
-        "sys": "wingos",
-        "abi": "sysv",
-        "encoding": "utf8",
-        "freestanding": false,
-        "host": false,
-        "kernel": false
+  "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
+  "id": "wingos-x86_64",
+  "type": "target",
+  "props": {
+    "toolchain": "gcc",
+    "arch": "x86_64",
+    "bits": "64",
+    "sys": "wingos",
+    "abi": "sysv",
+    "encoding": "utf8",
+    "freestanding": false,
+    "host": false,
+    "kernel": false
+  },
+  "tools": {
+    "cc": {
+      "cmd": "meta/build/cross/bin/x86_64-pc-wingos-gcc",
+
+      "args": [
+        "-g",
+        "-Isrc/libc",
+        "-fno-exceptions",
+        "-Wno-builtin-declaration-mismatch",
+        "-fno-stack-protector",
+        "-std=c11",
+        "-mavx",
+        "-Wnull-dereference",
+        "-Wstack-protector",
+        "-Walloca",
+        "-Wvla",
+        "-Warray-bounds",
+        "-Wshadow",
+        "-Wimplicit-fallthrough",
+        "-Og",
+
+        "-fno-omit-frame-pointer"
+      ]
     },
-    "tools": {
-        "cc": {
-            "cmd": "meta/build/cross/bin/x86_64-pc-wingos-gcc",
+    "cxx": {
+      "cmd": "meta/build/cross/bin/x86_64-pc-wingos-g++",
 
-            "args": [
-                "-g",
-                "-Isrc/libc",
-                "-fno-exceptions",
-                "-Wno-builtin-declaration-mismatch",
-                "-fno-stack-protector",
-                "-std=c11",
-                "-mavx",
-                "-Wnull-dereference",
-                "-Wstack-protector",
-                "-Walloca",
-                "-Wvla",
-                "-Warray-bounds",
-                "-Wshadow",
-                "-Wimplicit-fallthrough",
-                "-Og"
-            ]
-        },
-        "cxx": {
-            "cmd": "meta/build/cross/bin/x86_64-pc-wingos-g++",
-
-
-            "args": [
-                "-g",
-                "-Isrc/libc",
-                "-fno-exceptions",
-                "-fno-rtti",
-                "-fno-stack-protector",
-                "-Wno-builtin-declaration-mismatch",
-                "-std=c++23",
-                "-fno-threadsafe-statics" ,
-                   "-fno-stack-protector",
-               "-mavx",
-                "-Wnull-dereference",
-                "-Wstack-protector",
-                "-Walloca",
-                "-Wvla",
-                "-Warray-bounds",
-                "-Wshadow",
-                "-Wswitch-default",
-                "-Wfloat-equal",
-                "-Wimplicit-fallthrough",
-                "-Og",
-                "-fdiagnostics-color=always",
-                "-Wdangling-reference"
-    
-            ]
-        },
-        "ld": {
-            "cmd": "meta/build/cross/bin/x86_64-pc-wingos-ld",
-            "args": [
-                "-m",
-                "elf_x86_64",
-                "-T",
-                "meta/targets/wingos-x86_64.ld",
-                "-z",
-                "max-page-size=0x1000"
-            ]
-        },
-        "ar": {
-            "cmd": "{shell.latest('llvm-ar')}",
-            "args": [
-                "rcs"
-            ]
-        },
-        "as": {
-            "cmd": 
-                "nasm"
-            ,
-            "args": [
-                "-f",
-                "elf64"
-            ]
-        }
+      "args": [
+        "-g",
+        "-Isrc/libc",
+        "-fno-exceptions",
+        "-fno-rtti",
+        "-fno-stack-protector",
+        "-Wno-builtin-declaration-mismatch",
+        "-std=c++23",
+        "-fno-threadsafe-statics",
+        "-fno-stack-protector",
+        "-mavx",
+        "-Wnull-dereference",
+        "-Wstack-protector",
+        "-Walloca",
+        "-Wvla",
+        "-Warray-bounds",
+        "-Wshadow",
+        "-Wswitch-default",
+        "-Wfloat-equal",
+        "-Wimplicit-fallthrough",
+        "-Og",
+        "-fdiagnostics-color=always",
+        "-Wdangling-reference",
+        "-fno-omit-frame-pointer"
+      ]
+    },
+    "ld": {
+      "cmd": "meta/build/cross/bin/x86_64-pc-wingos-ld",
+      "args": [
+        "-m",
+        "elf_x86_64",
+        "-T",
+        "meta/targets/wingos-x86_64.ld",
+        "-z",
+        "max-page-size=0x1000"
+      ]
+    },
+    "ar": {
+      "cmd": "{shell.latest('llvm-ar')}",
+      "args": ["rcs"]
+    },
+    "as": {
+      "cmd": "nasm",
+      "args": ["-f", "elf64"]
     }
+  }
 }

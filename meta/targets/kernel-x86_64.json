@@ -43,7 +43,8 @@
         "-Wswitch-default",
         "-Wfloat-equal",
         "-fsanitize-address-use-after-scope",
-        "-Og"
+        "-Og",
+        "-fno-omit-frame-pointer"
       ]
     },
     "cxx": {
@@ -81,7 +82,8 @@
         "-Wfloat-equal",
         "-Wdangling-reference",
         "-fsanitize=undefined",
-        "-O3"
+        "-O3",
+        "-fno-omit-frame-pointer"
       ]
     },
     "ld": {

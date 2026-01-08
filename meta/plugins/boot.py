@@ -111,7 +111,7 @@ class LimineCfg:
         if not os.path.exists(ovmf):
             ovmf = shell.wget(
                 "https://retrage.github.io/edk2-nightly/bin/RELEASEX64_OVMF.fd"
-            ) 
+            )
 
         self.createDiskImage()
         qemuCmd: list[str] = [

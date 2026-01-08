@@ -10,6 +10,7 @@
 #include "libcore/alloc/alloc.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/lock/lock.hpp"
+#include "libcore/lock/rwlock.hpp"
 #include "wingos-headers/asset.h"
 #include "kernel/generic/ipc.hpp"
 #include "kernel/generic/space.hpp"
@@ -43,12 +44,11 @@ void dump_stackframe(void *rbp)
 
 
 core::Lock _syscall_lock;
-
+core::RWLock _syscall_rwlock;
 extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
 {
     //  log("syscall", LOG_INFO, "called syscall higher handler in: {} (stack: {})", stackframe->rip, stackframe->rsp);
 
-    _syscall_lock.lock();
     SyscallStackFrame *stackframe = sf;
 
 
@@ -58,7 +58,9 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
     Cpu::current()->debug_saved_syscall_stackframe = stackframe->rbp;
 
     Cpu::begin_syscall();
-    _syscall_lock.release();
+
+    _syscall_rwlock.read_acquire();
+
     auto res = syscall_handle({
         .id = (uint32_t)stackframe->rax,
         .arg1 = stackframe->rbx,
@@ -71,9 +73,12 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
 
 
 
+
+
     if (res.is_error())
     {
-
+        _syscall_rwlock.read_release();
+        _syscall_rwlock.write_acquire();
         log::err$("syscall error: {}", res.error());
         auto rax = stackframe->rax;
         auto rbx = stackframe->rbx;
@@ -111,7 +116,8 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
 
             if(space->assets[i].asset->kind == OBJECT_KIND_IPC_CONNECTION)
             {
-                IpcConnection *ipc_conn = space->assets[i].asset->ipc_connection;
+                auto conn_asset = space->assets[i].asset->casted<AssetConnection>();
+                IpcConnection *ipc_conn = conn_asset->connection;
 
                 log::log$("    IPC Connection: accepted={}, msg_count={}", ipc_conn->accepted, ipc_conn->message_sent.len());
             }
@@ -126,6 +132,8 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
     {
         sf->rax = res.unwrap();
     }
+
+    _syscall_rwlock.read_release();
 
     Cpu::end_syscall();
 

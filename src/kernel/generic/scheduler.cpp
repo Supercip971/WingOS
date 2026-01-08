@@ -119,6 +119,7 @@ core::Result<void> scheduler_init(int cpu_count)
         task_queues[i] = TaskQueue();
     }
 
+
     // Ensure cpu_runned has enough space
     try$(cpu_runned.reserve(running_cpu_count));
     try$(cpu_running.reserve(running_cpu_count));
@@ -127,13 +128,7 @@ core::Result<void> scheduler_init(int cpu_count)
 
     try$(scheduler_init_idle_task());
     scheduler_lock.write_release();
-    for (size_t i = 0; i < running_cpu_count; i++)
-    {
 
-        cpu_runned[i] = scheduler_idles[i];
-        cpu_runned[i]->sched().is_idle = true;
-        cpu_running[i] = cpu_runned[i];
-    }
     _choosen = try$(core::Vec<size_t>::with_capacity(running_cpu_count));
     _retried = try$(core::Vec<size_t>::with_capacity(running_cpu_count));
     _blocked_cores_idle_candidates = try$(core::Vec<CoreId>::with_capacity(running_cpu_count));
@@ -631,7 +626,7 @@ core::Result<void> dump_current_running_task()
 
         if (cpu_running[core]->space() != nullptr)
         {
-            Asset::dump_assets(cpu_running[core]->space());
+            cpu_running[core]->space()->dump_assets();
         }
         else
         {

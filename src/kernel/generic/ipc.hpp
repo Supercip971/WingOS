@@ -1,13 +1,15 @@
 #pragma once
 
 #include "kernel/generic/blocker.hpp"
-#include "kernel/generic/asset.hpp"
-#include "kernel/generic/space.hpp"
+#include "kernel/generic/asset_types.hpp"
 #include "math/align.hpp"
 #include "libcore/ds/vec.hpp"
 #include "libcore/lock/lock.hpp"
 #include "scheduler.hpp"
 #include "wingos-headers/ipc.h"
+
+// Forward declarations to avoid pulling `space.hpp` (and its dependencies) into IPC.
+struct Space;
 
 struct IpcMessageContent
 {
@@ -190,13 +192,13 @@ struct IpcConnection
 
     bool accepted;
     IpcConnectionClosedStatus closed_status;
-    IpcServerHandle server_handle; // the handle of the server that this connection is connected to
+    KernelIpcServer *server;
+    AssetRef<> server_asset; // only made to keep the server alive
+    IpcServerHandle server_handle;
 
     kernel::BlockMutex client_mutex;
     kernel::BlockMutex server_mutex;
     core::Vec<ReceivedIpcMessage> message_sent;
-
-    KernelIpcServer* server_asset;
 };
 
 struct KernelIpcServer
@@ -204,8 +206,8 @@ struct KernelIpcServer
 
     IpcServerHandle handle;
     uint64_t parent_space;
-    Asset *self;                     // the asset that represents this server
-    core::Vec<AssetPtr> connections; // the connections to this server
+    AssetRef<> self;              // the asset that represents this server
+    core::Vec<AssetRef<>> connections; // the connections to this server (untyped; returned by Space::asset_copy)
     bool destroyed;
 };
 
@@ -221,8 +223,8 @@ core::Result<KernelIpcServer *> query_server_locked(IpcServerHandle handle);
 void release_server_lock();
 
 // create a connection object for the server,
-
-core::Result<AssetPtr> server_accept_connection(KernelIpcServer *server);
+// Note: keep this API untyped to avoid requiring `AssetConnection` in this header.
+core::Result<AssetRef<>> server_accept_connection(KernelIpcServer *server);
 
 core::Result<MessageHandle> server_send_message(IpcConnection *connection, IpcMessage *message, bool expect_reply = false);
 core::Result<MessageHandle> server_send_call(IpcConnection *connection, IpcMessage *message);

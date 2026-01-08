@@ -259,6 +259,14 @@ extern "C" void __ubsan_handle_out_of_bounds(out_of_bounds_data *data,
     log::err$("UBSan out of bounds");
 }
 
+extern "C" void __ubsan_handle_builtin_unreachable(unreachable_data *data)
+{
+    lock_scope$(locker);
+    dump_source_location(&data->loc);
+    log::err$("UBSan builtin unreachable reached");
+    asm volatile("int $3");
+    while(true){};
+}
 extern "C" void __ubsan_handle_unreachable(unreachable_data *data)
 {
     lock_scope$(locker);

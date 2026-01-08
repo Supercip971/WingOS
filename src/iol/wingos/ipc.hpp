@@ -56,6 +56,8 @@ struct IpcServer : public UAsset
     core::Result<IpcConnection *> accept(bool block = false)
     {
         auto res = sys$ipc_accept(block, space_handle, this->handle);
+
+
         if (res.accepted_connection)
         {
             IpcConnection *connection = new IpcConnection();

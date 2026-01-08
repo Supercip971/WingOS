@@ -102,10 +102,25 @@ void kernel_entry(const mcx::MachineContext *context)
 
         log::log$("module {} loaded: {}", i, mod.path);
 
-        start_module_execution(loader.unwrap(), context);
+        start_module_execution(loader.unwrap(), context).unwrap();
     }
 
+
+    auto v = Space::global_space_by_handle(0);
+
+    if (v.is_error())
+    {
+        log::err$("unable to get global space: {}", v.error());
+        while (true)
+            ;
+    }
+
+    v.unwrap().asset->dump_assets();
+
+
     Cpu::current()->interrupt_release();
+
+
     while (true)
     {
         asm volatile("sti");

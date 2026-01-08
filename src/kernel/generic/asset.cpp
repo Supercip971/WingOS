@@ -1,204 +1,117 @@
-
 #include "asset.hpp"
+#include <new>
 
 #include "arch/x86_64/paging.hpp"
 #include "hw/mem/addr_space.hpp"
 #include "iol/mem_flags.h"
 
+// Make sure IPC public types (e.g. IpcServerHandle) are visible before this TU
+// pulls in headers that depend on them transitively.
 #include "kernel/generic/ipc.hpp"
 #include "kernel/generic/space.hpp"
+#include "kernel/generic/task.hpp"
 #include "math/align.hpp"
 #include "mcx/mcx.hpp"
 #include "wingos-headers/asset.h"
+#include "wingos-headers/ipc.h"
 
-core::Result<AssetPtr> _asset_create(Space *space, AssetKind kind)
+void Asset::own(Asset *asset)
 {
-    Asset *asset = new Asset();
-    *asset = {};
-    asset->kind = kind;
-
-    asset->lock.lock();
-
-    asset->ref_count = 1;
-
-    AssetPtr ptr = {};
-    ptr.asset = asset;
-    ptr.handle = 0;
-    if (space != nullptr)
+    if (asset != nullptr)
     {
-        space->self->lock.lock();
-        ptr.handle = space->alloc_uid++;
-
-        if (space->assets.push(ptr).is_error())
-        {
-            log::err$("unable to add asset to space");
-            delete asset;
-
-            space->self->lock.release();
-            return core::Result<AssetPtr>::error("asset create: unable to add asset to space");
-        }
-
-        space->self->lock.release();
+        asset->ref_count.fetch_add(1, std::memory_order_relaxed);
     }
-
-    return ptr;
 }
 
-void asset_own(Asset *asset)
+void Asset::release(Asset *asset)
 {
-    asset->lock.lock();
-    asset->ref_count++;
-    asset->lock.release();
-}
 
-void asset_remove_from_space(Space *space, Asset *asset)
-{
-    if (space == nullptr || asset == nullptr)
+    if (asset == nullptr)
     {
         return;
     }
-
-    space->self->lock.lock();
-    for (size_t i = 0; i < space->assets.len(); i++)
-    {
-        if (space->assets[i].asset == asset)
-        {
-            space->assets.pop(i);
-            break;
-        }
-    }
-    space->self->lock.release();
-}
-
-void asset_release(Space *space, Asset *asset)
-{
-
-    asset->lock.lock();
-
-    if (asset->ref_count == 0)
-    {
-        log::err$("asset_release: asset is already released");
-        asset->lock.release();
-        asset_remove_from_space(space, asset);
-        return;
-    }
-
     if (asset->kind == OBJECT_KIND_IPC_CONNECTION)
     {
-        if (asset->ipc_connection->closed_status == IPC_STILL_OPEN)
+
+        auto conn = asset->casted<AssetConnection>()->connection;
+        if (conn->closed_status == IPC_STILL_OPEN)
         {
-            asset->ipc_connection->closed_status = IPC_CLOSED;
-        }
-
-        if (space->uid == asset->ipc_connection->server_space_handle)
-        {
-            // CRITICAL: Use the server_handle to look up the server via query_server
-            // instead of using the server_asset pointer directly.
-            IpcServerHandle server_handle = asset->ipc_connection->server_handle;
-
-            // Skip for pipe connections (server_handle = -1)
-            if (server_handle != (IpcServerHandle)-1)
-            {
-                // This holds ipc_server_lock, ensuring the server can't be
-                // unregistered while we're working with it
-                auto server_result = query_server_locked(server_handle);
-
-                if (!server_result.is_error())
-                {
-                    auto kernel_server = server_result.unwrap();
-
-                    // Double-check this is really the server we connected to
-                    // (same handle) and it's not destroyed
-                    if (!kernel_server->destroyed)
-                    {
-                        // Release asset lock before acquiring server lock to avoid ABBA deadlock
-                        // (server_accept_connection acquires server->self->lock then asset->lock)
-                        asset->lock.release();
-
-                        kernel_server->self->lock.lock();
-                        for (size_t i = 0; i < kernel_server->connections.len(); i++)
-                        {
-                            if (kernel_server->connections[i].asset == asset)
-                            {
-                                kernel_server->connections.pop(i);
-                                break;
-                            }
-                        }
-
-                        kernel_server->self->ref_count--;
-                        kernel_server->self->lock.release();
-
-                        // Re-acquire asset lock to continue with release
-                        asset->lock.lock();
-                    }
-
-                    release_server_lock();
-                }
-                // If query_server_locked failed, the server was already unregistered
-                // and its connections were already cleaned up, so nothing to do
-            }
-
-            asset->ipc_connection->server_mutex.mutex_release();
+            conn->closed_status = IPC_CLOSED;
         }
     }
 
     if (asset->kind == OBJECT_KIND_IPC_SERVER)
     {
-        asset->ipc_server->destroyed = true;
+        auto server = asset->casted<AssetServer>();
+
+        server->server->destroyed = true;
 
         // Unregister the server first to prevent new connections
-        unregister_server(asset->ipc_server->handle, asset->ipc_server->parent_space);
+        unregister_server(server->server->handle, server->server->parent_space);
 
-        core::Vec<AssetPtr> connections_copy = asset->ipc_server->connections;
-        asset->ipc_server->connections.clear();
+        server->server->connections.release();
+    }
+}
 
-        for (size_t i = 0; i < connections_copy.len(); i++)
-        {
-            if (connections_copy[i].asset->kind == OBJECT_KIND_IPC_CONNECTION)
-            {
-                connections_copy[i].asset->ipc_connection->closed_status = IPC_CLOSED;
-                asset->ref_count--;
-            }
-            asset_release(space, connections_copy[i].asset);
-        }
-
-        connections_copy.release();
+uintptr_t last_asset = 0;
+void Asset::deref(Asset *asset)
+{
+    if (asset == nullptr)
+    {
+        return;
     }
 
-    asset->ref_count--;
+    // Atomically decrement ref_count and get the previous value
+    size_t old_count = asset->ref_count.fetch_sub(1, std::memory_order_acq_rel);
 
-    if (asset->ref_count == 0)
+    if (old_count == 0)
     {
+        // This means ref_count was already 0 before we decremented restore and bail
+        asset->ref_count.fetch_add(1, std::memory_order_relaxed);
+        log::err$("asset_release: asset is already released");
+        log::err$("double free detected");
+        return;
+    }
+
+    if (old_count == 1)
+    {
+        // We decremented from 1 to 0, so we own destruction
+        // Lock to ensure exclusive access during cleanup
+        asset->lock.lock();
+
+        //   log::log$("freeing asset");
         if (asset->kind == OBJECT_KIND_MEMORY)
         {
-            if (asset->memory.allocated)
+            auto mem = asset->casted<AssetMemory>();
+            if (mem->allocated)
             {
-                Pmm::the().release(PhysAddr{asset->memory.addr}, asset->memory.size);
+                Pmm::the().release(PhysAddr{mem->addr}, mem->size / 4096);
             }
         }
         else if (asset->kind == OBJECT_KIND_MAPPING)
         {
-            if (space != nullptr)
-            {
-                space->vmm_space.unmap(
-                    VirtRange(asset->mapping.start,
-                              asset->mapping.end),
-                    true);
-            }
+            auto map = asset->casted<AssetMapping>();
+            map->physical_mem = AssetRef<AssetMemory>{}; // deref physical mem
         }
+
         else if (asset->kind == OBJECT_KIND_IPC_CONNECTION)
         {
-            asset->ipc_connection->message_sent.release();
 
-            if (asset->ipc_connection->server_mutex.mutex_value())
+//            log::log$("({}) destroying connection: {}", Cpu::currentId(), (uintptr_t)asset | fmt::FMT_HEX);
+
+
+             auto conn = asset->casted<AssetConnection>();
+            // conn->connection->message_sent.release();
+
+            if (conn->connection->server_mutex.mutex_value())
             {
-                asset->ipc_connection->server_mutex.mutex_release();
+                conn->connection->server_mutex.mutex_release();
                 // kernel::resolve_blocked_tasks(); // release blocked tasks
             }
-            if (asset->ipc_connection->client_mutex.mutex_value())
+            if (conn->connection->client_mutex.mutex_value())
             {
-                asset->ipc_connection->client_mutex.mutex_release();
-                //  kernel::resolve_blocked_tasks(); // release blocked tasks
+                conn->connection->client_mutex.mutex_release();
+                // kernel::resolve_blocked_tasks(); // release blocked tasks
             }
 
             // Note: removal from server's connections list already happened above
@@ -206,91 +119,77 @@ void asset_release(Space *space, Asset *asset)
 
             // Check if we should auto-release the server when last connection is gone
             // Use query_server_locked to safely access the server (avoids use-after-free)
-            IpcServerHandle server_handle = asset->ipc_connection->server_handle;
-            if (server_handle != (IpcServerHandle)-1)
-            {
-                auto server_result = query_server_locked(server_handle);
-                if (!server_result.is_error())
-                {
-                    auto kernel_server = server_result.unwrap();
-                    if (!kernel_server->destroyed &&
-                        kernel_server->connections.len() == 0 &&
-                        kernel_server->self->ref_count == 1)
-                    {
-                        kernel_server->destroyed = true;
-                        release_server_lock();
-                        auto parent_space = Space::global_space_by_handle(kernel_server->parent_space).unwrap();
-                        asset_release(parent_space, kernel_server->self);
-                    }
-                    else
-                    {
-                        release_server_lock();
-                    }
-                }
-                // If query failed, server was already unregistered - nothing to do
-            }
 
-            delete asset->ipc_connection;
+            // If query failed, server was already unregistered - nothing to do
+
+            // Guard against accidental double-destruction if refcounts drifted.
+            if (conn->connection != nullptr)
+            {
+                delete conn->connection;
+                conn->connection = nullptr;
+            }
         }
 
         else if (asset->kind == OBJECT_KIND_IPC_SERVER)
         {
+            auto server = asset->casted<AssetServer>();
             // Connections list was already cleared and released above
             // Just delete the server structure
-            delete asset->ipc_server;
+
+            for (auto &conn : server->server->connections)
+            {
+                // Lock each connection asset before modifying its state
+                conn.asset->lock.lock();
+                auto aconn = conn.asset->casted<AssetConnection>();
+                aconn->connection->closed_status = IPC_CLOSED;
+                conn.asset->lock.release();
+            }
+
+            server->server->connections.clear();
+            delete server->server;
         }
         else if (asset->kind == OBJECT_KIND_SPACE)
         {
-            for (size_t i = 1; i < asset->space->assets.len(); i++)
-            {
-                asset_release(asset->space, asset->space->assets[i].asset);
-            }
+            // auto sp = asset->casted<Space>();
 
-            delete asset->space; // delete the space if it exists
+            log::warn$("asset_release: space asset is not supported yet");
+            // Check if we should auto-release the space when last connection is gone
+
+            // sp->vmm_space.release();
         }
         else if (asset->kind == OBJECT_KIND_TASK)
         {
             log::warn$("asset_release: task asset is not supported yet");
         }
 
-        asset->lock.release();
-        asset_remove_from_space(space, asset);
+        // Don't release the lock before deleting - the asset is about to be freed
+        // and no other thread should access it. The lock will be destroyed as part of delete.
         delete asset;
-    }
-    else
-    {
-        asset->lock.release();
-        // asset_remove_from_space(space, asset);
     }
 }
 
-core::Result<AssetPtr> asset_create_memory(Space *space, AssetMemoryCreateParams params)
+core::Result<AssetRef<AssetMemory>> Space::create_memory(AssetMemoryCreateParams params)
 {
 
     if (params.size == 0)
     {
-        return core::Result<AssetPtr>::error("size must be greater than 0");
+        return ("size must be greater than 0");
     }
 
     if (params.addr != 0 && params.addr + params.size > kernel_virtual_base())
     {
-        return core::Result<AssetPtr>::error("addr must be lower than kernel virtual base");
+        return ("addr must be lower than kernel virtual base");
     }
 
-    AssetPtr ptr = try$(_asset_create(space, OBJECT_KIND_MEMORY));
-    ptr.asset->memory.size = params.size;
-    ptr.asset->memory.addr = params.addr;
-    core::Result<PhysAddr> res(PhysAddr{0});
+    auto ptr = try$(allocate_asset<AssetMemory>(
+        params.size,
+        params.addr,
+        params.addr == 0));
     if (params.addr == 0)
     {
-        if (params.lower_half)
-        {
-            res = Pmm::the().allocate(math::alignUp<size_t>(params.size, arch::amd64::PAGE_SIZE) / arch::amd64::PAGE_SIZE, IOL_ALLOC_MEMORY_FLAG_LOWER_SPACE);
-        }
-        else
-        {
-            res = Pmm::the().allocate(math::alignUp<size_t>(params.size, arch::amd64::PAGE_SIZE) / arch::amd64::PAGE_SIZE);
-        }
+        core::Result<PhysAddr> res = params.lower_half
+                                         ? Pmm::the().allocate(math::alignUp<size_t>(params.size, arch::amd64::PAGE_SIZE) / arch::amd64::PAGE_SIZE, IOL_ALLOC_MEMORY_FLAG_LOWER_SPACE)
+                                         : Pmm::the().allocate(math::alignUp<size_t>(params.size, arch::amd64::PAGE_SIZE) / arch::amd64::PAGE_SIZE);
 
         if (res.is_error())
         {
@@ -299,11 +198,11 @@ core::Result<AssetPtr> asset_create_memory(Space *space, AssetMemoryCreateParams
             log::err$("asset_create_memory: unable to allocate memory: {}", res.error());
 
             ptr.asset->lock.release();
-            asset_release(space, ptr.asset);
-            return core::Result<AssetPtr>::error("unable to allocate memory");
+            _asset_remove(ptr.handle);
+            return ("unable to allocate memory");
         }
 
-        ptr.asset->memory.addr = res.unwrap()._addr;
+        ptr.asset->addr = res.unwrap()._addr;
     }
     else
     {
@@ -317,7 +216,7 @@ core::Result<AssetPtr> asset_create_memory(Space *space, AssetMemoryCreateParams
                 {
                     Pmm::the().own(PhysAddr{params.addr}, params.size);
                 }
-                else if(map.type != mcx::MemoryMap::Type::FREE)
+                else if (map.type != mcx::MemoryMap::Type::FREE)
                 {
                     log::err$("asset_create_memory: memory range {} is not free ({})", range, (int)map.type);
                 }
@@ -325,72 +224,57 @@ core::Result<AssetPtr> asset_create_memory(Space *space, AssetMemoryCreateParams
                 break;
             }
         }
+        // res = PhysAddr{params.addr};
 
-        res = PhysAddr{params.addr};
-    }
-
-
-
-    if (res.is_error())
-    {
-        log::err$("asset_create_memory: unable to allocate memory: {}", res.error());
-
-        ptr.asset->lock.release();
-        asset_release(space, ptr.asset);
-        return core::Result<AssetPtr>::error("unable to allocate memory");
+        ptr.asset->addr = params.addr;
     }
 
     ptr.asset->lock.release();
     return ptr;
 }
-core::Result<AssetPtr> asset_create_mapping(Space *space, AssetMappingCreateParams params)
+core::Result<AssetRef<AssetMapping>> Space::create_mapping(AssetMappingCreateParams params)
 {
-    AssetPtr ptr = try$(_asset_create(space, OBJECT_KIND_MAPPING));
+    auto ptr = try$(allocate_asset<AssetMapping>(
+        params.start,
+        params.end,
+        params.physical_mem,
+        params.writable,
+        params.executable));
 
     if (params.start >= params.end)
     {
-        return core::Result<AssetPtr>::error("asset_create_mapping: start must be less than end");
+        ptr.asset->lock.release();
+        return ("asset_create_mapping: start must be less than end");
     }
 
-    if (params.physical_mem->kind != OBJECT_KIND_MEMORY)
+    if (params.physical_mem.asset->kind != OBJECT_KIND_MEMORY)
     {
-        return core::Result<AssetPtr>::error("asset_create_mapping: physical_mem must be a memory asset");
+        ptr.asset->lock.release();
+        return ("asset_create_mapping: physical_mem must be a memory asset");
     }
 
     if (params.start >= kernel_virtual_base())
     {
-        return core::Result<AssetPtr>::error("asset_create_mapping: start must be less than kernel virtual base");
-    }
-
-    ptr.asset->mapping.start = params.start;
-    ptr.asset->mapping.end = params.end;
-    ptr.asset->mapping.physical_mem = params.physical_mem;
-
-    ptr.asset->mapping.writable = params.writable;
-    ptr.asset->mapping.executable = params.executable;
-
-    if (space == nullptr)
-    {
-        log::warn$("asset_create_mapping: space is null");
         ptr.asset->lock.release();
-        return ptr;
+        return ("asset_create_mapping: start must be less than kernel virtual base");
     }
 
     auto flags = PageFlags()
                      .user(true)
-                     .executable(ptr.asset->mapping.executable)
+                     .executable(ptr.asset->executable)
                      .present(true)
-                     .writeable(ptr.asset->mapping.writable);
+                     .writeable(ptr.asset->writable);
 
-    if (!space->vmm_space.map(
-            {ptr.asset->mapping.start, ptr.asset->mapping.end},
-            {ptr.asset->mapping.physical_mem->memory.addr,
-             ptr.asset->mapping.physical_mem->memory.size + ptr.asset->mapping.physical_mem->memory.addr},
-            flags))
+    if (vmm_space.map(
+                     {ptr.asset->start, ptr.asset->end},
+                     {ptr.asset->physical_mem.asset->addr,
+                      ptr.asset->physical_mem.asset->size + ptr.asset->physical_mem.asset->addr},
+                     flags)
+            .is_error())
     {
         ptr.asset->lock.release();
-        asset_release(space, ptr.asset);
-        return core::Result<AssetPtr>::error("unable to map memory");
+        _asset_remove(ptr.handle);
+        return "unable to map physical memory";
     }
 
     ptr.asset->lock.release();
@@ -398,112 +282,49 @@ core::Result<AssetPtr> asset_create_mapping(Space *space, AssetMappingCreatePara
     return ptr;
 }
 
-core::Result<AssetPtr> asset_create_task(Space *space, AssetTaskCreateParams params)
+core::Result<AssetRef<AssetTask>> Space::create_task(AssetTaskCreateParams params)
 {
-    AssetPtr ptr = try$(_asset_create(space, OBJECT_KIND_TASK));
-    ptr.asset->task = kernel::Task::task_create().unwrap();
+    auto ptr = try$(allocate_asset<AssetTask>(
+        kernel::Task::task_create().unwrap()));
 
-    ptr.asset->task->_space_owner = space;
+    ptr.asset->task->_space_owner = this;
+    Asset::own(ptr.asset);
 
-    if (ptr.asset->task->_initialize(params.launch, &space->vmm_space).is_error())
+    if (ptr.asset->task->_initialize(params.launch, &vmm_space).is_error())
     {
         ptr.asset->lock.release();
-        asset_release(space, ptr.asset);
-        return core::Result<AssetPtr>::error("unable to initialize task asset");
+        _asset_remove(ptr.handle);
+        return ("unable to initialize task asset");
     }
 
     ptr.asset->lock.release();
     return ptr;
 }
 
-core::Result<AssetPtr> asset_move(Space *from, Space *to, AssetPtr asset)
+// asset_move and asset_copy are now template functions defined in space.hpp
+
+core::Result<AssetRef<AssetServer>> Space::create_ipc_server(AssetIpcServerCreateParams params)
 {
-    if (from == nullptr || to == nullptr)
-    {
-        return core::Result<AssetPtr>::error("from or to space is null");
-    }
-
-    if (asset.asset == nullptr)
-    {
-        return core::Result<AssetPtr>::error("asset is null");
-    }
-
-    // Check if the asset exists in the from space
-    from->self->lock.lock();
-    for (size_t i = 0; i < from->assets.len(); i++)
-    {
-        if (from->assets[i].handle == asset.handle)
-        {
-            to->self->lock.lock();
-
-            // Move the asset to the new space
-            AssetPtr moved_asset = from->assets.pop(i);
-            moved_asset.handle = to->alloc_uid++;
-            to->assets.push(moved_asset);
-
-            to->self->lock.release();
-            from->self->lock.release();
-
-            return moved_asset;
-        }
-    }
-
-    from->self->lock.release();
-
-    return core::Result<AssetPtr>::error("asset not found in from space");
-}
-
-// FIXME: rename this to asset_share
-core::Result<AssetPtr> asset_copy(Space *from, Space *to, AssetPtr asset)
-{
-    if (from == nullptr || to == nullptr)
-    {
-        return core::Result<AssetPtr>::error("from or to space is null");
-    }
-
-    if (asset.asset == nullptr)
-    {
-        return core::Result<AssetPtr>::error("asset is null");
-    }
-
-    // Lock the asset to safely increment ref_count
-    asset.asset->lock.lock();
-    asset.asset->ref_count++;
-    asset.asset->lock.release();
-
-    // Now lock the destination space to add the asset
-    to->self->lock.lock();
-    AssetPtr copied_asset = {};
-    copied_asset.asset = asset.asset;
-    copied_asset.handle = to->alloc_uid++;
-    to->assets.push(copied_asset);
-    to->self->lock.release();
-
-    return copied_asset;
-}
-
-core::Result<AssetPtr> asset_create_ipc_server(Space *space, AssetIpcServerCreateParams params)
-{
-    AssetPtr ptr = try$(_asset_create(space, OBJECT_KIND_IPC_SERVER));
+    auto ptr = try$(allocate_asset<AssetServer>(nullptr));
 
     if (params.is_root)
     {
-        ptr.asset->ipc_server = register_server(0, space->uid);
+        ptr.asset->server = register_server(0, uid);
     }
     else
     {
-        ptr.asset->ipc_server = create_server(space->uid);
+        ptr.asset->server = create_server(uid);
     }
 
-    ptr.asset->ipc_server->self = ptr.asset;
-
     ptr.asset->lock.release();
+    ptr.asset->server->self = ptr.to_untyped();
+
     return ptr;
 }
 
-core::Result<AssetPtr> asset_create_ipc_connections(Space *space, AssetIpcConnectionCreateParams params)
+core::Result<AssetRef<AssetConnection>> Space::create_ipc_connection(AssetIpcConnectionCreateParams params)
 {
-    AssetPtr ptr = try$(_asset_create(space, OBJECT_KIND_IPC_CONNECTION));
+    auto ptr = try$(allocate_asset<AssetConnection>(new IpcConnection{}));
 
     // This prevents another thread from unregistering (and deleting) the server while we use it.
     auto query_res = query_server_locked(params.server_handle);
@@ -513,83 +334,84 @@ core::Result<AssetPtr> asset_create_ipc_connections(Space *space, AssetIpcConnec
 
         ptr.asset->lock.release();
 
-        asset_release(space, ptr.asset);
-        return core::Result<AssetPtr>::error("unable to query server");
+        asset_release(ptr);
+        return ("unable to query server");
     }
 
     auto server = query_res.unwrap();
 
-    ptr.asset->ipc_connection = new IpcConnection();
+    // Cache the server info we need while holding the lock
+    auto server_parent_space = server->parent_space;
+    auto server_self = server->self;
 
-    ptr.asset->ipc_connection->message_alloc_id = 0;
-    ptr.asset->ipc_connection->accepted = false;
-    ptr.asset->ipc_connection->closed_status = IPC_STILL_OPEN;
-    ptr.asset->ipc_connection->server_handle = params.server_handle;
-    ptr.asset->ipc_connection->server_space_handle = server->parent_space;
-    ptr.asset->ipc_connection->client_space_handle = space->uid;
-    ptr.asset->ipc_connection->message_sent = {};
+    // Release ipc_server_lock BEFORE acquiring any space locks to avoid deadlock
+    release_server_lock();
+
+    ptr.asset->connection->message_alloc_id = 0;
+    ptr.asset->connection->accepted = false;
+    ptr.asset->connection->closed_status = IPC_STILL_OPEN;
+    ptr.asset->connection->server_handle = params.server_handle;
+    ptr.asset->connection->server_space_handle = server_parent_space;
+    ptr.asset->connection->client_space_handle = uid;
+    ptr.asset->connection->server_asset = server_self;
+    ptr.asset->connection->message_sent = {};
 
     ptr.asset->lock.release();
 
-    // Get server space while holding ipc_server_lock (server can't be deleted)
-    auto server_space_res = Space::global_space_by_handle(server->parent_space);
+    // Get server space (ipc_server_lock already released)
+    auto server_space_res = Space::global_space_by_handle(server_parent_space);
     if (server_space_res.is_error())
     {
-        log::err$("asset_create_ipc_connection: failed to get server space {}", server->parent_space);
-        release_server_lock();
-        ptr.asset->lock.lock();
-        asset_release(space, ptr.asset);
-        return core::Result<AssetPtr>::error("failed to get server space");
+        log::err$("asset_create_ipc_connection: failed to get server space {}", server_parent_space);
+        _asset_remove(ptr.handle);
+
+        return ("failed to get server space");
     }
-    auto server_space = server_space_res.unwrap();
+    auto server_space = server_space_res.unwrap().asset;
 
     // Copy asset to server space (this handles its own locking internally)
-    auto copy_res = asset_copy(space, server_space, ptr);
+    auto copy_res = asset_copy(this, server_space, ptr);
     if (copy_res.is_error())
     {
-        log::err$("asset_create_ipc_connection: failed to copy asset to server space");
-        release_server_lock();
-        ptr.asset->lock.lock();
-        asset_release(space, ptr.asset);
-        return core::Result<AssetPtr>::error("failed to copy asset to server space");
+        log::err$("asset_create_ipc_connection: failed to copy asset to server space: {}", copy_res.error());
+        _asset_remove(ptr.handle);
+
+        return ("failed to copy asset to server space");
     }
     auto ptr_in_server = copy_res.unwrap();
 
-    // Now lock server->self to modify connections and ref_count
-    server->self->lock.lock();
-    server->connections.push(ptr_in_server);
-    server->self->ref_count++;
-    server->self->lock.release();
-
-    release_server_lock();
+    // Now lock server asset to modify connections
+    server_self.asset->lock.lock();
+    auto server_ptr = server_self.asset->casted<AssetServer>()->server;
+    try$(server_ptr->connections.push(core::move(ptr_in_server)));
+    server_self.asset->lock.release();
 
     return ptr;
 }
 
-core::Result<AssetIpcConnectionPipeCreateResult> asset_create_ipc_connections(
+core::Result<AssetIpcConnectionPipeCreateResult> Space::create_ipc_connections(
     Space *space_sender, Space *space_receiver, AssetIpcConnectionPipeCreateParams params)
 {
-
     (void)params;
-    AssetPtr send_ptr = try$(_asset_create(space_sender, OBJECT_KIND_IPC_CONNECTION));
 
-    send_ptr.asset->ipc_connection = new IpcConnection();
-    send_ptr.asset->ipc_connection->message_alloc_id = 0;
-    send_ptr.asset->ipc_connection->accepted = true;
-    send_ptr.asset->ipc_connection->closed_status = IPC_STILL_OPEN;
+    AssetRef<AssetConnection> send_ptr = try$(space_sender->allocate_asset<AssetConnection>(
+        new IpcConnection()));
 
-    send_ptr.asset->ipc_connection->server_handle = -1;
-    send_ptr.asset->ipc_connection->server_space_handle = space_receiver->uid;
-    send_ptr.asset->ipc_connection->client_space_handle = space_sender->uid;
+    send_ptr.asset->connection->message_alloc_id = 0;
+    send_ptr.asset->connection->accepted = true;
+    send_ptr.asset->connection->closed_status = IPC_STILL_OPEN;
 
-    send_ptr.asset->ipc_connection->message_sent = {};
+    send_ptr.asset->connection->server_handle = -1;
+    send_ptr.asset->connection->server_space_handle = space_receiver->uid;
+    send_ptr.asset->connection->client_space_handle = space_sender->uid;
+    send_ptr.asset->connection->message_sent = {};
 
     send_ptr.asset->lock.release();
 
-    AssetPtr recv_ptr = try$(asset_copy(space_sender, space_receiver, send_ptr));
+    auto recv_ptr = try$(asset_copy(space_sender, space_receiver, send_ptr));
 
     return AssetIpcConnectionPipeCreateResult{
-        .sender_connection = send_ptr,
+        .sender_connection = send_ptr.to_untyped(),
         .receiver_connection = recv_ptr,
     };
 }

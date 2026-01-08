@@ -23,60 +23,56 @@
 core::Result<void> start_module_execution(elf::ElfLoader loaded, mcx::MachineContext const *context)
 {
 
-    AssetPtr ptr = try$(space_create(nullptr, 0, 0));
-    Asset *asset = ptr.asset;
-    Space *root_space = asset->space;
+    AssetRef<Space> ptr = (Space::create_root());
+    Space *root_space = ptr.asset;
     void *context_mapped = nullptr;
     // copy machine context to task
     if (context)
     {
-        auto mem_asset_res = asset_create_memory(root_space, {
-                                                                 .size = math::alignUp(sizeof(StartupInfo), 4096ul),
-                                                             });
+        auto mem_asset_res = root_space->create_memory({
+            .size = math::alignUp(sizeof(StartupInfo), 4096ul),
+        });
         if (mem_asset_res.is_error())
         {
             log::err$("unable to create memory asset for machine context: {}", mem_asset_res.error());
-            asset_release(nullptr, asset);
+
             return mem_asset_res.error();
         }
 
         auto mem_asset_ptr = mem_asset_res.unwrap();
         auto mem_asset = mem_asset_ptr.asset;
-        auto mem = mem_asset->memory;
-        void *copied_data = (void *)toVirt(mem.addr);
+        void *copied_data = (void *)toVirt(mem_asset->addr);
         memset(copied_data, 0, sizeof(StartupInfo));
         memcpy(copied_data, context, sizeof(mcx::MachineContext));
 
-        if (asset_create_mapping(root_space, (AssetMappingCreateParams){
-                                                 .start = mem.addr,
-                                                 .end = math::alignUp(mem.addr + sizeof(StartupInfo), 4096ul),
-                                                 .physical_mem = mem_asset,
-                                                 .writable = true,
-                                             })
+        if (root_space->create_mapping((AssetMappingCreateParams){
+                                           .start = mem_asset->addr,
+                                           .end = math::alignUp(mem_asset->addr + sizeof(StartupInfo), 4096ul),
+                                           .physical_mem = mem_asset_ptr,
+                                           .writable = true,
+                                       })
                 .is_error())
         {
             log::err$("unable to create mapping for machine context: {}", mem_asset_res.error());
-            asset_release(nullptr, asset);
             return mem_asset_res.error();
         }
-        context_mapped = (void *)mem.addr;
+        context_mapped = (void *)mem_asset->addr;
     }
 
-    auto task_asset_res = asset_create_task(root_space,
-                                            {
-                                                .launch = {
-                                                    .entry = (void *)loaded.entry_point(),
-                                                    .args = {
-                                                        (uintptr_t)context_mapped},
-                                                    .user = true,
+    auto task_asset_res = root_space->create_task(
+        {
+            .launch = {
+                .entry = (void *)loaded.entry_point(),
+                .args = {
+                    (uintptr_t)context_mapped},
+                .user = true,
 
-                                                },
-                                            });
+            },
+        });
 
     if (task_asset_res.is_error())
     {
         log::err$("unable to create task asset: {}", task_asset_res.error());
-        asset_release(nullptr, asset);
         return task_asset_res.error();
     }
 
@@ -108,40 +104,37 @@ core::Result<void> start_module_execution(elf::ElfLoader loaded, mcx::MachineCon
             log::warn$("skipping program header {}: page count is 0", i);
             continue;
         }
-        auto mem_asset_res = asset_create_memory(root_space, {
-                                                                 .size = mem_size,
-                                                             });
+        auto mem_asset_res = root_space->create_memory({
+            .size = mem_size,
+        });
 
         if (mem_asset_res.is_error())
         {
             log::err$("unable to create memory asset for program header {}: {}", i, mem_asset_res.error());
-            asset_release(nullptr, asset);
 
             return mem_asset_res.error();
         }
 
         auto mem_asset_ptr = mem_asset_res.unwrap();
         auto mem_asset = mem_asset_ptr.asset;
-        auto mem = mem_asset->memory;
 
-        void *copied_data = (void *)toVirt(mem.addr);
+        void *copied_data = (void *)toVirt(mem_asset->addr);
 
         memset(copied_data, 0, ph.mem_size);
         memcpy(copied_data,
                (void *)((uintptr_t)loaded.range().start() + ph.file_offset),
                ph.file_size);
 
-        if (asset_create_mapping(root_space, (AssetMappingCreateParams){
-                                                 .start = ph.virt_addr,
-                                                 .end = ph.virt_addr + mem_size,
-                                                 .physical_mem = mem_asset,
-                                                 .writable = true,
-                                                 .executable = true,
-                                             })
+        if (root_space->create_mapping((AssetMappingCreateParams){
+                                           .start = ph.virt_addr,
+                                           .end = ph.virt_addr + mem_size,
+                                           .physical_mem = mem_asset_ptr,
+                                           .writable = true,
+                                           .executable = true,
+                                       })
                 .is_error())
         {
             log::err$("unable to create mapping for program header {}: {}", i, mem_asset_res.error());
-            asset_release(nullptr, asset);
             return mem_asset_res.error();
         }
     }

@@ -74,13 +74,13 @@ core::Result<kernel::Task *> kernel::Task::task_create()
     kernel::Task *task = kernel::Task::_task_allocate();
     if (task == nullptr)
     {
-        return core::Result<kernel::Task*>::error("unable to allocate task");
+        return ("unable to allocate task");
     }
 
     task->_cpu_context = try$(kernel::CpuContext::create_empty());
 
     log::log$("created task with id: {}", task->uid());
-    return core::Result<kernel::Task*>::success(task);
+    return (task);
 }
 
 core::Result<void> kernel::Task::_initialize(CpuContextLaunch params, VmmSpace *target_vspace)

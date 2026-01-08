@@ -199,8 +199,9 @@ core::Result<void> Pmm::release(PhysAddr addr, size_t count)
             if(section.bitmap.fill_expected_inverse(false, range).is_error())
             {
                 auto vaddr = addr._addr;
-                log::err$("Pmm: failed to release memory: {}", vaddr);
-                __builtin_trap();
+                log::err$("Pmm: failed to release memory: {} ({})", vaddr | fmt::FMT_HEX, count );
+                log::err$("At section: {}-{}", section.range.start() | fmt::FMT_HEX, section.range.end() | fmt::FMT_HEX);
+                __builtin_unreachable();
             }
             return {};
         }

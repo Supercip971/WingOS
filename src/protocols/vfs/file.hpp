@@ -20,7 +20,7 @@ struct FileInfo
     uint64_t created_at;
     uint64_t modified_at;
     uint64_t accessed_at;
-    bool is_directory;
+    uint16_t is_directory;
     core::WStr name;
 };
 
@@ -278,12 +278,12 @@ public:
         message.data[0].data = FS_GET_INFO;
         auto msg = try$(connection.call(message));
 
-        FileInfo info;
+        FileInfo info = {};
         info.size = msg.data[1].data;
         info.created_at = msg.data[2].data;
         info.modified_at = msg.data[3].data;
         info.accessed_at = msg.data[4].data;
-        info.is_directory = msg.data[5].data != 0;
+        info.is_directory = msg.data[5].data; 
         size_t name_len = msg.len;
         char name_buf[110] = {0};
         for (size_t i = 0; i < name_len && i < 110; i++)

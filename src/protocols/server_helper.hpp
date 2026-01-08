@@ -19,12 +19,14 @@ public:
     static core::Result<ManagedServer> create_registered_server(core::Str name, uint64_t major = 1, uint64_t minor = 0)
     {
         ManagedServer server = {};
+
         auto init_conn = InitConnection::connect();
         if (init_conn.is_error())
         {
             return "failed to connect to init";
         }
         auto v = init_conn.unwrap();
+
 
         auto ipc_server = Wingos::Space::self().create_ipc_server();
         InitRegisterServer reg = {};
@@ -34,6 +36,8 @@ public:
         reg.endpoint = ipc_server.addr;
 
         auto res = v.register_server(reg);
+
+
         if (res.is_error())
         {
             return "failed to register server with init";

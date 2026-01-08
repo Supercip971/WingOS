@@ -1,5 +1,6 @@
 #pragma once
 
+#include <new>
 #include <libcore/core.hpp>
 #include <libcore/mem/view.hpp>
 #include <stdlib.h>

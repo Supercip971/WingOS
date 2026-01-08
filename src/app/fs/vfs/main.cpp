@@ -104,13 +104,17 @@ int main(int, char **)
 {
 
     // attempt connection to server ID 0
+    log::log$("started vfs");
 
     auto server_r = prot::ManagedServer::create_registered_server("vfs", 1, 0);
+    log::log$("registered vfs");
     if (server_r.is_error())
     {
         log::err$("failed to create registered vfs server: {}", server_r.error());
         return 1;
     }
+
+
 
     auto server = server_r.take();
 

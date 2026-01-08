@@ -31,13 +31,13 @@ void Cpu::interrupt_hold()
 
 bool Cpu::begin_syscall()
 {
-    asm volatile("sti");
+//    asm volatile("sti");
     return true;
 }
 
 bool Cpu::end_syscall()
 {
-
+  //  asm volatile("cli");
     return true;
 }
 

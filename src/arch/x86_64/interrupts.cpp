@@ -12,6 +12,7 @@
 #include "kernel/generic/scheduler.hpp"
 #include "libcore/encourage.hpp"
 #include "libcore/lock/lock.hpp"
+#include "kernel/generic/task.hpp"
 #include "libcore/lock/rwlock.hpp"
 uint64_t ccount;
 volatile bool inside_error = false;
@@ -122,6 +123,25 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
             dump_stackframe((void *)Cpu::current()->debug_saved_syscall_stackframe);
         }
 
+
+        // task syscall and user space stack range from cpu task context
+
+        uintptr_t sys_task_stack_start = (uintptr_t)Cpu::current()->currentTask()->cpu_context()->syscall_stack_ptr;
+
+        uintptr_t sys_task_stack_end = (uintptr_t)Cpu::current()->currentTask()->cpu_context()->syscall_stack_top;
+
+        uintptr_t task_stack_start = (uintptr_t)Cpu::current()->currentTask()->cpu_context()->stack_ptr;
+
+        uintptr_t task_stack_end = (uintptr_t)Cpu::current()->currentTask()->cpu_context()->stack_top;
+
+        uintptr_t kernel_stack_start = (uintptr_t)Cpu::current()->currentTask()->cpu_context()->kernel_stack_ptr;
+
+        uintptr_t kernel_stack_end = (uintptr_t)Cpu::current()->currentTask()->cpu_context()->kernel_stack_top;
+        
+        log::log$("Syscall task stack range: {}-{}", sys_task_stack_start | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO, sys_task_stack_end | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
+        log::log$("Task stack range: {}-{}", task_stack_start | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO, task_stack_end | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
+        log::log$("Kernel stack range: {}-{}", kernel_stack_start | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO, kernel_stack_end | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
+        
         // [gs:0x0] and [gs:0x8]
         uintptr_t gs0 = 0;
         uintptr_t gs8 = 0;

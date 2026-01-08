@@ -39,6 +39,7 @@ public:
     bool try_acquire()
     {
         int expected = 0;
+        
         return _locked.compare_exchange_strong(expected, 1, std::memory_order_acquire, std::memory_order_relaxed);
     }
 

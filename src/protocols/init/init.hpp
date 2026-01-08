@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 #include <stdint.h>
 #include "iol/wingos/ipc.hpp"
 #include "libcore/result.hpp"
@@ -6,11 +6,11 @@
 #include "iol/wingos/space.hpp"
 
 
-namespace prot 
+namespace prot
 {
 
 
-     enum InitMessageType 
+     enum InitMessageType
     {
         INIT_REGISTER_SERVER = 1,
         INIT_UNREGISTER_SERVER = 2,
@@ -19,39 +19,39 @@ namespace prot
         INIT_SIGNAL_FS_AVAILABLE = 5,
         INIT_QUERY_FB = 6,
     };
-    struct InitRegisterServer 
+    struct InitRegisterServer
     {
         // wingos/disk
         // init
-    
-        char name[80]; 
-        uint64_t major; 
+
+        char name[80];
+        uint64_t major;
         uint64_t minor;
-        MessageHandle endpoint;   
+        MessageHandle endpoint;
 
     };
 
-    struct InitUnregisterServer 
+    struct InitUnregisterServer
     {
-         char name[80]; 
+         char name[80];
     };
 
-    struct InitGetServer 
+    struct InitGetServer
     {
-        char name[80]; 
+        char name[80];
         uint64_t major;
         uint64_t minor;
     };
 
-    struct InitGetServerResponse 
+    struct InitGetServerResponse
     {
-        IpcServerHandle endpoint; 
+        IpcServerHandle endpoint;
         uint64_t major;
         uint64_t minor;
     };
 
 
-    struct InitQueryFbResponse 
+    struct InitQueryFbResponse
     {
         uintptr_t framebuffer_addr;
         size_t framebuffer_width;
@@ -60,12 +60,12 @@ namespace prot
 
 
 
-    class InitConnection 
+    class InitConnection
     {
 
         Wingos::IpcClient connection;
-        
-        public: 
+
+        public:
 
         Wingos::IpcClient& raw_client() { return connection; }
 
@@ -104,7 +104,7 @@ namespace prot
 
             message.len = i+1;
 
-            auto sended_message = connection.send(message, false);
+            auto sended_message = connection.send(message, true);
 
             auto message_handle = sended_message.unwrap();
             if (sended_message.is_error())
@@ -149,7 +149,7 @@ namespace prot
 
             message.raw_buffer[i] = 0;
             message.len = i+1;
-            
+
         //   auto sended_message = connection.send(message, true);
             //auto message_handle = sended_message.unwrap();
           //  if (sended_message.is_error())
@@ -159,7 +159,7 @@ namespace prot
 /*
             while (true)
             {
-                
+
                 auto received = connection.receive_reply(message_handle);
                 if (!received.is_error())
                 {
@@ -177,7 +177,7 @@ namespace prot
                 }
             }
 */
-            
+
             auto res = connection.call(message);
             if (!res.is_error())
             {

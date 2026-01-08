@@ -88,13 +88,15 @@ bool update_endpoint(Ext4FsEndpoint* dev, Ext4FileEndpoint *endpoint)
     {
         log::log$("ext4: get_info request for inode {}", endpoint->inode.inode_id);
 
+        log::log$("    indode size: {}", core::copy(endpoint->inode.inode.size_lo));
+        log::log$("    inode type: {}", (int)endpoint->inode.inode.file_type);
         IpcMessage reply = {};
         reply.data[0].data = 1; // success
         reply.data[1].data = endpoint->inode.inode.size_lo;
         reply.data[2].data = endpoint->inode.inode.ctime;
         reply.data[3].data = endpoint->inode.inode.mtime;
         reply.data[4].data = endpoint->inode.inode.atime;
-        reply.data[5].data = (endpoint->inode.inode.file_type);
+        reply.data[5].data = (uint16_t)(endpoint->inode.inode.file_type);
         endpoint->file_server.reply(core::move(msg), reply);
         return true;
     }

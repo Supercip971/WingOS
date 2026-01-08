@@ -37,6 +37,7 @@ int main(int, char **)
     mouse_pipes = {};
     keyboard_pipes = {};
 
+    log::log$("Start ps2 app");
     auto server_r = prot::ManagedServer::create_registered_server("human-interface", 1, 0);
 
     if(server_r.is_error())

@@ -1,5 +1,7 @@
 #include <string.h>
 
+#include <new>
+
 #include "app/init/service_register.hpp"
 #include "module_startup.hpp"
 
@@ -58,31 +60,55 @@ core::Result<size_t> start_service(mcx::MachineContext* context, mcx::MachineCon
 
 core::Result<size_t> start_service_fs(mcx::MachineContext* context, core::Str const &path)
 {
-
     log::log$("[INIT] starting module from fs: {}", path);
 
-
     auto vfs_endpoint = try$(service_get("vfs"));
+    log::log$("[INIT] got vfs endpoint: {}", vfs_endpoint);
 
     auto vfs_service = prot::VfsConnection::connect(vfs_endpoint).unwrap();
+    log::log$("[INIT] connected to vfs for: {}", path);
 
-    auto file = try$(vfs_service.open_path(path));
+    auto file_res = vfs_service.open_path(path);
+    if (file_res.is_error())
+    {
+        log::err$("[INIT] failed to open {}: {}", path, file_res.error());
+        return file_res.error();
+    }
+    auto file = file_res.take();
+    log::log$("[INIT] opened {}", path);
 
+    auto info_res = file.get_info();
+    if (info_res.is_error())
+    {
+        log::err$("[INIT] get_info failed for {}: {}", path, info_res.error());
+        return info_res.error();
+    }
+    auto d = info_res.take();
+    log::log$("[INIT] {} size={} is_dir={}", path, d.size, d.is_directory);
 
-    auto d = try$(file.get_info());
-
+    if (d.is_directory != 8)
+    {
+        log::err$("[INIT] {} is a directory, cannot execute", path);
+        return "module path is a directory";
+    }
 
     auto aligned_size = math::alignUp<size_t>(d.size, 4096);
-    
     auto mem = Wingos::Space::self().allocate_physical_memory(aligned_size, false);
 
-    try$(file.read(mem, 0, d.size));
-    auto mapped = Wingos::Space::self().map_memory(mem, ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);  
-    
+    auto read_res = file.read(mem, 0, d.size);
+    if (read_res.is_error())
+    {
+        log::err$("[INIT] read failed for {}: {}", path, read_res.error());
+        return read_res.error();
+    }
+    log::log$("[INIT] read {} bytes from {}", d.size, path);
+
+    auto mapped = Wingos::Space::self().map_memory(mem, ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);
+
     auto loaded = elf::ElfLoader::load(VirtRange((uintptr_t)mapped.ptr(), (uintptr_t)mapped.ptr() + aligned_size));
     if (loaded.is_error())
     {
-        log::err$("[INIT] unable to load module {}: {}", loaded.error());
+        log::err$("[INIT] unable to load module {}: {}", path, loaded.error());
         return loaded.error();
     }
 
@@ -90,7 +116,7 @@ core::Result<size_t> start_service_fs(mcx::MachineContext* context, core::Str co
 
     log::log$("[INIT] started fs module: {}", path);
 
-    return 0ul;
+    return v;
 }
 
 core::Result<size_t> start_service(mcx::MachineContext *context, core::Str path)
@@ -243,6 +269,7 @@ core::Result<bool> try_startup_modules_cycle_one(mcx::MachineContext *context)
             if (!started_services.contain(mod.deps[d]))
             {
                 can_start = false;
+                log::log$("[try_startup] Module '{}' waiting for dependency '{}'", mod.name, mod.deps[d]);
                 break;
             }
         }
@@ -251,7 +278,15 @@ core::Result<bool> try_startup_modules_cycle_one(mcx::MachineContext *context)
         {
             continue;
         }
-        try$(start_service(context, mod.name));
+
+        log::log$("[try_startup] Starting module: {}", mod.name);
+        auto start_res = start_service(context, mod.name);
+        if (start_res.is_error())
+        {
+            log::err$("[try_startup] Failed to start module {}: {}", mod.name, start_res.error());
+            // Keep the module in the queue to retry later when another service appears.
+            continue;
+        }
 
         started_modules.push(mod.name);
         module_to_launch.pop(i);
@@ -292,13 +327,24 @@ core::Result<void> startup_module(mcx::MachineContext *context)
 
 core::Result<void> service_startup_callback(core::Str service_name)
 {
+    log::log$("[service_startup_callback] Service registered: {}", service_name);
 
     if (gmcx == nullptr)
     {
         return "machine context is null";
     }
     started_services.push(service_name);
+    
+    log::log$("[service_startup_callback] Attempting to start pending modules (count: {})", module_to_launch.len());
     auto res = try_startup_modules_cycle(gmcx);
+    
+    if (res.is_error())
+    {
+        log::err$("[service_startup_callback] Failed to start modules: {}", res.error());
+        return res;
+    }
+    
+    log::log$("[service_startup_callback] Module startup cycle complete, remaining modules: {}", module_to_launch.len());
 
     return {};
 }

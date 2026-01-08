@@ -1,4 +1,5 @@
 #pragma once
+
 #include "libcore/type-utils.hpp"
 #define HAS_LOGGING
 #include <libcore/fmt/fmt.hpp>
@@ -10,8 +11,8 @@ namespace log
 
 void provide_log_target(core::Writer *writer);
 
-void log_lock(); 
-void log_release(); 
+void log_lock();
+void log_release();
 core::Writer *log_target();
 
 template <typename S>
@@ -21,14 +22,14 @@ constexpr void log_impl(S &&arg)
 }
 
 template <typename S, typename... Args>
-constexpr void log_impl(S &&arg,  Args &&...args)
+constexpr void log_impl(S &&arg, Args &&...args)
 {
     log_target()->write(core::Str(arg));
     log_impl((args)...);
 }
 
 template <typename Fmt, typename... Args>
-constexpr void log(Fmt &&fmt,  Args &&...args)
+constexpr void log(Fmt &&fmt, Args &&...args)
 {
     fmt::format(*log_target(), (fmt), core::forward<Args>(args)...);
 }
@@ -53,7 +54,7 @@ inline consteval core::Str color_from_filename(const char *s)
     (void)s;
     return core::Str("5");
 }
-#else 
+#else
 inline consteval core::Str color_from_filename(const char *s)
 {
 
@@ -66,13 +67,13 @@ inline consteval core::Str color_from_filename(const char *s)
     }
     const char *colors[] = {
         "2", "3", "4",  "6", "9", "10", "11", "12", "13", "14",
-    "21", "26", "28", "30", "33", "34", "36", "37", "38", "39", 
+    "21", "26", "28", "30", "33", "34", "36", "37", "38", "39",
 "40", "41", "42", "43", "44", "45", "46", "47", "48", "49",
 "50", "51", "56", "57", "58", "62", "63", "64", "68", "69", "70",
-"74", "75", "76", "77", "78", "79", "80", 
-"81", "82", "83", "84", "85", "86", "87", 
+"74", "75", "76", "77", "78", "79", "80",
+"81", "82", "83", "84", "85", "86", "87",
 "90", "91", "92", "93", "94", "95", "96",
-"97", "98", "99", "100", "101", "102", "103", "104", "105", "106", 
+"97", "98", "99", "100", "101", "102", "103", "104", "105", "106",
 "107", "108", "109", "110", "111", "112", "113", "114", "115", "116",
 "117", "118", "119", "120", "121", "122", "123", "125", "126", "127",
 "128", "129", "130", "131", "132", "133", "134", "135", "136", "137", "138",
@@ -95,7 +96,7 @@ inline consteval core::Str color_from_filename(const char *s)
 #    define LOG_DEFAULT_COLOR log::color_from_filename(__FILE__)
 
 
-#endif 
+#endif
 
 
 #ifndef NO_LOG_COLOR
@@ -129,7 +130,6 @@ inline void core::Result<ValT, ErrT>::assert()
 {
     if (is_error())
     {
-
         log::log("Result assert failed: {}", _error);
 
         while (true)
@@ -137,12 +137,14 @@ inline void core::Result<ValT, ErrT>::assert()
         };
     }
 }
+
+// Provide the missing specialization for Result<void, ErrT>::assert().
+// Without this, some builds end up with an undefined symbol at link time.
 template <typename ErrT>
 inline void core::Result<void, ErrT>::assert()
 {
     if (is_error())
     {
-
         log::log("Result assert failed: {}", _error);
 
         while (true)

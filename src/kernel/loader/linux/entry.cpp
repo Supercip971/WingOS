@@ -75,6 +75,14 @@ void _start(void)
 
     static mcx::MachineContext _mcx{};
 
+
+
+    // create system mapping and memory, for _mcx
+
+    _mcx._memory_map_count = 0;
+
+    
+
  //   com = arch::x86::Com::initialize(arch::x86::Com::Port::COM1).unwrap();
 
     LinuxWriter linux_writer;

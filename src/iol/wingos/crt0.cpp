@@ -215,7 +215,11 @@ extern "C" __attribute__((weak)) void _entry_point(StartupInfo *context)
     log::provide_log_target(&logger);
 
     run_constructors();
-    cwd = new core::WStr();
+    if(context->stdout_handle != 0)
+    {
+
+        cwd = new core::WStr();
+    }
 
     if (context->stdout_handle != 0)
     {
@@ -270,6 +274,8 @@ extern "C" __attribute__((weak)) void _entry_point(StartupInfo *context)
     // Initialize the kernel
     if (_main(context) != 0)
     {
+        while(true){};
         return;
     }
+    while(true){};
 }

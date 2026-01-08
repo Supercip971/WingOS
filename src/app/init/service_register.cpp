@@ -80,7 +80,7 @@ void startup_init_service(Wingos::IpcServer server, MachineContextShared shared)
             connections.push(conn.unwrap());
         }
 
-        
+
         auto received = server.receive();
 
         if (!received.is_error())
@@ -97,6 +97,7 @@ void startup_init_service(Wingos::IpcServer server, MachineContextShared shared)
             {
             case prot::INIT_REGISTER_SERVER:
             {
+                log::log$("registered server: {}");
                 service_register(
                     msg.received.data[1].data,
                     core::Str((char *)msg.received.raw_buffer, msg.received.len - 1),
@@ -113,7 +114,7 @@ void startup_init_service(Wingos::IpcServer server, MachineContextShared shared)
             case prot::INIT_GET_SERVER:
             {
                 prot::InitGetServerResponse resp{};
-                resp.endpoint = 0;
+                resp.endpoint = -1;
 
                 auto name_len = msg.received.len - 1;
                 core::Str name = core::Str((char *)msg.received.raw_buffer, name_len);

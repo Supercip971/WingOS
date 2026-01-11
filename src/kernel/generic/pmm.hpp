@@ -68,10 +68,10 @@ struct Pmm
 
     static core::Result<Pmm> create(const mcx::MachineContext *context);
 
-    core::Result<PhysAddr> allocate(size_t count, IolAllocMemoryFlag flags = IOL_ALLOC_MEMORY_FLAG_NONE);
+    core::Result<PhysAddr> allocate(Pages count, IolAllocMemoryFlag flags = IOL_ALLOC_MEMORY_FLAG_NONE);
 
-    core::Result<void> own(PhysAddr addr, size_t count);
-    core::Result<void> release(PhysAddr addr, size_t count);
+    core::Result<void> own(PhysAddr addr, Pages count);
+    core::Result<void> release(PhysAddr addr, Pages count);
 
 
     core::Result<bool> query_usage(PhysAddr addr);

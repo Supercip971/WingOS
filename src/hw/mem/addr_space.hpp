@@ -4,6 +4,37 @@
 #include <stddef.h>
 #include <stdint.h>
 
+
+struct Pages
+{
+    uint64_t _count = 0;
+
+    static constexpr uint64_t size = 4096;
+    constexpr Pages() = default;
+    constexpr Pages(uint64_t count) : _count(count) {}
+
+    uint64_t count() const { return _count; }
+    uint64_t bytes() const { return _count * Pages::size; }
+
+    constexpr size_t operator+(const Pages &other) const { return (_count + other._count); }
+
+    constexpr size_t operator-(const Pages &other) const { return (_count - other._count); }
+
+    constexpr bool operator<(const Pages &other) const { return _count < other._count; }
+
+
+    static constexpr Pages from_bytes_floored(size_t bytes)
+    {
+        return Pages(bytes / Pages::size);
+    }
+    static constexpr Pages from_bytes_ceil(size_t bytes)
+    {
+        return Pages((bytes + Pages::size - 1) / Pages::size);
+    }
+
+
+
+};
 /* it's the implementation that knows how to cast virt address to physical ones */
 /* for a user app it'll allocate a virtual range and map the physical address */
 /* in a kernel it's just adding an offset */
@@ -34,7 +65,7 @@ struct VirtAddr
     // technically it's like a pointer, the pointer is constant
     // but not the value it points to
     template <typename T>
-    void write(T value) 
+    void write(T value)
     {
         *((T*)_addr) = value;
     }
@@ -42,12 +73,12 @@ struct VirtAddr
     template <typename T>
     T read() const
     {
-        
+
         return *((T*)_addr);
     }
 
     template <typename T>
-    void vwrite(T value) 
+    void vwrite(T value)
     {
         (*(volatile T*)_addr) = value;
     }

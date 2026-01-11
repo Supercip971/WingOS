@@ -188,8 +188,8 @@ core::Result<AssetRef<AssetMemory>> Space::create_memory(AssetMemoryCreateParams
     if (params.addr == 0)
     {
         core::Result<PhysAddr> res = params.lower_half
-                                         ? Pmm::the().allocate(math::alignUp<size_t>(params.size, arch::amd64::PAGE_SIZE) / arch::amd64::PAGE_SIZE, IOL_ALLOC_MEMORY_FLAG_LOWER_SPACE)
-                                         : Pmm::the().allocate(math::alignUp<size_t>(params.size, arch::amd64::PAGE_SIZE) / arch::amd64::PAGE_SIZE);
+                                         ? Pmm::the().allocate(Pages::from_bytes_ceil(params.size), IOL_ALLOC_MEMORY_FLAG_LOWER_SPACE)
+                                         : Pmm::the().allocate(Pages::from_bytes_ceil(params.size));
 
         if (res.is_error())
         {
@@ -203,6 +203,7 @@ core::Result<AssetRef<AssetMemory>> Space::create_memory(AssetMemoryCreateParams
         }
 
         ptr.asset->addr = res.unwrap()._addr;
+        ptr.asset->size = params.size;
     }
     else
     {
@@ -227,6 +228,7 @@ core::Result<AssetRef<AssetMemory>> Space::create_memory(AssetMemoryCreateParams
         // res = PhysAddr{params.addr};
 
         ptr.asset->addr = params.addr;
+        ptr.asset->size = params.size;
     }
 
     ptr.asset->lock.release();

@@ -126,7 +126,7 @@ core::Result<void> Pmm::_fill(const mcx::MachineContext *context)
     return {};
 }
 
-core::Result<PhysAddr> Pmm::allocate(size_t count, IolAllocMemoryFlag flags)
+core::Result<PhysAddr> Pmm::allocate(Pages count, IolAllocMemoryFlag flags)
 {
 
     lock_scope$(pmm_lock);
@@ -135,12 +135,12 @@ core::Result<PhysAddr> Pmm::allocate(size_t count, IolAllocMemoryFlag flags)
         for (size_t i = 0; i < this->_sections_count; i++)
         {
             auto &section = this->_sections[i];
-            auto start = section.bitmap.alloc(count);
+            auto start = section.bitmap.alloc(count.count());
 
             if (!start.is_error())
             {
 
-                auto range = mcx::MemoryRange::from_begin_len(start.unwrap(), count);
+                auto range = mcx::MemoryRange::from_begin_len(start.unwrap(), count.count());
                 section.bitmap.fill(true, range);
                 return PhysAddr(section.range.start() + range.start() * page_size_bit);
             }
@@ -150,12 +150,12 @@ core::Result<PhysAddr> Pmm::allocate(size_t count, IolAllocMemoryFlag flags)
     for (long i = this->_sections_count - 1; i >= 0; i--)
     {
         auto &section = this->_sections[i];
-        auto start = section.bitmap.alloc(count);
+        auto start = section.bitmap.alloc(count.count());
 
         if (!start.is_error())
         {
             size_t start_addr = start.unwrap();
-            auto range = mcx::MemoryRange::from_begin_len(start_addr, count);
+            auto range = mcx::MemoryRange::from_begin_len(start_addr, count.count());
 
             section.bitmap.fill(true, range);
 
@@ -163,11 +163,11 @@ core::Result<PhysAddr> Pmm::allocate(size_t count, IolAllocMemoryFlag flags)
         }
     }
 
-    log::warn$("Pmm: out of memory: {}", count * page_size_bit);
+    log::warn$("Pmm: out of memory: {}", count.count() * page_size_bit);
     return ("Could not allocate memory");
 }
 
-core::Result<void> Pmm::own(PhysAddr addr, size_t count)
+core::Result<void> Pmm::own(PhysAddr addr, Pages count)
 {
     lock_scope$(pmm_lock);
 
@@ -177,7 +177,7 @@ core::Result<void> Pmm::own(PhysAddr addr, size_t count)
         if (section.range.contains(addr))
         {
 
-            auto range = mcx::MemoryRange::from_begin_len((addr - section.range.start())/page_size_bit, count);
+            auto range = mcx::MemoryRange::from_begin_len((addr - section.range.start())/page_size_bit, count.count());
             section.bitmap.fill(true, range);
             return {};
         }
@@ -185,7 +185,7 @@ core::Result<void> Pmm::own(PhysAddr addr, size_t count)
 
     return ("Could not own memory");
 }
-core::Result<void> Pmm::release(PhysAddr addr, size_t count)
+core::Result<void> Pmm::release(PhysAddr addr, Pages count)
 {
     lock_scope$(pmm_lock);
 
@@ -195,11 +195,11 @@ core::Result<void> Pmm::release(PhysAddr addr, size_t count)
         if (section.range.contains(addr))
         {
 
-            auto range = mcx::MemoryRange::from_begin_len((addr - section.range.start())/page_size_bit, count);
+            auto range = mcx::MemoryRange::from_begin_len((addr - section.range.start())/page_size_bit, count.count());
             if(section.bitmap.fill_expected_inverse(false, range).is_error())
             {
                 auto vaddr = addr._addr;
-                log::err$("Pmm: failed to release memory: {} ({})", vaddr | fmt::FMT_HEX, count );
+                log::err$("Pmm: failed to release memory: {} ({})", vaddr | fmt::FMT_HEX, count.count() );
                 log::err$("At section: {}-{}", section.range.start() | fmt::FMT_HEX, section.range.end() | fmt::FMT_HEX);
                 __builtin_unreachable();
             }

@@ -11,28 +11,27 @@ WingOS is a small hobbyist 64 bit kernel made with <3 in C++
 [latest milestone](https://cyp.sh/blog/wingos-milestone-1/) - [blog](https://cyp.sh/blog/) - [old branch](https://github.com/Supercip971/WingOS/tree/old)
 </div>
 
-I am currently working on this rewrite. 
-If you want to see the original version, you can checkout the [old branch](https://github.com/Supercip971/WingOS/tree/old). Please note that I wrote the old version when I was a beginner in C++ and OS development 3-4 years ago, and I have learned a lot since then.
-
-If you are interested in seeing much more advanced, working, and cool projects, you should visit the [brutal](https://github.com/brutal-org/brutal) project or [skift](https://github.com/skift-org/skift).
-
-Please be aware that this rewrite is a work in progress. And due to my current schedule and my engineering school exams, I don't have much time to work on it. I'm no longer 14 years old, and I am a lot more busy now :⁽.
-
 ## What the project is about
 
-The project is about creating a small hobbyist kernel that is simple, easy to understand, and fun to work on.
-It is not meant to be a production-ready kernel, but it doesn't mean that coding should not be taken seriously.
-Everything should be done with care, and the code should aim to be fast, while being simple and easy to understand.
+The project is about creating an operating system that is easy to program for, with a simple and clean API.
+- It tries to experiment with new ideas and API, ditching old and legacy concepts when possible.
+- WingOS is a **microkernel** based operating system, currently targetting x86_64. It tries to be a capability based OS, with a focus on security and stability. 
+- The userspace is beginning to be fleshed out, with a VFS+ext4+nvme support. 
+
+<div align="center">
+<br>
+
+![Wingos-doom](meta/doc/wingos-doom.png)
+
+Wingos screenshot running DOOM in userspace 
+
+</div>
+
 
 ## Milestones
 
 - [milestone 2 blog post](https://cyp.sh/blog/wingos-milestone-2/)
 - [milestone 1 blog post](https://cyp.sh/blog/wingos-milestone-1/)
-
-## Dependencies
-
-- The project uses the [cutekit](https://github.com/cute-engineering/cutekit) build system.
-- The project uses [limine](https://github.com/limine-bootloader/limine) as a bootloader.
 
 ## Feature list 
 
@@ -43,6 +42,11 @@ For now the kernel is still in development, but it has a few key features:
 - Nvme (NVMe) disk support (in userspace)
 - Ext4 filesystem support (in userspace)
 - VFS support (in userspace)
+
+## Dependencies
+
+- The project uses the [cutekit](https://github.com/cute-engineering/cutekit) build system.
+- The project uses [limine](https://github.com/limine-bootloader/limine) as a bootloader.
 
 
 ## Roadmap 
@@ -68,9 +72,9 @@ For now the kernel is still in development, but it has a few key features:
     - [x] VFS support
 - [x] Blocking IPC
 - [x] Graphics support (VESA, framebuffer, ...)
-- [ ] Input support (keyboard, mouse, ...)
+- [x] Input support (keyboard, mouse, ...)
     - [ ] Interrupt handling in userspace 
-- [ ] Port DOOM
+- [x] Port DOOM
 - [ ] Signals 
 - [ ] Create a shell 
 - [ ] Above and beyond 
@@ -87,4 +91,3 @@ Run `bash meta/build/make_cross_compiler.sh` to build the Wingos specific versio
 Now do `ck s` to start the build and run.
 
 Do `ck p` to build ports (now no ports are buildable, do a git clone recursive to get all ports).
-

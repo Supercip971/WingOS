@@ -27,5 +27,6 @@ extern "C" int _linux_start(int argc, char **argv)
 
     int c = main(argc, argv);
 
-    return c;
+    exit(c);
+   // return c;
 }

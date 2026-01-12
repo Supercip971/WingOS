@@ -1,113 +1,102 @@
 {
-    "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
-    "id": "host-x86_64",
-    "type": "target",
-    "props": {
-        "toolchain": "clang",
-        "arch": "x86_64",
-        "bits": "64",
-        "sys": "{shell.uname().sysname}",
-        "abi": "unknown",
-        "encoding": "utf8",
-        "freestanding": false,
-        "host": true
+  "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
+  "id": "host-x86_64",
+  "type": "target",
+  "props": {
+    "toolchain": "clang",
+    "arch": "x86_64",
+    "bits": "64",
+    "sys": "{shell.uname().sysname}",
+    "abi": "unknown",
+    "encoding": "utf8",
+    "freestanding": false,
+    "host": true,
+    "kernel": false
+  },
+  "tools": {
+    "cc": {
+      "cmd": "{shell.latest('clang')}",
+      "args": [
+        "-Isrc/libc",
+        "-fno-stack-protector",
+        "-ffreestanding",
+        "-g",
+        "-fsanitize=address",
+        "-fno-omit-frame-pointer",
+        "-std=gnu23",
+        "-Og",
+        "-Wnull-dereference",
+        "-Wstack-protector",
+        "-Wstrict-overflow=3",
+        "-Walloca",
+        "-Wvla",
+        "-Warray-bounds",
+        "-Wtautological-constant-in-range-compare",
+        "-Wloop-analysis",
+        "-Wshadow",
+        "-Wstrict-overflow=4",
+        "-Wstrict-prototypes",
+        "-Wswitch-default",
+        "-Wthread-safety",
+        "-Wunreachable-code-aggressive",
+        "-Widiomatic-parentheses",
+        "-Wfloat-equal",
+        "-Wassign-enum",
+        "-Wfor-loop-analysis",
+        "-Wimplicit-fallthrough"
+      ]
     },
-    "tools": {
-        "cc": {
-            "cmd": "{shell.latest('clang')}",
-            "args": [
-                "-Isrc/libc",
-               "-fno-stack-protector" ,
-
-                "-ffreestanding",
-               "-g", "-fsanitize=address",
-                "-fno-omit-frame-pointer",
-                "-std=gnu23",
-                "-Og",
- "-Wnull-dereference",
-                "-Wstack-protector",
-                "-Wstrict-overflow=3",
-                "-Walloca",
-                "-Wvla",
-                "-Warray-bounds",
-                "-Wtautological-constant-in-range-compare",
-                "-Wloop-analysis",
-                "-Wshadow",
-                "-Wstrict-overflow=4",
-                "-Wstrict-prototypes",
-                "-Wswitch-default",
-                "-Wthread-safety",
-                "-Wunreachable-code-aggressive",
-                "-Widiomatic-parentheses",
-                "-Wfloat-equal",
-                "-Wassign-enum",
-                "-Wfor-loop-analysis",
-                "-Wimplicit-fallthrough"
-           
-            ]
-        },
-        "cxx": {
-            "cmd": "{shell.latest('clang++')}",
-            "args": [
-                "-Isrc/libc",
-               "-fno-stack-protector",
-               "-g", "-fsanitize=address",
-                "-fno-omit-frame-pointer",
-                "-std=gnu++26",
-                "-D_NEW",
-                "-Wno-main",
-                "-Og",
-                "-fno-c++-static-destructors",
-                "-fno-builtin",
-                "-fno-threadsafe-statics" ,
-                   "-fno-stack-protector",
-                "-fno-c++-static-destructors",
-                "-fno-builtin",
-                "-fno-threadsafe-statics",
-               
-                "-Wnull-dereference",
-                "-Wstack-protector",
-                "-Wstrict-overflow=3",
-                "-Walloca",
-                "-Wvla",
-                "-Warray-bounds",
-                "-Wtautological-constant-in-range-compare",
-                "-Wloop-analysis",
-                "-Wshadow",
-                "-Wstrict-overflow=4",
-                "-Wstrict-prototypes",
-                "-Wswitch-default",
-                "-Wthread-safety",
-                "-Wunreachable-code-aggressive",
-                "-Widiomatic-parentheses",
-                "-Wfloat-equal",
-                "-Wassign-enum",
-                "-Wfor-loop-analysis",
-                "-Wimplicit-fallthrough"
-           
-            ]
-        },
-        "ld": {
-            "cmd": "{shell.latest('clang++')}",
-            "args": [
-                "-e",
-                "_cstart",
-                "-g",
-                "-fsanitize=address"
-            ]
-        },
-        "ar": {
-            "cmd": "{shell.latest('llvm-ar')}",
-            "args": [
-                "rcs"
-            ]
-        },
-        "as": {
-            "cmd": "nasm",
-            "args": [
-                "-f",
-                "elf64"
-            ]
-        }
+    "cxx": {
+      "cmd": "{shell.latest('clang++')}",
+      "args": [
+        "-Isrc/libc",
+        "-fno-stack-protector",
+        "-g",
+        "-fsanitize=address",
+        "-fno-omit-frame-pointer",
+        "-std=gnu++26",
+        "-D_NEW",
+        "-Wno-main",
+        "-Og",
+        "-fno-c++-static-destructors",
+        "-fno-builtin",
+        "-fno-threadsafe-statics",
+        "-fno-stack-protector",
+        "-fno-c++-static-destructors",
+        "-fno-builtin",
+        "-fno-threadsafe-statics",
+        "-Wnull-dereference",
+        "-Wstack-protector",
+        "-Wstrict-overflow=3",
+        "-Walloca",
+        "-Wvla",
+        "-Warray-bounds",
+        "-Wtautological-constant-in-range-compare",
+        "-Wloop-analysis",
+        "-Wshadow",
+        "-Wstrict-overflow=4",
+        "-Wstrict-prototypes",
+        "-Wswitch-default",
+        "-Wthread-safety",
+        "-Wunreachable-code-aggressive",
+        "-Widiomatic-parentheses",
+        "-Wfloat-equal",
+        "-Wassign-enum",
+        "-Wfor-loop-analysis",
+        "-Wimplicit-fallthrough"
+      ]
+    },
+    "ld": {
+      "cmd": "{shell.latest('clang++')}",
+      "args": ["-e", "_cstart", "-g", "-fsanitize=address"]
+    },
+    "ar": {
+      "cmd": "{shell.latest('llvm-ar')}",
+      "args": ["rcs"]
+    },
+    "as": {
+      "cmd": "nasm",
+      "args": ["-f", "elf64"]
     }
+  }
 }

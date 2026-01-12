@@ -664,8 +664,7 @@ void PREFIX(free)(void *ptr)
 		}
 
 		// being lied to...
-		liballoc_unlock();		// release the lock
-		return;
+		//
 	}
 
 	#ifdef DEBUG
@@ -812,8 +811,6 @@ void*   PREFIX(realloc)(void *p, size_t size)
 			}
 
 			// being lied to...
-			liballoc_unlock();		// release the lock
-			return NULL;
 		}
 
 		// Definitely a memory block.

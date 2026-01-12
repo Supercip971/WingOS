@@ -140,7 +140,9 @@ public:
     T *push(F v)
     {
         auto node = (Node *)malloc(sizeof(Node));
-        node->data = core::forward<F>(v);
+
+        new (&node->data) Storage<T>(core::forward<F>(v));
+       // node->data = core::forward<F>(v);
         node->next = nullptr;
 
         if (tail != nullptr)
@@ -205,7 +207,7 @@ public:
         T res = core::move(node_to_delete->data.value());
 
         prev->next = node_to_delete->next;
-        
+
 
         if (node_to_delete == tail)
         {

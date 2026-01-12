@@ -34,23 +34,17 @@ public:
     }
 
     Vec(const Vec &other)
+        : _data(nullptr), _count(0), _capacity(0)
     {
-
-        _count = other._count;
-        _capacity = other._capacity;
-
-        if (_count != 0)
+        if (other._count != 0)
         {
-            _data = core::mem_alloc<T>(_capacity).unwrap();
+            _data = core::mem_alloc<T>(other._capacity).unwrap();
+            _capacity = other._capacity;
             for (long i = 0; i < other._count; i++)
             {
-                _data[i] = other._data[i];
+                new (&_data[i]) T(other._data[i]);
             }
-        }
-        else
-        {
-            _capacity = 0;
-            _data = nullptr;
+            _count = other._count;
         }
     }
 
@@ -102,17 +96,16 @@ public:
         clear();
         if (other._count == 0)
         {
-
             _count = 0;
             return *this;
         }
 
         reserve(other._count);
-        _count = other._count;
         for (long i = 0; i < other._count; i++)
         {
-            _data[i] = other._data[i];
+            new (&_data[i]) T(other._data[i]);
         }
+        _count = other._count;
         return *this;
     }
 

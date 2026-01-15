@@ -164,17 +164,18 @@ public:
     {
         if (head == nullptr) [[unlikely]]
         {
-            // fixme: maybe use an optional ?
-            return Storage<T>::empty();
+            __builtin_unreachable();
         }
 
-        T res = core::move(head->data.value());
+        T res = core::move(head->data.take());
         auto next = head->next;
 
         if (tail == head)
         {
             tail = nullptr;
         }
+
+
         free(head);
         head = next;
         _count--;
@@ -204,7 +205,7 @@ public:
         }
 
         auto node_to_delete = prev->next;
-        T res = core::move(node_to_delete->data.value());
+        T res = node_to_delete->data.take();
 
         prev->next = node_to_delete->next;
 
@@ -215,7 +216,7 @@ public:
             tail->next = nullptr;
         }
 
-        free(node_to_delete);
+        free (node_to_delete);
         _count--;
 
         return (res);

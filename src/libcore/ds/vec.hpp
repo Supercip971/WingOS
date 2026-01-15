@@ -231,17 +231,16 @@ public:
         if (_count > 0)
         {
             _count--;
-            return core::move(_data[_count]);
+
+            auto v = _data[_count];
+
+            _data[_count].~T();
+
+            return v;
         }
 
 
-        Result<void>("empty").unwrap();
-
-        while (true)
-        {
-
-        };
-        // abort();
+        __builtin_unreachable();
     }
 
     T pop(size_t id)
@@ -249,12 +248,12 @@ public:
 
         if (id >= (size_t)_count)
         {
-            while (true)
-            {
-            };
+            __builtin_unreachable();
         }
 
         T value = core::move(_data[id]);
+
+        _data[id].~T();
         for (long i = id; i < _count - 1; i++)
         {
             _data[i] = core::move(_data[i + 1]);

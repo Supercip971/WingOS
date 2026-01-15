@@ -6,6 +6,7 @@
 #include "tests/libcore/vec_test.hpp"
 #include "tests/libcore/fmt_test.hpp"
 #include "../test.hpp"
+#include "tests/libcore/sharedptr.hpp"
 
 static constexpr TestGroup libcoreTests = {
     test_grouped_group$(
@@ -14,6 +15,7 @@ static constexpr TestGroup libcoreTests = {
         bitmapTests,
         vecTests,
         llistTests,
-        fmtTestWStr
+        fmtTestWStr,
+        sharedPtrTests
     ),
 };

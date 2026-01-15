@@ -28,7 +28,7 @@ union Storage
     }
 
 
-    constexpr Storage(Storage const &other bounded$) 
+    constexpr Storage(Storage const &other bounded$)
         : _val(other.value())
     {
     }
@@ -44,7 +44,7 @@ union Storage
     }
 
 
-    constexpr Storage &operator=(const Storage &other ) 
+    constexpr Storage &operator=(const Storage &other )
     {
         this->value() = other.value();
         return *this;
@@ -73,6 +73,13 @@ union Storage
         return *as_ptr();
     }
 
+
+    constexpr T take()
+    {
+        T val = core::move(_val);
+        destruct();
+        return val;
+    }
 
     constexpr T & retreive() bounded$
     {
@@ -124,7 +131,7 @@ public:
             new (&_value) Storage<Type>(other._value);
         }
     }
-    constexpr Optional(Optional &&other) : 
+    constexpr Optional(Optional &&other) :
                                            _contain_value(other._contain_value)
     {
         if(other._contain_value)
@@ -246,12 +253,12 @@ public:
     {
         return &_value.value();
     }
-    constexpr Type take() 
+    constexpr Type take()
     {
         _contain_value = false;
         return core::move(_value.value());
     }
-    constexpr Type& unwrap() 
+    constexpr Type& unwrap()
     {
         return (_value.value());
     }

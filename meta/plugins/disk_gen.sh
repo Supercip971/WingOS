@@ -1,6 +1,5 @@
-#!/bin/sh 
+#!/bin/sh
 
-set -e 
 echo "This script is used to generate disk images for WingOS. Please run it under the python script"
 echo "Due to partitionning and mounting, the build system may ask you to enter root privileges. Sorry for that"
 
@@ -11,7 +10,7 @@ rm -rf $DISK
 dd if=/dev/zero of=$DISK bs=1M count=256
 
 # CREATING PARTITION 1 (boot)
-sgdisk $DISK -g -n 1:0:+100M -t 1:EF00 -c 1:"EFI System Partition" 
+sgdisk $DISK -g -n 1:0:+100M -t 1:EF00 -c 1:"EFI System Partition"
 if [ $? -ne 0 ]; then
     echo "Failed to create partition table on $DISK"
     exit 1
@@ -76,12 +75,28 @@ BOOT_DISK_PATH=""
 for i in $(seq 1 5); do
     echo "Attempting to mount boot partition... (attempt $i/5)"
     BOOT_DISK_PATH_S="`udisksctl mount -b $BOOT_DISK_PART 2>&1`"
-    if [ $? -eq 0 ]; then
+    status=$?
+    
+    if [ $status -eq 0 ]; then
         BOOT_DISK_PATH=${BOOT_DISK_PATH_S#*at }
         BOOT_DISK_PATH=$(echo "$BOOT_DISK_PATH" | tr -d '.')
         echo "Successfully mounted boot partition at $BOOT_DISK_PATH"
         break
     fi
+    
+    # Check if already mounted - extract path between backtick and single quote
+    # Format: "...is already mounted at \`/run/media/user/xxx'."
+    case "$BOOT_DISK_PATH_S" in
+        *AlreadyMounted*)
+            BOOT_DISK_PATH="${BOOT_DISK_PATH_S#*\`}"
+            BOOT_DISK_PATH="${BOOT_DISK_PATH%%\'*}"
+            if [ -n "$BOOT_DISK_PATH" ] && [ -d "$BOOT_DISK_PATH" ]; then
+                echo "Boot partition already mounted at $BOOT_DISK_PATH (using existing mount)"
+                break
+            fi
+            ;;
+    esac
+    
     echo "Mount failed, retrying..."
     sleep 1
 done
@@ -121,20 +136,37 @@ if [ $? -ne 0 ]; then
     udisksctl loop-delete -b $LOOP_DISK
     exit 1
 fi
-sync 
+sync
 sleep 0.5
 
 # Try mounting system partition with retries
 MAIN_DISK_PATH=""
 for i in $(seq 1 5); do
     echo "Attempting to mount system partition... (attempt $i/5)"
-    MAIN_DISK_PATH_S="`udisksctl mount -b $MAIN_DISK_PART --no-user-interaction 2>&1`"
-    if [ $? -eq 0 ]; then
+    MAIN_DISK_PATH_S="$(udisksctl mount -b "$MAIN_DISK_PART" --no-user-interaction 2>&1)"
+    status=$?
+
+    if [ $status -eq 0 ]; then
+        # Successfully mounted now
         MAIN_DISK_PATH=${MAIN_DISK_PATH_S#*at }
         MAIN_DISK_PATH=$(echo "$MAIN_DISK_PATH" | tr -d '.')
         echo "Successfully mounted system partition at $MAIN_DISK_PATH"
         break
     fi
+
+    # Check if already mounted - extract path between backtick and single quote
+    # Format: "...is already mounted at \`/run/media/user/xxx'."
+    case "$MAIN_DISK_PATH_S" in
+        *AlreadyMounted*)
+            MAIN_DISK_PATH="${MAIN_DISK_PATH_S#*\`}"
+            MAIN_DISK_PATH="${MAIN_DISK_PATH%%\'*}"
+            if [ -n "$MAIN_DISK_PATH" ] && [ -d "$MAIN_DISK_PATH" ]; then
+                echo "System partition already mounted at $MAIN_DISK_PATH (using existing mount)"
+                break
+            fi
+            ;;
+    esac
+
     echo "Mount failed, retrying..."
     sleep 1
 done

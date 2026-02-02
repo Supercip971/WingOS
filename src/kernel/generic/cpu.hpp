@@ -17,6 +17,8 @@ class [[gnu::packed]] Cpu
 
     // used for syscall handling -- <!> ORDER IS IMPORTANT FOR ASM CODE <!>
 public:
+    uintptr_t syscall_stack;
+
    uintptr_t debug_saved_syscall_stackframe;
 
 protected:

@@ -12,7 +12,7 @@
 #include "libcore/fmt/flags.hpp"
 #include "libcore/fmt/log.hpp"
 
-static volatile bool _ready = false;
+static bool _ready = false;
 core::Result<void> arch::amd64::smp_initialize()
 {
     log::log$("initializing smp (cpu count: {})", CpuImpl::count());
@@ -24,8 +24,10 @@ core::Result<void> arch::amd64::smp_initialize()
 
     for (int cpu = 0; cpu < (int)CpuImpl::count(); cpu++)
     {
+
         CpuImpl *cpu_impl = CpuImpl::getImpl(cpu);
 
+        cpu_impl->syscall_stack = toVirt(Pmm::the().allocate(kernel::kernel_stack_size).unwrap())._addr + kernel::kernel_stack_size;
         log::log$("cpu: {} (lapic: {})", cpu, cpu_impl->lapic());
 
         if (cpu_impl->lapic() != CpuImpl::currentId())
@@ -40,14 +42,10 @@ core::Result<void> arch::amd64::smp_initialize()
 void smp_entry_other(void)
 {
     log::log$("cpu booted!");
-    _ready = true;
-    arch::amd64::other_cpu_entry();
-
-    log::err$("cpu entry exited while it shouldn't");
+    arch::amd64::other_cpu_entry(_ready);
 
     while (true)
     {
-        asm volatile("hlt");
     };
 }
 
@@ -73,7 +71,7 @@ core::Result<void> _setup_trampoline(hw::acpi::LCpuId cpu_id)
     VmmSpace::invalidate();
     VirtAddr(arch::amd64::SMP_PAGE_TABLE).write(VmmSpace::kernel_page_table().self_addr());
 
-    
+
     // seting up code
     memcpy((void *)arch::amd64::SMP_TRAMPOLINE_START, (void *)(&trampoline_start), trampoline_len);
 

@@ -28,15 +28,18 @@ void Cpu::interrupt_hold()
 }
 
 
+core::Lock _locker = {};
 
 bool Cpu::begin_syscall()
 {
+    _locker.lock();
 //    asm volatile("sti");
     return true;
 }
 
 bool Cpu::end_syscall()
 {
+    _locker.release();
   //  asm volatile("cli");
     return true;
 }
@@ -89,6 +92,7 @@ size_t CpuImpl::max_processors()
 
 void setup_entry_gs()
 {
+    log::log$("setup gs: {}", (uintptr_t)Cpu::current());
     Msr::Write(MsrReg::GS_BASE, (uintptr_t)Cpu::current());
     Msr::Write(MsrReg::KERNEL_GS_BASE, (uintptr_t)Cpu::current());
 }

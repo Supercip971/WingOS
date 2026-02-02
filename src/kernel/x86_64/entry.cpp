@@ -112,7 +112,7 @@ void arch_entry(const mcx::MachineContext *context)
     kernel_entry(context);
 }
 
-void arch::amd64::other_cpu_entry()
+void arch::amd64::other_cpu_entry(bool& ready)
 {
     //  log::log$("other cpu entry");
     hw::acpi::Lapic::the().enable().assert();
@@ -129,15 +129,19 @@ void arch::amd64::other_cpu_entry()
     arch::amd64::setup_entry_gs();
 
     arch::x86_64::SimdContext::initialize_cpu().assert();
-    while (_running_cpu_count < CpuImpl::count())
-    {
-        asm volatile("pause");
-    }
 
-    Cpu::current()->interrupt_release();
-    while (true)
-    {
-        asm volatile("sti");
-        asm volatile("hlt");
-    };
+
+    ready = true;
+    while (_running_cpu_count < CpuImpl::count())
+       {
+           asm volatile("pause");
+       }
+
+       Cpu::current()->interrupt_release();
+       while (true)
+       {
+           asm volatile("sti");
+           asm volatile("hlt");
+       };
+
 }

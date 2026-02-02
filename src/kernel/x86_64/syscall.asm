@@ -34,7 +34,6 @@
     pop rdx
     pop rcx
     pop rbx
-    pop rax
 
 %endmacro
 
@@ -43,12 +42,12 @@ extern syscall_higher_handler
 global syscall_handle
 syscall_handle:
     swapgs
-    mov r12, rsp       ; gs.saved_stack = rsp
+    mov qword [gs:0x8], rsp       ; gs.saved_stack = rsp
     mov rsp, qword [gs:0x0]       ; rsp = gs.syscall_stack
 
     ; push information (gs, cs, rip, rflags, rip...)
     push qword 0x1b         ; user data segment
-    push qword r12     ; saved stack
+    push qword [gs:0x8]     ; saved stack
     push r11                ; saved rflags
     push qword 0x23         ; user code segment
     push rcx                ; current RIP
@@ -63,11 +62,11 @@ syscall_handle:
 
     pop_all_syscall         ; pop every register except RAX as we use it for the return value
 
-    pop rcx                ; pop return RIP
-    add rsp, 8           ; pop return CS
-    pop r11               ; pop return RFLAGS
-    pop rsp              ; pop return RSP
-    mov rsp, r12
+
+
+    mov rsp, qword [gs:0x8]
+
+
 
     swapgs
     o64 sysret

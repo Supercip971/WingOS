@@ -33,7 +33,7 @@ public:
     CpuImpl() : Cpu(-1, false), _lapic(-1) {};
 };
 
-void other_cpu_entry();
+void other_cpu_entry(bool& ready);
 
 void setup_entry_gs();
 

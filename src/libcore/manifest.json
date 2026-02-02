@@ -1,22 +1,11 @@
 {
-    "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
-    "type": "lib",
-    "id": "libcore",
-    "description": "Core library for Wingos",
-    "requires": [
-        "libc",
-        "iol",
-        "userspace-arch",
-        "liballoc"
-    ],
-    "subdirs": [
-        "ds",
-        "fmt",
-        "fmt/impl",
-        "io",
-        "mem",
-        "type",
-        "alloc",
-        "lock"
-    ]
+  "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
+  "type": "lib",
+  "id": "libcore",
+  "description": "Core library for Wingos",
+  "requires": ["libc", "iol", "userspace-arch", "liballoc"],
+  "subdirs": ["ds", "fmt", "fmt/impl", "io", "mem", "type", "alloc", "lock"],
+  "props": {
+    "export-headers": ".."
+  }
 }

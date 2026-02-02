@@ -1,11 +1,10 @@
 {
-    "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
-    "type": "lib",
-    "id": "kernel",
-    "requires": [
-        "kernel-arch",
-        "libcore",
-        "libc"
-    ],
-    "description": "WingOS Kernel" 
+  "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
+  "type": "lib",
+  "id": "kernel",
+  "requires": ["kernel-arch", "libcore", "libc"],
+  "description": "WingOS Kernel",
+  "props": {
+    "export-headers": ".."
+  }
 }

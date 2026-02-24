@@ -7,10 +7,21 @@ namespace arch::amd64
 
 // table 8-1 (part 8.2 Vectors) amd64 architecture programmer's manual volume 2
 
-void interrupt_hold();
-
-void interrupt_release();
-
+static inline void interrupt_hold()
+{
+    asm volatile("cli");
+}
+static inline bool interrupt_status()
+{
+    uint64_t rflags;
+    asm volatile("pushfq; popq %0"
+                 : "=r"(rflags) : : "memory");
+    return (rflags & (1 << 9)) != 0;
+}
+static inline void interrupt_release()
+{
+    asm volatile("sti");
+}
 static constexpr core::Array interrupts_names{
     core::Str("Divide by zero [#DE]"),
     "Debug [#DB]",

@@ -13,10 +13,12 @@ namespace core
  */
 class RWLock
 {
+    protected:
     Lock _access_lock = Lock();
-    int _readers = 0;
-    int _writers = 0;
-    int _waiters = 0;
+
+    std::atomic<int> _readers = 0;
+    std::atomic<int> _writers = 0;
+    std::atomic<int> _waiters = 0;
 
 public:
     RWLock() = default;
@@ -37,7 +39,7 @@ public:
         _access_lock.lock();
         _waiters += 1;
         _access_lock.release();
-        int retry = 5;
+        int retry = 20000;
         while (true)
         {
             _access_lock.lock();
@@ -65,10 +67,10 @@ public:
 
                 return false;
             }
-            
+
         }
         return success;
- 
+
     }
     bool write_acquire()
     {
@@ -86,14 +88,21 @@ public:
                 success = true;
                 _waiters -= 1;
                 _access_lock.release();
-                __atomic_thread_fence(__ATOMIC_SEQ_CST);
                 break;
             }
             _access_lock.release();
-            __atomic_thread_fence(__ATOMIC_SEQ_CST);
             arch::pause();
         }
         return success;
+    }
+
+    // convert 1 writer into a reader
+    void release_mutability()
+    {
+        _access_lock.lock();
+        _writers -= 1;
+        _readers += 1;
+        _access_lock.release();
     }
 
     void write_release()
@@ -118,7 +127,6 @@ public:
                 break;
             }
             _access_lock.release();
-            __atomic_thread_fence(__ATOMIC_SEQ_CST);
             arch::pause();
         }
         return success;

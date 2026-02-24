@@ -13,7 +13,7 @@ namespace log
 {
 
 
-core::Lock _log_lock;
+core::Lock _log_lock = {};
 static core::VoidRW default_target{};
 static core::Writer *target = &default_target;
 

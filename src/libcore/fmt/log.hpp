@@ -101,19 +101,25 @@ inline consteval core::Str color_from_filename(const char *s)
 
 #ifndef NO_LOG_COLOR
 #    define log$(...)                                   \
-        log("\033[38;5;{}m[{}]:\033[0m ",  LOG_DEFAULT_COLOR,  __LOG_FILENAME__); \
+        log_lock(); \
+        log::log("\033[38;5;{}m[{}]:\033[0m ",  LOG_DEFAULT_COLOR,  __LOG_FILENAME__); \
         log::log(__VA_ARGS__);                          \
-        log::log("\n")
+        log::log("\n"); \
+        log::log_release()
 
 #    define err$(...)                                   \
-        log("\033[91m[{}] (<!!!!>):\033[0m ", __LOG_FILENAME__); \
+        log_lock(); \
+        log::log("\033[91m[{}] (<!!!!>):\033[0m ", __LOG_FILENAME__); \
         log::log(__VA_ARGS__);                          \
-        log::log("\n")
+        log::log("\n"); \
+        log::log_release()
 
-#    define warn$(...)                                  \
-        log("\033[93m[{}] (<!>):\033[0m ", __LOG_FILENAME__); \
+#    define warn$(...)\
+        log_lock(); \
+        log::log("\033[93m[{}] (<!>):\033[0m ", __LOG_FILENAME__); \
         log::log(__VA_ARGS__);                          \
-        log::log("\n")
+        log::log("\n"); \
+        log::log_release()
 
 #else
 #    define log$(...)                    \

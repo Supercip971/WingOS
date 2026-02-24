@@ -5,6 +5,7 @@
 #include "hw/acpi/lapic.hpp"
 #include "kernel/generic/cpu.hpp"
 #include "kernel/generic/scheduler.hpp"
+#include "arch/x86_64/context.hpp"
 #include "libcore/fmt/log.hpp"
 uintptr_t _scheduler_impl(uintptr_t stack)
 {
@@ -13,7 +14,7 @@ uintptr_t _scheduler_impl(uintptr_t stack)
     kernel::scheduler_tick();
     auto res = kernel::schedule(Cpu::current()->currentTask(), (void *)stack, Cpu::currentId());
 
-    if (res.error())
+    if (res.is_error())
     {
         return stack;
     }
@@ -24,10 +25,14 @@ uintptr_t _scheduler_impl(uintptr_t stack)
 uintptr_t _scheduler_impl_soft(uintptr_t stack)
 {
 
-    auto res = kernel::schedule(Cpu::current()->currentTask(), (void *)stack, Cpu::currentId(), true);
+    auto *current = Cpu::current()->currentTask();
 
-    if (res.error())
+    auto res = kernel::schedule(current, (void *)stack, Cpu::currentId(), true);
+
+    if (res.is_error())
     {
+        auto err = res.error();
+        log::err$("soft schedule: kernel::schedule returned error: {}", err);
         return stack;
     }
 

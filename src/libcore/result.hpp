@@ -149,7 +149,6 @@ public:
 template <typename ErrT>
 struct Result<void, ErrT> : public NoCopy
 {
-private:
 public:
     union {
 

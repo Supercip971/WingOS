@@ -29,14 +29,22 @@ void dump_stackframe(void *rbp)
 
     stackframe *frame = reinterpret_cast<stackframe *>(rbp);
     int size = 0;
+
+    log::log$("stackframe: ");
+
+    log::log_lock();
     while (frame && size++ < 20)
     {
         auto rip = frame->rip;
-        log::log$("stackframe: {}", rip | fmt::FMT_HEX);
+
+        log::log("{} ", rip | fmt::FMT_HEX);
         frame = frame->rbp;
     }
 
-    if(size >= 20)
+    log::log("\n");
+    log::log_release();
+
+    if (size >= 20)
     {
         log::log$("... (stackframe too deep)");
     }

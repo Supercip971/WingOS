@@ -6,11 +6,11 @@
 #include <stdlib.h>
 
 #include "libcore/alloc/alloc.hpp"
-#include "libcore/ds/array.hpp"
 #include "libcore/logic.hpp"
 #include "libcore/result.hpp"
 namespace core
 {
+    void dump_vec(uintptr_t _this, uintptr_t _data, bool start);
 template <typename T>
 class Vec
 {
@@ -50,6 +50,10 @@ public:
 
     Vec &operator=(Vec &&other)
     {
+        if(this == &other)
+        {
+            return *this;
+        }
         core::swap(_data, other._data);
         core::swap(_count, other._count);
         core::swap(_capacity, other._capacity);
@@ -62,20 +66,22 @@ public:
         reserve(_count + other._count);
         for (long i = 0; i < other._count; i++)
         {
-            _data[_count + i] = other._data[i];
+            new (&_data[_count + i]) T(other._data[i]);
+         //   _data[_count + i] = other._data[i];
         }
         _count += other._count;
 
         return *this;
     }
 
-    Vec &operator+=(Vec &&other)
+    Vec &operator+=(Vec &other)
     {
 
         reserve(_count + other._count);
         for (long i = 0; i < other._count; i++)
         {
-            _data[_count + i] = core::move(other._data[i]);
+            new (&_data[_count + i]) T(core::move(other._data[i]));
+          //  _data[_count + i] = core::move(other._data[i]);
         }
         _count += other._count;
         core::mem_free(other._data);
@@ -187,6 +193,10 @@ public:
 
     T &operator[](size_t index)
     {
+        if(index >= this->len()) [[unlikely]]
+        {
+            __builtin_unreachable();
+        }
 #ifdef ADVANCED_CHECK
         if (index > this->len()) [[unlikely]]
         {
@@ -200,6 +210,10 @@ public:
     const T &operator[](size_t index) const
     {
 
+        if(index >= this->len()) [[unlikely]]
+        {
+            __builtin_unreachable();
+        }
 #ifdef ADVANCED_CHECK
         if (index > this->len()) [[unlikely]]
         {
@@ -253,18 +267,26 @@ public:
 
         T value = core::move(_data[id]);
 
-        _data[id].~T();
         for (long i = id; i < _count - 1; i++)
         {
             _data[i] = core::move(_data[i + 1]);
         }
+
+        _data[_count-1].~T();
+
         _count--;
         return value;
     }
 
-    ~Vec()
-    {
+    ~Vec(){
+
+        //dump_vec((uintptr_t)this, (uintptr_t)_data, true);
+
         release();
+
+        //dump_vec((uintptr_t)this, (uintptr_t)_data, false);
+
+
     }
 
     static Result<Vec> with_capacity(size_t capacity)

@@ -14,14 +14,14 @@ struct Space
     uint64_t handle; // the handle of the space
     static Space self()
     {
-        Space space;
+        Space space = {};
         space.handle = 0; // self space handle is 0
         return space;
     }
 
     static Space from_uid(uint64_t uid)
     {
-        Space space;
+        Space space = {};
         space.handle = uid; // the handle of the space
         return space;
     }

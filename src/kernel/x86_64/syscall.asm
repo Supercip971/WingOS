@@ -56,6 +56,7 @@ syscall_handle:
     push_all                ; push every register
 
     mov rdi, rsp            ; put the stackframe as the syscall argument
+    mov rax, rsp
     mov rbp, 0
 
     call syscall_higher_handler ; jump to beautiful higher level code

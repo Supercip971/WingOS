@@ -157,21 +157,16 @@ void Asset::deref(Asset *asset)
 
             // If query failed, server was already unregistered - nothing to do
 
-            // Guard against accidental double-destruction if refcounts drifted.
-            if (conn->connection != nullptr)
-            {
-                delete conn->connection;
-                conn->connection = nullptr;
-            }
+
+            
         }
 
         else if (asset->kind == OBJECT_KIND_IPC_SERVER)
         {
             auto server = asset->casted<AssetServer>();
-            // Connections list was already cleared and released above
-            // Just delete the server structure
 
-            for (auto &conn : server->server->connections)
+           
+            if (server->server != nullptr)
             {
                 if (!server->server->destroyed)
                 {
@@ -302,6 +297,7 @@ core::Result<AssetRef<AssetMemory>> Space::create_memory(AssetMemoryCreateParams
 }
 core::Result<AssetRef<AssetMapping>> Space::create_mapping(AssetMappingCreateParams params)
 {
+    params.physical_mem.lock();
     auto ptr = try$(allocate_asset<AssetMapping>(
         params.start,
         params.end,
@@ -312,18 +308,21 @@ core::Result<AssetRef<AssetMapping>> Space::create_mapping(AssetMappingCreatePar
     if (params.start >= params.end)
     {
         ptr.asset->lock.release();
+        params.physical_mem.unlock();
         return ("asset_create_mapping: start must be less than end");
     }
 
     if (params.physical_mem.asset->kind != OBJECT_KIND_MEMORY)
     {
         ptr.asset->lock.release();
+        params.physical_mem.unlock();
         return ("asset_create_mapping: physical_mem must be a memory asset");
     }
 
     if (params.start >= kernel_virtual_base())
     {
         ptr.asset->lock.release();
+        params.physical_mem.unlock();
         return ("asset_create_mapping: start must be less than kernel virtual base");
     }
 
@@ -342,10 +341,12 @@ core::Result<AssetRef<AssetMapping>> Space::create_mapping(AssetMappingCreatePar
     {
         ptr.asset->lock.release();
         _asset_remove(ptr.handle);
+        params.physical_mem.unlock();
         return "unable to map physical memory";
     }
 
     ptr.asset->lock.release();
+    params.physical_mem.unlock();
 
     return ptr;
 }
@@ -373,19 +374,23 @@ core::Result<AssetRef<AssetTask>> Space::create_task(AssetTaskCreateParams param
 
 core::Result<AssetRef<AssetServer>> Space::create_ipc_server(AssetIpcServerCreateParams params)
 {
-    auto ptr = try$(allocate_asset<AssetServer>(nullptr));
-
+    KernelIpcServer *server;
     if (params.is_root)
     {
-        ptr.asset->server = register_server(0, uid);
+        server = allocate_server(0, uid);
     }
     else
     {
-        ptr.asset->server = create_server(uid);
+        server = allocate_server_auto_handle(uid);
     }
 
+    auto ptr = try$(allocate_asset<AssetServer>(server));
+
+    server->self = ptr.to_untyped();
+
+    publish_server(server);
+
     ptr.asset->lock.release();
-    ptr.asset->server->self = ptr.to_untyped();
 
     return ptr;
 }
@@ -408,7 +413,6 @@ core::Result<AssetRef<AssetConnection>> Space::create_ipc_connection(AssetIpcCon
 
     auto server = query_res.unwrap();
 
-    // Cache the server info we need while holding the lock
     auto server_parent_space = server->parent_space;
     auto server_self = server->self;
 
@@ -445,6 +449,7 @@ core::Result<AssetRef<AssetConnection>> Space::create_ipc_connection(AssetIpcCon
 
         return ("failed to get server space");
     }
+
     auto server_space = server_space_res.unwrap().asset;
 
     // Copy asset to server space (this handles its own locking internally)
@@ -456,7 +461,6 @@ core::Result<AssetRef<AssetConnection>> Space::create_ipc_connection(AssetIpcCon
 
         return ("failed to copy asset to server space");
     }
-    auto ptr_in_server = copy_res.unwrap();
 
     auto ptr_in_server = core::move(copy_res.unwrap());
 
@@ -466,6 +470,8 @@ core::Result<AssetRef<AssetConnection>> Space::create_ipc_connection(AssetIpcCon
     auto server_ptr = server_self.asset->casted<AssetServer>()->server;
     try$(server_ptr->connections.push(core::move(ptr_in_server)));
     server_self.asset->lock.release();
+
+
 
     return ptr;
 }

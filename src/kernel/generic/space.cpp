@@ -25,7 +25,7 @@ core::Lock _spaces_lock = {};
  AssetRef<Space> Space::create_root()
 {
     Space * root_space = new Space();
-    root_space->parent_space_handle = AssetRef<Space>(root_space, -1);
+   // root_space->parent_space_handle = AssetRef<Space>(root_space, -1);
     auto vspace = VmmSpace::create(false);
     if (vspace.is_error())
     {
@@ -58,17 +58,13 @@ void Space::dump_assets()
             if(assets[i].asset->kind == OBJECT_KIND_IPC_SERVER)
             {
                 auto server = assets[i].asset->casted<AssetServer>();
-                log::log$("    IPC Server parent space: {}", server->server->parent_space);
-                log::log$("    IPC Server handle: {}", server->server->handle);
-                log::log$("    IPC Server connections: {}", server->server->connections.len());
+                log::log$("    parent: {} | server handle: {} | connections: {}", server->server->parent_space, server->server->handle, server->server->connections.len());
             }
 
             if(assets[i].asset->kind == OBJECT_KIND_IPC_CONNECTION)
             {
-                auto conn = assets[i].asset->casted<AssetConnection>()->connection;
-                log::log$("    IPC Connection accepted: {}", conn->accepted);
-                 log::log$("    IPC Connection closed: {}", (int)conn->closed_status);
-                 log::log$("    IPC Connected to server: {}", (int)conn->server_handle);
+                auto conn = assets[i].asset->casted<AssetConnection>();
+                log::log$("     accepted: {} | closed: {} | server: {} | msg count: {}", conn->accepted, (int)conn->closed_status, (int)conn->server_handle, conn->message_sent.len());
 
             }
             if(assets[i].asset->kind == OBJECT_KIND_MEMORY)
@@ -84,9 +80,9 @@ void Space::dump_assets()
             {
                 auto mapping = assets[i].asset->casted<AssetMapping>();
 
-                log::log$("    Mapping: {}-{}", mapping->start | fmt::FMT_HEX, mapping->end | fmt::FMT_HEX);
-                log::log$("    Mapping writable: {}", mapping->writable);
-                log::log$("    Mapping executable: {}", mapping->executable);
+                log::log$("    Mapping: {}-{} (W: {}, EX: {})", mapping->start | fmt::FMT_HEX, mapping->end | fmt::FMT_HEX,
+                    mapping->writable ? "Y" : "N", mapping->executable ? "Y" : "N"
+                );
             }
 
 
@@ -104,7 +100,7 @@ core::Result<AssetRef<Space>> Space::create_space([[maybe_unused]] uint64_t flag
     AssetRef<Space> ptr = try$(allocate_asset<Space>());
     auto asset = ptr.asset;
 
-    asset->parent_space_handle = AssetRef<Space>(this, -1);
+  //  asset->parent_space_handle = AssetRef<Space>(this, -1);
 
     auto vspace = VmmSpace::create(false);
 
@@ -129,7 +125,7 @@ core::Result<AssetRef<Space>> Space::create_space([[maybe_unused]] uint64_t flag
     asset->uid = space_ptr.handle;
    // asset->ref_count++; // referencing by itself
 
-    asset->alloc_uid = 16;
+    asset->alloc_uid = 16 + 10000 * space_ptr.handle;
 
     asset->lock.release();
 

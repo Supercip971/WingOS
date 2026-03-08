@@ -4,16 +4,18 @@
 #include "arch/x86_64/gdt.hpp"
 #include "arch/x86_64/msr.hpp"
 
+#include "hw/acpi/lapic.hpp"
 #include "kernel/generic/cpu.hpp"
+#include "kernel/generic/ipc.hpp"
 #include "kernel/generic/kernel.hpp"
+#include "kernel/generic/scheduler.hpp"
+#include "kernel/generic/space.hpp"
 #include "kernel/generic/syscalls.hpp"
 #include "libcore/alloc/alloc.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/lock/lock.hpp"
 #include "libcore/lock/rwlock.hpp"
 #include "wingos-headers/asset.h"
-#include "kernel/generic/ipc.hpp"
-#include "kernel/generic/space.hpp"
 
 namespace arch::amd64
 {
@@ -22,7 +24,6 @@ struct stackframe
     stackframe *rbp;
     uint64_t rip;
 } __attribute__((packed));
-
 
 void dump_stackframe(void *rbp)
 {
@@ -50,7 +51,6 @@ void dump_stackframe(void *rbp)
     }
 }
 
-
 core::Lock _syscall_lock;
 core::RWLock _syscall_rwlock;
 extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
@@ -59,82 +59,89 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
 
     SyscallStackFrame *stackframe = sf;
 
-
-
-
-   // Cpu::enter_syscall_safe_mode();
-    Cpu::current()->debug_saved_syscall_stackframe = stackframe->rbp;
+       // Cpu::enter_syscall_safe_mode();
 
     Cpu::begin_syscall();
+    _syscall_lock.lock();
+
+    Cpu::current()->debug_context.in_syscall = true;
+    Cpu::current()->debug_context.last_syscall_id = (uint32_t)stackframe->rax;
+    Cpu::current()->debug_context.last_syscall_task_called = Cpu::current()->currentTask() ? Cpu::current()->currentTask()->uid() : -1;
+
+    kernel::Task* cur_task = Cpu::current()->currentTask();
+    _syscall_lock.release();
 
     _syscall_rwlock.read_acquire();
 
     auto res = syscall_handle({
         .id = (uint32_t)stackframe->rax,
+        ._zero = 0,
         .arg1 = stackframe->rbx,
         .arg2 = stackframe->rdx,
         .arg3 = stackframe->rsi,
         .arg4 = stackframe->rdi,
         .arg5 = stackframe->r8,
         .arg6 = stackframe->r9,
-    });
-
-
-
-
+    }, cur_task);
 
     if (res.is_error())
     {
-        _syscall_rwlock.read_release();
-        _syscall_rwlock.write_acquire();
-        log::err$("syscall error: {}", res.error());
-        auto rax = stackframe->rax;
-        auto rbx = stackframe->rbx;
-        auto rdx = stackframe->rdx;
-        auto rsi = stackframe->rsi;
-        auto rdi = stackframe->rdi;
-        auto r8 = stackframe->r8;
-        auto r9 = stackframe->r9;
-        log::log$("syscall id: {}", rax);
-        log::log$("syscall args: {}, {}, {}, {}, {}, {}", rbx, rdx, rsi, rdi, r8, r9);
-        log::log$("task: {}", Cpu::current()->currentTask() ? Cpu::current()->currentTask()->uid() : -1);
+        // send interrupt 102 to all other cpus
 
-        // [gs:0x0] and [gs:0x8]
-        uintptr_t gs0 = 0;
-        uintptr_t gs8 = 0;
-        asm volatile("mov %%gs:0x0, %0"
-                     : "=r"(gs0));
-        asm volatile("mov %%gs:0x8, %0"
-                     : "=r"(gs8));
-        log::log$("gs[0x0]: {}", gs0 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
-        log::log$("gs[0x8]: {}", gs8 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
-
-
-        log::log$("task stacktrace dump:");
-        dump_stackframe((void *)stackframe->rbp);
-
-
-        log::log$("task space({}) dump:", Cpu::current()->currentTask()->space()->uid);
-
-
-        auto space = Cpu::current()->currentTask()->space();
-        for(size_t i = 0; i < space->assets.len(); i++)
-        {
-            log::log$("  Asset[{}]: handle={}, kind={}", i, space->assets[i].handle, assetKind2Str(space->assets[i].asset->kind));
-
-            if(space->assets[i].asset->kind == OBJECT_KIND_IPC_CONNECTION)
-            {
-                auto conn_asset = space->assets[i].asset->casted<AssetConnection>();
-                IpcConnection *ipc_conn = conn_asset->connection;
-
-                log::log$("    IPC Connection: accepted={}, msg_count={}", ipc_conn->accepted, ipc_conn->message_sent.len());
-            }
-        }
 
 
         Cpu::end_syscall(); // early end syscall mode,
+
+        for(size_t i = 0; i< Cpu::count(); i++)
+        {
+            if( (int)i != Cpu::currentId())
+            {
+                hw::acpi::Lapic::the().send_interrupt(i,102);
+            }
+        }
+        _syscall_lock.lock();
+
+        {
+
+            log::err$("syscall error: {}", res.error());
+            auto rax = stackframe->rax;
+            auto rbx = stackframe->rbx;
+            auto rdx = stackframe->rdx;
+            auto rsi = stackframe->rsi;
+            auto rdi = stackframe->rdi;
+            auto r8 = stackframe->r8;
+            auto r9 = stackframe->r9;
+            log::log$("syscall id: {}", rax);
+            log::log$("syscall args: {}, {}, {}, {}, {}, {}", rbx, rdx, rsi, rdi, r8, r9);
+            log::log$("task: {}", Cpu::current()->currentTask() ? Cpu::current()->currentTask()->uid() : -1);
+
+            // [gs:0x0] and [gs:0x8]
+            uintptr_t gs0 = 0;
+            uintptr_t gs8 = 0;
+            asm volatile("mov %%gs:0x0, %0"
+                         : "=r"(gs0));
+            asm volatile("mov %%gs:0x8, %0"
+                         : "=r"(gs8));
+            log::log$("gs[0x0]: {}", gs0 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
+            log::log$("gs[0x8]: {}", gs8 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
+
+            log::log$("task stacktrace dump:");
+            dump_stackframe((void *)stackframe->rbp);
+
+            log::log$("task space({}) dump:", Cpu::current()->currentTask()->space()->uid);
+
+            auto space = Cpu::current()->currentTask()->space();
+            space->dump_assets();
+
+            scheduler_dump_all();
+        }
+
+        _syscall_lock.release();
         while(true)
-        {}
+        {
+
+        }
+
     }
     else
     {
@@ -145,7 +152,7 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
 
     Cpu::end_syscall();
 
-    //log::log$("syscall: {} ", stackframe->rax);
+    // log::log$("syscall: {} ", stackframe->rax);
     return sf->rax;
 }
 
@@ -174,14 +181,12 @@ core::Result<void> syscall_init_for_current_cpu()
     // ucode + 16 : user code
     Msr::Write(MsrReg::STAR, ((((uint64_t)Gdt::kernel_code_segment_id * 8)) << 32) | (((uint64_t)((Gdt::kernel_data_segment_id * 8) | 3)) << 48));
     Msr::Write(MsrReg::LSTAR, (uint64_t)syscall_handle);
-    Msr::Write(MsrReg::SYSCALL_FLAG_MASK, ((uint32_t)(RFLAGS_INTERRUPT_ENABLE)) |  0xfffffffe);
+    Msr::Write(MsrReg::SYSCALL_FLAG_MASK, ((uint32_t)(RFLAGS_INTERRUPT_ENABLE)) | 0xfffffffe);
 
+    //  Cpu::current()->syscall_stack = (void *)((uintptr_t)try$(core::mem_alloc(kernel::kernel_stack_size)) +
+    //                                           kernel::kernel_stack_size - 16); // allocate a stack for syscall handling
 
-  //  Cpu::current()->syscall_stack = (void *)((uintptr_t)try$(core::mem_alloc(kernel::kernel_stack_size)) +
-  //                                           kernel::kernel_stack_size - 16); // allocate a stack for syscall handling
-
-
-  return {};
+    return {};
 }
 
 } // namespace arch::amd64

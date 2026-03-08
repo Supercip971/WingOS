@@ -6,6 +6,7 @@
 #include <wingos-headers/ipc.h>
 
 #include "kernel/generic/asset_types.hpp"
+
 #include "kernel/generic/context.hpp"
 #include "kernel/generic/cpu.hpp"
 #include "kernel/generic/paging.hpp"
@@ -14,7 +15,6 @@
 #include "libcore/fmt/log.hpp"
 #include "libcore/lock/lock.hpp"
 #include "libcore/type-utils.hpp"
-
 
 /*union
 {
@@ -57,6 +57,7 @@ struct AssetMemory : public Asset
 
 struct AssetMapping : public Asset
 {
+    static constexpr size_t IDENT = AssetKind::OBJECT_KIND_MAPPING;
     size_t start;
     size_t end;
     AssetRef<AssetMemory> physical_mem; // the physical memory that this mapping is based on
@@ -70,22 +71,21 @@ struct AssetMapping : public Asset
 struct AssetTask : public Asset
 {
     static constexpr size_t IDENT = AssetKind::OBJECT_KIND_TASK;
-    kernel::Task* task;
+    kernel::Task *task;
 
-    AssetTask(kernel::Task* task_value)
+    AssetTask(kernel::Task *task_value)
         : Asset(AssetKind::OBJECT_KIND_TASK), task(task_value) {}
 };
 
 struct KernelIpcServer;
 struct AssetServer : public Asset
 {
-    KernelIpcServer* server;
+    KernelIpcServer *server;
 
     static constexpr size_t IDENT = AssetKind::OBJECT_KIND_IPC_SERVER;
     AssetServer(KernelIpcServer *server_value)
         : Asset(AssetKind::OBJECT_KIND_IPC_SERVER), server(server_value) {}
 };
-
 
 struct IpcConnection;
 using AssetConnection = IpcConnection;
@@ -137,24 +137,46 @@ struct Space : public Asset
 {
 
     constexpr static size_t IDENT = AssetKind::OBJECT_KIND_SPACE;
-    void dump_assets() ;
+    void dump_assets();
     size_t uid;
-    size_t alloc_uid;
-    uint64_t space_handle;
-    AssetRef<Space> parent_space_handle;
-   // Space *parent_space_handle; // the space that created this space
-    VmmSpace vmm_space;         // the virtual memory space of this space
-
-
-    Space()
-        : Asset(AssetKind::OBJECT_KIND_SPACE), uid(0), alloc_uid(0), space_handle(0), parent_space_handle(), vmm_space() {}
+    std::atomic<size_t> alloc_uid;
+    // Space *parent_space_handle; // the space that created this space
+    VmmSpace vmm_space; // the virtual memory space of this space
 
     core::Vec<AssetRef<>> assets;
 
+    Space()
+        : Asset(AssetKind::OBJECT_KIND_SPACE), uid(0), alloc_uid(0),  vmm_space(), assets()
+    {
+    }
+
     static AssetRef<Space> create_root();
 
+    template <typename T>
+    core::Result<AssetRef<T>> by_fn(auto fn)
+    {
 
-    core::Result<AssetRef<>> by_handle( uint64_t handle)
+        lock.lock();
+        for (size_t i = 0; i < assets.len(); i++)
+        {
+            if (assets[i].asset->kind != (AssetKind)T::IDENT)
+            {
+                continue;
+            }
+
+            if (fn(assets[i].casted<T>()))
+            {
+                auto result = assets[i]; // copy under lock (increments refcount)
+                lock.release();
+                return result.casted<T>();
+            }
+        }
+
+        lock.release();
+        return "not found";
+    }
+
+    core::Result<AssetRef<>> by_handle(uint64_t handle)
     {
 
         lock.lock();
@@ -162,8 +184,9 @@ struct Space : public Asset
         {
             if (assets[i].handle == handle)
             {
+                auto result = assets[i]; // copy under lock (increments refcount)
                 lock.release();
-                return assets[i];
+                return result;
             }
         }
 
@@ -176,50 +199,72 @@ struct Space : public Asset
 
         for (size_t i = 0; i < assets.len(); i++)
         {
-            log::log$("  Asset[{}]: handle={}, kind={}", i,assets[i].handle, assetKind2Str(assets[i].asset->kind));
+            log::log$("  Asset[{}]: handle={}, kind={}", i, assets[i].handle, assetKind2Str(assets[i].asset->kind));
         }
 
         lock.release();
 
         return "asset not found";
-
     }
-    template<typename T>
-        core::Result<AssetRef<T>> by_handle(uint64_t handle)
+    template <typename T>
+    core::Result<AssetRef<T>> by_handle(uint64_t handle)
+    {
+        lock.lock();
+        for (size_t i = 0; i < assets.len(); i++)
         {
-            lock.lock();
-            for (size_t i = 0; i < assets.len(); i++)
+            if (assets[i].handle == handle)
             {
-                if (assets[i].handle == handle)
-                {
-                    lock.release();
+                AssetRef<> found = assets[i]; // copy under lock (increments refcount)
+                lock.release();
 
-                    // Untyped lookup: allow returning any asset when caller asks for `Asset`.
-                    if constexpr (core::IsSame<T, Asset>)
+                // Untyped lookup: allow returning any asset when caller asks for `Asset`.
+                if constexpr (core::IsSame<T, Asset>)
+                {
+
+                    return found;
+                }
+                else
+                {
+
+                    found.lock();
+                    if (found.asset->kind == (AssetKind)T::IDENT)
                     {
-                        return assets[i];
+                        found.unlock();
+
+                        return found.casted<T>();
                     }
                     else
                     {
-                        if (assets[i].asset->kind == (AssetKind)T::IDENT)
-                        {
-                            return assets[i].casted<T>();
-                        }
-                        else
-                        {
-                            log::log$("expected: {}, got: {} for raw id: {}",
-                                T::IDENT,
-                                assets[i].asset->kind,
-                                assets[i].handle);
-                            return core::Result<AssetRef<T>>::error("asset kind mismatch");
-                        }
+
+                        found.unlock();
+                        log::err$("expected: {}, got: {} for raw id: {} (space: {})",
+                                  assetKind2Str((AssetKind)T::IDENT),
+                                  found.asset->kind,
+                                  found.handle, this->uid);
+
+                        return core::Result<AssetRef<T>>::error("asset kind mismatch");
                     }
                 }
             }
-            lock.release();
-
-            return core::Result<AssetRef<T>>::error("asset not found");
         }
+
+        log::log$("Asset not found in space({}) for handle {}", uid, handle);
+
+        auto cur = Cpu::current()->currentTask();
+        log::log$("task: {}", cur ? cur->uid() : (size_t)-1);
+
+        log::log$("Assets in space {}:", assets.len());
+
+        for (size_t i = 0; i < assets.len(); i++)
+        {
+            log::log$("  Asset[{}]: handle={}, kind={}", i, assets[i].handle, assetKind2Str(assets[i].asset->kind));
+        }
+
+        lock.release();
+
+
+        return core::Result<AssetRef<T>>::error("asset not found");
+    }
     core::Result<AssetRef<>> by_handle_ptr(uint64_t handle)
     {
         lock.lock();
@@ -227,8 +272,9 @@ struct Space : public Asset
         {
             if (assets[i].handle == handle)
             {
+                auto result = assets[i]; // copy under lock (increments refcount)
                 lock.release();
-                return assets[i];
+                return result;
             }
         }
         lock.release();
@@ -236,17 +282,18 @@ struct Space : public Asset
         return ("asset not found");
     }
 
-
-    template<typename T, typename ...Args>
-    core::Result<AssetRef<T>> allocate_asset(Args&&... args)
+    template <typename T, typename... Args>
+    core::Result<AssetRef<T>> allocate_asset(Args &&...args)
     {
-        T* res = new T(args...);
-        res->lock.lock();  // Lock the asset before adding to space
+
+        T *res = new T(args...);
+        res->lock.lock(); // Lock the asset before adding to space
 
         lock.lock();
-        auto handle = alloc_uid;
+
         alloc_uid++;
-        AssetRef<T> ref = AssetRef<T>(res, handle, true, true, true);
+        size_t nhandle = alloc_uid;
+        AssetRef<T> ref = AssetRef<T>(res, nhandle, true, true, true);
 
         assets.push(ref.to_untyped());
         lock.release();
@@ -255,13 +302,11 @@ struct Space : public Asset
         return ref;
     }
 
-
     // asset_release is defined as template below after _asset_remove
 
     core::Result<AssetRef<Space>> create_space(uint64_t flags, uint64_t rights);
 
     static core::Result<AssetRef<Space>> global_space_by_handle(uint64_t handle);
-
 
     AssetRef<> _asset_remove(uint64_t asset_handle)
     {
@@ -272,7 +317,7 @@ struct Space : public Asset
             {
                 // pop returns the removed AssetRef, which will be destroyed
                 // and call Asset::deref. This is the only deref we want.
-                auto val  = assets.pop(i);
+                auto val = assets.pop(i);
                 lock.release();
                 return (val);
             }
@@ -280,10 +325,9 @@ struct Space : public Asset
         lock.release();
 
         __builtin_unreachable();
-
     }
 
-    core::Result<AssetRef<AssetMemory>> create_memory( AssetMemoryCreateParams params);
+    core::Result<AssetRef<AssetMemory>> create_memory(AssetMemoryCreateParams params);
 
     core::Result<AssetRef<AssetMapping>> create_mapping(AssetMappingCreateParams params);
 
@@ -296,11 +340,11 @@ struct Space : public Asset
         AssetIpcConnectionCreateParams params);
 
     static core::Result<AssetIpcConnectionPipeCreateResult> create_ipc_connections(
-        Space* sender, Space* receiver, AssetIpcConnectionPipeCreateParams params);
+        Space *sender, Space *receiver, AssetIpcConnectionPipeCreateParams params);
 
-    template<typename T>
+    template <typename T>
     static core::Result<AssetRef<>> asset_move(
-        Space* from, Space* to, AssetRef<T> const& asset)
+        Space *from, Space *to, AssetRef<T> const &asset)
     {
         if (from == nullptr || to == nullptr)
         {
@@ -313,8 +357,8 @@ struct Space : public Asset
         }
 
         // Lock spaces in consistent order (by address) to prevent ABBA deadlock
-        Space* first = from < to ? from : to;
-        Space* second = from < to ? to : from;
+        Space *first = from < to ? from : to;
+        Space *second = from < to ? to : from;
 
         first->lock.lock();
         if (first != second)
@@ -329,7 +373,8 @@ struct Space : public Asset
             {
                 // Move the asset to the new space
                 auto moved_asset = from->assets.pop(i);
-                moved_asset.handle = to->alloc_uid++;
+                to->alloc_uid++;
+                moved_asset.handle = to->alloc_uid;
                 to->assets.push(moved_asset);
 
                 if (first != second)
@@ -351,9 +396,9 @@ struct Space : public Asset
         return ("asset not found in from space");
     }
 
-    template<typename T>
+    template <typename T>
     static core::Result<AssetRef<>> asset_copy(
-        Space* from, Space* to, AssetRef<T> const& asset)
+        Space *from, Space *to, AssetRef<T> const &asset)
     {
         if (from == nullptr || to == nullptr)
         {
@@ -371,7 +416,9 @@ struct Space : public Asset
         // Lock the destination space before modifying its assets
         to->lock.lock();
 
-        auto nref = AssetRef<>(reinterpret_cast<Asset*>(asset.asset), to->alloc_uid++);
+        to->alloc_uid++;
+        auto nref = AssetRef<>(reinterpret_cast<Asset *>(asset.asset), to->alloc_uid);
+
         to->assets.push(nref);
 
         to->lock.release();
@@ -381,16 +428,32 @@ struct Space : public Asset
         return nref;
     }
 
-    template<typename T>
-    void asset_release(AssetRef<T> const& ref)
+    void asset_release_by_handle(uint64_t handle)
     {
-        _asset_remove(ref.handle);
-
+        auto v = _asset_remove(handle);
+        log::log$("Releasing asset: {} kind: {}", handle, assetKind2Str(v.asset->kind));
+        Asset::release(v.asset);
     }
 
-    };
+    template <typename T>
+    void asset_release(AssetRef<T> const &ref)
+    {
+        // Mark the asset as "released" (e.g. close IPC connections, unregister
+        // servers) BEFORE removing it from the space's asset list.  This ensures
+        // that other CPUs that still hold an AssetRef see the updated status
+        // (closed / destroyed) instead of stale IPC_STILL_OPEN values —
+        // fixing "incorrect status" races under SMP.
+        if (ref.asset != nullptr)
+        {
+
+            Asset::release(reinterpret_cast<Asset *>(ref.asset));
+
+            auto res = _asset_remove(ref.handle);
+        }
+    }
+};
 
 struct KernelIpcServer;
 struct IpcConnection;
 
-//core::Result<AssetRef> space_create(Space *parent, uint64_t flags, uint64_t rights);
+// core::Result<AssetRef> space_create(Space *parent, uint64_t flags, uint64_t rights);

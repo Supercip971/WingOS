@@ -19,11 +19,11 @@
 struct Asset : public core::NoCopy
 {
     // Provide an IDENT constant so templates written against typed assets can also be instantiated with `Asset`.
-    static constexpr size_t IDENT = (size_t)OBJECT_KIND_UNKNOWN;
+    //static constexpr size_t IDENT = (size_t)OBJECT_KIND_UNKNOWN;
 
     core::Lock lock{};
     std::atomic<size_t> ref_count{0};
-    AssetKind kind{AssetKind::OBJECT_KIND_SPACE};
+    AssetKind kind{AssetKind::OBJECT_KIND_UNKNOWN};
 
     explicit Asset(AssetKind kind_value)
         : ref_count(0), kind(kind_value)
@@ -224,7 +224,27 @@ struct AssetRef
     template<typename T2>
     AssetRef<T2> casted() const
     {
-
+        if(T2::IDENT != asset->kind)
+        {
+            __builtin_unreachable();
+        }
         return AssetRef<T2>(*this);
+    }
+
+
+    void lock()
+    {
+        if(asset != nullptr)
+        {
+            asset->lock.lock();
+        }
+    }
+
+    void unlock()
+    {
+        if(asset != nullptr)
+        {
+            asset->lock.release();
+        }
     }
 };

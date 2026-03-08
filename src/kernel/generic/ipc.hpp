@@ -2,6 +2,7 @@
 
 #include "kernel/generic/blocker.hpp"
 #include "kernel/generic/asset_types.hpp"
+#include "kernel/generic/space.hpp"
 #include "math/align.hpp"
 #include "libcore/ds/vec.hpp"
 #include "libcore/lock/lock.hpp"
@@ -181,7 +182,7 @@ typedef enum
 } IpcConnectionClosedStatus;
 
 struct KernelIpcServer;
-struct IpcConnection
+struct IpcConnection : public Asset
 {
     uint64_t message_alloc_id;
     core::Lock lock;
@@ -199,6 +200,24 @@ struct IpcConnection
     kernel::BlockMutex client_mutex;
     kernel::BlockMutex server_mutex;
     core::Vec<ReceivedIpcMessage> message_sent;
+
+    static constexpr size_t IDENT = AssetKind::OBJECT_KIND_IPC_CONNECTION;
+
+    IpcConnection() :
+        Asset(AssetKind::OBJECT_KIND_IPC_CONNECTION),
+        message_alloc_id(0),
+        lock(),
+        client_space_handle(0),
+        server_space_handle(0),
+        accepted(false),
+        closed_status(IPC_STILL_OPEN),
+        server(nullptr),
+        server_asset(),
+        server_handle(0),
+        client_mutex(),
+        server_mutex(),
+        message_sent()
+    {   }
 };
 
 struct KernelIpcServer
@@ -214,6 +233,14 @@ struct KernelIpcServer
 KernelIpcServer *register_server(IpcServerHandle handle, uint64_t space_handle);
 KernelIpcServer *create_server(uint64_t space_handle);
 
+// Allocate a KernelIpcServer struct WITHOUT registering it globally.
+// The caller MUST call publish_server() after fully initializing the server
+KernelIpcServer *allocate_server(IpcServerHandle handle, uint64_t space_handle);
+KernelIpcServer *allocate_server_auto_handle(uint64_t space_handle);
+
+// Register a fully-initialized KernelIpcServer in the global server list.
+void publish_server(KernelIpcServer *server);
+
 void unregister_server(IpcServerHandle handle, uint64_t space_handle);
 
 core::Result<KernelIpcServer *> query_server(IpcServerHandle handle);
@@ -226,15 +253,15 @@ void release_server_lock();
 // Note: keep this API untyped to avoid requiring `AssetConnection` in this header.
 core::Result<AssetRef<>> server_accept_connection(KernelIpcServer *server);
 
-core::Result<MessageHandle> server_send_message(IpcConnection *connection, IpcMessage *message, bool expect_reply = false);
-core::Result<MessageHandle> server_send_call(IpcConnection *connection, IpcMessage *message);
+core::Result<MessageHandle> server_send_message(AssetRef<AssetConnection>& connection, IpcMessage *message, bool expect_reply = false);
+core::Result<MessageHandle> server_send_call(AssetRef<AssetConnection> &connection, IpcMessage *message);
 
-core::Result<void> server_reply_message(IpcConnection *connection, MessageHandle from, IpcMessage *message);
+core::Result<void> server_reply_message(AssetRef<AssetConnection>& connection, MessageHandle from, IpcMessage *message);
 
-core::Result<ReceivedIpcMessage> server_receive_message( IpcConnection *connection);
+core::Result<ReceivedIpcMessage> server_receive_message( AssetRef<AssetConnection>& connection);
 
-core::Result<ReceivedIpcMessage> client_receive_message(IpcConnection *connection);
+core::Result<ReceivedIpcMessage> client_receive_message(AssetRef<AssetConnection>& connection);
 
-core::Result<ReceivedIpcMessage> client_receive_response(IpcConnection *connection, MessageHandle handle);
+core::Result<ReceivedIpcMessage> client_receive_response(AssetRef<AssetConnection>& connection, MessageHandle handle);
 
-core::Result<IpcMessage> call_server_and_wait(IpcConnection *connection, IpcMessage *message);
+core::Result<IpcMessage> call_server_and_wait(AssetRef<AssetConnection>& connection, IpcMessage *message);

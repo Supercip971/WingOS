@@ -1,6 +1,7 @@
 #include "asset.hpp"
 #include <new>
 
+#include <arch/x86_64/barrier.hpp>
 #include "arch/x86_64/paging.hpp"
 #include "hw/mem/addr_space.hpp"
 #include "iol/mem_flags.h"
@@ -30,13 +31,23 @@ void Asset::release(Asset *asset)
     {
         return;
     }
+
+
+    asset->lock.lock();
+
+    AssetRef<> saved_self{};
+
     if (asset->kind == OBJECT_KIND_IPC_CONNECTION)
     {
-
-        auto conn = asset->casted<AssetConnection>()->connection;
-        if (conn->closed_status == IPC_STILL_OPEN)
+        auto conn = asset->casted<AssetConnection>();
+        if (conn != nullptr)
         {
-            conn->closed_status = IPC_CLOSED;
+            conn->lock.lock();
+            if (conn->closed_status == IPC_STILL_OPEN)
+            {
+                conn->closed_status = IPC_CLOSED;
+            }
+            conn->lock.release();
         }
     }
 
@@ -44,13 +55,37 @@ void Asset::release(Asset *asset)
     {
         auto server = asset->casted<AssetServer>();
 
-        server->server->destroyed = true;
+        
+        if (server->server != nullptr)
+        {
+            server->server->destroyed = true;
 
-        // Unregister the server first to prevent new connections
-        unregister_server(server->server->handle, server->server->parent_space);
+            unregister_server(server->server->handle, server->server->parent_space);
 
-        server->server->connections.release();
+            for (auto &conn_ref : server->server->connections)
+            {
+                if (conn_ref.asset != nullptr)
+                {
+                    conn_ref.asset->lock.lock();
+                    auto aconn = conn_ref.asset->casted<AssetConnection>();
+                    if (aconn != nullptr)
+                    {
+                        aconn->lock.lock();
+                        aconn->closed_status = IPC_CLOSED;
+                        aconn->lock.release();
+                    }
+                    conn_ref.asset->lock.release();
+                }
+            }
+
+            server->server->connections.release();
+
+            saved_self = core::move(server->server->self);
+        }
     }
+
+    asset->lock.release();
+    // `saved_self` destructor runs at end of scope
 }
 
 uintptr_t last_asset = 0;
@@ -67,7 +102,7 @@ void Asset::deref(Asset *asset)
     if (old_count == 0)
     {
         // This means ref_count was already 0 before we decremented restore and bail
-        asset->ref_count.fetch_add(1, std::memory_order_relaxed);
+   //     asset->ref_count.fetch_add(1, std::memory_order_relaxed);
         log::err$("asset_release: asset is already released");
         log::err$("double free detected");
         return;
@@ -103,14 +138,14 @@ void Asset::deref(Asset *asset)
              auto conn = asset->casted<AssetConnection>();
             // conn->connection->message_sent.release();
 
-            if (conn->connection->server_mutex.mutex_value())
+            if (conn->server_mutex.mutex_value())
             {
-                conn->connection->server_mutex.mutex_release();
+                conn->server_mutex.mutex_release();
                 // kernel::resolve_blocked_tasks(); // release blocked tasks
             }
-            if (conn->connection->client_mutex.mutex_value())
+            if (conn->client_mutex.mutex_value())
             {
-                conn->connection->client_mutex.mutex_release();
+                conn->client_mutex.mutex_release();
                 // kernel::resolve_blocked_tasks(); // release blocked tasks
             }
 
@@ -138,15 +173,46 @@ void Asset::deref(Asset *asset)
 
             for (auto &conn : server->server->connections)
             {
-                // Lock each connection asset before modifying its state
-                conn.asset->lock.lock();
-                auto aconn = conn.asset->casted<AssetConnection>();
-                aconn->connection->closed_status = IPC_CLOSED;
-                conn.asset->lock.release();
-            }
+                if (!server->server->destroyed)
+                {
+                    server->server->destroyed = true;
+                    unregister_server(server->server->handle, server->server->parent_space);
+                }
 
-            server->server->connections.clear();
-            delete server->server;
+                for (auto &conn : server->server->connections)
+                {
+                    if (conn.asset == nullptr)
+                        continue;
+                    conn.asset->lock.lock();
+                    auto aconn = conn.asset->casted<AssetConnection>();
+                    if (aconn != nullptr)
+                    {
+                        aconn->lock.lock();
+                        aconn->closed_status = IPC_CLOSED;
+                        aconn->lock.release();
+                    }
+                    conn.asset->lock.release();
+                }
+
+                server->server->connections.clear();
+
+                // Move server->self into a local BEFORE deleting the
+                // KernelIpcServer.  Deleting the server would run the
+                // AssetRef destructor for `self`, triggering Asset::deref()
+                // which tries to reacquire asset->lock (non-reentrant
+                // spinlock) -> deadlock.  By moving it out we let the
+                // destructor run after `delete asset` below (or at end of
+                // scope) when the lock is no longer held.
+                auto deferred_self = core::move(server->server->self);
+
+                delete server->server;
+                server->server = nullptr;
+
+                asset->lock.release();
+
+                delete asset;
+                return;
+            }
         }
         else if (asset->kind == OBJECT_KIND_SPACE)
         {
@@ -326,7 +392,7 @@ core::Result<AssetRef<AssetServer>> Space::create_ipc_server(AssetIpcServerCreat
 
 core::Result<AssetRef<AssetConnection>> Space::create_ipc_connection(AssetIpcConnectionCreateParams params)
 {
-    auto ptr = try$(allocate_asset<AssetConnection>(new IpcConnection{}));
+    auto ptr = try$(allocate_asset<IpcConnection>());
 
     // This prevents another thread from unregistering (and deleting) the server while we use it.
     auto query_res = query_server_locked(params.server_handle);
@@ -349,14 +415,24 @@ core::Result<AssetRef<AssetConnection>> Space::create_ipc_connection(AssetIpcCon
     // Release ipc_server_lock BEFORE acquiring any space locks to avoid deadlock
     release_server_lock();
 
-    ptr.asset->connection->message_alloc_id = 0;
-    ptr.asset->connection->accepted = false;
-    ptr.asset->connection->closed_status = IPC_STILL_OPEN;
-    ptr.asset->connection->server_handle = params.server_handle;
-    ptr.asset->connection->server_space_handle = server_parent_space;
-    ptr.asset->connection->client_space_handle = uid;
-    ptr.asset->connection->server_asset = server_self;
-    ptr.asset->connection->message_sent = {};
+    mb();
+
+    if (server_self.asset == nullptr)
+    {
+        log::err$("asset_create_ipc_connection: server->self is null for server handle {}", params.server_handle);
+        ptr.asset->lock.release();
+        asset_release(ptr);
+        return ("server self-reference not initialized");
+    }
+
+    ptr.asset->message_alloc_id = 0;
+    ptr.asset->accepted = false;
+    ptr.asset->closed_status = IPC_STILL_OPEN;
+    ptr.asset->server_handle = params.server_handle;
+    ptr.asset->server_space_handle = server_parent_space;
+    ptr.asset->client_space_handle = uid;
+    ptr.asset->server_asset = server_self;
+    ptr.asset->message_sent = {};
 
     ptr.asset->lock.release();
 
@@ -382,7 +458,10 @@ core::Result<AssetRef<AssetConnection>> Space::create_ipc_connection(AssetIpcCon
     }
     auto ptr_in_server = copy_res.unwrap();
 
-    // Now lock server asset to modify connections
+    auto ptr_in_server = core::move(copy_res.unwrap());
+
+    // Now lock server asset to modify connections.
+    // server_self.asset is guaranteed non-null (checked above).
     server_self.asset->lock.lock();
     auto server_ptr = server_self.asset->casted<AssetServer>()->server;
     try$(server_ptr->connections.push(core::move(ptr_in_server)));
@@ -396,17 +475,16 @@ core::Result<AssetIpcConnectionPipeCreateResult> Space::create_ipc_connections(
 {
     (void)params;
 
-    AssetRef<AssetConnection> send_ptr = try$(space_sender->allocate_asset<AssetConnection>(
-        new IpcConnection()));
+    AssetRef<AssetConnection> send_ptr = try$(space_sender->allocate_asset<AssetConnection>());
 
-    send_ptr.asset->connection->message_alloc_id = 0;
-    send_ptr.asset->connection->accepted = true;
-    send_ptr.asset->connection->closed_status = IPC_STILL_OPEN;
+    send_ptr.asset->message_alloc_id = 0;
+    send_ptr.asset->accepted = true;
+    send_ptr.asset->closed_status = IPC_STILL_OPEN;
 
-    send_ptr.asset->connection->server_handle = -1;
-    send_ptr.asset->connection->server_space_handle = space_receiver->uid;
-    send_ptr.asset->connection->client_space_handle = space_sender->uid;
-    send_ptr.asset->connection->message_sent = {};
+    send_ptr.asset->server_handle = -1;
+    send_ptr.asset->server_space_handle = space_receiver->uid;
+    send_ptr.asset->client_space_handle = space_sender->uid;
+    send_ptr.asset->message_sent = {};
 
     send_ptr.asset->lock.release();
 

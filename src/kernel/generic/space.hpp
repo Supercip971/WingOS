@@ -88,14 +88,7 @@ struct AssetServer : public Asset
 
 
 struct IpcConnection;
-struct AssetConnection  : public Asset
-{
-    IpcConnection* connection;
-
-    static constexpr size_t IDENT = AssetKind::OBJECT_KIND_IPC_CONNECTION;
-    AssetConnection(IpcConnection* connection_value)
-        : Asset(AssetKind::OBJECT_KIND_IPC_CONNECTION), connection(connection_value) {}
-};
+using AssetConnection = IpcConnection;
 
 struct AssetMemoryCreateParams
 {
@@ -131,7 +124,7 @@ struct AssetIpcConnectionCreateParams
 
 struct AssetIpcConnectionPipeCreateParams
 {
-    uint64_t flags;                // flags for the connection
+    uint64_t flags; // flags for the connection
 };
 
 struct AssetIpcConnectionPipeCreateResult

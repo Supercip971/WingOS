@@ -106,7 +106,13 @@ struct IpcServer : public UAsset
     {
         for (auto &connection : connections)
         {
+            if(connection == nullptr)
+            {
+                continue;
+            }
             auto res = receive(connection->handle, block);
+
+
             if (res.is_error())
             {
                 continue; // try next connection

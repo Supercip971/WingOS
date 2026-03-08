@@ -45,7 +45,7 @@ __attribute__((weak)) int _main(StartupInfo *context)
     return main(context->argc, context->argv);
 }
 
-static char _buffer[100];
+static char _buffer[200];
 static size_t _index;
 
 static bool use_stdout = false;

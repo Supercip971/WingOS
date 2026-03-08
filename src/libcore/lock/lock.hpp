@@ -96,6 +96,12 @@ public:
 
     void release()
     {
+
+        if(_locked.load(core::MemoryOrder::Acquire) == 0)
+        {
+            __builtin_unreachable();
+            return;
+        }
         __atomic_thread_fence(__ATOMIC_SEQ_CST);
         _locked.store(0, core::MemoryOrder::Release);
         exit_critical_context(_secure_ctx.load(core::MemoryOrder::Acquire));

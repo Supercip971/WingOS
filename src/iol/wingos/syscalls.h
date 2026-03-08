@@ -208,7 +208,7 @@ extern "C"
 
     static inline SyscallIpcStatus sys$ipc_status(uint64_t space_handle, IpcConnectionHandle connection_handle)
     {
-        SyscallIpcStatus status = {space_handle, connection_handle, 0};
+        SyscallIpcStatus status = {space_handle, connection_handle, false};
         SyscallInterface interface = syscall_ipc_status_encode(&status);
         uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
         (void)result;

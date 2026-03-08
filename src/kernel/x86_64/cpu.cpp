@@ -32,15 +32,13 @@ core::Lock _locker = {};
 
 bool Cpu::begin_syscall()
 {
-    _locker.lock();
-//    asm volatile("sti");
+    asm volatile("sti");
     return true;
 }
 
 bool Cpu::end_syscall()
 {
-    _locker.release();
-  //  asm volatile("cli");
+    asm volatile("cli");
     return true;
 }
 
@@ -92,9 +90,19 @@ size_t CpuImpl::max_processors()
 
 void setup_entry_gs()
 {
-    log::log$("setup gs: {}", (uintptr_t)Cpu::current());
+    uintptr_t cr4 = 0;
+    asm volatile ("movq %%cr4, %0"
+                 : "=r"(cr4));
+    cr4 |= (1 << 16); // set FSGSBASE bit
+
+    asm volatile ("movq %0, %%cr4"
+                 :
+                 : "r"(cr4));
+
     Msr::Write(MsrReg::GS_BASE, (uintptr_t)Cpu::current());
     Msr::Write(MsrReg::KERNEL_GS_BASE, (uintptr_t)Cpu::current());
+
+
 }
 } // namespace arch::amd64
 Cpu *Cpu::current()

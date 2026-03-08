@@ -22,15 +22,14 @@
 core::Lock log_lock;
 
 template <typename T>
-core::Result<T *> syscall_check_ptr(uintptr_t ptr)
+core::Result<T *> syscall_check_ptr(kernel::Task* caller, uintptr_t ptr)
 {
     if (ptr == 0)
     {
         return core::Result<T *>::error("null pointer");
     }
 
-    auto tsk = Cpu::current()->currentTask();
-    if (tsk == nullptr)
+    if (caller == nullptr)
     {
         return core::Result<T *>::error("no current task");
     }
@@ -40,19 +39,19 @@ core::Result<T *> syscall_check_ptr(uintptr_t ptr)
         return core::Result<T *>::error("invalid pointer");
     }
 
-    try$(tsk->vmm_space().verify(ptr, sizeof(T)));
+    try$(caller->vmm_space().verify(ptr, sizeof(T)));
 
     return reinterpret_cast<T *>(ptr);
 }
 template <typename T>
-core::Result<T *> syscall_check_ptr(T *ptr)
+core::Result<T *> syscall_check_ptr(kernel::Task* caller, T *ptr)
 {
     if (ptr == 0)
     {
         return core::Result<T *>::error("null pointer");
     }
 
-    auto tsk = Cpu::current()->currentTask();
+    auto tsk = caller;
     if (tsk == nullptr)
     {
         return core::Result<T *>::error("no current task");
@@ -63,19 +62,19 @@ core::Result<T *> syscall_check_ptr(T *ptr)
     return reinterpret_cast<T *>(ptr);
 }
 
-core::Result<uintptr_t> ksyscall_mem_own(SyscallMemOwn *mem_own)
+core::Result<uintptr_t> ksyscall_mem_own(kernel::Task* caller, SyscallMemOwn *mem_own)
 {
     Space *space = nullptr;
 
     if (mem_own->target_space_handle != 0)
     {
         space = try$(
-                    Cpu::current()->currentTask()->space()->by_handle<Space>(mem_own->target_space_handle))
+                    caller->space()->by_handle<Space>(mem_own->target_space_handle))
                     .asset;
     }
     else
     {
-        space = Cpu::current()->currentTask()->space();
+        space = caller->space();
     }
 
     if (space == nullptr)
@@ -96,7 +95,7 @@ core::Result<uintptr_t> ksyscall_mem_own(SyscallMemOwn *mem_own)
     return (uint64_t)asset.handle;
 }
 
-core::Result<uintptr_t> ksyscall_map(SyscallMap *map)
+core::Result<uintptr_t> ksyscall_map(kernel::Task* caller, SyscallMap *map)
 {
     Space *space = nullptr;
     bool need_invalidate = false;
@@ -104,12 +103,12 @@ core::Result<uintptr_t> ksyscall_map(SyscallMap *map)
     if (map->target_space_handle != 0)
     {
         space = try$(
-                    Cpu::current()->currentTask()->space()->by_handle<Space>(map->target_space_handle))
+                    caller->space()->by_handle<Space>(map->target_space_handle))
                     .asset;
     }
     else
     {
-        space = Cpu::current()->currentTask()->space();
+        space = caller->space();
         need_invalidate = true;
     }
 
@@ -152,19 +151,19 @@ core::Result<uintptr_t> ksyscall_map(SyscallMap *map)
     return (uint64_t)asset.handle;
 }
 
-core::Result<size_t> ksyscall_task_create(SyscallTaskCreate *task_create)
+core::Result<size_t> ksyscall_task_create(kernel::Task* caller, SyscallTaskCreate *task_create)
 {
     Space *space = nullptr;
     if (task_create->target_space_handle != 0)
     {
 
         space = try$(
-                    Cpu::current()->currentTask()->space()->by_handle<Space>(task_create->target_space_handle))
+                    caller->space()->by_handle<Space>(task_create->target_space_handle))
                     .asset;
     }
     else
     {
-        space = Cpu::current()->currentTask()->space();
+        space = caller->space();
     }
 
     if (space == nullptr)
@@ -192,18 +191,18 @@ core::Result<size_t> ksyscall_task_create(SyscallTaskCreate *task_create)
     return (uint64_t)asset.handle;
 }
 
-core::Result<size_t> ksyscall_space_create(SyscallSpaceCreate *args)
+core::Result<size_t> ksyscall_space_create(kernel::Task* caller, SyscallSpaceCreate *args)
 {
     Space *space = nullptr;
     if (args->parent_space_handle != 0)
     {
         space = try$(
-                    Cpu::current()->currentTask()->space()->by_handle<Space>(args->parent_space_handle))
+                    caller->space()->by_handle<Space>(args->parent_space_handle))
                     .asset;
     }
     else
     {
-        space = Cpu::current()->currentTask()->space();
+        space = caller->space();
     }
 
     if (space == nullptr)
@@ -216,9 +215,9 @@ core::Result<size_t> ksyscall_space_create(SyscallSpaceCreate *args)
     args->returned_handle = asset.handle;
     return (uint64_t)asset.handle;
 }
-core::Result<size_t> ksyscall_mem_release(SyscallAssetRelease *release)
+core::Result<size_t> ksyscall_mem_release(kernel::Task* caller, SyscallAssetRelease *release)
 {
-    auto space = Cpu::current()->currentTask()->space();
+    auto space = caller->space();
     if (space == nullptr)
     {
         return core::Result<size_t>::error("no current space");
@@ -226,21 +225,30 @@ core::Result<size_t> ksyscall_mem_release(SyscallAssetRelease *release)
 
     // With the AssetRef refactor, release by explicit handle (preferred) rather than scanning raw pointers.
     // The userspace ABI already provides `asset_handle` for release.
-    if (release->asset_handle == 0)
+
+    auto virt_mem_asset = try$(space->by_fn<AssetMapping>([&](AssetRef<AssetMapping> const &a)
+                                                          {
+        if(a.asset->start == (uintptr_t)release->addr && a.asset->end ==(uintptr_t) ( release->end)) {
+            return true;
+        }
+        return false; }));
+
+    auto mem_asset = virt_mem_asset.asset->physical_mem;
+
+    if (mem_asset.asset == nullptr)
     {
-        return core::Result<size_t>::error("missing asset_handle for mem release");
+        return core::Result<size_t>::error("memory asset not found for given address range");
     }
 
-    auto asset = try$(space->by_handle<Asset>(release->asset_handle));
-    space->asset_release(asset);
-
+    space->asset_release(virt_mem_asset);
+    space->asset_release(mem_asset);
     return 0ul;
 }
-core::Result<size_t> ksyscall_asset_release(SyscallAssetRelease *release)
+core::Result<size_t> ksyscall_asset_release(kernel::Task* caller, SyscallAssetRelease *release)
 {
     if (release->asset_handle == 0 && release->addr != nullptr)
     {
-        return ksyscall_mem_release(release);
+        return ksyscall_mem_release(caller, release);
     }
 
     Space *space = nullptr;
@@ -248,12 +256,12 @@ core::Result<size_t> ksyscall_asset_release(SyscallAssetRelease *release)
     {
 
         space = try$(
-                    Cpu::current()->currentTask()->space()->by_handle<Space>(release->space_handle))
+                    caller->space()->by_handle<Space>(release->space_handle))
                     .asset;
     }
     else
     {
-        space = Cpu::current()->currentTask()->space();
+        space = caller->space();
     }
 
     if (space == nullptr)
@@ -267,7 +275,7 @@ core::Result<size_t> ksyscall_asset_release(SyscallAssetRelease *release)
     return 0ul;
 }
 
-core::Result<size_t> ksyscall_task_launch(SyscallTaskLaunch *task_launch)
+core::Result<size_t> ksyscall_task_launch(kernel::Task* caller, SyscallTaskLaunch *task_launch)
 {
 
     Space *space = nullptr;
@@ -275,12 +283,12 @@ core::Result<size_t> ksyscall_task_launch(SyscallTaskLaunch *task_launch)
     {
 
         space = try$(
-                    Cpu::current()->currentTask()->space()->by_handle<Space>(task_launch->target_space_handle))
+                    caller->space()->by_handle<Space>(task_launch->target_space_handle))
                     .asset;
     }
     else
     {
-        space = Cpu::current()->currentTask()->space();
+        space = caller->space();
     }
 
     if (space == nullptr)
@@ -301,7 +309,7 @@ core::Result<size_t> ksyscall_task_launch(SyscallTaskLaunch *task_launch)
     return 0ul;
 }
 
-core::Result<size_t> ksyscall_asset_move(SyscallAssetMove *asset_move_args)
+core::Result<size_t> ksyscall_asset_move(kernel::Task* caller, SyscallAssetMove *asset_move_args)
 {
     Space *from_space = nullptr;
     Space *to_space = nullptr;
@@ -310,23 +318,23 @@ core::Result<size_t> ksyscall_asset_move(SyscallAssetMove *asset_move_args)
     {
 
         from_space = try$(
-                         Cpu::current()->currentTask()->space()->by_handle<Space>(asset_move_args->from_space_handle))
+                         caller->space()->by_handle<Space>(asset_move_args->from_space_handle))
                          .asset;
     }
     else
     {
-        from_space = Cpu::current()->currentTask()->space();
+        from_space = caller->space();
     }
 
     if (asset_move_args->to_space_handle != 0)
     {
         to_space = try$(
-                       Cpu::current()->currentTask()->space()->by_handle<Space>(asset_move_args->to_space_handle))
+                       caller->space()->by_handle<Space>(asset_move_args->to_space_handle))
                        .asset;
     }
     else
     {
-        to_space = Cpu::current()->currentTask()->space();
+        to_space = caller->space();
     }
 
     if (from_space == nullptr || to_space == nullptr)
@@ -343,18 +351,18 @@ core::Result<size_t> ksyscall_asset_move(SyscallAssetMove *asset_move_args)
     return (uint64_t)moved_asset.handle;
 }
 
-core::Result<size_t> ksyscall_create_server(SyscallIpcCreateServer *create)
+core::Result<size_t> ksyscall_create_server(kernel::Task* caller, SyscallIpcCreateServer *create)
 {
     Space *space = nullptr;
     if (create->space_handle != 0)
     {
         space = try$(
-                    Cpu::current()->currentTask()->space()->by_handle<Space>(create->space_handle))
+                    caller->space()->by_handle<Space>(create->space_handle))
                     .asset;
     }
     else
     {
-        space = Cpu::current()->currentTask()->space();
+        space = caller->space();
     }
 
     if (space == nullptr)
@@ -372,7 +380,7 @@ core::Result<size_t> ksyscall_create_server(SyscallIpcCreateServer *create)
 
     return (uint64_t)asset.handle;
 }
-core::Result<size_t> ksyscall_create_pipe_connection(SyscallIpcConnect *create)
+core::Result<size_t> ksyscall_create_pipe_connection(kernel::Task* caller, SyscallIpcConnect *create)
 {
 
     Space *space_sender = nullptr;
@@ -381,23 +389,23 @@ core::Result<size_t> ksyscall_create_pipe_connection(SyscallIpcConnect *create)
     if (create->sender_space_handle != 0)
     {
         space_sender = try$(
-                           Cpu::current()->currentTask()->space()->by_handle<Space>(create->sender_space_handle))
+                           caller->space()->by_handle<Space>(create->sender_space_handle))
                            .asset;
     }
     else
     {
-        space_sender = Cpu::current()->currentTask()->space();
+        space_sender = caller->space();
     }
     if (create->receiver_space_handle != 0)
     {
 
         space_receiver = try$(
-                             Cpu::current()->currentTask()->space()->by_handle<Space>(create->receiver_space_handle))
+                             caller->space()->by_handle<Space>(create->receiver_space_handle))
                              .asset;
     }
     else
     {
-        space_receiver = Cpu::current()->currentTask()->space();
+        space_receiver = caller->space();
     }
 
     if (space_sender == nullptr || space_receiver == nullptr)
@@ -418,12 +426,12 @@ core::Result<size_t> ksyscall_create_pipe_connection(SyscallIpcConnect *create)
     return {0ul};
 }
 
-core::Result<size_t> ksyscall_create_connection(SyscallIpcConnect *create)
+core::Result<size_t> ksyscall_create_connection(kernel::Task* caller, SyscallIpcConnect *create)
 {
 
     if (create->flags & IPC_CONNECTION_FLAG_PIPE)
     {
-        return ksyscall_create_pipe_connection(create);
+        return ksyscall_create_pipe_connection(caller, create);
     }
 
     Space *space = nullptr;
@@ -431,12 +439,12 @@ core::Result<size_t> ksyscall_create_connection(SyscallIpcConnect *create)
     {
 
         space = try$(
-                    Cpu::current()->currentTask()->space()->by_handle<Space>(create->sender_space_handle))
+                    caller->space()->by_handle<Space>(create->sender_space_handle))
                     .asset;
     }
     else
     {
-        space = Cpu::current()->currentTask()->space();
+        space = caller->space();
     }
 
     if (space == nullptr)
@@ -454,19 +462,19 @@ core::Result<size_t> ksyscall_create_connection(SyscallIpcConnect *create)
     return (uint64_t)asset.handle;
 }
 
-core::Result<size_t> ksyscall_send(SyscallIpcSend *send)
+core::Result<size_t> ksyscall_send(kernel::Task* caller, SyscallIpcSend *send)
 {
     Space *space = nullptr;
     if (send->space_handle != 0)
     {
 
         space = try$(
-                    Cpu::current()->currentTask()->space()->by_handle<Space>(send->space_handle))
+                    caller->space()->by_handle<Space>(send->space_handle))
                     .asset;
     }
     else
     {
-        space = Cpu::current()->currentTask()->space();
+        space = caller->space();
     }
 
     if (space == nullptr)
@@ -476,36 +484,29 @@ core::Result<size_t> ksyscall_send(SyscallIpcSend *send)
 
     auto connection = try$(space->by_handle<AssetConnection>(send->connection_handle));
 
-    auto ipc_connection = connection.asset->connection;
-    if (ipc_connection == nullptr)
-    {
-        return core::Result<size_t>::error("SEND: connection has no ipc object");
-    }
-
-    if (!ipc_connection->accepted)
+    if (!connection.asset->accepted)
     {
         return core::Result<size_t>::error("SEND: connection is not accepted");
     }
 
-    auto res = try$(server_send_message(ipc_connection, try$(syscall_check_ptr(send->message)), send->expect_reply));
+    auto res = try$(server_send_message(connection, try$(syscall_check_ptr(caller, send->message)), send->expect_reply));
 
     send->returned_msg_handle = res;
     return (size_t)res;
 }
 
-core::Result<size_t> ksyscall_server_receive(SyscallIpcServerReceive *receive)
+core::Result<size_t> ksyscall_server_receive(kernel::Task* caller, SyscallIpcServerReceive *receive)
 {
     Space *space = nullptr;
     if (receive->space_handle != 0)
     {
-       space = try$(
-                       Cpu::current()->currentTask()->space()->by_handle<Space>(receive->space_handle))
-                       .asset;
-
+        space = try$(
+                    caller->space()->by_handle<Space>(receive->space_handle))
+                    .asset;
     }
     else
     {
-        space = Cpu::current()->currentTask()->space();
+        space = caller->space();
     }
 
     if (space == nullptr)
@@ -515,15 +516,9 @@ core::Result<size_t> ksyscall_server_receive(SyscallIpcServerReceive *receive)
 
     auto connection = (space->by_handle<AssetConnection>(receive->connection_handle)).unwrap();
 
-    auto ipc_connection = connection.asset->connection;
-    if (ipc_connection == nullptr)
+    if (!connection.asset->accepted)
     {
-        return core::Result<size_t>::error("RECEIVE: connection has no ipc object");
-    }
-
-    if (!ipc_connection->accepted)
-    {
-        log::err$("for ipc connection: ({}): {}", space->space_handle, receive->connection_handle);
+        log::err$("for ipc connection: ({}): {}", space->uid, receive->connection_handle);
 
         log::err$("for server: {}", receive->server_handle);
         log::err$("in space: {}", space->uid);
@@ -542,20 +537,20 @@ core::Result<size_t> ksyscall_server_receive(SyscallIpcServerReceive *receive)
             auto kernel_server = server_asset.asset->server;
             if (kernel_server != nullptr)
             {
-                if (ipc_connection->server_handle != kernel_server->handle)
+                if (connection.asset->server_handle != kernel_server->handle)
                 {
                     log::err$("[IPC-BUG] Server mismatch detected!");
-                    log::err$("  Connection thinks it belongs to server: {}", ipc_connection->server_handle);
+                    log::err$("  Connection thinks it belongs to server: {}", connection.asset->server_handle);
                     log::err$("  But receive is being called from server: {}", kernel_server->handle);
                     log::err$("  Connection handle: {}, Server asset handle: {}", receive->connection_handle, receive->server_handle);
-                    log::err$("  Client space: {}, Server space: {}", ipc_connection->client_space_handle, ipc_connection->server_space_handle);
+                    log::err$("  Client space: {}, Server space: {}", connection.asset->client_space_handle, connection.asset->server_space_handle);
                     return core::Result<size_t>::error("connection belongs to different server");
                 }
             }
         }
     }
 
-    auto res = (server_receive_message(ipc_connection));
+    auto res = (server_receive_message(connection));
 
     if (res.is_error())
     {
@@ -580,25 +575,23 @@ core::Result<size_t> ksyscall_server_receive(SyscallIpcServerReceive *receive)
     }
 
     receive->returned_msg_handle = received_message.uid;
-    *try$(syscall_check_ptr(receive->returned_message)) = received_message.message_sended.to_server();
+    *try$(syscall_check_ptr(caller, receive->returned_message)) = received_message.message_sended.to_server();
     receive->contain_response = true;
 
     return (size_t)received_message.uid;
 }
 
-core::Result<size_t> ksyscall_client_receive_reply(SyscallIpcClientReceiveReply *receive)
+core::Result<size_t> ksyscall_client_receive_reply(kernel::Task* caller, SyscallIpcClientReceiveReply *receive)
 {
     Space *space = nullptr;
     if (receive->space_handle != 0)
     {
 
-
-               space = try$(Cpu::current()->currentTask()->space()->by_handle<Space>(receive->space_handle)).asset;
-
+        space = try$(caller->space()->by_handle<Space>(receive->space_handle)).asset;
     }
     else
     {
-        space = Cpu::current()->currentTask()->space();
+        space = caller->space();
     }
 
     if (space == nullptr)
@@ -615,26 +608,19 @@ core::Result<size_t> ksyscall_client_receive_reply(SyscallIpcClientReceiveReply 
         return core::Result<size_t>::error("CLIENT RECEIVE: connection not found");
     }
     auto connection = r_connection.unwrap();
-    auto ipc_connection = connection.asset->connection;
-    if (ipc_connection == nullptr)
-    {
-        log::log$("in space({}), handle {}", receive->space_handle, receive->connection_handle);
-        log::err$("Connection has no ipc object");
-        return core::Result<size_t>::error("CLIENT RECEIVE: connection has no ipc object");
-    }
 
-    if (!ipc_connection->accepted)
+    if (!connection.asset->accepted)
     {
 
-        log::err$("for server: {}", ipc_connection->server_handle);
-        log::err$("in space: (client) {}", ipc_connection->client_space_handle);
-        log::err$("in space: (server) {}", ipc_connection->server_space_handle);
+        log::err$("for server: {}", connection.asset->server_handle);
+        log::err$("in space: (client) {}", connection.asset->client_space_handle);
+        log::err$("in space: (server) {}", connection.asset->server_space_handle);
 
         log::log$("connection is not accepted");
         return core::Result<size_t>::error("connection is not accepted");
     }
 
-    auto res = client_receive_response(ipc_connection, receive->message);
+    auto res = client_receive_response(connection, receive->message);
 
     if (res.is_error())
     {
@@ -653,25 +639,25 @@ core::Result<size_t> ksyscall_client_receive_reply(SyscallIpcClientReceiveReply 
 
     // receive->returned_msg_handle = received_message.uid;
 
-    *try$(syscall_check_ptr(receive->returned_message)) = received_message.message_responded.to_client();
+    *try$(syscall_check_ptr(caller, receive->returned_message)) = received_message.message_responded.to_client();
     receive->contain_response = true;
 
     return (size_t)received_message.uid;
 }
 
-core::Result<size_t> ksyscall_ipc_call(SyscallIpcCall *call)
+core::Result<size_t> ksyscall_ipc_call(kernel::Task* caller, SyscallIpcCall *call)
 {
     Space *space = nullptr;
     if (call->space_handle != 0)
     {
 
         space = try$(
-                        Cpu::current()->currentTask()->space()->by_handle<Space>(call->space_handle))
-                        .asset;
+                    caller->space()->by_handle<Space>(call->space_handle))
+                    .asset;
     }
     else
     {
-        space = Cpu::current()->currentTask()->space();
+        space = caller->space();
     }
 
     if (space == nullptr)
@@ -681,20 +667,12 @@ core::Result<size_t> ksyscall_ipc_call(SyscallIpcCall *call)
 
     auto connection = try$(space->by_handle<AssetConnection>(call->connection_handle));
 
-    auto ipc_connection = connection.asset->connection;
-    if (ipc_connection == nullptr)
-    {
-        log::log$("in space({}), handle {}", call->space_handle, call->connection_handle);
-        log::err$("Connection has no ipc object");
-        return core::Result<size_t>::error("CALL: connection has no ipc object");
-    }
-
-    if (!ipc_connection->accepted)
+    if (!connection.asset->accepted)
     {
         return core::Result<size_t>::error("connection is not accepted");
     }
 
-    auto res = call_server_and_wait(ipc_connection, call->message);
+    auto res = call_server_and_wait(connection, call->message);
 
     if (res.is_error())
     {
@@ -703,26 +681,25 @@ core::Result<size_t> ksyscall_ipc_call(SyscallIpcCall *call)
 
     auto received_message = (res.take());
 
-    *try$(syscall_check_ptr(call->returned_message)) = core::move(received_message);
+    *try$(syscall_check_ptr(caller ,call->returned_message)) = core::move(received_message);
     call->has_reply = true;
     // call->returned_msg_handle = received_message.uid;
 
     return 0ul;
 }
 
-core::Result<size_t> ksyscall_ipc_accept(SyscallIpcAccept *accept)
+core::Result<size_t> ksyscall_ipc_accept(kernel::Task* caller, SyscallIpcAccept *accept)
 {
     Space *space = nullptr;
     if (accept->space_handle != 0)
     {
         space = try$(
-                        Cpu::current()->currentTask()->space()->by_handle<Space>(accept->space_handle))
-                        .asset;
-
+                    caller->space()->by_handle<Space>(accept->space_handle))
+                    .asset;
     }
     else
     {
-        space = Cpu::current()->currentTask()->space();
+        space = caller->space();
     }
 
     if (space == nullptr)
@@ -753,7 +730,7 @@ core::Result<size_t> ksyscall_ipc_accept(SyscallIpcAccept *accept)
         accept->accepted_connection = false;
         return 0ul;
     }
-    //space->dump_assets();
+    // space->dump_assets();
 
     accept->connection_handle = connection.handle;
     accept->accepted_connection = true;
@@ -761,18 +738,18 @@ core::Result<size_t> ksyscall_ipc_accept(SyscallIpcAccept *accept)
     return (size_t)connection.handle;
 }
 
-core::Result<size_t> ksyscall_ipc_server_reply(SyscallIpcReply *reply)
+core::Result<size_t> ksyscall_ipc_server_reply(kernel::Task* caller, SyscallIpcReply *reply)
 {
     Space *space = nullptr;
     if (reply->space_handle != 0)
-    {        space = try$(
-                         Cpu::current()->currentTask()->space()->by_handle<Space>(reply->space_handle))
-                         .asset;
-
+    {
+        space = try$(
+                    caller->space()->by_handle<Space>(reply->space_handle))
+                    .asset;
     }
     else
     {
-        space = Cpu::current()->currentTask()->space();
+        space = caller->space();
     }
 
     if (space == nullptr)
@@ -780,22 +757,16 @@ core::Result<size_t> ksyscall_ipc_server_reply(SyscallIpcReply *reply)
         return core::Result<size_t>::error("no current space");
     }
 
-    auto msg = try$(syscall_check_ptr(reply->message));
+    auto msg = try$(syscall_check_ptr(caller, reply->message));
 
     auto connection = try$(space->by_handle<AssetConnection>(reply->connection_handle));
 
-    auto ipc_connection = connection.asset->connection;
-    if (ipc_connection == nullptr)
-    {
-        return core::Result<size_t>::error("SERVER REPLY: connection has no ipc object");
-    }
-
-    if (!ipc_connection->accepted)
+    if (!connection.asset->accepted)
     {
         return core::Result<size_t>::error("connection is not accepted");
     }
 
-    auto res = server_reply_message(ipc_connection, reply->message_handle, msg);
+    auto res = server_reply_message(connection, reply->message_handle, msg);
 
     if (res.is_error())
     {
@@ -805,21 +776,21 @@ core::Result<size_t> ksyscall_ipc_server_reply(SyscallIpcReply *reply)
     return 0ul;
 }
 
-core::Result<size_t> ksyscall_ipc_status(SyscallIpcStatus *status)
+core::Result<size_t> ksyscall_ipc_status(kernel::Task* caller, SyscallIpcStatus *status)
 {
     Space *space = nullptr;
 
     status->returned_is_accepted = false;
     if (status->space_handle != 0)
     {
-
         space = try$(
-                         Cpu::current()->currentTask()->space()->by_handle<Space>(status->space_handle))
-                         .asset;
+                    caller->space()->by_handle<Space>(status->space_handle))
+                    .asset;
+        log::log$("using custom space handle: {}", status->space_handle);
     }
     else
     {
-        space = Cpu::current()->currentTask()->space();
+        space = caller->space();
     }
 
     if (space == nullptr)
@@ -829,40 +800,34 @@ core::Result<size_t> ksyscall_ipc_status(SyscallIpcStatus *status)
 
     auto connection = try$(space->by_handle<AssetConnection>(status->connection_handle));
 
-    auto ipc_connection = connection.asset->connection;
-    if (ipc_connection == nullptr)
-    {
-        log::log$("in space({}), handle {}", status->space_handle, status->connection_handle);
-        log::err$("Connection has no ipc object");
-        return core::Result<size_t>::error("STATUS: connection has no ipc object");
-    }
+    connection.asset->lock.lock();
 
-    if (!ipc_connection->accepted)
+    if (!connection.asset->accepted)
     {
         status->returned_is_accepted = false;
     }
     else
     {
-
         status->returned_is_accepted = true;
     }
+
+    connection.asset->lock.release();
 
     return 0ul;
 }
 
-core::Result<size_t> ksyscall_ipc_asset_info(SyscallAssetInfo *info)
+core::Result<size_t> ksyscall_ipc_asset_info(kernel::Task* caller, SyscallAssetInfo *info)
 {
     Space *space = nullptr;
     if (info->space_handle != 0)
     {
         space = try$(
-                         Cpu::current()->currentTask()->space()->by_handle<Space>(info->space_handle))
-                         .asset;
-
+                    caller->space()->by_handle<Space>(info->space_handle))
+                    .asset;
     }
     else
     {
-        space = Cpu::current()->currentTask()->space();
+        space = caller->space();
     }
 
     if (space == nullptr)
@@ -900,18 +865,18 @@ core::Result<size_t> ksyscall_ipc_asset_info(SyscallAssetInfo *info)
     return 0ul;
 }
 
-core::Result<size_t> ksyscall_ipc_x86_port(SyscallIpcX86Port *port)
+core::Result<size_t> ksyscall_ipc_x86_port(kernel::Task* caller, SyscallIpcX86Port *port)
 {
     Space *space = nullptr;
     if (port->space_handle != 0)
-    {        space = try$(
-                           Cpu::current()->currentTask()->space()->by_handle<Space>(port->space_handle))
-                           .asset;
-
+    {
+        space = try$(
+                    caller->space()->by_handle<Space>(port->space_handle))
+                    .asset;
     }
     else
     {
-        space = Cpu::current()->currentTask()->space();
+        space = caller->space();
     }
 
     if (space == nullptr)
@@ -965,112 +930,111 @@ core::Result<size_t> ksyscall_ipc_x86_port(SyscallIpcX86Port *port)
 }
 
 core::Lock _sys_log_lock = {};
-core::Result<size_t> syscall_handle(SyscallInterface syscall)
+core::Result<size_t> syscall_handle(SyscallInterface syscall, kernel::Task* caller)
 {
-
     switch (syscall.id)
     {
     case SYSCALL_DEBUG_LOG_ID:
     {
-        _sys_log_lock.lock();
+        log::log_lock();
         auto debug = syscall_debug_decode(syscall);
-        log::log("{}", Cpu::current()->currentTask()->uid());
+        log::log("{}", caller->uid());
         log::log("{}", debug.message);
-        _sys_log_lock.release();
+        log::log_release();
 
         return 0ul;
     }
     case SYSCALL_PHYSICAL_MEM_OWN_ID:
     {
-        SyscallMemOwn *mem_own = try$(syscall_check_ptr<SyscallMemOwn>(syscall.arg1));
+        SyscallMemOwn *mem_own = try$(syscall_check_ptr<SyscallMemOwn>(caller, syscall.arg1));
 
-        return ksyscall_mem_own(mem_own);
+        return ksyscall_mem_own(caller, mem_own);
     }
     case SYSCALL_MAPPING_CREATE_ID:
     {
-        SyscallMap *map = try$(syscall_check_ptr<SyscallMap>(syscall.arg1));
+        SyscallMap *map = try$(syscall_check_ptr<SyscallMap>(caller, syscall.arg1));
 
-        return ksyscall_map(map);
+        return ksyscall_map(caller, map);
     }
     case SYSCALL_TASK_CREATE_ID:
     {
-        SyscallTaskCreate *task_create = try$(syscall_check_ptr<SyscallTaskCreate>(syscall.arg1));
-        return ksyscall_task_create(task_create);
+        SyscallTaskCreate *task_create = try$(syscall_check_ptr<SyscallTaskCreate>(caller, syscall.arg1));
+        return ksyscall_task_create(caller, task_create);
     }
     case SYSCALL_SPACE_CREATE_ID:
     {
-        SyscallSpaceCreate *space_create = try$(syscall_check_ptr<SyscallSpaceCreate>(syscall.arg1));
-        return ksyscall_space_create(space_create);
+        SyscallSpaceCreate *space_create = try$(syscall_check_ptr<SyscallSpaceCreate>(caller, syscall.arg1));
+        return ksyscall_space_create(caller, space_create);
     }
     case SYSCALL_ASSET_RELEASE_ID:
     {
-        SyscallAssetRelease *asset_release = try$(syscall_check_ptr<SyscallAssetRelease>(syscall.arg1));
-        return ksyscall_asset_release(asset_release);
+        SyscallAssetRelease *asset_release = try$(syscall_check_ptr<SyscallAssetRelease>(caller, syscall.arg1));
+        return ksyscall_asset_release(caller, asset_release);
     }
     case SYSCALL_TASK_LAUNCH_ID:
     {
-        SyscallTaskLaunch *task_launch = try$(syscall_check_ptr<SyscallTaskLaunch>(syscall.arg1));
-        return ksyscall_task_launch(task_launch);
+        SyscallTaskLaunch *task_launch = try$(syscall_check_ptr<SyscallTaskLaunch>(caller, syscall.arg1));
+        return ksyscall_task_launch(caller, task_launch);
     }
     case SYSCALL_ASSET_MOVE:
     {
-        SyscallAssetMove *asset_move = try$(syscall_check_ptr<SyscallAssetMove>(syscall.arg1));
-        return ksyscall_asset_move(asset_move);
+        SyscallAssetMove *asset_move = try$(syscall_check_ptr<SyscallAssetMove>(caller, syscall.arg1));
+        return ksyscall_asset_move(caller, asset_move);
     }
     case SYSCALL_IPC_CREATE_SERVER_ID:
     {
-        SyscallIpcCreateServer *create = try$(syscall_check_ptr<SyscallIpcCreateServer>(syscall.arg1));
-        return ksyscall_create_server(create);
+        SyscallIpcCreateServer *create = try$(syscall_check_ptr<SyscallIpcCreateServer>(caller, syscall.arg1));
+        return ksyscall_create_server(caller, create);
     }
     case SYSCALL_IPC_CONNECT_ID:
     {
-        SyscallIpcConnect *create = try$(syscall_check_ptr<SyscallIpcConnect>(syscall.arg1));
-        return ksyscall_create_connection(create);
+        SyscallIpcConnect *create = try$(syscall_check_ptr<SyscallIpcConnect>(caller, syscall.arg1));
+        return ksyscall_create_connection(caller, create);
     }
     case SYSCALL_IPC_SEND_ID:
     {
-        SyscallIpcSend *send = try$(syscall_check_ptr<SyscallIpcSend>(syscall.arg1));
-        return ksyscall_send(send);
+        SyscallIpcSend *send = try$(syscall_check_ptr<SyscallIpcSend>(caller, syscall.arg1));
+        return ksyscall_send(caller, send);
     }
     case SYSCALL_IPC_SERVER_RECEIVE_ID:
     {
-        SyscallIpcServerReceive *receive = try$(syscall_check_ptr<SyscallIpcServerReceive>(syscall.arg1));
-        return ksyscall_server_receive(receive);
+        SyscallIpcServerReceive *receive = try$(syscall_check_ptr<SyscallIpcServerReceive>(caller, syscall.arg1));
+        return ksyscall_server_receive(caller, receive);
     }
     case SYSCALL_IPC_CLIENT_RECEIVE_REPLY_ID:
     {
-        SyscallIpcClientReceiveReply *receive = try$(syscall_check_ptr<SyscallIpcClientReceiveReply>(syscall.arg1));
-        return ksyscall_client_receive_reply(receive);
+        SyscallIpcClientReceiveReply *receive = try$(syscall_check_ptr<SyscallIpcClientReceiveReply>(caller, syscall.arg1));
+        return ksyscall_client_receive_reply(caller, receive);
     }
     case SYSCALL_IPC_CALL_ID:
     {
-        SyscallIpcCall *call = try$(syscall_check_ptr<SyscallIpcCall>(syscall.arg1));
-        return ksyscall_ipc_call(call);
+        SyscallIpcCall *call = try$(syscall_check_ptr<SyscallIpcCall>(caller, syscall.arg1));
+        return ksyscall_ipc_call(caller, call);
     }
     case SYSCALL_IPC_ACCEPT_ID:
     {
-        SyscallIpcAccept *accept = try$(syscall_check_ptr<SyscallIpcAccept>(syscall.arg1));
-        return ksyscall_ipc_accept(accept);
+        SyscallIpcAccept *accept = try$(syscall_check_ptr<SyscallIpcAccept>(caller, syscall.arg1));
+        return ksyscall_ipc_accept(caller, accept);
     }
     case SYSCALL_IPC_REPLY_ID:
     {
-        SyscallIpcReply *reply = try$(syscall_check_ptr<SyscallIpcReply>(syscall.arg1));
-        return ksyscall_ipc_server_reply(reply);
+        SyscallIpcReply *reply = try$(syscall_check_ptr<SyscallIpcReply>(caller, syscall.arg1));
+        return ksyscall_ipc_server_reply(caller, reply);
     }
     case SYSCALL_IPC_STATUS_ID:
     {
-        SyscallIpcStatus *status = try$(syscall_check_ptr<SyscallIpcStatus>(syscall.arg1));
-        return ksyscall_ipc_status(status);
+        SyscallIpcStatus *status = try$(syscall_check_ptr<SyscallIpcStatus>(caller, syscall.arg1));
+        return ksyscall_ipc_status(caller, status);
     }
     case SYSCALL_ASSET_INFO_ID:
     {
-        SyscallAssetInfo *info = try$(syscall_check_ptr<SyscallAssetInfo>(syscall.arg1));
-        return ksyscall_ipc_asset_info(info);
+        SyscallAssetInfo *info = try$(syscall_check_ptr<SyscallAssetInfo>(caller, syscall.arg1));
+        return ksyscall_ipc_asset_info(caller, info);
     }
     case SYSCALL_IPC_X86_PORT:
     {
-        SyscallIpcX86Port *port = try$(syscall_check_ptr<SyscallIpcX86Port>(syscall.arg1));
-        return ksyscall_ipc_x86_port(port);
+        SyscallIpcX86Port *port = try$(syscall_check_ptr<SyscallIpcX86Port>(caller, syscall.arg1));
+        return ksyscall_ipc_x86_port(caller, port);
     }
 
     default:

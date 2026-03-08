@@ -59,7 +59,7 @@ core::Result<void> scheduler_tick();
 core::Result<void> task_run(TUID task_id, CoreId core = 0);
 
 core::Result<Task *> schedule(Task *current, void *state, CoreId core, bool soft = false);
-core::Result<void> dump_current_running_task();
+core::Result<void> dump_current_running_task(bool complete);
 
 
 core::Result<void> dump_all_current_running_tasks();
@@ -77,3 +77,6 @@ void trigger_reschedule_unblocked(CoreId cpu);
 
 
 void reschedule_self();
+
+
+void scheduler_dump_all();

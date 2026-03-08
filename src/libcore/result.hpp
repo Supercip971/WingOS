@@ -28,7 +28,7 @@ public:
         ErrorType _error;
     };
 
-    bool _is_error = false;
+    bool _is_error = true;
     constexpr Result() : _error("empty result"), _is_error(true) {}
 
     constexpr ~Result()
@@ -61,6 +61,10 @@ public:
             new (&_value) ValueType(core::move(other._value));
         }
     }
+
+
+
+
     constexpr Result &operator=(Result &&other)
     {
         if (this == &other) return *this;
@@ -113,14 +117,18 @@ public:
         return _value;
     }
 
-    ValT&& unwrap() && bounded$
+    ValT copied() const
+    {
+        return _value;
+    }
+
+    ValT unwrap() && bounded$
     {
         assert();
         return core::move(_value);
     }
 
-    ValT take() && = delete;
-    ValT take() & bounded$
+    ValT take()
     {
         assert();
         return core::move(_value);

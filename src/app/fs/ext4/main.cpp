@@ -292,7 +292,7 @@ int main(int, char **)
 
     prot::ManagedServer serv = serv_r.take();
 
-    prot::VfsConnection vfs = prot::VfsConnection::connect().unwrap();
+    prot::VfsConnection vfs = prot::VfsConnection::connect().take();
 
     vfs.register_fs(core::Str("ext4"), serv.addr()).unwrap();
     log::log$("ext4: registered fs manager with vfs");

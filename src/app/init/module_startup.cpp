@@ -1,6 +1,5 @@
-#include <string.h>
-
 #include <new>
+#include <string.h>
 
 #include "app/init/service_register.hpp"
 #include "module_startup.hpp"
@@ -41,7 +40,7 @@ VirtRange map_mcx_address(mcx::MemoryRange range)
 
     return VirtRange((uintptr_t)mem, (uintptr_t)mem + phys.len());
 }
-core::Result<size_t> start_service(mcx::MachineContext* context, mcx::MachineContextModule mod)
+core::Result<size_t> start_service(mcx::MachineContext *context, mcx::MachineContextModule mod)
 {
     auto vrange = map_mcx_address(mod.range);
     auto loaded = elf::ElfLoader::load(vrange);
@@ -58,14 +57,14 @@ core::Result<size_t> start_service(mcx::MachineContext* context, mcx::MachineCon
     return v;
 }
 
-core::Result<size_t> start_service_fs(mcx::MachineContext* context, core::Str const &path)
+core::Result<size_t> start_service_fs(mcx::MachineContext *context, core::Str const &path)
 {
     log::log$("[INIT] starting module from fs: {}", path);
 
     auto vfs_endpoint = try$(service_get("vfs"));
     log::log$("[INIT] got vfs endpoint: {}", vfs_endpoint);
 
-    auto vfs_service = prot::VfsConnection::connect(vfs_endpoint).unwrap();
+    auto vfs_service = prot::VfsConnection::connect(vfs_endpoint).take();
     log::log$("[INIT] connected to vfs for: {}", path);
 
     auto file_res = vfs_service.open_path(path);
@@ -143,7 +142,7 @@ void start_from_pci(wjson::JsonValue *pjson)
     Wingos::dev::PciController pci_controller;
     pci_controller.scan_bus(0);
 
-    auto drivers_json = (*pjson)[("drivers")]->as_array().unwrap();
+    auto drivers_json = (*pjson)[("drivers")].as_array().unwrap();
     for (const auto &device : pci_controller.devices)
     {
         log::log$("Found PCI Device: Bus {}, Device {}, Function {}, Vendor ID: {}, Device ID: {}, Class: {}, Subclass: {}",
@@ -152,7 +151,7 @@ void start_from_pci(wjson::JsonValue *pjson)
                   device.class_code() | fmt::FMT_HEX, device.subclass() | fmt::FMT_HEX);
 
         Wingos::dev::log_dev(device.class_code(), device.subclass());
-        for (auto &driver : *drivers_json)
+        for (auto &driver : drivers_json)
         {
             auto pci_req = driver.get("pci");
             if (pci_req.is_error())
@@ -162,12 +161,12 @@ void start_from_pci(wjson::JsonValue *pjson)
 
             auto pci_req_obj = pci_req.unwrap();
 
-            if ((*pci_req_obj)["class-code"]->as_number().unwrap() == device.class_code() &&
-                (*pci_req_obj)["subclass-code"]->as_number().unwrap() == device.subclass())
+            if ((pci_req_obj)["class-code"].as_number().unwrap() == device.class_code() &&
+                (pci_req_obj)["subclass-code"].as_number().unwrap() == device.subclass())
             {
-                log::log$("Found matching driver for device: {}", driver["name"]->as_string().unwrap());
+                log::log$("Found matching driver for device: {}", driver["name"].as_string().unwrap());
 
-                auto path = driver["path"]->as_string().unwrap();
+                auto path = driver["path"].as_string().unwrap();
                 log::log$("Loading driver from path: {}", path);
 
                 ModuleLaunch ml = {};
@@ -175,8 +174,8 @@ void start_from_pci(wjson::JsonValue *pjson)
                 auto deps_json = driver.get("requires");
                 if (!deps_json.is_error())
                 {
-                    auto deps_array = deps_json.unwrap()->as_array().unwrap();
-                    for (auto &d : *deps_array)
+                    auto deps_array = deps_json.unwrap().as_array().unwrap();
+                    for (auto &d : deps_array)
                     {
                         log::log$("Driver dependency: {}", d.as_string().unwrap());
                         ml.deps.push(d.as_string().unwrap());
@@ -221,21 +220,18 @@ core::Result<void> load_module_config(mcx::MachineContext *context)
 
     auto dat = core::Str((const char *)loaded_config, config_range.len());
 
-    auto jsond = (wjson::Json::parse(dat));
-    if (jsond.is_error())
+    json = try$(wjson::Json::parse(dat));
+
+    wjson::JsonValue tb = try$(json.root().get("modules"));
+
+    auto modules = try$(tb.as_array());
+
+    for (wjson::JsonValue &l : modules)
     {
-        log::err$("failed to parse config: {}", jsond.error());
-        return jsond.error();
-    }
+        auto name = try$(l["name"].as_string());
 
-    json = core::move(jsond.unwrap());
-
-    auto modules = (json.root().get("modules").unwrap())->as_array().unwrap();
-
-    for (auto &l : *modules)
-    {
-        auto name = l["name"]->as_string().unwrap();
-        auto path = l["path"]->as_string().unwrap();
+        log::log$("l-module: {}", name);
+        auto path = try$(l["path"].as_string());
 
         log::log$("module: {}, path: {}", name, path);
         ModuleLaunch ml = {};
@@ -243,16 +239,29 @@ core::Result<void> load_module_config(mcx::MachineContext *context)
         auto deps_json = l.get("requires");
         if (!deps_json.is_error())
         {
-            auto deps_array = deps_json.unwrap()->as_array().unwrap();
-            for (auto &d : *deps_array)
+            auto deps_array_r = (deps_json.take());
             {
 
-                ml.deps.push(d.as_string().unwrap());
+                core::Vec<wjson::JsonValue> deps_array = try$(deps_array_r.as_array());
+                {
+
+                    for (auto d : deps_array)
+                    {
+
+                        ml.deps.push(try$(d.as_string()));
+                    }
+                    log::log$("AAAA");
+                }
+                log::log$("destructing deps_array: {}", deps_array.len());
             }
+            log::log$("destructing deps_array_r: {}", deps_array_r.storage.raw);
         }
         module_to_launch.push(ml);
+
+        log::log$("nl-module: {}", name);
         // module_service.push(core::Str(path));
     }
+    log::log$("A:");
 
     return {};
 }
@@ -334,16 +343,16 @@ core::Result<void> service_startup_callback(core::Str service_name)
         return "machine context is null";
     }
     started_services.push(service_name);
-    
+
     log::log$("[service_startup_callback] Attempting to start pending modules (count: {})", module_to_launch.len());
     auto res = try_startup_modules_cycle(gmcx);
-    
+
     if (res.is_error())
     {
         log::err$("[service_startup_callback] Failed to start modules: {}", res.error());
         return res;
     }
-    
+
     log::log$("[service_startup_callback] Module startup cycle complete, remaining modules: {}", module_to_launch.len());
 
     return {};

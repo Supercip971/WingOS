@@ -141,6 +141,7 @@ public:
     {
         auto node = (Node *)malloc(sizeof(Node));
 
+
         new (&node->data) Storage<T>(core::forward<F>(v));
        // node->data = core::forward<F>(v);
         node->next = nullptr;

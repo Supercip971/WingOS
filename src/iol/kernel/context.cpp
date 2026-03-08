@@ -20,3 +20,9 @@ void exit_critical_context(int previous_state)
 
 
 }
+
+
+void enter_chaos_critical_context()
+{
+    arch::amd64::interrupt_release();
+}

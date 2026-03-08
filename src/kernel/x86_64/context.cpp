@@ -9,8 +9,10 @@
 
 #include "kernel/generic/context.hpp"
 #include "kernel/generic/kernel.hpp"
+#include "kernel/generic/mem.hpp"
 #include "kernel/generic/paging.hpp"
 #include "libcore/alloc/alloc.hpp"
+#include "libcore/atomic.hpp"
 #include "libcore/lock/lock.hpp"
 #include "math/align.hpp"
 
@@ -21,13 +23,13 @@ core::Result<CpuContext *> CpuContext::create_empty()
 
     arch::amd64::CpuContextAmd64 *data = new arch::amd64::CpuContextAmd64{};
 
-    data->lock.release();
+    data->lock = {};
     data->await_load = false;
 
     data->await_save = false;
     data->stackframe(arch::amd64::StackFrame{});
 
-    return (CpuContext*)data;
+    return (CpuContext *)data;
 }
 
 void CpuContext::load_to(void *state)
@@ -35,6 +37,9 @@ void CpuContext::load_to(void *state)
     arch::amd64::CpuContextAmd64 const *data = this->as<arch::amd64::CpuContextAmd64>();
 
     arch::amd64::StackFrame *frame = (arch::amd64::StackFrame *)state;
+
+    Cpu::current()->syscall_stack = (uintptr_t)data->syscall_stack_top;
+    Cpu::current()->debug_saved_syscall_stackframe = data->saved_syscall_stack;
 
     // Validate frame before loading
     if (!frame || !data)
@@ -48,32 +53,39 @@ void CpuContext::load_to(void *state)
     // Validate segment selectors
     if (stored_frame.cs == 0 || stored_frame.ss == 0)
     {
-     //   log::log$("schedule in ring 0: CS={}, SS={}", stored_frame.cs, stored_frame.ss);
+        //   log::log$("schedule in ring 0: CS={}, SS={}", stored_frame.cs, stored_frame.ss);
     }
 
-    // Validate stack pointer
+    if (stored_frame.rsp > kernel_virtual_base())
+    {
+        log::log$("Warning: Loading a context with RSP in kernel space: RSP={}", ((uintptr_t)stored_frame.rsp) | fmt::FMT_HEX);
+    }
+
     if (stored_frame.rsp == 0 || stored_frame.rip == 0)
     {
-        auto rsp_val = stored_frame.rsp;
-        auto rip_val = stored_frame.rip;
-        log::err$("Invalid stack pointer: RSP={}", rsp_val);
-        log::err$("Invalid instruction pointer: RIP={}", rip_val);
-        return;
+        log::err$("FATAL: Invalid context in load_to - RSP={}, RIP={}",
+                  (uintptr_t)stored_frame.rsp | fmt::FMT_HEX,
+                  (uintptr_t)stored_frame.rip | fmt::FMT_HEX);
+        log::err$("FATAL: Cannot switch to task with uninitialized context!");
+        while (true)
+        {
+            asm volatile("cli; hlt");
+        }
     }
 
     *frame = stored_frame;
 
-    //Cpu::current()->syscall_stack = data->syscall_stack_top;
-   // Cpu::current()->saved_stack = data->saved_syscall_stack;
+    // Cpu::current()->syscall_stack = data->syscall_stack_top;
+    // Cpu::current()->saved_stack = data->saved_syscall_stack;
 
-   arch::amd64::Msr::Write(arch::amd64::MsrReg::GS_BASE, reinterpret_cast<uintptr_t>(this));
-   arch::amd64::Msr::Write(arch::amd64::MsrReg::KERNEL_GS_BASE, reinterpret_cast<uintptr_t>(this));
-
+    // arch::amd64::Msr::Write(arch::amd64::MsrReg::GS_BASE, reinterpret_cast<uintptr_t>(this));
+    // arch::amd64::Msr::Write(arch::amd64::MsrReg::KERNEL_GS_BASE, reinterpret_cast<uintptr_t>(this));
 
     this->_vmm_space->use();
 
     data->simd_context.load();
 
+    core::atomic_cache_flush();
     {
 
         lock_scope$(this->lock);
@@ -96,7 +108,7 @@ void CpuContext::dump()
 
 void CpuContext::save_in(void *state)
 {
-
+    core::atomic_cache_sync();
 
     arch::amd64::CpuContextAmd64 *data = this->as<arch::amd64::CpuContextAmd64>();
 
@@ -104,14 +116,18 @@ void CpuContext::save_in(void *state)
 
     data->stackframe(*frame);
 
-   // this->syscall_stack_top = Cpu::current()->syscall_stack;
-   // this->saved_syscall_stack = Cpu::current()->saved_stack;
+    // Cpu::current()->syscall_stack = (uintptr_t)data->syscall_stack_top;
+    data->syscall_stack_top = (void *)Cpu::current()->syscall_stack;
+    data->saved_syscall_stack = Cpu::current()->debug_saved_syscall_stackframe;
+    //Cpu::current()->debug_saved_syscall_stackframe = data->saved_syscall_stack;
+
+    // this->syscall_stack_top = Cpu::current()->syscall_stack;
+    // this->saved_syscall_stack = Cpu::current()->saved_stack;
     data->simd_context.save();
     {
 
         lock_scope$(this->lock);
         this->await_save = false;
-
     }
 }
 
@@ -156,8 +172,7 @@ core::Result<void> CpuContext::prepare(CpuContextLaunch launch)
 
     data->saved_syscall_stack = 0;
 
-
-    auto frame = arch::amd64::StackFrame();
+    arch::amd64::StackFrame frame = {};
 
     frame.rsp = (uint64_t)data->stack_top;
     frame.rbp = (uint64_t)0;

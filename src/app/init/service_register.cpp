@@ -136,7 +136,8 @@ void startup_init_service(Wingos::IpcServer server, MachineContextShared shared)
                 IpcMessage reply = {};
                 reply.data[0].data = resp.endpoint;
                 reply.data[0].is_asset = false;
-                server.reply(core::move(msg), reply).assert();
+                server.reply((msg), reply).assert();
+
                 break;
             }
             case prot::INIT_SIGNAL_FS_AVAILABLE:
@@ -157,7 +158,7 @@ void startup_init_service(Wingos::IpcServer server, MachineContextShared shared)
                 reply.data[0].data = resp.framebuffer_addr;
                 reply.data[1].data = resp.framebuffer_width;
                 reply.data[2].data = resp.framebuffer_height;
-                server.reply(core::move(msg), reply).assert();
+                server.reply((msg), reply).assert();
                 break;
             }
             default:

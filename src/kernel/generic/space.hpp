@@ -247,6 +247,7 @@ struct Space : public Asset
                 }
             }
         }
+        asm volatile("cli");
 
         log::log$("Asset not found in space({}) for handle {}", uid, handle);
 
@@ -324,7 +325,7 @@ struct Space : public Asset
         }
         lock.release();
 
-        __builtin_unreachable();
+        unreachable$();
     }
 
     core::Result<AssetRef<AssetMemory>> create_memory(AssetMemoryCreateParams params);

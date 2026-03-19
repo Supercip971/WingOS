@@ -165,7 +165,7 @@ public:
     {
         if (head == nullptr) [[unlikely]]
         {
-            __builtin_unreachable();
+            unreachable$();
         }
 
         T res = core::move(head->data.take());

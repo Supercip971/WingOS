@@ -34,8 +34,8 @@ public:
     uintptr_t saved_syscall_stack;
 
     core::Lock lock;
-    volatile bool await_save;
-    volatile bool await_load;
+    std::atomic<bool> await_save;
+    std::atomic<bool> await_load;
 
     VmmSpace *_vmm_space;
     static core::Result<CpuContext *> create_empty();

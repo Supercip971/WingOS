@@ -25,6 +25,7 @@ struct Asset : public core::NoCopy
     std::atomic<size_t> ref_count{0};
     AssetKind kind{AssetKind::OBJECT_KIND_UNKNOWN};
 
+    static constexpr AssetKind IDENT = AssetKind::OBJECT_KIND_UNKNOWN;
     explicit Asset(AssetKind kind_value)
         : ref_count(0), kind(kind_value)
     {
@@ -78,6 +79,7 @@ struct Asset : public core::NoCopy
 template <typename T = Asset>
 struct AssetRef
 {
+    static_assert(T::IDENT != -1);
     T *asset{nullptr};
     uint64_t handle{(uint64_t)-1};
     bool write{true};
@@ -226,7 +228,7 @@ struct AssetRef
     {
         if(T2::IDENT != asset->kind)
         {
-            __builtin_unreachable();
+            unreachable$();
         }
         return AssetRef<T2>(*this);
     }

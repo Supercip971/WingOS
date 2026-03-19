@@ -37,13 +37,13 @@ void PREFIX(free)(void *ptr)
 
     if(ptr == nullptr)
     {
-        __builtin_unreachable();
+        unreachable$();
     }
     WingosAllocNode *n = (WingosAllocNode *)((char *)ptr - sizeof(WingosAllocNode));
 
     if (n->magic != ALLOC_MAGIC)
     {
-        __builtin_unreachable();
+        unreachable$();
     }
 
     liballoc_lock();

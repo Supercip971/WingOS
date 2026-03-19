@@ -201,7 +201,7 @@ core::Result<void> Pmm::release(PhysAddr addr, Pages count)
                 auto vaddr = addr._addr;
                 log::err$("Pmm: failed to release memory: {} ({})", vaddr | fmt::FMT_HEX, count.count() );
                 log::err$("At section: {}-{}", section.range.start() | fmt::FMT_HEX, section.range.end() | fmt::FMT_HEX);
-                __builtin_unreachable();
+                unreachable$();
             }
             return {};
         }

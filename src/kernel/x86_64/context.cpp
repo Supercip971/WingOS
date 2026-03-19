@@ -102,13 +102,10 @@ void CpuContext::dump()
     log::log$("  Stack Pointer: {}", (uintptr_t)data->stack_ptr | fmt::FMT_HEX);
     log::log$("  Kernel Stack Pointer: {}", (uintptr_t)data->kernel_stack_ptr | fmt::FMT_HEX);
     log::log$("  Stack Frame: {}", data->stackframe());
-    log::log$("  Await Save: {}", data->await_save);
-    log::log$("  Await Load: {}", data->await_load);
 }
 
 void CpuContext::save_in(void *state)
 {
-    core::atomic_cache_sync();
 
     arch::amd64::CpuContextAmd64 *data = this->as<arch::amd64::CpuContextAmd64>();
 
@@ -124,11 +121,9 @@ void CpuContext::save_in(void *state)
     // this->syscall_stack_top = Cpu::current()->syscall_stack;
     // this->saved_syscall_stack = Cpu::current()->saved_stack;
     data->simd_context.save();
-    {
 
-        lock_scope$(this->lock);
-        this->await_save = false;
-    }
+    core::atomic_cache_sync();
+    this->await_save = false;
 }
 
 void CpuContext::release()

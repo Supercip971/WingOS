@@ -29,15 +29,16 @@
 // source: derived from brutal OS but
 // I wrote the brutal PS2 code
 
-static core::Vec<prot::SenderPipe*> mouse_pipes = {};
-static core::Vec<prot::SenderPipe*> keyboard_pipes = {};
+core::Vec<prot::SenderPipe*> mouse_pipes = {};
+core::Vec<prot::SenderPipe*> keyboard_pipes = {};
 
 int main(int, char **)
 {
     mouse_pipes = {};
     keyboard_pipes = {};
-
     log::log$("Start ps2 app");
+
+
     auto server_r = prot::ManagedServer::create_registered_server("human-interface", 1, 0);
 
     if(server_r.is_error())
@@ -66,7 +67,7 @@ int main(int, char **)
         auto received = server.try_receive();
         if (!received.is_error())
         {
-            auto msg = core::move(received.unwrap());
+            auto msg = (received.take());
 
             switch (msg.received.data[0].data)
             {

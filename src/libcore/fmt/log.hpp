@@ -137,6 +137,7 @@ inline void core::Result<ValT, ErrT>::assert()
     if (is_error())
     {
         log::log("Result assert failed: {}", _error);
+        unreachable$();
 
         while (true)
         {
@@ -152,6 +153,8 @@ inline void core::Result<void, ErrT>::assert()
     if (is_error())
     {
         log::log("Result assert failed: {}", _error);
+
+        unreachable$();
 
         while (true)
         {

@@ -632,7 +632,7 @@ void PREFIX(free)(void *ptr)
 
 
 
-			__builtin_unreachable();
+			unreachable$();
 			#if defined DEBUG || defined INFO
 			printf( "liballoc: ERROR: Possible 1-3 byte overrun for magic %x != %x\n",
 								min->magic,
@@ -644,7 +644,7 @@ void PREFIX(free)(void *ptr)
 
 		if ( min->magic == LIBALLOC_DEAD )
 		{
-			__builtin_unreachable();
+			unreachable$();
 			#if defined DEBUG || defined INFO
 			printf( "liballoc: ERROR: multiple PREFIX(free)() attempt on %x from %x.\n",
 									ptr,
@@ -654,7 +654,7 @@ void PREFIX(free)(void *ptr)
 		}
 		else
 		{
-			__builtin_unreachable();
+			unreachable$();
 			#if defined DEBUG || defined INFO
 			printf( "liballoc: ERROR: Bad PREFIX(free)( %x ) called from %x\n",
 								ptr,
@@ -780,7 +780,7 @@ void*   PREFIX(realloc)(void *p, size_t size)
 			   )
 			{
 				l_possibleOverruns += 1;
-				__builtin_unreachable();
+				unreachable$();
 				#if defined DEBUG || defined INFO
 				printf( "liballoc: ERROR: Possible 1-3 byte overrun for magic %x != %x\n",
 									min->magic,
@@ -791,7 +791,7 @@ void*   PREFIX(realloc)(void *p, size_t size)
 
 			if ( min->magic == LIBALLOC_DEAD )
 			{
-				__builtin_unreachable();
+				unreachable$();
 				#if defined DEBUG || defined INFO
 				printf( "liballoc: ERROR: multiple PREFIX(free)() attempt on %x from %x.\n",
 										ptr,
@@ -801,7 +801,7 @@ void*   PREFIX(realloc)(void *p, size_t size)
 			}
 			else
 			{
-				__builtin_unreachable();
+				unreachable$();
 				#if defined DEBUG || defined INFO
 				printf( "liballoc: ERROR: Bad PREFIX(free)( %x ) called from %x\n",
 									ptr,

@@ -195,7 +195,7 @@ public:
     {
         if(index >= this->len()) [[unlikely]]
         {
-            __builtin_unreachable();
+            unreachable$();
         }
 #ifdef ADVANCED_CHECK
         if (index > this->len()) [[unlikely]]
@@ -212,7 +212,7 @@ public:
 
         if(index >= this->len()) [[unlikely]]
         {
-            __builtin_unreachable();
+            unreachable$();
         }
 #ifdef ADVANCED_CHECK
         if (index > this->len()) [[unlikely]]
@@ -254,7 +254,7 @@ public:
         }
 
 
-        __builtin_unreachable();
+        unreachable$();
     }
 
     T pop(size_t id)
@@ -262,7 +262,7 @@ public:
 
         if (id >= (size_t)_count)
         {
-            __builtin_unreachable();
+            unreachable$();
         }
 
         T value = core::move(_data[id]);

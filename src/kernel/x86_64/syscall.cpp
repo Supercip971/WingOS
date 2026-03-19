@@ -2,7 +2,9 @@
 
 #include "arch/x86_64/context.hpp"
 #include "arch/x86_64/gdt.hpp"
+#include "arch/x86_64/interrupts.hpp"
 #include "arch/x86_64/msr.hpp"
+#include "kernel/generic/smart_lock.hpp"
 
 #include "hw/acpi/lapic.hpp"
 #include "kernel/generic/cpu.hpp"
@@ -51,8 +53,7 @@ void dump_stackframe(void *rbp)
     }
 }
 
-core::Lock _syscall_lock;
-core::RWLock _syscall_rwlock;
+SRWLock _syscall_lock = {};
 extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
 {
     //  log("syscall", LOG_INFO, "called syscall higher handler in: {} (stack: {})", stackframe->rip, stackframe->rsp);
@@ -61,17 +62,28 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
 
        // Cpu::enter_syscall_safe_mode();
 
-    Cpu::begin_syscall();
-    _syscall_lock.lock();
+
+     if(interrupt_status() == 1)
+    {
+           log::err$("syscall called with interrupts disabled, this is not allowed");
+           while(true)
+           {
+
+           }
+     }
+
+
+
+    srwlock_write_acquire$(_syscall_lock);
 
     Cpu::current()->debug_context.in_syscall = true;
     Cpu::current()->debug_context.last_syscall_id = (uint32_t)stackframe->rax;
     Cpu::current()->debug_context.last_syscall_task_called = Cpu::current()->currentTask() ? Cpu::current()->currentTask()->uid() : -1;
 
     kernel::Task* cur_task = Cpu::current()->currentTask();
-    _syscall_lock.release();
+    (_syscall_lock.write_release());
 
-    _syscall_rwlock.read_acquire();
+    Cpu::begin_syscall();
 
     auto res = syscall_handle({
         .id = (uint32_t)stackframe->rax,
@@ -99,7 +111,10 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
                 hw::acpi::Lapic::the().send_interrupt(i,102);
             }
         }
-        _syscall_lock.lock();
+
+        log::err$("syscall error: {}", res.error());
+
+        srwlock_write_acquire$(_syscall_lock);
 
         {
 
@@ -136,7 +151,7 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
             scheduler_dump_all();
         }
 
-        _syscall_lock.release();
+        _syscall_lock.write_release();
         while(true)
         {
 
@@ -148,9 +163,9 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
         sf->rax = res.unwrap();
     }
 
-    _syscall_rwlock.read_release();
 
     Cpu::end_syscall();
+    Cpu::current()->debug_context.in_syscall = false;
 
     // log::log$("syscall: {} ", stackframe->rax);
     return sf->rax;

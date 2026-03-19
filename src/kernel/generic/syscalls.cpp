@@ -514,7 +514,7 @@ core::Result<size_t> ksyscall_server_receive(kernel::Task* caller, SyscallIpcSer
         return core::Result<size_t>::error("no current space");
     }
 
-    auto connection = (space->by_handle<AssetConnection>(receive->connection_handle)).unwrap();
+    auto connection = (space->by_handle<AssetConnection>(receive->connection_handle)).copied();
 
     if (!connection.asset->accepted)
     {
@@ -929,7 +929,6 @@ core::Result<size_t> ksyscall_ipc_x86_port(kernel::Task* caller, SyscallIpcX86Po
     return 0ul;
 }
 
-core::Lock _sys_log_lock = {};
 core::Result<size_t> syscall_handle(SyscallInterface syscall, kernel::Task* caller)
 {
     switch (syscall.id)

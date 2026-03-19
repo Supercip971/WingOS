@@ -50,14 +50,14 @@ struct Msr
         uint32_t high = static_cast<uint64_t>(value) >> 32;
         asm volatile("wrmsr"
                      :
-                     : "a"(low), "d"(high), "c"(static_cast<uint32_t>(msr)));
+                     : "a"(low), "d"(high), "c"(static_cast<uint32_t>(msr)) : "memory");
     }
     static inline uint64_t Read(uint32_t msr)
     {
         uint32_t low, high;
         asm volatile("rdmsr"
                      : "=a"(low), "=d"(high)
-                     : "c"(msr));
+                     : "c"(msr) : "memory");
         return ((uint64_t)high << 32) | low;
     }
 

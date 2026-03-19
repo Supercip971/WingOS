@@ -42,6 +42,7 @@ extern syscall_higher_handler
 global syscall_handle
 syscall_handle:
     swapgs
+    cli
     mov qword [gs:0x8], rsp       ; gs.saved_stack = rsp
     mov rsp, qword [gs:0x0]       ; rsp = gs.syscall_stack
 
@@ -62,11 +63,8 @@ syscall_handle:
     call syscall_higher_handler ; jump to beautiful higher level code
 
     pop_all_syscall         ; pop every register except RAX as we use it for the return value
-
-
-
+    cli
     mov rsp, qword [gs:0x8]
-
 
 
     swapgs

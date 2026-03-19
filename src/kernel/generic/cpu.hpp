@@ -2,15 +2,47 @@
 #pragma once
 
 // generally used by implementation
-#include <stdint.h>
-#include <stddef.h>
 #include <libcore/lock/lock.hpp>
+#include <stddef.h>
+#include <stdint.h>
+#include <libcore/fmt/log.hpp>
 using CoreId = int;
 static constexpr CoreId CpuCoreNone = -1;
 
+struct DebuggedContext
+{
+    const char *last_syscall;
+    size_t last_syscall_id;
+    size_t last_syscall_task_called;
+    bool in_syscall;
 
-namespace kernel {
-    class Task;
+    void dump() const {
+        log::log$("DebuggedContext:");
+        log::log$("  - last_syscall_id: {}", last_syscall_id);
+        log::log$("  - last_syscall_task_called: {}", last_syscall_task_called);
+        log::log$("  - in_syscall: {}", in_syscall ? "true" : "false");
+    }
+};
+
+ enum CpuSchedStates : int {
+    CPU_SCHED_RUNNING,
+    CPU_SCHED_SWAP_SINGLE,
+    CPU_SCHED_SWAP_GROUP,
+    CPU_SCHED_DIRECTING,
+};
+
+static inline const char* cpuSchedStateToStr(CpuSchedStates state) {
+    switch(state) {
+        case CPU_SCHED_RUNNING: return "RUNNING";
+        case CPU_SCHED_SWAP_SINGLE: return "SWAP_SINGLE";
+        case CPU_SCHED_SWAP_GROUP: return "SWAP_GROUP";
+        case CPU_SCHED_DIRECTING: return "DIRECTING";
+        default: return "UNKNOWN";
+    }
+}
+namespace kernel
+{
+class Task;
 };
 class [[gnu::packed]] Cpu
 {
@@ -19,7 +51,7 @@ class [[gnu::packed]] Cpu
 public:
     uintptr_t syscall_stack;
 
-   uintptr_t debug_saved_syscall_stackframe;
+    uintptr_t debug_saved_syscall_stackframe;
 
 protected:
     //
@@ -29,12 +61,23 @@ protected:
     bool _in_interrupt = false;
     bool _present;
     bool _in_syscall_lock = false;
+
 public:
 
+    kernel::Task * _current_task = nullptr;
+    DebuggedContext __attribute__((aligned(16))) debug_context;
+
+    CpuSchedStates sched_state = CpuSchedStates::CPU_SCHED_RUNNING;
     bool in_interrupt()
     {
         return _in_interrupt;
     }
+
+    void set_current_task(kernel::Task *task)
+    {
+        _current_task = task;
+    }
+
 
     // apply after every syscall information required are retrieved
     static bool begin_syscall();

@@ -25,7 +25,7 @@ void log_lock()
 
 void log_release()
 {
-    _log_lock.release();
+    _log_lock.force_unlock();
 }
 void provide_log_target(core::Writer *writer)
 {

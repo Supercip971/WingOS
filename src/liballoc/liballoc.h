@@ -4,6 +4,7 @@
 #include <stddef.h>
 
 #include <iol/mem.h>
+#include <libcore/unreachable.h>
 /** \defgroup ALLOCHOOKS liballoc hooks 
  *
  * These are the OS specific functions which need to 

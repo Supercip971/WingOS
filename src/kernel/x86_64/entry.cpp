@@ -123,10 +123,10 @@ void arch::amd64::other_cpu_entry(bool& ready)
     arch::amd64::load_default_gdt();
     arch::amd64::gdt_use();
 
+    arch::amd64::setup_entry_gs();
     arch::amd64::setup_ist();
 
     arch::amd64::syscall_init_for_current_cpu();
-    arch::amd64::setup_entry_gs();
 
     arch::x86_64::SimdContext::initialize_cpu().assert();
 

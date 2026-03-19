@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include "arch/generic/instruction.hpp"
 #include "libcore/lock/lock.hpp"
 #include "libcore/type-utils.hpp"
@@ -29,48 +30,51 @@ public:
         _readers = 0;
         _waiters = 0;
         _writers= 0;
-        _access_lock.release();
+        _access_lock = {};
     }
 
     bool try_write_acquire()
     {
-        bool success = false;
 
-        _access_lock.lock();
-        _waiters += 1;
-        _access_lock.release();
-        int retry = 20000;
+       _access_lock.lock();
+       _waiters += 1;
+       _access_lock.release();
+       int retry = 20000;
         while (true)
         {
+            bool has_writter = false;
             _access_lock.lock();
             if (_readers == 0 && _writers == 0)
             {
                 _writers += 1;
-                success = true;
                 _waiters -= 1;
+
                 _access_lock.release();
                 __atomic_thread_fence(__ATOMIC_SEQ_CST);
-                break;
+                return true;
+            }
+            else if(_writers == 0)
+            {
+                has_writter = true;
             }
             _access_lock.release();
             __atomic_thread_fence(__ATOMIC_SEQ_CST);
 
             arch::pause();
             retry--;
-            if(retry==0)
+            if(retry==0 && has_writter)
             {
+
                 _access_lock.lock();
-                _waiters -= 1;
-                _access_lock.release();
-                __atomic_thread_fence(__ATOMIC_SEQ_CST);
+                               _waiters -= 1;
+                               _access_lock.release();
+                               __atomic_thread_fence(__ATOMIC_SEQ_CST);
 
 
                 return false;
             }
 
         }
-        return success;
-
     }
     bool write_acquire()
     {
@@ -102,6 +106,11 @@ public:
         _access_lock.lock();
         _writers -= 1;
         _readers += 1;
+
+        if(_writers < 0)
+        {
+            unreachable$();
+        }
         _access_lock.release();
     }
 
@@ -109,6 +118,11 @@ public:
     {
         _access_lock.lock();
         _writers -= 1;
+
+        if(_writers < 0)
+        {
+            unreachable$();
+        }
         _access_lock.release();
     }
     bool read_acquire()
@@ -117,7 +131,7 @@ public:
         while (true)
         {
             _access_lock.lock();
-            if (_writers == 0 && _waiters == 0)
+            if (_writers == 0 )
             {
                 _readers += 1;
 
@@ -129,12 +143,18 @@ public:
             _access_lock.release();
             arch::pause();
         }
+
         return success;
     }
     void read_release()
     {
         _access_lock.lock();
         _readers -= 1;
+
+        if(_readers < 0)
+        {
+            unreachable$();
+        }
         _access_lock.release();
     }
 };

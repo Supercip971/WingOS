@@ -60,6 +60,7 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
 
     if (Cpu::current()->in_interrupt())
     {
+        log::log_release();
         log::warn$("already in an interrupt {}", Cpu::currentId());
     }
 
@@ -70,6 +71,7 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
     {
         int_lock.read_release();
 
+        log::log_release();
         if (!Cpu::current()->in_interrupt())
         {
 

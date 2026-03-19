@@ -1,64 +1,78 @@
 #pragma once
 
 #include "iol/lock_context.h"
+
 #include "arch/generic/instruction.hpp"
+#include "libcore/atomic.hpp"
 #include "libcore/type-utils.hpp"
 #include "libcore/type/trait.hpp"
-#include "libcore/atomic.hpp"
-
-
-
 
 namespace core
 {
 
-class Lock : public NoCopy
+template <bool _Critical = false>
+class _Lock : public NoCopy
 {
-
-
 
 public:
     core::Atomic<int> _locked = {};
     core::Atomic<int> _secure_ctx = {};
 
-    Lock() : _locked(0), _secure_ctx(0) {}
+    _Lock() : _locked(0), _secure_ctx(0) {}
 
-    Lock(Lock&& v) {
+    _Lock(_Lock &&v)
+    {
         _locked.store(v._locked.load(core::MemoryOrder::Acquire), core::MemoryOrder::Relaxed);
         _secure_ctx.store(v._secure_ctx.load(core::MemoryOrder::Acquire), core::MemoryOrder::Relaxed);
     }
 
-    Lock& operator=(Lock&& v) {
+    _Lock &operator=(_Lock &&v)
+    {
         _locked.store(v._locked.load(core::MemoryOrder::Acquire), core::MemoryOrder::Relaxed);
         _secure_ctx.store(v._secure_ctx.load(core::MemoryOrder::Acquire), core::MemoryOrder::Relaxed);
         return *this;
     }
 
-    ~Lock() {
+    ~_Lock()
+    {
         _locked.store(0, core::MemoryOrder::Relaxed);
-
     }
 
+    void force_unlock()
+    {
+        _locked.store(0, core::MemoryOrder::Release);
+    }
     bool try_acquire()
     {
         int expected = 0;
 
-
-        int ctx = enter_critical_context();
-
-        auto v = _locked.compare_exchange_strong(expected, 1, core::MemoryOrder::Acquire, core::MemoryOrder::Relaxed);
-
-        __atomic_thread_fence(__ATOMIC_SEQ_CST);
-        if(v)
+        if constexpr (_Critical)
         {
-            _secure_ctx.store(ctx);
+
+            int ctx = enter_critical_context();
+
+            auto v = _locked.compare_exchange_weak(expected, 1, core::MemoryOrder::Acquire, core::MemoryOrder::Relaxed);
+
+            if (v)
+            {
+                _secure_ctx.store(ctx);
+            }
+            else
+            {
+                exit_critical_context(ctx);
+            }
+
+            __atomic_thread_fence(__ATOMIC_SEQ_CST);
+            return v;
         }
         else
         {
-            exit_critical_context(ctx);
-        }
+            auto v = _locked.compare_exchange_weak(expected, 1, core::MemoryOrder::Acquire, core::MemoryOrder::Relaxed);
 
-        return v;
+            __atomic_thread_fence(__ATOMIC_SEQ_CST);
+
+            return v;
+        }
     }
 
     bool try_lock()
@@ -73,19 +87,24 @@ public:
 
     void lock()
     {
+
+        int _retry = 1 << 30;
         while (!try_acquire())
         {
             arch::pause();
+            if (_retry-- == 0)
+            {
+                unreachable$();
+            }
         }
     }
 
-
-    bool retry_try_lock(long retry = 100000)
+    bool retry_try_lock(long retry = 10000)
     {
         while (!try_acquire())
         {
             arch::pause();
-            if(retry-- == 0)
+            if (retry-- == 0)
             {
                 return false;
             }
@@ -97,17 +116,25 @@ public:
     void release()
     {
 
-        if(_locked.load(core::MemoryOrder::Acquire) == 0)
+        if (_locked.load(core::MemoryOrder::Acquire) == 0)
         {
-            __builtin_unreachable();
+            unreachable$();
             return;
         }
         __atomic_thread_fence(__ATOMIC_SEQ_CST);
-        _locked.store(0, core::MemoryOrder::Release);
-        exit_critical_context(_secure_ctx.load(core::MemoryOrder::Acquire));
 
+        auto ctx = _secure_ctx.load(core::MemoryOrder::Acquire);
+
+        _locked.store(0, core::MemoryOrder::Release);
+        if constexpr (_Critical)
+        {
+            exit_critical_context(ctx);
+        }
     }
 };
+
+using Lock = _Lock<false>;
+using LockCritical = _Lock<true>;
 
 class CtxLocker : public NoCopy, NoMove
 {

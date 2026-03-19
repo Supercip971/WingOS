@@ -12,7 +12,7 @@
 
 core::LinkedList<kernel::Task> task_list = {};
 bool loaded = false;
-kernel::TUID next_uid = 1;
+std::atomic<kernel::TUID> next_uid = 1;
 core::RWLock _task_lock = {};
 
 kernel::Task *kernel::Task::_task_allocate()
@@ -85,7 +85,7 @@ core::Result<kernel::Task *> kernel::Task::task_create()
 
 core::Result<void> kernel::Task::_initialize(CpuContextLaunch params, VmmSpace *target_vspace)
 {
-    _cpu_context->prepare(params);
+    try$(_cpu_context->prepare(params));
 
     _state = kernel::TaskState::TASK_IDLE;
 

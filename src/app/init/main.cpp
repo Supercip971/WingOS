@@ -16,6 +16,7 @@ int _main(StartupInfo *info)
     mcx::MachineContext *context = &info->machine_context_optional;
     log::log$("hello world from init!");
 
+
     auto server = Wingos::Space::self().create_ipc_server(true);
     log::log$("created server with handle: {}", server.handle);
 

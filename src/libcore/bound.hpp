@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 
 
 #ifdef __cplusplus
@@ -6,8 +6,8 @@
 #ifdef __clang__
 #define bounded$ [[clang::lifetimebound]]
 #elif defined(__GNUC__)
-#define bounded$ 
+#define bounded$
 #else
 #define bounded$
-#endif 
+#endif
 #endif

@@ -157,7 +157,7 @@ size_t fread(void* __restrict ptr, size_t size, size_t n, FILE* __restrict file 
 FILE* fopen(const char* filename, const char* mode)
 {
     (void)mode;
-    
+
     auto vfs_res = prot::VfsConnection::connect();
     if (vfs_res.is_error())
     {
@@ -165,16 +165,16 @@ FILE* fopen(const char* filename, const char* mode)
         return nullptr;
     }
     prot::VfsConnection vfs = core::move(vfs_res.unwrap());
-    
+
     auto path_res = vfs.open_path(core::Str(filename));
     if (path_res.is_error())
     {
         log::err$("fopen: failed to open path {}: {}", filename, path_res.error());
         return nullptr;
     }
-    
+
     prot::FsFile* file = new prot::FsFile(core::move(path_res.unwrap()));
-    
+
     FILE* f = new FILE();
     f->kind = FILE_KIND_FILE;
     f->buffer = core::WStr::copy(filename);

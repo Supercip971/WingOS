@@ -1,6 +1,8 @@
 #pragma once
 
+#include "arch/x86_64/interrupts.hpp"
 #include "libcore/fmt/log.hpp"
+#include "libcore/lock/lock.hpp"
 #include "libcore/lock/rwlock.hpp"
 
 // a drop in replacement for RWLock that adds some debugging features, such as dumping the state of the lock
@@ -14,28 +16,105 @@ class SRWLock : private core::RWLock
     static constexpr int MAX_READERS = 200;
 
     volatile int allocated_readers = 0;
-    const char* mreaders_file[MAX_READERS] = {};
-    int mreaders_line[MAX_READERS] = {};
-
+    const char* mreaders_file[MAX_READERS+16] = {};
+    int mreaders_line[MAX_READERS+16] = {};
 
 public:
 
 
-    bool write_acquire(const char *fn, int line)
+
+    bool write_acquire_interrupt_disabled(const char *fn, int line)
     {
-        auto v = core::RWLock::try_write_acquire();
-        if(!v)
+        // Do NOT use _waiters here. Setting _waiters blocks read_acquire()
+        // callers, which creates a circular dependency in the scheduler:
+        // - Writer waits for _readers == 0 (existing readers hold read locks)
+        // - Existing readers spin on await_save (waiting for other CPUs to save_in)
+        // - Other CPUs need read_acquire to do save_in, but _waiters > 0 blocks them
+        // Without _waiters, new readers can freely acquire, complete their work
+        // (including save_in), release, and eventually _readers drops to 0.
+        int retry = 700000;
+        bool immediate = true;
+
+        _waiters++;
+        while (true)
         {
-            log::log$("SRWLock: failed to acquire write lock immediately at {}:{}, dumping state before blocking", fn, line);
-            dump();
-            // Failed to acquire immediately, fall back to regular acquire which will block until it can acquire.
-            core::RWLock::write_acquire();
+            _access_lock.lock();
+
+            arch::amd64::interrupt_hold();
+            if (_readers == 0 && _writers == 0)
+            {
+                _writers += 1;
+                _waiters--;
+                _access_lock.release();
+                __atomic_thread_fence(__ATOMIC_SEQ_CST);
+                break;
+            }
+
+            arch::amd64::interrupt_release();
+            _access_lock.release();
+            __atomic_thread_fence(__ATOMIC_SEQ_CST);
+
+            if (retry > 0)
+            {
+                retry--;
+                if (retry == 0)
+                {
+                    log::log$("SRWLock: failed to acquire write lock immediately at {}:{}, dumping state before blocking", fn, line);
+                    dump();
+                }
+            }
+            arch::pause();
         }
 
         allocated_readers = 0;
         _last_write_acquire_fn = fn;
         _last_write_acquire_line = line;
-        return v;
+        return immediate;
+    }
+    bool write_acquire(const char *fn, int line)
+    {
+        // Do NOT use _waiters here. Setting _waiters blocks read_acquire()
+        // callers, which creates a circular dependency in the scheduler:
+        // - Writer waits for _readers == 0 (existing readers hold read locks)
+        // - Existing readers spin on await_save (waiting for other CPUs to save_in)
+        // - Other CPUs need read_acquire to do save_in, but _waiters > 0 blocks them
+        // Without _waiters, new readers can freely acquire, complete their work
+        // (including save_in), release, and eventually _readers drops to 0.
+        int retry = 700000;
+        bool immediate = true;
+
+        _waiters++;
+        while (true)
+        {
+            _access_lock.lock();
+            if (_readers == 0 && _writers == 0)
+            {
+                _writers += 1;
+                _waiters--;
+                _access_lock.release();
+                __atomic_thread_fence(__ATOMIC_SEQ_CST);
+                break;
+            }
+
+            _access_lock.release();
+            __atomic_thread_fence(__ATOMIC_SEQ_CST);
+
+            if (retry > 0)
+            {
+                retry--;
+                if (retry == 0)
+                {
+                    log::log$("SRWLock: failed to acquire write lock immediately at {}:{}, dumping state before blocking", fn, line);
+                    dump();
+                }
+            }
+            arch::pause();
+        }
+
+        allocated_readers = 0;
+        _last_write_acquire_fn = fn;
+        _last_write_acquire_line = line;
+        return immediate;
     }
 
     bool read_acquire(const char *fn, int line)
@@ -73,6 +152,11 @@ public:
             _last_write_acquire_fn = fn;
             _last_write_acquire_line = line;
         }
+        else
+        {
+            log::log$("SRWLock: failed to acquire write lock at {}:{}, dumping state", fn, line);
+            dump();
+        }
         return v;
     }
 
@@ -86,6 +170,7 @@ public:
             mreaders_file[i] = nullptr;
             mreaders_line[i] = 0;
         }
+        __atomic_thread_fence(__ATOMIC_SEQ_CST);
 
         core::RWLock::write_release();
     }
@@ -95,7 +180,7 @@ public:
     {
       //  _last_write_acquire_fn = "released mutability";
       //  _last_write_acquire_line = 0;
-            core::RWLock::release_mutability();
+        core::RWLock::release_mutability();
 
     }
 
@@ -140,5 +225,8 @@ public:
 
 
 #define srwlock_write_acquire$(lock) (lock).write_acquire(__FILE__, __LINE__)
+
+#define srwlock_write_acquire_critical$(lock) (lock).write_acquire_interrupt_disabled(__FILE__, __LINE__)
+
 #define srwlock_try_write_acquire$(lock) (lock).try_write_acquire(__FILE__, __LINE__)
 #define srwlock_read_acquire$(lock) (lock).read_acquire(__FILE__, __LINE__)

@@ -33,13 +33,14 @@ struct MouseEvent
 class Mouse
 {
     Controller &_controller;
-    bool has_wheel;
-    size_t cycle;
-    core::Vec<MouseEvent> _events;
-    uint8_t buf[4];
+    bool has_wheel = {};
+    size_t cycle = {};
+    core::Vec<MouseEvent> _events = {};
+    uint8_t buf[4] = {};
 
 public:
     Mouse(Controller &controller) : _controller(controller)
+    , _events()
     {
     }
 

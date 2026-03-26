@@ -189,7 +189,9 @@ double ldexp(double x, int power);
 float ldexpf(float x, int power);
 long double ldexpl(long double x, int power);
 
+#ifndef DO_NOT_LOG
 double log(double x);
+#endif
 float logf(float x);
 long double logl(long double x);
 

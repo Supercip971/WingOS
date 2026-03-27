@@ -41,7 +41,6 @@
         "-Wshadow",
         "-fno-pie",
         "-Wswitch-default",
-        "-Wfloat-equal",
         "-fsanitize-address-use-after-scope",
         "-Og"
       ]
@@ -78,7 +77,6 @@
         "-Warray-bounds",
         "-Wshadow",
         "-Wswitch-default",
-        "-Wfloat-equal",
         "-Wdangling-reference",
         "-O3"
       ]

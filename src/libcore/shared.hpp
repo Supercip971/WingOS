@@ -33,6 +33,17 @@ namespace core
         };
         ControlBlock* control_block;
 
+        template<typename T2>
+        SharedPtr<T2> static_pointer_cast() const
+        {
+            SharedPtr<T2> ptr = {};
+            ptr.control_block = (typename SharedPtr<T2>::ControlBlock*) control_block;
+            if(ptr.control_block)
+            {
+                ptr.control_block->ref_count++;
+            }
+            return ptr;
+        }
 
         template<typename ...Args>
         static SharedPtr<T> make(Args ...args)

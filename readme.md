@@ -9,6 +9,7 @@
 WingOS is a small hobbyist 64 bit kernel made with <3 in C++ 
 
 [latest milestone](https://cyp.sh/blog/wingos-milestone-1/) - [blog](https://cyp.sh/blog/) - [old branch](https://github.com/Supercip971/WingOS/tree/old)
+
 </div>
 
 ## What the project is about

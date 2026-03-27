@@ -82,7 +82,7 @@
         "-Wfloat-equal",
         "-Wdangling-reference",
         "-fsanitize=undefined",
-        "-O3",
+        "-O2",
         "-fno-omit-frame-pointer"
       ]
     },

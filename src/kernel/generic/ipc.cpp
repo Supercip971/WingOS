@@ -616,7 +616,7 @@ core::Result<IpcMessage> call_server_and_wait(AssetRef<IpcConnection> &connectio
 
     while (msg.is_null)
     {
-        log::err$("call_server_and_wait: received null message, retrying...");
+   //     log::err$("call_server_and_wait: received null message, retrying...");
         asm volatile("pause"); // CPU hint to reduce power and improve SMT performance
         msg = try$(client_receive_response(connection, res));
     }

@@ -40,7 +40,6 @@
         "-Wthread-safety",
         "-Wunreachable-code-aggressive",
         "-Widiomatic-parentheses",
-        "-Wfloat-equal",
         "-Wassign-enum",
         "-Wfor-loop-analysis",
         "-Wimplicit-fallthrough"
@@ -80,7 +79,6 @@
         "-Wthread-safety",
         "-Wunreachable-code-aggressive",
         "-Widiomatic-parentheses",
-        "-Wfloat-equal",
         "-Wassign-enum",
         "-Wfor-loop-analysis",
         "-Wimplicit-fallthrough"

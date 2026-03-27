@@ -58,7 +58,6 @@
         "-Warray-bounds",
         "-Wshadow",
         "-Wswitch-default",
-        "-Wfloat-equal",
         "-Wimplicit-fallthrough",
         "-Og",
         "-fdiagnostics-color=always",

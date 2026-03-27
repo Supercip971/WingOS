@@ -1,0 +1,10 @@
+{
+  "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
+  "id": "gfx-canvas-backend-raster-default",
+  "type": "lib",
+  "provides": ["gfx-canvas-backend-raster"],
+
+  "props": {
+    "export-headers": "."
+  }
+}

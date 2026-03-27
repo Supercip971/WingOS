@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 #include "iol/wingos/asset.hpp"
 #include "iol/wingos/ipc.hpp"
 #include "iol/wingos/space.hpp"
@@ -6,22 +6,22 @@
 #include "wingos-headers/ipc.h"
 
 
-namespace prot 
+namespace prot
 {
-    enum WindowMessageType 
+    enum WindowMessageType
     {
         WINDOW_GET_ATTRIBUTE_SIZE,
         WINDOW_GET_FRAMEBUFFER,
         WINDOW_SWAP_BUFFERS,
     };
 
-    struct WindowGetAttributeSize 
+    struct WindowGetAttributeSize
     {
         uint64_t width;
         uint64_t height;
     };
 
-    class WindowConnection 
+    class WindowConnection
     {
         bool has_swap;
         MessageHandle last_swap_handle;
@@ -74,11 +74,11 @@ namespace prot
 
                 mem_asset = Wingos::MemoryAsset::from_handle(mem_asset.handle);
                 virt_asset = Wingos::Space::self().map_memory(mem_asset, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
-                
+
                 return (virt_asset);
             }
             return ("failed to receive framebuffer asset");
-        }   
+        }
 
         core::Result<void> swap_buffers()
         {

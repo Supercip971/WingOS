@@ -1,0 +1,7 @@
+{
+  "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
+  "id": "gui-demo",
+  "type": "exe",
+  "description": "WingOS gui demo",
+  "requires": ["libcore", "libc", "iol", "json", "gfx-backend"]
+}

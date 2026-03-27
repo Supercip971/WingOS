@@ -1,7 +1,16 @@
 {
-    "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.project.v1",
-    "type": "project",
-    "id": "supercip971/wingos",
-    "description": "A simple operating system",
-    "extern": {}
+  "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.project.v1",
+  "type": "project",
+  "id": "supercip971/wingos",
+  "description": "A simple operating system",
+  "extern": {
+    "sdl3": {
+      "description": "A cross-platform development library designed to provide low level access to hardware",
+      "names": ["sdl3"]
+    },
+    "opengl": {
+      "description": "opengl library",
+      "names": ["gl"]
+    }
+  }
 }

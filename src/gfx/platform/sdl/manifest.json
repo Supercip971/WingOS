@@ -1,0 +1,19 @@
+{
+  "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
+  "id": "gfx-backend-sdl",
+  "type": "lib",
+  "requires": [
+    "sdl3",
+    "gfx-canvas-backend-raster",
+    "gfx-canvas-backend-opengl"
+  ],
+  "provides": ["gfx-backend"],
+  "enableIf": {
+    "sys": ["linux"],
+    "kernel": [false]
+  },
+
+  "props": {
+    "export-headers": "."
+  }
+}

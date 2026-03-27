@@ -38,7 +38,7 @@ public:
     {
         if (other._count != 0)
         {
-            _data = core::mem_alloc<T>(other._capacity).unwrap();
+            _data = core::mem_alloc<T>(other._capacity).copied();
             _capacity = other._capacity;
             for (long i = 0; i < other._count; i++)
             {

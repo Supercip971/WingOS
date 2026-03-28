@@ -16,6 +16,10 @@ int main(int argc, char **argv)
     log::log$("Hello, World!");
 
 
+    float x = 0;
+    float y = 0;
+    float dx = 1;
+    float dy = 1;
     wgfx::initialize_platform();
 
 
@@ -23,21 +27,33 @@ int main(int argc, char **argv)
 
     window->attach();
     float i = 0;
+    (void)i;
     while(true)
     {
         auto frame=  window->create_frame();
 
         log::log$("ran frame");
 
-        auto col = wgfx::CompositeColor::fromOklch((float)63.7 / 100, 0.237, i);
+        auto col = wgfx::CompositeColor::fromOklch((float)63.7 / 100, 0.237, 0.5);
 
-        i += 0.01;
-        if(i > 100)
-        {
-            i = 0.0;
-        }
+
 
         frame->clear(col);
+
+        frame->drawRect(x, y, 256, 256, wgfx::CompositeColor::fromOklch((float)63.7/100, 0, 0));
+
+        x += dx;
+        y += dy;
+
+        if(x >= ((long)window->width() - 256) || x <= 0)
+        {
+            dx = -dx;
+        }
+        if(y >= (long)(window->height() - 256) || y <= 0)
+        {
+            dy = -dy;
+        }
+
 
         window->end_frame(frame);
     }

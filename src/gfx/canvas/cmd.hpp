@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gfx/color.hpp"
+#include "gfx/rect.hpp"
 namespace wgfx
 {
 
@@ -26,6 +27,7 @@ struct Painter
 enum class RenderCommandKind
 {
     RENDER_KIND_FILL,
+    RENDER_KIND_RECT,
     RENDER_KIND_USE_COLOR,
     RENDER_KIND_TEXT,
 };
@@ -34,6 +36,12 @@ struct FillCommand
 {
     Painter paint;
 };
+
+struct RectCommand
+{
+    Painter paint;
+    GRect rect;
+};
 struct RenderCommand
 {
 
@@ -41,6 +49,7 @@ struct RenderCommand
     union
     {
         FillCommand fill;
+        RectCommand rect;
     };
 };
 } // namespace wgfx

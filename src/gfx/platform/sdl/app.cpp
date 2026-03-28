@@ -17,6 +17,9 @@ namespace wgfx
 {
 struct SDLWindowImpl : public wgfx::PlatformWindow
 {
+    RasterCanvas* raster_canvas;
+    OpenglCanvas* opengl_canvas;
+
     SDL_Window *window;
 
     SDL_GLContext ctx;
@@ -66,20 +69,18 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
         case wgfx::BACKEND_KIND_RASTER:
         {
 
-            RasterCanvas *cnvas = new RasterCanvas();
-            cnvas->bpp = 32;
-            cnvas->width = raster_width;
-            cnvas->height = raster_height;
-            cnvas->buffer = (Rgba8*)raster_buffer;
-            return cnvas;
+            raster_canvas->bpp = 32;
+            raster_canvas->width = width();
+            raster_canvas->height = height();
+            raster_canvas->buffer = (Rgba8*)raster_buffer;
+            return raster_canvas;
         }
         case wgfx::BACKEND_KIND_OPENGL:
         {
-            OpenglCanvas* cnvas = new OpenglCanvas();
 
-            cnvas->width = raster_width;
-            cnvas->height = raster_height;
-            return cnvas;
+            opengl_canvas->width = width();
+            opengl_canvas->height = height();
+            return opengl_canvas;
         }
         default:
         {
@@ -101,14 +102,12 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
         }
         case wgfx::BACKEND_KIND_RASTER:
         {
-
             RasterCanvas *cnvas = (RasterCanvas *)frame;
             SDL_UpdateTexture(raster_texture, NULL, cnvas->buffer, cnvas->width * sizeof(uint32_t));
             SDL_RenderClear(renderer);
 
             SDL_RenderTexture(renderer, raster_texture, NULL, NULL);
             SDL_RenderPresent(renderer);
-            delete frame;
             break;
         }
         default:
@@ -117,6 +116,17 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
         }
         }
     }
+
+    virtual size_t width() override
+    {
+        return 1920;
+    }
+
+    virtual size_t height() override
+    {
+        return 1080;
+    }
+
     virtual core::Result<void> attach() override
     {
 
@@ -139,6 +149,9 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
             SDL_GL_MakeCurrent(window, gl_context);
             SDL_GL_SetSwapInterval(1); // Enable vsync
             SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+
+
+            opengl_canvas = new OpenglCanvas();
             break;
         }
         case wgfx::BACKEND_KIND_RASTER:
@@ -149,6 +162,8 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
             raster_height = 1080;
             raster_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, raster_width, raster_height);
             raster_buffer = new uint32_t[raster_height * raster_width];
+
+            raster_canvas = new RasterCanvas();
             break;
         }
         default:

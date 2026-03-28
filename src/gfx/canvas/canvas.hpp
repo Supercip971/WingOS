@@ -26,6 +26,18 @@ namespace wgfx {
             commands.push(cmd);
         }
 
+        void drawRect(long x, long y, long width, long height, CompositeColor color)
+        {
+            RenderCommand cmd = {
+                .kind = RenderCommandKind::RENDER_KIND_RECT,
+                .rect = (RectCommand){
+                    .paint = color,
+                    .rect = {x, y, width, height},
+                }
+            };
+            commands.push(cmd);
+        }
+
 
         virtual void apply(){};
     };

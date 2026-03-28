@@ -17,9 +17,22 @@ public:
     void clearCommandExecute(FillCommand const &fill)
     {
         Rgba8 color = fill.paint.color.toRgba8();
-        for (size_t x = 0; x < width; x++)
+        for (size_t y = 0; y < height; y++)
         {
-            for (size_t y = 0; y < height; y++)
+            for (size_t x = 0; x < width; x++)
+            {
+                buffer[x + y * width] = color;
+            }
+        }
+    }
+
+    void rectCommandExecute(RectCommand const &cmd)
+    {
+        Rgba8 color = cmd.paint.color.toRgba8();
+
+        for (long y = cmd.rect.y; y < cmd.rect.endy(); y++)
+        {
+            for (long x = cmd.rect.x; x < cmd.rect.endx(); x++)
             {
                 buffer[x + y * width] = color;
             }
@@ -35,6 +48,11 @@ public:
             case wgfx::RenderCommandKind::RENDER_KIND_FILL:
             {
                 clearCommandExecute(cmd.fill);
+                break;
+            }
+            case wgfx::RenderCommandKind::RENDER_KIND_RECT:
+            {
+                rectCommandExecute(cmd.rect);
                 break;
             }
             default:

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "gfx/canvas/draw_context.hpp"
+
 #include "gfx/canvas/canvas.hpp"
 #include "gfx/canvas/cmd.hpp"
 #include "gfx/color.hpp"
@@ -30,38 +32,38 @@ public:
     {
         Rgba8 color = cmd.paint.color.toRgba8();
 
-        for (long y = cmd.rect.y; y < cmd.rect.endy(); y++)
+        for (long y = cmd.rect.start.y; y < cmd.rect.end.y; y++)
         {
-            for (long x = cmd.rect.x; x < cmd.rect.endx(); x++)
+            for (long x = cmd.rect.start.x; x < cmd.rect.end.y; x++)
             {
                 buffer[x + y * width] = color;
             }
         }
     }
-    virtual void apply() override
+
+
+
+    virtual void apply(DrawContext const &ctx, RenderCommand const &cmd) override
     {
-        for (size_t i = 0; i < commands.len(); i++)
+        (void)ctx;
+        switch (cmd.kind)
         {
-            auto const &cmd = commands[i];
-            switch (cmd.kind)
-            {
-            case wgfx::RenderCommandKind::RENDER_KIND_FILL:
-            {
-                clearCommandExecute(cmd.fill);
-                break;
-            }
-            case wgfx::RenderCommandKind::RENDER_KIND_RECT:
-            {
-                rectCommandExecute(cmd.rect);
-                break;
-            }
-            default:
-            {
-                log::warn$("Unsupported render command kind: {} for raster backend", (int)cmd.kind);
-            }
-            }
+        case wgfx::RenderCommandKind::RENDER_KIND_FILL:
+        {
+            clearCommandExecute(cmd.fill);
+            break;
         }
-        commands.clear();
+        case wgfx::RenderCommandKind::RENDER_KIND_RECT:
+        {
+            rectCommandExecute(cmd.rect);
+            break;
+        }
+
+        default:
+        {
+            log::warn$("Unsupported render command kind: {} for raster backend", (int)cmd.kind);
+        }
+        }
     }
 };
 } // namespace wgfx

@@ -92,7 +92,7 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
 
     virtual void end_frame(Canvas *frame) override
     {
-        frame->apply();
+        frame->flush();
         switch (backend_kind)
         {
         case wgfx::BACKEND_KIND_OPENGL:

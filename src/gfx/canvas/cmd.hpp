@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gfx/color.hpp"
-#include "gfx/rect.hpp"
+#include "gfx/geometry/rect.hpp"
 namespace wgfx
 {
 
@@ -30,18 +30,25 @@ enum class RenderCommandKind
     RENDER_KIND_RECT,
     RENDER_KIND_USE_COLOR,
     RENDER_KIND_TEXT,
+
 };
 
 struct FillCommand
 {
+    static constexpr auto KIND = RenderCommandKind::RENDER_KIND_FILL;
+
     Painter paint;
 };
 
 struct RectCommand
 {
+    static constexpr auto KIND = RenderCommandKind::RENDER_KIND_RECT;
+
     Painter paint;
     GRect rect;
 };
+
+
 struct RenderCommand
 {
 
@@ -50,6 +57,18 @@ struct RenderCommand
     {
         FillCommand fill;
         RectCommand rect;
+
+        uint8_t raw[];
     };
+    template<typename T>
+    static constexpr RenderCommand from(const T& r)
+    {
+        RenderCommand cmd = {};
+        cmd.kind = T::KIND;
+        *(T*)cmd.raw = r;
+        return cmd;
+    }
 };
+
+
 } // namespace wgfx

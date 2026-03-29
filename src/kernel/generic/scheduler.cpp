@@ -31,6 +31,15 @@ core::Vec<kernel::Task *> scheduler_idles = {};
 core::Vec<kernel::Task *> next_task_to_run = {};
 core::Vec<kernel::Task *> cpu_running = {};
 
+bool expect_scheduling(CoreId cpu)
+{
+    if (next_task_to_run[cpu] != cpu_running[cpu])
+    {
+        return true;
+    }
+    return false;
+}
+
 core::Array<TaskQueue, kernel::TASK_QUEUE_COUNT> task_queues = {};
 TaskQueue blocked_tasks = {};
 
@@ -498,6 +507,8 @@ core::Result<void> schedule_one(CoreId cpu)
 {
     bool found_task = false;
     auto c = scheduled_task_count();
+
+
     if (c == 0)
     {
         next_task_to_run[cpu] = scheduler_idles[cpu];
@@ -706,6 +717,11 @@ core::Result<void> dump_all_current_running_tasks()
 }
 core::Result<void> reschedule_only_one(CoreId core)
 {
+
+    if (expect_scheduling(core))
+    {
+        return {};
+    }
     update_runned_task_for_cpu(core);
 
     kernel::resolve_blocked_tasks_scheduler().assert();
@@ -734,24 +750,14 @@ core::Result<Task *> schedule_self(Task *current, void *state, CoreId core)
 {
 
     // Sanity check: the current task pointer should either be null or match cpu_running[core]
-    auto expected_current = cpu_running[core];
 
-    if (current != nullptr && expected_current != nullptr && current->uid() != expected_current->uid())
-    {
-        log::err$("schedule_self: current task (uid={}) does not match cpu_running[{}] (uid={})",
-                  (int)current->uid(),
-                  core,
-                  (int)expected_current->uid());
-        // In this inconsistent state, avoid touching the stack frame and just keep running current.
-        scheduler_lock.write_release();
-
-        return current;
-    }
-
-   if (current != nullptr)
+    if (current != nullptr)
     {
         current->cpu_context()->save_in(state);
     }
+
+    // ERROR: Scheduling should save the current task not the next task
+    // Because when saving the current task could differ
 
     auto v = reschedule_only_one(core);
     if (v.is_error())
@@ -850,7 +856,7 @@ core::Result<Task *> schedule(Task *current, void *state, CoreId core, bool soft
         // CPU 0 leave scheduler and release lock
         // CPU 1 acquire it from a syscall trying to block
         // CPU 1 trash everything because it didn't know there were scheduling activities.
-        //     srwlock_read_acquire$(scheduler_lock);
+        // Acquired when scheduling other cpus: srwlock_read_acquire$(scheduler_lock);
     }
     auto next_res = next_task_select(core);
 
@@ -927,7 +933,7 @@ core::Result<void> block_current_task(BlockEvent event)
 
     // why re enabling interrupt here ? Because an interrupt can occur between the lock acquire and
     // int 101 and the interrupt won't be able to handle the lock.
-    if(Cpu::current() != 0)
+    if (Cpu::current() != 0)
     {
 
         arch::amd64::interrupt_release();

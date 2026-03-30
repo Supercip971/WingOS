@@ -70,6 +70,8 @@ long double cbrtl(long double x)
         x *= 4;
         e -= 2;
         break;
+    default:
+        break;
     }
     v.f = 1.0;
     v.i.se = sign | (0x3fff + e / 3);

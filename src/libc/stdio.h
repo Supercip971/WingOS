@@ -9,7 +9,7 @@ extern "C" {
 #include <stddef.h>
 #include <stdarg.h>
 
-typedef struct FILE FILE;
+typedef struct _IO_FILE FILE;
 
 #define EOF (-1)
 #define SEEK_SET 0

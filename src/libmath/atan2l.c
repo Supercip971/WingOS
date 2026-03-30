@@ -51,6 +51,8 @@ long double atan2l(long double y, long double x)
             return 2 * pio2_hi; /* atan(+0,-anything) = pi */
         case 3:
             return -2 * pio2_hi; /* atan(-0,-anything) =-pi */
+        default:
+            break;
         }
     }
     if (x == 0)
@@ -69,6 +71,8 @@ long double atan2l(long double y, long double x)
                 return 1.5 * pio2_hi; /* atan(+INF,-INF) */
             case 3:
                 return -1.5 * pio2_hi; /* atan(-INF,-INF) */
+            default:
+                break;
             }
         }
         else
@@ -83,6 +87,8 @@ long double atan2l(long double y, long double x)
                 return 2 * pio2_hi; /* atan(+...,-INF) */
             case 3:
                 return -2 * pio2_hi; /* atan(-...,-INF) */
+            default:
+                break;
             }
         }
     }

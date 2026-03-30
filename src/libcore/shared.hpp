@@ -18,9 +18,9 @@ namespace core
         public:
         struct ControlBlock
         {
-            size_t ref_count;
+            size_t ref_count = {};
 
-            T data;
+            T data = {};
 
 
             ControlBlock() = default;
@@ -104,9 +104,9 @@ namespace core
 
         SharedPtr& operator=(SharedPtr&& other)
         {
-            if(this != &other)
+            if(this->control_block != other.control_block)
             {
-                if(control_block && --control_block->ref_count == 0)
+                if(control_block && --(control_block->ref_count) == 0)
                 {
                     delete control_block;
                 }
@@ -119,11 +119,17 @@ namespace core
 
         SharedPtr& operator=(const SharedPtr& other)
         {
-            if(this != &other)
+            if(this->control_block != other.control_block)
             {
-                if(control_block && --control_block->ref_count == 0)
+                if(control_block)
                 {
-                    delete control_block;
+                    control_block->ref_count--;
+                    if(control_block->ref_count == 0)
+                    {
+
+                        delete control_block;
+                    }
+
                 }
                 control_block = other.control_block;
                 if(control_block)

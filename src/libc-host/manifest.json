@@ -1,17 +1,11 @@
 {
-    "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
-    "id": "libc-host",
-    "type": "lib",
-    "description": "Use the host libc",
-    "enableIf": {
-        "host": [
-            true
-        ],
-        "kernel": [
-            false
-        ]
-    },
-    "provides": [
-        "libc"
-    ]
+  "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
+  "id": "libc-host",
+  "type": "lib",
+  "description": "Use the host libc",
+  "enableIf": {
+    "host": [true],
+    "kernel": [false]
+  },
+  "provides": ["libc"]
 }

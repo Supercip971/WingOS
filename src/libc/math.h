@@ -1,5 +1,10 @@
 #pragma once
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <float.h>
 
 #ifndef NAN
@@ -356,3 +361,7 @@ long double fminl(long double x, long double y);
 double fma(double, double, double);
 float fmaf(float, float, float);
 long double fmal(long double, long double, long double);
+
+#ifdef __cplusplus
+}
+#endif

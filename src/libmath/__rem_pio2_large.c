@@ -936,7 +936,7 @@ int __rem_pio2_large(double *x, double *y, int e0, int nx, int prec)
                 case 2:
                     iq[jz - 1] &= 0x3fffff;
                     break;
-                default: 
+                default:
                     break;
                 }
             }
@@ -1063,7 +1063,8 @@ int __rem_pio2_large(double *x, double *y, int e0, int nx, int prec)
             y[1] = -fq[1];
             y[2] = -fw;
         }
-    default: 
+        break;
+    default:
         break;
     }
     return n & 7;

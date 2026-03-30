@@ -1,14 +1,12 @@
 {
-    "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
-    "type": "lib",
-    "id": "libc-custom",
-    
-    "description": "Core C standard library",
-    "requires": [
-        "iol",
-        "userspace-arch",
-        "liballoc",
-        "libmath"
-    ],
-    "provides": ["libc"]
+  "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
+  "type": "lib",
+  "id": "libc-custom",
+
+  "description": "Core C standard library",
+  "requires": ["iol", "userspace-arch", "liballoc", "libmath"],
+  "enableIf": {
+    "host": [false]
+  },
+  "provides": ["libc"]
 }

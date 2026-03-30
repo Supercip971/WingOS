@@ -50,7 +50,7 @@ For now the kernel is still in development, but it has a few key features:
 - The project uses [limine](https://github.com/limine-bootloader/limine) as a bootloader.
 
 
-## Roadmap 
+## Roadmap (OS) 
 
 - [x] Boot
 - [x] x86 basic support (interrupt, paging, ...) 
@@ -60,17 +60,10 @@ For now the kernel is still in development, but it has a few key features:
 - [x] User space (ring 3)
 - [x] Syscalls 
 - [x] Spaces and handles 
-- [x] Userspace objects
-    - [x] Memory management (physical)
-    - [x] Memory management (virtual) 
-    - [x] IPC endpoint 
+- [x] Userspace objects (Virtual and Physical Memory, IPC, Task...)
 - [x] Services and IPC (inter process communication) 
 - [x] PCI support (scan, devices, ...) (in userspace)
-- [x] Hello File! 
-    - [x] Nvme disk support
-    - [x] Partition support (GPT)
-    - [x] Filesystem support (ext4)
-    - [x] VFS support
+- [x] Hello File! (NVME + GPT + Ext4 + VFS)
 - [x] Blocking IPC
 - [x] Graphics support (VESA, framebuffer, ...)
 - [x] Input support (keyboard, mouse, ...)
@@ -79,6 +72,14 @@ For now the kernel is still in development, but it has a few key features:
 - [ ] Signals 
 - [ ] Create a shell 
 - [ ] Above and beyond 
+
+## Roadmap (UI)
+
+- [x] Basic Render 
+- [x] Render fill 
+- [ ] Render text  
+- [ ] Transform 
+- [ ] Shader 
 
 ## Building the project
 

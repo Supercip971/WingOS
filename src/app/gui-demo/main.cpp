@@ -5,6 +5,7 @@
 #include "gfx/color.hpp"
 #include "gfx/platform/app.hpp"
 #include "gfx/platform/window.hpp"
+#include "gfx/text/font.hpp"
 #include "libcore/result.hpp"
 
 
@@ -26,6 +27,15 @@ int main(int argc, char **argv)
     auto window = wgfx::PlatformWindow::create_native(wgfx::BackendsKinds::BACKEND_KIND_RASTER).copied();
 
     window->attach();
+
+    auto t = wgfx::Typeface::from_file("./font.otf").copied();
+
+    auto font = wgfx::Font::load_font(t, 96).copied();
+
+
+
+    (void)t;
+
     float i = 0;
     (void)i;
     while(true)
@@ -40,7 +50,9 @@ int main(int argc, char **argv)
 
         frame->clear(col);
 
-        frame->drawRect(x, y, 256, 256, wgfx::CompositeColor::fromOklch((float)63.7/100, 0, 0));
+        frame->drawRect(wgfx::GRect(x, y, 256, 256), wgfx::CompositeColor::fromOklch((float)63.7/100, 0, 0));
+
+        frame->drawContour(font.shapes['@'].gfx_contour, wgfx::CompositeColor::fromOklch(63.7/100, 0, 0));
 
         x += dx;
         y += dy;

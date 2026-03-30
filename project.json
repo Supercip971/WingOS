@@ -11,6 +11,10 @@
     "opengl": {
       "description": "opengl library",
       "names": ["gl"]
+    },
+    "host-math": {
+      "description": "host math library",
+      "names": ["m"]
     }
   }
 }

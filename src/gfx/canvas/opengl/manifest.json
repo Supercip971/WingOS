@@ -2,8 +2,9 @@
   "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
   "id": "gfx-canvas-backend-opengl-default",
   "type": "lib",
-  "requires": ["sdl3", "opengl"],
+  "requires": ["sdl3", "opengl", "stb"],
   "provides": ["gfx-canvas-backend-opengl"],
+
   "enableIf": {
     "sys": ["linux"],
     "kernel": [false]

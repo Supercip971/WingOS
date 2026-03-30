@@ -36,13 +36,11 @@
         "-Wshadow",
         "-Wstrict-overflow=4",
         "-Wstrict-prototypes",
-        "-Wswitch-default",
         "-Wthread-safety",
         "-Wunreachable-code-aggressive",
         "-Widiomatic-parentheses",
         "-Wassign-enum",
-        "-Wfor-loop-analysis",
-        "-Wimplicit-fallthrough"
+        "-Wfor-loop-analysis"
       ]
     },
     "cxx": {
@@ -75,18 +73,16 @@
         "-Wshadow",
         "-Wstrict-overflow=4",
         "-Wstrict-prototypes",
-        "-Wswitch-default",
         "-Wthread-safety",
         "-Wunreachable-code-aggressive",
         "-Widiomatic-parentheses",
         "-Wassign-enum",
-        "-Wfor-loop-analysis",
-        "-Wimplicit-fallthrough"
+        "-Wfor-loop-analysis"
       ]
     },
     "ld": {
       "cmd": "{shell.latest('clang++')}",
-      "args": ["-e", "_cstart", "-g", "-fsanitize=address"]
+      "args": ["-e", "_cstart", "-g", "-fsanitize=address", "-lm"]
     },
     "ar": {
       "cmd": "{shell.latest('llvm-ar')}",

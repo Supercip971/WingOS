@@ -58,6 +58,16 @@ public:
         commands.push(cmd);
     }
 
+
+    void drawShape(core::SharedPtr<Contour> & shape, CompositeColor color)
+    {
+        RenderCommand cmd = RenderCommand::from((ShapeCommand){
+            .paint = color,
+            .contour = shape,
+        });
+        commands.push(cmd);
+    }
+
     virtual void apply(DrawContext const &ctx, RenderCommand const &cmd)
     {
         (void)ctx;

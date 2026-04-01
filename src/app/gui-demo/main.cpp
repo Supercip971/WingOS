@@ -30,7 +30,7 @@ int main(int argc, char **argv)
 
     auto t = wgfx::Typeface::from_file("./font.otf").copied();
 
-    auto font = wgfx::Font::load_font(t, 96).copied();
+    auto font = wgfx::Font::load_font(t, 196).copied();
 
 
 
@@ -38,11 +38,19 @@ int main(int argc, char **argv)
 
     float i = 0;
     (void)i;
+
+    auto contour = font.shapes['A'].gfx_contour;
+
+    for(size_t j = 0; j< contour->strokes.len(); j++)
+    {
+        log::log$("stroke: (a: {}) {}", (int)contour->strokes[j].a.action, (int)contour->strokes[j].a.pos.x);
+    }
     while(true)
     {
         auto frame=  window->create_frame();
 
-        log::log$("ran frame");
+        //log::log$("ran frame");
+
 
         auto col = wgfx::CompositeColor::fromOklch((float)63.7 / 100, 0.237, 0.5);
 
@@ -52,7 +60,7 @@ int main(int argc, char **argv)
 
         frame->drawRect(wgfx::GRect(x, y, 256, 256), wgfx::CompositeColor::fromOklch((float)63.7/100, 0, 0));
 
-        frame->drawContour(font.shapes['@'].gfx_contour, wgfx::CompositeColor::fromOklch(63.7/100, 0, 0));
+        frame->drawContour(font.shapes['A'].gfx_contour, wgfx::CompositeColor::fromOklch(63.7/100, 0, 0));
 
         x += dx;
         y += dy;

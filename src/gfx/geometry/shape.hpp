@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "gfx/canvas/cmd.hpp"
 #include "gfx/geometry/vec2.hpp"
 #include "libcore/ds/vec.hpp"
@@ -53,18 +52,27 @@ struct StrokePoint
     };
 };
 
+struct RawStroke
+{
+    StrokePoint a;
+    StrokePoint b;
+};
+
 class Contour
 {
     GRect _bound = {};
     Vec2 off_pos = {};
     bool has_point = false;
+    bool _invalidated = true;
+    StrokePoint last_stroke = StrokePoint::moved(Vec2(0, 0));
 
-    public:
-    core::Vec<StrokePoint> strokes = {};
+public:
+    core::Vec<RawStroke> strokes = {};
+    core::Vec<StrokePoint> commands = {};
 
     void update_bound(Vec2 off)
     {
-        if(!has_point)
+        if (!has_point)
         {
             _bound.start = off;
             _bound.end = off;
@@ -76,35 +84,90 @@ class Contour
         }
     }
 
+    void add_elt(StrokePoint point)
+    {
+
+        if (point.action == PathAction::GMOVE)
+        {
+            last_stroke = point;
+            return;
+        }
+
+        update_bound(point.pos);
+
+        strokes.add_sorted(
+            [](RawStroke const &left, RawStroke const &right)
+            { return core::min(left.a.pos.x, left.b.pos.x) - core::min(right.a.pos.x, right.b.pos.x); },
+            RawStroke{last_stroke, point});
+        last_stroke = point;
+    }
+    void compute_cache()
+    {
+
+        if (!_invalidated)
+        {
+            return;
+        }
+
+        _invalidated = false;
+
+        strokes.clear();
+
+        StrokePoint last = StrokePoint::moved(Vec2(0, 0));
+        for (StrokePoint a : commands)
+        {
+            if (a.action == PathAction::GMOVE)
+            {
+                last = a;
+                continue;
+            }
+
+            strokes.push(RawStroke{last, a});
+            last = a;
+        }
+
+        strokes.quick_sort([](RawStroke const &left, RawStroke const &right)
+                           { return left.a.pos.x - right.b.pos.x; }, 0, strokes.len());
+
+        // now sorts
+    }
+
     Contour() = default;
 
     GRect bound() const { return _bound; }
 
-    Contour& stroke_move(const Vec2& offset)
+    Contour &stroke_move(const Vec2 &offset)
     {
-        strokes.push(StrokePoint::moved(offset));
-        return *this;
-    }
-
-    Contour& stroke_point(const Vec2& offset)
-    {
-        update_bound(offset);
-        strokes.push(StrokePoint::point(offset));
-        return *this;
-    }
-
-    Contour& stroke_curve(const Vec2& offset, const Vec2& control)
-    {
-        update_bound(offset);
-        strokes.push(StrokePoint::curved(offset, control));
+        commands.push(StrokePoint::moved(offset));
+        add_elt(commands.last());
 
         return *this;
     }
 
-    Contour& stroke_cubic_curve(const Vec2& offset, const Vec2& control1, const Vec2& control2)
+    Contour &stroke_point(const Vec2 &offset)
     {
-        update_bound(offset);
-        strokes.push(StrokePoint::cubic_curved(offset, control1, control2));
+        commands.push(StrokePoint::point(offset));
+
+        add_elt(commands.last());
+
+        return *this;
+    }
+
+    Contour &stroke_curve(const Vec2 &offset, const Vec2 &control)
+    {
+
+        commands.push(StrokePoint::curved(offset, control));
+
+        add_elt(commands.last());
+
+        return *this;
+    }
+
+    Contour &stroke_cubic_curve(const Vec2 &offset, const Vec2 &control1, const Vec2 &control2)
+    {
+        commands.push(StrokePoint::cubic_curved(offset, control1, control2));
+
+        add_elt(commands.last());
 
         return *this;
     }

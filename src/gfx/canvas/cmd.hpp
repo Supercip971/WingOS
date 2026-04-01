@@ -37,6 +37,7 @@ enum class RenderCommandKind
     RENDER_KIND_USE_COLOR,
     RENDER_KIND_TEXT,
     RENDER_KIND_CONTOUR,
+    RENDER_KIND_SHAPE,
 
 };
 
@@ -61,6 +62,18 @@ struct ContourCommand
 
     Painter paint = {};
     core::SharedPtr<wgfx::Contour> contour = {};
+
+};
+
+
+struct ShapeCommand
+{
+
+    static constexpr auto KIND = RenderCommandKind::RENDER_KIND_SHAPE;
+
+    Painter paint = {};
+    core::SharedPtr<wgfx::Contour> contour = {};
+
 };
 
 struct TextCommand
@@ -78,7 +91,7 @@ struct TextCommand
 
 struct RenderCommand
 {
-
+public:
     RenderCommandKind kind;
     union
     {
@@ -87,6 +100,7 @@ struct RenderCommand
         FillCommand fill;
         ContourCommand contour;
         RectCommand rect;
+        ShapeCommand shape;
 
     };
 
@@ -111,6 +125,9 @@ struct RenderCommand
                 break;
             case RenderCommandKind::RENDER_KIND_CONTOUR:
                 new (&contour) ContourCommand(other.contour);
+                break;
+            case RenderCommandKind::RENDER_KIND_SHAPE:
+                new (&shape) ShapeCommand(other.shape);
                 break;
             default:
                 break;
@@ -140,6 +157,9 @@ struct RenderCommand
                 case RenderCommandKind::RENDER_KIND_CONTOUR:
                     new (&contour) ContourCommand(other.contour);
                     break;
+                case RenderCommandKind::RENDER_KIND_SHAPE:
+                    new (&shape) ShapeCommand(other.shape);
+                    break;
                 default:
                     break;
             }
@@ -157,6 +177,9 @@ struct RenderCommand
                 break;
             case RenderCommandKind::RENDER_KIND_CONTOUR:
                 contour.~ContourCommand();
+                break;
+            case RenderCommandKind::RENDER_KIND_SHAPE:
+                shape.~ShapeCommand();
                 break;
             default:
                 break;
@@ -183,6 +206,10 @@ struct RenderCommand
         else if constexpr (T::KIND == RenderCommandKind::RENDER_KIND_CONTOUR)
         {
             new (&cmd.contour) ContourCommand(r);
+        }
+        else if constexpr (T::KIND == RenderCommandKind::RENDER_KIND_SHAPE)
+        {
+            new (&cmd.shape) ShapeCommand(r);
         }
         return cmd;
     }

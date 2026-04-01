@@ -6,12 +6,14 @@
 #include "gfx/canvas/canvas.hpp"
 #include "gfx/canvas/cmd.hpp"
 #include "gfx/color.hpp"
+#include "gfx/geometry/shape.hpp"
 #include "gfx/geometry/vec2.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/logic.hpp"
+#include "libcore/shared.hpp"
 namespace wgfx
 {
-class RasterCanvas : public Canvas
+class RasterCanvas : public wgfx::Canvas
 {
 public:
     Rgba8 *buffer;
@@ -62,6 +64,112 @@ public:
 
     // https://fr.wikipedia.org/wiki/Algorithme_de_trac%C3%A9_de_segment_de_Xiaolin_Wu
 
+    void drawShapeRaster(ContourCommand const &shape)
+    {
+        core::SharedPtr<Contour> const &c = shape.contour;
+
+        long sy = core::max(floor(c->bound().start.y) - 1, 0);
+        long ey = core::min(ceil(c->bound().end.y) + 1, height - 1);
+
+        struct RasterLine
+        {
+            float x_pos;
+            int winding;
+        };
+
+        core::Vec<RasterLine> current = {};
+
+        //        active.winding = edge.sy > edge.ey ? 1 : -1;
+
+        for (long y = sy; y < ey; y++)
+        {
+            current.clear();
+            //  float draw = 0.0f;
+
+            float y_sample = (float)y + 0.5f;
+
+            for (RawStroke const &line : c->strokes)
+            {
+                Vec2 start = line.a.pos;
+
+                Vec2 end = line.b.pos;
+
+                start.y = c->bound().end.y - start.y;
+
+                end.y = c->bound().end.y - end.y;
+
+                int winding = start.y > end.y ? 1 : -1;
+
+
+                // avoid double counting on a single point
+
+
+                if(y_sample < core::min(start.y, end.y) || y_sample > core::max(start.y, end.y))
+                    continue;
+
+                if (core::abs(end.y - start.y) < 0.01f)
+                {
+                    current.push(
+                        RasterLine{
+                            .x_pos = core::min(start.x, end.x),
+                            .winding = winding,
+                        });
+
+                    current.push(
+                        RasterLine{
+                            .x_pos = core::max(start.x, end.x),
+                            .winding = -winding,
+
+                        });
+                    continue;
+                }
+
+                float raymarched = (((y_sample - start.y) * (end.x - start.x)) / (end.y - start.y));
+
+
+                current.push(
+                    RasterLine{
+                        .x_pos = raymarched + start.x,
+                        .winding = winding,
+                    });
+            }
+
+
+            if(current.len() < 2)
+            {
+                continue;
+            }
+
+            current.quick_sort([](RasterLine const &a, RasterLine const &b)
+                               { return (a.x_pos - b.x_pos); }, 0, current.len());
+
+            int winding = 0;
+            for (long i = 0; i + 1 < (long)current.len(); i += 1)
+            {
+
+                auto s1 = current[i].x_pos;
+                auto s2 = current[i + 1].x_pos;
+
+
+                if(s1 < c->bound().start.x || s2 >= c->bound().end.x)
+                    continue;
+
+                winding += current[i].winding;
+
+                if ((winding + current[i].winding) % 2 == 0)
+                {
+
+                    for (long x = (long)s1 + 1; x < (long)floor(s2); x++)
+                    {
+                        colorize(x, y, shape.paint.color.toRgba8());
+                    }
+                    blendChecked((long)s1, y, shape.paint.color.toRgba8(), 1.0f - (s1 - floorf(s1)));
+                    blendChecked((long)s2, y, shape.paint.color.toRgba8(), s2 - floorf(s2));
+
+                }
+            }
+        }
+    }
     void drawLineFast(Vec2 start, Vec2 end, Rgba8 color)
     {
 
@@ -102,14 +210,12 @@ public:
         {
             blendChecked(ypxl1, xpxl1, color, (1.0f - (yend - floor(yend))) * xgap);
             blendChecked(ypxl1 + 1, xpxl1, color, (yend - floor(yend)) * xgap);
-
         }
         else
         {
 
             blendChecked(xpxl1, ypxl1, color, (1.0f - (yend - floor(yend))) * xgap);
             blendChecked(xpxl1, ypxl1 + 1, color, (yend - floor(yend)) * xgap);
-
         }
 
         float intery = yend + gradient;
@@ -160,12 +266,13 @@ public:
             intery += gradient;
         }
     }
+
     void contourCommandExecute(ContourCommand const &cmd)
     {
         Vec2 pos = {};
-        for (auto const &stroke : cmd.contour->strokes)
+        for (auto const &stroke : cmd.contour->commands)
         {
-            log::log$("stroke: {}, {} {}", (int)stroke.pos.x, (int)stroke.pos.y, (int)stroke.action);
+            //            log::log$("stroke: {}, {} {}", (int)stroke.pos.x, (int)stroke.pos.y, (int)stroke.action);
 
             Vec2 ppos = stroke.pos /*+ off*/;
             ppos.y = cmd.contour->bound().end.y - ppos.y;
@@ -210,9 +317,10 @@ public:
         }
         case wgfx::RenderCommandKind::RENDER_KIND_CONTOUR:
         {
-            contourCommandExecute(cmd.contour);
+            drawShapeRaster(cmd.contour);
             break;
         }
+
         default:
         {
             log::warn$("Unsupported render command kind: {} for raster backend", (int)cmd.kind);

@@ -2,6 +2,7 @@
 
 #include <libcore/fmt/log.hpp>
 #include <stdio.h>
+#include <unistd.h>
 #include <stdlib.h>
 class LinuxLogger : public core::Writer
 {
@@ -17,13 +18,14 @@ public:
         return {};
     }
 };
-
 extern "C" int main(int argc, char **argv);
 extern "C" int _linux_start(int argc, char **argv)
 {
+
     printf("started\n");
     LinuxLogger logger;
     log::provide_log_target(&logger);
+
 
     int c = main(argc, argv);
 

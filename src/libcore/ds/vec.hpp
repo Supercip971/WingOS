@@ -1,8 +1,8 @@
 #pragma once
 
-#include <new>
 #include <libcore/core.hpp>
 #include <libcore/mem/view.hpp>
+#include <new>
 #include <stdlib.h>
 
 #include "libcore/alloc/alloc.hpp"
@@ -10,7 +10,7 @@
 #include "libcore/result.hpp"
 namespace core
 {
-    void dump_vec(uintptr_t _this, uintptr_t _data, bool start);
+void dump_vec(uintptr_t _this, uintptr_t _data, bool start);
 template <typename T>
 class Vec
 {
@@ -50,7 +50,7 @@ public:
 
     Vec &operator=(Vec &&other)
     {
-        if(this == &other)
+        if (this == &other)
         {
             return *this;
         }
@@ -67,7 +67,7 @@ public:
         for (long i = 0; i < other._count; i++)
         {
             new (&_data[_count + i]) T(other._data[i]);
-         //   _data[_count + i] = other._data[i];
+            //   _data[_count + i] = other._data[i];
         }
         _count += other._count;
 
@@ -81,7 +81,7 @@ public:
         for (long i = 0; i < other._count; i++)
         {
             new (&_data[_count + i]) T(core::move(other._data[i]));
-          //  _data[_count + i] = core::move(other._data[i]);
+            //  _data[_count + i] = core::move(other._data[i]);
         }
         _count += other._count;
         core::mem_free(other._data);
@@ -163,12 +163,12 @@ public:
         return Result<void>();
     }
 
-    T& last ()
+    T &last()
     {
         return _data[_count - 1];
     }
 
-    T const& last () const
+    T const &last() const
     {
         return _data[_count - 1];
     }
@@ -193,7 +193,7 @@ public:
 
     T &operator[](size_t index)
     {
-        if(index >= this->len()) [[unlikely]]
+        if (index >= this->len()) [[unlikely]]
         {
             unreachable$();
         }
@@ -210,7 +210,7 @@ public:
     const T &operator[](size_t index) const
     {
 
-        if(index >= this->len()) [[unlikely]]
+        if (index >= this->len()) [[unlikely]]
         {
             unreachable$();
         }
@@ -253,7 +253,6 @@ public:
             return v;
         }
 
-
         unreachable$();
     }
 
@@ -272,21 +271,43 @@ public:
             _data[i] = core::move(_data[i + 1]);
         }
 
-        _data[_count-1].~T();
+        _data[_count - 1].~T();
 
         _count--;
         return value;
     }
 
-    ~Vec(){
+    core::Result<void> insert(long id, T const &el)
+    {
+        if (id > _count)
+        {
+            id = _count - 1;
+        }
 
-        //dump_vec((uintptr_t)this, (uintptr_t)_data, true);
+        if (_count == _capacity)
+        {
+            try$(reserve(_capacity * 2));
+        }
+
+        for (long i = _count; i > (long)id; i--)
+        {
+            _data[i] = core::move(_data[i - 1]);
+        }
+
+        new (&_data[id]) T(el);
+
+        _count++;
+        return {};
+    }
+
+    ~Vec()
+    {
+
+        // dump_vec((uintptr_t)this, (uintptr_t)_data, true);
 
         release();
 
-        //dump_vec((uintptr_t)this, (uintptr_t)_data, false);
-
-
+        // dump_vec((uintptr_t)this, (uintptr_t)_data, false);
     }
 
     static Result<Vec> with_capacity(size_t capacity)
@@ -326,6 +347,54 @@ public:
             }
         }
         return false;
+    }
+    template <typename V>
+    constexpr void add_sorted(V AminusB, T const &el)
+    {
+        long l = 0;
+        long r = _count - 1;
+        long mid = l + (r - l) / 2;
+
+        while (l <= r)
+        {
+            if (AminusB(el, _data[mid]) < 0)
+            {
+                r = mid - 1;
+            }
+            else
+            {
+                l = mid + 1;
+            }
+            mid = l + (r - l) / 2;
+        }
+
+        insert(mid, el);
+    }
+
+    template <typename V>
+    constexpr void quick_sort(V AminusB, long l, long r)
+    {
+
+        if (l >= r)
+        {
+            return;
+        }
+
+        long sI = l-1;
+        T pivot = _data[r];
+        for(int j = l; j < r; j++)
+        {
+            if (AminusB(_data[j], pivot) < 0)
+            {
+
+                sI++;
+                core::swap(_data[sI], _data[j]);
+            }
+        }
+
+        core::swap(_data[sI+1], _data[r]);
+        quick_sort(AminusB, l, sI);
+        quick_sort(AminusB, sI+2, r);
     }
 };
 

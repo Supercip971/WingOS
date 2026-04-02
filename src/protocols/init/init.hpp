@@ -71,6 +71,7 @@ namespace prot
 
         static core::Result<InitConnection> connect()
         {
+            log::log$("connectin'");
             InitConnection conn {};
             conn.connection =  Wingos::Space::self().connect_to_ipc_server(0);
 
@@ -80,12 +81,12 @@ namespace prot
 
         }
 
-
         void end()
         {
             // FIXME: add a disconnect syscall
             //connection.();
         }
+
         core::Result<void> register_server(InitRegisterServer const &reg)
         {
             IpcMessage message = {};
@@ -104,7 +105,12 @@ namespace prot
 
             message.len = i+1;
 
+            log::log$("Register server {START} ");
+
             auto sended_message = connection.send(message, true);
+
+            log::log$("Register server {END } ");
+
 
             auto message_handle = sended_message.unwrap();
             if (sended_message.is_error())
@@ -114,8 +120,8 @@ namespace prot
             (void)message_handle;
 
             return {};
-
         }
+
         core::Result<void> unregister_server(InitUnregisterServer const &reg)
         {
             IpcMessage message = {};
@@ -178,7 +184,11 @@ namespace prot
             }
 */
 
+            log::log$("Querying server {START} ");
+
             auto res = connection.call(message);
+
+            log::log$("Querying server {END  } ");
             if (!res.is_error())
             {
                 auto msg = res.take();

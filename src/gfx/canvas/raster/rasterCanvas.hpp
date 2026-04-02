@@ -62,6 +62,70 @@ public:
         }
     }
 
+    // https://terathon.com/i3d2018_lengyel.pdf public domain
+    constexpr inline Vec2 solvePoly(Vec2 p1, Vec2 p2, Vec2 p3, float y_sample, bool &intersect1, bool &intersect2)
+    {
+        Vec2 a = p1 - p2 * 2.0f + p3;
+        Vec2 b = (p2 - p1) * 2.0f;
+        Vec2 c = p1 - Vec2(0.0, y_sample);
+
+        float t1 = 0.0f;
+        float t2 = 0.0f;
+
+        if (core::abs(a.y) < 1e-4f)
+        {
+
+            if (core::abs(b.y) < 1e-4f)
+            {
+                return {};
+            }
+            t1 = (t2 = (-c.y) / (b.y));
+            if (t1 < 0.0f || t1 >= 1.0f)
+            {
+                return {};
+            }
+
+            if (core::abs(t1 - 1.0f) < 0.0001f)
+            {
+                intersect1 = false;
+            }
+            else
+            {
+                intersect1 = true;
+            }
+        }
+        else
+        {
+
+            float dis = b.y * b.y - 4.f * a.y * (c.y);
+
+            if (dis < -0.000001f)
+            {
+                return {};
+            }
+            float rt = sqrtf(core::max(dis, 0.0f));
+
+            t1 = (-b.y - rt) / (2.f * a.y);
+            t2 = (-b.y + rt) / (2.f * a.y);
+
+            if (t1 >= 0.0f && t1 < 1.0f)
+            {
+                intersect1 = true;
+            }
+
+            if (t2 >= 0.0f && t2 < 1.0f)
+            {
+                intersect2 = true;
+            }
+        }
+
+        // if the derivative, aka:
+        // a t² + bt + c
+        // 2 a t + b < 0
+        // then we need to swap t1, t2
+
+        return Vec2(a.x * t1 * t1 + b.x * t1 + c.x, a.x * t2 * t2 + b.x * t2 + c.x);
+    }
     // https://fr.wikipedia.org/wiki/Algorithme_de_trac%C3%A9_de_segment_de_Xiaolin_Wu
 
     void drawShapeRaster(ContourCommand const &shape)
@@ -78,8 +142,7 @@ public:
         };
 
         core::Vec<RasterLine> current = {};
-
-        //        active.winding = edge.sy > edge.ey ? 1 : -1;
+        current.reserve(c->strokes.len());
 
         for (long y = sy; y < ey; y++)
         {
@@ -88,84 +151,98 @@ public:
 
             float y_sample = (float)y + 0.5f;
 
+            // critical loop
             for (RawStroke const &line : c->strokes)
             {
-                Vec2 start = line.a.pos;
 
-                Vec2 end = line.b.pos;
+                Vec2 p1 = line.a.pos;
+                Vec2 p3 = line.b.pos;
+                Vec2 p2;
 
-                start.y = c->bound().end.y - start.y;
+                bool isDownward = p1.y > p3.y;
+                p3.y = (c->bound().end.y - p3.y);
+                p1.y = (c->bound().end.y - p1.y);
+                if (isDownward)
+                {
+                    if (p1.y <= y_sample && p3.y < y_sample)
+                        continue;
+                    if (p1.y >= y_sample && p3.y > y_sample)
+                        continue;
+                }
+                else
+                {
+                    if (p1.y < y_sample && p3.y <= y_sample)
+                        continue;
+                    if (p1.y > y_sample && p3.y >= y_sample)
+                        continue;
+                }
+                if (line.b.action == PathAction::GCURVE)
+                {
+                    p2 = (line.b.curve.control);
+                }
+                else
+                {
+                    p2 = (p1 + p3) / 2.0f;
+                }
 
-                end.y = c->bound().end.y - end.y;
+                p2.y = (c->bound().end.y - p2.y);
 
-                int winding = start.y > end.y ? 1 : -1;
+                bool t1 = false;
+                bool t2 = false;
+                auto res = solvePoly(p1, p2, p3, y_sample, t1, t2);
 
-
-                // avoid double counting on a single point
-
-
-                if(y_sample < core::min(start.y, end.y) || y_sample > core::max(start.y, end.y))
-                    continue;
-
-                if (core::abs(end.y - start.y) < 0.01f)
+                int n = isDownward ? 1 : -1;
+                if (t1)
                 {
                     current.push(
                         RasterLine{
-                            .x_pos = core::min(start.x, end.x),
-                            .winding = winding,
+                            .x_pos = res.x,
+                            .winding = 1 * n,
                         });
+                }
+                if (t2)
+                {
 
                     current.push(
                         RasterLine{
-                            .x_pos = core::max(start.x, end.x),
-                            .winding = -winding,
-
+                            .x_pos = res.y,
+                            .winding = -1 * n,
                         });
-                    continue;
                 }
-
-                float raymarched = (((y_sample - start.y) * (end.x - start.x)) / (end.y - start.y));
-
-
-                current.push(
-                    RasterLine{
-                        .x_pos = raymarched + start.x,
-                        .winding = winding,
-                    });
             }
 
-
-            if(current.len() < 2)
+            if (current.len() < 2)
             {
                 continue;
             }
 
+            // see why miracly removing this quicksort don't break everything
             current.quick_sort([](RasterLine const &a, RasterLine const &b)
                                { return (a.x_pos - b.x_pos); }, 0, current.len());
 
             int winding = 0;
             for (long i = 0; i + 1 < (long)current.len(); i += 1)
             {
-
-                auto s1 = current[i].x_pos;
-                auto s2 = current[i + 1].x_pos;
-
-
-                if(s1 < c->bound().start.x || s2 >= c->bound().end.x)
-                    continue;
-
                 winding += current[i].winding;
 
-                if ((winding + current[i].winding) % 2 == 0)
+                if (winding % 2 != 0)
                 {
 
-                    for (long x = (long)s1 + 1; x < (long)floor(s2); x++)
+                    auto s1 = current[i].x_pos;
+                    auto s2 = current[i + 1].x_pos;
+
+                    s1 = core::clamp(s1, c->bound().start.x, c->bound().end.x);
+                    s2 = core::clamp(s2, c->bound().start.x, c->bound().end.x);
+
+                    float fs2 = floorf(s2);
+                    float fs1 = floorf(s1);
+                    for (long x = (long)(s1 + 1.f); x < (long)fs2; x++)
                     {
                         colorize(x, y, shape.paint.color.toRgba8());
                     }
-                    blendChecked((long)s1, y, shape.paint.color.toRgba8(), 1.0f - (s1 - floorf(s1)));
-                    blendChecked((long)s2, y, shape.paint.color.toRgba8(), s2 - floorf(s2));
 
+                    blendChecked((long)s1, y, shape.paint.color.toRgba8(), 1.0f - ((s1)-fs1));
+                    blendChecked((long)s2, y, shape.paint.color.toRgba8(), (s2 - fs2));
                 }
             }
         }

@@ -71,6 +71,7 @@ public:
                 break;
             case STBTT_vcubic:
                 contour.stroke_cubic_curve(Vec2(vertices[i].x, vertices[i].y) * scale, Vec2(vertices[i].cx, vertices[i].cy) * scale, Vec2(vertices[i].cx1, vertices[i].cy1) * scale);
+                log::log$("GCUBIC: ({}, {})", (long)vertices[i].x, (long)vertices[i].y);
                 break;
             default:
                 contour.stroke_point(Vec2(vertices[i].x, vertices[i].y) * scale);

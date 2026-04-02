@@ -18,13 +18,11 @@ enum class PathAction
 
 struct Curve
 {
-    Vec2 pos;
     Vec2 control;
 };
 
 struct CubicCurve
 {
-    Vec2 pos;
     Vec2 control1;
     Vec2 control2;
 };
@@ -37,19 +35,42 @@ struct StrokePoint
     Vec2 pos;
 
     constexpr StrokePoint(PathAction action, const Vec2 &pos) : action(action), pos(pos) {}
-    constexpr StrokePoint(const Curve &curve) : action(PathAction::GCURVE), pos(curve.pos), curve(curve) {}
-    constexpr StrokePoint(const CubicCurve &cubic_curve) : action(PathAction::GCUBIC_CURVE), pos(cubic_curve.pos), cubic_curve(cubic_curve) {}
+    constexpr StrokePoint(Vec2 const & cpos, const Curve &curve) : action(PathAction::GCURVE), pos(cpos), curve(curve) {}
+    constexpr StrokePoint(Vec2 const & cpos, const CubicCurve &cubic_curve) : action(PathAction::GCUBIC_CURVE), pos(cpos), cubic_curve(cubic_curve) {}
 
     constexpr static StrokePoint moved(const Vec2 &pos) { return StrokePoint(PathAction::GMOVE, pos); }
     constexpr static StrokePoint point(const Vec2 &pos) { return StrokePoint(PathAction::GPOINT, pos); }
-    constexpr static StrokePoint curved(const Vec2 &pos, const Vec2 &control) { return StrokePoint(Curve{pos, control}); }
-    constexpr static StrokePoint cubic_curved(const Vec2 &pos, const Vec2 &control1, const Vec2 &control2) { return StrokePoint(CubicCurve{pos, control1, control2}); }
+    constexpr static StrokePoint curved(const Vec2 &pos, const Vec2 &control) { return StrokePoint(pos, Curve{control}); }
+    constexpr static StrokePoint cubic_curved(const Vec2 &pos, const Vec2 &control1, const Vec2 &control2) { return StrokePoint(pos, CubicCurve{control1, control2}); }
 
     union
     {
         Curve curve;
         CubicCurve cubic_curve;
     };
+
+
+    constexpr StrokePoint() : action(PathAction::GMOVE), pos(Vec2(0, 0)) {}
+    constexpr StrokePoint(const StrokePoint &other) : action(other.action), pos(other.pos) {
+        if (action == PathAction::GCURVE) {
+            curve = other.curve;
+        } else if (action == PathAction::GCUBIC_CURVE) {
+            cubic_curve = other.cubic_curve;
+        }
+    }
+
+    constexpr StrokePoint &operator=(const StrokePoint &other) {
+        action = other.action;
+        pos = other.pos;
+        if (action == PathAction::GCURVE) {
+            curve = other.curve;
+        } else if (action == PathAction::GCUBIC_CURVE) {
+            cubic_curve = other.cubic_curve;
+        }
+        return *this;
+    }
+
+
 };
 
 struct RawStroke
@@ -63,12 +84,12 @@ class Contour
     GRect _bound = {};
     Vec2 off_pos = {};
     bool has_point = false;
-    bool _invalidated = true;
     StrokePoint last_stroke = StrokePoint::moved(Vec2(0, 0));
 
 public:
     core::Vec<RawStroke> strokes = {};
     core::Vec<StrokePoint> commands = {};
+
 
     void update_bound(Vec2 off)
     {
@@ -92,6 +113,15 @@ public:
             last_stroke = point;
             return;
         }
+        else if(point.action == PathAction::GCURVE)
+        {
+            update_bound(point.curve.control);
+        }
+        else if(point.action == PathAction::GCUBIC_CURVE)
+        {
+            update_bound(point.cubic_curve.control1);
+            update_bound(point.cubic_curve.control2);
+        }
 
         update_bound(point.pos);
 
@@ -100,36 +130,6 @@ public:
             { return core::min(left.a.pos.x, left.b.pos.x) - core::min(right.a.pos.x, right.b.pos.x); },
             RawStroke{last_stroke, point});
         last_stroke = point;
-    }
-    void compute_cache()
-    {
-
-        if (!_invalidated)
-        {
-            return;
-        }
-
-        _invalidated = false;
-
-        strokes.clear();
-
-        StrokePoint last = StrokePoint::moved(Vec2(0, 0));
-        for (StrokePoint a : commands)
-        {
-            if (a.action == PathAction::GMOVE)
-            {
-                last = a;
-                continue;
-            }
-
-            strokes.push(RawStroke{last, a});
-            last = a;
-        }
-
-        strokes.quick_sort([](RawStroke const &left, RawStroke const &right)
-                           { return left.a.pos.x - right.b.pos.x; }, 0, strokes.len());
-
-        // now sorts
     }
 
     Contour() = default;
@@ -155,6 +155,7 @@ public:
 
     Contour &stroke_curve(const Vec2 &offset, const Vec2 &control)
     {
+
 
         commands.push(StrokePoint::curved(offset, control));
 

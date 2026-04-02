@@ -28,9 +28,9 @@ int main(int argc, char **argv)
 
     window->attach();
 
-    auto t = wgfx::Typeface::from_file("./font.otf").copied();
+    auto t = wgfx::Typeface::from_file("./font.ttf").copied();
 
-    auto font = wgfx::Font::load_font(t, 196).copied();
+    auto font = wgfx::Font::load_font(t, 96).copied();
 
 
 
@@ -39,11 +39,30 @@ int main(int argc, char **argv)
     float i = 0;
     (void)i;
 
-    auto contour = font.shapes['A'].gfx_contour;
+    auto contour = font.shapes['@'].gfx_contour;
 
     for(size_t j = 0; j< contour->strokes.len(); j++)
     {
-        log::log$("stroke: (a: {}) {}", (int)contour->strokes[j].a.action, (int)contour->strokes[j].a.pos.x);
+        switch(contour->strokes[j].a.action)
+        {
+            case wgfx::PathAction::GMOVE:
+            log::log$("GMOVE");
+                break;
+            case wgfx::PathAction::GCURVE:
+                log::log$("GCURVE");
+                break;
+            case wgfx::PathAction::GCUBIC_CURVE:
+                log::log$("GCUBIC");
+                break;
+            default:
+                log::log$("UNKNOWN: ({}, {})", (long)contour->strokes[j].a.pos.x, (long)contour->strokes[j].a.pos.y);
+                break;
+        }
+        log::log$("start: ({}, {})", (long)contour->strokes[j].a.pos.x, (long)contour->strokes[j].a.pos.y);
+        log::log$("end: ({}, {})", (long)contour->strokes[j].b.pos.x, (long)contour->strokes[j].b.pos.y);
+        log::log$("control: ({}, {})", (long)contour->strokes[j].a.curve.control.x, (long)contour->strokes[j].a.curve.control.y);
+        log::log$("control2: ({}, {})", (long)contour->strokes[j].a.cubic_curve.control2.x, (long)contour->strokes[j].a.cubic_curve.control2.y);
+        log::log$("");
     }
     while(true)
     {
@@ -58,9 +77,26 @@ int main(int argc, char **argv)
 
         frame->clear(col);
 
-        frame->drawRect(wgfx::GRect(x, y, 256, 256), wgfx::CompositeColor::fromOklch((float)63.7/100, 0, 0));
+        //frame->drawRect(wgfx::GRect(x, y, 256, 256), wgfx::CompositeColor::fromOklch((float)63.7/100, 0, 0));
 
-        frame->drawContour(font.shapes['A'].gfx_contour, wgfx::CompositeColor::fromOklch(63.7/100, 0, 0));
+        frame->drawContour(font.shapes['@'].gfx_contour, wgfx::CompositeColor::fromOklch(63.7/100, 0, 0));
+
+        for(size_t j = 0; j < 300; j++)
+        {
+
+            frame->drawContour(font.shapes['@'].gfx_contour, wgfx::CompositeColor::fromOklch(63.7/100, 0, 0));
+            (void)j;
+
+        }
+
+
+
+
+
+
+
+
+
 
         x += dx;
         y += dy;

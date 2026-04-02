@@ -108,6 +108,14 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
 
             SDL_RenderTexture(renderer, raster_texture, NULL, NULL);
             SDL_RenderPresent(renderer);
+            // print fps
+            static uint32_t oldtime = 0;
+            static uint32_t newtime = 0;
+            static uint32_t fps = 0;
+            newtime = SDL_GetTicks();
+            fps = newtime - oldtime;
+            oldtime = newtime;
+            printf("%f\n", 1000.f / (float)fps);
             break;
         }
         default:

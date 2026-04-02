@@ -10,6 +10,8 @@ Dunnow
 namespace core
 {
 
+
+
 constexpr static inline auto max(auto a, auto b)
 {
     return a > b ? a : b;
@@ -20,6 +22,15 @@ constexpr static inline auto min(auto a, auto b)
     return a < b ? a : b;
 }
 
+constexpr static inline auto max(auto a, auto b, auto c)
+{
+    return max(a, max(b, c));
+}
+
+constexpr static inline auto min(auto a, auto b, auto c)
+{
+    return min(a, min(b, c));
+}
 constexpr static inline auto abs(auto a)
 {
     return a < 0 ? -a : a;

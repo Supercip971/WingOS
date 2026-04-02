@@ -375,14 +375,17 @@ public:
     constexpr void quick_sort(V AminusB, long l, long r)
     {
 
+
         if (l >= r)
         {
             return;
         }
 
-        long sI = l-1;
+        r = core::min((long)_count-1, r);
+
+        long sI = l - 1;
         T pivot = _data[r];
-        for(int j = l; j < r; j++)
+        for (int j = l; j < r; j++)
         {
             if (AminusB(_data[j], pivot) < 0)
             {
@@ -392,9 +395,9 @@ public:
             }
         }
 
-        core::swap(_data[sI+1], _data[r]);
+        core::swap(_data[sI + 1], _data[r]);
         quick_sort(AminusB, l, sI);
-        quick_sort(AminusB, sI+2, r);
+        quick_sort(AminusB, sI + 2, r);
     }
 };
 

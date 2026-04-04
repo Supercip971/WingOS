@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include "gfx/canvas/canvas.hpp"
+#include "gfx/canvas/cmd.hpp"
 #include "gfx/geometry/shape.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/result.hpp"
@@ -41,6 +42,13 @@ public:
     core::SharedPtr<Typeface> _from;
     float height;
     float weight;
+    float rscale;
+
+    float ascent;
+    float descent;
+    float line_gap;
+
+    wgfx::GRect global_box;
 
     struct CharacterShape
     {
@@ -48,6 +56,9 @@ public:
         stbtt_vertex *vertices;
         int num_vertices;
         core::SharedPtr<Contour> gfx_contour;
+        wgfx::GRect ibound;
+        float advance;
+        float bearing;
     };
 
     core::Vec<CharacterShape> shapes;
@@ -82,6 +93,10 @@ public:
         return contour;
     }
 
+     float additionalOffset(int a, int b) const
+    {
+        return stbtt_GetCodepointKernAdvance(&_from->raw, a, b) * rscale;
+    }
     static core::Result<Font> load_font(core::SharedPtr<Typeface> &from, float height)
     {
         Font fn = {};
@@ -91,8 +106,19 @@ public:
         fn.height = height;
 
         float rscale = stbtt_ScaleForPixelHeight(&from->raw, height);
+
+        fn.rscale = rscale;
+        int ascent = 0;
+        int descent = 0;
+        int line_gap = 0;
+        stbtt_GetFontVMetrics(&from->raw, &ascent, &descent, &line_gap);
+        fn.ascent = ascent * rscale;
+        fn.descent = descent * rscale;
+        fn.line_gap = line_gap * rscale;
+
         for (size_t i = 0; i < 127; i++)
         {
+
             CharacterShape shape = {};
             shape.c = static_cast<char>(i);
 
@@ -108,6 +134,21 @@ public:
             {
                 shape.gfx_contour = core::SharedPtr<Contour>::make();
             }
+
+            //     stbtt_GetGlyphHMetrics(const stbtt_fontinfo *info, int glyph_index, int *advanceWidth, int *leftSideBearing)
+            int sx = 0;
+            int sy = 0;
+            int ex = 0;
+            int ey = 0;
+            stbtt_GetCodepointBox(&from->raw, i, &sx, &sy, &ex, &ey);
+
+            shape.ibound = wgfx::GRect::from_start_end(sx * rscale, sy * rscale, ex * rscale, ey * rscale);
+
+            int advance;
+            int left_side_bearing;
+            stbtt_GetCodepointHMetrics(&from->raw, i, &advance, &left_side_bearing);
+            shape.advance = advance * rscale;
+            shape.bearing = left_side_bearing * rscale;
 
             fn.shapes.push(shape);
         }

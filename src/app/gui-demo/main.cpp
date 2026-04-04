@@ -3,10 +3,12 @@
 
 #include "gfx/backend.hpp"
 #include "gfx/color.hpp"
+#include "gfx/geometry/vec2.hpp"
 #include "gfx/platform/app.hpp"
 #include "gfx/platform/window.hpp"
 #include "gfx/text/font.hpp"
 #include "libcore/result.hpp"
+#include "libcore/shared.hpp"
 
 
 int main(int argc, char **argv)
@@ -28,9 +30,12 @@ int main(int argc, char **argv)
 
     window->attach();
 
-    auto t = wgfx::Typeface::from_file("./font.ttf").copied();
+    auto t = wgfx::Typeface::from_file("./meta/assets/oswald.ttf").copied();
 
-    auto font = wgfx::Font::load_font(t, 96).copied();
+    auto font = wgfx::Font::load_font(t, 196).copied();
+
+
+    auto sfont = core::SharedPtr<wgfx::Font>::make(font);
 
 
 
@@ -79,24 +84,11 @@ int main(int argc, char **argv)
 
         //frame->drawRect(wgfx::GRect(x, y, 256, 256), wgfx::CompositeColor::fromOklch((float)63.7/100, 0, 0));
 
-        frame->drawContour(font.shapes['@'].gfx_contour, wgfx::CompositeColor::fromOklch(63.7/100, 0, 0));
 
-        for(size_t j = 0; j < 300; j++)
-        {
+      //  frame->drawContour(font.shapes['@'].gfx_contour, wgfx::CompositeColor::fromOklch(63.7/100, 0, 0), wgfx::Vec2(x,y));
+      //
 
-            frame->drawContour(font.shapes['@'].gfx_contour, wgfx::CompositeColor::fromOklch(63.7/100, 0, 0));
-            (void)j;
-
-        }
-
-
-
-
-
-
-
-
-
+            frame->drawText(wgfx::Vec2(10.f,10.f), "Hello world g", sfont, wgfx::CompositeColor::fromOklch(63.7/100, 0, 0));
 
         x += dx;
         y += dy;

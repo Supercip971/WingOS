@@ -128,7 +128,7 @@ public:
     }
     // https://fr.wikipedia.org/wiki/Algorithme_de_trac%C3%A9_de_segment_de_Xiaolin_Wu
 
-    void drawShapeRaster(ContourCommand const &shape)
+    void drawShapeRaster(ContourCommand const &shape, Vec2 off)
     {
         core::SharedPtr<Contour> const &c = shape.contour;
 
@@ -238,11 +238,11 @@ public:
                     float fs1 = floorf(s1);
                     for (long x = (long)(s1 + 1.f); x < (long)fs2; x++)
                     {
-                        colorize(x, y, shape.paint.color.toRgba8());
+                        colorize(x + off.x, y + off.y, shape.paint.color.toRgba8());
                     }
 
-                    blendChecked((long)s1, y, shape.paint.color.toRgba8(), 1.0f - ((s1)-fs1));
-                    blendChecked((long)s2, y, shape.paint.color.toRgba8(), (s2 - fs2));
+                    blendChecked((long)s1 + off.x, y + off.y, shape.paint.color.toRgba8(), 1.0f - ((s1)-fs1));
+                    blendChecked((long)s2 + off.x, y + off.y, shape.paint.color.toRgba8(), (s2 - fs2));
                 }
             }
         }
@@ -250,7 +250,7 @@ public:
     void drawLineFast(Vec2 start, Vec2 end, Rgba8 color)
     {
 
-        GRect rect = {0, 0, (long)width, (long)height};
+        GRect rect = {0, 0, (float)width, (float)height};
 
         start = rect.contained(start);
         end = rect.contained(end);
@@ -377,6 +377,26 @@ public:
         }
     }
 
+    void drawText(TextCommand const &cmd)
+    {
+        Vec2 pos = cmd.pos;
+        for (long i = 0; i < (long)cmd.str.len(); ++i)
+        {
+            uint32_t chr = cmd.str[i];
+
+            auto const &shape = cmd.font->shapes[chr];
+            Vec2 opos = pos;
+            opos.y += cmd.font->ascent - cmd.font->descent + cmd.font->line_gap;
+            opos.y -=  shape.ibound.end.y;
+            opos.x += shape.bearing - shape.ibound.start.x;
+            drawShapeRaster(ContourCommand{cmd.paint, shape.gfx_contour}, opos);
+
+            if(i < (long)cmd.str.len() - 1){
+                pos.x += shape.advance + cmd.font->additionalOffset(chr, cmd.str[i + 1]);
+            }
+        }
+    }
+
     virtual void apply(DrawContext const &ctx, RenderCommand const &cmd) override
     {
         (void)ctx;
@@ -394,7 +414,12 @@ public:
         }
         case wgfx::RenderCommandKind::RENDER_KIND_CONTOUR:
         {
-            drawShapeRaster(cmd.contour);
+            drawShapeRaster(cmd.contour, cmd.contour.pos);
+            break;
+        }
+        case wgfx::RenderCommandKind::RENDER_KIND_TEXT:
+        {
+            drawText(cmd.text);
             break;
         }
 

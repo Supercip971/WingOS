@@ -30,6 +30,13 @@ struct GRect
         end.y = start.y + value;
     }
 
+    constexpr float width() const {
+        return end.x - start.x;
+    }
+    constexpr float height() const {
+        return end.y - start.y;
+    }
+
     Vec2 contained(const Vec2 & p) const {
         return Vec2(
             core::max(start.x, core::min(p.x, end.x)),
@@ -37,15 +44,15 @@ struct GRect
         );
     }
 
-    constexpr GRect(long _x, long _y, long _ex, long _ey) : start(_x, _y), end(_ex, _ey) {}
+    constexpr GRect(float _x, float _y, float _ex, float _ey) : start(_x, _y), end(_ex, _ey) {}
 
     constexpr GRect() {};
 
-    static constexpr GRect from_start_end(long sx, long sy, long ex, long ey)
+    static constexpr GRect from_start_end(float sx, float sy, float ex, float ey)
     {
         return GRect(sx, sy, ex - sx, ey - sy);
     }
-    static constexpr GRect from_size(long sx, long sy, long width, long height)
+    static constexpr GRect from_size(float sx, float sy, float width, float height)
     {
         return GRect(sx, sy, sx + width, sy + height);
     }

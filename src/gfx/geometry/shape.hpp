@@ -136,6 +136,8 @@ public:
 
     GRect bound() const { return _bound; }
 
+    void bound(const GRect &rect) { _bound = rect; }
+
     Contour &stroke_move(const Vec2 &offset)
     {
         commands.push(StrokePoint::moved(offset));

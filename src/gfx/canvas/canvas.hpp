@@ -7,8 +7,10 @@
 #include "gfx/color.hpp"
 #include "gfx/text/utf-text.hpp"
 #include "libcore/ds/vec.hpp"
+#include "libcore/shared.hpp"
 namespace wgfx
 {
+
 class Canvas
 {
 protected:
@@ -36,7 +38,7 @@ public:
         commands.push(cmd);
     }
 
-    void drawText(Vec2 start, Utf8Str string, Font *font, CompositeColor color)
+    void drawText(Vec2 start, Utf8Str string, core::SharedPtr<Font> &font, CompositeColor color)
     {
         RenderCommand cmd = RenderCommand::from((TextCommand){
             .paint = color,
@@ -49,24 +51,16 @@ public:
     }
 
 
-    void drawContour(core::SharedPtr<Contour> & contour, CompositeColor color)
+    void drawContour(core::SharedPtr<Contour> & contour, CompositeColor color, Vec2 pos)
     {
         RenderCommand cmd = RenderCommand::from((ContourCommand){
             .paint = color,
             .contour = contour,
+            .pos = pos,
         });
         commands.push(cmd);
     }
 
-
-    void drawShape(core::SharedPtr<Contour> & shape, CompositeColor color)
-    {
-        RenderCommand cmd = RenderCommand::from((ShapeCommand){
-            .paint = color,
-            .contour = shape,
-        });
-        commands.push(cmd);
-    }
 
     virtual void apply(DrawContext const &ctx, RenderCommand const &cmd)
     {

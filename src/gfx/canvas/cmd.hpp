@@ -63,17 +63,7 @@ struct ContourCommand
     Painter paint = {};
     core::SharedPtr<wgfx::Contour> contour = {};
 
-};
-
-
-struct ShapeCommand
-{
-
-    static constexpr auto KIND = RenderCommandKind::RENDER_KIND_SHAPE;
-
-    Painter paint = {};
-    core::SharedPtr<wgfx::Contour> contour = {};
-
+    Vec2 pos = {};
 };
 
 struct TextCommand
@@ -83,7 +73,7 @@ struct TextCommand
 
     Painter paint;
     Utf8Str str;
-    Font *font;
+    core::SharedPtr<Font> font;
     Vec2 pos;
 
 };
@@ -100,7 +90,6 @@ public:
         FillCommand fill;
         ContourCommand contour;
         RectCommand rect;
-        ShapeCommand shape;
 
     };
 
@@ -125,9 +114,6 @@ public:
                 break;
             case RenderCommandKind::RENDER_KIND_CONTOUR:
                 new (&contour) ContourCommand(other.contour);
-                break;
-            case RenderCommandKind::RENDER_KIND_SHAPE:
-                new (&shape) ShapeCommand(other.shape);
                 break;
             default:
                 break;
@@ -157,9 +143,6 @@ public:
                 case RenderCommandKind::RENDER_KIND_CONTOUR:
                     new (&contour) ContourCommand(other.contour);
                     break;
-                case RenderCommandKind::RENDER_KIND_SHAPE:
-                    new (&shape) ShapeCommand(other.shape);
-                    break;
                 default:
                     break;
             }
@@ -177,9 +160,6 @@ public:
                 break;
             case RenderCommandKind::RENDER_KIND_CONTOUR:
                 contour.~ContourCommand();
-                break;
-            case RenderCommandKind::RENDER_KIND_SHAPE:
-                shape.~ShapeCommand();
                 break;
             default:
                 break;
@@ -206,10 +186,6 @@ public:
         else if constexpr (T::KIND == RenderCommandKind::RENDER_KIND_CONTOUR)
         {
             new (&cmd.contour) ContourCommand(r);
-        }
-        else if constexpr (T::KIND == RenderCommandKind::RENDER_KIND_SHAPE)
-        {
-            new (&cmd.shape) ShapeCommand(r);
         }
         return cmd;
     }

@@ -197,7 +197,7 @@ public:
                     current.push(
                         RasterLine{
                             .x_pos = res.x,
-                            .winding = 1 * n,
+                            .winding = n,
                         });
                 }
                 if (t2)
@@ -206,7 +206,7 @@ public:
                     current.push(
                         RasterLine{
                             .x_pos = res.y,
-                            .winding = -1 * n,
+                            .winding =  n,
                         });
                 }
             }
@@ -221,17 +221,29 @@ public:
                                { return (a.x_pos - b.x_pos); }, 0, current.len());
 
             int winding = 0;
-            for (long i = 0; i + 1 < (long)current.len(); i += 1)
+
+            for (long i = 0; i  < (long)current.len(); i += 1)
             {
                 winding += current[i].winding;
 
-                if (winding % 2 != 0)
+
+                if (winding <= -1)
                 {
 
                     auto s1 = current[i].x_pos;
-                    auto s2 = current[i + 1].x_pos;
+                    auto s2 = 0.0f;
+                    while(i+1 < (long)current.len() && (winding ) <= -1)
+                    {
 
-                    s1 = core::clamp(s1, c->bound().start.x, c->bound().end.x);
+                        i++;
+                        winding += current[i].winding;
+
+
+                        s2 = current[i].x_pos;
+
+                    }
+
+                   s1 = core::clamp(s1, c->bound().start.x, c->bound().end.x);
                     s2 = core::clamp(s2, c->bound().start.x, c->bound().end.x);
 
                     float fs2 = floorf(s2);
@@ -243,6 +255,7 @@ public:
 
                     blendChecked((long)s1 + off.x, y + off.y, shape.paint.color.toRgba8(), 1.0f - ((s1)-fs1));
                     blendChecked((long)s2 + off.x, y + off.y, shape.paint.color.toRgba8(), (s2 - fs2));
+
                 }
             }
         }
@@ -317,7 +330,6 @@ public:
         // Move between endpoints
         if (steep)
         {
-
             xpxl1 = core::clamp(xpxl1, rect.start.x, rect.end.x - 1);
             xpxl2 = core::clamp(xpxl2, rect.start.y, rect.end.y - 1);
             intery = core::clamp(intery, rect.start.x, rect.end.x - 1);

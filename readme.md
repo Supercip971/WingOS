@@ -87,6 +87,7 @@ For now I don't have a complete dependency list, but you will need:
 - [cutekit](https://github.com/cute-engineering/cutekit/tree/stable)
 - Clang cross compiler for x86_64 
 - Everything needed to build a cross compiler 
+- git, wget, gptfdisk, mkfs.fat (dosfstools), qemu  
 
 Run `bash meta/build/make_cross_compiler.sh` to build the Wingos specific version of gcc.
 

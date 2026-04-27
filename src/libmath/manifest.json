@@ -5,5 +5,8 @@
 
   "description": "Core C standard math library",
   "requires": [],
+  "enableIf": {
+    "kernel": [false]
+  },
   "provides": ["libmath"]
 }

@@ -23,7 +23,7 @@ public:
 
 
 
-    bool write_acquire_interrupt_disabled(const char *fn, int line)
+    bool try_write_acquire_interrupt_disabled(const char *fn, int line)
     {
         // Do NOT use _waiters here. Setting _waiters blocks read_acquire()
         // callers, which creates a circular dependency in the scheduler:
@@ -32,15 +32,21 @@ public:
         // - Other CPUs need read_acquire to do save_in, but _waiters > 0 blocks them
         // Without _waiters, new readers can freely acquire, complete their work
         // (including save_in), release, and eventually _readers drops to 0.
-        int retry = 700000;
+        int retry = 7000;
         bool immediate = true;
 
         _waiters++;
         while (true)
         {
-            _access_lock.lock();
 
             arch::amd64::interrupt_hold();
+            if(!_access_lock.try_lock())
+            {
+                arch::amd64::interrupt_release();
+                __atomic_thread_fence(__ATOMIC_SEQ_CST);
+                return false;
+            }
+
             if (_readers == 0 && _writers == 0)
             {
                 _writers += 1;
@@ -50,8 +56,9 @@ public:
                 break;
             }
 
-            arch::amd64::interrupt_release();
             _access_lock.release();
+
+            arch::amd64::interrupt_release();
             __atomic_thread_fence(__ATOMIC_SEQ_CST);
 
             if (retry > 0)
@@ -59,8 +66,9 @@ public:
                 retry--;
                 if (retry == 0)
                 {
-                    log::log$("SRWLock: failed to acquire write lock immediately at {}:{}, dumping state before blocking", fn, line);
-                    dump();
+                  // log::log$("SRWLock: failed to acquire write lock immediately at {}:{}, dumping state before blocking", fn, line);
+                   return false;
+                  //  dump();
                 }
             }
             arch::pause();
@@ -154,8 +162,8 @@ public:
         }
         else
         {
-            log::log$("SRWLock: failed to acquire write lock at {}:{}, dumping state", fn, line);
-            dump();
+    //        log::log$("SRWLock: failed to acquire write lock at {}:{}, dumping state", fn, line);
+    //       dump();
         }
         return v;
     }
@@ -226,7 +234,7 @@ public:
 
 #define srwlock_write_acquire$(lock) (lock).write_acquire(__FILE__, __LINE__)
 
-#define srwlock_write_acquire_critical$(lock) (lock).write_acquire_interrupt_disabled(__FILE__, __LINE__)
+#define srwlock_try_write_acquire_critical$(lock) (lock).try_write_acquire_interrupt_disabled(__FILE__, __LINE__)
 
 #define srwlock_try_write_acquire$(lock) (lock).try_write_acquire(__FILE__, __LINE__)
 #define srwlock_read_acquire$(lock) (lock).read_acquire(__FILE__, __LINE__)

@@ -20,6 +20,7 @@
 
 using TaskQueue = core::Vec<kernel::Task *>;
 
+std::atomic<bool> currently_blocking = false;
 std::atomic<bool> blocked_task_dirty = false;
 
 core::Vec<size_t> _choosen = {};
@@ -508,7 +509,6 @@ core::Result<void> schedule_one(CoreId cpu)
     bool found_task = false;
     auto c = scheduled_task_count();
 
-
     if (c == 0)
     {
         next_task_to_run[cpu] = scheduler_idles[cpu];
@@ -838,6 +838,8 @@ core::Result<Task *> schedule(Task *current, void *state, CoreId core, bool soft
             return {};
         }
 
+        // scheduler_lock.release_mutability();
+
         //   arch::invalidate(cpu_runned.data());
     }
 
@@ -916,6 +918,15 @@ core::Result<void> block_current_task(BlockEvent event)
     // 1. lock interrupt
     // 2. Cpu 0 acquire scheduler lock
     // 3. Cpu 0 try to wait for CPU 1 to save but can't as they are waiting for the scheduler lock
+    //
+    if (Cpu::current() != 0)
+    {
+        arch::amd64::interrupt_release();
+    }
+    while(!srwlock_try_write_acquire_critical$(scheduler_lock))
+    {
+    }
+
     arch::amd64::interrupt_hold();
 
     auto cur = Cpu::current()->currentTask();
@@ -926,6 +937,7 @@ core::Result<void> block_current_task(BlockEvent event)
 
         arch::amd64::interrupt_release();
 
+        scheduler_lock.write_release();
         return {};
     }
 
@@ -933,13 +945,7 @@ core::Result<void> block_current_task(BlockEvent event)
 
     // why re enabling interrupt here ? Because an interrupt can occur between the lock acquire and
     // int 101 and the interrupt won't be able to handle the lock.
-    if (Cpu::current() != 0)
-    {
 
-        arch::amd64::interrupt_release();
-    }
-
-    srwlock_write_acquire_critical$(scheduler_lock);
     //    scheduler_lock.write_acquire(, int line);
     asm volatile("int $101" ::: "memory");
     arch::amd64::interrupt_release();

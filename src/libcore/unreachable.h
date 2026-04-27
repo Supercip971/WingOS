@@ -1,6 +1,7 @@
 #pragma once
 
 
+#define NNFAST
 #ifdef NNFAST
 #define unreachable$() \
     do { \
@@ -8,6 +9,7 @@
     } while(0)
 
 #else
+
 #define unreachable$() \
     do { \
         asm volatile("ud2"); \

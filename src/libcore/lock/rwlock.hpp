@@ -36,13 +36,15 @@ public:
     bool try_write_acquire()
     {
 
-       _access_lock.lock();
-       _waiters += 1;
+        if (!_access_lock.try_lock())
+        {
+            return false;
+        }
+        _waiters += 1;
        _access_lock.release();
-       int retry = 20000;
+        int retry = 2000;
         while (true)
         {
-            bool has_writter = false;
             _access_lock.lock();
             if (_readers == 0 && _writers == 0)
             {
@@ -53,21 +55,17 @@ public:
                 __atomic_thread_fence(__ATOMIC_SEQ_CST);
                 return true;
             }
-            else if(_writers == 0)
-            {
-                has_writter = true;
-            }
             _access_lock.release();
             __atomic_thread_fence(__ATOMIC_SEQ_CST);
 
             arch::pause();
             retry--;
-            if(retry==0 && has_writter)
+            if(retry==0 )
             {
 
                 _access_lock.lock();
-                               _waiters -= 1;
-                               _access_lock.release();
+                _waiters -= 1;
+                              _access_lock.release();
                                __atomic_thread_fence(__ATOMIC_SEQ_CST);
 
 

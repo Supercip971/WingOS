@@ -132,8 +132,8 @@ public:
     {
         core::SharedPtr<Contour> const &c = shape.contour;
 
-        long sy = core::max(floor(c->bound().start.y) - 1, 0);
-        long ey = core::min(ceil(c->bound().end.y) + 1, height - 1);
+        long sy = core::max(floorf(c->bound().start.y) - 1 + off.y, 0) - off.y;
+        long ey = core::min(ceilf(c->bound().end.y) + 1 + off.y, height - 1 ) - off.y;
 
         struct RasterLine
         {
@@ -141,8 +141,12 @@ public:
             int winding;
         };
 
+
         core::Vec<RasterLine> current = {};
         current.reserve(c->strokes.len());
+
+
+        auto col = shape.paint.color.toRgba8();
 
         for (long y = sy; y < ey; y++)
         {
@@ -160,8 +164,8 @@ public:
                 Vec2 p2;
 
                 bool isDownward = p1.y > p3.y;
-                p3.y = (c->bound().end.y - p3.y);
-                p1.y = (c->bound().end.y - p1.y);
+                p3.y = (p3.y);
+                p1.y = ( p1.y);
                 if (isDownward)
                 {
                     if (p1.y <= y_sample && p3.y < y_sample)
@@ -185,13 +189,13 @@ public:
                     p2 = (p1 + p3) / 2.0f;
                 }
 
-                p2.y = (c->bound().end.y - p2.y);
+                p2.y = ( p2.y);
 
                 bool t1 = false;
                 bool t2 = false;
                 auto res = solvePoly(p1, p2, p3, y_sample, t1, t2);
 
-                int n = isDownward ? 1 : -1;
+                int n = isDownward ? -1 : 1;
                 if (t1)
                 {
                     current.push(
@@ -222,6 +226,7 @@ public:
 
             int winding = 0;
 
+
             for (long i = 0; i  < (long)current.len(); i += 1)
             {
                 winding += current[i].winding;
@@ -237,24 +242,21 @@ public:
 
                         i++;
                         winding += current[i].winding;
-
-
                         s2 = current[i].x_pos;
-
                     }
 
-                   s1 = core::clamp(s1, c->bound().start.x, c->bound().end.x);
-                    s2 = core::clamp(s2, c->bound().start.x, c->bound().end.x);
+                    //s1 = core::clamp(s1, c->bound().start.x, c->bound().end.x);
+                    //s2 = core::clamp(s2, c->bound().start.x, c->bound().end.x);
 
                     float fs2 = floorf(s2);
                     float fs1 = floorf(s1);
                     for (long x = (long)(s1 + 1.f); x < (long)fs2; x++)
                     {
-                        colorize(x + off.x, y + off.y, shape.paint.color.toRgba8());
+                        colorize(x + off.x, y + off.y, col);
                     }
 
-                    blendChecked((long)s1 + off.x, y + off.y, shape.paint.color.toRgba8(), 1.0f - ((s1)-fs1));
-                    blendChecked((long)s2 + off.x, y + off.y, shape.paint.color.toRgba8(), (s2 - fs2));
+                    blendChecked((long)s1 + off.x, y + off.y, col, sqrtf(1.0f - ((s1)-fs1)));
+                    blendChecked((long)s2 + off.x, y + off.y, col, sqrtf((s2 - fs2)));
 
                 }
             }
@@ -364,7 +366,6 @@ public:
             //            log::log$("stroke: {}, {} {}", (int)stroke.pos.x, (int)stroke.pos.y, (int)stroke.action);
 
             Vec2 ppos = stroke.pos /*+ off*/;
-            ppos.y = cmd.contour->bound().end.y - ppos.y;
             switch (stroke.action)
             {
             case PathAction::GMOVE:
@@ -398,8 +399,9 @@ public:
 
             auto const &shape = cmd.font->shapes[chr];
             Vec2 opos = pos;
-            opos.y += cmd.font->ascent - cmd.font->descent + cmd.font->line_gap;
-            opos.y -=  shape.ibound.end.y;
+//#error            Vérifier: https://freetype.org/freetype2/docs/glyphs/glyphs-3.html
+            opos.y += /*cmd.font->ascent + cmd.font->descent-*/  cmd.font->line_gap;
+           // opos.y -=  cmd.font->ascent;
             opos.x += shape.bearing - shape.ibound.start.x;
             drawShapeRaster(ContourCommand{cmd.paint, shape.gfx_contour}, opos);
 

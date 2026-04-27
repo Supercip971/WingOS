@@ -35,8 +35,8 @@ struct StrokePoint
     Vec2 pos;
 
     constexpr StrokePoint(PathAction action, const Vec2 &pos) : action(action), pos(pos) {}
-    constexpr StrokePoint(Vec2 const & cpos, const Curve &curve) : action(PathAction::GCURVE), pos(cpos), curve(curve) {}
-    constexpr StrokePoint(Vec2 const & cpos, const CubicCurve &cubic_curve) : action(PathAction::GCUBIC_CURVE), pos(cpos), cubic_curve(cubic_curve) {}
+    constexpr StrokePoint(Vec2 const &cpos, const Curve &curve) : action(PathAction::GCURVE), pos(cpos), curve(curve) {}
+    constexpr StrokePoint(Vec2 const &cpos, const CubicCurve &cubic_curve) : action(PathAction::GCUBIC_CURVE), pos(cpos), cubic_curve(cubic_curve) {}
 
     constexpr static StrokePoint moved(const Vec2 &pos) { return StrokePoint(PathAction::GMOVE, pos); }
     constexpr static StrokePoint point(const Vec2 &pos) { return StrokePoint(PathAction::GPOINT, pos); }
@@ -49,28 +49,33 @@ struct StrokePoint
         CubicCurve cubic_curve;
     };
 
-
     constexpr StrokePoint() : action(PathAction::GMOVE), pos(Vec2(0, 0)) {}
-    constexpr StrokePoint(const StrokePoint &other) : action(other.action), pos(other.pos) {
-        if (action == PathAction::GCURVE) {
+    constexpr StrokePoint(const StrokePoint &other) : action(other.action), pos(other.pos)
+    {
+        if (action == PathAction::GCURVE)
+        {
             curve = other.curve;
-        } else if (action == PathAction::GCUBIC_CURVE) {
+        }
+        else if (action == PathAction::GCUBIC_CURVE)
+        {
             cubic_curve = other.cubic_curve;
         }
     }
 
-    constexpr StrokePoint &operator=(const StrokePoint &other) {
+    constexpr StrokePoint &operator=(const StrokePoint &other)
+    {
         action = other.action;
         pos = other.pos;
-        if (action == PathAction::GCURVE) {
+        if (action == PathAction::GCURVE)
+        {
             curve = other.curve;
-        } else if (action == PathAction::GCUBIC_CURVE) {
+        }
+        else if (action == PathAction::GCUBIC_CURVE)
+        {
             cubic_curve = other.cubic_curve;
         }
         return *this;
     }
-
-
 };
 
 struct RawStroke
@@ -90,7 +95,6 @@ public:
     core::Vec<RawStroke> strokes = {};
     core::Vec<StrokePoint> commands = {};
 
-
     void update_bound(Vec2 off)
     {
         if (!has_point)
@@ -105,6 +109,8 @@ public:
         }
     }
 
+    // https://iquilezles.org/articles/bezierbbox/
+
     void add_elt(StrokePoint point)
     {
 
@@ -113,19 +119,14 @@ public:
             last_stroke = point;
             return;
         }
-        else if(point.action == PathAction::GCURVE)
+
+        if (point.action == PathAction::GCURVE)
         {
             update_bound(point.curve.control);
         }
-        else if(point.action == PathAction::GCUBIC_CURVE)
-        {
-            update_bound(point.cubic_curve.control1);
-            update_bound(point.cubic_curve.control2);
-        }
-
+        update_bound(last_stroke.pos);
         update_bound(point.pos);
-
-        strokes.add_sorted(
+       strokes.add_sorted(
             [](RawStroke const &left, RawStroke const &right)
             { return core::min(left.a.pos.x, left.b.pos.x) - core::min(right.a.pos.x, right.b.pos.x); },
             RawStroke{last_stroke, point});
@@ -158,7 +159,6 @@ public:
     Contour &stroke_curve(const Vec2 &offset, const Vec2 &control)
     {
 
-
         commands.push(StrokePoint::curved(offset, control));
 
         add_elt(commands.last());
@@ -174,6 +174,8 @@ public:
 
         return *this;
     }
+
+
 };
 
 } // namespace wgfx

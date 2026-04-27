@@ -68,24 +68,27 @@ public:
         Contour contour = {};
         for (int i = 0; i < num_vertices; i++)
         {
+
+
             int kind = vertices[i].type;
+//#error ascent is incorrect here
             switch (kind)
             {
             case STBTT_vmove:
-                contour.stroke_move(Vec2(vertices[i].x, vertices[i].y) * scale);
+                contour.stroke_move(Vec2(vertices[i].x, -vertices[i].y) * scale);
                 break;
             case STBTT_vline:
-                contour.stroke_point(Vec2(vertices[i].x, vertices[i].y) * scale);
+                contour.stroke_point(Vec2(vertices[i].x, - vertices[i].y) * scale);
                 break;
             case STBTT_vcurve:
-                contour.stroke_curve(Vec2(vertices[i].x, vertices[i].y) * scale, Vec2(vertices[i].cx, vertices[i].cy) * scale);
+                contour.stroke_curve(Vec2(vertices[i].x,  -vertices[i].y) * scale, Vec2(vertices[i].cx,  -vertices[i].cy) * scale);
                 break;
             case STBTT_vcubic:
-                contour.stroke_cubic_curve(Vec2(vertices[i].x, vertices[i].y) * scale, Vec2(vertices[i].cx, vertices[i].cy) * scale, Vec2(vertices[i].cx1, vertices[i].cy1) * scale);
-                log::log$("GCUBIC: ({}, {})", (long)vertices[i].x, (long)vertices[i].y);
+                contour.stroke_cubic_curve(Vec2(vertices[i].x,  -vertices[i].y) * scale, Vec2(vertices[i].cx, -vertices[i].cy) * scale, Vec2(vertices[i].cx1,  -vertices[i].cy1) * scale);
                 break;
             default:
-                contour.stroke_point(Vec2(vertices[i].x, vertices[i].y) * scale);
+                contour.stroke_point(Vec2(vertices[i].x,  -vertices[i].y) * scale);
+
 
                 break;
             }
@@ -93,7 +96,7 @@ public:
         return contour;
     }
 
-     float additionalOffset(int a, int b) const
+    float additionalOffset(int a, int b) const
     {
         return stbtt_GetCodepointKernAdvance(&_from->raw, a, b) * rscale;
     }
@@ -109,6 +112,7 @@ public:
 
         fn.rscale = rscale;
         int ascent = 0;
+	(void)ascent;
         int descent = 0;
         int line_gap = 0;
         stbtt_GetFontVMetrics(&from->raw, &ascent, &descent, &line_gap);
@@ -124,6 +128,20 @@ public:
 
             shape.num_vertices = stbtt_GetCodepointShape(&from->raw, i, &shape.vertices);
 
+            //     stbtt_GetGlyphHMetrics(const stbtt_fontinfo *info, int glyph_index, int *advanceWidth, int *leftSideBearing)
+            int sx = 0;
+            int sy = 0;
+            int ex = 0;
+            int ey = 0;
+            stbtt_GetCodepointBox(&from->raw, i, &sx, &sy, &ex, &ey);
+
+            shape.ibound = wgfx::GRect::from_start_end((float)sx * rscale, (float)sy * rscale, (float)ex * rscale, (float)ey * rscale);
+
+            int advance;
+            int left_side_bearing;
+            stbtt_GetCodepointHMetrics(&from->raw, i, &advance, &left_side_bearing);
+            shape.advance = advance * rscale;
+            shape.bearing = left_side_bearing * rscale;
             if (shape.num_vertices > 0)
             {
                 char str[3] = {shape.c, 0};
@@ -134,22 +152,7 @@ public:
             {
                 shape.gfx_contour = core::SharedPtr<Contour>::make();
             }
-
-            //     stbtt_GetGlyphHMetrics(const stbtt_fontinfo *info, int glyph_index, int *advanceWidth, int *leftSideBearing)
-            int sx = 0;
-            int sy = 0;
-            int ex = 0;
-            int ey = 0;
-            stbtt_GetCodepointBox(&from->raw, i, &sx, &sy, &ex, &ey);
-
-            shape.ibound = wgfx::GRect::from_start_end(sx * rscale, sy * rscale, ex * rscale, ey * rscale);
-
-            int advance;
-            int left_side_bearing;
-            stbtt_GetCodepointHMetrics(&from->raw, i, &advance, &left_side_bearing);
-            shape.advance = advance * rscale;
-            shape.bearing = left_side_bearing * rscale;
-
+            //            shape.gfx_contour->bound(GRect::from_start_end((sx-1) * rscale, (sy-1) * rscale,  (ex+1)*rscale,  (ey+1) * rscale));
             fn.shapes.push(shape);
         }
         return fn;

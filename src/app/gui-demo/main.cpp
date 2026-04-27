@@ -32,7 +32,8 @@ int main(int argc, char **argv)
 
     auto t = wgfx::Typeface::from_file("./meta/assets/oswald.ttf").copied();
 
-    auto font = wgfx::Font::load_font(t, 196).copied();
+    auto font = wgfx::Font::load_font(t, 196 * window->dpi()).copied();
+
 
 
     auto sfont = core::SharedPtr<wgfx::Font>::make(font);
@@ -88,7 +89,7 @@ int main(int argc, char **argv)
       //  frame->drawContour(font.shapes['@'].gfx_contour, wgfx::CompositeColor::fromOklch(63.7/100, 0, 0), wgfx::Vec2(x,y));
       //
 
-            frame->drawText(wgfx::Vec2(10.f,10.f), "Hello world g", sfont, wgfx::CompositeColor::fromOklch(63.7/100, 0, 0));
+            frame->drawText(wgfx::Vec2(200.f * window->dpi(),200.f * window->dpi()), "g G @ hello world ", sfont, wgfx::CompositeColor::fromOklch(63.7/100, 0, 0));
 
         x += dx;
         y += dy;

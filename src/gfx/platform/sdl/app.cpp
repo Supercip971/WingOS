@@ -1,3 +1,6 @@
+#include <SDL3/SDL_properties.h>
+#define EXTERNAL_INCLUDED
+
 #include <SDL3/SDL.h>
 #include <gfx/platform/app.hpp>
 #include <gfx/platform/window.hpp>
@@ -18,8 +21,8 @@ namespace wgfx
 {
 struct SDLWindowImpl : public wgfx::PlatformWindow
 {
-    RasterCanvas* raster_canvas;
-    OpenglCanvas* opengl_canvas;
+    RasterCanvas *raster_canvas;
+    OpenglCanvas *opengl_canvas;
 
     SDL_Window *window;
 
@@ -73,7 +76,7 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
             raster_canvas->bpp = 32;
             raster_canvas->width = width();
             raster_canvas->height = height();
-            raster_canvas->buffer = (Rgba8*)raster_buffer;
+            raster_canvas->buffer = (Rgba8 *)raster_buffer;
             return raster_canvas;
         }
         case wgfx::BACKEND_KIND_OPENGL:
@@ -89,6 +92,10 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
         }
         }
         return nullptr;
+    }
+    virtual float dpi() override {
+        return SDL_GetWindowDisplayScale(window
+        );
     }
 
     virtual void end_frame(Canvas *frame) override
@@ -116,7 +123,7 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
             newtime = SDL_GetTicksNS();
             fps = newtime - oldtime;
             oldtime = newtime;
-            printf("%f\n", (1000.f*1000.f*1000.f) / (float)fps);
+            printf("%f\n", (1000.f * 1000.f * 1000.f) / (float)fps);
             break;
         }
         default:
@@ -128,12 +135,12 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
 
     virtual size_t width() override
     {
-        return 1920;
+        return raster_width;
     }
 
     virtual size_t height() override
     {
-        return 1080;
+        return raster_height;
     }
 
     virtual core::Result<void> attach() override
@@ -148,6 +155,10 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
             SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
             SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
             SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+
+            // set DPI aware window
+            //  SDL_SetHint(, "permonitorv2");
+
             SDL_GLContext gl_context = SDL_GL_CreateContext(window);
             if (gl_context == nullptr)
             {
@@ -159,7 +170,6 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
             SDL_GL_SetSwapInterval(1); // Enable vsync
             SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 
-
             opengl_canvas = new OpenglCanvas();
             break;
         }
@@ -167,8 +177,11 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
         {
             renderer = SDL_CreateRenderer(window, NULL);
             SDL_RenderClear(renderer);
-            raster_width = 1920;
-            raster_height = 1080;
+
+            int w, h;
+            SDL_GetWindowSizeInPixels(window, &w, &h);
+            raster_width = w;
+            raster_height = h;
             raster_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, raster_width, raster_height);
             raster_buffer = new uint32_t[raster_height * raster_width];
 
@@ -193,8 +206,27 @@ wgfx::PlatformWindow::create_native(wgfx::BackendsKinds preferred_backend)
 
     window->backend_kind = preferred_backend;
 
-    SDL_WindowFlags flags = (preferred_backend == BackendsKinds::BACKEND_KIND_OPENGL ? SDL_WINDOW_OPENGL : 0);
-    window->window = SDL_CreateWindow("WingOS SDL Window", 1920, 1080, flags);
+    SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, "WingOS SDL Window");
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, 1920);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, 1080);
+    SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN, true);
+    //  SDL_SetWindowProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, (preferred_backend == BackendsKinds::BACKEND_KIND_OPENGL ? SDL_WINDOW_OPENGL : 0) | SDL_WINDOW_HIGH_PIXEL_DENSITY);
+
+    SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN, 1);
+    if (preferred_backend == BackendsKinds::BACKEND_KIND_OPENGL)
+    {
+        SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, 1);
+    }
+    else
+    {
+        SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, 0);
+        SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_VULKAN_BOOLEAN, 0);
+
+        SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_EXTERNAL_GRAPHICS_CONTEXT_BOOLEAN, 1);
+
+    }
+    window->window = SDL_CreateWindowWithProperties(props);
 
     return window.static_pointer_cast<wgfx::PlatformWindow>();
 }

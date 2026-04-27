@@ -20,6 +20,8 @@ public:
 
     virtual core::Result<void> attach(){return {};};
 
+    virtual float dpi() { return 1.f; }
+
     virtual ~PlatformWindow() {};
 
     virtual void destroy()

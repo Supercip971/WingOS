@@ -283,7 +283,7 @@ public:
         info.created_at = msg.data[2].data;
         info.modified_at = msg.data[3].data;
         info.accessed_at = msg.data[4].data;
-        info.is_directory = msg.data[5].data; 
+        info.is_directory = msg.data[5].data;
         size_t name_len = msg.len;
         char name_buf[110] = {0};
         for (size_t i = 0; i < name_len && i < 110; i++)

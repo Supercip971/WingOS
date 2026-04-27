@@ -32,7 +32,7 @@ public:
         // - Other CPUs need read_acquire to do save_in, but _waiters > 0 blocks them
         // Without _waiters, new readers can freely acquire, complete their work
         // (including save_in), release, and eventually _readers drops to 0.
-        int retry = 7000;
+        int retry = 200;
         bool immediate = true;
 
         _waiters++;
@@ -123,6 +123,11 @@ public:
         _last_write_acquire_fn = fn;
         _last_write_acquire_line = line;
         return immediate;
+    }
+
+    bool try_write_acquire(int ini_retry)
+    {
+        return core::RWLock::try_write_acquire(ini_retry);
     }
 
     bool read_acquire(const char *fn, int line)
@@ -237,4 +242,7 @@ public:
 #define srwlock_try_write_acquire_critical$(lock) (lock).try_write_acquire_interrupt_disabled(__FILE__, __LINE__)
 
 #define srwlock_try_write_acquire$(lock) (lock).try_write_acquire(__FILE__, __LINE__)
+
+#define srwlock_try_write_acquire_with_retry$(lock, retry) (lock).try_write_acquire(retry)
+
 #define srwlock_read_acquire$(lock) (lock).read_acquire(__FILE__, __LINE__)

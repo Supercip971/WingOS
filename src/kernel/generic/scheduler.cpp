@@ -919,15 +919,20 @@ core::Result<void> block_current_task(BlockEvent event)
     // 2. Cpu 0 acquire scheduler lock
     // 3. Cpu 0 try to wait for CPU 1 to save but can't as they are waiting for the scheduler lock
     //
-    if (Cpu::current() != 0)
-    {
-        arch::amd64::interrupt_release();
-    }
-    while(!srwlock_try_write_acquire_critical$(scheduler_lock))
-    {
-    }
 
     arch::amd64::interrupt_hold();
+    while (!srwlock_try_write_acquire_with_retry$(scheduler_lock, 5))
+    {
+        arch::amd64::interrupt_release();
+        if (event.liberated())
+        {
+            return {};
+        }
+
+        asm volatile("pause");
+
+        arch::amd64::interrupt_hold();
+    }
 
     auto cur = Cpu::current()->currentTask();
 
@@ -935,9 +940,9 @@ core::Result<void> block_current_task(BlockEvent event)
     {
         log::err$("block_current_task: cpu_running[{}] is null, refusing to block", Cpu::currentId());
 
+        scheduler_lock.write_release();
         arch::amd64::interrupt_release();
 
-        scheduler_lock.write_release();
         return {};
     }
 

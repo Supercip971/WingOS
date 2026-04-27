@@ -62,6 +62,7 @@ protected:
     bool _present;
     bool _in_syscall_lock = false;
 
+
 public:
 
     kernel::Task * _current_task = nullptr;

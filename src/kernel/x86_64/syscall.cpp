@@ -74,14 +74,13 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
 
 
 
-    srwlock_write_acquire$(_syscall_lock);
 
-    Cpu::current()->debug_context.in_syscall = true;
-    Cpu::current()->debug_context.last_syscall_id = (uint32_t)stackframe->rax;
-    Cpu::current()->debug_context.last_syscall_task_called = Cpu::current()->currentTask() ? Cpu::current()->currentTask()->uid() : -1;
+     asm volatile("cli");
+    //Cpu::current()->debug_context.in_syscall = true;
+    //Cpu::current()->debug_context.last_syscall_id = (uint32_t)stackframe->rax;
+    //Cpu::current()->debug_context.last_syscall_task_called = Cpu::current()->currentTask()->uid();
 
     kernel::Task* cur_task = Cpu::current()->currentTask();
-    (_syscall_lock.write_release());
 
     Cpu::begin_syscall();
 
@@ -165,7 +164,7 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
 
 
     Cpu::end_syscall();
-    Cpu::current()->debug_context.in_syscall = false;
+  //  Cpu::current()->debug_context.in_syscall = false;
 
     // log::log$("syscall: {} ", stackframe->rax);
     return sf->rax;

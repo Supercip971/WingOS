@@ -33,7 +33,7 @@ public:
         _access_lock = {};
     }
 
-    bool try_write_acquire()
+    bool try_write_acquire(int ini_retry = 1000)
     {
 
         if (!_access_lock.try_lock())
@@ -42,7 +42,7 @@ public:
         }
         _waiters += 1;
        _access_lock.release();
-        int retry = 2000;
+        int retry = ini_retry;
         while (true)
         {
             _access_lock.lock();
@@ -65,7 +65,7 @@ public:
 
                 _access_lock.lock();
                 _waiters -= 1;
-                              _access_lock.release();
+                _access_lock.release();
                                __atomic_thread_fence(__ATOMIC_SEQ_CST);
 
 

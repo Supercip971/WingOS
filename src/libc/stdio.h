@@ -1,8 +1,6 @@
 #pragma once
 
 
-
-
 #ifdef __cplusplus
 extern "C" {
     #endif
@@ -10,7 +8,7 @@ extern "C" {
 #include <stdarg.h>
 
 
-typedef struct FILE FILE;
+typedef struct _IO_FILE FILE;
 
 #define EOF (-1)
 #define SEEK_SET 0

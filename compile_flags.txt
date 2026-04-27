@@ -6,4 +6,4 @@
 -Wall
 -Wextra
 -Werror
--ffreestanding
+-D__ck_clangd_NEW__

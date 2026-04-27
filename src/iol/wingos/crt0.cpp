@@ -2,6 +2,7 @@
 
 #include <libcore/fmt/log.hpp>
 #include <string.h>
+#include <stdio.h>
 
 #include "libc/stdio_fs.hpp"
 #include "libcore/str_writer.hpp"

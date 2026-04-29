@@ -142,6 +142,8 @@ class LimineCfg:
 
         if kvmAvailable():
             qemuCmd += ["-enable-kvm", "-cpu", "host"]
+        else:
+            print("KVM not available, running in TCG mode")
 
         shell.exec(*qemuCmd)
 
@@ -207,8 +209,7 @@ def build_object(args: model.TargetArgs, component, target):
     return product
 
 
-@cli.command("s", "Boot Wingos")
-def bootFunc(args: model.TargetArgs):
+def buildSystem(args: model.TargetArgs) -> LimineCfg:
     scope = builder.TargetScope.use(args)
     registry = model.Registry.use(args)
     components = list(registry.iter(model.Component))
@@ -235,7 +236,22 @@ def bootFunc(args: model.TargetArgs):
         ):
             obj = build_object(args, pkg.id, "wingos-x86_64")
             limine.append_component(obj)
-    limine.createImage().run()
+    return limine.createImage()
+
+
+@cli.command("rec", "Record qemu runtime")
+def recordFunc(args: model.TargetArgs):
+    buildSystem(args).record()
+
+
+@cli.command("rep", "Replay qemu runtime")
+def recordFunc(args: model.TargetArgs):
+    buildSystem(args).replay()
+
+
+@cli.command("s", "Boot Wingos")
+def bootFunc(args: model.TargetArgs):
+    buildSystem(args).run()
 
 
 # cmds.append(

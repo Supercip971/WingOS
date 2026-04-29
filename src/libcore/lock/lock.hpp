@@ -99,7 +99,7 @@ public:
         }
     }
 
-    bool retry_try_lock(long retry = 150)
+    bool retry_try_lock(long retry = 5)
     {
         while (!try_acquire())
         {

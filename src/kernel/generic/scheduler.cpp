@@ -921,7 +921,7 @@ core::Result<void> block_current_task(BlockEvent event)
     //
 
     arch::amd64::interrupt_hold();
-    while (!srwlock_try_write_acquire_with_retry$(scheduler_lock, 5))
+    while (!srwlock_try_write_acquire$(scheduler_lock))
     {
         arch::amd64::interrupt_release();
         if (event.liberated())

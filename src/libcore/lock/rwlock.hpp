@@ -33,7 +33,7 @@ public:
         _access_lock = {};
     }
 
-    bool try_write_acquire(int ini_retry = 1000)
+    bool try_write_acquire(int ini_retry = 3)
     {
 
         if (!_access_lock.try_lock())

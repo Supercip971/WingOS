@@ -32,7 +32,7 @@ public:
         // - Other CPUs need read_acquire to do save_in, but _waiters > 0 blocks them
         // Without _waiters, new readers can freely acquire, complete their work
         // (including save_in), release, and eventually _readers drops to 0.
-        int retry = 200;
+        int retry = 10;
         bool immediate = true;
 
         _waiters++;

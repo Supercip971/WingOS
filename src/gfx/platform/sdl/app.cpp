@@ -182,7 +182,7 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
             SDL_GetWindowSizeInPixels(window, &w, &h);
             raster_width = w;
             raster_height = h;
-            raster_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, raster_width, raster_height);
+            raster_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, raster_width, raster_height);
             raster_buffer = new uint32_t[raster_height * raster_width];
 
             raster_canvas = new RasterCanvas();

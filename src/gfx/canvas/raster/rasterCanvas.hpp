@@ -29,6 +29,11 @@ public:
     {
         buffer[x + y * width].blend(col, factor);
     }
+
+    inline constexpr void blendGamma(long x, long y, Rgba8 col, float factor)
+    {
+        buffer[x + y * width].blendGamma(col, factor);
+    }
     inline constexpr void blendChecked(long x, long y, Rgba8 col, float factor)
     {
         if (x >= 0 && x < (long)width && y >= 0 && y < (long)height)
@@ -255,8 +260,8 @@ public:
                         colorize(x + off.x, y + off.y, col);
                     }
 
-                    blendChecked((long)s1 + off.x, y + off.y, col, sqrtf(1.0f - ((s1)-fs1)));
-                    blendChecked((long)s2 + off.x, y + off.y, col, sqrtf((s2 - fs2)));
+                    blend((long)s1 + off.x, y + off.y, col, (1.0f - ((s1)-fs1)));
+                    blend((long)s2 + off.x, y + off.y, col, ((s2 - fs2)));
 
                 }
             }

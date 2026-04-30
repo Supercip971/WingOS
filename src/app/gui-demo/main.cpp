@@ -32,7 +32,7 @@ int main(int argc, char **argv)
 
     auto t = wgfx::Typeface::from_file("./meta/assets/oswald.ttf").copied();
 
-    auto font = wgfx::Font::load_font(t, 196 * window->dpi()).copied();
+    auto font = wgfx::Font::load_font(t, 96 * window->dpi()).copied();
 
 
 
@@ -70,18 +70,30 @@ int main(int argc, char **argv)
         log::log$("control2: ({}, {})", (long)contour->strokes[j].a.cubic_curve.control2.x, (long)contour->strokes[j].a.cubic_curve.control2.y);
         log::log$("");
     }
+
+    float l = 0.f;
     while(true)
     {
-        auto frame=  window->create_frame();
+        wgfx::Canvas* frame=  window->create_frame();
 
         //log::log$("ran frame");
 
 
-        auto col = wgfx::CompositeColor::fromOklch((float)63.7 / 100, 0.237, 0.5);
+
+        log::log$("green: l:{} - a:{} - b:{}", (long)(wgfx::GREEN.lightness * 100), (long)(wgfx::GREEN.a_green_rediness * 100), (long)(wgfx::GREEN.b_blue_yelowness * 100));
+
+        log::log$("red: {}", wgfx::RED.toRgba8());
+
+        log::log$("blue: {}", wgfx::BLUE.toRgba8());
+
+        log::log$("green: {}", wgfx::GREEN.toRgba8());
 
 
 
-        frame->clear(col);
+        l += 0.5;
+        wgfx::CompositeColor color = wgfx::CompositeColor::fromOklch(70.4f/100.f, 0.295, l);
+
+        frame->clear(wgfx::SLATE_WHITE);
 
         //frame->drawRect(wgfx::GRect(x, y, 256, 256), wgfx::CompositeColor::fromOklch((float)63.7/100, 0, 0));
 
@@ -89,7 +101,18 @@ int main(int argc, char **argv)
       //  frame->drawContour(font.shapes['@'].gfx_contour, wgfx::CompositeColor::fromOklch(63.7/100, 0, 0), wgfx::Vec2(x,y));
       //
 
-            frame->drawText(wgfx::Vec2(200.f * window->dpi(),200.f * window->dpi()), "g G @ hello world ", sfont, wgfx::CompositeColor::fromOklch(63.7/100, 0, 0));
+        frame->drawText(wgfx::Vec2(200.f * window->dpi(),150.f * window->dpi()), "@Hello World ", sfont, wgfx::RED);
+
+
+        frame->drawText(wgfx::Vec2(200.f * window->dpi(),250.f * window->dpi()), "@Hello World ", sfont, wgfx::GREEN);
+
+        frame->drawText(wgfx::Vec2(200.f * window->dpi(),350.f * window->dpi()), "@Hello World ", sfont, wgfx::BLUE);
+
+        frame->drawText(wgfx::Vec2(200.f * window->dpi(),450.f * window->dpi()), "@Hello World ", sfont, wgfx::CYAN);
+
+        frame->drawText(wgfx::Vec2(200.f * window->dpi(),550.f * window->dpi()), "@Hello World ", sfont, wgfx::YELLOW);
+
+        frame->drawText(wgfx::Vec2(200.f * window->dpi(),650.f * window->dpi()), "@Hello World ", sfont, color);
 
         x += dx;
         y += dy;

@@ -1,4 +1,4 @@
-
+#pragma once
 
 #include "gfx/geometry/vec2.hpp"
 #include "libcore/logic.hpp"

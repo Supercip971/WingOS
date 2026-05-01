@@ -116,7 +116,10 @@ int main(int argc, char **argv)
 
         frame->drawText(wgfx::Vec2(200.f * window->dpi(),650.f * window->dpi()), "@Hello World ", sfont, color);
 
-        frame->drawRect(wgfx::GRect::from_size(800.f * window->dpi(), 300.f * window->dpi(), 256.f * window->dpi(), 256.f * window->dpi()), wgfx::FUCHSIA, 0.3f);
+        frame->drawRect(
+            wgfx::GRect::from_size(800.f * window->dpi(), 300.f * window->dpi(), 256.f * window->dpi(), 256.f * window->dpi()),
+            wgfx::Painter::stroked(wgfx::FUCHSIA, 10.f),
+            (cosf(l*0.001f) +1.f)/2.f);
 
         x += dx;
         y += dy;

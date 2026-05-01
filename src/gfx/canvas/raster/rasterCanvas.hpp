@@ -24,6 +24,15 @@ public:
     size_t height;
     size_t bpp;
 
+    inline constexpr void colorizeChecked(long x, long y, Rgba8 col)
+    {
+
+        if (x >= 0 && x < (long)width && y >= 0 && y < (long)height)
+        {
+        buffer[x + y * width] = col;
+        }
+    }
+
     inline constexpr void colorize(long x, long y, Rgba8 col)
     {
         buffer[x + y * width] = col;
@@ -57,6 +66,11 @@ public:
     void rectRoundedFlatAligned(RectCommand const &cmd);
 
     void rectFlatAligned(RectCommand const &cmd);
+
+
+    void rectStrokeRoundedFlatAligned(RectCommand const &cmd);
+
+    void rectStrokeFlatAligned(RectCommand const &cmd);
 
     void rect(RectCommand const &cmd);
 

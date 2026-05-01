@@ -22,13 +22,28 @@ struct Painter
     CompositeColor color;
     PaintType type;
 
+    union  {
+        struct {
+            float width;
+        } stroke;
+    };
+
     constexpr Painter() {}
     constexpr Painter(CompositeColor comp_color)
     {
         color = comp_color;
         type = PAINT_MODE_FILLED;
     };
+
+
     constexpr static Painter filled(CompositeColor col) { return Painter(col); };
+
+    constexpr static Painter stroked(CompositeColor col, float w) { Painter a;
+        a.color = col;
+        a.type = PAINT_MODE_STROKE;
+        a.stroke.width = w;
+        return a;
+    };
 };
 enum class RenderCommandKind
 {

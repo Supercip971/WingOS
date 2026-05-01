@@ -27,11 +27,12 @@ public:
         commands.push(cmd);
     }
 
-    void drawRect(wgfx::GRect rect, CompositeColor color, float radius = 0.0f)
+
+    void drawRect(wgfx::GRect rect, Painter paint, float radius = 0.0f)
     {
 
         RenderCommand cmd = RenderCommand::from((RectCommand){
-            .paint = color,
+            .paint = paint,
             .rect = rect,
             .radius = radius,
         });

@@ -1,3 +1,4 @@
+#define DO_NOT_LOG
 #include "libm.h"
 
 #if FLT_EVAL_METHOD == 2

@@ -1,0 +1,329 @@
+
+ #include "gfx/geometry/vec2.hpp"
+#include "rasterCanvas.hpp"
+
+// https://terathon.com/i3d2018_lengyel.pdf public domain
+  constexpr inline wgfx::Vec2 solvePoly(wgfx::Vec2 p1, wgfx::Vec2 p2,wgfx:: Vec2 p3, float y_sample, bool &intersect1, bool &intersect2)
+    {
+        wgfx::Vec2 a = p1 - p2 * 2.0f + p3;
+        wgfx::Vec2 b = (p2 - p1) * 2.0f;
+        wgfx::Vec2 c = p1 - wgfx::Vec2(0.0, y_sample);
+
+        float t1 = 0.0f;
+        float t2 = 0.0f;
+
+        if (core::abs(a.y) < 1e-4f)
+        {
+
+            if (core::abs(b.y) < 1e-4f)
+            {
+                return {};
+            }
+            t1 = (t2 = (-c.y) / (b.y));
+            if (t1 < 0.0f || t1 >= 1.0f)
+            {
+                return {};
+            }
+
+            if (core::abs(t1 - 1.0f) < 0.0001f)
+            {
+                intersect1 = false;
+            }
+            else
+            {
+                intersect1 = true;
+            }
+        }
+        else
+        {
+
+            float dis = b.y * b.y - 4.f * a.y * (c.y);
+
+            if (dis < -0.000001f)
+            {
+                return {};
+            }
+            float rt = sqrtf(core::max(dis, 0.0f));
+
+            t1 = (-b.y - rt) / (2.f * a.y);
+            t2 = (-b.y + rt) / (2.f * a.y);
+
+            if (t1 >= 0.0f && t1 < 1.0f)
+            {
+                intersect1 = true;
+            }
+
+            if (t2 >= 0.0f && t2 < 1.0f)
+            {
+                intersect2 = true;
+            }
+        }
+
+        // if the derivative, aka:
+        // a t² + bt + c
+        // 2 a t + b < 0
+        // then we need to swap t1, t2
+
+        return wgfx::Vec2(a.x * t1 * t1 + b.x * t1 + c.x, a.x * t2 * t2 + b.x * t2 + c.x);
+    }
+    // https://fr.wikipedia.org/wiki/Algorithme_de_trac%C3%A9_de_segment_de_Xiaolin_Wu
+
+    void wgfx::RasterCanvas::pathFillFlat(ContourCommand const &shape, Vec2 off)
+    {
+        core::SharedPtr<Contour> const &c = shape.contour;
+
+        long sy = core::max(floorf(c->bound().start.y) - 1 + off.y, 0) - off.y;
+        long ey = core::min(ceilf(c->bound().end.y) + 1 + off.y, height - 1) - off.y;
+
+        struct RasterLine
+        {
+            float x_pos;
+            int winding;
+        };
+
+        core::Vec<RasterLine> current = {};
+        current.reserve(c->strokes.len());
+
+        auto col = shape.paint.color.toRgba8();
+
+        for (long y = sy; y < ey; y++)
+        {
+            current.clear();
+            //  float draw = 0.0f;
+
+            float y_sample = (float)y + 0.5f;
+
+            // critical loop
+            for (RawStroke const &line : c->strokes)
+            {
+
+                Vec2 p1 = line.a.pos;
+                Vec2 p3 = line.b.pos;
+                Vec2 p2;
+
+                bool isDownward = p1.y > p3.y;
+                p3.y = (p3.y);
+                p1.y = (p1.y);
+                if (isDownward)
+                {
+                    if (p1.y <= y_sample && p3.y < y_sample)
+                        continue;
+                    if (p1.y >= y_sample && p3.y > y_sample)
+                        continue;
+                }
+                else
+                {
+                    if (p1.y < y_sample && p3.y <= y_sample)
+                        continue;
+                    if (p1.y > y_sample && p3.y >= y_sample)
+                        continue;
+                }
+                if (line.b.action == PathAction::GCURVE)
+                {
+                    p2 = (line.b.curve.control);
+                }
+                else
+                {
+                    p2 = (p1 + p3) / 2.0f;
+                }
+
+                p2.y = (p2.y);
+
+                bool t1 = false;
+                bool t2 = false;
+                auto res = solvePoly(p1, p2, p3, y_sample, t1, t2);
+
+                int n = isDownward ? -1 : 1;
+                if (t1)
+                {
+                    current.push(
+                        RasterLine{
+                            .x_pos = res.x,
+                            .winding = n,
+                        });
+                }
+                if (t2)
+                {
+
+                    current.push(
+                        RasterLine{
+                            .x_pos = res.y,
+                            .winding = n,
+                        });
+                }
+            }
+
+            if (current.len() < 2)
+            {
+                continue;
+            }
+
+            // see why miracly removing this quicksort don't break everything
+            current.quick_sort([](RasterLine const &a, RasterLine const &b)
+                               { return (a.x_pos - b.x_pos); }, 0, current.len());
+
+            int winding = 0;
+
+            for (long i = 0; i < (long)current.len(); i += 1)
+            {
+                winding += current[i].winding;
+
+                if (winding <= -1)
+                {
+
+                    auto s1 = current[i].x_pos;
+                    auto s2 = 0.0f;
+                    while (i + 1 < (long)current.len() && (winding) <= -1)
+                    {
+
+                        i++;
+                        winding += current[i].winding;
+                        s2 = current[i].x_pos;
+                    }
+
+                    // s1 = core::clamp(s1, c->bound().start.x, c->bound().end.x);
+                    // s2 = core::clamp(s2, c->bound().start.x, c->bound().end.x);
+
+                    float fs2 = floorf(s2);
+                    float fs1 = floorf(s1);
+                    for (long x = (long)(s1 + 1.f); x < (long)fs2; x++)
+                    {
+                        colorize(x + off.x, y + off.y, col);
+                    }
+
+                    blend((long)s1 + off.x, y + off.y, col, (1.0f - ((s1)-fs1)));
+                    blend((long)s2 + off.x, y + off.y, col, ((s2 - fs2)));
+                }
+            }
+        }
+    }
+
+    void wgfx::RasterCanvas::pathLineFlat(Vec2 start, Vec2 end, Rgba8 color)
+    {
+
+        GRect rect = {0, 0, (float)width, (float)height};
+
+        start = rect.contained(start);
+        end = rect.contained(end);
+
+        //        int x0 = start.x, y0 = start.y;
+        //       int x1 = end.x, y1 = end.y;
+
+        // Find the greater difference
+        auto delta = end - start;
+        int steep = abs(delta.y) > abs(delta.x);
+
+        // Swap x and y if y has a greater difference than x
+        if (steep)
+        {
+            core::swap(end.x, end.y);
+            core::swap(start.x, start.y);
+        }
+        // Set the smaller x value to x0
+        if (start.x > end.x)
+        {
+            core::swap(start, end);
+        }
+        delta = end - start;
+
+        float gradient = (fabs(delta.x) <= 0.001) ? 1.0f : delta.y / delta.x;
+        // First endpoint
+        float xend = floor(start.x);
+        float yend = start.y + gradient * (xend - start.x);
+        float xgap = 1.0f - ((start.x) - xend);
+        int xpxl1 = xend;
+        int ypxl1 = floor(yend);
+
+        if (steep)
+        {
+            blendChecked(ypxl1, xpxl1, color, (1.0f - (yend - floor(yend))) * xgap);
+            blendChecked(ypxl1 + 1, xpxl1, color, (yend - floor(yend)) * xgap);
+        }
+        else
+        {
+
+            blendChecked(xpxl1, ypxl1, color, (1.0f - (yend - floor(yend))) * xgap);
+            blendChecked(xpxl1, ypxl1 + 1, color, (yend - floor(yend)) * xgap);
+        }
+
+        float intery = yend + gradient;
+
+        // Second endpoint
+        xend = ceil(end.x);
+        yend = end.y + gradient * (xend - end.x);
+        xgap = 1.f - (xend - end.x);
+        int xpxl2 = xend;
+        int ypxl2 = floor(yend);
+        if (steep)
+        {
+            blendChecked(ypxl2, xpxl2, color, (1.0f - (yend - floor(yend))) * xgap);
+            blendChecked(ypxl2 + 1, xpxl2, color, (yend - floor(yend)) * xgap);
+        }
+        else
+        {
+            blendChecked(xpxl2, ypxl2, color, (1.0f - (yend - floor(yend))) * xgap);
+            blendChecked(xpxl2, ypxl2 + 1, color, (yend - floor(yend)) * xgap);
+        }
+
+        // Move between endpoints
+        if (steep)
+        {
+            xpxl1 = core::clamp(xpxl1, rect.start.x, rect.end.x - 1);
+            xpxl2 = core::clamp(xpxl2, rect.start.y, rect.end.y - 1);
+            intery = core::clamp(intery, rect.start.x, rect.end.x - 1);
+        }
+        else
+        {
+            xpxl1 = core::clamp(xpxl1, rect.start.x, rect.end.x - 1);
+            xpxl2 = core::clamp(xpxl2, rect.start.x, rect.end.x - 1);
+            intery = core::clamp(intery, rect.start.y, rect.end.y - 2);
+        }
+        for (int x = xpxl1 + 1; x < xpxl2; x++)
+        {
+            if (steep)
+            {
+                blend(floor(intery), x, color, (1.0f - (intery - floor(intery))));
+                blend(floor(intery) + 1, x, color, (intery - floor(intery)));
+            }
+            else
+            {
+                blend(x, floor(intery), color, (1.0f - (intery - floor(intery))));
+                blend(x, floor(intery) + 1, color, (intery - floor(intery)));
+            }
+            intery += gradient;
+        }
+    }
+    void wgfx::RasterCanvas::contour(ContourCommand const &cmd)
+      {
+          Vec2 pos = {};
+          for (auto const &stroke : cmd.contour->commands)
+          {
+              //            log::log$("stroke: {}, {} {}", (int)stroke.pos.x, (int)stroke.pos.y, (int)stroke.action);
+
+              Vec2 ppos = stroke.pos /*+ off*/;
+              switch (stroke.action)
+              {
+              case PathAction::GMOVE:
+                  pos = ppos;
+                  break;
+              case PathAction::GPOINT:
+                  pathLineFlat(pos, ppos, cmd.paint.color.toRgba8());
+                  pos = ppos;
+                  break;
+              case PathAction::GCURVE:
+                  pathLineFlat(pos, ppos, cmd.paint.color.toRgba8());
+                  pos = ppos;
+                  break;
+              case PathAction::GCUBIC_CURVE:
+                  pathLineFlat(pos, ppos, cmd.paint.color.toRgba8());
+                  pos = ppos;
+                  break;
+              default:
+                  log::log$("unknown stroke action: {}", (int)stroke.action);
+                  break;
+              }
+          }
+      }
+
+
+      

@@ -1,3 +1,6 @@
+
+#define DO_NOT_LOG
+
 /* origin: FreeBSD /usr/src/lib/msun/src/e_jn.c */
 /*
  * ====================================================

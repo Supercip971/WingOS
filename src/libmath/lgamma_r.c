@@ -1,3 +1,5 @@
+#define DO_NOT_LOG
+
 /* origin: FreeBSD /usr/src/lib/msun/src/e_lgamma_r.c */
 /*
  * ====================================================

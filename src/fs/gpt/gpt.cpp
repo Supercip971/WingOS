@@ -11,13 +11,13 @@ core::Result<Wingos::GPTDiskParseResult> Wingos::parse_gpt(core::Str& device)
 
     Wingos::MemoryAsset header_asset = (Wingos::Space::self().allocate_physical_memory(4096));
 
-    
+
     try$(connection.read(header_asset,  1, 512));
        Wingos::VirtualMemoryAsset header_mapping = Wingos::Space::self().map_memory(header_asset, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
 
-    
+
     GPT* gpt_header = (GPT*)header_mapping.ptr();
-    // dump: 
+    // dump:
     log::log$("GPT Signature: {}", core::Str(gpt_header->signature, 8));
     log::log$("GPT Revision: {}", core::copy(gpt_header->revision));
     log::log$("GPT Size: {}", core::copy(gpt_header->size));
@@ -32,7 +32,7 @@ core::Result<Wingos::GPTDiskParseResult> Wingos::parse_gpt(core::Str& device)
     size_t partition_entries_sectors = math::alignUp((partition_entries_size), (size_t)512);
     Wingos::MemoryAsset partition_entries_asset = (Wingos::Space::self().allocate_physical_memory(math::alignUp(partition_entries_sectors, (size_t)4096)));
     try$(connection.read(partition_entries_asset,  gpt_header->lba_start_guid_partition_entry, partition_entries_sectors));
-   Wingos::VirtualMemoryAsset partition_entries_mapping = Wingos::Space::self().map_memory(partition_entries_asset, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
+    Wingos::VirtualMemoryAsset partition_entries_mapping = Wingos::Space::self().map_memory(partition_entries_asset, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
 
     GPTPartitionEntries* partition_entries = (GPTPartitionEntries*)partition_entries_mapping.ptr();
 
@@ -70,7 +70,7 @@ core::Result<Wingos::GPTDiskParseResult> Wingos::parse_gpt(core::Str& device)
         parse_entry.name = core::move(part_name);
         parse_entry.entry = entry;
         result.entries.push(core::move(parse_entry));
-        
+
     }
 
 

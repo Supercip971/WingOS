@@ -1,3 +1,6 @@
+
+#define DO_NOT_LOG
+
 /* origin: FreeBSD /usr/src/lib/msun/src/e_j0f.c */
 /*
  * Conversion to float by Ian Lance Taylor, Cygnus Support, ian@cygnus.com.

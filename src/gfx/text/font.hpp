@@ -2,6 +2,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// Prevent stb_truetype.h from including <assert.h>, which defines the
+// `assert` macro and conflicts with core::Result::assert() defined in log.hpp.
+#ifndef STBTT_assert
+#    define STBTT_assert(x) ((void)(x))
+#endif
 #include "external/stb/stb_truetype.h"
 #include "gfx/canvas/cmd.hpp"
 #include "gfx/geometry/shape.hpp"

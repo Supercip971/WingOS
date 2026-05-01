@@ -1,10 +1,10 @@
 #pragma once
 
+#include <libcore/result.hpp>
 #include "libcore/type-utils.hpp"
 #define HAS_LOGGING
 #include <libcore/fmt/fmt.hpp>
 #include <libcore/io/writer.hpp>
-#include <libcore/result.hpp>
 #include <libcore/str.hpp>
 namespace log
 {
@@ -130,6 +130,13 @@ inline consteval core::Str color_from_filename(const char *s)
 #endif
 
 } // namespace log
+
+// <assert.h> may have been pulled in transitively (e.g. via stb_truetype.h),
+// defining assert as a function-like macro that conflicts with the method
+// name below.  Undefine it here so the method definitions compile cleanly.
+#ifdef assert
+#    undef assert
+#endif
 
 template <typename ValT, typename ErrT>
 inline void core::Result<ValT, ErrT>::assert()

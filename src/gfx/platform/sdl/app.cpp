@@ -77,14 +77,14 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
             raster_canvas->width = width();
             raster_canvas->height = height();
             raster_canvas->buffer = (Rgba8 *)raster_buffer;
-            return raster_canvas;
+            return (Canvas*)raster_canvas;
         }
         case wgfx::BACKEND_KIND_OPENGL:
         {
 
             opengl_canvas->width = width();
             opengl_canvas->height = height();
-            return opengl_canvas;
+            return (Canvas*)opengl_canvas;
         }
         default:
         {

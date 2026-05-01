@@ -4,7 +4,6 @@
 
 #include "libcore/io/writer.hpp"
 #include "libcore/str.hpp"
-#define DO_NOT_LOG
 #include <libc/math.h>
 namespace wgfx
 {

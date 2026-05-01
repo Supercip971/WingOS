@@ -35,9 +35,9 @@ void *PREFIX(malloc)(size_t len)
 void PREFIX(free)(void *ptr)
 {
 
-    if(ptr == nullptr)
+    if (ptr == nullptr)
     {
-        unreachable$();
+        return;
     }
     WingosAllocNode *n = (WingosAllocNode *)((char *)ptr - sizeof(WingosAllocNode));
 
@@ -54,7 +54,7 @@ void PREFIX(free)(void *ptr)
 void *PREFIX(realloc)(void *ptr, size_t len)
 {
 
-    if(ptr == nullptr)
+    if (ptr == nullptr)
     {
         return kmalloc(len);
     }
@@ -89,17 +89,15 @@ void *PREFIX(realloc)(void *ptr, size_t len)
     return (void *)targ;
 }
 
-
-void* PREFIX(calloc)(size_t n, size_t size)
+void *PREFIX(calloc)(size_t n, size_t size)
 {
 
-    void* a = kmalloc(n * size);
+    void *a = kmalloc(n * size);
 
-    for(size_t i = 0; i < n*size; i++)
+    for (size_t i = 0; i < n * size; i++)
     {
-        ((uint8_t*)a)[i] = 0;
+        ((uint8_t *)a)[i] = 0;
     }
 
     return a;
-
 }

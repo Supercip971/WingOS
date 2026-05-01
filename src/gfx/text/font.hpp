@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "gfx/canvas/canvas.hpp"
+#include "external/stb/stb_truetype.h"
 #include "gfx/canvas/cmd.hpp"
 #include "gfx/geometry/shape.hpp"
 #include "libcore/fmt/log.hpp"
@@ -112,7 +112,7 @@ public:
 
         fn.rscale = rscale;
         int ascent = 0;
-	(void)ascent;
+        (void)ascent;
         int descent = 0;
         int line_gap = 0;
         stbtt_GetFontVMetrics(&from->raw, &ascent, &descent, &line_gap);

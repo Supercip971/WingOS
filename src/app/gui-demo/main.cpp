@@ -2,6 +2,7 @@
 
 
 #include "gfx/backend.hpp"
+#include "gfx/canvas/cmd.hpp"
 #include "gfx/color.hpp"
 #include "gfx/geometry/vec2.hpp"
 #include "gfx/platform/app.hpp"
@@ -93,6 +94,7 @@ int main(int argc, char **argv)
         l += 0.5;
         wgfx::CompositeColor color = wgfx::CompositeColor::fromOklch(70.4f/100.f, 0.295, l);
 
+
         frame->clear(wgfx::SLATE_WHITE);
 
         //frame->drawRect(wgfx::GRect(x, y, 256, 256), wgfx::CompositeColor::fromOklch((float)63.7/100, 0, 0));
@@ -113,6 +115,8 @@ int main(int argc, char **argv)
         frame->drawText(wgfx::Vec2(200.f * window->dpi(),550.f * window->dpi()), "@Hello World ", sfont, wgfx::YELLOW);
 
         frame->drawText(wgfx::Vec2(200.f * window->dpi(),650.f * window->dpi()), "@Hello World ", sfont, color);
+
+        frame->drawRect(wgfx::GRect::from_size(800.f * window->dpi(), 300.f * window->dpi(), 256.f * window->dpi(), 256.f * window->dpi()), wgfx::FUCHSIA, 0.3f);
 
         x += dx;
         y += dy;

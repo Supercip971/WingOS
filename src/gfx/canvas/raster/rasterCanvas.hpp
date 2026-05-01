@@ -53,17 +53,80 @@ public:
             }
         }
     }
+    void rectRoundedCommandExecute(RectCommand const &cmd)
+    {
+        Rgba8 color = cmd.paint.color.toRgba8();
+        float roundeness = core::min(cmd.radius, 1.0f);
+
+        float radius = cmd.rect.width() > cmd.rect.height() ? cmd.rect.width() : cmd.rect.height();
+        radius *= roundeness / 2.f;
+        for (long y = 0; y < cmd.rect.height(); y++)
+        {
+
+            // x = r cos ((y / r) * pi/2) for the top left
+            // x = width - r cos ((y / r) * pi/2) for the top right
+            // x =  r cos (((height-y) / r) * pi/2) for the bottom left
+            // x = width - r cos (((height-y) / r) * pi/2) for the bottom right
+
+            float start_x = cmd.rect.start.x;
+            float end_x = cmd.rect.end.x;
+
+
+            // top
+            if(y <= radius)
+            {
+              //  start_x  = radius * cosf(((float)y/radius) * M_PI);
+                start_x  = radius -  sqrtf(radius * radius - (radius - (float)y) * (radius - (float)y));
+                //log::log$("start_x: {}\n", (long)start_x);
+                end_x = cmd.rect.width() - start_x;
+
+            }
+            else if(y >= cmd.rect.height() - radius)
+            {
+
+                start_x  = radius -  sqrtf(radius * radius - (cmd.rect.height() - radius - (float)y) * (cmd.rect.height() - radius - (float)y));
+                //log::log$("start_x: {}\n", (long)start_x);
+                end_x = cmd.rect.width() - start_x;
+
+           }
+            else
+            {
+                start_x = 0;
+                end_x = cmd.rect.width();
+            }
+
+
+
+            float fs2 = floorf(end_x);
+            float fs1 = floorf(start_x);
+            for (long x = (long)(start_x + 1.f); x < (long)fs2; x++)
+            {
+                colorize(x + cmd.rect.start.x, y + cmd.rect.start.y, color);
+            }
+
+            blend((long)start_x + cmd.rect.start.x, y + cmd.rect.start.y, color, (1.0f - ((start_x)-fs1)));
+            blend((long)end_x + cmd.rect.start.x, y + cmd.rect.start.y, color, ((end_x - fs2)));
+        }
+    }
 
     void rectCommandExecute(RectCommand const &cmd)
     {
-        Rgba8 color = cmd.paint.color.toRgba8();
 
-        for (long y = cmd.rect.start.y; y < cmd.rect.end.y; y++)
+        if (cmd.radius <= 0.0001f)
         {
-            for (long x = cmd.rect.start.x; x < cmd.rect.end.y; x++)
+
+            Rgba8 color = cmd.paint.color.toRgba8();
+            for (long y = cmd.rect.start.y; y < cmd.rect.end.y; y++)
             {
-                buffer[x + y * width] = color;
+                for (long x = cmd.rect.start.x; x < cmd.rect.end.y; x++)
+                {
+                    buffer[x + y * width] = color;
+                }
             }
+        }
+        else
+        {
+            rectRoundedCommandExecute(cmd);
         }
     }
 
@@ -138,7 +201,7 @@ public:
         core::SharedPtr<Contour> const &c = shape.contour;
 
         long sy = core::max(floorf(c->bound().start.y) - 1 + off.y, 0) - off.y;
-        long ey = core::min(ceilf(c->bound().end.y) + 1 + off.y, height - 1 ) - off.y;
+        long ey = core::min(ceilf(c->bound().end.y) + 1 + off.y, height - 1) - off.y;
 
         struct RasterLine
         {
@@ -146,10 +209,8 @@ public:
             int winding;
         };
 
-
         core::Vec<RasterLine> current = {};
         current.reserve(c->strokes.len());
-
 
         auto col = shape.paint.color.toRgba8();
 
@@ -170,7 +231,7 @@ public:
 
                 bool isDownward = p1.y > p3.y;
                 p3.y = (p3.y);
-                p1.y = ( p1.y);
+                p1.y = (p1.y);
                 if (isDownward)
                 {
                     if (p1.y <= y_sample && p3.y < y_sample)
@@ -194,7 +255,7 @@ public:
                     p2 = (p1 + p3) / 2.0f;
                 }
 
-                p2.y = ( p2.y);
+                p2.y = (p2.y);
 
                 bool t1 = false;
                 bool t2 = false;
@@ -215,7 +276,7 @@ public:
                     current.push(
                         RasterLine{
                             .x_pos = res.y,
-                            .winding =  n,
+                            .winding = n,
                         });
                 }
             }
@@ -231,18 +292,16 @@ public:
 
             int winding = 0;
 
-
-            for (long i = 0; i  < (long)current.len(); i += 1)
+            for (long i = 0; i < (long)current.len(); i += 1)
             {
                 winding += current[i].winding;
-
 
                 if (winding <= -1)
                 {
 
                     auto s1 = current[i].x_pos;
                     auto s2 = 0.0f;
-                    while(i+1 < (long)current.len() && (winding ) <= -1)
+                    while (i + 1 < (long)current.len() && (winding) <= -1)
                     {
 
                         i++;
@@ -250,8 +309,8 @@ public:
                         s2 = current[i].x_pos;
                     }
 
-                    //s1 = core::clamp(s1, c->bound().start.x, c->bound().end.x);
-                    //s2 = core::clamp(s2, c->bound().start.x, c->bound().end.x);
+                    // s1 = core::clamp(s1, c->bound().start.x, c->bound().end.x);
+                    // s2 = core::clamp(s2, c->bound().start.x, c->bound().end.x);
 
                     float fs2 = floorf(s2);
                     float fs1 = floorf(s1);
@@ -262,7 +321,6 @@ public:
 
                     blend((long)s1 + off.x, y + off.y, col, (1.0f - ((s1)-fs1)));
                     blend((long)s2 + off.x, y + off.y, col, ((s2 - fs2)));
-
                 }
             }
         }
@@ -404,13 +462,12 @@ public:
 
             auto const &shape = cmd.font->shapes[chr];
             Vec2 opos = pos;
-//#error            Vérifier: https://freetype.org/freetype2/docs/glyphs/glyphs-3.html
-            opos.y += /*cmd.font->ascent + cmd.font->descent-*/  cmd.font->line_gap;
-           // opos.y -=  cmd.font->ascent;
+            opos.y += /*cmd.font->ascent + cmd.font->descent-*/ cmd.font->line_gap;
             opos.x += shape.bearing - shape.ibound.start.x;
             drawShapeRaster(ContourCommand{cmd.paint, shape.gfx_contour}, opos);
 
-            if(i < (long)cmd.str.len() - 1){
+            if (i < (long)cmd.str.len() - 1)
+            {
                 pos.x += shape.advance + cmd.font->additionalOffset(chr, cmd.str[i + 1]);
             }
         }

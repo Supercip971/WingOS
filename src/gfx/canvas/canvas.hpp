@@ -1,6 +1,5 @@
 #pragma once
 
-#include "external/stb/stb_truetype.h"
 #include "gfx/canvas/draw_context.hpp"
 
 #include "gfx/canvas/cmd.hpp"
@@ -28,12 +27,13 @@ public:
         commands.push(cmd);
     }
 
-    void drawRect(wgfx::GRect rect, CompositeColor color)
+    void drawRect(wgfx::GRect rect, CompositeColor color, float radius = 0.0f)
     {
 
         RenderCommand cmd = RenderCommand::from((RectCommand){
             .paint = color,
             .rect = rect,
+            .radius = radius,
         });
         commands.push(cmd);
     }

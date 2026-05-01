@@ -54,6 +54,7 @@ struct RectCommand
 
     Painter paint;
     GRect rect;
+    float radius;
 };
 
 struct ContourCommand

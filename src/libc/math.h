@@ -7,6 +7,20 @@ extern "C" {
 
 #include <float.h>
 
+
+#ifdef __LSP
+#ifndef __WTHROW
+#    ifdef __cplusplus
+#        define __WTHROW noexcept
+#    else
+#        define __WTHROW
+#    endif
+#endif
+#elifndef __WTHROW
+#define __WTHROW
+#else
+#define __WTHROW
+#endif
 #ifndef NAN
 #    define NAN (0.0 / 0.0)
 #endif
@@ -35,41 +49,41 @@ extern "C" {
 
 extern int signgam;
 
-double j0(double);
-double j1(double);
-double jn(int, double);
+double j0(double) __WTHROW;
+double j1(double) __WTHROW;
+double jn(int, double) __WTHROW;
 
-double y0(double);
-double y1(double);
-double yn(int, double);
+double y0(double) __WTHROW;
+double y1(double) __WTHROW;
+double yn(int, double) __WTHROW;
 
 #endif
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE) || defined(_SKIFT_SOURCE)
 #    define HUGE 3.40282346638528859812e+38F
 
-double drem(double, double);
-float dremf(float, float);
+double drem(double, double) __WTHROW;
+float dremf(float, float) __WTHROW;
 
-int finite(double);
-int finitef(float);
+int finite(double) __WTHROW;
+int finitef(float) __WTHROW;
 
-double scalb(double, double);
-float scalbf(float, float);
+double scalb(double, double) __WTHROW;
+float scalbf(float, float) __WTHROW;
 
-double significand(double);
-float significandf(float);
+double significand(double) __WTHROW;
+float significandf(float) __WTHROW;
 
-double lgamma_r(double, int *);
-float lgammaf_r(float, int *);
+double lgamma_r(double, int *) __WTHROW;
+float lgammaf_r(float, int *) __WTHROW;
 
-float j0f(float);
-float j1f(float);
-float jnf(int, float);
+float j0f(float) __WTHROW;
+float j1f(float) __WTHROW;
+float jnf(int, float) __WTHROW;
 
-float y0f(float);
-float y1f(float);
-float ynf(int, float);
+float y0f(float) __WTHROW;
+float y1f(float) __WTHROW;
+float ynf(int, float) __WTHROW;
 
 #endif
 
@@ -92,9 +106,9 @@ typedef float float_t;
 #define FP_SUBNORMAL 8
 #define FP_ZERO 16
 
-int __fpclassify(double x);
-int __fpclassifyf(float x);
-int __fpclassifyl(long double x);
+int __fpclassify(double x) __WTHROW;
+int __fpclassifyf(float x) __WTHROW;
+int __fpclassifyl(long double x) __WTHROW;
 
 #define fpclassify(x) \
     (sizeof(x) == sizeof(double) ? __fpclassify(x) : (sizeof(x) == sizeof(float) ? __fpclassifyf(x) : (sizeof(x) == sizeof(long double) ? __fpclassifyl(x) : 0)))
@@ -106,261 +120,261 @@ int __fpclassifyl(long double x);
 
 // [ GNUC extension]
 
-void sincos(double, double *, double *);
-void sincosf(float, float *, float *);
-void sincosl(long double, long double *, long double *);
+void sincos(double, double *, double *) __WTHROW;
+void sincosf(float, float *, float *) __WTHROW;
+void sincosl(long double, long double *, long double *) __WTHROW;
 
-double exp10(double);
-float exp10f(float);
-long double exp10l(long double);
+double exp10(double) __WTHROW;
+float exp10f(float) __WTHROW;
+long double exp10l(long double) __WTHROW;
 
-double pow10(double);
-float pow10f(float);
-long double pow10l(long double);
+double pow10(double) __WTHROW;
+float pow10f(float) __WTHROW;
+long double pow10l(long double) __WTHROW;
 
 // [C11/7.12.4 Trigonometric functions]
 
-double acos(double x);
-float acosf(float x);
-long double acosl(long double x);
-double asin(double x);
-float asinf(float x);
-long double asinl(long double x);
-double atan(double x);
-float atanf(float x);
-long double atanl(long double x);
-double atan2(double x, double y);
-float atan2f(float x, float y);
-long double atan2l(long double x, long double y);
-double cos(double x);
-float cosf(float x);
-long double cosl(long double x);
-double sin(double x);
-float sinf(float x);
-long double sinl(long double x);
-double tan(double x);
-float tanf(float x);
-long double tanl(long double x);
+double acos(double x) __WTHROW;
+float acosf(float x) __WTHROW;
+long double acosl(long double x) __WTHROW;
+double asin(double x) __WTHROW;
+float asinf(float x) __WTHROW;
+long double asinl(long double x) __WTHROW;
+double atan(double x) __WTHROW;
+float atanf(float x) __WTHROW;
+long double atanl(long double x) __WTHROW;
+double atan2(double x, double y) __WTHROW;
+float atan2f(float x, float y) __WTHROW;
+long double atan2l(long double x, long double y) __WTHROW;
+double cos(double x) __WTHROW;
+float cosf(float x) __WTHROW;
+long double cosl(long double x) __WTHROW;
+double sin(double x) __WTHROW;
+float sinf(float x) __WTHROW;
+long double sinl(long double x) __WTHROW;
+double tan(double x) __WTHROW;
+float tanf(float x) __WTHROW;
+long double tanl(long double x) __WTHROW;
 
 // [C11/7.12.5 Hyperbolic functions]
 
-double acosh(double x);
-float acoshf(float x);
-long double acoshl(long double x);
+double acosh(double x) __WTHROW;
+float acoshf(float x) __WTHROW;
+long double acoshl(long double x) __WTHROW;
 
-double asinh(double x);
-float asinhf(float x);
-long double asinhl(long double x);
+double asinh(double x) __WTHROW;
+float asinhf(float x) __WTHROW;
+long double asinhl(long double x) __WTHROW;
 
-double atanh(double x);
-float atanhf(float x);
-long double atanhl(long double x);
+double atanh(double x) __WTHROW;
+float atanhf(float x) __WTHROW;
+long double atanhl(long double x) __WTHROW;
 
-double cosh(double x);
-float coshf(float x);
-long double coshl(long double x);
+double cosh(double x) __WTHROW;
+float coshf(float x) __WTHROW;
+long double coshl(long double x) __WTHROW;
 
-double sinh(double x);
-float sinhf(float x);
-long double sinhl(long double x);
+double sinh(double x) __WTHROW;
+float sinhf(float x) __WTHROW;
+long double sinhl(long double x) __WTHROW;
 
-double tanh(double x);
-float tanhf(float x);
-long double tanhl(long double x);
+double tanh(double x) __WTHROW;
+float tanhf(float x) __WTHROW;
+long double tanhl(long double x) __WTHROW;
 
 // [C11/7.12.6 Exponential and logarithmic functions]
 
-double exp(double x);
-float expf(float x);
-long double expl(long double x);
+double exp(double x) __WTHROW;
+float expf(float x) __WTHROW;
+long double expl(long double x) __WTHROW;
 
-double exp2(double x);
-float exp2f(float x);
-long double exp2l(long double x);
+double exp2(double x) __WTHROW;
+float exp2f(float x) __WTHROW;
+long double exp2l(long double x) __WTHROW;
 
-double expm1(double x);
-float expm1f(float x);
-long double expm1l(long double x);
+double expm1(double x) __WTHROW;
+float expm1f(float x) __WTHROW;
+long double expm1l(long double x) __WTHROW;
 
-double frexp(double x, int *power);
-float frexpf(float x, int *power);
-long double frexpl(long double x, int *power);
+double frexp(double x, int *power) __WTHROW;
+float frexpf(float x, int *power) __WTHROW;
+long double frexpl(long double x, int *power) __WTHROW;
 
-int ilogb(double x);
-int ilogbf(float x);
-int ilogbl(long double x);
+int ilogb(double x) __WTHROW;
+int ilogbf(float x) __WTHROW;
+int ilogbl(long double x) __WTHROW;
 
-double ldexp(double x, int power);
-float ldexpf(float x, int power);
-long double ldexpl(long double x, int power);
+double ldexp(double x, int power) __WTHROW;
+float ldexpf(float x, int power) __WTHROW;
+long double ldexpl(long double x, int power) __WTHROW;
 
 #ifdef DO_NOT_LOG
-double log(double x);
+double log(double x) __WTHROW;
 #endif
-float logf(float x);
-long double logl(long double x);
+float logf(float x) __WTHROW;
+long double logl(long double x) __WTHROW;
 
-double log10(double x);
-float log10f(float x);
-long double log10l(long double x);
+double log10(double x) __WTHROW;
+float log10f(float x) __WTHROW;
+long double log10l(long double x) __WTHROW;
 
-double log1p(double x);
-float log1pf(float x);
-long double log1pl(long double x);
+double log1p(double x) __WTHROW;
+float log1pf(float x) __WTHROW;
+long double log1pl(long double x) __WTHROW;
 
-double log2(double x);
-float log2f(float x);
-long double log2l(long double x);
+double log2(double x) __WTHROW;
+float log2f(float x) __WTHROW;
+long double log2l(long double x) __WTHROW;
 
-double logb(double x);
-float logbf(float x);
-long double logbl(long double x);
+double logb(double x) __WTHROW;
+float logbf(float x) __WTHROW;
+long double logbl(long double x) __WTHROW;
 
-double modf(double x, double *integral);
-float modff(float x, float *integral);
-long double modfl(long double x, long double *integral);
+double modf(double x, double *integral) __WTHROW;
+float modff(float x, float *integral) __WTHROW;
+long double modfl(long double x, long double *integral) __WTHROW;
 
-double scalbn(double x, int power);
-float scalbnf(float x, int power);
-long double scalbnl(long double x, int power);
+double scalbn(double x, int power) __WTHROW;
+float scalbnf(float x, int power) __WTHROW;
+long double scalbnl(long double x, int power) __WTHROW;
 
-double scalbln(double x, long power);
-float scalblnf(float x, long power);
-long double scalblnl(long double x, long power);
+double scalbln(double x, long power) __WTHROW;
+float scalblnf(float x, long power) __WTHROW;
+long double scalblnl(long double x, long power) __WTHROW;
 
 // [C11/7.12.7 Power and absolute-value functions]
 
-double cbrt(double x);
-float cbrtf(float x);
-long double cbrtl(long double x);
+double cbrt(double x) __WTHROW;
+float cbrtf(float x) __WTHROW;
+long double cbrtl(long double x) __WTHROW;
 
-double fabs(double x);
-float fabsf(float x);
-long double fabsl(long double x);
+double fabs(double x) __WTHROW;
+float fabsf(float x) __WTHROW;
+long double fabsl(long double x) __WTHROW;
 
-double hypot(double x, double y);
-float hypotf(float x, float y);
-long double hypotl(long double x, long double y);
+double hypot(double x, double y) __WTHROW;
+float hypotf(float x, float y) __WTHROW;
+long double hypotl(long double x, long double y) __WTHROW;
 
-double pow(double x, double y);
-float powf(float x, float y);
-long double powl(long double x, long double y);
+double pow(double x, double y) __WTHROW;
+float powf(float x, float y) __WTHROW;
+long double powl(long double x, long double y) __WTHROW;
 
-double sqrt(double x);
-float sqrtf(float x);
-long double sqrtl(long double x);
+double sqrt(double x) __WTHROW;
+float sqrtf(float x) __WTHROW;
+long double sqrtl(long double x) __WTHROW;
 
 // [C11/7.12.8 Error and gamma functions]
 
-double erf(double x);
-float erff(float x);
-long double erfl(long double x);
+double erf(double x) __WTHROW;
+float erff(float x) __WTHROW;
+long double erfl(long double x) __WTHROW;
 
-double erfc(double x);
-float erfcf(float x);
-long double erfcl(long double x);
+double erfc(double x) __WTHROW;
+float erfcf(float x) __WTHROW;
+long double erfcl(long double x) __WTHROW;
 
-double lgamma(double x);
-float lgammaf(float x);
-long double lgammal(long double x);
+double lgamma(double x) __WTHROW;
+float lgammaf(float x) __WTHROW;
+long double lgammal(long double x) __WTHROW;
 
-double tgamma(double x);
-float tgammaf(float x);
-long double tgammal(long double x);
+double tgamma(double x) __WTHROW;
+float tgammaf(float x) __WTHROW;
+long double tgammal(long double x) __WTHROW;
 
 // [C11/7.12.9 Nearest integer functions]
 
-double ceil(double x);
-float ceilf(float x);
-long double ceill(long double x);
+double ceil(double x) __WTHROW;
+float ceilf(float x) __WTHROW;
+long double ceill(long double x) __WTHROW;
 
-double floor(double x);
-float floorf(float x);
-long double floorl(long double x);
+double floor(double x) __WTHROW;
+float floorf(float x) __WTHROW;
+long double floorl(long double x) __WTHROW;
 
-double nearbyint(double x);
-float nearbyintf(float x);
-long double nearbyintl(long double x);
+double nearbyint(double x) __WTHROW;
+float nearbyintf(float x) __WTHROW;
+long double nearbyintl(long double x) __WTHROW;
 
-double rint(double x);
-float rintf(float x);
-long double rintl(long double x);
+double rint(double x) __WTHROW;
+float rintf(float x) __WTHROW;
+long double rintl(long double x) __WTHROW;
 
-long lrint(double x);
-long lrintf(float x);
-long lrintl(long double x);
+long lrint(double x) __WTHROW;
+long lrintf(float x) __WTHROW;
+long lrintl(long double x) __WTHROW;
 
-long long llrint(double x);
-long long llrintf(float x);
-long long llrintl(long double x);
+long long llrint(double x) __WTHROW;
+long long llrintf(float x) __WTHROW;
+long long llrintl(long double x) __WTHROW;
 
-double round(double x);
-float roundf(float x);
-long double roundl(long double x);
+double round(double x) __WTHROW;
+float roundf(float x) __WTHROW;
+long double roundl(long double x) __WTHROW;
 
-long lround(double x);
-long lroundf(float x);
-long lroundl(long double x);
+long lround(double x) __WTHROW;
+long lroundf(float x) __WTHROW;
+long lroundl(long double x) __WTHROW;
 
-long long llround(double x);
-long long llroundf(float x);
-long long llroundl(long double x);
+long long llround(double x) __WTHROW;
+long long llroundf(float x) __WTHROW;
+long long llroundl(long double x) __WTHROW;
 
-double trunc(double x);
-float truncf(float x);
-long double truncl(long double x);
+double trunc(double x) __WTHROW;
+float truncf(float x) __WTHROW;
+long double truncl(long double x) __WTHROW;
 
 // [C11/7.12.10 Remainder functions]
 
-double fmod(double x, double y);
-float fmodf(float x, float y);
-long double fmodl(long double x, long double y);
+double fmod(double x, double y) __WTHROW;
+float fmodf(float x, float y) __WTHROW;
+long double fmodl(long double x, long double y) __WTHROW;
 
-double remainder(double x, double y);
-float remainderf(float x, float y);
-long double remainderl(long double x, long double y);
+double remainder(double x, double y) __WTHROW;
+float remainderf(float x, float y) __WTHROW;
+long double remainderl(long double x, long double y) __WTHROW;
 
-double remquo(double x, double y, int *quotient);
-float remquof(float x, float y, int *quotient);
-long double remquol(long double x, long double y, int *quotient);
+double remquo(double x, double y, int *quotient) __WTHROW;
+float remquof(float x, float y, int *quotient) __WTHROW;
+long double remquol(long double x, long double y, int *quotient) __WTHROW;
 
 // [C11/7.12.11 Manipulation functions]
 
-double copysign(double x, double sign);
-float copysignf(float x, float sign);
-long double copysignl(long double x, long double sign);
+double copysign(double x, double sign) __WTHROW;
+float copysignf(float x, float sign) __WTHROW;
+long double copysignl(long double x, long double sign) __WTHROW;
 
-double nan(char const *tag);
-float nanf(char const *tag);
-long double nanl(char const *tag);
+double nan(char const *tag) __WTHROW;
+float nanf(char const *tag) __WTHROW;
+long double nanl(char const *tag) __WTHROW;
 
-double nextafter(double x, double dir);
-float nextafterf(float x, float dir);
-long double nextafterl(long double x, long double dir);
+double nextafter(double x, double dir) __WTHROW;
+float nextafterf(float x, float dir) __WTHROW;
+long double nextafterl(long double x, long double dir) __WTHROW;
 
-double nexttoward(double x, long double dir);
-float nexttowardf(float x, long double dir);
-long double nexttowardl(long double x, long double dir);
+double nexttoward(double x, long double dir) __WTHROW;
+float nexttowardf(float x, long double dir) __WTHROW;
+long double nexttowardl(long double x, long double dir) __WTHROW;
 
 // [C11/7.12.12 Maximum, minimum and positive difference functions]
 
-double fdim(double x, double y);
-float fdimf(float x, float y);
-long double fdiml(long double x, long double y);
+double fdim(double x, double y) __WTHROW;
+float fdimf(float x, float y) __WTHROW;
+long double fdiml(long double x, long double y) __WTHROW;
 
-double fmax(double x, double y);
-float fmaxf(float x, float y);
-long double fmaxl(long double x, long double y);
+double fmax(double x, double y) __WTHROW;
+float fmaxf(float x, float y) __WTHROW;
+long double fmaxl(long double x, long double y) __WTHROW;
 
-double fmin(double x, double y);
-float fminf(float x, float y);
-long double fminl(long double x, long double y);
+double fmin(double x, double y) __WTHROW;
+float fminf(float x, float y) __WTHROW;
+long double fminl(long double x, long double y) __WTHROW;
 
 // [C11/7.12.13 Floating multiply-add]
 
-double fma(double, double, double);
-float fmaf(float, float, float);
-long double fmal(long double, long double, long double);
+double fma(double, double, double) __WTHROW;
+float fmaf(float, float, float) __WTHROW;
+long double fmal(long double, long double, long double) __WTHROW;
 
 #ifdef __cplusplus
 }

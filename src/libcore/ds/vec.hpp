@@ -2,7 +2,6 @@
 
 #include <libcore/core.hpp>
 #include <libcore/mem/view.hpp>
-#include <new>
 #include <stdlib.h>
 
 #include "libcore/alloc/alloc.hpp"

@@ -57,6 +57,7 @@ namespace core
             return ptr;
         }
 
+        explicit operator bool() const { return control_block != nullptr; }
         SharedPtr()
          : control_block(nullptr)
 
@@ -99,7 +100,6 @@ namespace core
         {
             return &(control_block->data);
         }
-
 
 
         SharedPtr& operator=(SharedPtr&& other)

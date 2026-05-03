@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 
 
 #include <libcore/io/writer.hpp>
@@ -9,7 +9,7 @@
 
 #include "libcore/ds/vec.hpp"
 
-namespace core 
+namespace core
 {
     class WStr : public MemAccess<char>
     {
@@ -30,9 +30,10 @@ namespace core
 
         WStr() : MemAccess(nullptr, 0), _capacity(0) {}
 
+
         WStr(WStr const&) = delete;
         WStr &operator=(WStr const&) = delete;
-        
+
        // constexpr WStr(char *str) : MemAccess(str, compute_len(str)), _capacity(compute_len(str)+1) {};
 
         const Str view() const {
@@ -60,18 +61,18 @@ namespace core
             }
             buffer[from.len()] = '\0';
 
-            
+
             return WStr::own(buffer, from.len());
         }
 
 
-        WStr  copy() 
+        WStr  copy()
         {
             return WStr::copy(view());
         }
 
-        
-        
+
+
 
         WStr(WStr &&other)
         {
@@ -123,7 +124,7 @@ namespace core
             {
                 this->_capacity = (this->len() + 2) * 2;
                 this->_data = (char*)realloc(this->_data, this->_capacity);
-                
+
             }
             if(this->_data == nullptr)
             {
@@ -146,7 +147,7 @@ namespace core
                 this->_capacity = (this->len() + str.len() + 1) * 2;
                 this->_data = (char*)realloc(this->_data, this->_capacity);
             }
-            
+
             if(this->_data == nullptr)
             {
                 this->_len = 0;
@@ -173,9 +174,9 @@ namespace core
             return write(str.data(), str.len());
         }
 
-        void clear() 
+        void clear()
         {
-            
+
             _len = 0;
         }
 
@@ -189,7 +190,7 @@ namespace core
                 _capacity = 0;
             }
         }
-       ~WStr() 
+       ~WStr()
         {
             release();
         }
@@ -198,6 +199,3 @@ namespace core
 
     static_assert(Writable<WStr>);
 }
-
-
-

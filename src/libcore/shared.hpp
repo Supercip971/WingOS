@@ -34,7 +34,7 @@ namespace core
         ControlBlock* control_block;
 
         template<typename T2>
-        SharedPtr<T2> static_pointer_cast() const
+        SharedPtr<T2> static_pointer_cast()
         {
             SharedPtr<T2> ptr = {};
             ptr.control_block = (typename SharedPtr<T2>::ControlBlock*) control_block;

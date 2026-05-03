@@ -20,6 +20,7 @@ class Vec
 
 public:
     using Type = T;
+
     Vec() : _data(nullptr), _count(0), _capacity(0) {}
 
     Vec(Vec &&other)
@@ -30,6 +31,12 @@ public:
         other._data = nullptr;
         other._count = 0;
         other._capacity = 0;
+    }
+
+    template<typename ...A>
+    explicit Vec(A ...a) {
+        reserve((sizeof...(a)));
+        (push(a), ...);
     }
 
     Vec(const Vec &other)

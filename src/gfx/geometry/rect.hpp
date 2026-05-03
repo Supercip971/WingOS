@@ -30,12 +30,22 @@ struct GRect
         end.y = start.y + value;
     }
 
+
     constexpr float width() const {
         return end.x - start.x;
     }
     constexpr float height() const {
         return end.y - start.y;
     }
+
+    Vec2 size() const {
+        return end - start;
+    }
+
+    GRect with_size(const Vec2 &size) const {
+        return GRect(start, start + size);
+    }
+
 
     Vec2 contained(const Vec2 & p) const {
         return Vec2(
@@ -46,6 +56,7 @@ struct GRect
 
     constexpr GRect(float _x, float _y, float _ex, float _ey) : start(_x, _y), end(_ex, _ey) {}
 
+    constexpr GRect(const Vec2 &start, const Vec2 &end) : start(start), end(end) {}
     constexpr GRect() {};
 
     static constexpr GRect from_start_end(float sx, float sy, float ex, float ey)
@@ -56,5 +67,29 @@ struct GRect
     {
         return GRect(sx, sy, sx + width, sy + height);
     }
+
+    bool operator==(const GRect &other) const {
+        return start == other.start && end == other.end;
+    }
+
+
+    GRect operator+(const Vec2 &offset) const {
+        return GRect(start + offset, end + offset);
+    }
+    GRect operator-(const Vec2 &offset) const {
+        return GRect(start - offset, end - offset);
+    }
+
+    GRect operator+=(const Vec2 &offset) {
+        start += offset;
+        end += offset;
+        return *this;
+    }
+    GRect operator-=(const Vec2 &offset) {
+        start -= offset;
+        end -= offset;
+        return *this;
+    }
+
 };
 } // namespace wgfx

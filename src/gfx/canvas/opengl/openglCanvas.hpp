@@ -26,7 +26,7 @@ public:
         return 1.0 - (v) * 2.0 / height;
     }
 
-    void rectCommandExecute(RectCommand const &cmd)
+    void rect(RectCommand const &cmd)
     {
 
         Rgba01 color = cmd.paint.color.toRgba01();
@@ -39,7 +39,9 @@ public:
             scaled_x(cmd.rect.end.x),
             scaled_y(cmd.rect.end.y));
     }
-    void clearCommandExecute(FillCommand const &fill)
+
+
+    void clear(FillCommand const &fill)
     {
         Rgba01 color = fill.paint.color.toRgba01();
 
@@ -53,12 +55,12 @@ public:
         {
         case wgfx::RenderCommandKind::RENDER_KIND_FILL:
         {
-            clearCommandExecute(cmd.fill);
+            clear(cmd.fill);
             break;
         }
         case wgfx::RenderCommandKind::RENDER_KIND_RECT:
         {
-            rectCommandExecute(cmd.rect);
+            rect(cmd.rect);
             break;
         }
         default:

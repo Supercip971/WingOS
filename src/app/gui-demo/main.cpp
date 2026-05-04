@@ -1,4 +1,6 @@
 #include <libcore/fmt/log.hpp>
+#include "libcore/fmt/fmt_str.hpp"
+#include "libcore/str_writer.hpp"
 
 
 #include "gfx/backend.hpp"
@@ -10,8 +12,40 @@
 #include "gfx/text/font.hpp"
 #include "libcore/result.hpp"
 #include "libcore/shared.hpp"
+#include "ui/widgets/text.hpp"
+#include "ui/widgets/vflex.hpp"
+
+core::SharedPtr<wgfx::Font> sfont;
+
+class CustomWidget : public fc::Widget {
 
 
+
+    public:
+
+    int counter = 0;
+
+    core::SharedPtr<fc::Widget> build(const fc::UiContext &) override
+    {
+
+        setState([&]{
+            counter += 1;
+        });
+
+        auto res = fmt::format_str("Counter: {}", counter);
+
+
+
+
+        return fc::VFlex::construct(
+            fc::TextWidget::construct("Hello, World!", sfont),
+            fc::TextWidget::construct(core::move(res.take()), sfont)
+        );
+
+
+
+    }
+};
 int main(int argc, char **argv)
 {
     (void)argc;
@@ -37,7 +71,7 @@ int main(int argc, char **argv)
 
 
 
-    auto sfont = core::SharedPtr<wgfx::Font>::make(font);
+     sfont = core::SharedPtr<wgfx::Font>::make(font);
 
 
 
@@ -73,11 +107,31 @@ int main(int argc, char **argv)
     }
 
     float l = 0.f;
+
+
+    auto vwidgt = fc::VFlex::construct(
+        fc::TextWidget::construct("Hello, World!", sfont),
+        fc::TextWidget::construct("Hello, World! 2", sfont),
+        core::SharedPtr<CustomWidget>::make().static_pointer_cast<fc::Widget>()
+    );
+
+
+    vwidgt->mount({});
+    vwidgt->build({});
+    vwidgt->layout({}, wgfx::GRect(32, 64, window->width(), window->height()));
+
     while(true)
     {
         wgfx::Canvas* frame=  window->create_frame();
 
         //log::log$("ran frame");
+
+
+
+        vwidgt->update_dirty({});
+
+
+        vwidgt->layout({}, wgfx::GRect(32, 64, window->width(), window->height()));
 
 
 
@@ -92,34 +146,37 @@ int main(int argc, char **argv)
 
 
         l += 0.5;
-        wgfx::CompositeColor color = wgfx::CompositeColor::fromOklch(70.4f/100.f, 0.295, l);
+        (void)l;
+       // wgfx::CompositeColor color = wgfx::CompositeColor::fromOklch(70.4f/100.f, 0.295, l);
 
 
         frame->clear(wgfx::SLATE_WHITE);
 
+        vwidgt->render({}, *frame);
+        //vwidgt->dump();
         //frame->drawRect(wgfx::GRect(x, y, 256, 256), wgfx::CompositeColor::fromOklch((float)63.7/100, 0, 0));
 
 
       //  frame->drawContour(font.shapes['@'].gfx_contour, wgfx::CompositeColor::fromOklch(63.7/100, 0, 0), wgfx::Vec2(x,y));
       //
 
-        frame->drawText(wgfx::Vec2(200.f * window->dpi(),150.f * window->dpi()), "@Hello World ", sfont, wgfx::RED);
+        //frame->drawText(wgfx::Vec2(200.f * window->dpi(),150.f * window->dpi()), "@Hello World ", sfont, wgfx::RED);
 
 
-        frame->drawText(wgfx::Vec2(200.f * window->dpi(),250.f * window->dpi()), "@Hello World ", sfont, wgfx::GREEN);
+        //frame->drawText(wgfx::Vec2(200.f * window->dpi(),250.f * window->dpi()), "@Hello World ", sfont, wgfx::GREEN);
 
-        frame->drawText(wgfx::Vec2(200.f * window->dpi(),350.f * window->dpi()), "@Hello World ", sfont, wgfx::BLUE);
+        //frame->drawText(wgfx::Vec2(200.f * window->dpi(),350.f * window->dpi()), "@Hello World ", sfont, wgfx::BLUE);
 
-        frame->drawText(wgfx::Vec2(200.f * window->dpi(),450.f * window->dpi()), "@Hello World ", sfont, wgfx::CYAN);
+        // frame->drawText(wgfx::Vec2(200.f * window->dpi(),450.f * window->dpi()), "@Hello World ", sfont, wgfx::CYAN);
 
-        frame->drawText(wgfx::Vec2(200.f * window->dpi(),550.f * window->dpi()), "@Hello World ", sfont, wgfx::YELLOW);
+        // frame->drawText(wgfx::Vec2(200.f * window->dpi(),550.f * window->dpi()), "@Hello World ", sfont, wgfx::YELLOW);
 
-        frame->drawText(wgfx::Vec2(200.f * window->dpi(),650.f * window->dpi()), "@Hello World ", sfont, color);
+        // frame->drawText(wgfx::Vec2(200.f * window->dpi(),650.f * window->dpi()), "@Hello World ", sfont, color);
 
-        frame->drawRect(
-            wgfx::GRect::from_size(800.f * window->dpi(), 300.f * window->dpi(), 256.f * window->dpi(), 256.f * window->dpi()),
-            wgfx::Painter::stroked(wgfx::FUCHSIA, 10.f),
-            (cosf(l*0.001f) +1.f)/2.f);
+        // frame->drawRect(
+        //      wgfx::GRect::from_size(800.f * window->dpi(), 300.f * window->dpi(), 256.f * window->dpi(), 256.f * window->dpi()),
+        //      wgfx::Painter::stroked(wgfx::FUCHSIA, 10.f),
+        //      (cosf(l*0.001f) +1.f)/2.f);
 
         x += dx;
         y += dy;

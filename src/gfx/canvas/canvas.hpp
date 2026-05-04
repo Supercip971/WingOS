@@ -1,8 +1,7 @@
 #pragma once
 
-#include "gfx/canvas/draw_context.hpp"
-
 #include "gfx/canvas/cmd.hpp"
+#include "gfx/canvas/draw_context.hpp"
 #include "gfx/color.hpp"
 #include "gfx/text/utf-text.hpp"
 #include "libcore/ds/vec.hpp"
@@ -39,7 +38,7 @@ public:
         commands.push(cmd);
     }
 
-    void drawText(Vec2 start, Utf8Str string, core::SharedPtr<Font> &font, CompositeColor color)
+    void drawText(Vec2 start, Utf8Str string, core::SharedPtr<Font> const &font, CompositeColor color)
     {
         RenderCommand cmd = RenderCommand::from((TextCommand){
             .paint = color,

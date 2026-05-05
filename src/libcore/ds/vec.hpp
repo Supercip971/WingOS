@@ -33,8 +33,9 @@ public:
         other._capacity = 0;
     }
 
-    template<typename ...A>
-    explicit Vec(A ...a) {
+    template <typename... A>
+    explicit Vec(A... a)
+    {
         reserve((sizeof...(a)));
         (push(a), ...);
     }
@@ -333,6 +334,15 @@ public:
     {
         return _data + _count;
     }
+    constexpr const T *cbegin() const
+    {
+        return _data;
+    }
+
+    constexpr const T *cend() const
+    {
+        return _data + _count;
+    }
     constexpr const T *begin() const
     {
         return _data;
@@ -381,13 +391,12 @@ public:
     constexpr void quick_sort(V AminusB, long l, long r)
     {
 
-
         if (l >= r)
         {
             return;
         }
 
-        r = core::min((long)_count-1, r);
+        r = core::min((long)_count - 1, r);
 
         long sI = l - 1;
         T pivot = _data[r];

@@ -40,19 +40,8 @@ namespace fc
         {
             log::log$("renderign text at: {}-{} {}", (long)bounds().start.x, (long)bounds().start.y, val.view());
             (void)ctx;
-            canvas.drawText(bounds().start, val.view(), font, wgfx::SLATE_DARK);
+            canvas.drawText(bounds().start + wgfx::Vec2(0.f, 96.f), val.view(), font, wgfx::SLATE_DARK);
         }
-        static core::SharedPtr<Widget> construct(core::Str from, core::SharedPtr<wgfx::Font> const &font)
-        {
-            return core::SharedPtr<TextWidget>::make(from, font).static_pointer_cast<Widget>();
-        }
-
-        static core::SharedPtr<Widget> construct(core::WStr && from, core::SharedPtr<wgfx::Font> const &font)
-        {
-
-            return core::SharedPtr<TextWidget>::make(core::move(from), font).static_pointer_cast<Widget>();
-        }
-
 
     };
 }

@@ -10,6 +10,7 @@
 
 namespace fc
 {
+
 class VFlex : public Widget
 {
 
@@ -52,17 +53,14 @@ public:
 
      void render(UiContext const &ctx, wgfx::Canvas &canvas) const override
     {
-        for (auto &child : childs)
-        {
-            child->render(ctx, canvas);
-        }
+        (void)ctx;
+        (void)canvas;
+      //  for (auto &child : childs)
+      //  {
+      //      child->render(ctx, canvas);
+      //  }
     }
 
-    template <typename... T>
-    static core::SharedPtr<Widget> construct(T... args)
-    {
-        return core::SharedPtr<VFlex>::make(args...).template static_pointer_cast<Widget>();
-    }
 
      core::Vec<core::SharedPtr<Widget>> build_childs(UiContext const &v) override
     {

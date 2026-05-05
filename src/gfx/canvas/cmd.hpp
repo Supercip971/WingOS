@@ -99,6 +99,7 @@ struct RenderCommand
 {
 public:
     RenderCommandKind kind;
+    wgfx::GRect constraint;
     union
     {
 

@@ -40,7 +40,6 @@ public:
             scaled_y(cmd.rect.end.y));
     }
 
-
     void clear(FillCommand const &fill)
     {
         Rgba01 color = fill.paint.color.toRgba01();

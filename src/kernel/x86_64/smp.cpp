@@ -2,13 +2,13 @@
 #include <string.h>
 
 #include "hw/mem/addr_space.hpp"
+#include "kernel/x86_64/cpu.hpp" // Ensure `CpuImpl` and `max_cpu` are available
 
 #include "hw/acpi/lapic.hpp"
 #include "kernel/generic/cpu.hpp"
 #include "kernel/generic/kernel.hpp"
 #include "kernel/generic/paging.hpp"
 #include "kernel/generic/pmm.hpp"
-#include "kernel/x86_64/cpu.hpp" // Ensure `CpuImpl` and `max_cpu` are available
 #include "libcore/fmt/flags.hpp"
 #include "libcore/fmt/log.hpp"
 
@@ -71,13 +71,11 @@ core::Result<void> _setup_trampoline(hw::acpi::LCpuId cpu_id)
     VmmSpace::invalidate();
     VirtAddr(arch::amd64::SMP_PAGE_TABLE).write(VmmSpace::kernel_page_table().self_addr());
 
-
     // seting up code
     memcpy((void *)arch::amd64::SMP_TRAMPOLINE_START, (void *)(&trampoline_start), trampoline_len);
 
     // writing needed values
     VirtAddr(arch::amd64::SMP_START_ADDR).write(smp_entry_other);
-
 
     // setting up stack
     PhysAddr stack = try$(Pmm::the().allocate(kernel::kernel_stack_size, IOL_ALLOC_MEMORY_FLAG_LOWER_SPACE));

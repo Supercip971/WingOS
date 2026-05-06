@@ -1,11 +1,12 @@
 #pragma once
 
+namespace wgfx
+{
 
-namespace wgfx {
-
-    enum BackendsKinds {
-        BACKEND_KIND_OPENGL,
-        BACKEND_KIND_VULKAN,
-        BACKEND_KIND_RASTER,
-    };
+enum BackendsKinds
+{
+    BACKEND_KIND_OPENGL,
+    BACKEND_KIND_VULKAN,
+    BACKEND_KIND_RASTER,
+};
 }

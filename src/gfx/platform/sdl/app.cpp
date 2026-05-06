@@ -78,8 +78,8 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
             raster_canvas->height = height();
             raster_canvas->buffer = (Rgba8 *)raster_buffer;
             raster_canvas->size.start = {0, 0};
-            raster_canvas->size.end.x =raster_canvas->width;
-            raster_canvas->size.end.y =raster_canvas->height;
+            raster_canvas->size.end.x = raster_canvas->width;
+            raster_canvas->size.end.y = raster_canvas->height;
 
             return (Canvas *)raster_canvas;
         }

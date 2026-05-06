@@ -27,7 +27,6 @@ public:
         }
         auto v = init_conn.unwrap();
 
-
         auto ipc_server = Wingos::Space::self().create_ipc_server();
         InitRegisterServer reg = {};
         name.copy_to((char *)reg.name, 80);
@@ -36,7 +35,6 @@ public:
         reg.endpoint = ipc_server.addr;
 
         auto res = v.register_server(reg);
-
 
         if (res.is_error())
         {
@@ -66,15 +64,17 @@ public:
     bool accept_connection()
     {
 
-        if(!loaded)
+        if (!loaded)
         {
             fmt::err$("ManagedServer: accept_connection called before server was fully initialized");
-            while(true){};
+            while (true)
+            {
+            };
         }
 
         auto c = ipc_server.accept();
 
-        if(c.is_error())
+        if (c.is_error())
         {
             return false;
         }
@@ -92,7 +92,7 @@ public:
 
     void close()
     {
-        if(!loaded)
+        if (!loaded)
         {
             fmt::err$("ManagedServer: close called before server was fully initialized");
             return;

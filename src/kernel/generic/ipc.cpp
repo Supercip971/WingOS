@@ -1,6 +1,7 @@
 #include "ipc.hpp"
-
 #include <new>
+
+#include <arch/x86_64/barrier.hpp>
 
 #include "iol/wingos/space.hpp"
 #include "kernel/generic/asset.hpp"
@@ -9,7 +10,6 @@
 #include "libcore/fmt/flags.hpp"
 #include "scheduler.hpp"
 #include "wingos-headers/asset.h"
-#include <arch/x86_64/barrier.hpp>
 #include "wingos-headers/ipc.h"
 struct KernelIpcServerRegistered
 {
@@ -156,15 +156,15 @@ core::Result<AssetRef<>> server_accept_connection(KernelIpcServer *server)
 
     for (size_t i = 0; i < server->connections.len(); /* i incremented in loop */)
     {
-        auto& ref = server->connections[i];
+        auto &ref = server->connections[i];
 
         // Try to lock the asset - use try_lock to avoid deadlock
         ref.asset->lock.lock();
 
-        if(ref.asset->kind != OBJECT_KIND_IPC_CONNECTION)
+        if (ref.asset->kind != OBJECT_KIND_IPC_CONNECTION)
         {
             fmt::err$("server_accept_connection: invalid asset kind {} in connection {} of server {}",
-                (uint64_t)ref.asset->kind, i, server->handle);
+                      (uint64_t)ref.asset->kind, i, server->handle);
             ref.asset->lock.release();
             server->self.asset->lock.release();
             return "invalid asset kind in connection";
@@ -176,23 +176,21 @@ core::Result<AssetRef<>> server_accept_connection(KernelIpcServer *server)
         if (conn->server_handle != server->handle)
         {
             fmt::err$("[IPC-BUG] Connection in server {}'s list has wrong server_handle {}!",
-                server->handle, conn->server_handle);
+                      server->handle, conn->server_handle);
             fmt::err$("  This connection was meant for server {}, not this server",
-                conn->server_handle);
+                      conn->server_handle);
             fmt::err$("  Removing misrouted connection from list");
 
-
             fmt::err$("  Client space: {}", conn->client_space_handle);
-            //fmt::err$("  Connection handle: {}", asset->ipc_connection.);
+            // fmt::err$("  Connection handle: {}", asset->ipc_connection.);
 
+            //  for(size_t j = 0; j < registered_servers.len(); j++)
+            //  {
+            //      fmt::err$("  Server[{}] = {}", j, registered_servers[j].handle);
+            //      fmt::err$("  Server space: {}", registered_servers[j].server->parent_space);
 
-          //  for(size_t j = 0; j < registered_servers.len(); j++)
-          //  {
-          //      fmt::err$("  Server[{}] = {}", j, registered_servers[j].handle);
-          //      fmt::err$("  Server space: {}", registered_servers[j].server->parent_space);
-
-          //  }
-//            fmt::err$("  Client process: {}", asset->ipc_connection->client_process_handle);
+            //  }
+            //            fmt::err$("  Client process: {}", asset->ipc_connection->client_process_handle);
             ref.asset->lock.release();
             i++;
 
@@ -204,7 +202,7 @@ core::Result<AssetRef<>> server_accept_connection(KernelIpcServer *server)
 
         if (!already_accepted)
         {
-             conn->accepted = true;
+            conn->accepted = true;
             conn->lock.release();
 
             auto result = ref;
@@ -226,7 +224,7 @@ core::Result<AssetRef<>> server_accept_connection(KernelIpcServer *server)
 }
 
 // send message to the server
-core::Result<MessageHandle> _server_send_message(AssetRef<IpcConnection>& connection, IpcMessage *message, bool is_call)
+core::Result<MessageHandle> _server_send_message(AssetRef<IpcConnection> &connection, IpcMessage *message, bool is_call)
 {
     if (connection.asset == nullptr)
     {
@@ -270,7 +268,7 @@ core::Result<MessageHandle> _server_send_message(AssetRef<IpcConnection>& connec
     return uid; // return the unique id of the message
 }
 
-core::Result<MessageHandle> server_send_message(AssetRef<IpcConnection>& connection, IpcMessage *message, bool expect_reply)
+core::Result<MessageHandle> server_send_message(AssetRef<IpcConnection> &connection, IpcMessage *message, bool expect_reply)
 {
     return _server_send_message(connection, message, expect_reply);
 }
@@ -278,12 +276,12 @@ core::Result<MessageHandle> server_send_message(AssetRef<IpcConnection>& connect
 // for now share the same code, but for later, we will have to differentiate between call and message
 // a call expects a reply and thus we can use some scheduling tricks to directly
 // handle the reply by jumping onto the server code
-core::Result<MessageHandle> server_send_call(AssetRef<IpcConnection>& connection, IpcMessage *message)
+core::Result<MessageHandle> server_send_call(AssetRef<IpcConnection> &connection, IpcMessage *message)
 {
     return _server_send_message(connection, message, true);
 }
 
-core::Result<IpcMessageServer> update_handle_from_client_to_server(AssetRef<IpcConnection>& connection, IpcMessageClient message)
+core::Result<IpcMessageServer> update_handle_from_client_to_server(AssetRef<IpcConnection> &connection, IpcMessageClient message)
 {
     if (connection.asset == nullptr)
     {
@@ -314,8 +312,7 @@ core::Result<IpcMessageServer> update_handle_from_client_to_server(AssetRef<IpcC
 
             auto asset_ptr = asset_ptr_res.unwrap();
 
-
-            if(!message.data[i].copy_asset)
+            if (!message.data[i].copy_asset)
             {
 
                 message.data[i].asset_handle = try$(Space::asset_move(client_space.asset, server_space.asset, asset_ptr)).handle;
@@ -351,10 +348,7 @@ core::Result<IpcMessageClient> update_handle_from_server_to_client(AssetRef<IpcC
         {
             auto asset_handle = message.data[i].asset_handle;
 
-
-
             auto asset_ptr_res = server_space.asset->by_handle(asset_handle);
-
 
             if (asset_ptr_res.is_error())
             {
@@ -363,14 +357,14 @@ core::Result<IpcMessageClient> update_handle_from_server_to_client(AssetRef<IpcC
 
             auto asset_ptr = asset_ptr_res.unwrap();
 
-            if(asset_ptr.asset->kind == OBJECT_KIND_IPC_CONNECTION && asset_ptr.asset->casted<AssetConnection>() == connection.asset )
+            if (asset_ptr.asset->kind == OBJECT_KIND_IPC_CONNECTION && asset_ptr.asset->casted<AssetConnection>() == connection.asset)
             {
                 fmt::err$("attempted to move or copy connection asset by itself (self)");
                 fmt::warn$("currently not supported");
                 continue;
             }
 
-            if(!message.data[i].copy_asset)
+            if (!message.data[i].copy_asset)
             {
 
                 message.data[i].asset_handle = try$(Space::asset_move(server_space.asset, client_space.asset, asset_ptr)).handle;
@@ -385,7 +379,7 @@ core::Result<IpcMessageClient> update_handle_from_server_to_client(AssetRef<IpcC
     return (message);
 }
 
-core::Result<ReceivedIpcMessage> server_receive_message( AssetRef<IpcConnection>&connection)
+core::Result<ReceivedIpcMessage> server_receive_message(AssetRef<IpcConnection> &connection)
 {
     if (connection.asset == nullptr)
     {
@@ -436,13 +430,12 @@ core::Result<ReceivedIpcMessage> server_receive_message( AssetRef<IpcConnection>
     }
     connection.asset->lock.release();
 
-
     ReceivedIpcMessage null_message = {};
     null_message.is_null = true;
     return (null_message);
 }
 
-core::Result<ReceivedIpcMessage> client_receive_message(AssetRef<IpcConnection>& connection)
+core::Result<ReceivedIpcMessage> client_receive_message(AssetRef<IpcConnection> &connection)
 {
     if (connection.asset == nullptr)
     {
@@ -487,7 +480,7 @@ core::Result<ReceivedIpcMessage> client_receive_message(AssetRef<IpcConnection>&
 
     return ("no message found");
 }
-core::Result<ReceivedIpcMessage> client_receive_response(AssetRef<IpcConnection>& connection, MessageHandle handle)
+core::Result<ReceivedIpcMessage> client_receive_response(AssetRef<IpcConnection> &connection, MessageHandle handle)
 {
     if (connection.asset == nullptr)
     {
@@ -513,7 +506,6 @@ core::Result<ReceivedIpcMessage> client_receive_response(AssetRef<IpcConnection>
             auto message = connection.asset->message_sent.pop(i);
             connection.asset->lock.release();
 
-
             message.message_responded.client = try$(update_handle_from_server_to_client(connection, message.message_responded.server));
 
             return message;
@@ -527,7 +519,7 @@ core::Result<ReceivedIpcMessage> client_receive_response(AssetRef<IpcConnection>
     return null_message;
 }
 
-core::Result<void> server_reply_message(AssetRef<IpcConnection>& connection, MessageHandle from, IpcMessage *message)
+core::Result<void> server_reply_message(AssetRef<IpcConnection> &connection, MessageHandle from, IpcMessage *message)
 {
 
     if (connection.asset == nullptr)
@@ -616,7 +608,7 @@ core::Result<IpcMessage> call_server_and_wait(AssetRef<IpcConnection> &connectio
 
     while (msg.is_null)
     {
-   //     fmt::err$("call_server_and_wait: received null message, retrying...");
+        //     fmt::err$("call_server_and_wait: received null message, retrying...");
         asm volatile("pause"); // CPU hint to reduce power and improve SMT performance
         msg = try$(client_receive_response(connection, res));
     }

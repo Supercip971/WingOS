@@ -1,7 +1,7 @@
 #include "space.hpp"
-#include "kernel/generic/asset_types.hpp"
-
 #include <new>
+
+#include "kernel/generic/asset_types.hpp"
 
 #include "kernel/generic/asset.hpp"
 #include "libcore/ds/vec.hpp"
@@ -21,17 +21,15 @@ struct SpacePtr
 core::Vec<SpacePtr> _spaces = {};
 core::Lock _spaces_lock = {};
 
-
- AssetRef<Space> Space::create_root()
+AssetRef<Space> Space::create_root()
 {
-    Space * root_space = new Space();
-   // root_space->parent_space_handle = AssetRef<Space>(root_space, -1);
+    Space *root_space = new Space();
+    // root_space->parent_space_handle = AssetRef<Space>(root_space, -1);
     auto vspace = VmmSpace::create(false);
     if (vspace.is_error())
     {
         fmt::err$("space_create: failed to create vmm space: {}", vspace.error());
         delete root_space;
-
     }
     root_space->vmm_space = vspace.unwrap();
     root_space->uid = 0;
@@ -41,8 +39,7 @@ core::Lock _spaces_lock = {};
 
     _spaces.push((SpacePtr){root_space, 0});
     root_space->assets[0].asset->ref_count.store(99999, std::memory_order_relaxed);
-    return *(AssetRef<Space>*) &root_space->assets[0];
-
+    return *(AssetRef<Space> *)&root_space->assets[0];
 }
 // AssetRef is now defined (and fully implemented) in `asset_types.hpp`.
 // Keep `space.cpp` focused on Space logic to avoid ODR violations from duplicate
@@ -50,47 +47,41 @@ core::Lock _spaces_lock = {};
 
 void Space::dump_assets()
 {
-        lock.lock();
-        fmt::log$("Assets in space {}:", uid);
-        for (size_t i = 0; i < assets.len(); i++)
+    lock.lock();
+    fmt::log$("Assets in space {}:", uid);
+    for (size_t i = 0; i < assets.len(); i++)
+    {
+        fmt::log$("  Asset[{}]: handle={}, kind={}", i, assets[i].handle, assetKind2Str(assets[i].asset->kind));
+        if (assets[i].asset->kind == OBJECT_KIND_IPC_SERVER)
         {
-            fmt::log$("  Asset[{}]: handle={}, kind={}", i, assets[i].handle, assetKind2Str(assets[i].asset->kind));
-            if(assets[i].asset->kind == OBJECT_KIND_IPC_SERVER)
-            {
-                auto server = assets[i].asset->casted<AssetServer>();
-                fmt::log$("    parent: {} | server handle: {} | connections: {}", server->server->parent_space, server->server->handle, server->server->connections.len());
-            }
-
-            if(assets[i].asset->kind == OBJECT_KIND_IPC_CONNECTION)
-            {
-                auto conn = assets[i].asset->casted<AssetConnection>();
-                fmt::log$("     accepted: {} | closed: {} | server: {} | msg count: {}", conn->accepted, (int)conn->closed_status, (int)conn->server_handle, conn->message_sent.len());
-
-            }
-            if(assets[i].asset->kind == OBJECT_KIND_MEMORY)
-            {
-                auto mem = assets[i].asset->casted<AssetMemory>();
-
-                fmt::log$("    Memory addr: {}-{}", mem->addr | fmt::FMT_HEX,
-                          (mem->addr + mem->size) | fmt::FMT_HEX);
-                fmt::log$("    Memory allocated: {}", mem->allocated);
-            }
-
-            if(assets[i].asset->kind == OBJECT_KIND_MAPPING)
-            {
-                auto mapping = assets[i].asset->casted<AssetMapping>();
-
-                fmt::log$("    Mapping: {}-{} (W: {}, EX: {})", mapping->start | fmt::FMT_HEX, mapping->end | fmt::FMT_HEX,
-                    mapping->writable ? "Y" : "N", mapping->executable ? "Y" : "N"
-                );
-            }
-
-
-
+            auto server = assets[i].asset->casted<AssetServer>();
+            fmt::log$("    parent: {} | server handle: {} | connections: {}", server->server->parent_space, server->server->handle, server->server->connections.len());
         }
 
+        if (assets[i].asset->kind == OBJECT_KIND_IPC_CONNECTION)
+        {
+            auto conn = assets[i].asset->casted<AssetConnection>();
+            fmt::log$("     accepted: {} | closed: {} | server: {} | msg count: {}", conn->accepted, (int)conn->closed_status, (int)conn->server_handle, conn->message_sent.len());
+        }
+        if (assets[i].asset->kind == OBJECT_KIND_MEMORY)
+        {
+            auto mem = assets[i].asset->casted<AssetMemory>();
 
-       lock.release();
+            fmt::log$("    Memory addr: {}-{}", mem->addr | fmt::FMT_HEX,
+                      (mem->addr + mem->size) | fmt::FMT_HEX);
+            fmt::log$("    Memory allocated: {}", mem->allocated);
+        }
+
+        if (assets[i].asset->kind == OBJECT_KIND_MAPPING)
+        {
+            auto mapping = assets[i].asset->casted<AssetMapping>();
+
+            fmt::log$("    Mapping: {}-{} (W: {}, EX: {})", mapping->start | fmt::FMT_HEX, mapping->end | fmt::FMT_HEX,
+                      mapping->writable ? "Y" : "N", mapping->executable ? "Y" : "N");
+        }
+    }
+
+    lock.release();
 }
 
 // asset_release is now a template function defined in space.hpp
@@ -100,7 +91,7 @@ core::Result<AssetRef<Space>> Space::create_space([[maybe_unused]] uint64_t flag
     AssetRef<Space> ptr = try$(allocate_asset<Space>());
     auto asset = ptr.asset;
 
-  //  asset->parent_space_handle = AssetRef<Space>(this, -1);
+    //  asset->parent_space_handle = AssetRef<Space>(this, -1);
 
     auto vspace = VmmSpace::create(false);
 
@@ -123,7 +114,7 @@ core::Result<AssetRef<Space>> Space::create_space([[maybe_unused]] uint64_t flag
     _spaces_lock.release();
 
     asset->uid = space_ptr.handle;
-   // asset->ref_count++; // referencing by itself
+    // asset->ref_count++; // referencing by itself
 
     asset->alloc_uid = 16 + 10000 * space_ptr.handle;
 
@@ -148,7 +139,6 @@ core::Result<AssetRef<Space>> Space::global_space_by_handle(uint64_t handle)
         }
     }
     _spaces_lock.release();
-
 
     return "Space not found";
 }

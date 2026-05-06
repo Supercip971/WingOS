@@ -1,10 +1,10 @@
 #pragma once
 
 #include <libcore/core.hpp>
+
 #include "gfx/color.hpp"
 #include "gfx/geometry/rect.hpp"
 #include "gfx/geometry/shape.hpp"
-
 #include "gfx/text/font.hpp"
 #include "gfx/text/utf-text.hpp"
 #include "libcore/shared.hpp"
@@ -22,8 +22,10 @@ struct Painter
     CompositeColor color;
     PaintType type;
 
-    union  {
-        struct {
+    union
+    {
+        struct
+        {
             float width;
         } stroke;
     };
@@ -35,10 +37,11 @@ struct Painter
         type = PAINT_MODE_FILLED;
     };
 
-
     constexpr static Painter filled(CompositeColor col) { return Painter(col); };
 
-    constexpr static Painter stroked(CompositeColor col, float w) { Painter a;
+    constexpr static Painter stroked(CompositeColor col, float w)
+    {
+        Painter a;
         a.color = col;
         a.type = PAINT_MODE_STROKE;
         a.stroke.width = w;
@@ -92,7 +95,6 @@ struct TextCommand
     Utf8Str str;
     core::SharedPtr<Font> font;
     Vec2 pos;
-
 };
 
 struct ScissorCommand
@@ -115,17 +117,47 @@ public:
         ContourCommand contour;
         RectCommand rect;
         ScissorCommand scissor;
-
     };
 
     // Default constructor
     RenderCommand() : kind(RenderCommandKind::RENDER_KIND_FILL) {}
 
     // Copy constructor
-    RenderCommand(const RenderCommand& other) : kind(other.kind)
+    RenderCommand(const RenderCommand &other) : kind(other.kind)
     {
         switch (kind)
         {
+        case RenderCommandKind::RENDER_KIND_FILL:
+            fill = other.fill;
+            break;
+        case RenderCommandKind::RENDER_KIND_TEXT:
+            new (&text) TextCommand(other.text);
+            break;
+        case RenderCommandKind::RENDER_KIND_RECT:
+            rect = other.rect;
+            break;
+        case RenderCommandKind::RENDER_KIND_USE_COLOR:
+            break;
+        case RenderCommandKind::RENDER_KIND_CONTOUR:
+            new (&contour) ContourCommand(other.contour);
+            break;
+        case RenderCommandKind::RENDER_KIND_SCISSOR:
+            new (&scissor) ScissorCommand(other.scissor);
+            break;
+        default:
+            break;
+        }
+    }
+
+    // Copy assignment operator
+    RenderCommand &operator=(const RenderCommand &other)
+    {
+        if (this != &other)
+        {
+            this->~RenderCommand();
+            kind = other.kind;
+            switch (kind)
+            {
             case RenderCommandKind::RENDER_KIND_FILL:
                 fill = other.fill;
                 break;
@@ -145,37 +177,6 @@ public:
                 break;
             default:
                 break;
-        }
-    }
-
-    // Copy assignment operator
-    RenderCommand& operator=(const RenderCommand& other)
-    {
-        if (this != &other)
-        {
-            this->~RenderCommand();
-            kind = other.kind;
-            switch (kind)
-            {
-                case RenderCommandKind::RENDER_KIND_FILL:
-                    fill = other.fill;
-                    break;
-                case RenderCommandKind::RENDER_KIND_TEXT:
-                    new (&text) TextCommand(other.text);
-                    break;
-                case RenderCommandKind::RENDER_KIND_RECT:
-                    rect = other.rect;
-                    break;
-                case RenderCommandKind::RENDER_KIND_USE_COLOR:
-                    break;
-                case RenderCommandKind::RENDER_KIND_CONTOUR:
-                    new (&contour) ContourCommand(other.contour);
-                    break;
-                case RenderCommandKind::RENDER_KIND_SCISSOR:
-                    new (&scissor) ScissorCommand(other.scissor);
-                    break;
-                default:
-                    break;
             }
         }
         return *this;
@@ -186,19 +187,19 @@ public:
     {
         switch (kind)
         {
-            case RenderCommandKind::RENDER_KIND_TEXT:
-                text.~TextCommand();
-                break;
-            case RenderCommandKind::RENDER_KIND_CONTOUR:
-                contour.~ContourCommand();
-                break;
-            default:
-                break;
+        case RenderCommandKind::RENDER_KIND_TEXT:
+            text.~TextCommand();
+            break;
+        case RenderCommandKind::RENDER_KIND_CONTOUR:
+            contour.~ContourCommand();
+            break;
+        default:
+            break;
         }
     }
 
-    template<typename T>
-    static RenderCommand from(const T& r)
+    template <typename T>
+    static RenderCommand from(const T &r)
     {
         RenderCommand cmd = {};
         cmd.kind = T::KIND;

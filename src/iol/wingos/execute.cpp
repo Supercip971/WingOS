@@ -1,21 +1,21 @@
 #include <string.h>
+
 #include "hw/mem/addr_space.hpp"
 
 #include "dev/pci/classes.hpp"
 #include "dev/pci/pci.hpp"
+#include "execute.hpp"
 #include "iol/wingos/space.hpp"
 #include "json/json.hpp"
 #include "libcore/fmt/flags.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libelf/elf.hpp"
 #include "mcx/mcx.hpp"
-#include "execute.hpp"
 #include "protocols/vfs/vfs.hpp"
 #include "wingos-headers/asset.h"
 #include "wingos-headers/startup.hpp"
 
-
-core::Result<size_t> execute_program_from_mem(Wingos::Space &subspace, elf::ElfLoader loaded, StartupInfo const & args)
+core::Result<size_t> execute_program_from_mem(Wingos::Space &subspace, elf::ElfLoader loaded, StartupInfo const &args)
 {
     auto startup_info_mem = Wingos::Space::self().allocate_physical_memory(sizeof(StartupInfo));
 
@@ -66,7 +66,7 @@ core::Result<size_t> execute_program_from_mem(Wingos::Space &subspace, elf::ElfL
     return 0ul;
 }
 
-core::Result<size_t> execute_program_from_path(Wingos::Space& subspace, const core::Str & path, StartupInfo const & args)
+core::Result<size_t> execute_program_from_path(Wingos::Space &subspace, const core::Str &path, StartupInfo const &args)
 {
     auto vfs_conn = try$(prot::VfsConnection::connect());
     auto file_asset = try$(vfs_conn.open_path(path));
@@ -84,5 +84,4 @@ core::Result<size_t> execute_program_from_path(Wingos::Space& subspace, const co
     elf::ElfLoader prog = try$(elf::ElfLoader::load(range));
 
     return execute_program_from_mem(subspace, core::move(prog), args);
-
 }

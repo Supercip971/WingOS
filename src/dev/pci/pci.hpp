@@ -112,11 +112,9 @@ struct [[gnu::packed]] PciBridgeRegMemBaseStat
     uint16_t mem_limit; // 0x24
 };
 
-
 template <typename T>
 concept IsCastableToUint32 = requires(
-    T value
-){
+    T value) {
     sizeof(T) == 4;
 };
 
@@ -131,13 +129,13 @@ struct PciDevice
     {
         PciConfigReg reg = {off, func, slot, bus, 0, 1};
 
-        union {
+        union
+        {
             PciConfigReg reg;
             uint32_t as_uint32;
         } u;
         u.reg = reg;
         uint32_t address = u.as_uint32;
-
 
         // Write the address to the CONFIG_ADDRESS port
 
@@ -203,7 +201,8 @@ struct PciDevice
     {
         PciConfigReg reg = {off, func, slot, bus, 0, 1};
 
-        union {
+        union
+        {
             PciConfigReg reg;
             uint32_t as_uint32;
         } u;
@@ -222,11 +221,12 @@ struct PciDevice
     }
 
     template <IsCastableToUint32 T>
-    
-    T read_config(size_t reg) const 
+
+    T read_config(size_t reg) const
     {
         uint32_t value = read_config(reg);
-        union {
+        union
+        {
             uint32_t as_uint32;
             T as_type;
         } u;
@@ -239,7 +239,8 @@ struct PciDevice
     T read_config(size_t reg, size_t func) const
     {
         uint32_t value = read_config(reg, func);
-        union {
+        union
+        {
             uint32_t as_uint32;
             T as_type;
         } u;

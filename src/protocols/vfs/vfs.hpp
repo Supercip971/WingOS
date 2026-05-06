@@ -54,16 +54,16 @@ public:
     }
 
     // Disable copy to prevent double-disconnect
-    VfsConnection(const VfsConnection&) = delete;
-    VfsConnection& operator=(const VfsConnection&) = delete;
+    VfsConnection(const VfsConnection &) = delete;
+    VfsConnection &operator=(const VfsConnection &) = delete;
 
     // Enable move
-    VfsConnection(VfsConnection&& other) : connection(other.connection), connected(other.connected)
+    VfsConnection(VfsConnection &&other) : connection(other.connection), connected(other.connected)
     {
 
         other.connected = false;
     }
-    VfsConnection& operator=(VfsConnection&& other)
+    VfsConnection &operator=(VfsConnection &&other)
     {
         if (this != &other)
         {
@@ -116,7 +116,6 @@ public:
         return vfs_conn;
     }
 
-
     static core::Result<VfsConnection> connect()
     {
         VfsConnection vfs_conn = {};
@@ -133,9 +132,6 @@ public:
         vfs_conn.connected = true;
         return vfs_conn;
     }
-
-
-
 
     core::Result<void> register_fs(core::Str name, IpcServerHandle endpoint)
     {
@@ -180,11 +176,10 @@ public:
         return file_res;
     }
 
-
-    core::Result<FsFile> open_path(core::Str const & path)
+    core::Result<FsFile> open_path(core::Str const &path)
     {
         fmt::log$("VfsConnection::open_path: opening path {}", path.view());
-        if(path[0] != '/')
+        if (path[0] != '/')
         {
             fmt::warn$("FIXME: path must be absolute");
             return ("only absolute paths are supported");
@@ -195,11 +190,11 @@ public:
         auto current_dir = core::move(root_res);
         auto components = path.substr(1).split('/');
 
-        for(size_t i = 0; i < components.len(); i++)
+        for (size_t i = 0; i < components.len(); i++)
         {
             fmt::log$("path component {}: {}", i, components[i].view());
         }
-        for(size_t i = 0; i < components.len(); i++)
+        for (size_t i = 0; i < components.len(); i++)
         {
             auto next_dir_res = try$(current_dir.open_file(components[i]));
             current_dir.close();

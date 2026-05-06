@@ -4,7 +4,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-
 struct Pages
 {
     uint64_t _count = 0;
@@ -22,7 +21,6 @@ struct Pages
 
     constexpr bool operator<(const Pages &other) const { return _count < other._count; }
 
-
     static constexpr Pages from_bytes_floored(size_t bytes)
     {
         return Pages(bytes / Pages::size);
@@ -31,9 +29,6 @@ struct Pages
     {
         return Pages((bytes + Pages::size - 1) / Pages::size);
     }
-
-
-
 };
 /* it's the implementation that knows how to cast virt address to physical ones */
 /* for a user app it'll allocate a virtual range and map the physical address */
@@ -67,26 +62,26 @@ struct VirtAddr
     template <typename T>
     void write(T value)
     {
-        *((T*)_addr) = value;
+        *((T *)_addr) = value;
     }
 
     template <typename T>
     T read() const
     {
 
-        return *((T*)_addr);
+        return *((T *)_addr);
     }
 
     template <typename T>
     void vwrite(T value)
     {
-        (*(volatile T*)_addr) = value;
+        (*(volatile T *)_addr) = value;
     }
 
     template <typename T>
     T vread() const
     {
-        return (*(volatile T*)_addr);
+        return (*(volatile T *)_addr);
     }
 
     VirtAddr offsetted(uintptr_t offset) const
@@ -184,7 +179,7 @@ constexpr inline VirtRange toVirtRange(PhysRange range)
     return VirtRange(toVirt(range.start()), toVirt(range.end()));
 }
 #else
-#include <iol/wingos/space.hpp>
+#    include <iol/wingos/space.hpp>
 constexpr inline PhysAddr toPhys(VirtAddr addr)
 {
     // in userspace we assume the mapping is direct for now

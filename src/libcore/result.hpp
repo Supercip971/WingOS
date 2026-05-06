@@ -4,7 +4,6 @@
 #include <libcore/optional.hpp>
 #include <libcore/type-utils.hpp>
 
-
 namespace core
 {
 
@@ -16,13 +15,12 @@ struct Result : public NoCopy
 private:
     // FIXME: introduce either type
 
-
 public:
     using ErrorType = RemoveReference<ErrT>;
     using ValueType = RemoveReference<ValT>;
 
-
-    union {
+    union
+    {
         ValueType _value;
         ErrorType _error;
     };
@@ -32,7 +30,7 @@ public:
 
     constexpr ~Result()
     {
-        if(_is_error)
+        if (_is_error)
         {
             _error.~ErrorType();
         }
@@ -42,16 +40,17 @@ public:
         }
     }
 
-    constexpr Result(const ValueType &value) : _value(value), _is_error(false){}
+    constexpr Result(const ValueType &value) : _value(value), _is_error(false) {}
 
     constexpr Result(ValueType &&value) : _value(core::move(value)), _is_error(false) {}
 
     constexpr Result(const ErrorType &error) : _error(error), _is_error(true) {}
 
-    constexpr Result(ErrorType &&error) :_error(core::move(error)), _is_error(true) {}
+    constexpr Result(ErrorType &&error) : _error(core::move(error)), _is_error(true) {}
 
-    constexpr Result(Result &&other) : _is_error(other._is_error)  {
-        if(_is_error)
+    constexpr Result(Result &&other) : _is_error(other._is_error)
+    {
+        if (_is_error)
         {
             new (&_error) ErrorType(core::move(other._error));
         }
@@ -61,15 +60,13 @@ public:
         }
     }
 
-
-
-
     constexpr Result &operator=(Result &&other)
     {
-        if (this == &other) return *this;
+        if (this == &other)
+            return *this;
 
         // Destroy current value
-        if(_is_error)
+        if (_is_error)
         {
             _error.~ErrorType();
         }
@@ -80,7 +77,7 @@ public:
 
         // Construct new value
         _is_error = other._is_error;
-        if(_is_error)
+        if (_is_error)
         {
             new (&_error) ErrorType(core::move(other._error));
         }
@@ -94,7 +91,7 @@ public:
     static constexpr Result<ValT, ErrT> success(U val bounded$)
         requires core::IsConvertibleTo<U, ValueType>
     {
-        Result<ValT, ErrT> res {};
+        Result<ValT, ErrT> res{};
         res._is_error = false;
         res._value = (core::forward<U>(val));
         return res;
@@ -104,13 +101,13 @@ public:
     static constexpr Result<ValT, ErrT> error(E err bounded$)
         requires core::IsConvertibleTo<E, ErrorType>
     {
-        Result<ValT, ErrT> res {};
+        Result<ValT, ErrT> res{};
         res._is_error = true;
         res._error = (core::forward<E>(err));
         return res;
     }
     void assert();
-    ValT& unwrap() & bounded$
+    ValT &unwrap() & bounded$
     {
         assert();
         return _value;
@@ -157,10 +154,10 @@ template <typename ErrT>
 struct Result<void, ErrT> : public NoCopy
 {
 public:
-    union {
+    union
+    {
 
-    ErrT _error;
-
+        ErrT _error;
     };
     bool _is_error;
     using ErrorType = RemoveReference<ErrT>;
@@ -169,7 +166,7 @@ public:
 
     constexpr Result(const ErrT &error) : _error(error), _is_error(true) {}
 
-    constexpr Result(ErrT &&error) : _error(core::move(error)), _is_error(true){}
+    constexpr Result(ErrT &&error) : _error(core::move(error)), _is_error(true) {}
 
     constexpr Result(Result &&other) : _error(core::move(other._error)), _is_error(other._is_error) {}
 
@@ -201,7 +198,7 @@ public:
 
     constexpr ~Result()
     {
-        if(_is_error)
+        if (_is_error)
         {
             _error.~ErrT();
         }
@@ -227,7 +224,7 @@ extern void debug_provide_info(const char *info, const char *data);
 
 #define try_v$(expr, vname) ({                                               \
     auto vname = (expr);                                                     \
-    if (vname.is_error()) [[unlikely]]                             \
+    if (vname.is_error()) [[unlikely]]                                       \
     {                                                                        \
         core::debug_provide_info("error:    ", (const char *)vname.error()); \
         core::debug_provide_info("at:       ", #expr);                       \
@@ -236,7 +233,7 @@ extern void debug_provide_info(const char *info, const char *data);
         core::debug_provide_info("line:     ", STRINGIZE(__LINE__));         \
         return vname.error();                                                \
     }                                                                        \
-    vname.take();                                             \
+    vname.take();                                                            \
 })
 
 #define CONCAT_IMPL(x, y) x##y

@@ -115,13 +115,11 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
         uintptr_t cr3 = arch::CpuCr<3>::read();
         fmt::log$("cr3: {}", cr3 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
 
-
         fmt::log$("cpu: {}", hw::acpi::Lapic::the().id());
 
         // dump_stackframe((void*)Cpu::current()->currentTask()->cpu_context()->);
         fmt::log$("kernel stacktrace:");
         dump_stackframe((void *)frame->rbp);
-
 
         Cpu::current()->debug_context.dump();
         // task syscall and user space stack range from cpu task context
@@ -152,27 +150,22 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
         fmt::log$("gs[0x0]: {}", gs0 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
         fmt::log$("gs[0x8]: {}", gs8 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
 
-
         kernel::dump_current_running_task(frame->interrupt_number != 2);
-
-
 
         inside_error = false;
         int_lock.write_release();
 
-        if(frame->interrupt_number != 2)
+        if (frame->interrupt_number != 2)
         {
 
-        while (true)
-        {
-            asm volatile("hlt");
-        }
-
+            while (true)
+            {
+                asm volatile("hlt");
+            }
         }
 
         else
         {
-
         }
     }
     else if (frame->interrupt_number == 32)
@@ -195,10 +188,10 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
     {
         _scheduler_impl_soft(stack);
     }
-    else if(frame->interrupt_number == 102)
+    else if (frame->interrupt_number == 102)
     {
-        while(true){
-
+        while (true)
+        {
         }
     }
 
@@ -207,8 +200,7 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
 
     Cpu::current()->interrupt_release(false);
 
-
-    if(frame->interrupt_number != 2)
+    if (frame->interrupt_number != 2)
     {
 
         int_lock.read_release();

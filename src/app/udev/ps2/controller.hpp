@@ -1,6 +1,7 @@
 #pragma once
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
+
 #include "iol/ports.hpp"
 
 namespace Ps2
@@ -11,8 +12,8 @@ namespace Ps2
 class Controller
 {
 
-    public:
-/* PS2 8048 driver */
+public:
+    /* PS2 8048 driver */
     static constexpr auto PS2_IO_BASE = 0x60;
 
     typedef enum
@@ -95,7 +96,6 @@ class Controller
             }
         }
     }
-
 
     void wait_write()
     {

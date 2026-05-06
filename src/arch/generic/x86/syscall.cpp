@@ -2,14 +2,13 @@
 
 uintptr_t syscall_execute(uint32_t id, uintptr_t arg1, uintptr_t arg2, uintptr_t arg3, uintptr_t arg4, uintptr_t arg5, uintptr_t arg6)
 {
-/*     .id = (uint32_t)stackframe->rax,
-    .arg1 = stackframe->rbx,
-    .arg2 = stackframe->rdx,
-    .arg3 = stackframe->rsi,
-    .arg4 = stackframe->rdi,
-    .arg5 = stackframe->r8,
-    .arg6 = stackframe->r9,*/
-
+    /*     .id = (uint32_t)stackframe->rax,
+        .arg1 = stackframe->rbx,
+        .arg2 = stackframe->rdx,
+        .arg3 = stackframe->rsi,
+        .arg4 = stackframe->rdi,
+        .arg5 = stackframe->r8,
+        .arg6 = stackframe->r9,*/
 
     register uintptr_t out0 asm("rax") = id;
 

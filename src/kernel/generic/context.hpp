@@ -20,13 +20,12 @@ class CpuContext
 {
 
 public:
-
-    void * syscall_stack_top;
+    void *syscall_stack_top;
     volatile uintptr_t saved_stack; // used to save the stack pointer before syscall
 
     void *stack_ptr;
     void *kernel_stack_ptr;
-    void * syscall_stack_ptr;
+    void *syscall_stack_ptr;
 
     void *stack_top;
     void *kernel_stack_top;

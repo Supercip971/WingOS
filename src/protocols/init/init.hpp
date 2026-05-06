@@ -1,261 +1,251 @@
 #pragma once
 #include <stdint.h>
+
 #include "iol/wingos/ipc.hpp"
+#include "iol/wingos/space.hpp"
 #include "libcore/result.hpp"
 #include "wingos-headers/ipc.h"
-#include "iol/wingos/space.hpp"
-
 
 namespace prot
 {
 
+enum InitMessageType
+{
+    INIT_REGISTER_SERVER = 1,
+    INIT_UNREGISTER_SERVER = 2,
+    INIT_GET_SERVER = 3,
+    INIT_GET_SERVER_RESPONSE = 4,
+    INIT_SIGNAL_FS_AVAILABLE = 5,
+    INIT_QUERY_FB = 6,
+};
+struct InitRegisterServer
+{
+    // wingos/disk
+    // init
 
-     enum InitMessageType
+    char name[80];
+    uint64_t major;
+    uint64_t minor;
+    MessageHandle endpoint;
+};
+
+struct InitUnregisterServer
+{
+    char name[80];
+};
+
+struct InitGetServer
+{
+    char name[80];
+    uint64_t major;
+    uint64_t minor;
+};
+
+struct InitGetServerResponse
+{
+    IpcServerHandle endpoint;
+    uint64_t major;
+    uint64_t minor;
+};
+
+struct InitQueryFbResponse
+{
+    uintptr_t framebuffer_addr;
+    size_t framebuffer_width;
+    size_t framebuffer_height;
+};
+
+class InitConnection
+{
+
+    Wingos::IpcClient connection;
+
+public:
+    Wingos::IpcClient &raw_client() { return connection; }
+
+    static core::Result<InitConnection> connect()
     {
-        INIT_REGISTER_SERVER = 1,
-        INIT_UNREGISTER_SERVER = 2,
-        INIT_GET_SERVER = 3,
-        INIT_GET_SERVER_RESPONSE = 4,
-        INIT_SIGNAL_FS_AVAILABLE = 5,
-        INIT_QUERY_FB = 6,
-    };
-    struct InitRegisterServer
+        fmt::log$("connectin'");
+        InitConnection conn{};
+        conn.connection = Wingos::Space::self().connect_to_ipc_server(0);
+
+        conn.connection.wait_for_accept();
+
+        return conn;
+    }
+
+    void end()
     {
-        // wingos/disk
-        // init
+        // FIXME: add a disconnect syscall
+        // connection.();
+    }
 
-        char name[80];
-        uint64_t major;
-        uint64_t minor;
-        MessageHandle endpoint;
-
-    };
-
-    struct InitUnregisterServer
+    core::Result<void> register_server(InitRegisterServer const &reg)
     {
-         char name[80];
-    };
+        IpcMessage message = {};
+        message.data[0].data = INIT_REGISTER_SERVER;
+        message.data[1].data = reg.endpoint;
+        message.data[2].data = reg.major;
+        message.data[3].data = reg.minor;
+        size_t i;
 
-    struct InitGetServer
-    {
-        char name[80];
-        uint64_t major;
-        uint64_t minor;
-    };
-
-    struct InitGetServerResponse
-    {
-        IpcServerHandle endpoint;
-        uint64_t major;
-        uint64_t minor;
-    };
-
-
-    struct InitQueryFbResponse
-    {
-        uintptr_t framebuffer_addr;
-        size_t framebuffer_width;
-        size_t framebuffer_height;
-    };
-
-
-
-    class InitConnection
-    {
-
-        Wingos::IpcClient connection;
-
-        public:
-
-        Wingos::IpcClient& raw_client() { return connection; }
-
-        static core::Result<InitConnection> connect()
+        for (i = 0; i < 80 && reg.name[i] != 0; i++)
         {
-            fmt::log$("connectin'");
-            InitConnection conn {};
-            conn.connection =  Wingos::Space::self().connect_to_ipc_server(0);
-
-            conn.connection.wait_for_accept();
-
-            return conn;
-
+            message.raw_buffer[i] = reg.name[i];
         }
 
-        void end()
+        message.raw_buffer[i] = 0;
+
+        message.len = i + 1;
+
+        fmt::log$("Register server {START} ");
+
+        auto sended_message = connection.send(message, true);
+
+        fmt::log$("Register server {END } ");
+
+        auto message_handle = sended_message.unwrap();
+        if (sended_message.is_error())
         {
-            // FIXME: add a disconnect syscall
-            //connection.();
+            return ("failed to send register server message");
+        }
+        (void)message_handle;
+
+        return {};
+    }
+
+    core::Result<void> unregister_server(InitUnregisterServer const &reg)
+    {
+        IpcMessage message = {};
+        message.data[0].data = INIT_UNREGISTER_SERVER;
+        for (size_t i = 0; i < 80 && reg.name[i] != 0; i++)
+        {
+            message.raw_buffer[i] = reg.name[i];
         }
 
-        core::Result<void> register_server(InitRegisterServer const &reg)
+        auto sended_message = connection.send(message, false);
+        auto message_handle = sended_message.unwrap();
+        if (sended_message.is_error())
         {
-            IpcMessage message = {};
-            message.data[0].data = INIT_REGISTER_SERVER;
-            message.data[1].data= reg.endpoint;
-            message.data[2].data = reg.major;
-            message.data[3].data = reg.minor;
-            size_t i;
+            return ("failed to send unregister server message");
+        }
+        (void)message_handle;
 
-            for (i = 0; i < 80 && reg.name[i] != 0; i++)
-            {
-                message.raw_buffer[i] = reg.name[i];
-            }
-
-            message.raw_buffer[i] = 0;
-
-            message.len = i+1;
-
-            fmt::log$("Register server {START} ");
-
-            auto sended_message = connection.send(message, true);
-
-            fmt::log$("Register server {END } ");
-
-
-            auto message_handle = sended_message.unwrap();
-            if (sended_message.is_error())
-            {
-                return ("failed to send register server message");
-            }
-            (void)message_handle;
-
-            return {};
+        return {};
+    }
+    core::Result<InitGetServerResponse> get_server(InitGetServer const &reg)
+    {
+        IpcMessage message = {};
+        message.data[0].data = INIT_GET_SERVER;
+        message.data[1].data = reg.major;
+        message.data[2].data = reg.minor;
+        size_t i;
+        for (i = 0; i < 80 && reg.name[i] != 0; i++)
+        {
+            message.raw_buffer[i] = reg.name[i];
         }
 
-        core::Result<void> unregister_server(InitUnregisterServer const &reg)
-        {
-            IpcMessage message = {};
-            message.data[0].data = INIT_UNREGISTER_SERVER;
-            for (size_t i = 0; i < 80 && reg.name[i] != 0; i++)
-            {
-                message.raw_buffer[i] = reg.name[i];
-            }
-
-            auto sended_message = connection.send(message, false);
-            auto message_handle = sended_message.unwrap();
-            if (sended_message.is_error())
-            {
-                return ("failed to send unregister server message");
-            }
-            (void)message_handle;
-
-            return {};
-        }
-        core::Result<InitGetServerResponse> get_server(InitGetServer const &reg)
-        {
-            IpcMessage message = {};
-            message.data[0].data = INIT_GET_SERVER;
-            message.data[1].data = reg.major;
-            message.data[2].data = reg.minor;
-            size_t i;
-            for ( i = 0; i < 80 && reg.name[i] != 0; i++)
-            {
-                message.raw_buffer[i] = reg.name[i];
-            }
-
-            message.raw_buffer[i] = 0;
-            message.len = i+1;
+        message.raw_buffer[i] = 0;
+        message.len = i + 1;
 
         //   auto sended_message = connection.send(message, true);
-            //auto message_handle = sended_message.unwrap();
-          //  if (sended_message.is_error())
-          //  {
-          //      return ("failed to send get server message");
-          //  }
-/*
-            while (true)
-            {
-
-                auto received = connection.receive_reply(message_handle);
-                if (!received.is_error())
-                {
-                    auto msg = received.take();
-                    InitGetServerResponse resp {};
-                    resp.endpoint = msg.data[0].data;
-
-                    if(resp.endpoint == 0)
+        // auto message_handle = sended_message.unwrap();
+        //  if (sended_message.is_error())
+        //  {
+        //      return ("failed to send get server message");
+        //  }
+        /*
+                    while (true)
                     {
-                        return ("server not found");
+
+                        auto received = connection.receive_reply(message_handle);
+                        if (!received.is_error())
+                        {
+                            auto msg = received.take();
+                            InitGetServerResponse resp {};
+                            resp.endpoint = msg.data[0].data;
+
+                            if(resp.endpoint == 0)
+                            {
+                                return ("server not found");
+                            }
+                            resp.major = msg.data[1].data;
+                            resp.minor = msg.data[2].data;
+                            return (resp);
+                        }
                     }
-                    resp.major = msg.data[1].data;
-                    resp.minor = msg.data[2].data;
-                    return (resp);
-                }
-            }
-*/
+        */
 
-            fmt::log$("Querying server {START} ");
+        fmt::log$("Querying server {START} ");
 
-            auto res = connection.call(message);
+        auto res = connection.call(message);
 
-            fmt::log$("Querying server {END  } ");
-            if (!res.is_error())
-            {
-                auto msg = res.take();
-                InitGetServerResponse resp {};
-                resp.endpoint = msg.data[0].data;
-                if(resp.endpoint == 0)
-                {
-                    return ("server not found");
-                }
-                resp.major = msg.data[1].data;
-                resp.minor = msg.data[2].data;
-                fmt::log$("got server response: endpoint={}, major={}, minor={}", resp.endpoint, resp.major, resp.minor);
-                return (resp);
-            }
-            fmt::log$("failed to get server response");
-
-
-            return ("failed to receive get server response");
-        }
-
-        core::Result<InitGetServerResponse> get_server(core::Str name, uint64_t major, uint64_t minor)
+        fmt::log$("Querying server {END  } ");
+        if (!res.is_error())
         {
-            InitGetServer get = {
-
-                .name = {},
-                .major = major,
-                .minor = minor,
-            };
-
-            name.copy_to((char *)get.name, 80);
-
-            return get_server(get);
-        }
-
-        core::Result<void> signal_fs_available()
-        {
-            IpcMessage message = {};
-            message.data[0].data = INIT_SIGNAL_FS_AVAILABLE;
-
-            auto sended_message = connection.send(message, false);
-            auto message_handle = sended_message.unwrap();
-            if (sended_message.is_error())
+            auto msg = res.take();
+            InitGetServerResponse resp{};
+            resp.endpoint = msg.data[0].data;
+            if (resp.endpoint == 0)
             {
-                return ("failed to send signal fs available message");
+                return ("server not found");
             }
-            (void)message_handle;
-
-            return {};
+            resp.major = msg.data[1].data;
+            resp.minor = msg.data[2].data;
+            fmt::log$("got server response: endpoint={}, major={}, minor={}", resp.endpoint, resp.major, resp.minor);
+            return (resp);
         }
+        fmt::log$("failed to get server response");
 
+        return ("failed to receive get server response");
+    }
 
-        core::Result<InitQueryFbResponse> query_framebuffer()
+    core::Result<InitGetServerResponse> get_server(core::Str name, uint64_t major, uint64_t minor)
+    {
+        InitGetServer get = {
+
+            .name = {},
+            .major = major,
+            .minor = minor,
+        };
+
+        name.copy_to((char *)get.name, 80);
+
+        return get_server(get);
+    }
+
+    core::Result<void> signal_fs_available()
+    {
+        IpcMessage message = {};
+        message.data[0].data = INIT_SIGNAL_FS_AVAILABLE;
+
+        auto sended_message = connection.send(message, false);
+        auto message_handle = sended_message.unwrap();
+        if (sended_message.is_error())
         {
-            IpcMessage message = {};
-            message.data[0].data = INIT_QUERY_FB;
-
-            auto res = connection.call(message);
-            if (!res.is_error())
-            {
-                auto msg = res.take();
-                InitQueryFbResponse resp {};
-                resp.framebuffer_addr = msg.data[0].data;
-                resp.framebuffer_width = msg.data[1].data;
-                resp.framebuffer_height = msg.data[2].data;
-                return (resp);
-            }
-            return ("failed to receive framebuffer info");
+            return ("failed to send signal fs available message");
         }
-    };
+        (void)message_handle;
+
+        return {};
+    }
+
+    core::Result<InitQueryFbResponse> query_framebuffer()
+    {
+        IpcMessage message = {};
+        message.data[0].data = INIT_QUERY_FB;
+
+        auto res = connection.call(message);
+        if (!res.is_error())
+        {
+            auto msg = res.take();
+            InitQueryFbResponse resp{};
+            resp.framebuffer_addr = msg.data[0].data;
+            resp.framebuffer_width = msg.data[1].data;
+            resp.framebuffer_height = msg.data[2].data;
+            return (resp);
+        }
+        return ("failed to receive framebuffer info");
+    }
+};
 } // namespace prot

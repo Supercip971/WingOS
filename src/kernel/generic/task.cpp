@@ -17,7 +17,7 @@ core::RWLock _task_lock = {};
 
 kernel::Task *kernel::Task::_task_allocate()
 {
-    if(!loaded)
+    if (!loaded)
     {
         task_list = {};
         next_uid = 1;
@@ -27,19 +27,14 @@ kernel::Task *kernel::Task::_task_allocate()
     }
     core::lock_scope_writer$(_task_lock);
 
-    kernel::Task task {};
+    kernel::Task task{};
 
     task.uid(next_uid++);
     task.state(kernel::TaskState::TASK_EMBRYO);
 
     task_list.push(task);
 
-
-
-
     return task_list.last();
-
-
 }
 
 kernel::Task *kernel::Task::by_id_unsafe(kernel::TUID uid)
@@ -102,11 +97,11 @@ core::Result<void> kernel::Task::_initialize(CpuContextLaunch params, VmmSpace *
             toPhys(addrOf(_cpu_context->stack_top)));
 
         vmm_space().map(userspace_stack, phys_userspace_stack,
-                              PageFlags()
-                                  .user(true)
-                                  .executable(false)
-                                  .present(true)
-                                  .writeable(true));
+                        PageFlags()
+                            .user(true)
+                            .executable(false)
+                            .present(true)
+                            .writeable(true));
 
         _cpu_context->use_stack_addr(userspace_stack_base);
     }

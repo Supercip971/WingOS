@@ -84,22 +84,21 @@ using Pure = RemoveConst<RemoveReference<T>>;
 template <class T>
 using UnderlyingType = std::underlying_type<T>::type;
 
-
-//template <typename From, typename To>
-//concept IsConvertibleTo = __is_convertible_to(From, To);
+// template <typename From, typename To>
+// concept IsConvertibleTo = __is_convertible_to(From, To);
 
 template <class T>
 concept IsEnum = __is_enum(T);
 
 // Note: this implementation uses C++20 facilities
-template<class T>
-struct is_integral : IntegralConstant<bool,
-    requires (T t, T* p, void (*f)(T)) // T* parameter excludes reference types
-    {
-        reinterpret_cast<T>(t); // Exclude class types
-        f(0); // Exclude enumeration types
-        p + t; // Exclude everything not yet excluded but integral types
-    }> {};
+template <class T>
+    struct is_integral : IntegralConstant < bool,
+    requires(T t, T *p, void (*f)(T)) // T* parameter excludes reference types
+{
+    reinterpret_cast<T>(t); // Exclude class types
+    f(0);                   // Exclude enumeration types
+    p + t;                  // Exclude everything not yet excluded but integral types
+}>{};
 
 template <class T>
 concept IsIntegral = is_integral<T>::value;
@@ -128,44 +127,35 @@ T declval() noexcept
     static_assert(false, "declval not allowed in an evaluated context");
 }
 
-namespace IsConvertibleImpl 
+namespace IsConvertibleImpl
 {
-   template<class T> 
-   auto test_returnable(int) -> decltype(
-    void(static_cast<T(*)()>(nullptr)), TrueType{}    
-   ); 
+template <class T>
+auto test_returnable(int) -> decltype(void(static_cast<T (*)()>(nullptr)), TrueType{});
 
-    template<class> 
-    auto test_returnable(...) -> FalseType;
+template <class>
+auto test_returnable(...) -> FalseType;
 
-    template <class From, class To>
-    auto test_implicit_convertible(int) -> decltype( 
-        void(declval<void(&)(To)>()(declval<From>())), TrueType{}
-    );
+template <class From, class To>
+auto test_implicit_convertible(int) -> decltype(void(declval<void (&)(To)>()(declval<From>())), TrueType{});
 
-    template<class, class>
-    auto test_implicit_convertible(...) -> FalseType;
-}
-
+template <class, class>
+auto test_implicit_convertible(...) -> FalseType;
+} // namespace IsConvertibleImpl
 
 #ifndef __clang__
 
 template <class From, class To>
-struct IsImplicitlyConvertible
-    : 
-        core::IntegralConstant<bool, 
-            decltype(core::IsConvertibleImpl::test_implicit_convertible<From, To>(0))::value
-            ||
-                (IsSame<From, void> && IsSame<To, void>)>
+struct IsImplicitlyConvertible :
+    core::IntegralConstant<bool,
+                           decltype(core::IsConvertibleImpl::test_implicit_convertible<From, To>(0))::value ||
+                               (IsSame<From, void> && IsSame<To, void>)>
 
-                {
-
-                };
-template<class From, class To>
+{
+};
+template <class From, class To>
 concept IsConvertibleTo = IsImplicitlyConvertible<From, To>::value;
 
-
-                #else 
+#else
 
 template <typename From, typename To>
 concept IsConvertibleTo = __is_convertible_to(From, To);
@@ -174,5 +164,5 @@ concept IsConvertibleTo = __is_convertible_to(From, To);
 // Check if a type is default constructible
 template <class T>
 concept IsDefaultConstructible = requires { T{}; };
- 
+
 } // namespace core

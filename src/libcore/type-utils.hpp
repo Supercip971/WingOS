@@ -40,9 +40,9 @@ constexpr RemoveReference<T> &&move(T &&t)
     return static_cast<RemoveReference<T> &&>(t);
 }
 
-// copy 
-template<class T>
-constexpr T copy(T const& t)
+// copy
+template <class T>
+constexpr T copy(T const &t)
 {
     return t;
 }

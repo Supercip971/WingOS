@@ -1,96 +1,91 @@
 #pragma once
 
-
-#include <stdint.h>
-
-#include <stddef.h>
 #include <libcore/lock/lock.hpp>
+#include <stddef.h>
+#include <stdint.h>
 struct ReceivedIpcMessage;
 namespace kernel
 {
 
-    struct BlockMutex
+struct BlockMutex
+{
+    core::Lock lock = {};
+
+    // if a task block a mutex, then it release it, then relock it but another task wait on the old one,
+    // acquire_uid will change
+    size_t acquire_uid = 0;
+
+    bool mutex_acquire()
     {
-        core::Lock lock = {};
+        lock.lock();
+        return true;
+    }
 
-        // if a task block a mutex, then it release it, then relock it but another task wait on the old one,
-        // acquire_uid will change
-        size_t acquire_uid = 0;
-
-
-        bool mutex_acquire()
+    bool mutex_release()
+    {
+        if (lock.try_lock())
         {
-             lock.lock();
-            return true;
-        }
-
-        bool mutex_release()
-        {
-            if(lock.try_lock())
-            {
-                // was not locked
-                lock.release();
-                return false;
-            }
+            // was not locked
             lock.release();
+            return false;
+        }
+        lock.release();
+        return true;
+    }
+
+    bool mutex_value()
+    {
+        return lock.view_locked();
+    }
+};
+
+struct BlockEvent
+{
+    enum class Type
+    {
+        NONE,
+        SLEEP,
+        MUTEX
+    };
+    bool resolved;
+
+    Type type = Type::NONE;
+
+    uintptr_t id = 0;
+
+    union
+    {
+        long dt;
+        BlockMutex *mtx;
+    };
+
+    bool liberated()
+    {
+        switch (type)
+        {
+        case Type::MUTEX:
+        {
+            bool v = mtx->mutex_value();
+
+            if (mtx->acquire_uid != id)
+            {
+                return true;
+            }
+            return !v;
+        }
+        case Type::NONE:
+        {
             return true;
         }
-
-        bool mutex_value()
+        default:
         {
-            return lock.view_locked();
+            return false;
         }
-    };
-
-    struct BlockEvent
-    {
-        enum class Type
-        {
-            NONE,
-            SLEEP,
-            MUTEX
-        };
-        bool resolved;
-
-        Type type = Type::NONE;
-
-        uintptr_t id = 0;
-
-        union {
-            long dt;
-            BlockMutex* mtx;
-        };
-
-        bool liberated()
-        {
-            switch(type)
-            {
-                case Type::MUTEX:
-                {
-                    bool v = mtx->mutex_value();
-
-                    if(mtx->acquire_uid != id)
-                    {
-                        return true;
-                    }
-                    return !v;
-                }
-                case Type::NONE:
-                {
-                    return true;
-                }
-                default:
-                {
-                    return false;
-                }
-            }
-
         }
+    }
+};
+BlockEvent create_block(BlockEvent::Type type, uintptr_t data = 0);
 
-    };
-    BlockEvent create_block(BlockEvent::Type type, uintptr_t data=  0);
+BlockEvent create_mutex_block(BlockMutex *msg);
 
-    BlockEvent create_mutex_block(BlockMutex* msg);
-
-
-}
+} // namespace kernel

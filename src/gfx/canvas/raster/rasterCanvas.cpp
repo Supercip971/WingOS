@@ -26,7 +26,6 @@ void wgfx::RasterCanvas::apply(DrawContext const &ctx, RenderCommand const &cmd)
         break;
     }
 
-
     default:
     {
         fmt::warn$("Unsupported render command kind: {} for raster backend", (int)cmd.kind);

@@ -77,7 +77,7 @@ struct Space
 
     void release_memory(void *ptr, size_t size)
     {
-        sys$asset_release_mem(ptr, (void*)(size + (uintptr_t)ptr));
+        sys$asset_release_mem(ptr, (void *)(size + (uintptr_t)ptr));
     }
 
     void release_asset(UAsset asset)

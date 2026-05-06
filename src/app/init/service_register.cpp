@@ -80,14 +80,13 @@ void startup_init_service(Wingos::IpcServer server, MachineContextShared shared)
             connections.push(conn.unwrap());
         }
 
-
         auto received = server.receive();
 
         if (!received.is_error())
         {
             auto msg = received.take();
 
-            if(msg.received.flags & IPC_MESSAGE_FLAG_DISCONNECT)
+            if (msg.received.flags & IPC_MESSAGE_FLAG_DISCONNECT)
             {
                 fmt::log$("(server) disconnecting connection");
                 server.disconnect(msg.connection);

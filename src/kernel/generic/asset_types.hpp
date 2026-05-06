@@ -1,7 +1,7 @@
 #pragma once
 
-#include <stdint.h>
 #include <atomic>
+#include <stdint.h>
 
 #include "libcore/core.hpp"
 #include "libcore/lock/lock.hpp"
@@ -19,7 +19,7 @@
 struct Asset : public core::NoCopy
 {
     // Provide an IDENT constant so templates written against typed assets can also be instantiated with `Asset`.
-    //static constexpr size_t IDENT = (size_t)OBJECT_KIND_UNKNOWN;
+    // static constexpr size_t IDENT = (size_t)OBJECT_KIND_UNKNOWN;
 
     core::Lock lock{};
     std::atomic<size_t> ref_count{0};
@@ -88,9 +88,8 @@ struct AssetRef
 
     AssetRef() = default;
 
-
-    template<typename T2>
-    AssetRef(AssetRef<T2> const& other)
+    template <typename T2>
+    AssetRef(AssetRef<T2> const &other)
     {
         asset = reinterpret_cast<T *>(other.asset);
         handle = other.handle;
@@ -98,7 +97,7 @@ struct AssetRef
         read = other.read;
         share = other.share;
 
-        if(asset != nullptr)
+        if (asset != nullptr)
         {
             Asset::own(reinterpret_cast<Asset *>(asset));
         }
@@ -123,7 +122,7 @@ struct AssetRef
           read(other.read),
           share(other.share)
     {
-        if(asset != nullptr)
+        if (asset != nullptr)
         {
             Asset::own(reinterpret_cast<Asset *>(asset));
         }
@@ -145,7 +144,7 @@ struct AssetRef
 
     ~AssetRef()
     {
-        if(asset != nullptr)
+        if (asset != nullptr)
         {
             Asset::deref(reinterpret_cast<Asset *>(asset));
             asset = nullptr;
@@ -203,7 +202,7 @@ struct AssetRef
 
     // Returns the raw asset pointer for use in functions that need Asset*
     // Does NOT transfer or share ownership
-    Asset* raw() const
+    Asset *raw() const
     {
         return reinterpret_cast<Asset *>(asset);
     }
@@ -222,21 +221,19 @@ struct AssetRef
         return AssetRef<Asset>(*this);
     }
 
-
-    template<typename T2>
+    template <typename T2>
     AssetRef<T2> casted() const
     {
-        if(T2::IDENT != asset->kind)
+        if (T2::IDENT != asset->kind)
         {
             unreachable$();
         }
         return AssetRef<T2>(*this);
     }
 
-
     void lock()
     {
-        if(asset != nullptr)
+        if (asset != nullptr)
         {
             asset->lock.lock();
         }
@@ -244,7 +241,7 @@ struct AssetRef
 
     void unlock()
     {
-        if(asset != nullptr)
+        if (asset != nullptr)
         {
             asset->lock.release();
         }

@@ -60,54 +60,48 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
 
     SyscallStackFrame *stackframe = sf;
 
-       // Cpu::enter_syscall_safe_mode();
+    // Cpu::enter_syscall_safe_mode();
 
-
-     if(interrupt_status() == 1)
+    if (interrupt_status() == 1)
     {
-           fmt::err$("syscall called with interrupts disabled, this is not allowed");
-           while(true)
-           {
+        fmt::err$("syscall called with interrupts disabled, this is not allowed");
+        while (true)
+        {
+        }
+    }
 
-           }
-     }
+    asm volatile("cli");
+    // Cpu::current()->debug_context.in_syscall = true;
+    // Cpu::current()->debug_context.last_syscall_id = (uint32_t)stackframe->rax;
+    // Cpu::current()->debug_context.last_syscall_task_called = Cpu::current()->currentTask()->uid();
 
-
-
-
-     asm volatile("cli");
-    //Cpu::current()->debug_context.in_syscall = true;
-    //Cpu::current()->debug_context.last_syscall_id = (uint32_t)stackframe->rax;
-    //Cpu::current()->debug_context.last_syscall_task_called = Cpu::current()->currentTask()->uid();
-
-    kernel::Task* cur_task = Cpu::current()->currentTask();
+    kernel::Task *cur_task = Cpu::current()->currentTask();
 
     Cpu::begin_syscall();
 
     auto res = syscall_handle({
-        .id = (uint32_t)stackframe->rax,
-        ._zero = 0,
-        .arg1 = stackframe->rbx,
-        .arg2 = stackframe->rdx,
-        .arg3 = stackframe->rsi,
-        .arg4 = stackframe->rdi,
-        .arg5 = stackframe->r8,
-        .arg6 = stackframe->r9,
-    }, cur_task);
+                                  .id = (uint32_t)stackframe->rax,
+                                  ._zero = 0,
+                                  .arg1 = stackframe->rbx,
+                                  .arg2 = stackframe->rdx,
+                                  .arg3 = stackframe->rsi,
+                                  .arg4 = stackframe->rdi,
+                                  .arg5 = stackframe->r8,
+                                  .arg6 = stackframe->r9,
+                              },
+                              cur_task);
 
     if (res.is_error())
     {
         // send interrupt 102 to all other cpus
 
-
-
         Cpu::end_syscall(); // early end syscall mode,
 
-        for(size_t i = 0; i< Cpu::count(); i++)
+        for (size_t i = 0; i < Cpu::count(); i++)
         {
-            if( (int)i != Cpu::currentId())
+            if ((int)i != Cpu::currentId())
             {
-                hw::acpi::Lapic::the().send_interrupt(i,102);
+                hw::acpi::Lapic::the().send_interrupt(i, 102);
             }
         }
 
@@ -151,20 +145,17 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
         }
 
         _syscall_lock.write_release();
-        while(true)
+        while (true)
         {
-
         }
-
     }
     else
     {
         sf->rax = res.unwrap();
     }
 
-
     Cpu::end_syscall();
-  //  Cpu::current()->debug_context.in_syscall = false;
+    //  Cpu::current()->debug_context.in_syscall = false;
 
     // fmt::log$("syscall: {} ", stackframe->rax);
     return sf->rax;

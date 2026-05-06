@@ -6,7 +6,7 @@ namespace wjson
 
 core::Result<JsonValue> parse_json_value(core::Scanner<char> &scanner)
 {
-    JsonValue result {};
+    JsonValue result{};
     if (scanner.skip_spaced('{').unwrap())
     {
 
@@ -133,7 +133,7 @@ core::Result<JsonValue> parse_json_value(core::Scanner<char> &scanner)
 core::Result<Json> Json::parse(core::MemView<char> reader)
 {
 
-    Json json {};
+    Json json{};
 
     core::Scanner<char> scanner(reader);
     json._root = try$(parse_json_value(scanner));

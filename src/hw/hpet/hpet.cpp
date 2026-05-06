@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #include "hw/mem/addr_space.hpp"
+
 #include "libcore/time/time.hpp"
 
 static VirtAddr hpet_base = 0;
@@ -29,10 +30,7 @@ core::Result<void> hw::hpet::hpet_initialize(hw::acpi::Rsdp *rsdp)
         return "HPET is not in memory";
     }
 
-
-
     hpet_tick = HPETCaps::from(_hpet_read(HPETRegister::HPET_CAPABILITIES)).clock_period;
-
 
     _hpet_write(HPET_CONFIGURATION + 0, HPETConfiguration::HPET_DISABLE_COUNTER);
     _hpet_write(HPET_MAIN_COUNTER, 0);
@@ -44,13 +42,12 @@ core::Result<void> hw::hpet::hpet_initialize(hw::acpi::Rsdp *rsdp)
 void hw::hpet::hpet_sleep(core::Milliseconds ms)
 {
 
-    #ifndef __ck_kernel__
-        fmt::log$("sleeping for: {} ms", ms.value());
-    #endif
+#ifndef __ck_kernel__
+    fmt::log$("sleeping for: {} ms", ms.value());
+#endif
     // 1 ms => 1'000'000'000'000 femtoseconds
 
-
-    if(hpet_tick == 0)
+    if (hpet_tick == 0)
     {
         fmt::err$("HPET not initialized");
         return;
@@ -63,7 +60,7 @@ void hw::hpet::hpet_sleep(core::Milliseconds ms)
     }
 }
 
-core::Milliseconds hw::hpet::hpet_clock_read( )
+core::Milliseconds hw::hpet::hpet_clock_read()
 {
     return core::Milliseconds((_hpet_read(HPET_MAIN_COUNTER) * (hpet_tick)) / 1'000'000'000'000); // in nanoseconds
 }

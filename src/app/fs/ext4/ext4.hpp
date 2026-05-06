@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <string.h>
+
 #include "protocols/disk/disk.hpp"
 
 struct [[gnu::packed]] Ext4Superblock
@@ -129,7 +130,6 @@ struct [[gnu::packed]] Ext4BlockGroupDescriptor
     uint32_t _reserved;
 };
 
-
 struct [[gnu::packed]] Ext4Inode
 {
     uint16_t permission : 12;
@@ -156,7 +156,6 @@ struct [[gnu::packed]] Ext4Inode
     // more fields may follow
 };
 
-
 struct [[gnu::packed]] Ext4DirEntry
 {
     uint32_t inode;
@@ -169,7 +168,6 @@ using BlockGroupId = uint64_t;
 using InodeId = uint64_t;
 using Blockid = uint64_t;
 
-
 struct Ext4InodeRef
 {
     InodeId inode_id;
@@ -179,14 +177,13 @@ struct Ext4InodeRef
 struct Ext4CacheNode
 {
     size_t block_num;
-    void * data;
+    void *data;
     size_t score;
-
 };
 class Ext4Filesystem
 {
     core::Vec<Ext4CacheNode> cache_nodes;
-   prot::DiskConnection disk;
+    prot::DiskConnection disk;
     size_t start_lba;
 
     size_t block_desc_size;
@@ -195,54 +192,41 @@ class Ext4Filesystem
 
     Ext4Superblock superblock;
 
-
     size_t bgd_table_start_block = 0;
 
     Wingos::MemoryAsset disk_asset;
     Wingos::VirtualMemoryAsset mapped_disk_asset;
 
 public:
-
     // use temp buffer
-    core::Result<void*> read_block_tmp(size_t block_num);
-    core::Result<void*> read_block_tmp(Wingos::MemoryAsset& target, size_t block_num, size_t mem_asset_off);
+    core::Result<void *> read_block_tmp(size_t block_num);
+    core::Result<void *> read_block_tmp(Wingos::MemoryAsset &target, size_t block_num, size_t mem_asset_off);
 
+    core::Result<void> write_block_tmp(size_t block_num, void *data);
 
-    core::Result<void> write_block_tmp(size_t block_num, void* data);
+    core::Result<size_t> inode_read(Ext4InodeRef const &inode, Wingos::MemoryAsset &out, size_t off, size_t len, size_t mem_asset_off);
 
-    core::Result<size_t> inode_read(Ext4InodeRef const &inode, Wingos::MemoryAsset &out, size_t off, size_t len,  size_t mem_asset_off);
+    core::Result<void *> inode_read_tmp(Ext4InodeRef const &inode, size_t block);
+    core::Result<void *> inode_read_blck_off(Ext4InodeRef const &inode, Wingos::MemoryAsset &out, size_t off, size_t mem_asset_off);
 
-    core::Result<void*> inode_read_tmp(Ext4InodeRef const &inode, size_t block);
-    core::Result<void*> inode_read_blck_off(Ext4InodeRef const &inode, Wingos::MemoryAsset& out, size_t off, size_t mem_asset_off);
-
-
-
-    core::Result<void> inode_write(Ext4InodeRef& inode, Wingos::MemoryAsset& out, size_t len, size_t block);
-    core::Result<void> inode_write_tmp(Ext4InodeRef& inode, size_t block, void* data);
-
+    core::Result<void> inode_write(Ext4InodeRef &inode, Wingos::MemoryAsset &out, size_t len, size_t block);
+    core::Result<void> inode_write_tmp(Ext4InodeRef &inode, size_t block, void *data);
 
     core::Result<BlockGroupId> find_available_group_for_alloc(BlockGroupId start_from);
 
     core::Result<uint64_t> allocate_block(BlockGroupId bg_id);
 
-    core::Result<void> inode_add_block(Ext4InodeRef& inode);
+    core::Result<void> inode_add_block(Ext4InodeRef &inode);
 
+    core::Result<uint64_t> inode_find_block(Ext4InodeRef const &inode, size_t block);
 
-    core::Result<uint64_t> inode_find_block(Ext4InodeRef const& inode, size_t block);
+    core::Result<void> dump_subdir(Ext4InodeRef const &dir_inode, int depth);
 
-
-    core::Result<void> dump_subdir(Ext4InodeRef const& dir_inode, int depth);
-
-
-
-
-
-    size_t block_size () const {
+    size_t block_size() const
+    {
         return (1024 << superblock.log_block_size);
     }
     // use temp buffer
-
-
 
     BlockGroupId blockgroup_from_inode(InodeId inode) const
     {
@@ -260,11 +244,9 @@ public:
         return containing_block / block_size();
     }
 
-
     core::Result<Ext4BlockGroupDescriptor> read_blockgroup_descriptor(BlockGroupId bg_id);
 
     core::Result<void> write_blockgroup_descriptor(BlockGroupId bg_id, Ext4BlockGroupDescriptor const &bgd);
-
 
     core::Result<Ext4InodeRef> read_inode(InodeId inode);
     core::Result<void> write_inode(InodeId inode, Ext4Inode const &data);
@@ -277,7 +259,6 @@ public:
         fs.start_lba = start_lba;
         fs.end_lba = end_lba;
         fs.disk_block_size = 512;
-
 
         fs.bgd_table_start_block = 0;
         // fixme: correctly setup disk block size
@@ -306,7 +287,7 @@ public:
 
         fs.block_desc_size = 4;
 
-        if(fs.superblock.rev_level >= 1 && fs.superblock.feature_incompat & EXT4_FEAT_64BIT)
+        if (fs.superblock.rev_level >= 1 && fs.superblock.feature_incompat & EXT4_FEAT_64BIT)
         {
             fs.block_desc_size = fs.superblock.desc_size;
         }
@@ -321,8 +302,6 @@ public:
             fs.bgd_table_start_block += fs.superblock.first_meta_bg * (fs.superblock.inodes_per_group * fs.superblock.inode_size + fs.block_desc_size - 1) / (1024 << fs.superblock.log_block_size);
         }
 
-
-
         auto v = try$(fs.read_inode(2));
 
         fmt::log$("ext4: root inode has {} blocks", core::copy(v.inode.blocks_lo));
@@ -330,15 +309,10 @@ public:
         fmt::log$("ext4: root inode first block pointer: {}", core::copy(v.inode.block[0]));
         fmt::log$("ext4: root inode type: {}", (uint16_t)v.inode.file_type);
 
-
         fs.dump_subdir(v, 0);
 
         return fs;
     }
 
-    core::Result<Ext4InodeRef> get_subdir(Ext4InodeRef const& dir_inode, core::Str const & name);
-
-
-
-
+    core::Result<Ext4InodeRef> get_subdir(Ext4InodeRef const &dir_inode, core::Str const &name);
 };

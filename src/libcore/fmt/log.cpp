@@ -5,18 +5,14 @@
 #include <libcore/str.hpp>
 
 #include "libcore/fmt/log.hpp"
-
-
 #include "libcore/lock/lock.hpp"
 
 namespace fmt
 {
 
-
 core::Lock _log_lock = {};
 static core::VoidRW default_target{};
 static core::Writer *target = &default_target;
-
 
 void log_lock()
 {
@@ -37,7 +33,7 @@ core::Writer *log_target()
     return target;
 }
 
-} // namespace log
+} // namespace fmt
 void core::debug_provide_info(const char *info, const char *data)
 {
     fmt::log$("{} {}", info, data);

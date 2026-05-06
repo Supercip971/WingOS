@@ -24,7 +24,7 @@ public:
         elements = core::Vec<core::SharedPtr<Widget>>(args...);
     }
 
-     wgfx::Vec2 preferred_size(wgfx::Vec2 constraint) const override
+    wgfx::Vec2 preferred_size(wgfx::Vec2 constraint) const override
     {
         wgfx::Vec2 current_constraint = {};
         for (auto &child : childs)
@@ -38,7 +38,7 @@ public:
         return current_constraint;
     }
 
-     wgfx::GRect layout(UiContext const &ctx, wgfx::GRect constraint) override
+    wgfx::GRect layout(UiContext const &ctx, wgfx::GRect constraint) override
     {
         wgfx::GRect current_constraint = constraint;
         for (auto &child : childs)
@@ -51,18 +51,17 @@ public:
             constraint.start.x, constraint.start.y, constraint.end.x, current_constraint.start.y);
     }
 
-     void render(UiContext const &ctx, wgfx::Canvas &canvas) const override
+    void render(UiContext const &ctx, wgfx::Canvas &canvas) const override
     {
         (void)ctx;
         (void)canvas;
-      //  for (auto &child : childs)
-      //  {
-      //      child->render(ctx, canvas);
-      //  }
+        //  for (auto &child : childs)
+        //  {
+        //      child->render(ctx, canvas);
+        //  }
     }
 
-
-     core::Vec<core::SharedPtr<Widget>> build_childs(UiContext const &v) override
+    core::Vec<core::SharedPtr<Widget>> build_childs(UiContext const &v) override
     {
         (void)v;
         return elements;

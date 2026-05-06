@@ -1,10 +1,10 @@
 #include "asset.hpp"
 #include <new>
 
-#include <arch/x86_64/barrier.hpp>
 #include "arch/x86_64/paging.hpp"
 #include "hw/mem/addr_space.hpp"
 #include "iol/mem_flags.h"
+#include <arch/x86_64/barrier.hpp>
 
 // Make sure IPC public types (e.g. IpcServerHandle) are visible before this TU
 // pulls in headers that depend on them transitively.
@@ -32,7 +32,6 @@ void Asset::release(Asset *asset)
         return;
     }
 
-
     asset->lock.lock();
 
     AssetRef<> saved_self{};
@@ -54,7 +53,6 @@ void Asset::release(Asset *asset)
     if (asset->kind == OBJECT_KIND_IPC_SERVER)
     {
         auto server = asset->casted<AssetServer>();
-
 
         if (server->server != nullptr)
         {
@@ -102,7 +100,7 @@ void Asset::deref(Asset *asset)
     if (old_count == 0)
     {
         // This means ref_count was already 0 before we decremented restore and bail
-   //     asset->ref_count.fetch_add(1, std::memory_order_relaxed);
+        //     asset->ref_count.fetch_add(1, std::memory_order_relaxed);
         fmt::err$("asset_release: asset is already released");
         fmt::err$("double free detected");
         return;
@@ -132,10 +130,9 @@ void Asset::deref(Asset *asset)
         else if (asset->kind == OBJECT_KIND_IPC_CONNECTION)
         {
 
-//            fmt::log$("({}) destroying connection: {}", Cpu::currentId(), (uintptr_t)asset | fmt::FMT_HEX);
+            //            fmt::log$("({}) destroying connection: {}", Cpu::currentId(), (uintptr_t)asset | fmt::FMT_HEX);
 
-
-             auto conn = asset->casted<AssetConnection>();
+            auto conn = asset->casted<AssetConnection>();
             // conn->connection->message_sent.release();
 
             if (conn->server_mutex.mutex_value())
@@ -156,15 +153,11 @@ void Asset::deref(Asset *asset)
             // Use query_server_locked to safely access the server (avoids use-after-free)
 
             // If query failed, server was already unregistered - nothing to do
-
-
-
         }
 
         else if (asset->kind == OBJECT_KIND_IPC_SERVER)
         {
             auto server = asset->casted<AssetServer>();
-
 
             if (server->server != nullptr)
             {
@@ -470,8 +463,6 @@ core::Result<AssetRef<AssetConnection>> Space::create_ipc_connection(AssetIpcCon
     auto server_ptr = server_self.asset->casted<AssetServer>()->server;
     try$(server_ptr->connections.push(core::move(ptr_in_server)));
     server_self.asset->lock.release();
-
-
 
     return ptr;
 }

@@ -27,19 +27,15 @@ struct Ext4FileEndpoint
     prot::ManagedServer file_server;
 };
 
-
-
 struct Ext4FsEndpoint
 {
     core::Vec<Ext4FileEndpoint *> ext4_file_endpoints = {};
     Ext4Filesystem *attached_fs;
     prot::ManagedServer root_server = {};
-
 };
 
-
-core::Vec<Ext4FsEndpoint*> ext4_fs_endpoints = {};
-bool update_endpoint(Ext4FsEndpoint* dev, Ext4FileEndpoint *endpoint)
+core::Vec<Ext4FsEndpoint *> ext4_fs_endpoints = {};
+bool update_endpoint(Ext4FsEndpoint *dev, Ext4FileEndpoint *endpoint)
 {
     // Accept all pending connections (there may be multiple)
     int accepted_count = 0;
@@ -70,9 +66,9 @@ bool update_endpoint(Ext4FsEndpoint* dev, Ext4FileEndpoint *endpoint)
 
         endpoint->file_server.close();
 
-        for(size_t i = 0; i < dev->ext4_file_endpoints.len(); i++)
+        for (size_t i = 0; i < dev->ext4_file_endpoints.len(); i++)
         {
-            if(dev->ext4_file_endpoints[i] == endpoint)
+            if (dev->ext4_file_endpoints[i] == endpoint)
             {
                 dev->ext4_file_endpoints.pop(i);
                 delete endpoint;
@@ -222,53 +218,50 @@ bool update_endpoint(Ext4FsEndpoint* dev, Ext4FileEndpoint *endpoint)
     return false;
 };
 
-core::Result<void> update_endpoints(Ext4FsEndpoint* dev)
+core::Result<void> update_endpoints(Ext4FsEndpoint *dev)
 {
 
-
-    while(dev->root_server.accept_connection())
+    while (dev->root_server.accept_connection())
     {
     }
-
 
     auto received = dev->root_server.try_receive();
     if (!received.is_error())
     {
         auto msg = core::move(received.unwrap());
-        switch(msg.received.data[0].data)
+        switch (msg.received.data[0].data)
         {
-            case prot::DISK_CREATE_ROOT_ENDPOINT:
-            {
-                /*
+        case prot::DISK_CREATE_ROOT_ENDPOINT:
+        {
+            /*
 
-                .inode = dfs_res.read_inode(2).unwrap(),
-                .root_server = ms.take(),
-                .attached_fs = new Ext4Filesystem(dfs_res)});
+            .inode = dfs_res.read_inode(2).unwrap(),
+            .root_server = ms.take(),
+            .attached_fs = new Ext4Filesystem(dfs_res)});
 
 
-                */
-                IpcMessage reply = {};
-                reply.data[0].data = 1; // success
-                Ext4FileEndpoint* new_endpoint = new Ext4FileEndpoint{
-                    .inode = dev->attached_fs->read_inode(2).unwrap(),
-                    .file_server = try$(prot::ManagedServer::create_server()),
-                };
-                reply.data[1].data = new_endpoint->file_server.addr();
+            */
+            IpcMessage reply = {};
+            reply.data[0].data = 1; // success
+            Ext4FileEndpoint *new_endpoint = new Ext4FileEndpoint{
+                .inode = dev->attached_fs->read_inode(2).unwrap(),
+                .file_server = try$(prot::ManagedServer::create_server()),
+            };
+            reply.data[1].data = new_endpoint->file_server.addr();
 
-                dev->ext4_file_endpoints.push(new_endpoint);
-                dev->root_server.reply(core::move(msg), reply);
-                fmt::log$("ext4: provided root endpoint {}", dev->root_server.addr());
-                break;
-            }
+            dev->ext4_file_endpoints.push(new_endpoint);
+            dev->root_server.reply(core::move(msg), reply);
+            fmt::log$("ext4: provided root endpoint {}", dev->root_server.addr());
+            break;
+        }
 
-            default:
-            {
-                fmt::warn$("ext4: unknown message type received (root endpoint): {}", msg.received.data[0].data);
-                break;
-            }
+        default:
+        {
+            fmt::warn$("ext4: unknown message type received (root endpoint): {}", msg.received.data[0].data);
+            break;
+        }
         }
     }
-
 
     for (auto &endpoint : dev->ext4_file_endpoints)
     {
@@ -300,8 +293,7 @@ int main(int, char **)
     while (true)
     {
 
-
-        for(auto &dev : ext4_fs_endpoints)
+        for (auto &dev : ext4_fs_endpoints)
         {
             update_endpoints(dev);
         }
@@ -373,7 +365,7 @@ int main(int, char **)
             auto dfs_res = dfs.unwrap();
 
             auto ms = prot::ManagedServer::create_server();
-            Ext4FsEndpoint* new_fs_endpoint = new Ext4FsEndpoint{
+            Ext4FsEndpoint *new_fs_endpoint = new Ext4FsEndpoint{
                 .attached_fs = new Ext4Filesystem(dfs_res),
                 .root_server = ms.take(),
 
@@ -383,7 +375,7 @@ int main(int, char **)
             reply.data[0].data = 1; // success
             reply.data[1].data = new_fs_endpoint->root_server.addr();
 
-           // reply.data[1].data = ext4_file_roots[ext4_file_roots.len() - 1]->root_server.addr();
+            // reply.data[1].data = ext4_file_roots[ext4_file_roots.len() - 1]->root_server.addr();
             (void)end_lba;
             fmt::log$("ext4: ext4 filesystem detected on device {}, mounting...", name.view());
 

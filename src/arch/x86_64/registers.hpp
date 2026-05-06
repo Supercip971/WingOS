@@ -129,4 +129,4 @@ struct CpuXCR0
     }
 };
 
-}; // namespace arch::x86
+}; // namespace arch

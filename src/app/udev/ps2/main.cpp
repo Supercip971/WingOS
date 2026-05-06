@@ -29,8 +29,8 @@
 // source: derived from brutal OS but
 // I wrote the brutal PS2 code
 
-core::Vec<prot::SenderPipe*> mouse_pipes = {};
-core::Vec<prot::SenderPipe*> keyboard_pipes = {};
+core::Vec<prot::SenderPipe *> mouse_pipes = {};
+core::Vec<prot::SenderPipe *> keyboard_pipes = {};
 
 int main(int, char **)
 {
@@ -38,10 +38,9 @@ int main(int, char **)
     keyboard_pipes = {};
     fmt::log$("Start ps2 app");
 
-
     auto server_r = prot::ManagedServer::create_registered_server("human-interface", 1, 0);
 
-    if(server_r.is_error())
+    if (server_r.is_error())
     {
         fmt::err$("failed to create hio server: {}", server_r.error());
         return -1;
@@ -63,7 +62,6 @@ int main(int, char **)
 
         server.accept_connection();
 
-
         auto received = server.try_receive();
         if (!received.is_error())
         {
@@ -75,8 +73,7 @@ int main(int, char **)
             {
                 uint32_t event_types = (uint32_t)msg.received.data[1].data;
 
-
-                auto pipe = prot::Duplex::create(Wingos::Space::self(), Wingos::Space::self() );
+                auto pipe = prot::Duplex::create(Wingos::Space::self(), Wingos::Space::self());
 
                 if (pipe.is_error())
                 {
@@ -87,13 +84,12 @@ int main(int, char **)
                 auto duplex = core::move(pipe.unwrap());
 
                 fmt::log$("hio: duplex handles: {} {}", duplex.connection_sender.handle, duplex.connection_receiver.handle);
-                prot::SenderPipe* sender = new prot::SenderPipe(core::move(duplex.connection_sender));
+                prot::SenderPipe *sender = new prot::SenderPipe(core::move(duplex.connection_sender));
 
                 if (event_types & prot::HI_EVENT_TYPE_MOUSE)
                 {
                     mouse_pipes.push(sender);
                     fmt::log$("hio: added mouse pipe: {}", sender->raw_connection().handle);
-
                 }
 
                 if (event_types & prot::HI_EVENT_TYPE_KEYBOARD)

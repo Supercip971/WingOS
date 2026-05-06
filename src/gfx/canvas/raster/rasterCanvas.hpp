@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "gfx/canvas/draw_context.hpp"
 
 #include "gfx/canvas/canvas.hpp"
@@ -13,8 +12,6 @@
 #include "libcore/shared.hpp"
 namespace wgfx
 {
-
-
 
 class RasterCanvas : public wgfx::Canvas
 {
@@ -29,7 +26,7 @@ public:
 
         if (x >= 0 && x < (long)width && y >= 0 && y < (long)height)
         {
-        buffer[x + y * width] = col;
+            buffer[x + y * width] = col;
         }
     }
 
@@ -67,13 +64,11 @@ public:
 
     void rectFlatAligned(RectCommand const &cmd);
 
-
     void rectStrokeRoundedFlatAligned(RectCommand const &cmd);
 
     void rectStrokeFlatAligned(RectCommand const &cmd);
 
     void rect(RectCommand const &cmd);
-
 
     // https://fr.wikipedia.org/wiki/Algorithme_de_trac%C3%A9_de_segment_de_Xiaolin_Wu
 
@@ -89,6 +84,5 @@ public:
     }
 
     virtual void apply(DrawContext const &ctx, RenderCommand const &cmd) override;
-
 };
 } // namespace wgfx

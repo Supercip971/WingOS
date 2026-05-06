@@ -3,8 +3,8 @@
 extern "C" char *getcwd(
     char *buf, size_t size)
 {
-    
-    char * b = iol_get_cwd();
+
+    char *b = iol_get_cwd();
     if (buf == NULL)
     {
         return NULL;
@@ -18,9 +18,8 @@ extern "C" char *getcwd(
     }
 
     return buf;
-
 }
-int chdir(const char* path)
+int chdir(const char *path)
 {
     int res = iol_change_cwd(path);
     return res;

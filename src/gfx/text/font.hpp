@@ -172,11 +172,11 @@ public:
         {
             auto &shape = shapes[c];
             auto off = last == 0 ? 0 : additionalOffset(last, c);
-            w += core::abs(shape.advance + off );
-            h = core::max(h, ascent - descent + line_gap  - height/10.f);
+            w += core::abs(shape.advance + off);
+            h = core::max(h, ascent - descent + line_gap - height / 10.f);
 
-           // h = core::max(h, core::abs(line_gap) + core::abs(shape.ibound.start.y) + shape.ibound.height());
-          //  h = core::max(h, height);
+            // h = core::max(h, core::abs(line_gap) + core::abs(shape.ibound.start.y) + shape.ibound.height());
+            //  h = core::max(h, height);
 
             last = c;
         }

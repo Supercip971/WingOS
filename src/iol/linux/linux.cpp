@@ -2,8 +2,8 @@
 
 #include <libcore/fmt/log.hpp>
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
+#include <unistd.h>
 class LinuxLogger : public core::Writer
 {
 public:
@@ -26,9 +26,8 @@ extern "C" int _linux_start(int argc, char **argv)
     LinuxLogger logger;
     fmt::provide_log_target(&logger);
 
-
     int c = main(argc, argv);
 
     exit(c);
-   // return c;
+    // return c;
 }

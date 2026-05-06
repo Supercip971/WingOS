@@ -37,7 +37,7 @@ public:
 
     void recordApply(RenderCommands const &cmds, wgfx::GRect constraint)
     {
-        if(cmds.len() == 0)
+        if (cmds.len() == 0)
         {
             return;
         }

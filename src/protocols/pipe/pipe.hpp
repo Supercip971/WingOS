@@ -11,7 +11,7 @@ struct Duplex
     Wingos::IpcClient connection_sender;
     Wingos::IpcClient connection_receiver;
 
-    static core::Result<Duplex> create(Wingos::Space  const &sender_space, Wingos::Space const  &receiver_space, uint64_t flags = 0)
+    static core::Result<Duplex> create(Wingos::Space const &sender_space, Wingos::Space const &receiver_space, uint64_t flags = 0)
     {
 
         Wingos::IpcClient client_sender = {};
@@ -28,7 +28,6 @@ struct Duplex
 class SenderPipe
 {
 public:
-
     Wingos::IpcClient &raw_connection() { return _connection; }
     core::Result<void> send(const void *buffer, size_t len)
     {
@@ -40,10 +39,9 @@ public:
 
         IpcMessage message = {};
 
-
-        for(size_t i = 0; i < len; i++)
+        for (size_t i = 0; i < len; i++)
         {
-            message.raw_buffer[i] = (( const uint8_t *)buffer)[i];
+            message.raw_buffer[i] = ((const uint8_t *)buffer)[i];
         }
         message.len = len;
         auto sended_message = _connection.send(message);
@@ -62,16 +60,15 @@ public:
     SenderPipe(Wingos::IpcClient &&connection) : _connection(core::move(connection))
     {
     }
+
 private:
     Wingos::IpcClient _connection;
-
 };
 
 class ReceiverPipe
 {
 
-    public:
-    
+public:
     static core::Result<ReceiverPipe> from(Wingos::Space const &space, uint64_t handle)
     {
         ReceiverPipe pipe;
@@ -84,7 +81,6 @@ class ReceiverPipe
         pipe._connection = core::move(connection);
         return core::Result<ReceiverPipe>::success(core::move(pipe));
     }
-
 
     core::Result<IpcMessage> receive_message()
     {
@@ -120,18 +116,17 @@ class ReceiverPipe
             mlen = len;
         }
 
-        for(size_t i = 0; i < math::alignUp(mlen, sizeof(uint64_t)) / sizeof(uint64_t); i++)
+        for (size_t i = 0; i < math::alignUp(mlen, sizeof(uint64_t)) / sizeof(uint64_t); i++)
         {
-            (( uint64_t *)buffer)[i] = received_message.buffer[i];
+            ((uint64_t *)buffer)[i] = received_message.buffer[i];
         }
 
-//        memcpy(buffer, (uint8_t *)received_message.raw_buffer, mlen);
+        //        memcpy(buffer, (uint8_t *)received_message.raw_buffer, mlen);
 
         return {mlen};
     }
+
 private:
     Wingos::IpcClient _connection;
-
-
 };
 } // namespace prot

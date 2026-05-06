@@ -46,8 +46,8 @@ public:
     }
 
     bool compare_exchange_strong(T &expected, T desired,
-                                  MemoryOrder success = MemoryOrder::SeqCst,
-                                  MemoryOrder failure = MemoryOrder::SeqCst)
+                                 MemoryOrder success = MemoryOrder::SeqCst,
+                                 MemoryOrder failure = MemoryOrder::SeqCst)
     {
         return __atomic_compare_exchange_n(&_value, &expected, desired, false,
                                            static_cast<int>(success),
@@ -55,8 +55,8 @@ public:
     }
 
     bool compare_exchange_weak(T &expected, T desired,
-                                MemoryOrder success = MemoryOrder::SeqCst,
-                                MemoryOrder failure = MemoryOrder::SeqCst)
+                               MemoryOrder success = MemoryOrder::SeqCst,
+                               MemoryOrder failure = MemoryOrder::SeqCst)
     {
         return __atomic_compare_exchange_n(&_value, &expected, desired, true,
                                            static_cast<int>(success),
@@ -162,7 +162,7 @@ static inline void atomic_cache_sync()
 
 #else
 // For kernel and embedded targets, use std::atomic from the standard library
-#include <atomic>
+#    include <atomic>
 
 namespace core
 {
@@ -214,17 +214,17 @@ public:
     }
 
     bool compare_exchange_strong(T &expected, T desired,
-                                  MemoryOrder success = MemoryOrder::SeqCst,
-                                  MemoryOrder failure = MemoryOrder::SeqCst)
+                                 MemoryOrder success = MemoryOrder::SeqCst,
+                                 MemoryOrder failure = MemoryOrder::SeqCst)
     {
-        return _value.compare_exchange_strong(expected, desired, 
+        return _value.compare_exchange_strong(expected, desired,
                                               to_std_order(success),
                                               to_std_order(failure));
     }
 
     bool compare_exchange_weak(T &expected, T desired,
-                                MemoryOrder success = MemoryOrder::SeqCst,
-                                MemoryOrder failure = MemoryOrder::SeqCst)
+                               MemoryOrder success = MemoryOrder::SeqCst,
+                               MemoryOrder failure = MemoryOrder::SeqCst)
     {
         return _value.compare_exchange_weak(expected, desired,
                                             to_std_order(success),

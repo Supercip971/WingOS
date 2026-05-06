@@ -3,5 +3,5 @@
 namespace arch
 {
 void pause();
-void invalidate(void* addr);
-}
+void invalidate(void *addr);
+} // namespace arch

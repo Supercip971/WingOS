@@ -1,15 +1,15 @@
 
 #pragma once
-#include <stdint.h>
+#include <kernel/generic/blocker.hpp>
 #include <stddef.h>
+#include <stdint.h>
+
 #include "kernel/generic/cpu.hpp"
 #include "libcore/logic.hpp"
 #include "libcore/result.hpp"
-#include <kernel/generic/blocker.hpp>
 
 namespace kernel
 {
-
 
 using TUID = uint64_t;
 
@@ -61,7 +61,6 @@ core::Result<void> task_run(TUID task_id, CoreId core = 0);
 core::Result<Task *> schedule(Task *current, void *state, CoreId core, bool soft = false);
 core::Result<void> dump_current_running_task(bool complete);
 
-
 core::Result<void> dump_all_current_running_tasks();
 
 core::Result<void> block_current_task(BlockEvent event);
@@ -75,8 +74,6 @@ void schedule_if_task_blocked();
 void trigger_reschedule(CoreId cpu);
 void trigger_reschedule_unblocked(CoreId cpu);
 
-
 void reschedule_self();
-
 
 void scheduler_dump_all();

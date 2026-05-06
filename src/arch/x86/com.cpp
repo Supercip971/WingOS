@@ -50,7 +50,7 @@ core::Result<void> Com::write(const char *str, size_t size)
         putc(str[i]);
     }
 
-    if(v)
+    if (v)
     {
         _lock.release();
     }

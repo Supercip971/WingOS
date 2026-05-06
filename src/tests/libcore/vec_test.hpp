@@ -19,12 +19,12 @@ struct VecTestObject
         construct_count++;
     }
 
-    VecTestObject(const VecTestObject& other) : value(other.value)
+    VecTestObject(const VecTestObject &other) : value(other.value)
     {
         construct_count++;
     }
 
-    VecTestObject(VecTestObject&& other) : value(other.value)
+    VecTestObject(VecTestObject &&other) : value(other.value)
     {
         construct_count++;
     }

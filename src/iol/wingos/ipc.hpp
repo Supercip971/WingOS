@@ -57,7 +57,6 @@ struct IpcServer : public UAsset
     {
         auto res = sys$ipc_accept(block, space_handle, this->handle);
 
-
         if (res.accepted_connection)
         {
             IpcConnection *connection = new IpcConnection();
@@ -106,12 +105,11 @@ struct IpcServer : public UAsset
     {
         for (auto &connection : connections)
         {
-            if(connection == nullptr)
+            if (connection == nullptr)
             {
                 continue;
             }
             auto res = receive(connection->handle, block);
-
 
             if (res.is_error())
             {

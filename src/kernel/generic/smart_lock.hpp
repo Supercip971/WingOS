@@ -1,6 +1,7 @@
 #pragma once
 
 #include "arch/x86_64/interrupts.hpp"
+
 #include "libcore/fmt/log.hpp"
 #include "libcore/lock/lock.hpp"
 #include "libcore/lock/rwlock.hpp"
@@ -9,20 +10,16 @@
 class SRWLock : private core::RWLock
 {
 
-    std::atomic<const char *>_last_write_acquire_fn = nullptr;
+    std::atomic<const char *> _last_write_acquire_fn = nullptr;
     std::atomic<int> _last_write_acquire_line = 0;
-
 
     static constexpr int MAX_READERS = 200;
 
     volatile int allocated_readers = 0;
-    const char* mreaders_file[MAX_READERS+16] = {};
-    int mreaders_line[MAX_READERS+16] = {};
+    const char *mreaders_file[MAX_READERS + 16] = {};
+    int mreaders_line[MAX_READERS + 16] = {};
 
 public:
-
-
-
     bool try_write_acquire_interrupt_disabled(const char *fn, int line)
     {
         // Do NOT use _waiters here. Setting _waiters blocks read_acquire()
@@ -40,7 +37,7 @@ public:
         {
 
             arch::amd64::interrupt_hold();
-            if(!_access_lock.try_lock())
+            if (!_access_lock.try_lock())
             {
                 arch::amd64::interrupt_release();
                 __atomic_thread_fence(__ATOMIC_SEQ_CST);
@@ -66,9 +63,9 @@ public:
                 retry--;
                 if (retry == 0)
                 {
-                  // fmt::log$("SRWLock: failed to acquire write lock immediately at {}:{}, dumping state before blocking", fn, line);
-                   return false;
-                  //  dump();
+                    // fmt::log$("SRWLock: failed to acquire write lock immediately at {}:{}, dumping state before blocking", fn, line);
+                    return false;
+                    //  dump();
                 }
             }
             arch::pause();
@@ -167,15 +164,15 @@ public:
         }
         else
         {
-    //        fmt::log$("SRWLock: failed to acquire write lock at {}:{}, dumping state", fn, line);
-    //       dump();
+            //        fmt::log$("SRWLock: failed to acquire write lock at {}:{}, dumping state", fn, line);
+            //       dump();
         }
         return v;
     }
 
     void write_release()
     {
-               // Reset reader tracking on writer release so stale entries don't linger forever.
+        // Reset reader tracking on writer release so stale entries don't linger forever.
         // This is best-effort debugging info; it does not affect correctness.
         allocated_readers = 0;
         for (int i = 0; i < MAX_READERS; i++)
@@ -188,13 +185,11 @@ public:
         core::RWLock::write_release();
     }
 
-
     void release_mutability()
     {
-      //  _last_write_acquire_fn = "released mutability";
-      //  _last_write_acquire_line = 0;
+        //  _last_write_acquire_fn = "released mutability";
+        //  _last_write_acquire_line = 0;
         core::RWLock::release_mutability();
-
     }
 
     void read_release()
@@ -204,38 +199,35 @@ public:
 
     void dump()
     {
-        const char* state = "unknown";
+        const char *state = "unknown";
         int line = -1;
-        if(_last_write_acquire_fn == nullptr)
+        if (_last_write_acquire_fn == nullptr)
         {
             state = "never acquired";
         }
 
         else
         {
-            state = (const char*)_last_write_acquire_fn;
+            state = (const char *)_last_write_acquire_fn;
             line = (int)_last_write_acquire_line;
         }
-
 
         int wcount = _writers;
         int rcount = _readers;
         int wwaiters = _waiters;
         fmt::log$("SRWLock state: {} writer(s), {} reader(s), {} waiting writer(s)", wcount, rcount, wwaiters);
-        fmt::log$("SRWLock dump: last write acquire at {}:{}",core::Str(state), line);
+        fmt::log$("SRWLock dump: last write acquire at {}:{}", core::Str(state), line);
 
-        for(int i = 0; i < allocated_readers; i++)
+        for (int i = 0; i < allocated_readers; i++)
         {
-            if(mreaders_file[i] != nullptr)
+            if (mreaders_file[i] != nullptr)
             {
 
                 fmt::log$("  - reader {} at {}:{}", i, mreaders_file[i], mreaders_line[i]);
             }
         }
-
     }
 };
-
 
 #define srwlock_write_acquire$(lock) (lock).write_acquire(__FILE__, __LINE__)
 

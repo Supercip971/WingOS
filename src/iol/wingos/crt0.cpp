@@ -1,8 +1,8 @@
 
 
 #include <libcore/fmt/log.hpp>
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "libc/stdio_fs.hpp"
 #include "libcore/str_writer.hpp"
@@ -55,7 +55,7 @@ static prot::SenderPipe _stdout_pipe;
 static prot::SenderPipe _stderr_pipe;
 static prot::ReceiverPipe _stdin_pipe;
 
-static prot::FsFile* _pwd;
+static prot::FsFile *_pwd;
 
 class WingosLogger : public core::Writer
 {
@@ -90,11 +90,10 @@ public:
     }
 };
 
-
 class EmptyReader : public core::Reader
 {
 public:
-    virtual core::Result<size_t> read(char* buffer, size_t size) const override
+    virtual core::Result<size_t> read(char *buffer, size_t size) const override
     {
         (void)buffer;
         (void)size;
@@ -110,7 +109,6 @@ asm(
     "   call _entry_point \n"
     "   \n");
 
-
 // source: https://maskray.me/blog/2021-11-07-init-ctors-init-array
 
 using InitializerPtr = void (*)();
@@ -119,15 +117,14 @@ static WingosLogger logger = {};
 extern "C" InitializerPtr __init_array_start[] __attribute__((weak, visibility("hidden")));
 extern "C" InitializerPtr __init_array_end[] __attribute__((weak, visibility("hidden")));
 
-
 extern "C" void run_constructors()
 {
-    if(*__init_array_start == nullptr)
+    if (*__init_array_start == nullptr)
     {
         return;
     }
 
-    for(size_t i = 0; i < (size_t)(__init_array_end - __init_array_start); i++)
+    for (size_t i = 0; i < (size_t)(__init_array_end - __init_array_start); i++)
     {
         fmt::log$("Running constructor: {}", (uintptr_t)__init_array_start[i] | fmt::FMT_HEX);
         fmt::log$("Constructor name: {}", (uintptr_t)(*__init_array_start[i]) | fmt::FMT_HEX);
@@ -144,7 +141,7 @@ char *iol_get_cwd()
 int iol_change_cwd(const char *path)
 {
 
-    if(_pwd == nullptr)
+    if (_pwd == nullptr)
     {
         fmt::log$("iol_change_cwd: _pwd is null");
         return -1;
@@ -196,27 +193,27 @@ int iol_change_cwd(const char *path)
 
     return 0;
 }
- extern "C"
-__attribute__((weak)) int __cxa_atexit(void (*destructor) (void *), void *arg, void *__dso_handle)
+extern "C"
+    __attribute__((weak)) int
+    __cxa_atexit(void (*destructor)(void *), void *arg, void *__dso_handle)
 {
     (void)destructor;
     (void)arg;
     (void)__dso_handle;
     return 0;
 }
-__attribute__((weak)) void* __dso_handle;
-
+__attribute__((weak)) void *__dso_handle;
 
 extern "C" __attribute__((weak)) void _entry_point(StartupInfo *context)
 {
     asm volatile("andq $-16, %rsp");
     _index = 0;
-    logger= {};
+    logger = {};
 
     fmt::provide_log_target(&logger);
 
     run_constructors();
-    if(context->stdout_handle != 0)
+    if (context->stdout_handle != 0)
     {
 
         cwd = new core::WStr();
@@ -252,7 +249,6 @@ extern "C" __attribute__((weak)) void _entry_point(StartupInfo *context)
         stderr = new FILE();
         stderr->kind = FILE_KIND_WRITER;
         stderr->writer = &logger;
-
     }
 
     if (context->stdin_handle != 0)
@@ -275,8 +271,12 @@ extern "C" __attribute__((weak)) void _entry_point(StartupInfo *context)
     // Initialize the kernel
     if (_main(context) != 0)
     {
-        while(true){};
+        while (true)
+        {
+        };
         return;
     }
-    while(true){};
+    while (true)
+    {
+    };
 }

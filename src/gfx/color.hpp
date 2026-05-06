@@ -1,10 +1,10 @@
 #pragma once
+#include <libc/math.h>
 #include <libcore/fmt/fmt.hpp>
 #include <stdint.h>
 
 #include "libcore/io/writer.hpp"
 #include "libcore/str.hpp"
-#include <libc/math.h>
 namespace wgfx
 {
 
@@ -164,7 +164,7 @@ public:
     {
         // why +PI/2 ? I don't know, it is not specified anywhere in the spec, nor in the CSS doc
         // but I guess it's now like that
-        float H_rad = (H *M_PI) / 180.f + M_PI_2;
+        float H_rad = (H * M_PI) / 180.f + M_PI_2;
         CompositeColor col = {
             .lightness = L,
             .a_green_rediness = C * fast_cos(H_rad),

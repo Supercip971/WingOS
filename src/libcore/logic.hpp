@@ -10,8 +10,6 @@ Dunnow
 namespace core
 {
 
-
-
 constexpr static inline auto max(auto a, auto b)
 {
     return a > b ? a : b;

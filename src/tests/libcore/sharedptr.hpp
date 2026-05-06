@@ -1,7 +1,7 @@
 #pragma once
 
-#include <libcore/shared.hpp>
 #include <libcore/fmt/log.hpp>
+#include <libcore/shared.hpp>
 
 #include "../test.hpp"
 
@@ -97,7 +97,7 @@ static constexpr TestGroup sharedPtrTests = {
                     }
 
                     {
-                        auto ptr2 = ptr1;  // Copy constructor
+                        auto ptr2 = ptr1; // Copy constructor
 
                         if (TestObject::construct_count != 1)
                         {
@@ -152,7 +152,7 @@ static constexpr TestGroup sharedPtrTests = {
                         return "construct_count != 2";
                     }
 
-                    ptr2 = ptr1;  // Copy assignment
+                    ptr2 = ptr1; // Copy assignment
 
                     // ptr2's old object should be destroyed
                     if (TestObject::destruct_count != 1)
@@ -189,7 +189,7 @@ static constexpr TestGroup sharedPtrTests = {
                 {
                     auto ptr1 = core::SharedPtr<TestObject>::make(99);
 
-                    auto ptr2 = core::move(ptr1);  // Move constructor
+                    auto ptr2 = core::move(ptr1); // Move constructor
 
                     if (TestObject::construct_count != 1)
                     {
@@ -219,7 +219,7 @@ static constexpr TestGroup sharedPtrTests = {
                     auto ptr1 = core::SharedPtr<TestObject>::make(111);
                     auto ptr2 = core::SharedPtr<TestObject>::make(222);
 
-                    ptr2 = core::move(ptr1);  // Move assignment
+                    ptr2 = core::move(ptr1); // Move assignment
 
                     // ptr2's old object should be destroyed
                     if (TestObject::destruct_count != 1)
@@ -290,7 +290,7 @@ static constexpr TestGroup sharedPtrTests = {
                 TestObject::reset_counts();
                 {
                     auto ptr = core::SharedPtr<TestObject>::make(123);
-                    ptr = ptr;  // Self assignment
+                    ptr = ptr; // Self assignment
 
                     if (TestObject::construct_count != 1)
                     {
@@ -343,6 +343,5 @@ static constexpr TestGroup sharedPtrTests = {
                 }
 
                 return {};
-            })
-    ),
+            })),
 };

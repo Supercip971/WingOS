@@ -15,7 +15,7 @@ namespace hw::acpi
 constexpr int max_ioapic = 256;
 static core::Array<IOApic, max_ioapic> ioapics = {};
 
-core::Result<IOApic*> IOApic::get(IOApicIndex index)
+core::Result<IOApic *> IOApic::get(IOApicIndex index)
 {
     if (index >= max_ioapic)
     {

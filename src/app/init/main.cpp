@@ -7,15 +7,17 @@
 #include "mcx/mcx.hpp"
 #include "wingos-headers/startup.hpp"
 
-
-
-int main(int , char** ){while(true){}};
+int main(int, char **)
+{
+    while (true)
+    {
+    }
+};
 int _main(StartupInfo *info)
 {
 
     mcx::MachineContext *context = &info->machine_context_optional;
     fmt::log$("hello world from init!");
-
 
     auto server = Wingos::Space::self().create_ipc_server(true);
     fmt::log$("created server with handle: {}", server.handle);

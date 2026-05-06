@@ -2,13 +2,13 @@
 
 #include <stdint.h>
 
+#include "arch/x86_64/msr.hpp"
 #include "hw/mem/addr_space.hpp"
 
 #include "hw/acpi/madt.hpp"
 #include "libcore/enum-op.hpp"
 #include "libcore/result.hpp"
 #include "libcore/type/trait.hpp"
-#include "arch/x86_64/msr.hpp"
 namespace hw::acpi
 {
 
@@ -154,7 +154,7 @@ public:
 
     LCpuId id() const
     {
-       // return arch::amd64::Msr::Read(arch::amd64::MsrReg::LAPIC_CPU_ID);
+        // return arch::amd64::Msr::Read(arch::amd64::MsrReg::LAPIC_CPU_ID);
         return ((uint64_t)read(LAPICReg::ID) >> 24) & (uint64_t)0xff;
     }
 

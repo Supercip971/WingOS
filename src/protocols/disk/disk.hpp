@@ -54,7 +54,7 @@ public:
             }
         }
     }
-    core::Result<size_t> read(Wingos::MemoryAsset &asset,  uint64_t lba, uint64_t len, uint64_t asset_start = 0)
+    core::Result<size_t> read(Wingos::MemoryAsset &asset, uint64_t lba, uint64_t len, uint64_t asset_start = 0)
     {
         if (len < MAX_IPC_BUFFER_SIZE)
         {
@@ -98,11 +98,10 @@ public:
                     asset = Wingos::MemoryAsset::from_handle(msg.data[1].asset_handle);
                 }
                 return bytes_read;
-
             }
         }
         // swap back
-               (void)message_handle;
+        (void)message_handle;
         return core::Result<size_t>::success(0);
     }
 

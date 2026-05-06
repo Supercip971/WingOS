@@ -37,11 +37,9 @@ public:
 
         auto res = fmt::format_str("Counter 2: {}", counter);
 
-
         return $<fc::VFlex>(
             $<fc::TextWidget>("Hello, World!", sfont),
             $<fc::TextWidget>(core::move(res.take()), sfont));
-
     }
 };
 class CustomWidget : public fc::Statefull<MyState>
@@ -121,7 +119,7 @@ int main(int argc, char **argv)
     auto vwidgt = core::SharedPtr<CustomWidget>::make().static_pointer_cast<fc::Widget>();
 
     vwidgt->mount({});
-    //vwidgt->build({});
+    // vwidgt->build({});
     vwidgt->relayout({}, wgfx::GRect(0, 0, window->width(), window->height()));
 
     vwidgt->update_dirty({});

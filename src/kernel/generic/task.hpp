@@ -1,13 +1,13 @@
 #pragma once
 #include <stdint.h>
-#include "scheduler.hpp"
+
 #include "arch/x86_64/context.hpp"
 
 #include "kernel/generic/context.hpp"
 #include "kernel/generic/paging.hpp"
 #include "libcore/lock/lock.hpp"
-
 #include "libcore/result.hpp"
+#include "scheduler.hpp"
 
 struct Space;
 namespace kernel
@@ -33,7 +33,6 @@ enum TaskPriority : uint32_t
     TASK_PRIORITY_COUNT,
 };
 
-
 struct SchedulerControlBlock;
 class Task
 {
@@ -42,12 +41,10 @@ class Task
     CpuContext *_cpu_context = nullptr;
     SchedulerControlBlock _scheduler_block;
 
-
     Task() = default;
-    static Task* _task_allocate();
+    static Task *_task_allocate();
+
 public:
-
-
     bool should_run() const
     {
         return !_scheduler_block.is_idle;

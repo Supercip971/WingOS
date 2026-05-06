@@ -39,8 +39,7 @@ class Mouse
     uint8_t buf[4] = {};
 
 public:
-    Mouse(Controller &controller) : _controller(controller)
-    , _events()
+    Mouse(Controller &controller) : _controller(controller), _events()
     {
     }
 
@@ -121,7 +120,6 @@ public:
 
         _events.push(ev);
     }
-
 
     bool handle_event()
     {

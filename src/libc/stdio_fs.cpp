@@ -1,160 +1,153 @@
-#include "protocols/vfs/vfs.hpp"
-#include "stdio.h"
 #include <stdarg.h>
-
 #include <string.h>
 
 #include "stdio_fs.hpp"
 
-extern "C"
-size_t fwrite(const void* __restrict ptr, size_t size, size_t n, FILE* __restrict file )
+#include "protocols/vfs/vfs.hpp"
+#include "stdio.h"
+
+extern "C" size_t fwrite(const void *__restrict ptr, size_t size, size_t n, FILE *__restrict file)
 {
 #if defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnonnull-compare"
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wnonnull-compare"
 #endif
-    if(!file)
+    if (!file)
     {
         fmt::log$("fwrite: file is null");
         return 0;
     }
 #if defined(__GNUC__)
-#pragma GCC diagnostic pop
+#    pragma GCC diagnostic pop
 #endif
-    if(file->kind == FILE_KIND_VOID)
+    if (file->kind == FILE_KIND_VOID)
     {
         fmt::err$("fwrite: file handle is invalid (use-after-fclose detected!)");
         return 0;
     }
-    uint8_t* ptr_v = (uint8_t*)ptr;
-    switch(file->kind)
+    uint8_t *ptr_v = (uint8_t *)ptr;
+    switch (file->kind)
     {
-        case FILE_KIND_FILE:
+    case FILE_KIND_FILE:
+    {
+        file->file->write(const_cast<void *>(ptr), file->cursor, size * n);
+        file->cursor += size * n;
+        return n;
+    }
+    case FILE_KIND_OUT:
+    {
+        for (size_t i = 0; i < size * n; i += 100)
         {
-            file->file->write(const_cast<void*>(ptr), file->cursor, size * n);
-            file->cursor += size * n;
-            return n;
-        }
-        case FILE_KIND_OUT:
-        {
-            for(size_t i = 0; i < size * n; i += 100)
+
+            if (size * n >= 100)
             {
 
-                if(size * n >= 100)
-                {
-
-                    file->output->send(ptr_v, 100);
-                    ptr_v += 100;
-
-                }
-                else
-                {
-                    file->output->send(ptr_v, size * n - i );
-                    ptr_v += size * n - i ;
-                }
-
-
+                file->output->send(ptr_v, 100);
+                ptr_v += 100;
             }
-
-            return n;
-        }
-        case FILE_KIND_WRITER:
-        {
-            size_t total_written = 0;
-            while (total_written < size * n)
+            else
             {
-                auto res = file->writer->write((const char*)ptr_v + total_written, size * n - total_written);
-                if (res.is_error())
-                {
-                    return total_written / size;
-                }
-                total_written += size * n - total_written;
+                file->output->send(ptr_v, size * n - i);
+                ptr_v += size * n - i;
             }
-            return n;
         }
-        case FILE_KIND_READER:
-        case FILE_KIND_IN:
-        case FILE_KIND_VOID:
-        default:
+
+        return n;
+    }
+    case FILE_KIND_WRITER:
+    {
+        size_t total_written = 0;
+        while (total_written < size * n)
         {
-            return -1;
+            auto res = file->writer->write((const char *)ptr_v + total_written, size * n - total_written);
+            if (res.is_error())
+            {
+                return total_written / size;
+            }
+            total_written += size * n - total_written;
         }
+        return n;
+    }
+    case FILE_KIND_READER:
+    case FILE_KIND_IN:
+    case FILE_KIND_VOID:
+    default:
+    {
+        return -1;
+    }
     }
 }
 
-size_t fread(void* __restrict ptr, size_t size, size_t n, FILE* __restrict file )
+size_t fread(void *__restrict ptr, size_t size, size_t n, FILE *__restrict file)
 
 {
 #if defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnonnull-compare"
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wnonnull-compare"
 #endif
-    if(!file)
+    if (!file)
     {
         fmt::err$("fread: file is null");
         return 0;
     }
 #if defined(__GNUC__)
-#pragma GCC diagnostic pop
+#    pragma GCC diagnostic pop
 #endif
 
-    uint8_t* ptr_v = (uint8_t*)ptr;
-    switch(file->kind)
+    uint8_t *ptr_v = (uint8_t *)ptr;
+    switch (file->kind)
     {
-        case FILE_KIND_FILE:
+    case FILE_KIND_FILE:
+    {
+        file->file->read(ptr, file->cursor, size * n);
+        file->cursor += size * n;
+        return n;
+    }
+    case FILE_KIND_READER:
+    {
+        size_t total_read = 0;
+        while (total_read < size * n)
         {
-            file->file->read( ptr, file->cursor, size * n);
-            file->cursor += size * n;
-            return n;
-        }
-        case FILE_KIND_READER:
-        {
-            size_t total_read = 0;
-            while (total_read < size * n)
+            auto res = file->reader->read((char *)ptr_v + total_read, size * n - total_read);
+            if (res.is_error())
             {
-                auto res = file->reader->read((char*)ptr_v + total_read, size * n - total_read);
-                if (res.is_error())
-                {
-                    return total_read / size;
-                }
-                total_read += size * n - total_read;
+                return total_read / size;
             }
-            return n;
+            total_read += size * n - total_read;
         }
-        case FILE_KIND_IN:
+        return n;
+    }
+    case FILE_KIND_IN:
+    {
+        for (size_t i = 0; i < size * n; i += 100)
         {
-            for(size_t i = 0; i < size * n; i += 100)
+
+            if (size * n >= 100)
             {
 
-                if(size * n >= 100)
-                {
-
-                    file->input->receive(ptr_v, 100);
-                    ptr_v += 100;
-
-                }
-                else
-                {
-                    file->input->receive(ptr_v, size * n - i );
-                    ptr_v += size * n - i ;
-                }
-
-
+                file->input->receive(ptr_v, 100);
+                ptr_v += 100;
             }
+            else
+            {
+                file->input->receive(ptr_v, size * n - i);
+                ptr_v += size * n - i;
+            }
+        }
 
-            return n;
-        }
-        case FILE_KIND_WRITER:
-        case FILE_KIND_OUT:
-        case FILE_KIND_VOID:
-        default:
-        {
-            return -1;
-        }
+        return n;
+    }
+    case FILE_KIND_WRITER:
+    case FILE_KIND_OUT:
+    case FILE_KIND_VOID:
+    default:
+    {
+        return -1;
+    }
     }
 }
 
-FILE* fopen(const char* filename, const char* mode)
+FILE *fopen(const char *filename, const char *mode)
 {
     (void)mode;
 
@@ -173,199 +166,196 @@ FILE* fopen(const char* filename, const char* mode)
         return nullptr;
     }
 
-    prot::FsFile* file = new prot::FsFile(core::move(path_res.unwrap()));
+    prot::FsFile *file = new prot::FsFile(core::move(path_res.unwrap()));
 
-    FILE* f = new FILE();
+    FILE *f = new FILE();
     f->kind = FILE_KIND_FILE;
     f->buffer = core::WStr::copy(filename);
     f->file = file;
 
     f->cursor = 0;
     return f;
-
 }
-int remove(const char* filename)
+int remove(const char *filename)
 {
     fmt::warn$("remove not implemented yet: {}", filename);
     // not implemented
     return 0;
 }
-int rename(const char* old_filename, const char* new_filename)
+int rename(const char *old_filename, const char *new_filename)
 {
     fmt::warn$("rename not implemented yet: {} {}", old_filename, new_filename);
     return 0;
 }
 
-int puts(const char* str)
+int puts(const char *str)
 {
     size_t len = strlen(str);
-    fwrite((void*)str, 1, len, stdout);
+    fwrite((void *)str, 1, len, stdout);
     char newline = '\n';
-    fwrite((void*)&newline, 1, 1, stdout);
+    fwrite((void *)&newline, 1, 1, stdout);
     return 0;
 }
 
-void fflush(FILE* stream)
+void fflush(FILE *stream)
 {
     // no buffering, so nothing to do
     (void)stream;
 }
-int mkdir(const char* pathname, unsigned int mode)
+int mkdir(const char *pathname, unsigned int mode)
 {
     fmt::warn$("mkdir not implemented yet: {} {}", pathname, mode);
     return 0;
 }
 
-
-int fclose(FILE* stream)
+int fclose(FILE *stream)
 {
-    if(stream == nullptr)
+    if (stream == nullptr)
     {
         fmt::err$("fclose: stream is null");
         return -1;
     }
-    if(stream->kind == FILE_KIND_VOID)
+    if (stream->kind == FILE_KIND_VOID)
     {
         fmt::err$("fclose: file already closed (double-fclose detected!)");
         return -1;
     }
     fmt::log$("calling fclose: {}", stream->buffer.view());
-    switch(stream->kind)
+    switch (stream->kind)
     {
-        case FILE_KIND_FILE:
-        {
-            stream->file->close();
+    case FILE_KIND_FILE:
+    {
+        stream->file->close();
 
-            delete stream->file;
-            stream->file = nullptr;
-            // Mark as void instead of deleting to detect use-after-free
-            stream->kind = FILE_KIND_VOID;
-            // Note: intentionally not deleting stream to catch use-after-free bugs
-            // In production, you may want to delete it after debugging
-            return 0;
-        }
-        case FILE_KIND_OUT:
-        {
-            stream->kind = FILE_KIND_VOID;
-            return 0;
-        }
-        case FILE_KIND_IN:
-        case FILE_KIND_READER:
-        case FILE_KIND_WRITER:
-        {
-            stream->kind = FILE_KIND_VOID;
-            return 0;
-        }
-        case FILE_KIND_VOID:
-        default:
-        {
-            return -1;
-        }
+        delete stream->file;
+        stream->file = nullptr;
+        // Mark as void instead of deleting to detect use-after-free
+        stream->kind = FILE_KIND_VOID;
+        // Note: intentionally not deleting stream to catch use-after-free bugs
+        // In production, you may want to delete it after debugging
+        return 0;
+    }
+    case FILE_KIND_OUT:
+    {
+        stream->kind = FILE_KIND_VOID;
+        return 0;
+    }
+    case FILE_KIND_IN:
+    case FILE_KIND_READER:
+    case FILE_KIND_WRITER:
+    {
+        stream->kind = FILE_KIND_VOID;
+        return 0;
+    }
+    case FILE_KIND_VOID:
+    default:
+    {
+        return -1;
+    }
     }
 }
-int fseek(FILE* stream, long offset, int origin)
+int fseek(FILE *stream, long offset, int origin)
 {
-    if(stream == nullptr)
+    if (stream == nullptr)
     {
         fmt::err$("fseek: stream is null");
         return -1;
     }
-    if(stream->kind == FILE_KIND_VOID)
+    if (stream->kind == FILE_KIND_VOID)
     {
         fmt::err$("fseek: file handle is invalid (use-after-fclose detected!)");
         return -1;
     }
-    switch(stream->kind)
+    switch (stream->kind)
     {
-        case FILE_KIND_FILE:
+    case FILE_KIND_FILE:
+    {
+        switch (origin)
         {
-            switch(origin)
-            {
-                case SEEK_SET:
-                {
-                    stream->cursor = offset;
-                    return 0;
-                }
-                case SEEK_CUR:
-                {
-                    stream->cursor += offset;
-                    return 0;
-                }
-                case SEEK_END:
-                {
-                    auto info = stream->file->get_info();
-                    if (info.is_error())
-                    {
-                        return -1;
-                    }
-                    stream->cursor = info.unwrap().size + offset;
-                    return 0;
-                }
-                default:
-                {
-                    return -1;
-                }
-            }
+        case SEEK_SET:
+        {
+            stream->cursor = offset;
+            return 0;
         }
-        case FILE_KIND_OUT:
-
-        case FILE_KIND_IN:
-        case FILE_KIND_VOID:
-        case FILE_KIND_READER:
-        case FILE_KIND_WRITER:
+        case SEEK_CUR:
+        {
+            stream->cursor += offset;
+            return 0;
+        }
+        case SEEK_END:
+        {
+            auto info = stream->file->get_info();
+            if (info.is_error())
+            {
+                return -1;
+            }
+            stream->cursor = info.unwrap().size + offset;
+            return 0;
+        }
         default:
         {
             return -1;
         }
+        }
     }
+    case FILE_KIND_OUT:
 
+    case FILE_KIND_IN:
+    case FILE_KIND_VOID:
+    case FILE_KIND_READER:
+    case FILE_KIND_WRITER:
+    default:
+    {
+        return -1;
+    }
+    }
 }
-long ftell(FILE* stream)
+long ftell(FILE *stream)
 {
-    if(stream == nullptr)
+    if (stream == nullptr)
     {
         fmt::err$("ftell: stream is null");
         return -1;
     }
-    if(stream->kind == FILE_KIND_VOID)
+    if (stream->kind == FILE_KIND_VOID)
     {
         fmt::err$("ftell: file handle is invalid (use-after-fclose detected!)");
         return -1;
     }
-    switch(stream->kind)
+    switch (stream->kind)
     {
-        case FILE_KIND_FILE:
-        {
-            return stream->cursor;
-        }
-        case FILE_KIND_OUT:
+    case FILE_KIND_FILE:
+    {
+        return stream->cursor;
+    }
+    case FILE_KIND_OUT:
 
-        case FILE_KIND_IN:
-        case FILE_KIND_VOID:
-        case FILE_KIND_READER:
-        case FILE_KIND_WRITER:
-        default:
-        {
-            return -1;
-        }
+    case FILE_KIND_IN:
+    case FILE_KIND_VOID:
+    case FILE_KIND_READER:
+    case FILE_KIND_WRITER:
+    default:
+    {
+        return -1;
+    }
     }
 }
 
-int feof(FILE* stream)
+int feof(FILE *stream)
 {
     if (stream == nullptr)
         return 1;
     return stream->eof_flag;
 }
 
-int ferror(FILE* stream)
+int ferror(FILE *stream)
 {
     if (stream == nullptr)
         return 1;
     return stream->error_flag;
 }
 
-int fgetc(FILE* stream)
+int fgetc(FILE *stream)
 {
     if (stream == nullptr)
         return -1;
@@ -383,12 +373,12 @@ int fgetc(FILE* stream)
     if (read != 1)
     {
         stream->eof_flag = 1;
-        return -1;  // EOF
+        return -1; // EOF
     }
     return c;
 }
 
-int ungetc(int c, FILE* stream)
+int ungetc(int c, FILE *stream)
 {
     if (stream == nullptr || c == -1)
         return -1;
@@ -398,6 +388,6 @@ int ungetc(int c, FILE* stream)
         return -1;
 
     stream->ungetc_buf = c;
-    stream->eof_flag = 0;  // Clear EOF flag
+    stream->eof_flag = 0; // Clear EOF flag
     return c;
 }

@@ -1,6 +1,6 @@
 #pragma once
-#include <stdint.h>
 #include <libcore/fmt/log.hpp>
+#include <stdint.h>
 
 struct [[gnu::packed]] CompletionQueueEntry
 {

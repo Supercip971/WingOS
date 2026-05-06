@@ -1,5 +1,4 @@
 #include "kernel/generic/blocker.hpp"
-
 #include <generic/ipc.hpp>
 static size_t block_event_id = 0;
 
@@ -16,7 +15,7 @@ BlockEvent create_block(BlockEvent::Type type, uintptr_t data)
     return event;
 }
 
-BlockEvent create_mutex_block(BlockMutex*msg)
+BlockEvent create_mutex_block(BlockMutex *msg)
 {
     BlockEvent ev = create_block(BlockEvent::Type::MUTEX);
 

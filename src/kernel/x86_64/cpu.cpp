@@ -27,7 +27,6 @@ void Cpu::interrupt_hold()
     this->interrupt_depth++;
 }
 
-
 core::Lock _locker = {};
 
 bool Cpu::begin_syscall()
@@ -44,7 +43,7 @@ bool Cpu::end_syscall()
 
 void Cpu::interrupt_release(bool re_enable_int)
 {
-    if(this->interrupt_depth == 0)
+    if (this->interrupt_depth == 0)
     {
         fmt::err$("cpu: {} interrupt_release called with depth 0", this->id());
         return;
@@ -91,27 +90,27 @@ size_t CpuImpl::max_processors()
 void setup_entry_gs()
 {
     uintptr_t cr4 = 0;
-    asm volatile ("movq %%cr4, %0"
+    asm volatile("movq %%cr4, %0"
                  : "=r"(cr4));
     cr4 |= (1 << 16); // set FSGSBASE bit
 
-    asm volatile ("movq %0, %%cr4"
+    asm volatile("movq %0, %%cr4"
                  :
                  : "r"(cr4));
 
     Msr::Write(MsrReg::GS_BASE, (uintptr_t)Cpu::current());
     Msr::Write(MsrReg::KERNEL_GS_BASE, (uintptr_t)Cpu::current());
-
-
 }
 } // namespace arch::amd64
 Cpu *Cpu::current()
 {
     auto id = Cpu::currentId();
-    if(id == -1 || id >= arch::amd64::max_cpu) [[unlikely]]
+    if (id == -1 || id >= arch::amd64::max_cpu) [[unlikely]]
     {
         fmt::err$("error: cpu id {} is not valid", id);
-        while(true){};
+        while (true)
+        {
+        };
     }
     return Cpu::get(id);
 }
@@ -164,5 +163,5 @@ void reschedule_self()
     asm volatile("sti");
 
     asm volatile("int $101");
-    //hw::acpi::Lapic::the().send_interrupt(Cpu::currentId(), 101);
+    // hw::acpi::Lapic::the().send_interrupt(Cpu::currentId(), 101);
 }

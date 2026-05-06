@@ -12,8 +12,6 @@ enum DiskFsManagerMessageType
     DISK_FS_UNMOUNT = 2,
 };
 
-
-
 enum DiskImplementationMessageType
 {
     DISK_CREATE_ROOT_ENDPOINT = 1,
@@ -88,19 +86,18 @@ public:
     };
 };
 
-
-class DiskFsImplementationConnection 
+class DiskFsImplementationConnection
 {
     Wingos::IpcClient connection;
+
 public:
     static core::Result<DiskFsImplementationConnection> connect(IpcServerHandle fs_endpoint)
     {
         DiskFsImplementationConnection conn;
         conn.connection = Wingos::Space::self().connect_to_ipc_server(fs_endpoint);
         conn.connection.wait_for_accept();
-        return core::Result<DiskFsImplementationConnection>::success(core::move(conn)); 
+        return core::Result<DiskFsImplementationConnection>::success(core::move(conn));
     }
-
 
     core::Result<IpcServerHandle> create_root_endpoint()
     {
@@ -112,8 +109,6 @@ public:
         IpcServerHandle endpoint = msg.data[1].data;
         return endpoint;
     };
-
-    
 };
 
-}
+} // namespace prot

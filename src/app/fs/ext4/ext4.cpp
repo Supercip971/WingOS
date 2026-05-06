@@ -1,8 +1,8 @@
 #include "ext4.hpp"
 
 #include "libcore/str_writer.hpp"
-#include "libcore/alloc/alloc.hpp"
 
+#include "libcore/alloc/alloc.hpp"
 
 core::Result<void *> Ext4Filesystem::read_block_tmp(Wingos::MemoryAsset &target, size_t block_num, size_t mem_asset_off)
 {
@@ -18,13 +18,12 @@ core::Result<void *> Ext4Filesystem::read_block_tmp(Wingos::MemoryAsset &target,
     return mapped_disk_asset.ptr();
 }
 
-
 core::Result<void *> Ext4Filesystem::read_block_tmp(size_t block_num)
 {
 
-    for(size_t i = 0; i < cache_nodes.len(); i++)
+    for (size_t i = 0; i < cache_nodes.len(); i++)
     {
-        if(cache_nodes[i].block_num == block_num)
+        if (cache_nodes[i].block_num == block_num)
         {
             cache_nodes[i].score++;
             return cache_nodes[i].data;
@@ -38,9 +37,8 @@ core::Result<void *> Ext4Filesystem::read_block_tmp(size_t block_num)
         return "short disk read for cached block";
     }
 
-
     // add to cache
-    if(cache_nodes.len() < 128)
+    if (cache_nodes.len() < 128)
     {
         Ext4CacheNode node;
         node.block_num = block_num;
@@ -57,9 +55,9 @@ core::Result<void *> Ext4Filesystem::read_block_tmp(size_t block_num)
         size_t lowest_score_index = 0;
         size_t lowest_score = cache_nodes[0].score;
 
-        for(size_t i = 1; i < cache_nodes.len(); i++)
+        for (size_t i = 1; i < cache_nodes.len(); i++)
         {
-            if(cache_nodes[i].score < lowest_score)
+            if (cache_nodes[i].score < lowest_score)
             {
                 lowest_score = cache_nodes[i].score;
                 lowest_score_index = i;
@@ -68,7 +66,7 @@ core::Result<void *> Ext4Filesystem::read_block_tmp(size_t block_num)
 
         // replace
         cache_nodes[lowest_score_index].block_num = block_num;
-        memcpy( cache_nodes[lowest_score_index].data, mapped_disk_asset.ptr(), (1024 << superblock.log_block_size));
+        memcpy(cache_nodes[lowest_score_index].data, mapped_disk_asset.ptr(), (1024 << superblock.log_block_size));
         cache_nodes[lowest_score_index].score = 1;
         // Return the cached copy, not mapped_disk_asset which can be overwritten by subsequent reads
         return cache_nodes[lowest_score_index].data;
@@ -128,7 +126,6 @@ core::Result<Ext4InodeRef> Ext4Filesystem::read_inode(InodeId inode)
     auto inode_ptr = (uint8_t *)inode_block_res;
     inode_ptr += local_block_offset;
 
-
     Ext4InodeRef inode_ref;
     inode_ref.inode_id = inode;
     inode_ref.inode = *(Ext4Inode *)inode_ptr;
@@ -161,7 +158,7 @@ core::Result<uint64_t> Ext4Filesystem::inode_find_block(Ext4InodeRef const &inod
         {
             return "sparse indirect block (block[12] is 0)";
         }
-        auto indirect_block_res = try$(read_block_tmp( inode.inode.block[12]));
+        auto indirect_block_res = try$(read_block_tmp(inode.inode.block[12]));
         auto block_entries = (uint32_t *)indirect_block_res;
 
         block_ptr = block_entries[indirect_block_index];
@@ -177,7 +174,7 @@ core::Result<uint64_t> Ext4Filesystem::inode_find_block(Ext4InodeRef const &inod
         {
             return "sparse double indirect block (block[13] is 0)";
         }
-        auto first_level_block_res = try$(read_block_tmp( inode.inode.block[13]));
+        auto first_level_block_res = try$(read_block_tmp(inode.inode.block[13]));
         auto first_level_entries = (uint32_t *)first_level_block_res;
 
         if (first_level_entries[first_level_index] == 0)
@@ -208,7 +205,7 @@ core::Result<uint64_t> Ext4Filesystem::inode_find_block(Ext4InodeRef const &inod
     return block_ptr;
 }
 
-core::Result<size_t> Ext4Filesystem::inode_read(Ext4InodeRef const &inode, Wingos::MemoryAsset &out, size_t off, size_t len,  size_t mem_asset_off)
+core::Result<size_t> Ext4Filesystem::inode_read(Ext4InodeRef const &inode, Wingos::MemoryAsset &out, size_t off, size_t len, size_t mem_asset_off)
 
 {
     size_t const file_size = (size_t)inode.inode.size_lo;
@@ -237,8 +234,7 @@ core::Result<size_t> Ext4Filesystem::inode_read(Ext4InodeRef const &inode, Wingo
     size_t end_block = (off + len) / block_size_;
     size_t block_offset = off % block_size_;
 
-
-  //  fmt::log$("inode_read: inode={}, off={}, len={}, start_block={}, end_block={}, block_offset={}", inode.inode_id, off, len, start_block, end_block, block_offset);
+    //  fmt::log$("inode_read: inode={}, off={}, len={}, start_block={}, end_block={}, block_offset={}", inode.inode_id, off, len, start_block, end_block, block_offset);
     size_t bytes_read = 0;
 
     auto vfile = Wingos::Space::self().map_memory(out, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
@@ -258,12 +254,11 @@ core::Result<size_t> Ext4Filesystem::inode_read(Ext4InodeRef const &inode, Wingo
 
     // middle blocks
 
-
     for (size_t b = start_block; b < end_block; b++)
     {
-        try$(inode_read_blck_off(inode, out, b * block_size_, bytes_read + mem_asset_off ));
-    //    auto block_data_res = try$(inode_read_tmp(inode, b));
-     //   memcpy((uint8_t *)vfile.ptr() + bytes_read + mem_asset_off, (uint8_t *)block_data_res, block_size_);
+        try$(inode_read_blck_off(inode, out, b * block_size_, bytes_read + mem_asset_off));
+        //    auto block_data_res = try$(inode_read_tmp(inode, b));
+        //   memcpy((uint8_t *)vfile.ptr() + bytes_read + mem_asset_off, (uint8_t *)block_data_res, block_size_);
         bytes_read += block_size_;
     }
 
@@ -478,7 +473,7 @@ core::Result<void> Ext4Filesystem::inode_write_tmp(Ext4InodeRef &inode, size_t b
     return {};
 }
 
-core::Result<void* > Ext4Filesystem::inode_read_blck_off(Ext4InodeRef const &inode, Wingos::MemoryAsset &out, size_t off, size_t mem_asset_off)
+core::Result<void *> Ext4Filesystem::inode_read_blck_off(Ext4InodeRef const &inode, Wingos::MemoryAsset &out, size_t off, size_t mem_asset_off)
 {
     size_t block_size_ = block_size();
     size_t block = off / block_size_;
@@ -504,7 +499,6 @@ core::Result<Ext4InodeRef> Ext4Filesystem::get_subdir(Ext4InodeRef const &dir_in
     size_t total_blocks = (dir_size + block_size_ - 1) / block_size_;
     fmt::log$("ext4: searching for entry '{}' in directory inode {}", name.view(), dir_inode.inode_id);
 
-
     for (size_t b = 0; b < total_blocks; b++)
     {
         size_t bytes_processed = 0;
@@ -522,8 +516,6 @@ core::Result<Ext4InodeRef> Ext4Filesystem::get_subdir(Ext4InodeRef const &dir_in
             {
                 continue;
             }
-
-
 
             core::Str ename = core::Str(entry->name, entry->name_len);
 

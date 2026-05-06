@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+
 #include "arch/generic/instruction.hpp"
 #include "libcore/lock/lock.hpp"
 #include "libcore/type-utils.hpp"
@@ -14,7 +15,7 @@ namespace core
  */
 class RWLock
 {
-    protected:
+protected:
     Lock _access_lock = Lock();
 
     std::atomic<int> _readers = 0;
@@ -24,12 +25,11 @@ class RWLock
 public:
     RWLock() = default;
 
-
     void full_reset()
     {
         _readers = 0;
         _waiters = 0;
-        _writers= 0;
+        _writers = 0;
         _access_lock = {};
     }
 
@@ -41,7 +41,7 @@ public:
             return false;
         }
         _waiters += 1;
-       _access_lock.release();
+        _access_lock.release();
         int retry = ini_retry;
         while (true)
         {
@@ -60,18 +60,16 @@ public:
 
             arch::pause();
             retry--;
-            if(retry==0 )
+            if (retry == 0)
             {
 
                 _access_lock.lock();
                 _waiters -= 1;
                 _access_lock.release();
-                               __atomic_thread_fence(__ATOMIC_SEQ_CST);
-
+                __atomic_thread_fence(__ATOMIC_SEQ_CST);
 
                 return false;
             }
-
         }
     }
     bool write_acquire()
@@ -105,7 +103,7 @@ public:
         _writers -= 1;
         _readers += 1;
 
-        if(_writers < 0)
+        if (_writers < 0)
         {
             unreachable$();
         }
@@ -117,7 +115,7 @@ public:
         _access_lock.lock();
         _writers -= 1;
 
-        if(_writers < 0)
+        if (_writers < 0)
         {
             unreachable$();
         }
@@ -129,7 +127,7 @@ public:
         while (true)
         {
             _access_lock.lock();
-            if (_writers == 0 )
+            if (_writers == 0)
             {
                 _readers += 1;
 
@@ -149,7 +147,7 @@ public:
         _access_lock.lock();
         _readers -= 1;
 
-        if(_readers < 0)
+        if (_readers < 0)
         {
             unreachable$();
         }

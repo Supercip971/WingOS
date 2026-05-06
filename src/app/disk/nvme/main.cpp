@@ -31,7 +31,6 @@ class NvmeController
     uint64_t queue_slots;
     uint64_t max_transfer;
 
-
     uint32_t *nsids;
     void *base_addr;
 
@@ -332,7 +331,7 @@ class NvmeController
 
         fmt::log$("   - max transfer size: {} bytes ({} blocks)", this->max_transfer | fmt::FMT_HEX, max_lba | fmt::FMT_HEX);
 
-        //device.max_phys_rpgs = max_lba / (1ull << (12 + cap.memory_page_size_minimum));
+        // device.max_phys_rpgs = max_lba / (1ull << (12 + cap.memory_page_size_minimum));
         device.max_phys_rpgs = 512; // 512 entry of pages means that the max transfer size is 512 * 4096 = 2MB
 
         fmt::log$(" - max phys rpgs: {} ({} / {})", device.max_phys_rpgs, max_lba, 1ull << (12 + cap.memory_page_size_minimum));
@@ -370,12 +369,9 @@ public:
             return "requested nlb too large for max transfer";
         }
 
-
-
-
         uintptr_t phys_addr = (uintptr_t)buffer - USERSPACE_VIRT_BASE;
         uintptr_t phys_addr_page = phys_addr & ~0xFFFULL;
-        size_t page_offset = phys_addr & 0xFFF;  // Offset within 4K page
+        size_t page_offset = phys_addr & 0xFFF; // Offset within 4K page
         size_t space_in_first_page = 4096 - page_offset;
         size_t transfer_size = nlb * dev->lba_size;
 
@@ -384,10 +380,8 @@ public:
         bool need_prp_list = false;
         uintptr_t *prp_list_addr;
 
-
         if (need_prp2 && transfer_size > (space_in_first_page + 4096))
         {
-
 
             need_prp2 = false;
             need_prp_list = true;
@@ -422,11 +416,10 @@ public:
             // PRP2 points to the start of the next page
             cmd.prp2 = (phys_addr_page) + 0x1000;
         }
-        else if(need_prp_list)
+        else if (need_prp_list)
         {
             cmd.prp2 = (uintptr_t)prp_list_addr - USERSPACE_VIRT_BASE;
         }
-
 
         return nvme_await_submit(&cmd, dev->io_queues);
     }
@@ -669,21 +662,20 @@ int main(int, char **)
 
                 uint64_t asset_handle = msg.received.data[3].asset_handle;
                 uint64_t mem_asset_off = msg.received.data[4].data;
-                //fmt::log$("Read sector off: {}", mem_asset_off);
+                // fmt::log$("Read sector off: {}", mem_asset_off);
                 auto asset = Wingos::MemoryAsset::from_handle(asset_handle);
 
-                uintptr_t buffer_ptr = asset.memory.start() ;
+                uintptr_t buffer_ptr = asset.memory.start();
                 auto &dev = ep.controller->devices[ep.device_id]; // for simplicity only first device
 
                 if (size >= 512)
                 {
 
-                    auto res = ep.controller->read_write_ptr(&dev, false, lba, size/512, (void *)(buffer_ptr + USERSPACE_VIRT_BASE + mem_asset_off), size);
-
+                    auto res = ep.controller->read_write_ptr(&dev, false, lba, size / 512, (void *)(buffer_ptr + USERSPACE_VIRT_BASE + mem_asset_off), size);
                 }
                 else
                 {
-                    auto res = ep.controller->read_write_ptr(&dev, false, lba, size/512, (void *)(buffer_ptr + USERSPACE_VIRT_BASE + mem_asset_off), size);
+                    auto res = ep.controller->read_write_ptr(&dev, false, lba, size / 512, (void *)(buffer_ptr + USERSPACE_VIRT_BASE + mem_asset_off), size);
 
                     if (res.is_error())
                     {
@@ -710,7 +702,7 @@ int main(int, char **)
 
                 uintptr_t buffer_ptr = asset.memory.start();
                 auto &dev = ep.controller->devices[ep.device_id]; // for simplicity only first device
-                auto res = ep.controller->read_write_ptr(&dev, true, lba, size/512, (void *)(buffer_ptr + USERSPACE_VIRT_BASE), size);
+                auto res = ep.controller->read_write_ptr(&dev, true, lba, size / 512, (void *)(buffer_ptr + USERSPACE_VIRT_BASE), size);
 
                 if (res.is_error())
                 {

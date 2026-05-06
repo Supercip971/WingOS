@@ -168,7 +168,7 @@ public:
                 return "Page not present";
             }
 
-            if(user && !entry.user())
+            if (user && !entry.user())
             {
                 return "Page not user accessible";
             }

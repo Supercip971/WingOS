@@ -9,13 +9,13 @@
 #include <iol/mem_flags.h>
 
 #include "libcore/fmt/impl/bitmap.hpp"
+#include "libcore/lock/lock.hpp"
 #include "libcore/mem/mem.hpp"
 #include "libcore/type-utils.hpp"
 #include "libcore/type/trait.hpp"
 #include "math/align.hpp"
 #include "math/range.hpp"
 #include "mem.hpp"
-#include "libcore/lock/lock.hpp"
 struct PmmSection
 {
     math::Range<uintptr_t> range;
@@ -59,7 +59,6 @@ struct Pmm
 
     static Pmm &the();
 
-
     static core::Result<void> initialize(const mcx::MachineContext *context);
 
     static core::Result<Pmm> _allocate_structure(const mcx::MachineContext *context);
@@ -73,9 +72,7 @@ struct Pmm
     core::Result<void> own(PhysAddr addr, Pages count);
     core::Result<void> release(PhysAddr addr, Pages count);
 
-
     core::Result<bool> query_usage(PhysAddr addr);
-
 };
 
 template <core::IsConvertibleTo<Pmm> T, core::Writable Targ>

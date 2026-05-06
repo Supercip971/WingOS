@@ -82,9 +82,7 @@ void _start(void)
     static arch::x86::Com com{};
     asm volatile("cli");
 
-
-
-    auto c =  arch::x86::Com::initialize(arch::x86::Com::Port::COM1);
+    auto c = arch::x86::Com::initialize(arch::x86::Com::Port::COM1);
     if (c.is_error())
     {
         done();

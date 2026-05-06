@@ -1,9 +1,9 @@
 #pragma once
+#include <libcore/ds/vec.hpp>
 #include <libcore/io/reader.hpp>
 #include <libcore/mem/view.hpp>
 #include <libcore/type-utils.hpp>
 #include <stddef.h>
-#include <libcore/ds/vec.hpp>
 
 namespace core
 {
@@ -92,7 +92,6 @@ public:
         return substr(last);
     }
 
-
     constexpr Str remove_after(char v) const
     {
         int last = _len;
@@ -140,7 +139,6 @@ public:
         }
         return true;
     }
-
 
     core::Vec<Str> split(char c) const
     {
@@ -194,7 +192,7 @@ public:
         size_t len = _len;
         if (len >= buffer_len)
         {
-            len = buffer_len-1;
+            len = buffer_len - 1;
         }
         for (size_t i = 0; i < len; i++)
         {

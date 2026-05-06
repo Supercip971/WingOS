@@ -1,11 +1,8 @@
 
+#include <SDL3/SDL.h>
 #include <gfx/platform/app.hpp>
 
-
-#include <SDL3/SDL.h>
 #include <SDL3/SDL_surface.h>
-
-
 
 core::Result<void> wgfx::initialize_platform()
 {

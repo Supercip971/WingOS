@@ -1,21 +1,19 @@
 #pragma once
 #include <libcore/fmt/impl/integers.hpp>
-
+#include <wingos-headers/asset.h>
 
 #include "libcore/fmt/flags.hpp"
-
-#include <wingos-headers/asset.h>
 
 namespace fmt
 {
 template <core::IsConvertibleTo<core::Str> T, core::Writable Targ>
 constexpr core::Result<void> format_v(Targ &target, T &&value);
 
-
 template <typename C, core::Writable Targ>
-constexpr core::Result<void> format_v(Targ &target, C &&value) requires (core::IsSame<AssetKind, core::RemoveReference<C>>)
+constexpr core::Result<void> format_v(Targ &target, C &&value)
+    requires(core::IsSame<AssetKind, core::RemoveReference<C>>)
 {
-    switch(value)
+    switch (value)
     {
     case OBJECT_KIND_UNKNOWN:
         return format_v(target, core::Str("OBJECT_KIND_UNKNOWN"));
@@ -35,10 +33,11 @@ constexpr core::Result<void> format_v(Targ &target, C &&value) requires (core::I
         return format_v(target, core::Str("UNKNOWN_ASSET_KIND"));
     }
 }
-template <typename C,  core::Writable Targ>
-constexpr core::Result<void> format_v(Targ &target, fmt::FormatFlags<C> flagged) requires (core::IsSame<AssetKind, core::RemoveReference<C>>)
-{  
-    switch(flagged.value)
+template <typename C, core::Writable Targ>
+constexpr core::Result<void> format_v(Targ &target, fmt::FormatFlags<C> flagged)
+    requires(core::IsSame<AssetKind, core::RemoveReference<C>>)
+{
+    switch (flagged.value)
     {
     case OBJECT_KIND_UNKNOWN:
         return format_v(target, flagged.forward_flags(core::Str("OBJECT_KIND_UNKNOWN")));
@@ -57,7 +56,6 @@ constexpr core::Result<void> format_v(Targ &target, fmt::FormatFlags<C> flagged)
     default:
         return format_v(target, flagged.forward_flags(core::Str("UNKNOWN_ASSET_KIND")));
     }
-   
 }
 
-}
+} // namespace fmt

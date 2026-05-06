@@ -146,7 +146,7 @@ struct Space : public Asset
     core::Vec<AssetRef<>> assets;
 
     Space()
-        : Asset(AssetKind::OBJECT_KIND_SPACE), uid(0), alloc_uid(0),  vmm_space(), assets()
+        : Asset(AssetKind::OBJECT_KIND_SPACE), uid(0), alloc_uid(0), vmm_space(), assets()
     {
     }
 
@@ -262,7 +262,6 @@ struct Space : public Asset
         }
 
         lock.release();
-
 
         return core::Result<AssetRef<T>>::error("asset not found");
     }

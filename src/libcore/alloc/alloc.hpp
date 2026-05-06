@@ -27,8 +27,6 @@ static inline Result<void *> mem_alloc(size_t bytes)
     return v;
 }
 
-
-
 template <typename T>
 static inline Result<T *> mem_alloc(size_t count)
 {
@@ -38,7 +36,7 @@ static inline Result<T *> mem_alloc(size_t count)
 template <typename T>
 static inline Result<T *> mem_alloc()
 {
-    return Result<T*>::success(static_cast<T *>(try$(mem_alloc(sizeof(T)))));
+    return Result<T *>::success(static_cast<T *>(try$(mem_alloc(sizeof(T)))));
 }
 
 static inline void mem_free(void *addr)

@@ -114,8 +114,6 @@ int main(int, char **)
         return 1;
     }
 
-
-
     auto server = server_r.take();
 
     registered_services = core::Vec<RegisteredDevice>();

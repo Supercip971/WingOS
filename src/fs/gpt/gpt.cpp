@@ -1,9 +1,9 @@
 #include "gpt.hpp"
+#include <libcore/fmt/log.hpp>
 #include <libcore/result.hpp>
 #include <protocols/disk/disk.hpp>
-#include <libcore/fmt/log.hpp>
 
-core::Result<Wingos::GPTDiskParseResult> Wingos::parse_gpt(core::Str& device)
+core::Result<Wingos::GPTDiskParseResult> Wingos::parse_gpt(core::Str &device)
 {
     Wingos::GPTDiskParseResult result = {};
 
@@ -11,12 +11,10 @@ core::Result<Wingos::GPTDiskParseResult> Wingos::parse_gpt(core::Str& device)
 
     Wingos::MemoryAsset header_asset = (Wingos::Space::self().allocate_physical_memory(4096));
 
+    try$(connection.read(header_asset, 1, 512));
+    Wingos::VirtualMemoryAsset header_mapping = Wingos::Space::self().map_memory(header_asset, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
 
-    try$(connection.read(header_asset,  1, 512));
-       Wingos::VirtualMemoryAsset header_mapping = Wingos::Space::self().map_memory(header_asset, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
-
-
-    GPT* gpt_header = (GPT*)header_mapping.ptr();
+    GPT *gpt_header = (GPT *)header_mapping.ptr();
     // dump:
     fmt::log$("GPT Signature: {}", core::Str(gpt_header->signature, 8));
     fmt::log$("GPT Revision: {}", core::copy(gpt_header->revision));
@@ -31,14 +29,14 @@ core::Result<Wingos::GPTDiskParseResult> Wingos::parse_gpt(core::Str& device)
     size_t partition_entries_size = gpt_header->partition_count * gpt_header->partition_entry_size;
     size_t partition_entries_sectors = math::alignUp((partition_entries_size), (size_t)512);
     Wingos::MemoryAsset partition_entries_asset = (Wingos::Space::self().allocate_physical_memory(math::alignUp(partition_entries_sectors, (size_t)4096)));
-    try$(connection.read(partition_entries_asset,  gpt_header->lba_start_guid_partition_entry, partition_entries_sectors));
+    try$(connection.read(partition_entries_asset, gpt_header->lba_start_guid_partition_entry, partition_entries_sectors));
     Wingos::VirtualMemoryAsset partition_entries_mapping = Wingos::Space::self().map_memory(partition_entries_asset, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
 
-    GPTPartitionEntries* partition_entries = (GPTPartitionEntries*)partition_entries_mapping.ptr();
+    GPTPartitionEntries *partition_entries = (GPTPartitionEntries *)partition_entries_mapping.ptr();
 
     for (size_t i = 0; i < gpt_header->partition_count; i++)
     {
-        GPTPartitionEntries* entry = (GPTPartitionEntries*)((uint8_t*)partition_entries + i * gpt_header->partition_entry_size);
+        GPTPartitionEntries *entry = (GPTPartitionEntries *)((uint8_t *)partition_entries + i * gpt_header->partition_entry_size);
         // check if partition type GUID is not zero
         bool is_empty = true;
         for (size_t j = 0; j < 16; j++)
@@ -62,7 +60,7 @@ core::Result<Wingos::GPTDiskParseResult> Wingos::parse_gpt(core::Str& device)
             {
                 break;
             }
-            part_name.append(core::Str((char*)&(entry->name[j]), 1)); // convert char16_t to char
+            part_name.append(core::Str((char *)&(entry->name[j]), 1)); // convert char16_t to char
         }
         fmt::log$("Found partition: {} (LBA {} - {})", part_name.view(), core::copy(entry->lba_start), core::copy(entry->lba_end));
 
@@ -70,9 +68,7 @@ core::Result<Wingos::GPTDiskParseResult> Wingos::parse_gpt(core::Str& device)
         parse_entry.name = core::move(part_name);
         parse_entry.entry = entry;
         result.entries.push(core::move(parse_entry));
-
     }
-
 
     return (result);
 }

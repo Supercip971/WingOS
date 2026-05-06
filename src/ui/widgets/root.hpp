@@ -26,13 +26,12 @@ public:
         elements = (args);
     }
 
-
     virtual wgfx::Vec2 preferred_size(wgfx::Vec2 constraint) const override
     {
         return constraint;
     }
 
-     void render(UiContext const &ctx, wgfx::Canvas &canvas) const override
+    void render(UiContext const &ctx, wgfx::Canvas &canvas) const override
     {
         fmt::log$("render root: {} {} {} {}", (long)this->bounds().start.x, (long)this->bounds().start.y, (long)this->bounds().width(), (long)this->bounds().height());
         (void)ctx;
@@ -41,19 +40,16 @@ public:
     }
 
     template <typename T>
-    static core::SharedPtr<Widget> construct(wgfx::CompositeColor bg,  T args)
+    static core::SharedPtr<Widget> construct(wgfx::CompositeColor bg, T args)
     {
         return core::SharedPtr<_Root>::make(bg, args).template static_pointer_cast<Widget>();
     }
 
-     core::SharedPtr<Widget> build(UiContext const &v) override
+    core::SharedPtr<Widget> build(UiContext const &v) override
     {
         (void)v;
         return elements;
     };
 };
-
-
-
 
 } // namespace fc

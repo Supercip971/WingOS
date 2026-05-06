@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <sys/types.h>
+
 #include "hw/mem/addr_space.hpp"
 #include "protocols/server_helper.hpp"
 
@@ -20,8 +21,7 @@
 
 // source: derived from brutal OS but
 // I wrote the brutal PS2 code
-int main(int , char **){return 0;};
-
+int main(int, char **) { return 0; };
 
 struct Waiter
 {
@@ -30,18 +30,16 @@ struct Waiter
     Wingos::MessageServerReceived msg;
 };
 
-
-int _main(StartupInfo*context)
+int _main(StartupInfo *context)
 {
     core::Vec<Waiter> waiters = {};
     fmt::log$("clock from rsdp addr: {}", context->machine_context_optional._rsdp | fmt::FMT_HEX);
 
     uintptr_t phys_rsdp = context->machine_context_optional._rsdp - 0xffff800000000000;
 
-
-
     fmt::log$("preparing rsdp mapping");
-    hw::acpi::prepare_mapping(phys_rsdp, [](uintptr_t addr, size_t size) {
+    hw::acpi::prepare_mapping(phys_rsdp, [](uintptr_t addr, size_t size)
+                              {
         auto vrange = math::Range<size_t>(addr, addr + size).growAlign(4096);
 
         fmt::log$("mapping hpet rsdp region: {} - {}", vrange.start() | fmt::FMT_HEX, vrange.end() | fmt::FMT_HEX);
@@ -49,29 +47,28 @@ int _main(StartupInfo*context)
         Wingos::Space::self().map_physical_memory(vrange.start(), vrange.len(), ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
         return core::Result<size_t>{
             vrange.start()
-        };
-    }).unwrap();
+        }; })
+        .unwrap();
 
     fmt::log$("preparing hpet");
 
-    hw::hpet::hpet_prepare_mapping(phys_rsdp, [](uintptr_t addr, size_t size) {
+    hw::hpet::hpet_prepare_mapping(phys_rsdp, [](uintptr_t addr, size_t size)
+                                   {
         auto vrange = math::Range<size_t>(addr, addr + size).growAlign(4096);
 
         fmt::log$("mapping hpet region: {} - {}", vrange.start() | fmt::FMT_HEX, vrange.end() | fmt::FMT_HEX);
         Wingos::Space::self().map_physical_memory(vrange.start(), vrange.len(), ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
         return core::Result<size_t>{
             vrange.start()
-        };
-    }).unwrap();
+        }; })
+        .unwrap();
 
     hw::hpet::hpet_initialize(toVirt(phys_rsdp).as<hw::acpi::Rsdp>()).unwrap();
     // map everything
 
-
-
     auto server_r = prot::ManagedServer::create_registered_server("clock", 1, 0);
 
-    if(server_r.is_error())
+    if (server_r.is_error())
     {
         fmt::err$("failed to create hio server: {}", server_r.error());
         return -1;
@@ -83,10 +80,10 @@ int _main(StartupInfo*context)
     while (true)
     {
 
-        //fmt::log$("1 second to ms: {} ->{}", core::Seconds(1).value(), core::Seconds(1).to<core::Milliseconds>().value());
+        // fmt::log$("1 second to ms: {} ->{}", core::Seconds(1).value(), core::Seconds(1).to<core::Milliseconds>().value());
 
-//        hw::hpet::hpet_sleep(core::Seconds(1));
-//        fmt::log$("tick");
+        //        hw::hpet::hpet_sleep(core::Seconds(1));
+        //        fmt::log$("tick");
 
         server.accept_connection();
 
@@ -104,7 +101,6 @@ int _main(StartupInfo*context)
             }
         }
 
-
         auto received = server.try_receive();
         if (!received.is_error())
         {
@@ -116,8 +112,8 @@ int _main(StartupInfo*context)
             {
                 IpcMessage reply = {};
                 core::Milliseconds ms = hw::hpet::hpet_clock_read();
-       //         fmt::log$("hpet: system time: {}ms", ms.value());
-                reply.data[1].data = ms.value()/1000;
+                //         fmt::log$("hpet: system time: {}ms", ms.value());
+                reply.data[1].data = ms.value() / 1000;
                 reply.data[2].data = ms.value();
                 server.reply(core::move(msg), reply).unwrap();
                 break;

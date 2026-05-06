@@ -1,12 +1,12 @@
 #pragma once
 
+#include <libcore/mem/view.hpp>
+
 #include "libcore/ds/vec.hpp"
 #include "libcore/funcs.hpp"
 #include "libcore/optional.hpp"
 #include "libcore/type-utils.hpp"
 #include "libcore/type/trait.hpp"
-
-#include <libcore/mem/view.hpp>
 namespace core
 {
 
@@ -52,7 +52,7 @@ public:
         Iterator &operator++()
         {
 
-            if(_ptr == nullptr) [[unlikely]]
+            if (_ptr == nullptr) [[unlikely]]
             {
                 return *this;
             }
@@ -62,7 +62,7 @@ public:
 
         Iterator operator++(int)
         {
-            if(_ptr == nullptr) [[unlikely]]
+            if (_ptr == nullptr) [[unlikely]]
             {
                 return *this;
             }
@@ -141,9 +141,8 @@ public:
     {
         auto node = (Node *)malloc(sizeof(Node));
 
-
         new (&node->data) Storage<T>(core::forward<F>(v));
-       // node->data = core::forward<F>(v);
+        // node->data = core::forward<F>(v);
         node->next = nullptr;
 
         if (tail != nullptr)
@@ -175,7 +174,6 @@ public:
         {
             tail = nullptr;
         }
-
 
         free(head);
         head = next;
@@ -210,14 +208,13 @@ public:
 
         prev->next = node_to_delete->next;
 
-
         if (node_to_delete == tail)
         {
             tail = prev;
             tail->next = nullptr;
         }
 
-        free (node_to_delete);
+        free(node_to_delete);
         _count--;
 
         return (res);
@@ -237,7 +234,6 @@ public:
         return *this;
     }
 
-
     auto first()
     {
         return head->data.as_ptr();
@@ -252,7 +248,6 @@ public:
     {
         return Iterator(head);
     }
-
 
     Iterator end()
     {

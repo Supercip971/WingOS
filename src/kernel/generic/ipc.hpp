@@ -1,11 +1,12 @@
 #pragma once
 
-#include "kernel/generic/blocker.hpp"
 #include "kernel/generic/asset_types.hpp"
+
+#include "kernel/generic/blocker.hpp"
 #include "kernel/generic/space.hpp"
-#include "math/align.hpp"
 #include "libcore/ds/vec.hpp"
 #include "libcore/lock/lock.hpp"
+#include "math/align.hpp"
 #include "scheduler.hpp"
 #include "wingos-headers/ipc.h"
 
@@ -26,7 +27,6 @@ struct IpcMessagePair
     uint64_t buffer[MAX_IPC_BUFFER_SIZE / sizeof(uint64_t)];
     uint64_t len;
 
-
     IpcMessageClient client; // the message from the client's point of view
     IpcMessageServer server; // the message from the server's point of view
 
@@ -34,7 +34,8 @@ struct IpcMessagePair
     {
     }
 
-    IpcMessagePair(const IpcMessagePair &other) {
+    IpcMessagePair(const IpcMessagePair &other)
+    {
         len = other.len;
         client = other.client;
         server = other.server;
@@ -44,8 +45,10 @@ struct IpcMessagePair
         }
     }
 
-    IpcMessagePair &operator=(const IpcMessagePair &other) {
-        if (this != &other) {
+    IpcMessagePair &operator=(const IpcMessagePair &other)
+    {
+        if (this != &other)
+        {
             len = other.len;
             client = other.client;
             server = other.server;
@@ -57,7 +60,8 @@ struct IpcMessagePair
         return *this;
     }
 
-    IpcMessagePair(IpcMessagePair &&other) noexcept {
+    IpcMessagePair(IpcMessagePair &&other) noexcept
+    {
         len = other.len;
         client = other.client;
         server = other.server;
@@ -67,8 +71,10 @@ struct IpcMessagePair
         }
     }
 
-    IpcMessagePair &operator=(IpcMessagePair &&other) noexcept {
-        if (this != &other) {
+    IpcMessagePair &operator=(IpcMessagePair &&other) noexcept
+    {
+        if (this != &other)
+        {
             len = other.len;
             client = other.client;
             server = other.server;
@@ -152,7 +158,7 @@ struct IpcMessagePair
             msg.data[i] = server.data[i];
         }
 
-        for (size_t i = 0; i < math::alignUp(len, sizeof(uint64_t))/ sizeof(uint64_t); i++)
+        for (size_t i = 0; i < math::alignUp(len, sizeof(uint64_t)) / sizeof(uint64_t); i++)
         {
             msg.buffer[i] = buffer[i];
         }
@@ -173,7 +179,6 @@ struct ReceivedIpcMessage
     IpcMessagePair message_sended;
     IpcMessagePair message_responded; // the message from the pov of the server (handle are different)
 };
-
 
 typedef enum
 {
@@ -203,21 +208,21 @@ struct IpcConnection : public Asset
 
     static constexpr size_t IDENT = AssetKind::OBJECT_KIND_IPC_CONNECTION;
 
-    IpcConnection() :
-        Asset(AssetKind::OBJECT_KIND_IPC_CONNECTION),
-        message_alloc_id(0),
-        lock(),
-        client_space_handle(0),
-        server_space_handle(0),
-        accepted(false),
-        closed_status(IPC_STILL_OPEN),
-        server(nullptr),
-        server_asset(),
-        server_handle(0),
-        client_mutex(),
-        server_mutex(),
-        message_sent()
-    {   }
+    IpcConnection() : Asset(AssetKind::OBJECT_KIND_IPC_CONNECTION),
+                      message_alloc_id(0),
+                      lock(),
+                      client_space_handle(0),
+                      server_space_handle(0),
+                      accepted(false),
+                      closed_status(IPC_STILL_OPEN),
+                      server(nullptr),
+                      server_asset(),
+                      server_handle(0),
+                      client_mutex(),
+                      server_mutex(),
+                      message_sent()
+    {
+    }
 };
 
 struct KernelIpcServer
@@ -225,7 +230,7 @@ struct KernelIpcServer
 
     IpcServerHandle handle;
     uint64_t parent_space;
-    AssetRef<> self;              // the asset that represents this server
+    AssetRef<> self;                   // the asset that represents this server
     core::Vec<AssetRef<>> connections; // the connections to this server (untyped; returned by Space::asset_copy)
     bool destroyed;
 };
@@ -253,15 +258,15 @@ void release_server_lock();
 // Note: keep this API untyped to avoid requiring `AssetConnection` in this header.
 core::Result<AssetRef<>> server_accept_connection(KernelIpcServer *server);
 
-core::Result<MessageHandle> server_send_message(AssetRef<AssetConnection>& connection, IpcMessage *message, bool expect_reply = false);
+core::Result<MessageHandle> server_send_message(AssetRef<AssetConnection> &connection, IpcMessage *message, bool expect_reply = false);
 core::Result<MessageHandle> server_send_call(AssetRef<AssetConnection> &connection, IpcMessage *message);
 
-core::Result<void> server_reply_message(AssetRef<AssetConnection>& connection, MessageHandle from, IpcMessage *message);
+core::Result<void> server_reply_message(AssetRef<AssetConnection> &connection, MessageHandle from, IpcMessage *message);
 
-core::Result<ReceivedIpcMessage> server_receive_message( AssetRef<AssetConnection>& connection);
+core::Result<ReceivedIpcMessage> server_receive_message(AssetRef<AssetConnection> &connection);
 
-core::Result<ReceivedIpcMessage> client_receive_message(AssetRef<AssetConnection>& connection);
+core::Result<ReceivedIpcMessage> client_receive_message(AssetRef<AssetConnection> &connection);
 
-core::Result<ReceivedIpcMessage> client_receive_response(AssetRef<AssetConnection>& connection, MessageHandle handle);
+core::Result<ReceivedIpcMessage> client_receive_response(AssetRef<AssetConnection> &connection, MessageHandle handle);
 
-core::Result<IpcMessage> call_server_and_wait(AssetRef<AssetConnection>& connection, IpcMessage *message);
+core::Result<IpcMessage> call_server_and_wait(AssetRef<AssetConnection> &connection, IpcMessage *message);

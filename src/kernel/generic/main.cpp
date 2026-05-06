@@ -105,7 +105,6 @@ void kernel_entry(const mcx::MachineContext *context)
         start_module_execution(loader.unwrap(), context).unwrap();
     }
 
-
     auto v = Space::global_space_by_handle(0);
 
     if (v.is_error())
@@ -117,9 +116,7 @@ void kernel_entry(const mcx::MachineContext *context)
 
     v.unwrap().asset->dump_assets();
 
-
     Cpu::current()->interrupt_release();
-
 
     while (true)
     {

@@ -1,8 +1,10 @@
 #pragma once
 
-#include "libcore/str_writer.hpp"
 #include <stdint.h>
 #include <string.h>
+
+#include "libcore/str_writer.hpp"
+
 #include "iol/wingos/asset.hpp"
 #include "iol/wingos/ipc.hpp"
 #include "iol/wingos/space.hpp"
@@ -69,7 +71,6 @@ class FsFile
     bool keep_alive = false;
     core::Vec<FsFileCacheEntry> cache_entries;
 
-
     void add_cache_entry(uint64_t offset, uint64_t size, Wingos::MemoryAsset &asset, Wingos::VirtualMemoryAsset &mapped)
     {
         FsFileCacheEntry entry = {};
@@ -79,7 +80,7 @@ class FsFile
         entry.mapped = mapped;
         entry.score = 1;
 
-        if(cache_entries.len() > 256)
+        if (cache_entries.len() > 256)
         {
             // evict lowest score
             size_t lowest_score_index = 0;
@@ -94,8 +95,8 @@ class FsFile
                 }
             }
 
-            Wingos::Space::self().release_asset( cache_entries[lowest_score_index].mapped);
-            Wingos::Space::self().release_asset( cache_entries[lowest_score_index].asset);
+            Wingos::Space::self().release_asset(cache_entries[lowest_score_index].mapped);
+            Wingos::Space::self().release_asset(cache_entries[lowest_score_index].asset);
             cache_entries[lowest_score_index] = entry;
         }
         else
@@ -106,37 +107,35 @@ class FsFile
     }
 
 public:
-
-    ~FsFile () {
-        for(size_t i = 0; i < cache_entries.len(); i++)
+    ~FsFile()
+    {
+        for (size_t i = 0; i < cache_entries.len(); i++)
         {
-            Wingos::Space::self().release_asset( cache_entries[i].mapped);
-            Wingos::Space::self().release_asset( cache_entries[i].asset);
+            Wingos::Space::self().release_asset(cache_entries[i].mapped);
+            Wingos::Space::self().release_asset(cache_entries[i].asset);
         }
         cache_entries.clear();
     }
 
     // Disable copy to prevent double-close issues
-    FsFile(const FsFile&) = delete;
-    FsFile& operator=(const FsFile&) = delete;
+    FsFile(const FsFile &) = delete;
+    FsFile &operator=(const FsFile &) = delete;
 
     // Enable move
-    FsFile(FsFile&& other)
-        : connection(other.connection)
-        , keep_alive(other.keep_alive)
-        , cache_entries(core::move(other.cache_entries))
+    FsFile(FsFile &&other)
+        : connection(other.connection), keep_alive(other.keep_alive), cache_entries(core::move(other.cache_entries))
     {
     }
 
-    FsFile& operator=(FsFile&& other)
+    FsFile &operator=(FsFile &&other)
     {
         if (this != &other)
         {
             // Clean up our existing cache entries
-            for(size_t i = 0; i < cache_entries.len(); i++)
+            for (size_t i = 0; i < cache_entries.len(); i++)
             {
-                Wingos::Space::self().release_asset( cache_entries[i].mapped);
-                Wingos::Space::self().release_asset( cache_entries[i].asset);
+                Wingos::Space::self().release_asset(cache_entries[i].mapped);
+                Wingos::Space::self().release_asset(cache_entries[i].asset);
             }
             cache_entries.clear();
 
@@ -180,19 +179,17 @@ public:
         return received_len;
     }
 
-
-
-    core::Result<size_t> read(void* buffer, size_t offset, size_t len)
+    core::Result<size_t> read(void *buffer, size_t offset, size_t len)
     {
         if (len == 0)
         {
             return core::Result<size_t>::success(0);
         }
 
-        for(size_t i = 0; i < cache_entries.len(); i++)
+        for (size_t i = 0; i < cache_entries.len(); i++)
         {
             auto &entry = cache_entries[i];
-            if(offset >= entry.offset && (offset + len) <= (entry.offset + entry.size))
+            if (offset >= entry.offset && (offset + len) <= (entry.offset + entry.size))
             {
                 size_t cache_offset = offset - entry.offset;
                 memcpy(buffer, (void *)((uintptr_t)entry.mapped.ptr() + cache_offset), len);
@@ -203,11 +200,10 @@ public:
 
         size_t aoffset = math::alignDown(offset, 4096ul);
 
-        size_t alen = math::alignUp(len*2 + offset, 4096ul) - aoffset;
+        size_t alen = math::alignUp(len * 2 + offset, 4096ul) - aoffset;
 
         size_t delta_offset = offset - aoffset;
         Wingos::MemoryAsset masset = Wingos::Space::self().allocate_physical_memory(alen);
-
 
         auto res = try$(this->read(masset, aoffset, alen));
 
@@ -215,17 +211,17 @@ public:
         memcpy(buffer, (void *)((uintptr_t)mapped.ptr() + delta_offset), len);
 
         this->add_cache_entry(aoffset, alen, masset, mapped);
-       // Wingos::Space::self().release_asset(mapped);
-      //  Wingos::Space::self().release_asset(masset);
+        // Wingos::Space::self().release_asset(mapped);
+        //  Wingos::Space::self().release_asset(masset);
         return res;
     }
 
     core::Result<size_t> write(Wingos::MemoryAsset &asset, size_t offset, size_t len)
     {
-        for(size_t i = 0; i < cache_entries.len(); i++)
+        for (size_t i = 0; i < cache_entries.len(); i++)
         {
             auto &entry = cache_entries[i];
-            if(offset >= entry.offset && (offset + len) <= (entry.offset + entry.size))
+            if (offset >= entry.offset && (offset + len) <= (entry.offset + entry.size))
             {
                 size_t cache_offset = offset - entry.offset;
                 memcpy((void *)((uintptr_t)entry.mapped.ptr() + cache_offset), (void *)((uintptr_t)asset.memory.start() + cache_offset), len);
@@ -244,8 +240,7 @@ public:
         return received_len;
     }
 
-
-    core::Result<size_t> write(void* buffer, size_t offset, size_t len)
+    core::Result<size_t> write(void *buffer, size_t offset, size_t len)
     {
         if (len == 0)
         {
@@ -377,8 +372,7 @@ public:
 
         auto msg = core::move(received.unwrap());
 
-
-        if(msg.data[0].data == 0)
+        if (msg.data[0].data == 0)
         {
             return ("failed to open file");
         }

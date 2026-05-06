@@ -1,32 +1,21 @@
 #pragma once
 
-
 namespace fc
 {
 
-    class ContextSnapshot
-    {
+class ContextSnapshot
+{
 
-        public :
+public:
+    bool operator==(ContextSnapshot const &) const { return true; }
+};
+class UiContext
+{
 
-        bool operator==(ContextSnapshot const &) const { return true; }
+public:
+    UiContext() = default;
 
-    };
-    class UiContext
-    {
+    ContextSnapshot snapshot() const { return ContextSnapshot(); }
+};
 
-
-        public:
-
-
-
-        UiContext() = default;
-
-
-        ContextSnapshot snapshot() const { return ContextSnapshot(); }
-
-    };
-
-
-
-}
+} // namespace fc

@@ -13,7 +13,7 @@
 #include "wingos-headers/asset.h"
 #include "wingos-headers/startup.hpp"
 
-core::Result<size_t> execute_module(mcx::MachineContext* mcx, elf::ElfLoader loaded)
+core::Result<size_t> execute_module(mcx::MachineContext *mcx, elf::ElfLoader loaded)
 {
     auto subspace = Wingos::Space::self().create_space();
 
@@ -21,7 +21,7 @@ core::Result<size_t> execute_module(mcx::MachineContext* mcx, elf::ElfLoader loa
 
     auto startup_info_mapped = Wingos::Space::self().map_memory(startup_info_mem, ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_READ);
 
-    StartupInfo* ptr = (StartupInfo*)startup_info_mapped.ptr();
+    StartupInfo *ptr = (StartupInfo *)startup_info_mapped.ptr();
 
     *ptr = {};
     ptr->machine_context_optional = *mcx;
@@ -42,7 +42,7 @@ core::Result<size_t> execute_module(mcx::MachineContext* mcx, elf::ElfLoader loa
         auto ph = try$(loaded.program_header(i));
         if (ph.type != core::underlying_value(ElfProgramHeaderType::HEADER_LOAD))
         {
-            fmt::warn$("skipping program header {}: type is not LOAD but {}", i,core::copy(ph.type));
+            fmt::warn$("skipping program header {}: type is not LOAD but {}", i, core::copy(ph.type));
             continue;
         }
         auto memory = Wingos::Space::self().allocate_physical_memory(ph.mem_size, false);

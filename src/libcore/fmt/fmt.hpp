@@ -6,11 +6,12 @@
 #include <libcore/str.hpp>
 #include <math/range.hpp>
 
+#include "libcore/fmt/impl/asset_kind.hpp"
+
 #include "libcore/mem/view.hpp"
 #include "libcore/result.hpp"
 #include "libcore/type-utils.hpp"
 #include "libcore/type/trait.hpp"
-#include "libcore/fmt/impl/asset_kind.hpp"
 namespace fmt
 {
 
@@ -67,7 +68,7 @@ constexpr core::Result<void> format_impl(Targ &target, core::Str fmt, int _c, Ar
     {
         return format_v(target, core::Str("{null}"));
     }
-    
+
     while (c < fmt.len() && fmt[c] != '{')
     {
         c++;
@@ -92,7 +93,7 @@ constexpr core::Result<void> format_impl(Targ &target, core::Str fmt, int _c, Ar
     else
     {
         c++;
-        return format_impl(target, fmt, c,core::forward<Arg>(a), core::forward<Args>(args)...);
+        return format_impl(target, fmt, c, core::forward<Arg>(a), core::forward<Args>(args)...);
     }
 }
 

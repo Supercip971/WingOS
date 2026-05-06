@@ -2,10 +2,10 @@
 #pragma once
 
 // generally used by implementation
+#include <libcore/fmt/log.hpp>
 #include <libcore/lock/lock.hpp>
 #include <stddef.h>
 #include <stdint.h>
-#include <libcore/fmt/log.hpp>
 using CoreId = int;
 static constexpr CoreId CpuCoreNone = -1;
 
@@ -16,7 +16,8 @@ struct DebuggedContext
     size_t last_syscall_task_called;
     bool in_syscall;
 
-    void dump() const {
+    void dump() const
+    {
         fmt::log$("DebuggedContext:");
         fmt::log$("  - last_syscall_id: {}", last_syscall_id);
         fmt::log$("  - last_syscall_task_called: {}", last_syscall_task_called);
@@ -24,20 +25,28 @@ struct DebuggedContext
     }
 };
 
- enum CpuSchedStates : int {
+enum CpuSchedStates : int
+{
     CPU_SCHED_RUNNING,
     CPU_SCHED_SWAP_SINGLE,
     CPU_SCHED_SWAP_GROUP,
     CPU_SCHED_DIRECTING,
 };
 
-static inline const char* cpuSchedStateToStr(CpuSchedStates state) {
-    switch(state) {
-        case CPU_SCHED_RUNNING: return "RUNNING";
-        case CPU_SCHED_SWAP_SINGLE: return "SWAP_SINGLE";
-        case CPU_SCHED_SWAP_GROUP: return "SWAP_GROUP";
-        case CPU_SCHED_DIRECTING: return "DIRECTING";
-        default: return "UNKNOWN";
+static inline const char *cpuSchedStateToStr(CpuSchedStates state)
+{
+    switch (state)
+    {
+    case CPU_SCHED_RUNNING:
+        return "RUNNING";
+    case CPU_SCHED_SWAP_SINGLE:
+        return "SWAP_SINGLE";
+    case CPU_SCHED_SWAP_GROUP:
+        return "SWAP_GROUP";
+    case CPU_SCHED_DIRECTING:
+        return "DIRECTING";
+    default:
+        return "UNKNOWN";
     }
 }
 namespace kernel
@@ -62,10 +71,8 @@ protected:
     bool _present;
     bool _in_syscall_lock = false;
 
-
 public:
-
-    kernel::Task * _current_task = nullptr;
+    kernel::Task *_current_task = nullptr;
     DebuggedContext __attribute__((aligned(16))) debug_context;
 
     CpuSchedStates sched_state = CpuSchedStates::CPU_SCHED_RUNNING;
@@ -78,7 +85,6 @@ public:
     {
         _current_task = task;
     }
-
 
     // apply after every syscall information required are retrieved
     static bool begin_syscall();

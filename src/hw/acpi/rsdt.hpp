@@ -1,10 +1,11 @@
 
 #pragma once
 
+#include <string.h>
+
 #include <hw/mem/addr_space.hpp>
 
 #include "hw/acpi/rsdp.hpp"
-#include <string.h>
 #include "libcore/fmt/log.hpp"
 #include "libcore/result.hpp"
 #include "libcore/str.hpp"
@@ -83,7 +84,6 @@ template <SdTable T, SdtEntry K>
 core::Result<K *> SdtFind(T *table)
 {
 
-
     for (size_t i = 0; i < (table->header.child_len()) / sizeof(table->entries[0]); i++)
     {
         auto entry = table->entries[i];
@@ -94,7 +94,7 @@ core::Result<K *> SdtFind(T *table)
             return reinterpret_cast<K *>(entry_header);
     }
 
-    return core::Result<K*>::error("Not found");
+    return core::Result<K *>::error("Not found");
 }
 
 template <SdtEntry K>
@@ -113,7 +113,7 @@ core::Result<K *> rsdt_find(hw::acpi::Rsdp *_rsdp)
     }
 }
 
-template<MappCallbackFn T>
+template <MappCallbackFn T>
 core::Result<void> prepare_mapping(uintptr_t rsdp_addr, T fn)
 {
     try$(fn(rsdp_addr, sizeof(hw::acpi::Rsdp)));
@@ -123,18 +123,17 @@ core::Result<void> prepare_mapping(uintptr_t rsdp_addr, T fn)
     {
         auto rsdt = toVirt(addr.physical_addr).as<hw::acpi::Rsdt>();
         try$(fn((uintptr_t)addr.physical_addr, 4096));
-        if(rsdt->header.length > 4096)
+        if (rsdt->header.length > 4096)
         {
             try$(fn((uintptr_t)addr.physical_addr, rsdt->header.length));
         }
 
-
-        for(size_t i = 0; i < (rsdt->header.child_len()) / sizeof(rsdt->entries[0]); i++)
+        for (size_t i = 0; i < (rsdt->header.child_len()) / sizeof(rsdt->entries[0]); i++)
         {
             auto entry = rsdt->entries[i];
             try$(fn((uintptr_t)entry, 4096));
             auto *entry_header = toVirt(entry).template as<SdtHeader>();
-            if(entry_header->length > 4096)
+            if (entry_header->length > 4096)
             {
                 try$(fn((uintptr_t)entry, entry_header->length));
             }
@@ -144,17 +143,17 @@ core::Result<void> prepare_mapping(uintptr_t rsdp_addr, T fn)
     {
         auto xsdt = toVirt(addr.physical_addr).as<hw::acpi::Xsdt>();
         try$(fn((uintptr_t)addr.physical_addr, 4096));
-        if(xsdt->header.length > 4096)
+        if (xsdt->header.length > 4096)
         {
             try$(fn((uintptr_t)addr.physical_addr, xsdt->header.length));
         }
 
-        for(size_t i = 0; i < (xsdt->header.child_len()) / sizeof(xsdt->entries[0]); i++)
+        for (size_t i = 0; i < (xsdt->header.child_len()) / sizeof(xsdt->entries[0]); i++)
         {
             auto entry = xsdt->entries[i];
             try$(fn((uintptr_t)entry, 4096));
             auto *entry_header = toVirt(entry).template as<SdtHeader>();
-            if(entry_header->length > 4096)
+            if (entry_header->length > 4096)
             {
                 try$(fn((uintptr_t)entry, entry_header->length));
             }
@@ -162,10 +161,7 @@ core::Result<void> prepare_mapping(uintptr_t rsdp_addr, T fn)
     }
 
     return {};
-
-
 }
-
 
 template <SdTable T, typename Fn>
 void SdtForeach(T *table, Fn callback)

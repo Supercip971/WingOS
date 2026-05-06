@@ -1,159 +1,146 @@
 #pragma once
 
-
-
-#include <stddef.h>
-#include "libcore/type-utils.hpp"
 #include <libcore/bound.hpp>
+#include <stddef.h>
+
+#include "libcore/type-utils.hpp"
 
 namespace core
 {
 
+template <typename T>
 
-    template<typename T>
+class SharedPtr
+{
 
-    class SharedPtr
+public:
+    struct ControlBlock
     {
+        size_t ref_count = {};
 
-        public:
-        struct ControlBlock
+        T data = {};
+
+        ControlBlock() = default;
+
+        template <typename... Args>
+        ControlBlock(Args... args)
+            : ref_count(0), data(core::forward<Args>(args)...)
         {
-            size_t ref_count = {};
+        }
+    };
+    ControlBlock *control_block;
 
-            T data = {};
+    template <typename T2>
+    SharedPtr<T2> static_pointer_cast()
+    {
+        SharedPtr<T2> ptr = {};
+        ptr.control_block = (typename SharedPtr<T2>::ControlBlock *)control_block;
+        if (ptr.control_block)
+        {
+            ptr.control_block->ref_count++;
+        }
+        return ptr;
+    }
 
+    template <typename... Args>
+    static SharedPtr<T> make(Args... args)
+    {
+        SharedPtr<T> ptr = {};
+        ptr.control_block = new ControlBlock(core::forward<Args>(args)...);
 
-            ControlBlock() = default;
+        ptr.control_block->ref_count = 1;
+        return ptr;
+    }
 
-            template<typename ...Args>
-            ControlBlock (Args ...args)
-                : ref_count(0), data(core::forward<Args>(args)...)
+    explicit operator bool() const { return control_block != nullptr; }
+    SharedPtr()
+        : control_block(nullptr)
+
+    {
+    }
+    SharedPtr(SharedPtr &&val)
+        : control_block(val.control_block)
+    {
+        val.control_block = nullptr;
+    }
+
+    SharedPtr(const SharedPtr &copy)
+    {
+        control_block = copy.control_block;
+        if (control_block)
+        {
+            control_block->ref_count++;
+        }
+    }
+
+    T &operator*() bounded$
+    {
+        return control_block->data;
+    }
+
+    T const &operator*() const bounded$
+    {
+        return control_block->data;
+    }
+
+    T *operator->() bounded$
+    {
+        return &(control_block->data);
+    }
+
+    T const *operator->() const bounded$
+    {
+        return &(control_block->data);
+    }
+
+    SharedPtr &operator=(SharedPtr &&other)
+    {
+        if (this->control_block != other.control_block)
+        {
+            if (control_block && --(control_block->ref_count) == 0)
             {
+                delete control_block;
             }
-        };
-        ControlBlock* control_block;
+            control_block = other.control_block;
+            other.control_block = nullptr;
+        }
+        return *this;
+    }
 
-        template<typename T2>
-        SharedPtr<T2> static_pointer_cast()
+    SharedPtr &operator=(const SharedPtr &other)
+    {
+        if (this->control_block != other.control_block)
         {
-            SharedPtr<T2> ptr = {};
-            ptr.control_block = (typename SharedPtr<T2>::ControlBlock*) control_block;
-            if(ptr.control_block)
+            if (control_block)
             {
-                ptr.control_block->ref_count++;
+                control_block->ref_count--;
+                if (control_block->ref_count == 0)
+                {
+
+                    delete control_block;
+                }
             }
-            return ptr;
-        }
-
-        template<typename ...Args>
-        static SharedPtr<T> make(Args ...args)
-        {
-            SharedPtr<T> ptr = {};
-            ptr.control_block = new ControlBlock(core::forward<Args>(args)...);
-
-
-
-            ptr.control_block->ref_count = 1;
-            return ptr;
-        }
-
-        explicit operator bool() const { return control_block != nullptr; }
-        SharedPtr()
-         : control_block(nullptr)
-
-         {
-
-         }
-        SharedPtr(SharedPtr&& val)
-            : control_block(val.control_block)
-        {
-            val.control_block = nullptr;
-        }
-
-        SharedPtr(const SharedPtr& copy)
-        {
-            control_block = copy.control_block;
-            if(control_block)
+            control_block = other.control_block;
+            if (control_block)
             {
                 control_block->ref_count++;
             }
         }
+        return *this;
+    }
 
-
-        T& operator*() bounded$
+    ~SharedPtr()
+    {
+        if (control_block != nullptr)
         {
-            return control_block->data;
-        }
-
-
-        T const& operator*() const bounded$
-        {
-            return control_block->data;
-        }
-
-        T* operator->() bounded$
-        {
-            return &(control_block->data);
-        }
-
-        T const* operator->() const bounded$
-        {
-            return &(control_block->data);
-        }
-
-
-        SharedPtr& operator=(SharedPtr&& other)
-        {
-            if(this->control_block != other.control_block)
+            control_block->ref_count--;
+            if (control_block->ref_count == 0)
             {
-                if(control_block && --(control_block->ref_count) == 0)
-                {
-                    delete control_block;
-                }
-                control_block = other.control_block;
-                other.control_block = nullptr;
+                delete control_block;
             }
-            return *this;
         }
 
-
-        SharedPtr& operator=(const SharedPtr& other)
-        {
-            if(this->control_block != other.control_block)
-            {
-                if(control_block)
-                {
-                    control_block->ref_count--;
-                    if(control_block->ref_count == 0)
-                    {
-
-                        delete control_block;
-                    }
-
-                }
-                control_block = other.control_block;
-                if(control_block)
-                {
-                    control_block->ref_count++;
-                }
-            }
-            return *this;
-        }
-
-        ~SharedPtr()
-        {
-            if(control_block != nullptr)
-            {
-                control_block->ref_count--;
-                if(control_block->ref_count == 0)
-                {
-                    delete control_block;
-                }
-
-            }
-
-            control_block = nullptr;
-        }
-
-    };
-}
+        control_block = nullptr;
+    }
+};
+} // namespace core

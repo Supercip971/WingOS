@@ -110,7 +110,7 @@ constexpr FormatFlags<T> operator|(const FormatFlags<T> &a, FmtFlag flag)
     case FMT_HEX:
         b.is_hex = true;
         break;
-    default: 
+    default:
         break;
     }
     return core::forward<FormatFlags<T>>(b);
@@ -133,7 +133,7 @@ constexpr FormatFlags<T> operator|(FormatFlags<T> &&a, FmtFlag flag)
     case FMT_HEX:
         a.is_hex = true;
         break;
-    default: 
+    default:
         break;
     }
     return core::forward<FormatFlags<T>>(a);

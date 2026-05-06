@@ -3,9 +3,10 @@
 #include <arch/x86/port.hpp>
 #include <libcore/enum-op.hpp>
 #include <libcore/io/writer.hpp>
-#include <libcore/result.hpp>
 #include <libcore/lock/lock.hpp>
+#include <libcore/result.hpp>
 #include <stdint.h>
+
 #include "libcore/type-utils.hpp"
 namespace arch::x86
 {
@@ -13,6 +14,7 @@ namespace arch::x86
 class Com : public core::Writer, public core::NoCopy
 {
     core::Lock _lock = {};
+
 public:
     Com() = default;
     Com(Com &&) = default;

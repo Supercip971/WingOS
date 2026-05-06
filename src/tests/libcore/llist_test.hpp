@@ -20,12 +20,12 @@ struct LListTestObject
         construct_count++;
     }
 
-    LListTestObject(const LListTestObject& other) : value(other.value)
+    LListTestObject(const LListTestObject &other) : value(other.value)
     {
         construct_count++;
     }
 
-    LListTestObject(LListTestObject&& other) : value(other.value)
+    LListTestObject(LListTestObject &&other) : value(other.value)
     {
         construct_count++;
     }

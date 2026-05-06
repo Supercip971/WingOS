@@ -46,7 +46,6 @@ concept Writable = requires(T *x) {
     } -> IsConvertibleToResult<void>;
 };
 
-
 static_assert(Writable<Writer>);
 
 } // namespace core

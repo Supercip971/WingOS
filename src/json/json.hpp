@@ -29,17 +29,17 @@ struct JsonChilds
 
     JsonChilds() : values(), keys() {};
 
-    JsonChilds(JsonChilds&& other) noexcept
+    JsonChilds(JsonChilds &&other) noexcept
         : values(core::move(other.values)), keys(core::move(other.keys))
     {
     }
 
-    JsonChilds(const JsonChilds& other)
+    JsonChilds(const JsonChilds &other)
         : values(other.values), keys(other.keys)
     {
     }
 
-    JsonChilds& operator=(JsonChilds&& other) noexcept
+    JsonChilds &operator=(JsonChilds &&other) noexcept
     {
         if (this != &other)
         {
@@ -50,7 +50,7 @@ struct JsonChilds
     }
 
     // Copy assignment
-    JsonChilds& operator=(const JsonChilds& other)
+    JsonChilds &operator=(const JsonChilds &other)
     {
         if (this != &other)
         {
@@ -70,7 +70,7 @@ struct JsonStorage
 
     JsonStorage() : raw(""), boolean(false), number(0), integer(0), childs() {}
 
-    JsonStorage(JsonStorage&& other)
+    JsonStorage(JsonStorage &&other)
         : raw((other.raw)),
           boolean(other.boolean),
           number(other.number),
@@ -79,7 +79,7 @@ struct JsonStorage
     {
     }
 
-    JsonStorage(const JsonStorage& other)
+    JsonStorage(const JsonStorage &other)
         : raw(other.raw),
           boolean(other.boolean),
           number(other.number),
@@ -89,7 +89,7 @@ struct JsonStorage
     }
 
     // Move assignment
-    JsonStorage& operator=(JsonStorage&& other) noexcept
+    JsonStorage &operator=(JsonStorage &&other) noexcept
     {
         if (this != &other)
         {
@@ -103,7 +103,7 @@ struct JsonStorage
     }
 
     // Copy assignment
-    JsonStorage& operator=(const JsonStorage& other)
+    JsonStorage &operator=(const JsonStorage &other)
     {
         if (this != &other)
         {
@@ -125,18 +125,18 @@ struct JsonValue
     JsonStorage storage = {};
     JsonValue() : type(JsonType::Null), storage() {};
 
-    JsonValue(JsonValue&& other) noexcept
+    JsonValue(JsonValue &&other) noexcept
         : type(other.type), storage(core::move(other.storage))
     {
         other.type = JsonType::Null;
     }
 
-    JsonValue(const JsonValue& other)
+    JsonValue(const JsonValue &other)
         : type(other.type), storage(other.storage)
     {
     }
 
-    JsonValue& operator=(JsonValue&& other)
+    JsonValue &operator=(JsonValue &&other)
     {
         if (this != &other)
         {
@@ -147,7 +147,7 @@ struct JsonValue
     }
 
     // Copy assignment
-    JsonValue& operator=(const JsonValue& other)
+    JsonValue &operator=(const JsonValue &other)
     {
         if (this != &other)
         {
@@ -164,11 +164,11 @@ struct JsonValue
         type = JsonType::Null;
     }
 
-    core::Result<JsonValue > get(const core::Str &key)
+    core::Result<JsonValue> get(const core::Str &key)
     {
         if (type != JsonType::Object)
         {
-            return core::Result<JsonValue >::error(("Not an object"));
+            return core::Result<JsonValue>::error(("Not an object"));
         }
         for (size_t i = 0; i < storage.childs.keys.len(); i++)
         {
@@ -177,20 +177,20 @@ struct JsonValue
                 return storage.childs.values[i];
             }
         }
-        return core::Result<JsonValue >::error(("Key not found"));
+        return core::Result<JsonValue>::error(("Key not found"));
     }
 
-    core::Result<JsonValue > get(size_t index)
+    core::Result<JsonValue> get(size_t index)
     {
         if (type != JsonType::Array)
         {
-            return core::Result<JsonValue >::error(("Not an array"));
+            return core::Result<JsonValue>::error(("Not an array"));
         }
         if (index < storage.childs.values.len())
         {
             return storage.childs.values[index];
         }
-        return core::Result<JsonValue >::error(("Index out of bounds"));
+        return core::Result<JsonValue>::error(("Index out of bounds"));
     }
 
     bool is_null()
@@ -232,7 +232,6 @@ struct JsonValue
             return storage.childs.values;
         }
 
-
         return core::Result<core::Vec<JsonValue>>::error("Not an array");
     }
 
@@ -264,7 +263,7 @@ struct JsonValue
     }
 
     // Convenience getter for array children
-    core::Vec<JsonValue>& children()
+    core::Vec<JsonValue> &children()
     {
         return storage.childs.values;
     }

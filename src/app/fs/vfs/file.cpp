@@ -40,7 +40,6 @@ core::Result<VfsFileEndpoint *> VfsFileEndpoint::open_root()
         {
             VfsFileEndpoint *endpoint = new VfsFileEndpoint();
 
-
             auto root_endpoint = try$(mounted_filesystems[i].endpoint.create_root_endpoint());
 
             auto connect_res = prot::FsFile::connect(root_endpoint);
@@ -99,7 +98,7 @@ void close_endpoint(VfsFileEndpoint *endpoint)
 
 void update_all_endpoints()
 {
-    for (auto& endpoint : opened_file_endpoints)
+    for (auto &endpoint : opened_file_endpoints)
     {
         // Always try to accept new connections (there may be multiple pending)
         while (endpoint->server.accept_connection())
@@ -119,7 +118,6 @@ void update_all_endpoints()
                 close_endpoint(endpoint);
 
                 return;
-
             }
 
             switch (msg.received.data[0].data)

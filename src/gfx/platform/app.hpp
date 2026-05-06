@@ -1,9 +1,9 @@
 #pragma once
+#include <gfx/platform/window.hpp>
 #include <stddef.h>
 
 #include "libcore/ds/vec.hpp"
 #include "libcore/fmt/log.hpp"
-#include <gfx/platform/window.hpp>
 #include "libcore/shared.hpp"
 #include "libcore/type-utils.hpp"
 
@@ -15,11 +15,10 @@ core::Result<void> initialize_platform();
 class PlatformApp
 {
 
-    public:
+public:
     virtual ~PlatformApp() = default;
 
     core::Vec<core::SharedPtr<PlatformWindow>> windows;
-
 
     void attach(core::SharedPtr<PlatformWindow> &window)
     {
@@ -29,4 +28,4 @@ class PlatformApp
     // BackendWindow& create_window(size_t width, size_t height);
 };
 
-}; // namespace gfx
+}; // namespace wgfx

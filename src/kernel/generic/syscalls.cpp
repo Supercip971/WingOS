@@ -22,7 +22,7 @@
 core::Lock log_lock;
 
 template <typename T>
-core::Result<T *> syscall_check_ptr(kernel::Task* caller, uintptr_t ptr)
+core::Result<T *> syscall_check_ptr(kernel::Task *caller, uintptr_t ptr)
 {
     if (ptr == 0)
     {
@@ -44,7 +44,7 @@ core::Result<T *> syscall_check_ptr(kernel::Task* caller, uintptr_t ptr)
     return reinterpret_cast<T *>(ptr);
 }
 template <typename T>
-core::Result<T *> syscall_check_ptr(kernel::Task* caller, T *ptr)
+core::Result<T *> syscall_check_ptr(kernel::Task *caller, T *ptr)
 {
     if (ptr == 0)
     {
@@ -62,7 +62,7 @@ core::Result<T *> syscall_check_ptr(kernel::Task* caller, T *ptr)
     return reinterpret_cast<T *>(ptr);
 }
 
-core::Result<uintptr_t> ksyscall_mem_own(kernel::Task* caller, SyscallMemOwn *mem_own)
+core::Result<uintptr_t> ksyscall_mem_own(kernel::Task *caller, SyscallMemOwn *mem_own)
 {
     Space *space = nullptr;
 
@@ -95,7 +95,7 @@ core::Result<uintptr_t> ksyscall_mem_own(kernel::Task* caller, SyscallMemOwn *me
     return (uint64_t)asset.handle;
 }
 
-core::Result<uintptr_t> ksyscall_map(kernel::Task* caller, SyscallMap *map)
+core::Result<uintptr_t> ksyscall_map(kernel::Task *caller, SyscallMap *map)
 {
     Space *space = nullptr;
     bool need_invalidate = false;
@@ -151,7 +151,7 @@ core::Result<uintptr_t> ksyscall_map(kernel::Task* caller, SyscallMap *map)
     return (uint64_t)asset.handle;
 }
 
-core::Result<size_t> ksyscall_task_create(kernel::Task* caller, SyscallTaskCreate *task_create)
+core::Result<size_t> ksyscall_task_create(kernel::Task *caller, SyscallTaskCreate *task_create)
 {
     Space *space = nullptr;
     if (task_create->target_space_handle != 0)
@@ -191,7 +191,7 @@ core::Result<size_t> ksyscall_task_create(kernel::Task* caller, SyscallTaskCreat
     return (uint64_t)asset.handle;
 }
 
-core::Result<size_t> ksyscall_space_create(kernel::Task* caller, SyscallSpaceCreate *args)
+core::Result<size_t> ksyscall_space_create(kernel::Task *caller, SyscallSpaceCreate *args)
 {
     Space *space = nullptr;
     if (args->parent_space_handle != 0)
@@ -215,7 +215,7 @@ core::Result<size_t> ksyscall_space_create(kernel::Task* caller, SyscallSpaceCre
     args->returned_handle = asset.handle;
     return (uint64_t)asset.handle;
 }
-core::Result<size_t> ksyscall_mem_release(kernel::Task* caller, SyscallAssetRelease *release)
+core::Result<size_t> ksyscall_mem_release(kernel::Task *caller, SyscallAssetRelease *release)
 {
     auto space = caller->space();
     if (space == nullptr)
@@ -244,7 +244,7 @@ core::Result<size_t> ksyscall_mem_release(kernel::Task* caller, SyscallAssetRele
     space->asset_release(mem_asset);
     return 0ul;
 }
-core::Result<size_t> ksyscall_asset_release(kernel::Task* caller, SyscallAssetRelease *release)
+core::Result<size_t> ksyscall_asset_release(kernel::Task *caller, SyscallAssetRelease *release)
 {
     if (release->asset_handle == 0 && release->addr != nullptr)
     {
@@ -275,7 +275,7 @@ core::Result<size_t> ksyscall_asset_release(kernel::Task* caller, SyscallAssetRe
     return 0ul;
 }
 
-core::Result<size_t> ksyscall_task_launch(kernel::Task* caller, SyscallTaskLaunch *task_launch)
+core::Result<size_t> ksyscall_task_launch(kernel::Task *caller, SyscallTaskLaunch *task_launch)
 {
 
     Space *space = nullptr;
@@ -309,7 +309,7 @@ core::Result<size_t> ksyscall_task_launch(kernel::Task* caller, SyscallTaskLaunc
     return 0ul;
 }
 
-core::Result<size_t> ksyscall_asset_move(kernel::Task* caller, SyscallAssetMove *asset_move_args)
+core::Result<size_t> ksyscall_asset_move(kernel::Task *caller, SyscallAssetMove *asset_move_args)
 {
     Space *from_space = nullptr;
     Space *to_space = nullptr;
@@ -351,7 +351,7 @@ core::Result<size_t> ksyscall_asset_move(kernel::Task* caller, SyscallAssetMove 
     return (uint64_t)moved_asset.handle;
 }
 
-core::Result<size_t> ksyscall_create_server(kernel::Task* caller, SyscallIpcCreateServer *create)
+core::Result<size_t> ksyscall_create_server(kernel::Task *caller, SyscallIpcCreateServer *create)
 {
     Space *space = nullptr;
     if (create->space_handle != 0)
@@ -380,7 +380,7 @@ core::Result<size_t> ksyscall_create_server(kernel::Task* caller, SyscallIpcCrea
 
     return (uint64_t)asset.handle;
 }
-core::Result<size_t> ksyscall_create_pipe_connection(kernel::Task* caller, SyscallIpcConnect *create)
+core::Result<size_t> ksyscall_create_pipe_connection(kernel::Task *caller, SyscallIpcConnect *create)
 {
 
     Space *space_sender = nullptr;
@@ -426,7 +426,7 @@ core::Result<size_t> ksyscall_create_pipe_connection(kernel::Task* caller, Sysca
     return {0ul};
 }
 
-core::Result<size_t> ksyscall_create_connection(kernel::Task* caller, SyscallIpcConnect *create)
+core::Result<size_t> ksyscall_create_connection(kernel::Task *caller, SyscallIpcConnect *create)
 {
 
     if (create->flags & IPC_CONNECTION_FLAG_PIPE)
@@ -462,7 +462,7 @@ core::Result<size_t> ksyscall_create_connection(kernel::Task* caller, SyscallIpc
     return (uint64_t)asset.handle;
 }
 
-core::Result<size_t> ksyscall_send(kernel::Task* caller, SyscallIpcSend *send)
+core::Result<size_t> ksyscall_send(kernel::Task *caller, SyscallIpcSend *send)
 {
     Space *space = nullptr;
     if (send->space_handle != 0)
@@ -495,7 +495,7 @@ core::Result<size_t> ksyscall_send(kernel::Task* caller, SyscallIpcSend *send)
     return (size_t)res;
 }
 
-core::Result<size_t> ksyscall_server_receive(kernel::Task* caller, SyscallIpcServerReceive *receive)
+core::Result<size_t> ksyscall_server_receive(kernel::Task *caller, SyscallIpcServerReceive *receive)
 {
     Space *space = nullptr;
     if (receive->space_handle != 0)
@@ -581,7 +581,7 @@ core::Result<size_t> ksyscall_server_receive(kernel::Task* caller, SyscallIpcSer
     return (size_t)received_message.uid;
 }
 
-core::Result<size_t> ksyscall_client_receive_reply(kernel::Task* caller, SyscallIpcClientReceiveReply *receive)
+core::Result<size_t> ksyscall_client_receive_reply(kernel::Task *caller, SyscallIpcClientReceiveReply *receive)
 {
     Space *space = nullptr;
     if (receive->space_handle != 0)
@@ -645,7 +645,7 @@ core::Result<size_t> ksyscall_client_receive_reply(kernel::Task* caller, Syscall
     return (size_t)received_message.uid;
 }
 
-core::Result<size_t> ksyscall_ipc_call(kernel::Task* caller, SyscallIpcCall *call)
+core::Result<size_t> ksyscall_ipc_call(kernel::Task *caller, SyscallIpcCall *call)
 {
     Space *space = nullptr;
     if (call->space_handle != 0)
@@ -681,14 +681,14 @@ core::Result<size_t> ksyscall_ipc_call(kernel::Task* caller, SyscallIpcCall *cal
 
     auto received_message = (res.take());
 
-    *try$(syscall_check_ptr(caller ,call->returned_message)) = core::move(received_message);
+    *try$(syscall_check_ptr(caller, call->returned_message)) = core::move(received_message);
     call->has_reply = true;
     // call->returned_msg_handle = received_message.uid;
 
     return 0ul;
 }
 
-core::Result<size_t> ksyscall_ipc_accept(kernel::Task* caller, SyscallIpcAccept *accept)
+core::Result<size_t> ksyscall_ipc_accept(kernel::Task *caller, SyscallIpcAccept *accept)
 {
     Space *space = nullptr;
     if (accept->space_handle != 0)
@@ -738,7 +738,7 @@ core::Result<size_t> ksyscall_ipc_accept(kernel::Task* caller, SyscallIpcAccept 
     return (size_t)connection.handle;
 }
 
-core::Result<size_t> ksyscall_ipc_server_reply(kernel::Task* caller, SyscallIpcReply *reply)
+core::Result<size_t> ksyscall_ipc_server_reply(kernel::Task *caller, SyscallIpcReply *reply)
 {
     Space *space = nullptr;
     if (reply->space_handle != 0)
@@ -776,7 +776,7 @@ core::Result<size_t> ksyscall_ipc_server_reply(kernel::Task* caller, SyscallIpcR
     return 0ul;
 }
 
-core::Result<size_t> ksyscall_ipc_status(kernel::Task* caller, SyscallIpcStatus *status)
+core::Result<size_t> ksyscall_ipc_status(kernel::Task *caller, SyscallIpcStatus *status)
 {
     Space *space = nullptr;
 
@@ -816,7 +816,7 @@ core::Result<size_t> ksyscall_ipc_status(kernel::Task* caller, SyscallIpcStatus 
     return 0ul;
 }
 
-core::Result<size_t> ksyscall_ipc_asset_info(kernel::Task* caller, SyscallAssetInfo *info)
+core::Result<size_t> ksyscall_ipc_asset_info(kernel::Task *caller, SyscallAssetInfo *info)
 {
     Space *space = nullptr;
     if (info->space_handle != 0)
@@ -865,7 +865,7 @@ core::Result<size_t> ksyscall_ipc_asset_info(kernel::Task* caller, SyscallAssetI
     return 0ul;
 }
 
-core::Result<size_t> ksyscall_ipc_x86_port(kernel::Task* caller, SyscallIpcX86Port *port)
+core::Result<size_t> ksyscall_ipc_x86_port(kernel::Task *caller, SyscallIpcX86Port *port)
 {
     Space *space = nullptr;
     if (port->space_handle != 0)
@@ -929,7 +929,7 @@ core::Result<size_t> ksyscall_ipc_x86_port(kernel::Task* caller, SyscallIpcX86Po
     return 0ul;
 }
 
-core::Result<size_t> syscall_handle(SyscallInterface syscall, kernel::Task* caller)
+core::Result<size_t> syscall_handle(SyscallInterface syscall, kernel::Task *caller)
 {
     switch (syscall.id)
     {

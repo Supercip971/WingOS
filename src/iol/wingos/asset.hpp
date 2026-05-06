@@ -1,13 +1,12 @@
 #pragma once
 
+#include <libcore/fmt/log.hpp>
 #include <stdint.h>
 
 #include "iol/wingos/syscalls.h"
 #include "math/align.hpp"
 #include "mcx/mcx.hpp"
 #include "wingos-headers/syscalls.h"
-
-#include <libcore/fmt/log.hpp>
 namespace Wingos
 {
 
@@ -66,22 +65,19 @@ struct VirtualMemoryAsset : public UAsset
         return asset;
     }
 
-
     static core::Result<VirtualMemoryAsset> from_handle(uint64_t handle)
     {
         VirtualMemoryAsset asset = {};
         asset.handle = handle;
 
-
         auto v = sys$ipc_asset_info(0, handle);
 
-        if(v.returned_kind != AssetKind::OBJECT_KIND_MAPPING)
+        if (v.returned_kind != AssetKind::OBJECT_KIND_MAPPING)
         {
             fmt::warn$("Tried to create MemoryAsset from handle {}, but asset kind is {}", handle, v.returned_kind);
             return "asset kind is not mapping";
         }
         asset.memory = mcx::MemoryRange(v.returned_info.mapping.start, v.returned_info.mapping.end).growAlign(4096);
-
 
         return asset;
     }
@@ -118,10 +114,9 @@ struct MemoryAsset : public UAsset
         MemoryAsset asset = {};
         asset.handle = handle;
 
-
         auto v = sys$ipc_asset_info(0, handle);
 
-        if(v.returned_kind != AssetKind::OBJECT_KIND_MEMORY)
+        if (v.returned_kind != AssetKind::OBJECT_KIND_MEMORY)
         {
             fmt::warn$("Tried to create MemoryAsset from handle {}, but asset kind is {}", handle, v.returned_kind);
             return asset; // return empty asset

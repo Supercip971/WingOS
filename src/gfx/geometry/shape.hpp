@@ -126,7 +126,7 @@ public:
         }
         update_bound(last_stroke.pos);
         update_bound(point.pos);
-       strokes.add_sorted(
+        strokes.add_sorted(
             [](RawStroke const &left, RawStroke const &right)
             { return core::min(left.a.pos.x, left.b.pos.x) - core::min(right.a.pos.x, right.b.pos.x); },
             RawStroke{last_stroke, point});
@@ -174,8 +174,6 @@ public:
 
         return *this;
     }
-
-
 };
 
 } // namespace wgfx

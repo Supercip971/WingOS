@@ -1,4 +1,5 @@
 #include "protocols/hi/human_interface.hpp"
+
 #include "arch/generic/syscalls.h"
 #include "iol/wingos/space.hpp"
 #include "iol/wingos/syscalls.h"
@@ -41,9 +42,6 @@ int main(int, char **)
 
     prot::HIConnection hi_conn = prot::HIConnection::connect().unwrap();
     hi_conn.start_listen().unwrap();
-
-
-
 
     while (true)
     {

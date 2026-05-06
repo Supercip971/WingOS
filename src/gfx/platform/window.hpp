@@ -5,10 +5,10 @@
 #include "libcore/ds/vec.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/shared.hpp"
-
 #include "libcore/type-utils.hpp"
 
-namespace wgfx {
+namespace wgfx
+{
 
 class PlatformWindow : public core::NoCopy
 {
@@ -18,7 +18,7 @@ public:
 
     BackendsKinds backend_kind;
 
-    virtual core::Result<void> attach(){return {};};
+    virtual core::Result<void> attach() { return {}; };
 
     virtual float dpi() { return 1.f; }
 
@@ -41,13 +41,14 @@ public:
         return 0;
     }
 
-    virtual Canvas* create_frame()
+    virtual Canvas *create_frame()
     {
         fmt::warn$("Canvas unable to be acquired");
         return nullptr;
     }
 
-    virtual void end_frame(Canvas* frame) {
+    virtual void end_frame(Canvas *frame)
+    {
         (void)frame;
         fmt::warn$("Canvas was unable to be swapped");
     }
@@ -61,13 +62,7 @@ public:
         fmt::warn$("Window::set_height not implemented");
     }
 
-
-
-
-
-
-
     static core::Result<core::SharedPtr<PlatformWindow>> create_native(BackendsKinds preferred_backend = BackendsKinds::BACKEND_KIND_RASTER);
 };
 
-}
+} // namespace wgfx

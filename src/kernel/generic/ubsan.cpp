@@ -1,7 +1,7 @@
 
 #include <libcore/fmt/log.hpp>
-#include <stdint.h>
 #include <libcore/lock/lock.hpp>
+#include <stdint.h>
 
 struct source_location
 {
@@ -28,8 +28,8 @@ struct type_mismatch_info
 struct out_of_bounds_info
 {
     source_location location;
-    type_descriptor* left_type;
-    type_descriptor* right_type;
+    type_descriptor *left_type;
+    type_descriptor *right_type;
 };
 
 struct type_mismatch_data
@@ -90,14 +90,23 @@ void dump_source_location(source_location *loc)
     fmt::err$(" at {}:{}:{}", loc->file, loc->line, loc->column);
 }
 
-static const char* __kinds[] = {
-    "load of", "store to", "reference binding to", "member access within", "member call on", "constructor call on", "downcast of", "downcast of", "upcast of", "cast to virtual base of",
+static const char *__kinds[] = {
+    "load of",
+    "store to",
+    "reference binding to",
+    "member access within",
+    "member call on",
+    "constructor call on",
+    "downcast of",
+    "downcast of",
+    "upcast of",
+    "cast to virtual base of",
 };
 void dump_type_descriptor(type_descriptor *type)
 {
     fmt::err$("Type descriptor: {}", type->name);
 
-    if(type->kind < sizeof(__kinds) / sizeof(__kinds[0]))
+    if (type->kind < sizeof(__kinds) / sizeof(__kinds[0]))
     {
         fmt::err$("Kind: {}", __kinds[type->kind]);
     }
@@ -105,16 +114,16 @@ void dump_type_descriptor(type_descriptor *type)
 }
 
 extern "C" void __ubsan_handle_function_type_mismatch(type_mismatch_data *data,
-                                             unsigned long ptr __attribute__((unused)))
+                                                      unsigned long ptr __attribute__((unused)))
 {
 
     lock_scope$(locker);
-    if(!ptr)
+    if (!ptr)
     {
         fmt::err$("UBSan func type mismatch");
         dump_source_location(&data->loc);
     }
-    else if(ptr & ((1 << data->alignment) - 1 ) && data->alignment != 0)
+    else if (ptr & ((1 << data->alignment) - 1) && data->alignment != 0)
     {
         fmt::err$("UBSan func type alignment mismatch");
         dump_source_location(&data->loc);
@@ -125,28 +134,26 @@ extern "C" void __ubsan_handle_function_type_mismatch(type_mismatch_data *data,
         dump_source_location(&data->loc);
     }
 
-
-  //  dump_source_location(&data->loc);
-  //  fmt::err$("UBSan func type mismatch");
+    //  dump_source_location(&data->loc);
+    //  fmt::err$("UBSan func type mismatch");
 }
-//#error https://wiki.osdev.org/Undefined_Behavior_Sanitization
+// #error https://wiki.osdev.org/Undefined_Behavior_Sanitization
 extern "C" void __ubsan_handle_type_mismatch(type_mismatch_data *data,
                                              unsigned long ptr __attribute__((unused)))
 {
 
     lock_scope$(locker);
-    if(!ptr)
+    if (!ptr)
     {
         fmt::log$("UBSan type mismatch (null)");
         dump_source_location(&data->loc);
         dump_type_descriptor(data->type);
     }
-    else if((ptr & ((1 << data->alignment) - 1 )) && data->alignment != 0)
+    else if ((ptr & ((1 << data->alignment) - 1)) && data->alignment != 0)
     {
         fmt::log$("UBSan type alignment mismatch");
         dump_source_location(&data->loc);
         dump_type_descriptor(data->type);
-
     }
     else
     {
@@ -154,24 +161,23 @@ extern "C" void __ubsan_handle_type_mismatch(type_mismatch_data *data,
         dump_source_location(&data->loc);
         dump_type_descriptor(data->type);
     }
-
 }
 extern "C" void __ubsan_handle_type_mismatch_v1(type_mismatch_data *data,
-                                             unsigned long ptr __attribute__((unused)))
+                                                unsigned long ptr __attribute__((unused)))
 {
 
     lock_scope$(locker);
-    if(!ptr)
+    if (!ptr)
     {
         fmt::err$("(v1) UBSan type mismatch");
         dump_source_location(&data->loc);
         dump_type_descriptor(data->type);
     }
-    else if((ptr & ((1 << data->alignment) - 1 )) && data->alignment != 0)
+    else if ((ptr & ((1 << data->alignment) - 1)) && data->alignment != 0)
     {
         fmt::err$("(v1) UBSan type alignment mismatch");
         fmt::err$("Alignment expected: ", data->alignment);
-        fmt::err$("Alignment actual: ", ptr & ((1 << data->alignment) - 1 ));
+        fmt::err$("Alignment actual: ", ptr & ((1 << data->alignment) - 1));
 
         dump_source_location(&data->loc);
         dump_type_descriptor(data->type);
@@ -184,20 +190,20 @@ extern "C" void __ubsan_handle_type_mismatch_v1(type_mismatch_data *data,
     }
 
     (void)data;
-  //  dump_source_location(&data->loc);
-  //  fmt::err$("UBSan type mismatch");
+    //  dump_source_location(&data->loc);
+    //  fmt::err$("UBSan type mismatch");
 }
 extern "C" void __ubsan_handle_pointer_overflow(overflow_data *data,
-                                 unsigned long lhs __attribute__((unused)),
-                                 unsigned long rhs __attribute__((unused)))
+                                                unsigned long lhs __attribute__((unused)),
+                                                unsigned long rhs __attribute__((unused)))
 {
     lock_scope$(locker);
     dump_source_location(&data->loc);
     fmt::err$("UBSan ptr overflow");
 }
 extern "C" void __ubsan_handle_add_overflow(overflow_data *data,
-                                 unsigned long lhs __attribute__((unused)),
-                                 unsigned long rhs __attribute__((unused)))
+                                            unsigned long lhs __attribute__((unused)),
+                                            unsigned long rhs __attribute__((unused)))
 {
     lock_scope$(locker);
     dump_source_location(&data->loc);
@@ -205,8 +211,8 @@ extern "C" void __ubsan_handle_add_overflow(overflow_data *data,
 }
 
 extern "C" void __ubsan_handle_sub_overflow(overflow_data *data,
-                                 unsigned long lhs __attribute__((unused)),
-                                 unsigned long rhs __attribute__((unused)))
+                                            unsigned long lhs __attribute__((unused)),
+                                            unsigned long rhs __attribute__((unused)))
 {
     lock_scope$(locker);
     dump_source_location(&data->loc);
@@ -214,8 +220,8 @@ extern "C" void __ubsan_handle_sub_overflow(overflow_data *data,
 }
 
 extern "C" void __ubsan_handle_mul_overflow(overflow_data *data,
-                                 unsigned long lhs __attribute__((unused)),
-                                 unsigned long rhs __attribute__((unused)))
+                                            unsigned long lhs __attribute__((unused)),
+                                            unsigned long rhs __attribute__((unused)))
 {
     lock_scope$(locker);
     dump_source_location(&data->loc);
@@ -223,8 +229,8 @@ extern "C" void __ubsan_handle_mul_overflow(overflow_data *data,
 }
 
 extern "C" void __ubsan_handle_negate_overflow(overflow_data *data,
-                                    unsigned long old_val
-                                    __attribute__((unused)))
+                                               unsigned long old_val
+                                               __attribute__((unused)))
 {
     lock_scope$(locker);
     dump_source_location(&data->loc);
@@ -232,8 +238,8 @@ extern "C" void __ubsan_handle_negate_overflow(overflow_data *data,
 }
 
 extern "C" void __ubsan_handle_divrem_overflow(overflow_data *data,
-                                    unsigned long lhs __attribute__((unused)),
-                                    unsigned long rhs __attribute__((unused)))
+                                               unsigned long lhs __attribute__((unused)),
+                                               unsigned long rhs __attribute__((unused)))
 {
     lock_scope$(locker);
     dump_source_location(&data->loc);
@@ -241,10 +247,10 @@ extern "C" void __ubsan_handle_divrem_overflow(overflow_data *data,
 }
 
 extern "C" void __ubsan_handle_shift_out_of_bounds(shift_out_of_bounds_data *data,
-                                        unsigned long lhs
-                                        __attribute__((unused)),
-                                        unsigned long rhs
-                                        __attribute__((unused)))
+                                                   unsigned long lhs
+                                                   __attribute__((unused)),
+                                                   unsigned long rhs
+                                                   __attribute__((unused)))
 {
     lock_scope$(locker);
     dump_source_location(&data->loc);
@@ -252,7 +258,7 @@ extern "C" void __ubsan_handle_shift_out_of_bounds(shift_out_of_bounds_data *dat
 }
 
 extern "C" void __ubsan_handle_out_of_bounds(out_of_bounds_data *data,
-                                  unsigned long idx __attribute__((unused)))
+                                             unsigned long idx __attribute__((unused)))
 {
     lock_scope$(locker);
     dump_source_location(&data->loc);
@@ -265,7 +271,9 @@ extern "C" void __ubsan_handle_builtin_unreachable(unreachable_data *data)
     dump_source_location(&data->loc);
     fmt::err$("UBSan builtin unreachable reached");
     asm volatile("int $3");
-    while(true){};
+    while (true)
+    {
+    };
 }
 extern "C" void __ubsan_handle_unreachable(unreachable_data *data)
 {
@@ -285,8 +293,8 @@ __ubsan_handle_missing_return(unreachable_data *data)
 }
 
 extern "C" void __ubsan_handle_vla_bound_not_positive(vla_bound_data *data,
-                                           unsigned long bound
-                                           __attribute__((unused)))
+                                                      unsigned long bound
+                                                      __attribute__((unused)))
 {
     lock_scope$(locker);
     dump_source_location(&data->loc);
@@ -294,8 +302,8 @@ extern "C" void __ubsan_handle_vla_bound_not_positive(vla_bound_data *data,
 }
 
 extern "C" void __ubsan_handle_load_invalid_value(invalid_value_data *data,
-                                       unsigned long val
-                                       __attribute__((unused)))
+                                                  unsigned long val
+                                                  __attribute__((unused)))
 {
     lock_scope$(locker);
     dump_source_location(&data->loc);
@@ -310,8 +318,8 @@ extern "C" void __ubsan_handle_nonnull_return_v1(nonnull_arg_data *data)
 
 extern "C" void __ubsan_handle_nonnull_arg(nonnull_arg_data *data
 #if defined __GCC_VERSION && __GCC_VERSION < 60000
-                                ,
-                                size_t arg_no __attribute__((unused))
+                                           ,
+                                           size_t arg_no __attribute__((unused))
 #endif
 )
 {

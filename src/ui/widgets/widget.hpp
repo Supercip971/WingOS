@@ -7,6 +7,7 @@
 #include "libcore/ds/vec.hpp"
 #include "libcore/fmt/impl/tabbed.hpp"
 #include "libcore/fmt/log.hpp"
+#include "libcore/optional.hpp"
 #include "libcore/shared.hpp"
 #include "libcore/str.hpp"
 #include "libcore/type-utils.hpp"
@@ -14,8 +15,6 @@
 namespace fc
 {
 class Widget;
-
-
 
 /*
  * FIXME: rework the layout rebuilding because currently it is plitted between 3 functions and can be easily simplified
@@ -33,23 +32,20 @@ class Widget
     bool _dirty;
     bool _layout_dirty;
     bool _render_dirty;
+    wgfx::GRect _old_render_layout;
     wgfx::GRect _layout;
     wgfx::RenderCommands rendering;
 
 public:
-
-    template<typename T, typename... Args>
-    static core::SharedPtr<Widget> $(Args&&... args)
+    template <typename T, typename... Args>
+    static core::SharedPtr<Widget> $(Args &&...args)
     {
         return core::SharedPtr<T>::make(
-            core::forward<Args>(args)...
-        ).template static_pointer_cast<Widget>();
+                   core::forward<Args>(args)...)
+            .template static_pointer_cast<Widget>();
     }
 
-
-    Widget(){};
-
-
+    Widget() {};
 
     bool is_mutable = false;
     core::Str _key = "";
@@ -58,10 +54,9 @@ public:
 
     virtual ~Widget() {}
 
-
     virtual wgfx::Vec2 preferred_size(wgfx::Vec2 constraint) const
     {
-        if(childs.len()== 1)
+        if (childs.len() == 1)
         {
             return childs[0]->preferred_size(constraint);
         }
@@ -153,10 +148,77 @@ public:
         {
             _layout = nlayout;
             _render_dirty = true;
-
         }
 
         _layout_dirty = false;
+    }
+
+    virtual core::Optional<wgfx::GRect> render_dirty_rect()
+    {
+        if (_render_dirty)
+        {
+            return _old_render_layout.merge(_layout);
+        }
+
+        if (childs.len() == 0)
+        {
+            return {};
+        }
+
+        core::Optional<wgfx::GRect> f = {};
+        for (auto &child : childs)
+        {
+            auto rect = child->render_dirty_rect();
+            if (!rect.has_value())
+            {
+                continue;
+            }
+
+            if (f.has_value())
+            {
+                f = f->merge(rect.value());
+            }
+            else
+            {
+                f = rect;
+            }
+        }
+        return f;
+    }
+    virtual bool render_dirty(UiContext const &ctx, wgfx::Canvas &canvas)
+    {
+
+        if (_render_dirty)
+        {
+            auto ncanvas = canvas.record();
+            this->render(ctx, ncanvas);
+            rendering = ncanvas.stopRecord();
+            canvas.recordApply(rendering, _layout);
+
+            _old_render_layout = _layout;
+            for (auto &child : childs)
+            {
+                child->render_dirty(ctx, canvas);
+            }
+
+            _render_dirty = false;
+            return true;
+        }
+
+        for (auto &child : childs)
+        {
+            auto r = child->render_dirty_rect();
+            if (!r.has_value())
+            {
+                continue;
+            }
+
+            canvas.recordApply(rendering, r.value());
+
+            child->render_dirty(ctx, canvas);
+        }
+
+        return false;
     }
 
     virtual void rerender(UiContext const &ctx, wgfx::Canvas &canvas)
@@ -169,13 +231,13 @@ public:
 
             rendering = ncanvas.stopRecord();
 
+            _old_render_layout = _layout;
             log::log$("rendering: {}", rendering.len());
             canvas.recordApply(rendering, _layout);
             _render_dirty = false;
         }
         else
         {
-            log::log$("rerendering: {}", rendering.len());
 
             canvas.recordApply(rendering, _layout);
         }
@@ -187,6 +249,10 @@ public:
 
     virtual void update_layout(UiContext const &ctx, wgfx::GRect constraint)
     {
+        for (auto &child : childs)
+        {
+            child->update_layout(ctx, constraint);
+        }
         if (_layout_dirty)
         {
             relayout(ctx, constraint);
@@ -206,8 +272,8 @@ public:
         }
     }
 
-
-    virtual bool transferTo(Widget & other)  {
+    virtual bool transferTo(Widget &other)
+    {
 
         (void)other;
         other._layout = _layout;
@@ -252,7 +318,7 @@ public:
             }
             else
             {
-           //     childs[0]->transferTo(*rebuild_widget[0]);
+                //     childs[0]->transferTo(*rebuild_widget[0]);
 
                 childs[0] = rebuild_widget[0];
                 childs[0]->mount(ctx);
@@ -299,7 +365,6 @@ public:
                     childs[old_idx]->canUpdate(*rebuild_widget[i]))
                 {
                     matched_elm = childs[old_idx];
-
                 }
                 old_idx++;
             }
@@ -332,8 +397,6 @@ public:
         childs = core::move(new_childs);
     }
 };
-
-
 
 template <typename T, typename... Args>
 core::SharedPtr<Widget> mount(UiContext const &ctx, Args &&...args)

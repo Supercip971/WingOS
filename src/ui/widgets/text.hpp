@@ -29,10 +29,7 @@ namespace fc
         wgfx::Vec2 preferred_size(wgfx::Vec2 constraint) const override
         {
             (void)constraint;
-            return {
-                val.len() * 32.f,
-                96.f
-            };
+            return font->get_render_rect(val.view());
         }
 
         core::Str info() const override { return val.view(); }

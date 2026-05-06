@@ -151,7 +151,7 @@ int main(int argc, char **argv)
         (void)l;
         // wgfx::CompositeColor color = wgfx::CompositeColor::fromOklch(70.4f/100.f, 0.295, l);
 
-        vwidgt->rerender({}, *frame);
+        vwidgt->render_dirty({}, *frame);
         // vwidgt->dump();
         // frame->drawRect(wgfx::GRect(x, y, 256, 256), wgfx::CompositeColor::fromOklch((float)63.7/100, 0, 0));
 

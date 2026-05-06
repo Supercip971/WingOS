@@ -8,6 +8,7 @@
 #    define STBTT_assert(x) ((void)(x))
 #endif
 #include "external/stb/stb_truetype.h"
+
 #include "gfx/canvas/cmd.hpp"
 #include "gfx/geometry/shape.hpp"
 #include "libcore/fmt/log.hpp"
@@ -74,26 +75,24 @@ public:
         for (int i = 0; i < num_vertices; i++)
         {
 
-
             int kind = vertices[i].type;
-//#error ascent is incorrect here
+            // #error ascent is incorrect here
             switch (kind)
             {
             case STBTT_vmove:
                 contour.stroke_move(Vec2(vertices[i].x, -vertices[i].y) * scale);
                 break;
             case STBTT_vline:
-                contour.stroke_point(Vec2(vertices[i].x, - vertices[i].y) * scale);
+                contour.stroke_point(Vec2(vertices[i].x, -vertices[i].y) * scale);
                 break;
             case STBTT_vcurve:
-                contour.stroke_curve(Vec2(vertices[i].x,  -vertices[i].y) * scale, Vec2(vertices[i].cx,  -vertices[i].cy) * scale);
+                contour.stroke_curve(Vec2(vertices[i].x, -vertices[i].y) * scale, Vec2(vertices[i].cx, -vertices[i].cy) * scale);
                 break;
             case STBTT_vcubic:
-                contour.stroke_cubic_curve(Vec2(vertices[i].x,  -vertices[i].y) * scale, Vec2(vertices[i].cx, -vertices[i].cy) * scale, Vec2(vertices[i].cx1,  -vertices[i].cy1) * scale);
+                contour.stroke_cubic_curve(Vec2(vertices[i].x, -vertices[i].y) * scale, Vec2(vertices[i].cx, -vertices[i].cy) * scale, Vec2(vertices[i].cx1, -vertices[i].cy1) * scale);
                 break;
             default:
-                contour.stroke_point(Vec2(vertices[i].x,  -vertices[i].y) * scale);
-
+                contour.stroke_point(Vec2(vertices[i].x, -vertices[i].y) * scale);
 
                 break;
             }
@@ -105,6 +104,7 @@ public:
     {
         return stbtt_GetCodepointKernAdvance(&_from->raw, a, b) * rscale;
     }
+
     static core::Result<Font> load_font(core::SharedPtr<Typeface> &from, float height)
     {
         Font fn = {};
@@ -161,6 +161,26 @@ public:
             fn.shapes.push(shape);
         }
         return fn;
+    }
+
+    wgfx::Vec2 get_render_rect(core::Str string) const
+    {
+        float w = 0;
+        float h = 0;
+        char last = 0;
+        for (auto c : string)
+        {
+            auto &shape = shapes[c];
+            auto off = last == 0 ? 0 : additionalOffset(last, c);
+            w += core::abs(shape.advance + off );
+            h = core::max(h, ascent - descent + line_gap  - height/10.f);
+
+           // h = core::max(h, core::abs(line_gap) + core::abs(shape.ibound.start.y) + shape.ibound.height());
+          //  h = core::max(h, height);
+
+            last = c;
+        }
+        return wgfx::Vec2{w, h};
     }
 };
 } // namespace wgfx

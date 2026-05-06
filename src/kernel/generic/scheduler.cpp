@@ -375,7 +375,7 @@ static void update_runned_tasks()
 
     // for(size_t i = 0; i < running_cpu_count; i++)
     //{
-    //     log::log$("cpu: {} task[{}] weight: {}", i, cpu_runned[i]->uid(), cpu_runned[i]->sched().weight());
+    //     fmt::log$("cpu: {} task[{}] weight: {}", i, cpu_runned[i]->uid(), cpu_runned[i]->sched().weight());
     // }
     //  technically we should be able to do this in one iteration, and this is a bit of a waste
     //  but for now, I prefer having readable code rather than optimized one
@@ -476,10 +476,10 @@ static core::Result<void> fix_sched_affinity()
 
     to_fix.clear();
 
-    // log::log$("fix affinity attempts: {}", attempt);
+    // fmt::log$("fix affinity attempts: {}", attempt);
     if (attempt >= max_attempt)
     {
-        log::err$("unable to fix affinity, attempt limit reached");
+        fmt::err$("unable to fix affinity, attempt limit reached");
 
         return "unable to fix affinity, attempt limit reached";
     }
@@ -493,7 +493,7 @@ void run_task_queued(CoreId cpu, size_t queue_id, size_t queue_offset)
 
     if (task == nullptr)
     {
-        log::err$("task is null in run_task_queued");
+        fmt::err$("task is null in run_task_queued");
         next_task_to_run[cpu] = scheduler_idles[cpu];
         return;
     }
@@ -512,7 +512,7 @@ core::Result<void> schedule_one(CoreId cpu)
     if (c == 0)
     {
         next_task_to_run[cpu] = scheduler_idles[cpu];
-        log::log$("no task to schedule");
+        fmt::log$("no task to schedule");
         return {};
     }
 
@@ -567,7 +567,7 @@ core::Result<void> schedule_all()
     auto c = scheduled_task_count();
     if (c == 0)
     {
-        // log::log$("no task to schedule");
+        // fmt::log$("no task to schedule");
         return {};
     }
 
@@ -646,7 +646,7 @@ void schedule_other_cpus()
         }
         else if (Cpu::get(i)->currentTask() == nullptr && next_task_to_run[i] == nullptr)
         {
-            log::err$("cpu {} has no task to run, but is not idle", i);
+            fmt::err$("cpu {} has no task to run, but is not idle", i);
         }
         else if (next_task_to_run[i]->uid() != Cpu::get(i)->currentTask()->uid())
         {
@@ -663,17 +663,17 @@ core::Result<void> dump_current_running_task(bool complete)
     CoreId core = Cpu::currentId();
     if (cpu_running[core] != nullptr)
     {
-        log::log$("Current running task on CPU[{}]: Task UID: {}, State: {}",
+        fmt::log$("Current running task on CPU[{}]: Task UID: {}, State: {}",
                   core,
                   (int)cpu_running[core]->uid(),
                   (int)cpu_running[core]->state());
 
         if (complete)
         {
-            log::log$("CPU: ");
+            fmt::log$("CPU: ");
 
             cpu_running[core]->cpu_context()->dump();
-            log::log$("space of task:");
+            fmt::log$("space of task:");
 
             if (cpu_running[core]->space() != nullptr)
             {
@@ -681,13 +681,13 @@ core::Result<void> dump_current_running_task(bool complete)
             }
             else
             {
-                log::log$("  no space assigned");
+                fmt::log$("  no space assigned");
             }
         }
     }
     else
     {
-        log::log$("CPU {}: No task running", core);
+        fmt::log$("CPU {}: No task running", core);
     }
 
     dump_all_current_running_tasks();
@@ -696,21 +696,21 @@ core::Result<void> dump_current_running_task(bool complete)
 }
 core::Result<void> dump_all_current_running_tasks()
 {
-    log::log$("Dumping all current running tasks:");
+    fmt::log$("Dumping all current running tasks:");
     for (size_t i = 0; i < running_cpu_count; i++)
     {
         if (cpu_running[i] != nullptr)
         {
-            log::log$("CPU[{}] = Task UID: {}, State: {} (weight: {})",
+            fmt::log$("CPU[{}] = Task UID: {}, State: {} (weight: {})",
                       i,
                       (int)cpu_running[i]->uid(),
                       (int)cpu_running[i]->state(), (int)cpu_running[i]->sched().weight());
-            log::log$("CPU: ");
+            fmt::log$("CPU: ");
             cpu_running[i]->cpu_context()->dump();
         }
         else
         {
-            log::log$("CPU {}: No task running", i);
+            fmt::log$("CPU {}: No task running", i);
         }
     }
     return {};
@@ -762,8 +762,8 @@ core::Result<Task *> schedule_self(Task *current, void *state, CoreId core)
     auto v = reschedule_only_one(core);
     if (v.is_error())
     {
-        log::err$("unable to reschedule on core {}", core);
-        log::err$("we will continue to run the current one");
+        fmt::err$("unable to reschedule on core {}", core);
+        fmt::err$("we will continue to run the current one");
         scheduler_lock.write_release();
 
         return {};
@@ -772,7 +772,7 @@ core::Result<Task *> schedule_self(Task *current, void *state, CoreId core)
     auto next_res = next_task_select(core);
     if (next_res.is_error())
     {
-        log::err$("unable to select next task on core {}", core);
+        fmt::err$("unable to select next task on core {}", core);
         scheduler_lock.write_release();
 
         return next_res.error();
@@ -807,7 +807,7 @@ core::Result<Task *> schedule(Task *current, void *state, CoreId core, bool soft
     CoreId cur = Cpu::currentId();
     if (cur != core)
     {
-        log::err$("attempt to schedule on core {} from core {}", core, cur);
+        fmt::err$("attempt to schedule on core {} from core {}", core, cur);
         return "cannot schedule on another core";
     }
 
@@ -822,7 +822,7 @@ core::Result<Task *> schedule(Task *current, void *state, CoreId core, bool soft
         if (!srwlock_try_write_acquire$(scheduler_lock))
         {
             // scheduler_lock.dump();
-            // log::err$("scheduler_lock busy, skipping scheduling on core 0, this should not happen");
+            // fmt::err$("scheduler_lock busy, skipping scheduling on core 0, this should not happen");
 
             return current;
         }
@@ -830,8 +830,8 @@ core::Result<Task *> schedule(Task *current, void *state, CoreId core, bool soft
         auto v = reschedule_all();
         if (v.is_error())
         {
-            log::err$("unable to reschedule all tasks");
-            log::err$("we will continue to run the current ones");
+            fmt::err$("unable to reschedule all tasks");
+            fmt::err$("we will continue to run the current ones");
 
             scheduler_lock.write_release();
 
@@ -878,7 +878,7 @@ core::Result<Task *> schedule(Task *current, void *state, CoreId core, bool soft
 
     if (next_res.is_error())
     {
-        log::err$("unable to select next task on core {}", core);
+        fmt::err$("unable to select next task on core {}", core);
         scheduler_lock.read_release();
 
         return next_res.error();
@@ -938,7 +938,7 @@ core::Result<void> block_current_task(BlockEvent event)
 
     if (cur == nullptr)
     {
-        log::err$("block_current_task: cpu_running[{}] is null, refusing to block", Cpu::currentId());
+        fmt::err$("block_current_task: cpu_running[{}] is null, refusing to block", Cpu::currentId());
 
         scheduler_lock.write_release();
         arch::amd64::interrupt_release();
@@ -982,13 +982,13 @@ kernel::Task *Cpu::currentTask() const
 void scheduler_dump_all()
 {
 
-    log::log$("Dumping all tasks in scheduler:");
+    fmt::log$("Dumping all tasks in scheduler:");
     for (size_t i = 0; i < kernel::TASK_QUEUE_COUNT; i++)
     {
         for (size_t j = 0; j < task_queues[i].len(); j++)
         {
             auto &task = task_queues[i][j];
-            log::log$("  Task UID: {}, State: {}, Weight: {}, CPU Affinity: {}",
+            fmt::log$("  Task UID: {}, State: {}, Weight: {}, CPU Affinity: {}",
                       (int)task->uid(),
                       (int)task->state(),
                       task->sched().weight(),
@@ -999,7 +999,7 @@ void scheduler_dump_all()
     for (size_t i = 0; i < blocked_tasks.len(); i++)
     {
         auto &task = blocked_tasks[i];
-        log::log$("  Blocked Task UID: {}, State: {}, Weight: {}, CPU Affinity: {}, Block Event Type: {}",
+        fmt::log$("  Blocked Task UID: {}, State: {}, Weight: {}, CPU Affinity: {}, Block Event Type: {}",
                   (int)task->uid(),
                   (int)task->state(),
                   task->sched().weight(),
@@ -1011,7 +1011,7 @@ void scheduler_dump_all()
     {
         if (cpu_running[i] != nullptr)
         {
-            log::log$("CPU[{}] Running Task UID: {} ({}), State: {}, Weight: {}, CPU Affinity: {}",
+            fmt::log$("CPU[{}] Running Task UID: {} ({}), State: {}, Weight: {}, CPU Affinity: {}",
                       i,
                       (int)cpu_running[i]->uid(),
                       (int)cpu_running[i]->space()->uid,
@@ -1021,7 +1021,7 @@ void scheduler_dump_all()
         }
         else
         {
-            log::log$("CPU[{}] No task running", i);
+            fmt::log$("CPU[{}] No task running", i);
         }
     }
 }

@@ -32,7 +32,7 @@ core::Result<size_t> execute_program_from_mem(Wingos::Space &subspace, elf::ElfL
 
     if (task_asset.handle == 0)
     {
-        log::err$("failed to create task asset: {}", task_asset.handle);
+        fmt::err$("failed to create task asset: {}", task_asset.handle);
         return core::Result<size_t>::error("failed to create task asset");
     }
 
@@ -42,7 +42,7 @@ core::Result<size_t> execute_program_from_mem(Wingos::Space &subspace, elf::ElfL
         auto ph = try$(loaded.program_header(i));
         if (ph.type != core::underlying_value(ElfProgramHeaderType::HEADER_LOAD))
         {
-            log::warn$("skipping program header {}: type is not LOAD but {}", i, (uint32_t)ph.type);
+            fmt::warn$("skipping program header {}: type is not LOAD but {}", i, (uint32_t)ph.type);
             continue;
         }
 
@@ -76,13 +76,13 @@ core::Result<size_t> execute_program_from_path(Wingos::Space& subspace, const co
     auto mem_size = math::alignUp(file_size, 4096ul);
 
     auto data_asset = Wingos::Space::self().allocate_physical_memory(mem_size);
-    size_t read_bytes = try$(file_asset.read(data_asset, 0, file_size)); 
-    
+    size_t read_bytes = try$(file_asset.read(data_asset, 0, file_size));
+
     auto file_mapped = Wingos::Space::self().map_memory(data_asset, ASSET_MAPPING_FLAG_READ);
 
     auto range = VirtRange((uintptr_t)file_mapped.ptr(), (uintptr_t)file_mapped.ptr() + read_bytes);
-    elf::ElfLoader prog = try$(elf::ElfLoader::load(range)); 
+    elf::ElfLoader prog = try$(elf::ElfLoader::load(range));
 
     return execute_program_from_mem(subspace, core::move(prog), args);
-    
+
 }

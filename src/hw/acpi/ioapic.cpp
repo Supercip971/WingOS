@@ -35,13 +35,13 @@ core::Result<void> IOApic::initialize(IOApicIndex index, MadtEntryIoapic const *
 
     ioapic = IOApic(*entry, toVirt(entry->ioapic_addr));
 
-    log::log$("ioapic[{}]: ", entry->ioapic_id);
-    log::log$("  id: {}", ioapic.read(IOAPIC_REG_ID));
-    log::log$("  max redirect: {}", ioapic.max_redirect());
-    log::log$("  interrupt base: {}", ioapic.interrupt_base());
-    log::log$("  version: {}", ioapic.read(IOAPIC_REG_VERSION));
-    log::log$("  arbitration: {}", ioapic.read(IOAPIC_REG_ARBITRATION));
-    log::log$("  redir table base: {}", ioapic.read(IOAPIC_REG_REDIR_TABLE_BASE));
+    fmt::log$("ioapic[{}]: ", entry->ioapic_id);
+    fmt::log$("  id: {}", ioapic.read(IOAPIC_REG_ID));
+    fmt::log$("  max redirect: {}", ioapic.max_redirect());
+    fmt::log$("  interrupt base: {}", ioapic.interrupt_base());
+    fmt::log$("  version: {}", ioapic.read(IOAPIC_REG_VERSION));
+    fmt::log$("  arbitration: {}", ioapic.read(IOAPIC_REG_ARBITRATION));
+    fmt::log$("  redir table base: {}", ioapic.read(IOAPIC_REG_REDIR_TABLE_BASE));
 
     return {};
 }

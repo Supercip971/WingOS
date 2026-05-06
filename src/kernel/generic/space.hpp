@@ -190,16 +190,16 @@ struct Space : public Asset
             }
         }
 
-        log::log$("Asset not found in space({}) for handle {}", uid, handle);
+        fmt::log$("Asset not found in space({}) for handle {}", uid, handle);
 
         auto cur = Cpu::current()->currentTask();
-        log::log$("task: {}", cur ? cur->uid() : (size_t)-1);
+        fmt::log$("task: {}", cur ? cur->uid() : (size_t)-1);
 
-        log::log$("Assets in space {}:", assets.len());
+        fmt::log$("Assets in space {}:", assets.len());
 
         for (size_t i = 0; i < assets.len(); i++)
         {
-            log::log$("  Asset[{}]: handle={}, kind={}", i, assets[i].handle, assetKind2Str(assets[i].asset->kind));
+            fmt::log$("  Asset[{}]: handle={}, kind={}", i, assets[i].handle, assetKind2Str(assets[i].asset->kind));
         }
 
         lock.release();
@@ -237,7 +237,7 @@ struct Space : public Asset
                     {
 
                         found.unlock();
-                        log::err$("expected: {}, got: {} for raw id: {} (space: {})",
+                        fmt::err$("expected: {}, got: {} for raw id: {} (space: {})",
                                   assetKind2Str((AssetKind)T::IDENT),
                                   found.asset->kind,
                                   found.handle, this->uid);
@@ -249,16 +249,16 @@ struct Space : public Asset
         }
         asm volatile("cli");
 
-        log::log$("Asset not found in space({}) for handle {}", uid, handle);
+        fmt::log$("Asset not found in space({}) for handle {}", uid, handle);
 
         auto cur = Cpu::current()->currentTask();
-        log::log$("task: {}", cur ? cur->uid() : (size_t)-1);
+        fmt::log$("task: {}", cur ? cur->uid() : (size_t)-1);
 
-        log::log$("Assets in space {}:", assets.len());
+        fmt::log$("Assets in space {}:", assets.len());
 
         for (size_t i = 0; i < assets.len(); i++)
         {
-            log::log$("  Asset[{}]: handle={}, kind={}", i, assets[i].handle, assetKind2Str(assets[i].asset->kind));
+            fmt::log$("  Asset[{}]: handle={}, kind={}", i, assets[i].handle, assetKind2Str(assets[i].asset->kind));
         }
 
         lock.release();
@@ -432,7 +432,7 @@ struct Space : public Asset
     void asset_release_by_handle(uint64_t handle)
     {
         auto v = _asset_remove(handle);
-        log::log$("Releasing asset: {} kind: {}", handle, assetKind2Str(v.asset->kind));
+        fmt::log$("Releasing asset: {} kind: {}", handle, assetKind2Str(v.asset->kind));
         Asset::release(v.asset);
     }
 

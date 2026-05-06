@@ -16,8 +16,8 @@
 int main(int, char **)
 {
 
-    log::log$("Hello world from an application !");
-    log::log$("Wingos is a microkernel based OS! made with <3");
+    fmt::log$("Hello world from an application !");
+    fmt::log$("Wingos is a microkernel based OS! made with <3");
 
     // attempt connection to open root file
 
@@ -34,9 +34,9 @@ int main(int, char **)
 
     auto data_ptr = Wingos::Space::self().map_memory(data_asset, ASSET_MAPPING_FLAG_READ);
 
-    log::log$("read {} bytes from /boot/config/init-services.json:", res);
+    fmt::log$("read {} bytes from /boot/config/init-services.json:", res);
 
-    log::log$("{}", core::Str((const char *)data_ptr.ptr(), res));
+    fmt::log$("{}", core::Str((const char *)data_ptr.ptr(), res));
 */
 
     prot::HIConnection hi_conn = prot::HIConnection::connect().unwrap();
@@ -55,13 +55,13 @@ int main(int, char **)
             switch (event.type)
             {
             case prot::HI_EVENT_TYPE_MOUSE:
-                log::log$("mouse event: dx={} dy={} buttons={}", event.mouse.dx, event.mouse.dy, event.mouse.buttons);
+                fmt::log$("mouse event: dx={} dy={} buttons={}", event.mouse.dx, event.mouse.dy, event.mouse.buttons);
                 break;
             case prot::HI_EVENT_TYPE_KEYBOARD:
-                log::log$("keyboard event: key={} pressed={}", event.keyboard.keycode, event.keyboard.pressed);
+                fmt::log$("keyboard event: key={} pressed={}", event.keyboard.keycode, event.keyboard.pressed);
                 break;
             default:
-                log::log$("unknown event type: {}", (int)event.type);
+                fmt::log$("unknown event type: {}", (int)event.type);
                 break;
             }
             event_res = hi_conn.event_queue().poll_event();

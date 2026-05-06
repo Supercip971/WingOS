@@ -68,7 +68,7 @@ public:
 
         if(!loaded)
         {
-            log::err$("ManagedServer: accept_connection called before server was fully initialized");
+            fmt::err$("ManagedServer: accept_connection called before server was fully initialized");
             while(true){};
         }
 
@@ -94,7 +94,7 @@ public:
     {
         if(!loaded)
         {
-            log::err$("ManagedServer: close called before server was fully initialized");
+            fmt::err$("ManagedServer: close called before server was fully initialized");
             return;
         }
 

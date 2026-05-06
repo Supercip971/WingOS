@@ -65,7 +65,7 @@ public:
         }
         default:
         {
-            log::warn$("Unsupported render command kind: {} for raster backend", (int)cmd.kind);
+            fmt::warn$("Unsupported render command kind: {} for raster backend", (int)cmd.kind);
         }
         }
     }

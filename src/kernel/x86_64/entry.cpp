@@ -44,7 +44,7 @@ static core::Result<void> cpu_detect(const hw::acpi::MadtEntryLapic *lapic)
 void arch_entry(const mcx::MachineContext *context)
 {
     _running_cpu_count = 1;
-    log::log$("started kernel arch");
+    fmt::log$("started kernel arch");
     {
         if (*__init_array_start != nullptr)
         {
@@ -56,39 +56,39 @@ void arch_entry(const mcx::MachineContext *context)
     }
     arch::amd64::load_default_gdt();
     arch::amd64::gdt_use();
-    log::log$("loaded kernel gdt");
+    fmt::log$("loaded kernel gdt");
 
     arch::amd64::idt_use(arch::amd64::load_default_idt());
-    log::log$("loaded kernel idt");
+    fmt::log$("loaded kernel idt");
 
     Pmm::initialize(context).assert();
 
-    log::log$("initialized kernel pmm");
+    fmt::log$("initialized kernel pmm");
 
-    log::log$(" pmm: {}", Pmm::the());
+    fmt::log$(" pmm: {}", Pmm::the());
 
-    log::log$(" loading the vmm");
+    fmt::log$(" loading the vmm");
 
     auto kernel_space = VmmSpace::kernel_initialize(context).unwrap();
-    log::log$("using vmm...");
+    fmt::log$("using vmm...");
 
     kernel_space.use();
     VmmSpace::use_kernel(kernel_space);
 
-    log::log$("using vmm");
+    fmt::log$("using vmm");
 
     hw::acpi::apic_initialize(context, cpu_detect).assert();
 
-    log::log$("HPET initializing");
+    fmt::log$("HPET initializing");
     hw::hpet::hpet_initialize(hw::acpi::rsdp()).assert();
 
-    log::log$("HPET initialized");
+    fmt::log$("HPET initialized");
 
     hw::acpi::Lapic::the().timer_initialize().assert();
 
     arch::x86_64::SimdContext::initialize_cpu().assert();
 
-    log::log$("cpu count: {}", hw::acpi::apic_cpu_count());
+    fmt::log$("cpu count: {}", hw::acpi::apic_cpu_count());
     arch::amd64::smp_initialize().assert();
 
     arch::amd64::setup_ist();
@@ -99,13 +99,13 @@ void arch_entry(const mcx::MachineContext *context)
         asm volatile("pause");
     }
 
-    log::log$("all cpus are ready");
+    fmt::log$("all cpus are ready");
 
-    log::log$("Initialize cpu tree:");
+    fmt::log$("Initialize cpu tree:");
     auto root = initialize_cpu_tree().unwrap();
     CpuTreeNode::assign_root(root);
 
-    log::log$("cpu tree initialized");
+    fmt::log$("cpu tree initialized");
 
     arch::amd64::syscall_init_for_current_cpu().assert();
     arch::amd64::setup_entry_gs();
@@ -114,7 +114,7 @@ void arch_entry(const mcx::MachineContext *context)
 
 void arch::amd64::other_cpu_entry(bool& ready)
 {
-    //  log::log$("other cpu entry");
+    //  fmt::log$("other cpu entry");
     hw::acpi::Lapic::the().enable().assert();
 
     Cpu::current()->interrupt_hold();

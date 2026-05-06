@@ -208,9 +208,7 @@ double ldexp(double x, int power) __WTHROW;
 float ldexpf(float x, int power) __WTHROW;
 long double ldexpl(long double x, int power) __WTHROW;
 
-#ifdef DO_NOT_LOG
 double log(double x) __WTHROW;
-#endif
 float logf(float x) __WTHROW;
 long double logl(long double x) __WTHROW;
 

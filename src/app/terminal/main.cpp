@@ -115,7 +115,7 @@ int main(int, char **)
             display[j][i] = ' ';
         }
     }
-    log::log$("hello world from vfs app!");
+    fmt::log$("hello world from vfs app!");
 
     auto wdw = prot::WindowConnection::create(true).unwrap();
 
@@ -127,7 +127,7 @@ int main(int, char **)
 
     void *fb = malloc(size.width * size.height * 4);
 
-    log::log$("window size: {}x{}", size.width, size.height);
+    fmt::log$("window size: {}x{}", size.width, size.height);
 
     core::WStr wstr = {};
 
@@ -187,6 +187,6 @@ int main(int, char **)
         }
 
         // wstr.clear();
-        //     log::log$("swapped buffers: {}", frame);
+        //     fmt::log$("swapped buffers: {}", frame);
     }
 }

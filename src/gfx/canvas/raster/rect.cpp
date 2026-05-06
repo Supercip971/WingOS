@@ -24,14 +24,14 @@ void wgfx::RasterCanvas::rectRoundedFlatAligned(RectCommand const &cmd)
         {
             //  start_x  = radius * cosf(((float)y/radius) * M_PI);
             start_x = radius - sqrtf(radius * radius - (radius - (float)y) * (radius - (float)y));
-            // log::log$("start_x: {}\n", (long)start_x);
+            // fmt::log$("start_x: {}\n", (long)start_x);
             end_x = cmd.rect.width() - start_x;
         }
         else if (y >= cmd.rect.height() - radius)
         {
 
             start_x = radius - sqrtf(radius * radius - (cmd.rect.height() - radius - (float)y) * (cmd.rect.height() - radius - (float)y));
-            // log::log$("start_x: {}\n", (long)start_x);
+            // fmt::log$("start_x: {}\n", (long)start_x);
             end_x = cmd.rect.width() - start_x;
         }
         else

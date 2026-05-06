@@ -187,7 +187,7 @@ public:
         return Result<void>();
     }
 
-    Result<void> push(Vec<T> &&arr)
+    Result<void> push_elements(Vec<T> &&arr)
     {
         try$(reserve(_count + arr.len()));
         for (size_t i = 0; i < arr.len(); i++)
@@ -207,7 +207,7 @@ public:
 #ifdef ADVANCED_CHECK
         if (index > this->len()) [[unlikely]]
         {
-            log::err$("error: out of range operator[] with vec {} > {}", index, this->len());
+            fmt::err$("error: out of range operator[] with vec {} > {}", index, this->len());
             abort();
         }
 #endif
@@ -224,7 +224,7 @@ public:
 #ifdef ADVANCED_CHECK
         if (index > this->len()) [[unlikely]]
         {
-            log::err$("error: out of range operator[] with vec {} > {}", index, this->len());
+            fmt::err$("error: out of range operator[] with vec {} > {}", index, this->len());
             abort();
         }
 #endif

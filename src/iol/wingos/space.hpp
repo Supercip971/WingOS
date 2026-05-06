@@ -63,7 +63,7 @@ struct Space
         auto phys = own_memory_physical(start, len);
         if (phys.handle == 0)
         {
-            log::err$("failed to own physical memory: {}", phys.handle);
+            fmt::err$("failed to own physical memory: {}", phys.handle);
             return {};
         }
         return VirtualMemoryAsset::create(handle, start + USERSPACE_VIRT_BASE, start + phys.memory.len() + USERSPACE_VIRT_BASE, phys.handle, flags);
@@ -90,7 +90,7 @@ struct Space
         auto space_res = sys$space_create(handle, 0, 0);
         if (space_res.returned_handle == 0)
         {
-            log::err$("failed to create space: {}", space_res.returned_handle);
+            fmt::err$("failed to create space: {}", space_res.returned_handle);
             return Space::self();
         }
         return Space::from_uid(space_res.returned_handle);
@@ -101,7 +101,7 @@ struct Space
         auto task_res = sys$task_create(handle, launch, arg1, arg2, arg3, arg4);
         if (task_res.returned_handle == 0)
         {
-            log::err$("failed to create task: {}", task_res.returned_handle);
+            fmt::err$("failed to create task: {}", task_res.returned_handle);
             return TaskAsset();
         }
         TaskAsset task_asset;
@@ -126,7 +126,7 @@ struct Space
         auto move_res = sys$asset_move(handle, to.handle, moved_handle);
         if (move_res.returned_handle_in_space == 0)
         {
-            log::err$("failed to move asset: {}", move_res.returned_handle_in_space);
+            fmt::err$("failed to move asset: {}", move_res.returned_handle_in_space);
             return {};
         }
 
@@ -141,7 +141,7 @@ struct Space
         auto moved_asset = _move_to(to, asset.handle);
         if (moved_asset.handle == 0)
         {
-            log::err$("failed to move asset: {}", moved_asset.handle);
+            fmt::err$("failed to move asset: {}", moved_asset.handle);
             return T();
         }
 

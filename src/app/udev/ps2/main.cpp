@@ -36,20 +36,20 @@ int main(int, char **)
 {
     mouse_pipes = {};
     keyboard_pipes = {};
-    log::log$("Start ps2 app");
+    fmt::log$("Start ps2 app");
 
 
     auto server_r = prot::ManagedServer::create_registered_server("human-interface", 1, 0);
 
     if(server_r.is_error())
     {
-        log::err$("failed to create hio server: {}", server_r.error());
+        fmt::err$("failed to create hio server: {}", server_r.error());
         return -1;
     }
 
     prot::ManagedServer server = core::move(server_r.unwrap());
 
-    log::log$("started ps2 service");
+    fmt::log$("started ps2 service");
 
     Ps2::Controller controller = Ps2::Controller();
     Ps2::Ps2Keyboard keyboard(controller);
@@ -80,38 +80,38 @@ int main(int, char **)
 
                 if (pipe.is_error())
                 {
-                    log::err$("hio: failed to create duplex pipe: {}", pipe.error());
+                    fmt::err$("hio: failed to create duplex pipe: {}", pipe.error());
                     break;
                 }
 
                 auto duplex = core::move(pipe.unwrap());
 
-                log::log$("hio: duplex handles: {} {}", duplex.connection_sender.handle, duplex.connection_receiver.handle);
+                fmt::log$("hio: duplex handles: {} {}", duplex.connection_sender.handle, duplex.connection_receiver.handle);
                 prot::SenderPipe* sender = new prot::SenderPipe(core::move(duplex.connection_sender));
 
                 if (event_types & prot::HI_EVENT_TYPE_MOUSE)
                 {
                     mouse_pipes.push(sender);
-                    log::log$("hio: added mouse pipe: {}", sender->raw_connection().handle);
+                    fmt::log$("hio: added mouse pipe: {}", sender->raw_connection().handle);
 
                 }
 
                 if (event_types & prot::HI_EVENT_TYPE_KEYBOARD)
                 {
                     keyboard_pipes.push(sender);
-                    log::log$("hio: added keyboard pipe");
+                    fmt::log$("hio: added keyboard pipe");
                 }
 
                 IpcMessage resp = {};
                 resp.data[0].asset_handle = duplex.connection_receiver.handle;
-                log::log$("hio: replying with receiver handle: {}", resp.data[0].asset_handle);
+                fmt::log$("hio: replying with receiver handle: {}", resp.data[0].asset_handle);
                 resp.data[0].is_asset = true;
                 server.reply(core::move(msg), resp).unwrap();
 
                 break;
             }
             default:
-                log::warn$("hio: unknown message type received: {}", msg.received.data[0].data);
+                fmt::warn$("hio: unknown message type received: {}", msg.received.data[0].data);
                 break;
             }
         }
@@ -122,7 +122,7 @@ int main(int, char **)
             while (!ev_res.is_error())
             {
                 auto mouse_ev = ev_res.take();
-                log::log$("mouse event: dx={} dy={}", mouse_ev.offx, mouse_ev.offy);
+                fmt::log$("mouse event: dx={} dy={}", mouse_ev.offx, mouse_ev.offy);
                 prot::HIEvent event = {};
                 event.type = prot::HI_EVENT_TYPE_MOUSE;
                 event.mouse.dx = mouse_ev.offx;
@@ -143,7 +143,7 @@ int main(int, char **)
             while (!ev_res.is_error())
             {
                 auto kb_ev = ev_res.take();
-                log::log$("keyboard event: key={} down={}", kb_ev.key, kb_ev.down);
+                fmt::log$("keyboard event: key={} down={}", kb_ev.key, kb_ev.down);
                 prot::HIEvent event = {};
                 event.type = prot::HI_EVENT_TYPE_KEYBOARD;
                 event.keyboard.keycode = kb_ev.key;

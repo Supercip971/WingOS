@@ -45,14 +45,14 @@ void hw::hpet::hpet_sleep(core::Milliseconds ms)
 {
 
     #ifndef __ck_kernel__
-        log::log$("sleeping for: {} ms", ms.value());
+        fmt::log$("sleeping for: {} ms", ms.value());
     #endif
     // 1 ms => 1'000'000'000'000 femtoseconds
 
-    
+
     if(hpet_tick == 0)
     {
-        log::err$("HPET not initialized");
+        fmt::err$("HPET not initialized");
         return;
     }
     uint64_t target = _hpet_read(HPET_MAIN_COUNTER) + (ms.value() * 1'000'000'000'000) / hpet_tick;

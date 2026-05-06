@@ -136,7 +136,7 @@ void unregister_server(IpcServerHandle handle, uint64_t space_handle)
         }
     }
     ipc_server_lock.release();
-    log::warn$("unregister_server: server not found: {} {}", handle, space_handle);
+    fmt::warn$("unregister_server: server not found: {} {}", handle, space_handle);
 }
 
 core::Result<AssetRef<>> server_accept_connection(KernelIpcServer *server)
@@ -148,7 +148,7 @@ core::Result<AssetRef<>> server_accept_connection(KernelIpcServer *server)
 
     if (server->self.asset == nullptr)
     {
-        log::err$("server_accept_connection: server->self.asset is null for server handle {}", server->handle);
+        fmt::err$("server_accept_connection: server->self.asset is null for server handle {}", server->handle);
         return "server self-reference not initialized";
     }
 
@@ -163,7 +163,7 @@ core::Result<AssetRef<>> server_accept_connection(KernelIpcServer *server)
 
         if(ref.asset->kind != OBJECT_KIND_IPC_CONNECTION)
         {
-            log::err$("server_accept_connection: invalid asset kind {} in connection {} of server {}",
+            fmt::err$("server_accept_connection: invalid asset kind {} in connection {} of server {}",
                 (uint64_t)ref.asset->kind, i, server->handle);
             ref.asset->lock.release();
             server->self.asset->lock.release();
@@ -175,24 +175,24 @@ core::Result<AssetRef<>> server_accept_connection(KernelIpcServer *server)
         // WIP debug: Verify this connection actually belongs to this server
         if (conn->server_handle != server->handle)
         {
-            log::err$("[IPC-BUG] Connection in server {}'s list has wrong server_handle {}!",
+            fmt::err$("[IPC-BUG] Connection in server {}'s list has wrong server_handle {}!",
                 server->handle, conn->server_handle);
-            log::err$("  This connection was meant for server {}, not this server",
+            fmt::err$("  This connection was meant for server {}, not this server",
                 conn->server_handle);
-            log::err$("  Removing misrouted connection from list");
+            fmt::err$("  Removing misrouted connection from list");
 
 
-            log::err$("  Client space: {}", conn->client_space_handle);
-            //log::err$("  Connection handle: {}", asset->ipc_connection.);
+            fmt::err$("  Client space: {}", conn->client_space_handle);
+            //fmt::err$("  Connection handle: {}", asset->ipc_connection.);
 
 
           //  for(size_t j = 0; j < registered_servers.len(); j++)
           //  {
-          //      log::err$("  Server[{}] = {}", j, registered_servers[j].handle);
-          //      log::err$("  Server space: {}", registered_servers[j].server->parent_space);
+          //      fmt::err$("  Server[{}] = {}", j, registered_servers[j].handle);
+          //      fmt::err$("  Server space: {}", registered_servers[j].server->parent_space);
 
           //  }
-//            log::err$("  Client process: {}", asset->ipc_connection->client_process_handle);
+//            fmt::err$("  Client process: {}", asset->ipc_connection->client_process_handle);
             ref.asset->lock.release();
             i++;
 
@@ -365,8 +365,8 @@ core::Result<IpcMessageClient> update_handle_from_server_to_client(AssetRef<IpcC
 
             if(asset_ptr.asset->kind == OBJECT_KIND_IPC_CONNECTION && asset_ptr.asset->casted<AssetConnection>() == connection.asset )
             {
-                log::err$("attempted to move or copy connection asset by itself (self)");
-                log::warn$("currently not supported");
+                fmt::err$("attempted to move or copy connection asset by itself (self)");
+                fmt::warn$("currently not supported");
                 continue;
             }
 
@@ -616,7 +616,7 @@ core::Result<IpcMessage> call_server_and_wait(AssetRef<IpcConnection> &connectio
 
     while (msg.is_null)
     {
-   //     log::err$("call_server_and_wait: received null message, retrying...");
+   //     fmt::err$("call_server_and_wait: received null message, retrying...");
         asm volatile("pause"); // CPU hint to reduce power and improve SMT performance
         msg = try$(client_receive_response(connection, res));
     }

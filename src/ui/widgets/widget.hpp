@@ -65,9 +65,9 @@ public:
 
     virtual wgfx::GRect layout(UiContext const &ctx, wgfx::GRect constraint)
     {
-        // log::log$("== LAYOUT == ");
+        // fmt::log$("== LAYOUT == ");
         // dump();
-        log::log$("Constraint: ({}x{} - {}x{})", (long)constraint.start.x, (long)constraint.start.y, (long)constraint.end.x, (long)constraint.end.y);
+        fmt::log$("Constraint: ({}x{} - {}x{})", (long)constraint.start.x, (long)constraint.start.y, (long)constraint.end.x, (long)constraint.end.y);
 
         (void)ctx;
 
@@ -103,7 +103,7 @@ public:
     void dump(int depth = 0) const
     {
 
-        log::log$("{} - widget[{}]: {} [{}] ({}x{} - {}x{})", fmt::Tabbed(depth), _key, name(), info(),
+        fmt::log$("{} - widget[{}]: {} [{}] ({}x{} - {}x{})", fmt::Tabbed(depth), _key, name(), info(),
                   (long)_layout.start.x, (long)_layout.start.y, (long)_layout.end.x, (long)_layout.end.y);
         for (auto child : childs)
         {
@@ -139,10 +139,10 @@ public:
 
     virtual void relayout(UiContext const &ctx, wgfx::GRect constraint)
     {
-        log::log$("relayout: {} - {} {} {} {}", name(), (long)constraint.start.x, (long)constraint.start.y, (long)constraint.end.x, (long)constraint.end.y);
+        fmt::log$("relayout: {} - {} {} {} {}", name(), (long)constraint.start.x, (long)constraint.start.y, (long)constraint.end.x, (long)constraint.end.y);
         // manage how to layout childs
         auto nlayout = layout(ctx, constraint);
-        //  log::log$("relayout: {} - {} {} {} {}", name(), (long)nlayout.start.x, (long)nlayout.start.y, (long)nlayout.end.x, (long)nlayout.end.y);
+        //  fmt::log$("relayout: {} - {} {} {} {}", name(), (long)nlayout.start.x, (long)nlayout.start.y, (long)nlayout.end.x, (long)nlayout.end.y);
 
         if (_layout != nlayout)
         {
@@ -232,7 +232,7 @@ public:
             rendering = ncanvas.stopRecord();
 
             _old_render_layout = _layout;
-            log::log$("rendering: {}", rendering.len());
+            fmt::log$("rendering: {}", rendering.len());
             canvas.recordApply(rendering, _layout);
             _render_dirty = false;
         }
@@ -303,14 +303,14 @@ public:
         _render_dirty = true;
         auto rebuild_widget = (build_childs(ctx)); // rebuild the new widget
 
-        log::log$("==== REBUILDING ====");
+        fmt::log$("==== REBUILDING ====");
         dump();
         // leaf
         if (rebuild_widget.len() == 1 && childs.len() == 1)
         {
             if (childs[0]->canUpdate(*rebuild_widget[0]))
             {
-                log::log$("transferTo: {}", childs[0]->name());
+                fmt::log$("transferTo: {}", childs[0]->name());
                 childs[0]->transferTo(*rebuild_widget[0]);
 
                 childs[0] = rebuild_widget[0];
@@ -371,7 +371,7 @@ public:
 
             if (matched_elm)
             {
-                log::log$("transferTo: {} -> {}", matched_elm->name(), rebuild_widget[i]->name());
+                fmt::log$("transferTo: {} -> {}", matched_elm->name(), rebuild_widget[i]->name());
                 matched_elm->transferTo(*rebuild_widget[i]);
                 matched_elm = rebuild_widget[i];
                 matched_elm->rebuild(ctx);

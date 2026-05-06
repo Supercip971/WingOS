@@ -26,39 +26,39 @@ public:
 
     virtual void destroy()
     {
-        log::warn$("Window::destroy backend not implemented");
+        fmt::warn$("Window::destroy backend not implemented");
     }
 
     virtual size_t width()
     {
-        log::warn$("Window::width backend not implemented");
+        fmt::warn$("Window::width backend not implemented");
         return 0;
     }
 
     virtual size_t height()
     {
-        log::warn$("Window::height backend not implemented");
+        fmt::warn$("Window::height backend not implemented");
         return 0;
     }
 
     virtual Canvas* create_frame()
     {
-        log::warn$("Canvas unable to be acquired");
+        fmt::warn$("Canvas unable to be acquired");
         return nullptr;
     }
 
     virtual void end_frame(Canvas* frame) {
         (void)frame;
-        log::warn$("Canvas was unable to be swapped");
+        fmt::warn$("Canvas was unable to be swapped");
     }
     virtual void set_width(size_t width [[maybe_unused]])
     {
-        log::warn$("Window::set_width not implemented");
+        fmt::warn$("Window::set_width not implemented");
     }
 
     virtual void set_height(size_t height [[maybe_unused]])
     {
-        log::warn$("Window::set_height not implemented");
+        fmt::warn$("Window::set_height not implemented");
     }
 
 

@@ -154,13 +154,13 @@ public:
 
     static core::Result<FsFile> connect(IpcServerHandle fs_endpoint, bool keep_alive = false)
     {
-        log::log$("FsFile::connect: connecting to server endpoint {}", fs_endpoint);
+        fmt::log$("FsFile::connect: connecting to server endpoint {}", fs_endpoint);
         FsFile file = {};
         file.connection = Wingos::Space::self().connect_to_ipc_server(fs_endpoint);
-        log::log$("FsFile::connect: created connection handle {}, waiting for accept...", file.connection.handle);
+        fmt::log$("FsFile::connect: created connection handle {}, waiting for accept...", file.connection.handle);
         file.keep_alive = keep_alive;
         file.connection.wait_for_accept();
-        log::log$("FsFile::connect: connection {} accepted", file.connection.handle);
+        fmt::log$("FsFile::connect: connection {} accepted", file.connection.handle);
 
         return (file);
     }

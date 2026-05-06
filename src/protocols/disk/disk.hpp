@@ -58,7 +58,7 @@ public:
     {
         if (len < MAX_IPC_BUFFER_SIZE)
         {
-            log::warn$("read length is smaller than max ipc buffer size, consider using read_small");
+            fmt::warn$("read length is smaller than max ipc buffer size, consider using read_small");
         }
 
         if (len % 512 != 0)
@@ -70,7 +70,7 @@ public:
         message.data[0].data = DISK_READ_SECTORS;
         message.data[1].data = lba;
         message.data[2].data = len;
-        
+
         message.data[3].is_asset = true;
         message.data[3].asset_handle = asset.handle;
         message.data[4].data = asset_start;
@@ -163,7 +163,7 @@ public:
     {
         if (len < MAX_IPC_BUFFER_SIZE)
         {
-            log::warn$("write length is smaller than max ipc buffer size, consider using write_small");
+            fmt::warn$("write length is smaller than max ipc buffer size, consider using write_small");
         }
 
         IpcMessage message = {};
@@ -194,7 +194,7 @@ public:
         conn.connection = Wingos::Space::self().connect_to_ipc_server(v.endpoint);
 
         conn.connection.wait_for_accept();
-        log::log$("Connected to disk server at address: {} ({})", v.endpoint, conn.connection.associated_space_handle);
+        fmt::log$("Connected to disk server at address: {} ({})", v.endpoint, conn.connection.associated_space_handle);
         return conn;
     }
 
@@ -204,7 +204,7 @@ public:
         conn.connection = Wingos::Space::self().connect_to_ipc_server(disk_endpoint);
 
         conn.connection.wait_for_accept();
-        log::log$("Connected to disk server at address: {} ({})", disk_endpoint, conn.connection.associated_space_handle);
+        fmt::log$("Connected to disk server at address: {} ({})", disk_endpoint, conn.connection.associated_space_handle);
         return conn;
     }
 };

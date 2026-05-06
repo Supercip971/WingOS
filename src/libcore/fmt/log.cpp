@@ -9,7 +9,7 @@
 
 #include "libcore/lock/lock.hpp"
 
-namespace log
+namespace fmt
 {
 
 
@@ -40,5 +40,5 @@ core::Writer *log_target()
 } // namespace log
 void core::debug_provide_info(const char *info, const char *data)
 {
-    log::log$("{} {}", info, data);
+    fmt::log$("{} {}", info, data);
 }

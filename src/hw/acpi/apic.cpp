@@ -42,15 +42,15 @@ core::Result<void> update_interrupt_source_override(MadtEntryIso const *entry)
     {
         return "error: ISO out of range";
     }
-    log::log$("iso: {}", current_iso);
+    fmt::log$("iso: {}", current_iso);
 
     iso[current_iso] = *entry;
     current_iso++;
 
-    log::log$("  bus source: {}", entry->bus_source);
-    log::log$("  irq source: {}", entry->irq_source);
-    log::log$("  global system interrupt: {}", entry->global_system_interrupt);
-    log::log$("  flags: {}", entry->flags);
+    fmt::log$("  bus source: {}", entry->bus_source);
+    fmt::log$("  irq source: {}", entry->irq_source);
+    fmt::log$("  global system interrupt: {}", entry->global_system_interrupt);
+    fmt::log$("  flags: {}", entry->flags);
     return {};
 }
 
@@ -72,17 +72,17 @@ core::Result<void> apic_initialize(mcx::MachineContext const *context, CpuDetect
     current_iso = 0;
     _rsdp = (hw::acpi::Rsdp *)context->_rsdp;
 
-    log::log$("rsdp: {}", context->_rsdp | fmt::FMT_HEX);
+    fmt::log$("rsdp: {}", context->_rsdp | fmt::FMT_HEX);
 
     hw::acpi::Madt *madt;
     auto addr = _rsdp->rsdt_phys_addr();
     if (addr.type == hw::acpi::RsdtTypes::RSDT)
     {
-        log::log$("kind: RSDT");
+        fmt::log$("kind: RSDT");
 
         auto rsdt = toVirt(addr.physical_addr).as<hw::acpi::Rsdt>();
 
-        log::log$("rev: {}", rsdt->header.revision);
+        fmt::log$("rev: {}", rsdt->header.revision);
 
         hw::acpi::dump(rsdt);
 
@@ -90,11 +90,11 @@ core::Result<void> apic_initialize(mcx::MachineContext const *context, CpuDetect
     }
     else
     {
-        log::log$("kind: XSDT");
+        fmt::log$("kind: XSDT");
 
         auto xsdt = toVirt(addr.physical_addr).as<hw::acpi::Xsdt>();
 
-        log::log$("rev: {}", xsdt->header.revision);
+        fmt::log$("rev: {}", xsdt->header.revision);
         hw::acpi::dump(xsdt);
 
         madt = try$((hw::acpi::SdtFind<hw::acpi::Xsdt, hw::acpi::Madt>(xsdt)));
@@ -105,7 +105,7 @@ core::Result<void> apic_initialize(mcx::MachineContext const *context, CpuDetect
     madt->dump();
     madt->foreach_entry<MadtEntryLapic>([cpu_callback](MadtEntryLapic *entry)
                                         {
-                                            log::log$("- cpu detected: {} {}", entry->acpi_processor_id, entry->apic_id);
+                                            fmt::log$("- cpu detected: {} {}", entry->acpi_processor_id, entry->apic_id);
                                             cpu_callback(entry).assert();
                                             _cpu_count++; });
 
@@ -162,20 +162,20 @@ core::Result<void> _raw_redirect_interrupt(LCpuId cpu, uint8_t vector, bool enab
 core::Result<void> redirect_interrupt(LCpuId cpu, uint8_t irq, uint8_t vector, bool enabled)
 {
 
-    log::log$("- redirecting interrupt: cpu: {} irq: {} to vector: {} enabled: {}", cpu, irq, vector, enabled);
+    fmt::log$("- redirecting interrupt: cpu: {} irq: {} to vector: {} enabled: {}", cpu, irq, vector, enabled);
 
     for (size_t i = 0; i < current_iso; i++)
     {
         auto &entry = iso[i];
         if (entry.irq_source == irq)
         {
-            log::log$("  found iso: {}", i);
-            log::log$("    bus source: {}", entry.bus_source);
-            log::log$("    irq source: {}", entry.irq_source);
+            fmt::log$("  found iso: {}", i);
+            fmt::log$("    bus source: {}", entry.bus_source);
+            fmt::log$("    irq source: {}", entry.irq_source);
             auto global_sys_int = entry.global_system_interrupt;
-            log::log$("    global system interrupt: {}", global_sys_int);
+            fmt::log$("    global system interrupt: {}", global_sys_int);
             auto flags = entry.flags;
-            log::log$("    flags: {}", flags);
+            fmt::log$("    flags: {}", flags);
 
             try$(_raw_redirect_interrupt(cpu, vector, enabled, iso[i].global_system_interrupt, entry.flags));
             return {};

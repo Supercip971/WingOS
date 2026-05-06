@@ -298,7 +298,7 @@
           Vec2 pos = {};
           for (auto const &stroke : cmd.contour->commands)
           {
-              //            log::log$("stroke: {}, {} {}", (int)stroke.pos.x, (int)stroke.pos.y, (int)stroke.action);
+              //            fmt::log$("stroke: {}, {} {}", (int)stroke.pos.x, (int)stroke.pos.y, (int)stroke.action);
 
               Vec2 ppos = stroke.pos /*+ off*/;
               switch (stroke.action)
@@ -319,7 +319,7 @@
                   pos = ppos;
                   break;
               default:
-                  log::log$("unknown stroke action: {}", (int)stroke.action);
+                  fmt::log$("unknown stroke action: {}", (int)stroke.action);
                   break;
               }
           }

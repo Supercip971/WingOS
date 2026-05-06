@@ -34,20 +34,20 @@ void dump_stackframe(void *rbp)
     stackframe *frame = reinterpret_cast<stackframe *>(rbp);
     int size = 0;
 
-    log::log$("stackframe:");
-    log::log_lock();
+    fmt::log$("stackframe:");
+    fmt::log_lock();
     while (frame && size++ < 20)
     {
         auto rip = frame->rip;
-        log::log("{} ", rip | fmt::FMT_HEX);
+        fmt::log("{} ", rip | fmt::FMT_HEX);
 
         frame = frame->rbp;
     }
-    log::log_release();
+    fmt::log_release();
 
     if (size >= 20)
     {
-        log::log$("... (stackframe too deep)");
+        fmt::log$("... (stackframe too deep)");
     }
 }
 
@@ -60,8 +60,8 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
 
     if (Cpu::current()->in_interrupt())
     {
-        log::log_release();
-        log::warn$("already in an interrupt {}", Cpu::currentId());
+        fmt::log_release();
+        fmt::warn$("already in an interrupt {}", Cpu::currentId());
     }
 
     Cpu::current()->in_interrupt(true);
@@ -71,7 +71,7 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
     {
         int_lock.read_release();
 
-        log::log_release();
+        fmt::log_release();
         if (!Cpu::current()->in_interrupt())
         {
 
@@ -83,12 +83,12 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
         }
         inside_error = true;
 
-        log::log$("cpu: {}", hw::acpi::Lapic::the().id());
+        fmt::log$("cpu: {}", hw::acpi::Lapic::the().id());
 
         uint64_t interrupt_number = 0;
 
         interrupt_number = frame->interrupt_number;
-        log::log$("interrupt error: n°{} - {}", interrupt_number, arch::amd64::interrupts_names[interrupt_number]);
+        fmt::log$("interrupt error: n°{} - {}", interrupt_number, arch::amd64::interrupts_names[interrupt_number]);
 
         // fixme: use a real number generator for 'funny' messages instead of this
         {
@@ -101,25 +101,25 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
             uint64_t uid = interrupt_number ^ error_code ^ rax ^ rsp ^ rip ^ ccount;
 
             uid = uid % (sizeof(core::isnt_encouraging_messages) / sizeof(core::isnt_encouraging_messages[0]));
-            log::log$("-> '{}'", core::isnt_encouraging_messages[uid]);
+            fmt::log$("-> '{}'", core::isnt_encouraging_messages[uid]);
         }
 
-        log::log$("{}", *(arch::amd64::StackFrame *)frame);
+        fmt::log$("{}", *(arch::amd64::StackFrame *)frame);
 
         uintptr_t cr2 = 0;
         asm volatile("mov %%cr2, %0"
                      : "=r"(cr2));
-        log::log$("cr2: {}", cr2 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
+        fmt::log$("cr2: {}", cr2 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
 
         // dump gs
         uintptr_t cr3 = arch::CpuCr<3>::read();
-        log::log$("cr3: {}", cr3 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
+        fmt::log$("cr3: {}", cr3 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
 
 
-        log::log$("cpu: {}", hw::acpi::Lapic::the().id());
+        fmt::log$("cpu: {}", hw::acpi::Lapic::the().id());
 
         // dump_stackframe((void*)Cpu::current()->currentTask()->cpu_context()->);
-        log::log$("kernel stacktrace:");
+        fmt::log$("kernel stacktrace:");
         dump_stackframe((void *)frame->rbp);
 
 
@@ -138,9 +138,9 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
 
         uintptr_t kernel_stack_end = (uintptr_t)Cpu::current()->currentTask()->cpu_context()->kernel_stack_top;
 
-        log::log$("Syscall task stack range: {}-{}", sys_task_stack_start | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO, sys_task_stack_end | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
-        log::log$("Task stack range: {}-{}", task_stack_start | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO, task_stack_end | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
-        log::log$("Kernel stack range: {}-{}", kernel_stack_start | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO, kernel_stack_end | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
+        fmt::log$("Syscall task stack range: {}-{}", sys_task_stack_start | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO, sys_task_stack_end | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
+        fmt::log$("Task stack range: {}-{}", task_stack_start | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO, task_stack_end | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
+        fmt::log$("Kernel stack range: {}-{}", kernel_stack_start | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO, kernel_stack_end | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
 
         // [gs:0x0] and [gs:0x8]
         uintptr_t gs0 = 0;
@@ -149,8 +149,8 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
                      : "=r"(gs0));
         asm volatile("mov %%gs:0x8, %0"
                      : "=r"(gs8));
-        log::log$("gs[0x0]: {}", gs0 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
-        log::log$("gs[0x8]: {}", gs8 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
+        fmt::log$("gs[0x0]: {}", gs0 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
+        fmt::log$("gs[0x8]: {}", gs8 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
 
 
         kernel::dump_current_running_task(frame->interrupt_number != 2);
@@ -185,10 +185,10 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
         if(frame->rip >= kernel_virtual_base() && Cpu::current()->currentTask() != nullptr && Cpu::current()->currentTask()->sched().is_idle != true)
         {
           //  uintptr_t rip = frame->rip;
-          //  log::log$("task {} triggered a reschedule from rip {}, which is in kernel space, this is not allowed, skipping reschedule", Cpu::current()->currentTask()->uid(), rip | fmt::FMT_HEX);
+          //  fmt::log$("task {} triggered a reschedule from rip {}, which is in kernel space, this is not allowed, skipping reschedule", Cpu::current()->currentTask()->uid(), rip | fmt::FMT_HEX);
 
           }*/
-        // log::log$("rescheduling on cpu {}", hw::acpi::Lapic::the().id());
+        // fmt::log$("rescheduling on cpu {}", hw::acpi::Lapic::the().id());
         _scheduler_impl(stack);
     }
     else if (frame->interrupt_number == 101)

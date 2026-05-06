@@ -17,7 +17,7 @@ core::Result<void> mount_fs(IpcServerHandle device_name, core::WStr &&mount_path
 
     if (mount_path.view() == core::Str("/"))
     {
-        log::log$("VFS: signaled init that root fs is available");
+        fmt::log$("VFS: signaled init that root fs is available");
         prot::InitConnection init_conn = prot::InitConnection::connect().unwrap();
         init_conn.signal_fs_available().unwrap();
     }
@@ -32,10 +32,10 @@ core::Result<void> mount_fs(IpcServerHandle device_name, core::WStr &&mount_path
 
 core::Result<VfsFileEndpoint *> VfsFileEndpoint::open_root()
 {
-    log::log$("VfsFileEndpoint::open_root: searching for root filesystem, {} mounted", mounted_filesystems.len());
+    fmt::log$("VfsFileEndpoint::open_root: searching for root filesystem, {} mounted", mounted_filesystems.len());
     for (size_t i = 0; i < mounted_filesystems.len(); i++)
     {
-        log::log$("VfsFileEndpoint::open_root: checking mount {}: path={}", i, mounted_filesystems[i].path.view());
+        fmt::log$("VfsFileEndpoint::open_root: checking mount {}: path={}", i, mounted_filesystems[i].path.view());
         if (mounted_filesystems[i].path.view() == (core::Str("/")))
         {
             VfsFileEndpoint *endpoint = new VfsFileEndpoint();
@@ -46,32 +46,32 @@ core::Result<VfsFileEndpoint *> VfsFileEndpoint::open_root()
             auto connect_res = prot::FsFile::connect(root_endpoint);
             if (connect_res.is_error())
             {
-                log::err$("VFS: failed to connect to root filesystem: {}", connect_res.error());
+                fmt::err$("VFS: failed to connect to root filesystem: {}", connect_res.error());
                 delete endpoint;
                 return connect_res.error();
             }
             endpoint->connection_to_fs = core::move(connect_res.unwrap());
 
-            log::log$("VFS: connected to root fs, client handle: {}", endpoint->connection_to_fs.raw_client().handle);
+            fmt::log$("VFS: connected to root fs, client handle: {}", endpoint->connection_to_fs.raw_client().handle);
 
             auto server_res = prot::ManagedServer::create_server();
             if (server_res.is_error())
             {
-                log::err$("VFS: failed to create server for root endpoint: {}", server_res.error());
+                fmt::err$("VFS: failed to create server for root endpoint: {}", server_res.error());
                 endpoint->connection_to_fs.close();
                 delete endpoint;
                 return server_res.error();
             }
             endpoint->server = core::move(server_res.unwrap());
 
-            log::log$("VFS: created root endpoint server with addr: {}", endpoint->server.addr());
+            fmt::log$("VFS: created root endpoint server with addr: {}", endpoint->server.addr());
             opened_file_endpoints.push(endpoint);
 
             return endpoint;
         }
     }
 
-    log::err$("VfsFileEndpoint::open_root: no root filesystem mounted");
+    fmt::err$("VfsFileEndpoint::open_root: no root filesystem mounted");
     return core::Result<VfsFileEndpoint *>::error("no root filesystem mounted");
 }
 
@@ -94,7 +94,7 @@ void close_endpoint(VfsFileEndpoint *endpoint)
         }
     }
 
-    log::err$("VfsFileEndpoint: attempted to close unknown endpoint");
+    fmt::err$("VfsFileEndpoint: attempted to close unknown endpoint");
 }
 
 void update_all_endpoints()
@@ -141,7 +141,7 @@ void update_all_endpoints()
                 {
                     reply.data[0].data = 0; // failure
                     reply.data[1].data = 0;
-                    log::err$("VfsFileEndpoint: failed to open file {}: {}", filename.view(), file_res.error());
+                    fmt::err$("VfsFileEndpoint: failed to open file {}: {}", filename.view(), file_res.error());
                     endpoint->server.reply(core::move(msg), reply);
                 }
                 else
@@ -153,7 +153,7 @@ void update_all_endpoints()
                     reply.data[0].data = 1; // success
                     reply.data[1].data = nendpoint->server.addr();
 
-                    log::log$("VfsFileEndpoint: open file {}", filename.view());
+                    fmt::log$("VfsFileEndpoint: open file {}", filename.view());
                     endpoint->server.reply(core::move(msg), reply);
                     opened_file_endpoints.push(nendpoint);
 
@@ -174,7 +174,7 @@ void update_all_endpoints()
                 auto forward_res = endpoint->connection_to_fs.raw_client().send(msg.received, true);
                 if (forward_res.is_error())
                 {
-                    log::err$("VfsFileEndpoint: failed to forward message to filesystem: {}", forward_res.error());
+                    fmt::err$("VfsFileEndpoint: failed to forward message to filesystem: {}", forward_res.error());
                 }
 
                 auto forward_handle = forward_res.unwrap();
@@ -187,7 +187,7 @@ void update_all_endpoints()
                         auto reply_res = endpoint->server.reply(core::move(msg), fs_msg);
                         if (reply_res.is_error())
                         {
-                            log::err$("VfsFileEndpoint: failed to send reply back to client: {}", reply_res.error());
+                            fmt::err$("VfsFileEndpoint: failed to send reply back to client: {}", reply_res.error());
                         }
                         break;
                     }
@@ -200,12 +200,12 @@ void update_all_endpoints()
                 // Note: FS_CLOSE is no longer sent by FsFile::close() - it just disconnects.
                 // This code path should not be reached anymore, but keeping it for safety.
                 // The actual cleanup happens when IPC_MESSAGE_FLAG_DISCONNECT is received above.
-                log::warn$("VfsFileEndpoint: received FS_CLOSE message (deprecated path)");
+                fmt::warn$("VfsFileEndpoint: received FS_CLOSE message (deprecated path)");
                 break;
             }
             default:
             {
-                log::log$("VfsFileEndpoint: unknown message type: {}", msg.received.data[0].data);
+                fmt::log$("VfsFileEndpoint: unknown message type: {}", msg.received.data[0].data);
                 break;
             }
             }

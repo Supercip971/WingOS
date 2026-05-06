@@ -49,7 +49,7 @@ bool update_endpoint(Ext4FsEndpoint* dev, Ext4FileEndpoint *endpoint)
     }
     if (accepted_count > 0)
     {
-        log::log$("ext4: accepted {} connection(s) on endpoint for inode {}", accepted_count, endpoint->inode.inode_id);
+        fmt::log$("ext4: accepted {} connection(s) on endpoint for inode {}", accepted_count, endpoint->inode.inode_id);
     }
 
     auto received = endpoint->file_server.try_receive();
@@ -63,7 +63,7 @@ bool update_endpoint(Ext4FsEndpoint* dev, Ext4FileEndpoint *endpoint)
 
     if (msg.received.flags & IPC_MESSAGE_FLAG_DISCONNECT)
     {
-        log::log$("ext4: disconnecting endpoint for inode {}", endpoint->inode.inode_id);
+        fmt::log$("ext4: disconnecting endpoint for inode {}", endpoint->inode.inode_id);
         // remove from list
 
         endpoint->file_server.disconnect(msg.connection);
@@ -86,10 +86,10 @@ bool update_endpoint(Ext4FsEndpoint* dev, Ext4FileEndpoint *endpoint)
     {
     case prot::FS_GET_INFO:
     {
-        log::log$("ext4: get_info request for inode {}", endpoint->inode.inode_id);
+        fmt::log$("ext4: get_info request for inode {}", endpoint->inode.inode_id);
 
-        log::log$("    indode size: {}", core::copy(endpoint->inode.inode.size_lo));
-        log::log$("    inode type: {}", (int)endpoint->inode.inode.file_type);
+        fmt::log$("    indode size: {}", core::copy(endpoint->inode.inode.size_lo));
+        fmt::log$("    inode type: {}", (int)endpoint->inode.inode.file_type);
         IpcMessage reply = {};
         reply.data[0].data = 1; // success
         reply.data[1].data = endpoint->inode.inode.size_lo;
@@ -105,18 +105,18 @@ bool update_endpoint(Ext4FsEndpoint* dev, Ext4FileEndpoint *endpoint)
         // Note: FS_CLOSE is no longer sent by FsFile::close() - it just disconnects.
         // This code path should not be reached anymore, but keeping it for safety.
         // The actual cleanup happens when IPC_MESSAGE_FLAG_DISCONNECT is received.
-        log::err$("ext4: received explicit FS_CLOSE for inode {} (deprecated path) - THIS IS A BUG!", endpoint->inode.inode_id);
-        log::err$("  message_id: {}", msg.received.message_id);
-        log::err$("  flags: {}", msg.received.flags);
+        fmt::err$("ext4: received explicit FS_CLOSE for inode {} (deprecated path) - THIS IS A BUG!", endpoint->inode.inode_id);
+        fmt::err$("  message_id: {}", msg.received.message_id);
+        fmt::err$("  flags: {}", msg.received.flags);
 
         int a = msg.received.data[0].is_asset;
 
         int b = msg.received.data[1].is_asset;
 
-        log::err$("  data[0]: is_asset={}, data={}", a, msg.received.data[0].data);
-        log::err$("  data[1]: is_asset={}, data={}", b, msg.received.data[1].data);
-        log::err$("  len: {}", msg.received.len);
-        log::err$("  connection ptr: {}", (uint64_t)msg.connection);
+        fmt::err$("  data[0]: is_asset={}, data={}", a, msg.received.data[0].data);
+        fmt::err$("  data[1]: is_asset={}, data={}", b, msg.received.data[1].data);
+        fmt::err$("  len: {}", msg.received.len);
+        fmt::err$("  connection ptr: {}", (uint64_t)msg.connection);
         // Don't do cleanup here - let the IPC disconnect handler do it to avoid double-cleanup races
         return true;
     }
@@ -131,15 +131,15 @@ bool update_endpoint(Ext4FsEndpoint* dev, Ext4FileEndpoint *endpoint)
             path_buf[i] = msg.received.raw_buffer[i];
         }
         path = core::Str(path_buf, msg.received.len);
-        log::log$("ext4: open file request for path: {}", path.view());
+        fmt::log$("ext4: open file request for path: {}", path.view());
 
         auto file_res = dev->attached_fs->get_subdir(
             endpoint->inode, path);
 
-        log::log$("ext4: get_subdir result for path {}: {}", path.view(), file_res.is_error() ? file_res.error() : "success");
+        fmt::log$("ext4: get_subdir result for path {}: {}", path.view(), file_res.is_error() ? file_res.error() : "success");
         if (file_res.is_error())
         {
-            log::err$("ext4: failed to open file {}: {}", path.view(), file_res.error());
+            fmt::err$("ext4: failed to open file {}: {}", path.view(), file_res.error());
             reply.data[0].data = 0; // failure
             reply.data[1].data = 0;
             endpoint->file_server.reply(core::move(msg), reply);
@@ -147,14 +147,14 @@ bool update_endpoint(Ext4FsEndpoint* dev, Ext4FileEndpoint *endpoint)
         else
         {
             auto file_inode = file_res.unwrap();
-            log::log$("ext4: opened file {} with inode {}", path.view(), file_inode.inode_id);
+            fmt::log$("ext4: opened file {} with inode {}", path.view(), file_inode.inode_id);
             // create new endpoint for this file
 
             auto serv = prot::ManagedServer::create_server();
 
             if (serv.is_error())
             {
-                log::err$("ext4: failed to create file endpoint for file {}: {}", path.view(), serv.error());
+                fmt::err$("ext4: failed to create file endpoint for file {}: {}", path.view(), serv.error());
                 reply.data[0].data = 0; // failure
                 reply.data[1].data = 0;
                 endpoint->file_server.reply(core::move(msg), reply);
@@ -172,7 +172,7 @@ bool update_endpoint(Ext4FsEndpoint* dev, Ext4FileEndpoint *endpoint)
 
             endpoint->file_server.reply(core::move(msg), reply);
 
-            log::log$("ext4: provided file endpoint {} for file {}", reply.data[1].data, path.view());
+            fmt::log$("ext4: provided file endpoint {} for file {}", reply.data[1].data, path.view());
             return true;
         }
 
@@ -183,7 +183,7 @@ bool update_endpoint(Ext4FsEndpoint* dev, Ext4FileEndpoint *endpoint)
         size_t offset = msg.received.data[1].data;
         size_t len = msg.received.data[2].data;
 
-        // log::log$("ext4: read request for inode {} offset {} len {}", endpoint->inode.inode_id, offset, len);
+        // fmt::log$("ext4: read request for inode {} offset {} len {}", endpoint->inode.inode_id, offset, len);
 
         auto mem_asset = Wingos::MemoryAsset::from_handle(msg.received.data[3].asset_handle);
         auto r = dev->attached_fs->inode_read(
@@ -195,7 +195,7 @@ bool update_endpoint(Ext4FsEndpoint* dev, Ext4FileEndpoint *endpoint)
 
         if (r.is_error())
         {
-            log::err$("ext4: failed to read inode {}: {}", endpoint->inode.inode_id, r.error());
+            fmt::err$("ext4: failed to read inode {}: {}", endpoint->inode.inode_id, r.error());
             while (true)
             {
             };
@@ -215,7 +215,7 @@ bool update_endpoint(Ext4FsEndpoint* dev, Ext4FileEndpoint *endpoint)
     }
     default:
     {
-        log::warn$("ext4: unknown message type received (endpoint): {}", msg.received.data[0].data);
+        fmt::warn$("ext4: unknown message type received (endpoint): {}", msg.received.data[0].data);
         break;
     }
     }
@@ -257,13 +257,13 @@ core::Result<void> update_endpoints(Ext4FsEndpoint* dev)
 
                 dev->ext4_file_endpoints.push(new_endpoint);
                 dev->root_server.reply(core::move(msg), reply);
-                log::log$("ext4: provided root endpoint {}", dev->root_server.addr());
+                fmt::log$("ext4: provided root endpoint {}", dev->root_server.addr());
                 break;
             }
 
             default:
             {
-                log::warn$("ext4: unknown message type received (root endpoint): {}", msg.received.data[0].data);
+                fmt::warn$("ext4: unknown message type received (root endpoint): {}", msg.received.data[0].data);
                 break;
             }
         }
@@ -286,7 +286,7 @@ int main(int, char **)
     auto serv_r = prot::ManagedServer::create_registered_server("fs:ext4:manager", 1, 0);
     if (serv_r.is_error())
     {
-        log::err$("ext4: failed to create registered server: {}", serv_r.error());
+        fmt::err$("ext4: failed to create registered server: {}", serv_r.error());
         return 1;
     }
 
@@ -295,8 +295,8 @@ int main(int, char **)
     prot::VfsConnection vfs = prot::VfsConnection::connect().take();
 
     vfs.register_fs(core::Str("ext4"), serv.addr()).unwrap();
-    log::log$("ext4: registered fs manager with vfs");
-    log::log$("ext4: entering main loop");
+    fmt::log$("ext4: registered fs manager with vfs");
+    fmt::log$("ext4: entering main loop");
     while (true)
     {
 
@@ -320,7 +320,7 @@ int main(int, char **)
         auto msg = core::move(received.unwrap());
         if (msg.received.flags & IPC_MESSAGE_FLAG_DISCONNECT)
         {
-            log::log$("ext4: disconnecting from vfs");
+            fmt::log$("ext4: disconnecting from vfs");
             serv.disconnect(msg.connection);
             continue;
         }
@@ -341,12 +341,12 @@ int main(int, char **)
             }
             name = core::Str(name_buf, msg.received.len);
 
-            log::log$("ext4: mount request for device {} (part id {})", name.view(), part_id);
+            fmt::log$("ext4: mount request for device {} (part id {})", name.view(), part_id);
 
             auto disk_conn_res = prot::DiskConnection::connect(endpoint);
             if (disk_conn_res.is_error())
             {
-                log::err$("ext4: failed to connect to disk endpoint: {}", disk_conn_res.error());
+                fmt::err$("ext4: failed to connect to disk endpoint: {}", disk_conn_res.error());
                 break;
             }
 
@@ -357,14 +357,14 @@ int main(int, char **)
             auto dfs = Ext4Filesystem::initialize(disk_conn, begin_lba, end_lba);
             if (dfs.is_error())
             {
-                log::err$("ext4: failed to initialize ext4 filesystem on device {}: {}", name.view(), dfs.error());
+                fmt::err$("ext4: failed to initialize ext4 filesystem on device {}: {}", name.view(), dfs.error());
 
                 IpcMessage reply = {};
                 reply.data[0].data = 0; // fs endpoint 0 means failure
                 auto send_res = serv.reply(core::move(msg), reply);
                 if (send_res.is_error())
                 {
-                    log::err$("ext4: failed to send mount failure reply: {}", send_res.error());
+                    fmt::err$("ext4: failed to send mount failure reply: {}", send_res.error());
                 }
 
                 break;
@@ -385,18 +385,18 @@ int main(int, char **)
 
            // reply.data[1].data = ext4_file_roots[ext4_file_roots.len() - 1]->root_server.addr();
             (void)end_lba;
-            log::log$("ext4: ext4 filesystem detected on device {}, mounting...", name.view());
+            fmt::log$("ext4: ext4 filesystem detected on device {}, mounting...", name.view());
 
             auto send_res = serv.reply(core::move(msg), reply);
             if (send_res.is_error())
             {
-                log::err$("ext4: failed to send mount success reply: {}", send_res.error());
+                fmt::err$("ext4: failed to send mount success reply: {}", send_res.error());
             }
             break;
         }
         default:
         {
-            log::warn$("ext4: unknown message type received: {}", msg.received.data[0].data);
+            fmt::warn$("ext4: unknown message type received: {}", msg.received.data[0].data);
             break;
         }
         }

@@ -62,7 +62,7 @@ core::Result<kernel::Task *> kernel::Task::by_id(kernel::TUID uid)
     auto task = kernel::Task::by_id_unsafe(uid);
     if (task == nullptr)
     {
-        log::warn$("unable to find task {}", uid);
+        fmt::warn$("unable to find task {}", uid);
         return "unable to find task";
     }
 
@@ -79,7 +79,7 @@ core::Result<kernel::Task *> kernel::Task::task_create()
 
     task->_cpu_context = try$(kernel::CpuContext::create_empty());
 
-    log::log$("created task with id: {}", task->uid());
+    fmt::log$("created task with id: {}", task->uid());
     return (task);
 }
 

@@ -41,7 +41,7 @@ namespace core
         (void)_this;
         (void)_data;
         (void)start;
-        //log::log$("Vec destructed: {} - {} (begin: {})", (uintptr_t)_this | fmt::FMT_HEX, (uintptr_t)_data | fmt::FMT_HEX, start);
+        //fmt::log$("Vec destructed: {} - {} (begin: {})", (uintptr_t)_this | fmt::FMT_HEX, (uintptr_t)_data | fmt::FMT_HEX, start);
     }
 }
 __attribute__((weak)) void *operator new(size_t size)

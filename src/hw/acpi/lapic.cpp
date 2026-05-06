@@ -25,7 +25,7 @@ using MsrReg = arch::amd64::MsrReg;
 core::Result<void> Lapic::enable()
 {
 
-    // log::log$("Enabling LAPIC");
+    // fmt::log$("Enabling LAPIC");
 
     AMsr::Write(MsrReg::APIC,
                 (AMsr::Read(MsrReg::APIC) | arch::amd64::MsrApicBits::MSR_APIC_ENABLE) & (~(arch::amd64::MsrApicBits::MSR_X2APIC_ENABLE)));
@@ -33,9 +33,9 @@ core::Result<void> Lapic::enable()
                 this->read(LAPICReg::SPURIOUS_INTERRUPT_VECTOR) | LAPIC_SPURIOUS_APIC_SOFT_ENABLE |
                     LAPIC_SPURIOUS_VECTOR);
 
-    // log::log$("LAPIC Enabled");
+    // fmt::log$("LAPIC Enabled");
 
-    // log::log$("disabling 8259 PIC");
+    // fmt::log$("disabling 8259 PIC");
 
     return {};
 }
@@ -49,11 +49,11 @@ core::Result<void> Lapic::initialize(Madt *madt)
                                                     -> void
                                                 {
 		auto local_apic_addr = entry->local_apic_addr;
-		log::log$("lapic override: {}", local_apic_addr);
+		fmt::log$("lapic override: {}", local_apic_addr);
 		lapic_addr = entry->local_apic_addr; });
 
     auto addr_value = lapic_addr._addr;
-    log::log$("lapic: {}", addr_value | fmt::FMT_HEX);
+    fmt::log$("lapic: {}", addr_value | fmt::FMT_HEX);
 
     VirtAddr mapped_registers = toVirt(lapic_addr);
 
@@ -114,14 +114,14 @@ core::Result<void> Lapic::timer_initialize()
     // we want ticks in 0.1ms
     // so ticks = a / 0.1 = a * 10 / 16
 
-    log::log$("LAPIC ticks in 16ms: {}", ticks);
+    fmt::log$("LAPIC ticks in 16ms: {}", ticks);
 
     LAPICLocalVectorTable lvt = {0};
     lvt.val.mask = 0;
     lvt.val.vector = 32;
     lvt.val._timer_mode = 0b01; // mode: periodic
     write(LAPICReg::LVT_TIMER, lvt.raw);
-    log::log$("LVT_TIMER: {}", lvt.raw);
+    fmt::log$("LVT_TIMER: {}", lvt.raw);
     write(LAPICReg::TIMER_DIVIDE_CONFIGURATION, LAPIC_TIMER_DIVIDE_BY_16);
     write(LAPICReg::TIMER_INITIAL_COUNT, (ticks)/32); // 0.1 ms per switch
 

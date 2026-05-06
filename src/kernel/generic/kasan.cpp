@@ -108,7 +108,7 @@ inline void kernel::Kasan::assert_read_access(uintptr_t addr, size_t size)
         uintptr_t first_invalid_byte = shadow_addr * 8;
         if (first_invalid_byte < addr + size && (shadow_value == 0 || shadow_value == 0x1))
         {
-            log::err$("kasan: invalid read access at address {}, size {}\n", addr | fmt::FMT_HEX, size);
+            fmt::err$("kasan: invalid read access at address {}, size {}\n", addr | fmt::FMT_HEX, size);
 
             unreachable$();
         }
@@ -138,7 +138,7 @@ inline void kernel::Kasan::assert_write_access(uintptr_t addr, size_t size)
         uintptr_t first_invalid_byte = shadow_addr * 8;
         if (first_invalid_byte < addr + size && (shadow_value == 0 || shadow_value == 0x1))
         {
-            log::err$("kasan: invalid write access at address {}, size {}\n", addr | fmt::FMT_HEX, size);
+            fmt::err$("kasan: invalid write access at address {}, size {}\n", addr | fmt::FMT_HEX, size);
 
             unreachable$();
         }

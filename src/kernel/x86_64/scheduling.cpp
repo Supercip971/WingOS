@@ -32,7 +32,7 @@ uintptr_t _scheduler_impl_soft(uintptr_t stack)
     if (res.is_error())
     {
         auto err = res.error();
-        log::err$("soft schedule: kernel::schedule returned error: {}", err);
+        fmt::err$("soft schedule: kernel::schedule returned error: {}", err);
         return stack;
     }
 

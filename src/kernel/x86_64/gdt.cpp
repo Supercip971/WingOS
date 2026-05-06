@@ -31,7 +31,7 @@ void setup_ist()
     auto cpu = arch::amd64::CpuImpl::currentImpl();
     if (!cpu) [[unlikely]]
     {
-        log::err$("Failed to get current CPU implementation for IST setup");
+        fmt::err$("Failed to get current CPU implementation for IST setup");
         return;
     }
 

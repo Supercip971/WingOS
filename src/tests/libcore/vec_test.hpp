@@ -77,7 +77,7 @@ static constexpr TestGroup vecTests = {
                 {
                     if (vec[(int)i] != (int)i * 2)
                     {
-                        log::log$("[{}] = {}", i, (int)vec[i]);
+                        fmt::log$("[{}] = {}", i, (int)vec[i]);
 
                         return "v[i/2] != i";
                     }
@@ -156,7 +156,7 @@ static constexpr TestGroup vecTests = {
                     int constructs_after_push = VecTestObject::construct_count;
                     if (constructs_after_push < 10)
                     {
-                        log::log$("construct_count: {}, expected at least 10", constructs_after_push);
+                        fmt::log$("construct_count: {}, expected at least 10", constructs_after_push);
                         return "construct_count < 10 after push operations";
                     }
 
@@ -170,7 +170,7 @@ static constexpr TestGroup vecTests = {
                 // After scope exit, all objects should be destroyed
                 if (VecTestObject::construct_count != VecTestObject::destruct_count)
                 {
-                    log::log$("construct_count: {}, destruct_count: {}",
+                    fmt::log$("construct_count: {}, destruct_count: {}",
                               VecTestObject::construct_count, VecTestObject::destruct_count);
                     return "memory leak after scope exit";
                 }
@@ -199,7 +199,7 @@ static constexpr TestGroup vecTests = {
                     // All 10 objects in the vector should now be destroyed
                     if (VecTestObject::destruct_count < destructs_before_clear + 10)
                     {
-                        log::log$("destruct_count: {}, expected at least: {}",
+                        fmt::log$("destruct_count: {}, expected at least: {}",
                                   VecTestObject::destruct_count, destructs_before_clear + 10);
                         return "not all objects destroyed after clear";
                     }
@@ -214,7 +214,7 @@ static constexpr TestGroup vecTests = {
                 // Verify no memory leak
                 if (VecTestObject::construct_count != VecTestObject::destruct_count)
                 {
-                    log::log$("Final: construct_count={}, destruct_count={}",
+                    fmt::log$("Final: construct_count={}, destruct_count={}",
                               VecTestObject::construct_count, VecTestObject::destruct_count);
                     return "memory leak after scope exit";
                 }
@@ -246,7 +246,7 @@ static constexpr TestGroup vecTests = {
                     // Should have destroyed exactly 3 more objects
                     if (VecTestObject::destruct_count < destructs_before_pop + 3)
                     {
-                        log::log$("destruct_count: {}, expected at least: {}",
+                        fmt::log$("destruct_count: {}, expected at least: {}",
                                   VecTestObject::destruct_count, destructs_before_pop + 3);
                         return "destructor not called for all popped elements";
                     }
@@ -261,7 +261,7 @@ static constexpr TestGroup vecTests = {
                 // Verify all constructed objects are destroyed
                 if (VecTestObject::construct_count != VecTestObject::destruct_count)
                 {
-                    log::log$("Final: construct_count={}, destruct_count={}",
+                    fmt::log$("Final: construct_count={}, destruct_count={}",
                               VecTestObject::construct_count, VecTestObject::destruct_count);
                     return "memory leak: not all objects destroyed";
                 }

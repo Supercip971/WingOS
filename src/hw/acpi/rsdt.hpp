@@ -113,7 +113,7 @@ core::Result<K *> rsdt_find(hw::acpi::Rsdp *_rsdp)
     }
 }
 
-template<MappCallbackFn T> 
+template<MappCallbackFn T>
 core::Result<void> prepare_mapping(uintptr_t rsdp_addr, T fn)
 {
     try$(fn(rsdp_addr, sizeof(hw::acpi::Rsdp)));
@@ -195,12 +195,12 @@ constexpr void dump(T *d)
                    auto s2 = core::Str(entry->oem_id, 6);
                    auto s3 = core::Str(entry->oem_table_id, 8);
 
-                   log::log$("entry:");
-                   log::log$("- signature: {}", s1);
+                   fmt::log$("entry:");
+                   fmt::log$("- signature: {}", s1);
                    auto length = entry->length;
-                   log::log$("- length: {}", length);
-                   log::log$("- revision: {}", entry->revision);
-                   log::log$("- oem_id: {}", s2);
-                   log::log$("- oem_table_id: {}", s3); });
+                   fmt::log$("- length: {}", length);
+                   fmt::log$("- revision: {}", entry->revision);
+                   fmt::log$("- oem_id: {}", s2);
+                   fmt::log$("- oem_table_id: {}", s3); });
 }
 } // namespace hw::acpi

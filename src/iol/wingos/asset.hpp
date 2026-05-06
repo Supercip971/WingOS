@@ -27,7 +27,7 @@ struct VirtualMemoryAsset : public UAsset
 
         if (start == 0 || end == 0 || start >= end)
         {
-            log::err$("VirtualMemoryAsset::create: invalid range start={}, end={} (space_handle={}, phys_handle={}, flags={})",
+            fmt::err$("VirtualMemoryAsset::create: invalid range start={}, end={} (space_handle={}, phys_handle={}, flags={})",
                       start | fmt::FMT_HEX,
                       end | fmt::FMT_HEX,
                       space_handle,
@@ -42,7 +42,7 @@ struct VirtualMemoryAsset : public UAsset
 
         if (asset.memory.start() >= asset.memory.end())
         {
-            log::err$("VirtualMemoryAsset::create: range became invalid after align start={}, end={} (orig start={}, orig end={})",
+            fmt::err$("VirtualMemoryAsset::create: range became invalid after align start={}, end={} (orig start={}, orig end={})",
                       asset.memory.start() | fmt::FMT_HEX,
                       asset.memory.end() | fmt::FMT_HEX,
                       start | fmt::FMT_HEX,
@@ -56,7 +56,7 @@ struct VirtualMemoryAsset : public UAsset
 
         if (asset.handle == 0)
         {
-            log::err$("VirtualMemoryAsset::create: mapping syscall failed (start={}, end={}, phys_handle={}, flags={})",
+            fmt::err$("VirtualMemoryAsset::create: mapping syscall failed (start={}, end={}, phys_handle={}, flags={})",
                       asset.memory.start() | fmt::FMT_HEX,
                       asset.memory.end() | fmt::FMT_HEX,
                       physical_mem_handle,
@@ -77,7 +77,7 @@ struct VirtualMemoryAsset : public UAsset
 
         if(v.returned_kind != AssetKind::OBJECT_KIND_MAPPING)
         {
-            log::warn$("Tried to create MemoryAsset from handle {}, but asset kind is {}", handle, v.returned_kind);
+            fmt::warn$("Tried to create MemoryAsset from handle {}, but asset kind is {}", handle, v.returned_kind);
             return "asset kind is not mapping";
         }
         asset.memory = mcx::MemoryRange(v.returned_info.mapping.start, v.returned_info.mapping.end).growAlign(4096);
@@ -123,7 +123,7 @@ struct MemoryAsset : public UAsset
 
         if(v.returned_kind != AssetKind::OBJECT_KIND_MEMORY)
         {
-            log::warn$("Tried to create MemoryAsset from handle {}, but asset kind is {}", handle, v.returned_kind);
+            fmt::warn$("Tried to create MemoryAsset from handle {}, but asset kind is {}", handle, v.returned_kind);
             return asset; // return empty asset
         }
         asset.memory = mcx::MemoryRange::from_begin_len(v.returned_info.memory.addr, v.returned_info.memory.size).growAlign(4096);

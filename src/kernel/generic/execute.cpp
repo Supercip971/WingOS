@@ -34,7 +34,7 @@ core::Result<void> start_module_execution(elf::ElfLoader loaded, mcx::MachineCon
         });
         if (mem_asset_res.is_error())
         {
-            log::err$("unable to create memory asset for machine context: {}", mem_asset_res.error());
+            fmt::err$("unable to create memory asset for machine context: {}", mem_asset_res.error());
 
             return mem_asset_res.error();
         }
@@ -53,7 +53,7 @@ core::Result<void> start_module_execution(elf::ElfLoader loaded, mcx::MachineCon
                                        })
                 .is_error())
         {
-            log::err$("unable to create mapping for machine context: {}", mem_asset_res.error());
+            fmt::err$("unable to create mapping for machine context: {}", mem_asset_res.error());
             return mem_asset_res.error();
         }
         context_mapped = (void *)mem_asset->addr;
@@ -72,7 +72,7 @@ core::Result<void> start_module_execution(elf::ElfLoader loaded, mcx::MachineCon
 
     if (task_asset_res.is_error())
     {
-        log::err$("unable to create task asset: {}", task_asset_res.error());
+        fmt::err$("unable to create task asset: {}", task_asset_res.error());
         return task_asset_res.error();
     }
 
@@ -86,7 +86,7 @@ core::Result<void> start_module_execution(elf::ElfLoader loaded, mcx::MachineCon
         if (ph.type != core::underlying_value(ElfProgramHeaderType::HEADER_LOAD))
         {
             auto type_val = ph.type;
-            log::warn$("skipping program header {}: type is not LOAD but {}", i, type_val);
+            fmt::warn$("skipping program header {}: type is not LOAD but {}", i, type_val);
             continue;
         }
         auto type_val = ph.type;
@@ -94,14 +94,14 @@ core::Result<void> start_module_execution(elf::ElfLoader loaded, mcx::MachineCon
         auto virt_addr_val = ph.virt_addr;
         auto file_offset_val = ph.file_offset;
         auto file_size_val = ph.file_size;
-        log::log$("section[{}]: type: {}, flags: {}, virt_addr: {}, file_offset: {}, file_size: {}",
+        fmt::log$("section[{}]: type: {}, flags: {}, virt_addr: {}, file_offset: {}, file_size: {}",
                   i, type_val, flags_val, virt_addr_val, file_offset_val, file_size_val);
 
         size_t page_count = math::alignUp(ph.mem_size, 4096ul) / 4096;
         size_t mem_size = page_count * 4096;
         if (page_count == 0)
         {
-            log::warn$("skipping program header {}: page count is 0", i);
+            fmt::warn$("skipping program header {}: page count is 0", i);
             continue;
         }
         auto mem_asset_res = root_space->create_memory({
@@ -110,7 +110,7 @@ core::Result<void> start_module_execution(elf::ElfLoader loaded, mcx::MachineCon
 
         if (mem_asset_res.is_error())
         {
-            log::err$("unable to create memory asset for program header {}: {}", i, mem_asset_res.error());
+            fmt::err$("unable to create memory asset for program header {}: {}", i, mem_asset_res.error());
 
             return mem_asset_res.error();
         }
@@ -134,12 +134,12 @@ core::Result<void> start_module_execution(elf::ElfLoader loaded, mcx::MachineCon
                                        })
                 .is_error())
         {
-            log::err$("unable to create mapping for program header {}: {}", i, mem_asset_res.error());
+            fmt::err$("unable to create mapping for program header {}: {}", i, mem_asset_res.error());
             return mem_asset_res.error();
         }
     }
 
-    log::log$("module loaded: task uid: {}", task->uid());
+    fmt::log$("module loaded: task uid: {}", task->uid());
 
     try$(kernel::task_run(task->uid()));
 

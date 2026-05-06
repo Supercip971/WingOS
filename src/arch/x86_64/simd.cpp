@@ -76,7 +76,7 @@ core::Result<SimdContext> SimdContext::create()
     }
 
     context._real_data = toVirt(try$(Pmm::the().allocate(math::alignUp<uint64_t>(context._data_size, amd64::PAGE_SIZE) / amd64::PAGE_SIZE)));
-    
+
     // Align to 64-byte boundary (required for xsave, fxsave only needs 16)
     context._data = (uint8_t*)context._real_data;
 
@@ -103,7 +103,7 @@ core::Result<void> SimdContext::initialize_cpu()
     if (x86::Cpuid::has_xsave())
     {
 
-        log::log$("xsave supported, enabling it");
+        fmt::log$("xsave supported, enabling it");
         arch::CpuCr<4>::write(arch::CpuCr<4>::read() | ((uint64_t)CR4_XSAVE_ENABLE));
 
         uint64_t xcr0 = 0;
@@ -112,13 +112,13 @@ core::Result<void> SimdContext::initialize_cpu()
 
         if (x86::Cpuid::has_avx())
         {
-            log::log$("avx supported, enabling it");
+            fmt::log$("avx supported, enabling it");
             xcr0 |= XCR0_AVX_ENABLE;
         }
 
         if (x86::Cpuid::has_avx512())
         {
-            log::log$("avx512 supported, enabling it");
+            fmt::log$("avx512 supported, enabling it");
             xcr0 |= XCR0_AVX512_ENABLE;
             xcr0 |= XCR0_ZMM0_15_ENABLE;
             xcr0 |= XCR0_ZMM16_32_ENABLE;
@@ -130,13 +130,13 @@ core::Result<void> SimdContext::initialize_cpu()
     asm volatile("fninit" ::: "memory");
     if (x86::Cpuid::has_xsave())
     {
-        log::log$("context size: {}", x86::Cpuid::xsave_size());
+        fmt::log$("context size: {}", x86::Cpuid::xsave_size());
         asm volatile("xsave64 %0" : "+m"(*initial_context_data) : "a"(~(uintptr_t)0), "d"(~(uintptr_t)0)
                      : "memory");
     }
     else
     {
-        log::log$("context size: 512 (fxsave)");
+        fmt::log$("context size: 512 (fxsave)");
         asm volatile("fxsave %0" : "+m"(*(uint8_t(*)[512])initial_context_data)
                      : : "memory");
 

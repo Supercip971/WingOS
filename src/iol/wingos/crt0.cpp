@@ -129,8 +129,8 @@ extern "C" void run_constructors()
 
     for(size_t i = 0; i < (size_t)(__init_array_end - __init_array_start); i++)
     {
-        log::log$("Running constructor: {}", (uintptr_t)__init_array_start[i] | fmt::FMT_HEX);
-        log::log$("Constructor name: {}", (uintptr_t)(*__init_array_start[i]) | fmt::FMT_HEX);
+        fmt::log$("Running constructor: {}", (uintptr_t)__init_array_start[i] | fmt::FMT_HEX);
+        fmt::log$("Constructor name: {}", (uintptr_t)(*__init_array_start[i]) | fmt::FMT_HEX);
         (__init_array_start[i])();
     }
 }
@@ -146,7 +146,7 @@ int iol_change_cwd(const char *path)
 
     if(_pwd == nullptr)
     {
-        log::log$("iol_change_cwd: _pwd is null");
+        fmt::log$("iol_change_cwd: _pwd is null");
         return -1;
     }
 
@@ -213,7 +213,7 @@ extern "C" __attribute__((weak)) void _entry_point(StartupInfo *context)
     _index = 0;
     logger= {};
 
-    log::provide_log_target(&logger);
+    fmt::provide_log_target(&logger);
 
     run_constructors();
     if(context->stdout_handle != 0)

@@ -47,47 +47,47 @@ core::Result<size_t> start_service(mcx::MachineContext *context, mcx::MachineCon
 
     if (loaded.is_error())
     {
-        log::err$("[INIT] unable to load module {}: {}", loaded.error());
+        fmt::err$("[INIT] unable to load module {}: {}", loaded.error());
         return loaded.error();
     }
 
     auto v = execute_module(context, loaded.unwrap());
 
-    log::log$("[INIT] started boot module: {}", mod.path);
+    fmt::log$("[INIT] started boot module: {}", mod.path);
     return v;
 }
 
 core::Result<size_t> start_service_fs(mcx::MachineContext *context, core::Str const &path)
 {
-    log::log$("[INIT] starting module from fs: {}", path);
+    fmt::log$("[INIT] starting module from fs: {}", path);
 
     auto vfs_endpoint = try$(service_get("vfs"));
-    log::log$("[INIT] got vfs endpoint: {}", vfs_endpoint);
+    fmt::log$("[INIT] got vfs endpoint: {}", vfs_endpoint);
 
     auto vfs_service = prot::VfsConnection::connect(vfs_endpoint).take();
-    log::log$("[INIT] connected to vfs for: {}", path);
+    fmt::log$("[INIT] connected to vfs for: {}", path);
 
     auto file_res = vfs_service.open_path(path);
     if (file_res.is_error())
     {
-        log::err$("[INIT] failed to open {}: {}", path, file_res.error());
+        fmt::err$("[INIT] failed to open {}: {}", path, file_res.error());
         return file_res.error();
     }
     auto file = file_res.take();
-    log::log$("[INIT] opened {}", path);
+    fmt::log$("[INIT] opened {}", path);
 
     auto info_res = file.get_info();
     if (info_res.is_error())
     {
-        log::err$("[INIT] get_info failed for {}: {}", path, info_res.error());
+        fmt::err$("[INIT] get_info failed for {}: {}", path, info_res.error());
         return info_res.error();
     }
     auto d = info_res.take();
-    log::log$("[INIT] {} size={} is_dir={}", path, d.size, d.is_directory);
+    fmt::log$("[INIT] {} size={} is_dir={}", path, d.size, d.is_directory);
 
     if (d.is_directory != 8)
     {
-        log::err$("[INIT] {} is a directory, cannot execute", path);
+        fmt::err$("[INIT] {} is a directory, cannot execute", path);
         return "module path is a directory";
     }
 
@@ -97,23 +97,23 @@ core::Result<size_t> start_service_fs(mcx::MachineContext *context, core::Str co
     auto read_res = file.read(mem, 0, d.size);
     if (read_res.is_error())
     {
-        log::err$("[INIT] read failed for {}: {}", path, read_res.error());
+        fmt::err$("[INIT] read failed for {}: {}", path, read_res.error());
         return read_res.error();
     }
-    log::log$("[INIT] read {} bytes from {}", d.size, path);
+    fmt::log$("[INIT] read {} bytes from {}", d.size, path);
 
     auto mapped = Wingos::Space::self().map_memory(mem, ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);
 
     auto loaded = elf::ElfLoader::load(VirtRange((uintptr_t)mapped.ptr(), (uintptr_t)mapped.ptr() + aligned_size));
     if (loaded.is_error())
     {
-        log::err$("[INIT] unable to load module {}: {}", path, loaded.error());
+        fmt::err$("[INIT] unable to load module {}: {}", path, loaded.error());
         return loaded.error();
     }
 
     auto v = execute_module(context, loaded.unwrap());
 
-    log::log$("[INIT] started fs module: {}", path);
+    fmt::log$("[INIT] started fs module: {}", path);
 
     return v;
 }
@@ -130,14 +130,14 @@ core::Result<size_t> start_service(mcx::MachineContext *context, core::Str path)
         }
     }
 
-    log::warn$("[INIT] no module found with path: {}", path);
+    fmt::warn$("[INIT] no module found with path: {}", path);
 
     return start_service_fs(context, path);
 }
 
 void start_from_pci(wjson::JsonValue *pjson)
 {
-    log::log$("Starting from PCI scan...");
+    fmt::log$("Starting from PCI scan...");
 
     Wingos::dev::PciController pci_controller;
     pci_controller.scan_bus(0);
@@ -145,7 +145,7 @@ void start_from_pci(wjson::JsonValue *pjson)
     auto drivers_json = (*pjson)[("drivers")].as_array().unwrap();
     for (const auto &device : pci_controller.devices)
     {
-        log::log$("Found PCI Device: Bus {}, Device {}, Function {}, Vendor ID: {}, Device ID: {}, Class: {}, Subclass: {}",
+        fmt::log$("Found PCI Device: Bus {}, Device {}, Function {}, Vendor ID: {}, Device ID: {}, Class: {}, Subclass: {}",
                   device.bus, device.device, device.function,
                   device.vendor_id() | fmt::FMT_HEX, device.device_id() | fmt::FMT_HEX,
                   device.class_code() | fmt::FMT_HEX, device.subclass() | fmt::FMT_HEX);
@@ -164,10 +164,10 @@ void start_from_pci(wjson::JsonValue *pjson)
             if ((pci_req_obj)["class-code"].as_number().unwrap() == device.class_code() &&
                 (pci_req_obj)["subclass-code"].as_number().unwrap() == device.subclass())
             {
-                log::log$("Found matching driver for device: {}", driver["name"].as_string().unwrap());
+                fmt::log$("Found matching driver for device: {}", driver["name"].as_string().unwrap());
 
                 auto path = driver["path"].as_string().unwrap();
-                log::log$("Loading driver from path: {}", path);
+                fmt::log$("Loading driver from path: {}", path);
 
                 ModuleLaunch ml = {};
                 ml.name = path;
@@ -177,7 +177,7 @@ void start_from_pci(wjson::JsonValue *pjson)
                     auto deps_array = deps_json.unwrap().as_array().unwrap();
                     for (auto &d : deps_array)
                     {
-                        log::log$("Driver dependency: {}", d.as_string().unwrap());
+                        fmt::log$("Driver dependency: {}", d.as_string().unwrap());
                         ml.deps.push(d.as_string().unwrap());
                     }
                 }
@@ -194,7 +194,7 @@ core::Result<void> load_module_config(mcx::MachineContext *context)
     json = {};
     for (int i = 0; i < context->_modules_count; i++)
     {
-        log::log$("module {}: {}", i, context->_modules[i].path);
+        fmt::log$("module {}: {}", i, context->_modules[i].path);
     }
 
     mcx::MachineContextModule config_module = {};
@@ -204,7 +204,7 @@ core::Result<void> load_module_config(mcx::MachineContext *context)
 
         if (core::Str(mod.path) == core::Str("/config/init-services.json"))
         {
-            log::log$("found config module: {}", mod.path);
+            fmt::log$("found config module: {}", mod.path);
             config_module = mod;
             break;
         }
@@ -230,10 +230,10 @@ core::Result<void> load_module_config(mcx::MachineContext *context)
     {
         auto name = try$(l["name"].as_string());
 
-        log::log$("l-module: {}", name);
+        fmt::log$("l-module: {}", name);
         auto path = try$(l["path"].as_string());
 
-        log::log$("module: {}, path: {}", name, path);
+        fmt::log$("module: {}, path: {}", name, path);
         ModuleLaunch ml = {};
         ml.name = path;
         auto deps_json = l.get("requires");
@@ -250,18 +250,18 @@ core::Result<void> load_module_config(mcx::MachineContext *context)
 
                         ml.deps.push(try$(d.as_string()));
                     }
-                    log::log$("AAAA");
+                    fmt::log$("AAAA");
                 }
-                log::log$("destructing deps_array: {}", deps_array.len());
+                fmt::log$("destructing deps_array: {}", deps_array.len());
             }
-            log::log$("destructing deps_array_r: {}", deps_array_r.storage.raw);
+            fmt::log$("destructing deps_array_r: {}", deps_array_r.storage.raw);
         }
         module_to_launch.push(ml);
 
-        log::log$("nl-module: {}", name);
+        fmt::log$("nl-module: {}", name);
         // module_service.push(core::Str(path));
     }
-    log::log$("A:");
+    fmt::log$("A:");
 
     return {};
 }
@@ -278,7 +278,7 @@ core::Result<bool> try_startup_modules_cycle_one(mcx::MachineContext *context)
             if (!started_services.contain(mod.deps[d]))
             {
                 can_start = false;
-                log::log$("[try_startup] Module '{}' waiting for dependency '{}'", mod.name, mod.deps[d]);
+                fmt::log$("[try_startup] Module '{}' waiting for dependency '{}'", mod.name, mod.deps[d]);
                 break;
             }
         }
@@ -288,11 +288,11 @@ core::Result<bool> try_startup_modules_cycle_one(mcx::MachineContext *context)
             continue;
         }
 
-        log::log$("[try_startup] Starting module: {}", mod.name);
+        fmt::log$("[try_startup] Starting module: {}", mod.name);
         auto start_res = start_service(context, mod.name);
         if (start_res.is_error())
         {
-            log::err$("[try_startup] Failed to start module {}: {}", mod.name, start_res.error());
+            fmt::err$("[try_startup] Failed to start module {}: {}", mod.name, start_res.error());
             // Keep the module in the queue to retry later when another service appears.
             continue;
         }
@@ -328,7 +328,7 @@ core::Result<void> startup_module(mcx::MachineContext *context)
     auto res = try_startup_modules_cycle(context);
     if (res.is_error())
     {
-        log::err$("failed to startup modules cycle: {}", res.error());
+        fmt::err$("failed to startup modules cycle: {}", res.error());
     }
 
     return {};
@@ -336,7 +336,7 @@ core::Result<void> startup_module(mcx::MachineContext *context)
 
 core::Result<void> service_startup_callback(core::Str service_name)
 {
-    log::log$("[service_startup_callback] Service registered: {}", service_name);
+    fmt::log$("[service_startup_callback] Service registered: {}", service_name);
 
     if (gmcx == nullptr)
     {
@@ -344,16 +344,16 @@ core::Result<void> service_startup_callback(core::Str service_name)
     }
     started_services.push(service_name);
 
-    log::log$("[service_startup_callback] Attempting to start pending modules (count: {})", module_to_launch.len());
+    fmt::log$("[service_startup_callback] Attempting to start pending modules (count: {})", module_to_launch.len());
     auto res = try_startup_modules_cycle(gmcx);
 
     if (res.is_error())
     {
-        log::err$("[service_startup_callback] Failed to start modules: {}", res.error());
+        fmt::err$("[service_startup_callback] Failed to start modules: {}", res.error());
         return res;
     }
 
-    log::log$("[service_startup_callback] Module startup cycle complete, remaining modules: {}", module_to_launch.len());
+    fmt::log$("[service_startup_callback] Module startup cycle complete, remaining modules: {}", module_to_launch.len());
 
     return {};
 }

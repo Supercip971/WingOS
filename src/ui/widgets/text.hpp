@@ -35,7 +35,7 @@ namespace fc
         core::Str info() const override { return val.view(); }
         void render(UiContext const &ctx, wgfx::Canvas &canvas) const override
         {
-            log::log$("renderign text at: {}-{} {}", (long)bounds().start.x, (long)bounds().start.y, val.view());
+            fmt::log$("renderign text at: {}-{} {}", (long)bounds().start.x, (long)bounds().start.y, val.view());
             (void)ctx;
             canvas.drawText(bounds().start + wgfx::Vec2(0.f, 96.f), val.view(), font, wgfx::SLATE_DARK);
         }

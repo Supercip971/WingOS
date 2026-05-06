@@ -22,7 +22,7 @@ core::Vec<RegisteredService *> registered_services = {};
 core::Result<void> service_register(uint64_t endpoint, core::Str const &name, uint64_t major, uint64_t minor)
 
 {
-    log::log$("registering service: {} ({}.{}) at {}", name, major, minor, endpoint);
+    fmt::log$("registering service: {} ({}.{}) at {}", name, major, minor, endpoint);
     RegisteredService *service = new RegisteredService();
     size_t i;
     for (i = 0; i < 80 - 1 && i < name.len(); i++)
@@ -37,7 +37,7 @@ core::Result<void> service_register(uint64_t endpoint, core::Str const &name, ui
 
     registered_services.push(service);
 
-    log::log$("(server) registered service: {} ({}.{}) at {}", service->name, service->major, service->minor, service->endpoint);
+    fmt::log$("(server) registered service: {} ({}.{}) at {}", service->name, service->major, service->minor, service->endpoint);
 
     service_startup_callback(service->name);
 
@@ -58,7 +58,7 @@ core::Result<IpcServerHandle> service_get(core::Str const &name, uint64_t major,
         }
     }
 
-    log::log$("service not found: {} ({}.{})", name, major, minor);
+    fmt::log$("service not found: {} ({}.{})", name, major, minor);
 
     return ("service not found");
 }
@@ -66,7 +66,7 @@ core::Result<IpcServerHandle> service_get(core::Str const &name, uint64_t major,
 void startup_init_service(Wingos::IpcServer server, MachineContextShared shared)
 {
 
-    log::log$("created init server with handle: {}", server.handle);
+    fmt::log$("created init server with handle: {}", server.handle);
 
     registered_services = {};
 
@@ -76,7 +76,7 @@ void startup_init_service(Wingos::IpcServer server, MachineContextShared shared)
         auto conn = server.accept();
         if (!conn.is_error())
         {
-            log::log$("(server) accepted connection: {}", conn.unwrap()->handle);
+            fmt::log$("(server) accepted connection: {}", conn.unwrap()->handle);
             connections.push(conn.unwrap());
         }
 
@@ -89,7 +89,7 @@ void startup_init_service(Wingos::IpcServer server, MachineContextShared shared)
 
             if(msg.received.flags & IPC_MESSAGE_FLAG_DISCONNECT)
             {
-                log::log$("(server) disconnecting connection");
+                fmt::log$("(server) disconnecting connection");
                 server.disconnect(msg.connection);
                 continue;
             }
@@ -97,7 +97,7 @@ void startup_init_service(Wingos::IpcServer server, MachineContextShared shared)
             {
             case prot::INIT_REGISTER_SERVER:
             {
-                log::log$("registered server: {}");
+                fmt::log$("registered server: {}");
                 service_register(
                     msg.received.data[1].data,
                     core::Str((char *)msg.received.raw_buffer, msg.received.len - 1),
@@ -108,7 +108,7 @@ void startup_init_service(Wingos::IpcServer server, MachineContextShared shared)
             }
             case prot::INIT_UNREGISTER_SERVER:
             {
-                log::warn$("(server) unregister server not implemented yet");
+                fmt::warn$("(server) unregister server not implemented yet");
                 break;
             }
             case prot::INIT_GET_SERVER:
@@ -130,7 +130,7 @@ void startup_init_service(Wingos::IpcServer server, MachineContextShared shared)
                 }
                 else
                 {
-                    log::log$("(server) get server failed: {}", service_res.error());
+                    fmt::log$("(server) get server failed: {}", service_res.error());
                 }
 
                 IpcMessage reply = {};
@@ -142,7 +142,7 @@ void startup_init_service(Wingos::IpcServer server, MachineContextShared shared)
             }
             case prot::INIT_SIGNAL_FS_AVAILABLE:
             {
-                log::log$("(server) received signal fs available");
+                fmt::log$("(server) received signal fs available");
                 service_startup_callback("@fs");
                 break;
             }
@@ -163,7 +163,7 @@ void startup_init_service(Wingos::IpcServer server, MachineContextShared shared)
             }
             default:
             {
-                log::log$("(server) unknown message type: {}", msg.received.data[0].data);
+                fmt::log$("(server) unknown message type: {}", msg.received.data[0].data);
                 break;
             }
             }

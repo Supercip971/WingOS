@@ -188,10 +188,10 @@ struct [[gnu::packed]] Madt
     void dump()
     {
         int i = 0;
-        log::log$("madt: ");
+        fmt::log$("madt: ");
         for (MadtEntry *entry = begin(); entry < end(); entry = next(entry))
         {
-            log::log$("- entry[{}]: {}", i, entry->type);
+            fmt::log$("- entry[{}]: {}", i, entry->type);
 
             i++;
         }

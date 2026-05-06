@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 #include <stdint.h>
 #include <libcore/fmt/log.hpp>
 
@@ -62,13 +62,13 @@ union [[gnu::packed]] NvmeConfig
 
 static inline void dump_controller_cap(ControllerCap const &cap)
 {
-    log::log$("Controller Capability:");
-    log::log$("- max queue entries           : {}", cap.max_queue_entries);
-    log::log$("- contiguous queue requirement: {}", cap.contiguous_queue_req);
-    log::log$("- timeout                     : {}", cap.timeout);
-    log::log$("- stride                      : {}", cap.stride);
-    log::log$("- mem page size minimum       : {}", cap.memory_page_size_minimum);
-    log::log$("- mem page size maximum       : {}", cap.memory_page_size_maximum);
+    fmt::log$("Controller Capability:");
+    fmt::log$("- max queue entries           : {}", cap.max_queue_entries);
+    fmt::log$("- contiguous queue requirement: {}", cap.contiguous_queue_req);
+    fmt::log$("- timeout                     : {}", cap.timeout);
+    fmt::log$("- stride                      : {}", cap.stride);
+    fmt::log$("- mem page size minimum       : {}", cap.memory_page_size_minimum);
+    fmt::log$("- mem page size maximum       : {}", cap.memory_page_size_maximum);
 }
 
 struct [[gnu::packed]] NvmeCmdHeader

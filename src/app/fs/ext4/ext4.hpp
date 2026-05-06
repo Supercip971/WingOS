@@ -150,7 +150,7 @@ struct [[gnu::packed]] Ext4Inode
     uint32_t extended_attr_block;
     uint32_t size_high;
     uint32_t obso_faddr;
-    
+
     uint8_t osd2[12];
 
     // more fields may follow
@@ -170,22 +170,22 @@ using InodeId = uint64_t;
 using Blockid = uint64_t;
 
 
-struct Ext4InodeRef 
+struct Ext4InodeRef
 {
     InodeId inode_id;
-    Ext4Inode inode; // 
+    Ext4Inode inode; //
 };
 
 struct Ext4CacheNode
 {
     size_t block_num;
-    void * data;   
+    void * data;
     size_t score;
 
 };
 class Ext4Filesystem
 {
-    core::Vec<Ext4CacheNode> cache_nodes;    
+    core::Vec<Ext4CacheNode> cache_nodes;
    prot::DiskConnection disk;
     size_t start_lba;
 
@@ -204,12 +204,12 @@ class Ext4Filesystem
 public:
 
     // use temp buffer
-    core::Result<void*> read_block_tmp(size_t block_num); 
-    core::Result<void*> read_block_tmp(Wingos::MemoryAsset& target, size_t block_num, size_t mem_asset_off); 
+    core::Result<void*> read_block_tmp(size_t block_num);
+    core::Result<void*> read_block_tmp(Wingos::MemoryAsset& target, size_t block_num, size_t mem_asset_off);
 
 
     core::Result<void> write_block_tmp(size_t block_num, void* data);
- 
+
     core::Result<size_t> inode_read(Ext4InodeRef const &inode, Wingos::MemoryAsset &out, size_t off, size_t len,  size_t mem_asset_off);
 
     core::Result<void*> inode_read_tmp(Ext4InodeRef const &inode, size_t block);
@@ -241,10 +241,10 @@ public:
         return (1024 << superblock.log_block_size);
     }
     // use temp buffer
-    
 
-    
-    BlockGroupId blockgroup_from_inode(InodeId inode) const 
+
+
+    BlockGroupId blockgroup_from_inode(InodeId inode) const
     {
         return (inode - 1) / superblock.inodes_per_group;
     }
@@ -258,7 +258,7 @@ public:
     {
         size_t containing_block = blockgroup_inode_index(inode) * superblock.inode_size;
         return containing_block / block_size();
-    }    
+    }
 
 
     core::Result<Ext4BlockGroupDescriptor> read_blockgroup_descriptor(BlockGroupId bg_id);
@@ -271,7 +271,7 @@ public:
 
     static core::Result<Ext4Filesystem> initialize(prot::DiskConnection disk_conn, size_t start_lba, size_t end_lba)
     {
-        log::log$("ext4: initializing ext4 filesystem...");
+        fmt::log$("ext4: initializing ext4 filesystem...");
         Ext4Filesystem fs;
         fs.disk = (disk_conn);
         fs.start_lba = start_lba;
@@ -290,16 +290,16 @@ public:
             return "not an ext4 filesystem (invalid magic)";
         }
 
-        log::log$("ext4: detected ext4 filesystem with {} inodes and {} blocks", core::copy(fs.superblock.inodes_count), fs.superblock.blocks_count_lo | ((uint64_t)fs.superblock.blocks_count_hi << 32));
+        fmt::log$("ext4: detected ext4 filesystem with {} inodes and {} blocks", core::copy(fs.superblock.inodes_count), fs.superblock.blocks_count_lo | ((uint64_t)fs.superblock.blocks_count_hi << 32));
 
-        log::log$("ext4: block size: {}", 1024 << fs.superblock.log_block_size);
-        log::log$("ext4: inode size: {}", core::copy(fs.superblock.inode_size));
-        log::log$("ext4: blocks per group: {}", core::copy(fs.superblock.blocks_per_group));
-        log::log$("ext4: inodes per group: {}", core::copy(fs.superblock.inodes_per_group));
-        log::log$("ext4: first inode: {}", core::copy(fs.superblock.first_ino));
-        log::log$("ext4: feature compat: {}", core::copy(fs.superblock.feature_compat));
-        log::log$("ext4: feature incompat: {}", core::copy(fs.superblock.feature_incompat));
-        log::log$("ext4: feature ro compat: {}", core::copy(fs.superblock.feature_ro_compat));
+        fmt::log$("ext4: block size: {}", 1024 << fs.superblock.log_block_size);
+        fmt::log$("ext4: inode size: {}", core::copy(fs.superblock.inode_size));
+        fmt::log$("ext4: blocks per group: {}", core::copy(fs.superblock.blocks_per_group));
+        fmt::log$("ext4: inodes per group: {}", core::copy(fs.superblock.inodes_per_group));
+        fmt::log$("ext4: first inode: {}", core::copy(fs.superblock.first_ino));
+        fmt::log$("ext4: feature compat: {}", core::copy(fs.superblock.feature_compat));
+        fmt::log$("ext4: feature incompat: {}", core::copy(fs.superblock.feature_incompat));
+        fmt::log$("ext4: feature ro compat: {}", core::copy(fs.superblock.feature_ro_compat));
 
         fs.disk_asset = Wingos::Space::self().allocate_physical_memory(math::alignUp<size_t>((1024 << fs.superblock.log_block_size), (size_t)4096));
         fs.mapped_disk_asset = Wingos::Space::self().map_memory(fs.disk_asset, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
@@ -321,14 +321,14 @@ public:
             fs.bgd_table_start_block += fs.superblock.first_meta_bg * (fs.superblock.inodes_per_group * fs.superblock.inode_size + fs.block_desc_size - 1) / (1024 << fs.superblock.log_block_size);
         }
 
-        
+
 
         auto v = try$(fs.read_inode(2));
 
-        log::log$("ext4: root inode has {} blocks", core::copy(v.inode.blocks_lo));
-        log::log$("ext4: root inode size: {}", (uint64_t)v.inode.size_lo);
-        log::log$("ext4: root inode first block pointer: {}", core::copy(v.inode.block[0]));
-        log::log$("ext4: root inode type: {}", (uint16_t)v.inode.file_type);
+        fmt::log$("ext4: root inode has {} blocks", core::copy(v.inode.blocks_lo));
+        fmt::log$("ext4: root inode size: {}", (uint64_t)v.inode.size_lo);
+        fmt::log$("ext4: root inode first block pointer: {}", core::copy(v.inode.block[0]));
+        fmt::log$("ext4: root inode type: {}", (uint16_t)v.inode.file_type);
 
 
         fs.dump_subdir(v, 0);
@@ -340,5 +340,5 @@ public:
 
 
 
-    
+
 };

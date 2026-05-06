@@ -15,7 +15,7 @@ size_t fwrite(const void* __restrict ptr, size_t size, size_t n, FILE* __restric
 #endif
     if(!file)
     {
-        log::log$("fwrite: file is null");
+        fmt::log$("fwrite: file is null");
         return 0;
     }
 #if defined(__GNUC__)
@@ -23,7 +23,7 @@ size_t fwrite(const void* __restrict ptr, size_t size, size_t n, FILE* __restric
 #endif
     if(file->kind == FILE_KIND_VOID)
     {
-        log::err$("fwrite: file handle is invalid (use-after-fclose detected!)");
+        fmt::err$("fwrite: file handle is invalid (use-after-fclose detected!)");
         return 0;
     }
     uint8_t* ptr_v = (uint8_t*)ptr;
@@ -91,7 +91,7 @@ size_t fread(void* __restrict ptr, size_t size, size_t n, FILE* __restrict file 
 #endif
     if(!file)
     {
-        log::err$("fread: file is null");
+        fmt::err$("fread: file is null");
         return 0;
     }
 #if defined(__GNUC__)
@@ -161,7 +161,7 @@ FILE* fopen(const char* filename, const char* mode)
     auto vfs_res = prot::VfsConnection::connect();
     if (vfs_res.is_error())
     {
-        log::err$("fopen: failed to connect to VFS: {}", vfs_res.error());
+        fmt::err$("fopen: failed to connect to VFS: {}", vfs_res.error());
         return nullptr;
     }
     prot::VfsConnection vfs = core::move(vfs_res.unwrap());
@@ -169,7 +169,7 @@ FILE* fopen(const char* filename, const char* mode)
     auto path_res = vfs.open_path(core::Str(filename));
     if (path_res.is_error())
     {
-        log::err$("fopen: failed to open path {}: {}", filename, path_res.error());
+        fmt::err$("fopen: failed to open path {}: {}", filename, path_res.error());
         return nullptr;
     }
 
@@ -186,13 +186,13 @@ FILE* fopen(const char* filename, const char* mode)
 }
 int remove(const char* filename)
 {
-    log::warn$("remove not implemented yet: {}", filename);
+    fmt::warn$("remove not implemented yet: {}", filename);
     // not implemented
     return 0;
 }
 int rename(const char* old_filename, const char* new_filename)
 {
-    log::warn$("rename not implemented yet: {} {}", old_filename, new_filename);
+    fmt::warn$("rename not implemented yet: {} {}", old_filename, new_filename);
     return 0;
 }
 
@@ -212,7 +212,7 @@ void fflush(FILE* stream)
 }
 int mkdir(const char* pathname, unsigned int mode)
 {
-    log::warn$("mkdir not implemented yet: {} {}", pathname, mode);
+    fmt::warn$("mkdir not implemented yet: {} {}", pathname, mode);
     return 0;
 }
 
@@ -221,15 +221,15 @@ int fclose(FILE* stream)
 {
     if(stream == nullptr)
     {
-        log::err$("fclose: stream is null");
+        fmt::err$("fclose: stream is null");
         return -1;
     }
     if(stream->kind == FILE_KIND_VOID)
     {
-        log::err$("fclose: file already closed (double-fclose detected!)");
+        fmt::err$("fclose: file already closed (double-fclose detected!)");
         return -1;
     }
-    log::log$("calling fclose: {}", stream->buffer.view());
+    fmt::log$("calling fclose: {}", stream->buffer.view());
     switch(stream->kind)
     {
         case FILE_KIND_FILE:
@@ -267,12 +267,12 @@ int fseek(FILE* stream, long offset, int origin)
 {
     if(stream == nullptr)
     {
-        log::err$("fseek: stream is null");
+        fmt::err$("fseek: stream is null");
         return -1;
     }
     if(stream->kind == FILE_KIND_VOID)
     {
-        log::err$("fseek: file handle is invalid (use-after-fclose detected!)");
+        fmt::err$("fseek: file handle is invalid (use-after-fclose detected!)");
         return -1;
     }
     switch(stream->kind)
@@ -324,12 +324,12 @@ long ftell(FILE* stream)
 {
     if(stream == nullptr)
     {
-        log::err$("ftell: stream is null");
+        fmt::err$("ftell: stream is null");
         return -1;
     }
     if(stream->kind == FILE_KIND_VOID)
     {
-        log::err$("ftell: file handle is invalid (use-after-fclose detected!)");
+        fmt::err$("ftell: file handle is invalid (use-after-fclose detected!)");
         return -1;
     }
     switch(stream->kind)

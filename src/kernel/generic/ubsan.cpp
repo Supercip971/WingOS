@@ -87,7 +87,7 @@ void dump_source_location(source_location *loc)
 {
     // In a real kernel, you would look up the file and line number in debug info.
     // Here, we just print the raw information.
-    log::err$(" at {}:{}:{}", loc->file, loc->line, loc->column);
+    fmt::err$(" at {}:{}:{}", loc->file, loc->line, loc->column);
 }
 
 static const char* __kinds[] = {
@@ -95,13 +95,13 @@ static const char* __kinds[] = {
 };
 void dump_type_descriptor(type_descriptor *type)
 {
-    log::err$("Type descriptor: {}", type->name);
+    fmt::err$("Type descriptor: {}", type->name);
 
     if(type->kind < sizeof(__kinds) / sizeof(__kinds[0]))
     {
-        log::err$("Kind: {}", __kinds[type->kind]);
+        fmt::err$("Kind: {}", __kinds[type->kind]);
     }
-    log::err$("Info: {}", type->info);
+    fmt::err$("Info: {}", type->info);
 }
 
 extern "C" void __ubsan_handle_function_type_mismatch(type_mismatch_data *data,
@@ -111,23 +111,23 @@ extern "C" void __ubsan_handle_function_type_mismatch(type_mismatch_data *data,
     lock_scope$(locker);
     if(!ptr)
     {
-        log::err$("UBSan func type mismatch");
+        fmt::err$("UBSan func type mismatch");
         dump_source_location(&data->loc);
     }
     else if(ptr & ((1 << data->alignment) - 1 ) && data->alignment != 0)
     {
-        log::err$("UBSan func type alignment mismatch");
+        fmt::err$("UBSan func type alignment mismatch");
         dump_source_location(&data->loc);
     }
     else
     {
-        log::err$("UBSan func type mismatch (no space for object)");
+        fmt::err$("UBSan func type mismatch (no space for object)");
         dump_source_location(&data->loc);
     }
 
 
   //  dump_source_location(&data->loc);
-  //  log::err$("UBSan func type mismatch");
+  //  fmt::err$("UBSan func type mismatch");
 }
 //#error https://wiki.osdev.org/Undefined_Behavior_Sanitization
 extern "C" void __ubsan_handle_type_mismatch(type_mismatch_data *data,
@@ -137,20 +137,20 @@ extern "C" void __ubsan_handle_type_mismatch(type_mismatch_data *data,
     lock_scope$(locker);
     if(!ptr)
     {
-        log::log$("UBSan type mismatch (null)");
+        fmt::log$("UBSan type mismatch (null)");
         dump_source_location(&data->loc);
         dump_type_descriptor(data->type);
     }
     else if((ptr & ((1 << data->alignment) - 1 )) && data->alignment != 0)
     {
-        log::log$("UBSan type alignment mismatch");
+        fmt::log$("UBSan type alignment mismatch");
         dump_source_location(&data->loc);
         dump_type_descriptor(data->type);
 
     }
     else
     {
-        log::log$("UBSan type mismatch (no space for object)");
+        fmt::log$("UBSan type mismatch (no space for object)");
         dump_source_location(&data->loc);
         dump_type_descriptor(data->type);
     }
@@ -163,29 +163,29 @@ extern "C" void __ubsan_handle_type_mismatch_v1(type_mismatch_data *data,
     lock_scope$(locker);
     if(!ptr)
     {
-        log::err$("(v1) UBSan type mismatch");
+        fmt::err$("(v1) UBSan type mismatch");
         dump_source_location(&data->loc);
         dump_type_descriptor(data->type);
     }
     else if((ptr & ((1 << data->alignment) - 1 )) && data->alignment != 0)
     {
-        log::err$("(v1) UBSan type alignment mismatch");
-        log::err$("Alignment expected: ", data->alignment);
-        log::err$("Alignment actual: ", ptr & ((1 << data->alignment) - 1 ));
+        fmt::err$("(v1) UBSan type alignment mismatch");
+        fmt::err$("Alignment expected: ", data->alignment);
+        fmt::err$("Alignment actual: ", ptr & ((1 << data->alignment) - 1 ));
 
         dump_source_location(&data->loc);
         dump_type_descriptor(data->type);
     }
     else
     {
-        log::err$("(v1) UBSan type mismatch (no space for object)");
+        fmt::err$("(v1) UBSan type mismatch (no space for object)");
         dump_source_location(&data->loc);
         dump_type_descriptor(data->type);
     }
 
     (void)data;
   //  dump_source_location(&data->loc);
-  //  log::err$("UBSan type mismatch");
+  //  fmt::err$("UBSan type mismatch");
 }
 extern "C" void __ubsan_handle_pointer_overflow(overflow_data *data,
                                  unsigned long lhs __attribute__((unused)),
@@ -193,7 +193,7 @@ extern "C" void __ubsan_handle_pointer_overflow(overflow_data *data,
 {
     lock_scope$(locker);
     dump_source_location(&data->loc);
-    log::err$("UBSan ptr overflow");
+    fmt::err$("UBSan ptr overflow");
 }
 extern "C" void __ubsan_handle_add_overflow(overflow_data *data,
                                  unsigned long lhs __attribute__((unused)),
@@ -201,7 +201,7 @@ extern "C" void __ubsan_handle_add_overflow(overflow_data *data,
 {
     lock_scope$(locker);
     dump_source_location(&data->loc);
-    log::err$("UBSan add overflow");
+    fmt::err$("UBSan add overflow");
 }
 
 extern "C" void __ubsan_handle_sub_overflow(overflow_data *data,
@@ -210,7 +210,7 @@ extern "C" void __ubsan_handle_sub_overflow(overflow_data *data,
 {
     lock_scope$(locker);
     dump_source_location(&data->loc);
-    log::err$("UBSan sub overflow");
+    fmt::err$("UBSan sub overflow");
 }
 
 extern "C" void __ubsan_handle_mul_overflow(overflow_data *data,
@@ -219,7 +219,7 @@ extern "C" void __ubsan_handle_mul_overflow(overflow_data *data,
 {
     lock_scope$(locker);
     dump_source_location(&data->loc);
-    log::err$("UBSan mul overflow");
+    fmt::err$("UBSan mul overflow");
 }
 
 extern "C" void __ubsan_handle_negate_overflow(overflow_data *data,
@@ -228,7 +228,7 @@ extern "C" void __ubsan_handle_negate_overflow(overflow_data *data,
 {
     lock_scope$(locker);
     dump_source_location(&data->loc);
-    log::err$("UBSan negate overflow");
+    fmt::err$("UBSan negate overflow");
 }
 
 extern "C" void __ubsan_handle_divrem_overflow(overflow_data *data,
@@ -237,7 +237,7 @@ extern "C" void __ubsan_handle_divrem_overflow(overflow_data *data,
 {
     lock_scope$(locker);
     dump_source_location(&data->loc);
-    log::err$("UBSan divrem overflow");
+    fmt::err$("UBSan divrem overflow");
 }
 
 extern "C" void __ubsan_handle_shift_out_of_bounds(shift_out_of_bounds_data *data,
@@ -248,7 +248,7 @@ extern "C" void __ubsan_handle_shift_out_of_bounds(shift_out_of_bounds_data *dat
 {
     lock_scope$(locker);
     dump_source_location(&data->loc);
-    log::err$("UBSan shift out of bounds");
+    fmt::err$("UBSan shift out of bounds");
 }
 
 extern "C" void __ubsan_handle_out_of_bounds(out_of_bounds_data *data,
@@ -256,14 +256,14 @@ extern "C" void __ubsan_handle_out_of_bounds(out_of_bounds_data *data,
 {
     lock_scope$(locker);
     dump_source_location(&data->loc);
-    log::err$("UBSan out of bounds");
+    fmt::err$("UBSan out of bounds");
 }
 
 extern "C" void __ubsan_handle_builtin_unreachable(unreachable_data *data)
 {
     lock_scope$(locker);
     dump_source_location(&data->loc);
-    log::err$("UBSan builtin unreachable reached");
+    fmt::err$("UBSan builtin unreachable reached");
     asm volatile("int $3");
     while(true){};
 }
@@ -271,7 +271,7 @@ extern "C" void __ubsan_handle_unreachable(unreachable_data *data)
 {
     lock_scope$(locker);
     dump_source_location(&data->loc);
-    log::err$("UBSan unreachable reached");
+    fmt::err$("UBSan unreachable reached");
 }
 
 extern "C" void __attribute__((noreturn))
@@ -279,7 +279,7 @@ __ubsan_handle_missing_return(unreachable_data *data)
 {
     lock_scope$(locker);
     dump_source_location(&data->loc);
-    log::err$("UBSan missing return");
+    fmt::err$("UBSan missing return");
     while (true)
         ;
 }
@@ -290,7 +290,7 @@ extern "C" void __ubsan_handle_vla_bound_not_positive(vla_bound_data *data,
 {
     lock_scope$(locker);
     dump_source_location(&data->loc);
-    log::err$("UBSan VLA bound not positive");
+    fmt::err$("UBSan VLA bound not positive");
 }
 
 extern "C" void __ubsan_handle_load_invalid_value(invalid_value_data *data,
@@ -299,13 +299,13 @@ extern "C" void __ubsan_handle_load_invalid_value(invalid_value_data *data,
 {
     lock_scope$(locker);
     dump_source_location(&data->loc);
-    log::err$("UBSan load invalid value");
+    fmt::err$("UBSan load invalid value");
 }
 extern "C" void __ubsan_handle_nonnull_return_v1(nonnull_arg_data *data)
 {
     lock_scope$(locker);
     dump_source_location(&data->loc);
-    log::err$("UBSan nonnull return");
+    fmt::err$("UBSan nonnull return");
 }
 
 extern "C" void __ubsan_handle_nonnull_arg(nonnull_arg_data *data
@@ -317,5 +317,5 @@ extern "C" void __ubsan_handle_nonnull_arg(nonnull_arg_data *data
 {
     lock_scope$(locker);
     dump_source_location(&data->loc);
-    log::err$("UBSan nonnull argument passed null");
+    fmt::err$("UBSan nonnull argument passed null");
 }

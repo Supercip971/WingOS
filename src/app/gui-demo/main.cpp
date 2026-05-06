@@ -67,7 +67,7 @@ int main(int argc, char **argv)
     (void)argc;
     (void)argv;
 
-    log::log$("Hello, World!");
+    fmt::log$("Hello, World!");
 
     float x = 0;
     float y = 0;
@@ -97,23 +97,23 @@ int main(int argc, char **argv)
         switch (contour->strokes[j].a.action)
         {
         case wgfx::PathAction::GMOVE:
-            log::log$("GMOVE");
+            fmt::log$("GMOVE");
             break;
         case wgfx::PathAction::GCURVE:
-            log::log$("GCURVE");
+            fmt::log$("GCURVE");
             break;
         case wgfx::PathAction::GCUBIC_CURVE:
-            log::log$("GCUBIC");
+            fmt::log$("GCUBIC");
             break;
         default:
-            log::log$("UNKNOWN: ({}, {})", (long)contour->strokes[j].a.pos.x, (long)contour->strokes[j].a.pos.y);
+            fmt::log$("UNKNOWN: ({}, {})", (long)contour->strokes[j].a.pos.x, (long)contour->strokes[j].a.pos.y);
             break;
         }
-        log::log$("start: ({}, {})", (long)contour->strokes[j].a.pos.x, (long)contour->strokes[j].a.pos.y);
-        log::log$("end: ({}, {})", (long)contour->strokes[j].b.pos.x, (long)contour->strokes[j].b.pos.y);
-        log::log$("control: ({}, {})", (long)contour->strokes[j].a.curve.control.x, (long)contour->strokes[j].a.curve.control.y);
-        log::log$("control2: ({}, {})", (long)contour->strokes[j].a.cubic_curve.control2.x, (long)contour->strokes[j].a.cubic_curve.control2.y);
-        log::log$("");
+        fmt::log$("start: ({}, {})", (long)contour->strokes[j].a.pos.x, (long)contour->strokes[j].a.pos.y);
+        fmt::log$("end: ({}, {})", (long)contour->strokes[j].b.pos.x, (long)contour->strokes[j].b.pos.y);
+        fmt::log$("control: ({}, {})", (long)contour->strokes[j].a.curve.control.x, (long)contour->strokes[j].a.curve.control.y);
+        fmt::log$("control2: ({}, {})", (long)contour->strokes[j].a.cubic_curve.control2.x, (long)contour->strokes[j].a.cubic_curve.control2.y);
+        fmt::log$("");
     }
 
     float l = 0.f;
@@ -131,7 +131,7 @@ int main(int argc, char **argv)
     while (true)
     {
 
-        // log::log$("ran frame");
+        // fmt::log$("ran frame");
 
         wgfx::Canvas *frame = window->create_frame();
 
@@ -139,13 +139,13 @@ int main(int argc, char **argv)
 
         vwidgt->update_layout({}, wgfx::GRect(0, 0, window->width(), window->height()));
 
-        //   log::log$("green: l:{} - a:{} - b:{}", (long)(wgfx::GREEN.lightness * 100), (long)(wgfx::GREEN.a_green_rediness * 100), (long)(wgfx::GREEN.b_blue_yelowness * 100));
+        //   fmt::log$("green: l:{} - a:{} - b:{}", (long)(wgfx::GREEN.lightness * 100), (long)(wgfx::GREEN.a_green_rediness * 100), (long)(wgfx::GREEN.b_blue_yelowness * 100));
 
-        //   log::log$("red: {}", wgfx::RED.toRgba8());
+        //   fmt::log$("red: {}", wgfx::RED.toRgba8());
 
-        //   log::log$("blue: {}", wgfx::BLUE.toRgba8());
+        //   fmt::log$("blue: {}", wgfx::BLUE.toRgba8());
 
-        //   log::log$("green: {}", wgfx::GREEN.toRgba8());
+        //   fmt::log$("green: {}", wgfx::GREEN.toRgba8());
 
         l += 0.5;
         (void)l;

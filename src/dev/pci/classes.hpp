@@ -71,7 +71,7 @@ static inline void log_dev(uint8_t class_code, uint8_t subclass)
 {
     if (class_code >= dev_classes_count)
     {
-        log::log$("Unknown device class: {}", class_code);
+        fmt::log$("Unknown device class: {}", class_code);
         return;
     }
 
@@ -81,7 +81,7 @@ static inline void log_dev(uint8_t class_code, uint8_t subclass)
     {
         if (subclass < dev_classes_storage_count)
         {
-            log::log$("Storage device: {}", dev_classes_storage[subclass]);
+            fmt::log$("Storage device: {}", dev_classes_storage[subclass]);
             return;
         }
     }
@@ -89,7 +89,7 @@ static inline void log_dev(uint8_t class_code, uint8_t subclass)
     {
         if (subclass < dev_classes_network_count)
         {
-            log::log$("Network device: {}", dev_classes_network[subclass]);
+            fmt::log$("Network device: {}", dev_classes_network[subclass]);
             return;
         }
     }
@@ -97,11 +97,11 @@ static inline void log_dev(uint8_t class_code, uint8_t subclass)
     {
         if (subclass < dev_classes_display_count)
         {
-            log::log$("Display device: {}", dev_classes_display[subclass]);
+            fmt::log$("Display device: {}", dev_classes_display[subclass]);
             return;
         }
     }
 
-    log::log$("Unknown device class: {}, subclass: {}", class_str, subclass);
+    fmt::log$("Unknown device class: {}, subclass: {}", class_str, subclass);
 }
 } // namespace Wingos::dev

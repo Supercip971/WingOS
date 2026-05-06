@@ -23,7 +23,7 @@ int main(int argc, char **argv)
     (void)argc;
     (void)argv;
 
-    log::log$("Hello, World!");
+    fmt::log$("Hello, World!");
 
     v.execute(0);
     return 0;

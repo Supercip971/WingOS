@@ -20,7 +20,7 @@ public:
         _tick++;
         if (_tick == 1000)
         {
-            log::log$("Alive: {}", _name);
+            fmt::log$("Alive: {}", _name);
             _tick = 0;
         }
     }

@@ -183,21 +183,21 @@ public:
 
     core::Result<FsFile> open_path(core::Str const & path)
     {
-        log::log$("VfsConnection::open_path: opening path {}", path.view());
+        fmt::log$("VfsConnection::open_path: opening path {}", path.view());
         if(path[0] != '/')
         {
-            log::warn$("FIXME: path must be absolute");
+            fmt::warn$("FIXME: path must be absolute");
             return ("only absolute paths are supported");
         }
 
-        log::log$("opening path {}", path.view());
+        fmt::log$("opening path {}", path.view());
         auto root_res = try$(open_root());
         auto current_dir = core::move(root_res);
         auto components = path.substr(1).split('/');
 
         for(size_t i = 0; i < components.len(); i++)
         {
-            log::log$("path component {}: {}", i, components[i].view());
+            fmt::log$("path component {}: {}", i, components[i].view());
         }
         for(size_t i = 0; i < components.len(); i++)
         {

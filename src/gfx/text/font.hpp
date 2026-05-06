@@ -32,7 +32,7 @@ public:
         size_t file_size = ftell(f);
         fseek(f, 0, SEEK_SET);
 
-        log::log$("loading font from {} with size: {}", path, file_size);
+        fmt::log$("loading font from {} with size: {}", path, file_size);
         result->buffer = (uint8_t *)new uint8_t[file_size];
         fread(result->buffer, 1, file_size, f);
         fclose(f);
@@ -150,7 +150,7 @@ public:
             if (shape.num_vertices > 0)
             {
                 char str[3] = {shape.c, 0};
-                log::log$("loading font: char {}", str);
+                fmt::log$("loading font: char {}", str);
                 shape.gfx_contour = core::SharedPtr<Contour>::make(Font::from_stbtt_vertices(rscale, shape.vertices, shape.num_vertices));
             }
             else

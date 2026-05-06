@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 
 #include "iol/wingos/ipc.hpp"
 #include "iol/wingos/space.hpp"
@@ -7,21 +7,21 @@
 #include "wingos-headers/ipc.h"
 
 
-namespace prot 
+namespace prot
 {
-    enum CompositorMessageType 
+    enum CompositorMessageType
     {
         COMPOSITOR_CREATE_WINDOW = 1,
     };
 
 
-    struct CompositorCreateWindow 
+    struct CompositorCreateWindow
     {
         IpcServerHandle window_endpoint;
     };
 
 
-    class CompositorConnection 
+    class CompositorConnection
     {
         Wingos::IpcClient connection;
     public:
@@ -49,13 +49,13 @@ namespace prot
             auto sended_message = connection.call(message);
             if (sended_message.is_error())
             {
-                log::err$("compositor: failed to send create window message");
+                fmt::err$("compositor: failed to send create window message");
             }
 
             auto msg = core::move(sended_message.unwrap());
             IpcServerHandle window_endpoint = msg.data[0].data;
 
-            log::log$("compositor: created window with endpoint {}", window_endpoint);
+            fmt::log$("compositor: created window with endpoint {}", window_endpoint);
             return window_endpoint;
         }
     };

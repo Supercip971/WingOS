@@ -33,23 +33,23 @@ void dump_stackframe(void *rbp)
     stackframe *frame = reinterpret_cast<stackframe *>(rbp);
     int size = 0;
 
-    log::log$("stackframe: ");
+    fmt::log$("stackframe: ");
 
-    log::log_lock();
+    fmt::log_lock();
     while (frame && size++ < 20)
     {
         auto rip = frame->rip;
 
-        log::log("{} ", rip | fmt::FMT_HEX);
+        fmt::log("{} ", rip | fmt::FMT_HEX);
         frame = frame->rbp;
     }
 
-    log::log("\n");
-    log::log_release();
+    fmt::log("\n");
+    fmt::log_release();
 
     if (size >= 20)
     {
-        log::log$("... (stackframe too deep)");
+        fmt::log$("... (stackframe too deep)");
     }
 }
 
@@ -65,7 +65,7 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
 
      if(interrupt_status() == 1)
     {
-           log::err$("syscall called with interrupts disabled, this is not allowed");
+           fmt::err$("syscall called with interrupts disabled, this is not allowed");
            while(true)
            {
 
@@ -111,13 +111,13 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
             }
         }
 
-        log::err$("syscall error: {}", res.error());
+        fmt::err$("syscall error: {}", res.error());
 
         srwlock_write_acquire$(_syscall_lock);
 
         {
 
-            log::err$("syscall error: {}", res.error());
+            fmt::err$("syscall error: {}", res.error());
             auto rax = stackframe->rax;
             auto rbx = stackframe->rbx;
             auto rdx = stackframe->rdx;
@@ -125,9 +125,9 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
             auto rdi = stackframe->rdi;
             auto r8 = stackframe->r8;
             auto r9 = stackframe->r9;
-            log::log$("syscall id: {}", rax);
-            log::log$("syscall args: {}, {}, {}, {}, {}, {}", rbx, rdx, rsi, rdi, r8, r9);
-            log::log$("task: {}", Cpu::current()->currentTask() ? Cpu::current()->currentTask()->uid() : -1);
+            fmt::log$("syscall id: {}", rax);
+            fmt::log$("syscall args: {}, {}, {}, {}, {}, {}", rbx, rdx, rsi, rdi, r8, r9);
+            fmt::log$("task: {}", Cpu::current()->currentTask() ? Cpu::current()->currentTask()->uid() : -1);
 
             // [gs:0x0] and [gs:0x8]
             uintptr_t gs0 = 0;
@@ -136,13 +136,13 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
                          : "=r"(gs0));
             asm volatile("mov %%gs:0x8, %0"
                          : "=r"(gs8));
-            log::log$("gs[0x0]: {}", gs0 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
-            log::log$("gs[0x8]: {}", gs8 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
+            fmt::log$("gs[0x0]: {}", gs0 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
+            fmt::log$("gs[0x8]: {}", gs8 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
 
-            log::log$("task stacktrace dump:");
+            fmt::log$("task stacktrace dump:");
             dump_stackframe((void *)stackframe->rbp);
 
-            log::log$("task space({}) dump:", Cpu::current()->currentTask()->space()->uid);
+            fmt::log$("task space({}) dump:", Cpu::current()->currentTask()->space()->uid);
 
             auto space = Cpu::current()->currentTask()->space();
             space->dump_assets();
@@ -166,7 +166,7 @@ extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
     Cpu::end_syscall();
   //  Cpu::current()->debug_context.in_syscall = false;
 
-    // log::log$("syscall: {} ", stackframe->rax);
+    // fmt::log$("syscall: {} ", stackframe->rax);
     return sf->rax;
 }
 

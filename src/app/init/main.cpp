@@ -14,17 +14,17 @@ int _main(StartupInfo *info)
 {
 
     mcx::MachineContext *context = &info->machine_context_optional;
-    log::log$("hello world from init!");
+    fmt::log$("hello world from init!");
 
 
     auto server = Wingos::Space::self().create_ipc_server(true);
-    log::log$("created server with handle: {}", server.handle);
+    fmt::log$("created server with handle: {}", server.handle);
 
     startup_module(context);
 
     MachineContextShared shared = {};
 
-    log::log$("framebuffer addr: {}", (uintptr_t)context->_framebuffer.address | fmt::FMT_HEX);
+    fmt::log$("framebuffer addr: {}", (uintptr_t)context->_framebuffer.address | fmt::FMT_HEX);
     shared.framebuffer_width = context->_framebuffer.width;
     shared.framebuffer_height = context->_framebuffer.height;
     shared.framebuffer_addr = (uintptr_t)context->_framebuffer.address - 0xffff800000000000;

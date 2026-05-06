@@ -18,7 +18,7 @@
 #include "wingos-headers/syscalls.h"
 
 
-struct FramebufferInfo 
+struct FramebufferInfo
 {
     uintptr_t framebuffer_addr;
     size_t framebuffer_width;
@@ -28,18 +28,18 @@ struct FramebufferInfo
 
 int cdepth = 0;
 
-int mdepth = 0; // manager depth 
+int mdepth = 0; // manager depth
 
-struct Window 
+struct Window
 {
     prot::ManagedServer server;
 
-    size_t width; 
-    size_t height; 
+    size_t width;
+    size_t height;
     bool is_framebuffer_taken;
 
     Wingos::MemoryAsset framebuffer_asset;
-    int depth; 
+    int depth;
 
     Wingos::VirtualMemoryAsset framebuffer_mapped;
 
@@ -48,10 +48,10 @@ core::Vec<Window> windows = {};
 
 void * framebuffer_mapped = nullptr;
 
-bool update_window(Window &window) 
+bool update_window(Window &window)
 {
 
-    if(window.server.connection_count() == 0) 
+    if(window.server.connection_count() == 0)
     {
 
         window.server.accept_connection();
@@ -62,23 +62,23 @@ bool update_window(Window &window)
 
     auto received = window.server.try_receive();
 
-    if (received.is_error()) 
+    if (received.is_error())
     {
         return false;
     }
 
     auto msg = received.take();
 
-    if (msg.received.flags & IPC_MESSAGE_FLAG_DISCONNECT) 
+    if (msg.received.flags & IPC_MESSAGE_FLAG_DISCONNECT)
     {
-        log::log$("compositor: disconnecting window");
+        fmt::log$("compositor: disconnecting window");
         window.server.disconnect(msg.connection);
         return true;
     }
- 
-    switch (msg.received.data[0].data) 
+
+    switch (msg.received.data[0].data)
     {
-        case prot::WINDOW_GET_ATTRIBUTE_SIZE: 
+        case prot::WINDOW_GET_ATTRIBUTE_SIZE:
         {
             prot::WindowGetAttributeSize resp{};
             resp.width = window.width;
@@ -91,7 +91,7 @@ bool update_window(Window &window)
             window.server.reply(core::move(msg), reply).unwrap();
             break;
         }
-        case prot::WINDOW_GET_FRAMEBUFFER: 
+        case prot::WINDOW_GET_FRAMEBUFFER:
         {
             IpcMessage reply = {};
             auto fb_asset =  window.framebuffer_asset;
@@ -110,7 +110,7 @@ bool update_window(Window &window)
         }
         default:
         {
-            log::warn$("compositor: unknown window message type received: {}", msg.received.data[0].data);
+            fmt::warn$("compositor: unknown window message type received: {}", msg.received.data[0].data);
             break;
         }
     }
@@ -133,11 +133,11 @@ int main(int, char**)
 
     auto framebuffer_phys = Wingos::Space::self().own_memory_physical(fb.framebuffer_addr, fb.framebuffer_width * fb.framebuffer_height * 4);
     auto framebuffer_map = Wingos::Space::self().map_memory(framebuffer_phys, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
-    
+
     framebuffer_mapped = framebuffer_map.ptr();
 
 
-    for(size_t i = 0; i < fb.framebuffer_width * fb.framebuffer_height * 4; i++) 
+    for(size_t i = 0; i < fb.framebuffer_width * fb.framebuffer_height * 4; i++)
     {
         ((uint8_t *)framebuffer_mapped)[i] = 0xff; // white
     }
@@ -145,9 +145,9 @@ int main(int, char**)
     {
        // alive.tick();
         size_t idx = 0;
-        for(auto &window : windows) 
+        for(auto &window : windows)
         {
-            if(update_window(window)) 
+            if(update_window(window))
             {
                 // window closed
                 windows.pop(idx);
@@ -168,12 +168,12 @@ int main(int, char**)
 
         if (msg.received.flags & IPC_MESSAGE_FLAG_DISCONNECT)
         {
-            log::log$("compositor: disconnecting from client");
+            fmt::log$("compositor: disconnecting from client");
             serv.disconnect(msg.connection);
             continue;
         }
 
-        
+
 
         switch (msg.received.data[0].data)
         {
@@ -186,7 +186,7 @@ int main(int, char**)
             auto window_conn_r = prot::ManagedServer::create_server();
             if (window_conn_r.is_error())
             {
-                log::err$("compositor: failed to create window server: {}", window_conn_r.error());
+                fmt::err$("compositor: failed to create window server: {}", window_conn_r.error());
                 resp.window_endpoint = 0;
             }
             else
@@ -195,7 +195,7 @@ int main(int, char**)
                 resp.window_endpoint = window_conn.addr();
 
                 auto window_mem = Wingos::Space::self().allocate_physical_memory(fb.framebuffer_width * fb.framebuffer_height * 4);
-                auto window_map = Wingos::Space::self().map_memory(window_mem, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE); 
+                auto window_map = Wingos::Space::self().map_memory(window_mem, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
 
                 mdepth = cdepth+1;
                 windows.push(Window{
@@ -207,8 +207,8 @@ int main(int, char**)
                     .depth = cdepth++,
                     .framebuffer_mapped = window_map,
                 });
-                
-                log::log$("compositor: created window with endpoint {}, take_fb={}", resp.window_endpoint, take_fb);
+
+                fmt::log$("compositor: created window with endpoint {}, take_fb={}", resp.window_endpoint, take_fb);
             }
 
             IpcMessage reply = {};
@@ -218,11 +218,11 @@ int main(int, char**)
 
             break;
         }
-        
+
         default:
         {
-            log::warn$("compositor: unknown message type received: {}", msg.received.data[0].data);
-            
+            fmt::warn$("compositor: unknown message type received: {}", msg.received.data[0].data);
+
             break;
         }
 

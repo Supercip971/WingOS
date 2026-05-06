@@ -17,10 +17,10 @@ struct DebuggedContext
     bool in_syscall;
 
     void dump() const {
-        log::log$("DebuggedContext:");
-        log::log$("  - last_syscall_id: {}", last_syscall_id);
-        log::log$("  - last_syscall_task_called: {}", last_syscall_task_called);
-        log::log$("  - in_syscall: {}", in_syscall ? "true" : "false");
+        fmt::log$("DebuggedContext:");
+        fmt::log$("  - last_syscall_id: {}", last_syscall_id);
+        fmt::log$("  - last_syscall_task_called: {}", last_syscall_task_called);
+        fmt::log$("  - in_syscall: {}", in_syscall ? "true" : "false");
     }
 };
 

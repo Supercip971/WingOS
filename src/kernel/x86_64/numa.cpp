@@ -12,8 +12,8 @@ core::Result<CpuTreeNode *> initialize_cpu_tree()
 
     if (root.is_error())
     {
-        log::err$("unable to initialize cpu tree, falling back to guessed NUMA structure");
-        log::err$(root.error());
+        fmt::err$("unable to initialize cpu tree, falling back to guessed NUMA structure");
+        fmt::err$(root.error());
 
         return fallback_use_guessed();
     }

@@ -53,7 +53,7 @@ size_t mounted_devices_count = 0;
 
 void try_create_disk_endpoint()
 {
-    log::log$("rechecking mounted filesystems...");
+    fmt::log$("rechecking mounted filesystems...");
     for (auto &device : registered_services)
     {
 
@@ -67,7 +67,7 @@ void try_create_disk_endpoint()
             for (auto &fs : registered_fs)
             {
 
-                log::log$("trying to mount partition {} of device {} with fs {} on {}", part.part_name.view(), part.part_dev_name.view(), core::Str(fs.name), device.endpoint);
+                fmt::log$("trying to mount partition {} of device {} with fs {} on {}", part.part_name.view(), part.part_dev_name.view(), core::Str(fs.name), device.endpoint);
 
                 auto res = fs.endpoint.mount_if_device_valid(core::Str(device.name), device.endpoint, part.begin, part.end, part.id).unwrap();
 
@@ -92,7 +92,7 @@ void try_create_disk_endpoint()
 
                     mount_fs(mdev.endpoint, core::move(mdev.path)).unwrap();
 
-                    log::log$("detected partition {} of device {} with fs {}", part.part_name.view(), part.part_dev_name.view(), part.fs_name.view());
+                    fmt::log$("detected partition {} of device {} with fs {}", part.part_name.view(), part.part_dev_name.view(), part.fs_name.view());
                     break;
                 }
             }
@@ -104,13 +104,13 @@ int main(int, char **)
 {
 
     // attempt connection to server ID 0
-    log::log$("started vfs");
+    fmt::log$("started vfs");
 
     auto server_r = prot::ManagedServer::create_registered_server("vfs", 1, 0);
-    log::log$("registered vfs");
+    fmt::log$("registered vfs");
     if (server_r.is_error())
     {
-        log::err$("failed to create registered vfs server: {}", server_r.error());
+        fmt::err$("failed to create registered vfs server: {}", server_r.error());
         return 1;
     }
 
@@ -135,7 +135,7 @@ int main(int, char **)
 
             if (msg.received.flags & IPC_MESSAGE_FLAG_DISCONNECT)
             {
-                log::log$("Received disconnect message");
+                fmt::log$("Received disconnect message");
 
                 server.disconnect(msg.connection);
                 continue;
@@ -156,7 +156,7 @@ int main(int, char **)
 
                 recheck_mount = true;
 
-                log::log$("(server) registered device: {} with endpoint: {}", device.name, device.endpoint);
+                fmt::log$("(server) registered device: {} with endpoint: {}", device.name, device.endpoint);
 
                 core::Str v = core::Str(device.name);
                 auto v2_res = Wingos::parse_gpt(v);
@@ -175,7 +175,7 @@ int main(int, char **)
                     part.begin = entry.entry->lba_start;
                     part.end = entry.entry->lba_end;
 
-                    log::log$("(server) detected partition: {} -> (LBA {} - {})", part.part_name.view(), part.part_dev_name.view(), part.begin, part.end);
+                    fmt::log$("(server) detected partition: {} -> (LBA {} - {})", part.part_name.view(), part.part_dev_name.view(), part.begin, part.end);
 
                     device.partitions.push(core::move(part));
                 }
@@ -197,7 +197,7 @@ int main(int, char **)
 
                 registered_fs.push(filesystem);
 
-                log::log$("(server) registered filesystem: {} with endpoint: {}", core::Str(filesystem.name), msg.received.data[1].data);
+                fmt::log$("(server) registered filesystem: {} with endpoint: {}", core::Str(filesystem.name), msg.received.data[1].data);
 
                 recheck_mount = true;
                 break;
@@ -205,7 +205,7 @@ int main(int, char **)
 
             case prot::VFS_ROOT_ACCESS:
             {
-                log::log$("(server) root access requested");
+                fmt::log$("(server) root access requested");
                 IpcMessage reply = {};
                 if (mounted_devices_count > 0)
                 {
@@ -217,19 +217,19 @@ int main(int, char **)
 
                         reply.data[0].data = 0; // failure
                         reply.data[1].data = 0;
-                        log::err$("(server) failed to open root endpoint: {}", root_endpoint.error());
+                        fmt::err$("(server) failed to open root endpoint: {}", root_endpoint.error());
                     }
                     else
                     {
                         auto root_res = root_endpoint.unwrap();
                         reply.data[1].data = root_res->server.addr();
 
-                        log::log$("(server) provided root access with endpoint: {}", reply.data[1].data);
+                        fmt::log$("(server) provided root access with endpoint: {}", reply.data[1].data);
                     }
                 }
                 else
                 {
-                    log::err$("(server) no filesystems mounted, cannot provide root access");
+                    fmt::err$("(server) no filesystems mounted, cannot provide root access");
                     reply.data[0].data = 0; // failure
                     reply.data[1].data = 0;
                 }
@@ -237,14 +237,14 @@ int main(int, char **)
                 auto send_res = server.reply(core::move(msg), reply);
                 if (send_res.is_error())
                 {
-                    log::err$("(server) failed to send root access reply: {}", send_res.error());
+                    fmt::err$("(server) failed to send root access reply: {}", send_res.error());
                 }
 
                 break;
             }
             default:
             {
-                log::log$("(server) unknown message type: {}", msg.received.data[0].data);
+                fmt::log$("(server) unknown message type: {}", msg.received.data[0].data);
                 break;
             }
             }

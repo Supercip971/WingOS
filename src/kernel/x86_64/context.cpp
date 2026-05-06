@@ -44,7 +44,7 @@ void CpuContext::load_to(void *state)
     // Validate frame before loading
     if (!frame || !data)
     {
-        log::err$("Invalid frame or data in load_to");
+        fmt::err$("Invalid frame or data in load_to");
         return;
     }
 
@@ -53,20 +53,20 @@ void CpuContext::load_to(void *state)
     // Validate segment selectors
     if (stored_frame.cs == 0 || stored_frame.ss == 0)
     {
-        //   log::log$("schedule in ring 0: CS={}, SS={}", stored_frame.cs, stored_frame.ss);
+        //   fmt::log$("schedule in ring 0: CS={}, SS={}", stored_frame.cs, stored_frame.ss);
     }
 
     if (stored_frame.rsp > kernel_virtual_base())
     {
-        log::log$("Warning: Loading a context with RSP in kernel space: RSP={}", ((uintptr_t)stored_frame.rsp) | fmt::FMT_HEX);
+        fmt::log$("Warning: Loading a context with RSP in kernel space: RSP={}", ((uintptr_t)stored_frame.rsp) | fmt::FMT_HEX);
     }
 
     if (stored_frame.rsp == 0 || stored_frame.rip == 0)
     {
-        log::err$("FATAL: Invalid context in load_to - RSP={}, RIP={}",
+        fmt::err$("FATAL: Invalid context in load_to - RSP={}, RIP={}",
                   (uintptr_t)stored_frame.rsp | fmt::FMT_HEX,
                   (uintptr_t)stored_frame.rip | fmt::FMT_HEX);
-        log::err$("FATAL: Cannot switch to task with uninitialized context!");
+        fmt::err$("FATAL: Cannot switch to task with uninitialized context!");
         while (true)
         {
             asm volatile("cli; hlt");
@@ -98,10 +98,10 @@ void CpuContext::dump()
 {
     arch::amd64::CpuContextAmd64 const *data = this->as<arch::amd64::CpuContextAmd64>();
 
-    log::log$("Dumping CPU context:");
-    log::log$("  Stack Pointer: {}", (uintptr_t)data->stack_ptr | fmt::FMT_HEX);
-    log::log$("  Kernel Stack Pointer: {}", (uintptr_t)data->kernel_stack_ptr | fmt::FMT_HEX);
-    log::log$("  Stack Frame: {}", data->stackframe());
+    fmt::log$("Dumping CPU context:");
+    fmt::log$("  Stack Pointer: {}", (uintptr_t)data->stack_ptr | fmt::FMT_HEX);
+    fmt::log$("  Kernel Stack Pointer: {}", (uintptr_t)data->kernel_stack_ptr | fmt::FMT_HEX);
+    fmt::log$("  Stack Frame: {}", data->stackframe());
 }
 
 void CpuContext::save_in(void *state)

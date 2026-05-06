@@ -152,7 +152,7 @@ public:
         auto res = sys$ipc_connect(block, space_handle, server_address, flags);
         if (res.returned_handle_sender == 0)
         {
-            log::err$("failed to connect to server: {}", res.returned_handle_sender);
+            fmt::err$("failed to connect to server: {}", res.returned_handle_sender);
             return client;
         }
         client.handle = res.returned_handle_sender;
@@ -176,7 +176,7 @@ public:
 
         if (res.returned_handle_sender == 0)
         {
-            log::err$("failed to create pipe: {}", res.returned_handle_sender);
+            fmt::err$("failed to create pipe: {}", res.returned_handle_sender);
             return {};
         }
 

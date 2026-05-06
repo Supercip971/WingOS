@@ -24,7 +24,7 @@ extern "C" int _linux_start(int argc, char **argv)
 
     printf("started\n");
     LinuxLogger logger;
-    log::provide_log_target(&logger);
+    fmt::provide_log_target(&logger);
 
 
     int c = main(argc, argv);

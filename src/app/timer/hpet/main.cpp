@@ -34,17 +34,17 @@ struct Waiter
 int _main(StartupInfo*context)
 {
     core::Vec<Waiter> waiters = {};
-    log::log$("clock from rsdp addr: {}", context->machine_context_optional._rsdp | fmt::FMT_HEX);
+    fmt::log$("clock from rsdp addr: {}", context->machine_context_optional._rsdp | fmt::FMT_HEX);
 
     uintptr_t phys_rsdp = context->machine_context_optional._rsdp - 0xffff800000000000;
 
 
 
-    log::log$("preparing rsdp mapping");
+    fmt::log$("preparing rsdp mapping");
     hw::acpi::prepare_mapping(phys_rsdp, [](uintptr_t addr, size_t size) {
         auto vrange = math::Range<size_t>(addr, addr + size).growAlign(4096);
 
-        log::log$("mapping hpet rsdp region: {} - {}", vrange.start() | fmt::FMT_HEX, vrange.end() | fmt::FMT_HEX);
+        fmt::log$("mapping hpet rsdp region: {} - {}", vrange.start() | fmt::FMT_HEX, vrange.end() | fmt::FMT_HEX);
 
         Wingos::Space::self().map_physical_memory(vrange.start(), vrange.len(), ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
         return core::Result<size_t>{
@@ -52,12 +52,12 @@ int _main(StartupInfo*context)
         };
     }).unwrap();
 
-    log::log$("preparing hpet");
+    fmt::log$("preparing hpet");
 
     hw::hpet::hpet_prepare_mapping(phys_rsdp, [](uintptr_t addr, size_t size) {
         auto vrange = math::Range<size_t>(addr, addr + size).growAlign(4096);
 
-        log::log$("mapping hpet region: {} - {}", vrange.start() | fmt::FMT_HEX, vrange.end() | fmt::FMT_HEX);
+        fmt::log$("mapping hpet region: {} - {}", vrange.start() | fmt::FMT_HEX, vrange.end() | fmt::FMT_HEX);
         Wingos::Space::self().map_physical_memory(vrange.start(), vrange.len(), ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
         return core::Result<size_t>{
             vrange.start()
@@ -73,20 +73,20 @@ int _main(StartupInfo*context)
 
     if(server_r.is_error())
     {
-        log::err$("failed to create hio server: {}", server_r.error());
+        fmt::err$("failed to create hio server: {}", server_r.error());
         return -1;
     }
 
     prot::ManagedServer server = core::move(server_r.unwrap());
 
-    log::log$("started clock service");
+    fmt::log$("started clock service");
     while (true)
     {
 
-        //log::log$("1 second to ms: {} ->{}", core::Seconds(1).value(), core::Seconds(1).to<core::Milliseconds>().value());
+        //fmt::log$("1 second to ms: {} ->{}", core::Seconds(1).value(), core::Seconds(1).to<core::Milliseconds>().value());
 
 //        hw::hpet::hpet_sleep(core::Seconds(1));
-//        log::log$("tick");
+//        fmt::log$("tick");
 
         server.accept_connection();
 
@@ -116,7 +116,7 @@ int _main(StartupInfo*context)
             {
                 IpcMessage reply = {};
                 core::Milliseconds ms = hw::hpet::hpet_clock_read();
-       //         log::log$("hpet: system time: {}ms", ms.value());
+       //         fmt::log$("hpet: system time: {}ms", ms.value());
                 reply.data[1].data = ms.value()/1000;
                 reply.data[2].data = ms.value();
                 server.reply(core::move(msg), reply).unwrap();
@@ -137,7 +137,7 @@ int _main(StartupInfo*context)
                 break;
             }
             default:
-                log::warn$("hio: unknown message type received: {}", msg.received.data[0].data);
+                fmt::warn$("hio: unknown message type received: {}", msg.received.data[0].data);
                 break;
             }
         }

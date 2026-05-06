@@ -121,8 +121,8 @@ core::Result<JsonValue> parse_json_value(core::Scanner<char> &scanner)
 
     if (integer.is_error())
     {
-        log::log$("error parsing integer: {}", integer.error());
-        log::log$("remaining: {}", scanner.read_until('\0').unwrap());
+        fmt::log$("error parsing integer: {}", integer.error());
+        fmt::log$("remaining: {}", scanner.read_until('\0').unwrap());
         return core::Result<JsonValue>(integer.error());
     }
     result.type = JsonType::Number;

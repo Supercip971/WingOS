@@ -32,7 +32,7 @@ core::Result<size_t> execute_module(mcx::MachineContext* mcx, elf::ElfLoader loa
 
     if (task_asset.handle == 0)
     {
-        log::err$("failed to create task asset: {}", task_asset.handle);
+        fmt::err$("failed to create task asset: {}", task_asset.handle);
         return core::Result<size_t>::error("failed to create task asset");
     }
 
@@ -42,7 +42,7 @@ core::Result<size_t> execute_module(mcx::MachineContext* mcx, elf::ElfLoader loa
         auto ph = try$(loaded.program_header(i));
         if (ph.type != core::underlying_value(ElfProgramHeaderType::HEADER_LOAD))
         {
-            log::warn$("skipping program header {}: type is not LOAD but {}", i,core::copy(ph.type));
+            fmt::warn$("skipping program header {}: type is not LOAD but {}", i,core::copy(ph.type));
             continue;
         }
         auto memory = Wingos::Space::self().allocate_physical_memory(ph.mem_size, false);

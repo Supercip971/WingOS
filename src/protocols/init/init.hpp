@@ -71,7 +71,7 @@ namespace prot
 
         static core::Result<InitConnection> connect()
         {
-            log::log$("connectin'");
+            fmt::log$("connectin'");
             InitConnection conn {};
             conn.connection =  Wingos::Space::self().connect_to_ipc_server(0);
 
@@ -105,11 +105,11 @@ namespace prot
 
             message.len = i+1;
 
-            log::log$("Register server {START} ");
+            fmt::log$("Register server {START} ");
 
             auto sended_message = connection.send(message, true);
 
-            log::log$("Register server {END } ");
+            fmt::log$("Register server {END } ");
 
 
             auto message_handle = sended_message.unwrap();
@@ -184,11 +184,11 @@ namespace prot
             }
 */
 
-            log::log$("Querying server {START} ");
+            fmt::log$("Querying server {START} ");
 
             auto res = connection.call(message);
 
-            log::log$("Querying server {END  } ");
+            fmt::log$("Querying server {END  } ");
             if (!res.is_error())
             {
                 auto msg = res.take();
@@ -200,10 +200,10 @@ namespace prot
                 }
                 resp.major = msg.data[1].data;
                 resp.minor = msg.data[2].data;
-                log::log$("got server response: endpoint={}, major={}, minor={}", resp.endpoint, resp.major, resp.minor);
+                fmt::log$("got server response: endpoint={}, major={}, minor={}", resp.endpoint, resp.major, resp.minor);
                 return (resp);
             }
-            log::log$("failed to get server response");
+            fmt::log$("failed to get server response");
 
 
             return ("failed to receive get server response");

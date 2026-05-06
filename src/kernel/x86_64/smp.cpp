@@ -15,11 +15,11 @@
 static bool _ready = false;
 core::Result<void> arch::amd64::smp_initialize()
 {
-    log::log$("initializing smp (cpu count: {})", CpuImpl::count());
+    fmt::log$("initializing smp (cpu count: {})", CpuImpl::count());
 
     if (CpuImpl::count() > arch::amd64::max_cpu)
     {
-        log::warn$("cpu count ({}) exceeds max cpu count ({})", CpuImpl::count(), arch::amd64::max_cpu);
+        fmt::warn$("cpu count ({}) exceeds max cpu count ({})", CpuImpl::count(), arch::amd64::max_cpu);
     }
 
     for (int cpu = 0; cpu < (int)CpuImpl::count(); cpu++)
@@ -28,7 +28,7 @@ core::Result<void> arch::amd64::smp_initialize()
         CpuImpl *cpu_impl = CpuImpl::getImpl(cpu);
 
         cpu_impl->syscall_stack = toVirt(Pmm::the().allocate(kernel::kernel_stack_size).unwrap())._addr + kernel::kernel_stack_size;
-        log::log$("cpu: {} (lapic: {})", cpu, cpu_impl->lapic());
+        fmt::log$("cpu: {} (lapic: {})", cpu, cpu_impl->lapic());
 
         if (cpu_impl->lapic() != CpuImpl::currentId())
         {
@@ -41,7 +41,7 @@ core::Result<void> arch::amd64::smp_initialize()
 
 void smp_entry_other(void)
 {
-    log::log$("cpu booted!");
+    fmt::log$("cpu booted!");
     arch::amd64::other_cpu_entry(_ready);
 
     while (true)
@@ -82,7 +82,7 @@ core::Result<void> _setup_trampoline(hw::acpi::LCpuId cpu_id)
     // setting up stack
     PhysAddr stack = try$(Pmm::the().allocate(kernel::kernel_stack_size, IOL_ALLOC_MEMORY_FLAG_LOWER_SPACE));
     uintptr_t stack_addr = (uintptr_t)stack;
-    log::log$("stack addr: {}", stack_addr | fmt::FMT_HEX);
+    fmt::log$("stack addr: {}", stack_addr | fmt::FMT_HEX);
     cpu->trampoline_stack(stack);
 
     VirtAddr(arch::amd64::SMP_STACK).write(toVirt(stack) + kernel::kernel_stack_size);
@@ -98,7 +98,7 @@ core::Result<void> _setup_trampoline(hw::acpi::LCpuId cpu_id)
 
 core::Result<void> arch::amd64::smp_initialize_cpu(int apic, int id)
 {
-    log::log$("initializing cpu: {} (lapic: {})...", id, apic);
+    fmt::log$("initializing cpu: {} (lapic: {})...", id, apic);
 
     _ready = false;
 
@@ -113,7 +113,7 @@ core::Result<void> arch::amd64::smp_initialize_cpu(int apic, int id)
         // do nothing
         asm volatile("pause");
     }
-    log::log$("initialized cpu");
+    fmt::log$("initialized cpu");
 
     return {};
 }

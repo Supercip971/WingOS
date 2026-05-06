@@ -81,18 +81,18 @@ void _start(void)
 
     _mcx._memory_map_count = 0;
 
-    
+
 
  //   com = arch::x86::Com::initialize(arch::x86::Com::Port::COM1).unwrap();
 
     LinuxWriter linux_writer;
-    log::provide_log_target(&linux_writer);
+    fmt::provide_log_target(&linux_writer);
 
-    log::log$("successfully started serial...");
+    fmt::log$("successfully started serial...");
 
     load_mcx(&_mcx);
 
-    log::log$("Mcx: {}", (const mcx::MachineContext *)&_mcx);
+    fmt::log$("Mcx: {}", (const mcx::MachineContext *)&_mcx);
     arch_entry(&_mcx);
 
 }

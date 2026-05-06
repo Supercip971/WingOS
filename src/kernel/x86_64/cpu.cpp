@@ -46,7 +46,7 @@ void Cpu::interrupt_release(bool re_enable_int)
 {
     if(this->interrupt_depth == 0)
     {
-        log::err$("cpu: {} interrupt_release called with depth 0", this->id());
+        fmt::err$("cpu: {} interrupt_release called with depth 0", this->id());
         return;
     }
     this->interrupt_depth--;
@@ -68,7 +68,7 @@ core::Result<void> cpuContextInit(int id, int lapic)
 
     cpus[id] = CpuImpl(id, lapic);
 
-    log::log$("initialized cpu context: {} (lapic: {})", id, lapic);
+    fmt::log$("initialized cpu context: {} (lapic: {})", id, lapic);
     initialized_count++;
     return {};
 }
@@ -77,7 +77,7 @@ CpuImpl *CpuImpl::getImpl(int id)
 {
     if ((id > max_cpu || !cpus[id]._present) && id != 0) [[unlikely]]
     {
-        log::log$("error: cpu id {} is not valid", id);
+        fmt::log$("error: cpu id {} is not valid", id);
         return nullptr;
     }
     return &cpus[id];
@@ -110,7 +110,7 @@ Cpu *Cpu::current()
     auto id = Cpu::currentId();
     if(id == -1 || id >= arch::amd64::max_cpu) [[unlikely]]
     {
-        log::err$("error: cpu id {} is not valid", id);
+        fmt::err$("error: cpu id {} is not valid", id);
         while(true){};
     }
     return Cpu::get(id);

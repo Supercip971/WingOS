@@ -83,7 +83,7 @@ void _start(void)
     asm volatile("cli");
 
 
-    
+
     auto c =  arch::x86::Com::initialize(arch::x86::Com::Port::COM1);
     if (c.is_error())
     {
@@ -91,13 +91,13 @@ void _start(void)
     }
     auto com2 = core::move(c.take());
 
-    log::provide_log_target(&com2);
+    fmt::provide_log_target(&com2);
 
-    log::log$("successfully started serial...");
+    fmt::log$("successfully started serial...");
 
     load_mcx(&_mcx);
 
-    log::log$("Mcx: {}", (const mcx::MachineContext *)&_mcx);
+    fmt::log$("Mcx: {}", (const mcx::MachineContext *)&_mcx);
     arch_entry(&_mcx);
     done();
 }

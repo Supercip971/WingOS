@@ -84,13 +84,13 @@ static constexpr TestGroup llistTests = {
                 {
                     if (v != i)
                     {
-                        log::log$("[{}] = {}", i, v);
+                        fmt::log$("[{}] = {}", i, v);
 
-                        log::log$("{} : {}", (uintptr_t)ll.begin()._ptr | fmt::FMT_HEX, (uintptr_t)ll.end()._ptr | fmt::FMT_HEX);
+                        fmt::log$("{} : {}", (uintptr_t)ll.begin()._ptr | fmt::FMT_HEX, (uintptr_t)ll.end()._ptr | fmt::FMT_HEX);
                         ;
 
                         core::forEachIdx(ll, [&](auto &val, int idx)
-                                         { log::log$("[{}] = {}", idx, val); });
+                                         { fmt::log$("[{}] = {}", idx, val); });
 
                         return "v[i] != i";
                     }
@@ -99,7 +99,7 @@ static constexpr TestGroup llistTests = {
 
                 if (ll.count() != 16 || i != 16)
                 {
-                    log::log$("{} : {}", ll.count(), i);
+                    fmt::log$("{} : {}", ll.count(), i);
                     return "count != 16";
                 }
 
@@ -131,14 +131,14 @@ static constexpr TestGroup llistTests = {
                 {
                     if (v != i * 2)
                     {
-                        log::log$("[{}] = {}", i, v);
+                        fmt::log$("[{}] = {}", i, v);
 
-                        log::log$("{} : {}", (uintptr_t)ll.begin()._ptr | fmt::FMT_HEX, (uintptr_t)ll.end()._ptr | fmt::FMT_HEX);
+                        fmt::log$("{} : {}", (uintptr_t)ll.begin()._ptr | fmt::FMT_HEX, (uintptr_t)ll.end()._ptr | fmt::FMT_HEX);
                         core::forEachIdx(ll, [&](auto &val, int idx)
                                          {
                             if(idx < 100)
                             {
-                                log::log$("[{}] = {}", idx, val);
+                                fmt::log$("[{}] = {}", idx, val);
                             } });
 
                         return "v[i/2] != i";
@@ -199,7 +199,7 @@ static constexpr TestGroup llistTests = {
                     int constructs_after_push = LListTestObject::construct_count;
                     if (constructs_after_push < 10)
                     {
-                        log::log$("construct_count: {}, expected at least 10", constructs_after_push);
+                        fmt::log$("construct_count: {}, expected at least 10", constructs_after_push);
                         return "construct_count < 10 after push operations";
                     }
 
@@ -213,7 +213,7 @@ static constexpr TestGroup llistTests = {
                 // After scope exit, all objects should be destroyed
                 if (LListTestObject::construct_count != LListTestObject::destruct_count)
                 {
-                    log::log$("construct_count: {}, destruct_count: {}",
+                    fmt::log$("construct_count: {}, destruct_count: {}",
                               LListTestObject::construct_count, LListTestObject::destruct_count);
                     return "memory leak after scope exit";
                 }
@@ -242,7 +242,7 @@ static constexpr TestGroup llistTests = {
                     // All 10 objects in the list should now be destroyed
                     if (LListTestObject::destruct_count < destructs_before_release + 10)
                     {
-                        log::log$("destruct_count: {}, expected at least: {}",
+                        fmt::log$("destruct_count: {}, expected at least: {}",
                                   LListTestObject::destruct_count, destructs_before_release + 10);
                         return "not all objects destroyed after release";
                     }
@@ -257,7 +257,7 @@ static constexpr TestGroup llistTests = {
                 // Verify no memory leak
                 if (LListTestObject::construct_count != LListTestObject::destruct_count)
                 {
-                    log::log$("Final: construct_count={}, destruct_count={}",
+                    fmt::log$("Final: construct_count={}, destruct_count={}",
                               LListTestObject::construct_count, LListTestObject::destruct_count);
                     return "memory leak after scope exit";
                 }
@@ -289,7 +289,7 @@ static constexpr TestGroup llistTests = {
                     // Should have destroyed exactly 3 more objects
                     if (LListTestObject::destruct_count < destructs_before_remove + 3)
                     {
-                        log::log$("destruct_count: {}, expected at least: {}",
+                        fmt::log$("destruct_count: {}, expected at least: {}",
                                   LListTestObject::destruct_count, destructs_before_remove + 3);
                         return "destructor not called for all removed elements";
                     }
@@ -304,7 +304,7 @@ static constexpr TestGroup llistTests = {
                 // Verify all constructed objects are destroyed
                 if (LListTestObject::construct_count != LListTestObject::destruct_count)
                 {
-                    log::log$("Final: construct_count={}, destruct_count={}",
+                    fmt::log$("Final: construct_count={}, destruct_count={}",
                               LListTestObject::construct_count, LListTestObject::destruct_count);
                     return "memory leak: not all objects destroyed";
                 }

@@ -57,7 +57,7 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
 
         default:
         {
-            log::err$("Invalid backend kind used for destroy");
+            fmt::err$("Invalid backend kind used for destroy");
             break;
         }
         }
@@ -92,7 +92,7 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
         }
         default:
         {
-            log::warn$("Canvas can't create frame for backend kind: {}", (int)backend_kind);
+            fmt::warn$("Canvas can't create frame for backend kind: {}", (int)backend_kind);
         }
         }
         return nullptr;
@@ -132,7 +132,7 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
         }
         default:
         {
-            log::warn$("Canvas can't end frame for backend kind: {}", (int)backend_kind);
+            fmt::warn$("Canvas can't end frame for backend kind: {}", (int)backend_kind);
         }
         }
     }
@@ -166,7 +166,7 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
             SDL_GLContext gl_context = SDL_GL_CreateContext(window);
             if (gl_context == nullptr)
             {
-                log::err$("SDL_GL_CreateContext(): {}", SDL_GetError());
+                fmt::err$("SDL_GL_CreateContext(): {}", SDL_GetError());
                 return SDL_GetError();
             }
 
@@ -194,7 +194,7 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
         }
         default:
         {
-            log::warn$("Backend currently not supported: {}", (int)backend_kind);
+            fmt::warn$("Backend currently not supported: {}", (int)backend_kind);
             return "Backend not supported";
         }
         }

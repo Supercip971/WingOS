@@ -66,7 +66,7 @@ public:
                 retry--;
                 if (retry == 0)
                 {
-                  // log::log$("SRWLock: failed to acquire write lock immediately at {}:{}, dumping state before blocking", fn, line);
+                  // fmt::log$("SRWLock: failed to acquire write lock immediately at {}:{}, dumping state before blocking", fn, line);
                    return false;
                   //  dump();
                 }
@@ -112,7 +112,7 @@ public:
                 retry--;
                 if (retry == 0)
                 {
-                    log::log$("SRWLock: failed to acquire write lock immediately at {}:{}, dumping state before blocking", fn, line);
+                    fmt::log$("SRWLock: failed to acquire write lock immediately at {}:{}, dumping state before blocking", fn, line);
                     dump();
                 }
             }
@@ -167,7 +167,7 @@ public:
         }
         else
         {
-    //        log::log$("SRWLock: failed to acquire write lock at {}:{}, dumping state", fn, line);
+    //        fmt::log$("SRWLock: failed to acquire write lock at {}:{}, dumping state", fn, line);
     //       dump();
         }
         return v;
@@ -221,15 +221,15 @@ public:
         int wcount = _writers;
         int rcount = _readers;
         int wwaiters = _waiters;
-        log::log$("SRWLock state: {} writer(s), {} reader(s), {} waiting writer(s)", wcount, rcount, wwaiters);
-        log::log$("SRWLock dump: last write acquire at {}:{}",core::Str(state), line);
+        fmt::log$("SRWLock state: {} writer(s), {} reader(s), {} waiting writer(s)", wcount, rcount, wwaiters);
+        fmt::log$("SRWLock dump: last write acquire at {}:{}",core::Str(state), line);
 
         for(int i = 0; i < allocated_readers; i++)
         {
             if(mreaders_file[i] != nullptr)
             {
 
-                log::log$("  - reader {} at {}:{}", i, mreaders_file[i], mreaders_line[i]);
+                fmt::log$("  - reader {} at {}:{}", i, mreaders_file[i], mreaders_line[i]);
             }
         }
 

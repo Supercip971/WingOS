@@ -72,7 +72,7 @@ core::Result<Pmm> Pmm::_allocate_structure(const mcx::MachineContext *context)
     pmm._range = pmm_memory_origin;
     pmm._section_location = used_section;
 
-    log::log$("Pmm: allocated at {}", pmm_memory_origin | fmt::FMT_HEX);
+    fmt::log$("Pmm: allocated at {}", pmm_memory_origin | fmt::FMT_HEX);
 
     return pmm;
 }
@@ -89,11 +89,11 @@ core::Result<void> Pmm::_fill(const mcx::MachineContext *context)
             continue;
         }
 
-        log::log$("Pmm: section {} range: {}", sec_id, context->_memory_map[i].range | fmt::FMT_HEX);
+        fmt::log$("Pmm: section {} range: {}", sec_id, context->_memory_map[i].range | fmt::FMT_HEX);
 
         if (math::alignDown(context->_memory_map[i].range.len(), page_size_byte) == 0)
         {
-            log::log$("skipped: too small");
+            fmt::log$("skipped: too small");
             continue;
         }
 
@@ -163,7 +163,7 @@ core::Result<PhysAddr> Pmm::allocate(Pages count, IolAllocMemoryFlag flags)
         }
     }
 
-    log::warn$("Pmm: out of memory: {}", count.count() * page_size_bit);
+    fmt::warn$("Pmm: out of memory: {}", count.count() * page_size_bit);
     return ("Could not allocate memory");
 }
 
@@ -199,8 +199,8 @@ core::Result<void> Pmm::release(PhysAddr addr, Pages count)
             if(section.bitmap.fill_expected_inverse(false, range).is_error())
             {
                 auto vaddr = addr._addr;
-                log::err$("Pmm: failed to release memory: {} ({})", vaddr | fmt::FMT_HEX, count.count() );
-                log::err$("At section: {}-{}", section.range.start() | fmt::FMT_HEX, section.range.end() | fmt::FMT_HEX);
+                fmt::err$("Pmm: failed to release memory: {} ({})", vaddr | fmt::FMT_HEX, count.count() );
+                fmt::err$("At section: {}-{}", section.range.start() | fmt::FMT_HEX, section.range.end() | fmt::FMT_HEX);
                 unreachable$();
             }
             return {};

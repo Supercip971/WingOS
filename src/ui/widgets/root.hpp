@@ -34,7 +34,7 @@ public:
 
      void render(UiContext const &ctx, wgfx::Canvas &canvas) const override
     {
-        log::log$("render root: {} {} {} {}", (long)this->bounds().start.x, (long)this->bounds().start.y, (long)this->bounds().width(), (long)this->bounds().height());
+        fmt::log$("render root: {} {} {} {}", (long)this->bounds().start.x, (long)this->bounds().start.y, (long)this->bounds().width(), (long)this->bounds().height());
         (void)ctx;
         (void)canvas;
         canvas.drawRect(this->bounds(), this->bg);

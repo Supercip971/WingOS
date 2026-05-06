@@ -73,7 +73,7 @@ class NvmeController
             size_t len = math::alignUp(count * sizeof(T), 4096ul);
 
             queue.count = math::alignDown(len, sizeof(T)) / sizeof(T);
-            log::log$("Creating queue of {} entries ({} bytes)", queue.count, len);
+            fmt::log$("Creating queue of {} entries ({} bytes)", queue.count, len);
             queue.is_completion = core::IsSame<T, CompletionQueueEntry>;
             queue.tail = 0;
 
@@ -230,7 +230,7 @@ class NvmeController
 
         if (status != 0)
         {
-            log::err$("NVMe command failed with status: {}", status | fmt::FMT_HEX);
+            fmt::err$("NVMe command failed with status: {}", status | fmt::FMT_HEX);
             return "nvme command failed";
         }
 
@@ -324,18 +324,18 @@ class NvmeController
         idns_cmd.prp2 = 0;
         try$(nvme_await_submit(&idns_cmd, admin_queues));
 
-        log::log$(" - Namespace {}: {} blocks of size {}", nsid, core::copy(device.identify_namespace->nsze), 1 << (device.identify_namespace->lbaf[device.identify_namespace->flbas & 0xf].lbads));
+        fmt::log$(" - Namespace {}: {} blocks of size {}", nsid, core::copy(device.identify_namespace->nsze), 1 << (device.identify_namespace->lbaf[device.identify_namespace->flbas & 0xf].lbads));
 
         uint64_t flba = device.identify_namespace->flbas & 0xf;
         uint64_t lba_shift = (device.identify_namespace->lbaf[flba].lbads);
         uint64_t max_lba = (this->max_transfer) / (1 << lba_shift);
 
-        log::log$("   - max transfer size: {} bytes ({} blocks)", this->max_transfer | fmt::FMT_HEX, max_lba | fmt::FMT_HEX);
+        fmt::log$("   - max transfer size: {} bytes ({} blocks)", this->max_transfer | fmt::FMT_HEX, max_lba | fmt::FMT_HEX);
 
         //device.max_phys_rpgs = max_lba / (1ull << (12 + cap.memory_page_size_minimum));
         device.max_phys_rpgs = 512; // 512 entry of pages means that the max transfer size is 512 * 4096 = 2MB
 
-        log::log$(" - max phys rpgs: {} ({} / {})", device.max_phys_rpgs, max_lba, 1ull << (12 + cap.memory_page_size_minimum));
+        fmt::log$(" - max phys rpgs: {} ({} / {})", device.max_phys_rpgs, max_lba, 1ull << (12 + cap.memory_page_size_minimum));
 
         device.lba_size = 1 << lba_shift;
 
@@ -359,13 +359,13 @@ public:
 
         if ((nlb * dev->lba_size) > len)
         {
-            log::log$("buffer too small: {} bytes for {} blocks of size {}", len, nlb, dev->lba_size);
+            fmt::log$("buffer too small: {} bytes for {} blocks of size {}", len, nlb, dev->lba_size);
             return "buffer too small for requested nlb";
         }
 
         if (nlb * dev->lba_size > max_transfer)
         {
-            log::err$("requested nlb {} blocks of size {} exceeds max transfer {}", nlb, dev->lba_size, max_transfer);
+            fmt::err$("requested nlb {} blocks of size {} exceeds max transfer {}", nlb, dev->lba_size, max_transfer);
 
             return "requested nlb too large for max transfer";
         }
@@ -399,7 +399,7 @@ public:
             // Bounds check: ensure we don't overflow the pgs_reg buffer
             if (prp_count > dev->max_phys_rpgs)
             {
-                log::log$("transfer size exceeds max PRP entries: {} > {}", prp_count, dev->max_phys_rpgs);
+                fmt::log$("transfer size exceeds max PRP entries: {} > {}", prp_count, dev->max_phys_rpgs);
                 return "transfer size exceeds max PRP entries";
             }
 
@@ -437,13 +437,13 @@ public:
         uint64_t device_addr = dev.get_bar64(Wingos::dev::pci_reg_dev_BAR0); // Get the BAR0 address
 
         auto len = dev.get_bar64_size(Wingos::dev::pci_reg_dev_BAR0);
-        log::log$("Setting up NVMe disk at address: {} - {}", device_addr | fmt::FMT_HEX, (device_addr + len - 1) | fmt::FMT_HEX);
+        fmt::log$("Setting up NVMe disk at address: {} - {}", device_addr | fmt::FMT_HEX, (device_addr + len - 1) | fmt::FMT_HEX);
 
         driver.base_addr = driver.remap_nvme_addr(device_addr, len);
 
         driver.stride = (device_addr >> 12) & 0xf;
 
-        log::log$("remapped nvme at: {}", ((uint64_t)driver.base_addr) | fmt::FMT_HEX);
+        fmt::log$("remapped nvme at: {}", ((uint64_t)driver.base_addr) | fmt::FMT_HEX);
 
         driver.cap.raw_value_0 = driver.read(NVME_CAP);
         driver.cap.raw_value_1 = driver.read(NVME_CAP + sizeof(uint32_t));
@@ -455,7 +455,7 @@ public:
         {
             cfg.en = 0;
 
-            log::log$("Disabling NVMe controller to reset it...");
+            fmt::log$("Disabling NVMe controller to reset it...");
             driver.write(NVME_CONTROLLER_CONFIG, cfg.raw_value);
         }
         while (driver.read(NVME_CONTROLLER_STATUS) & 1)
@@ -465,8 +465,8 @@ public:
         driver.stride = (driver.cap.stride);
         driver.queue_slots = driver.cap.max_queue_entries;
 
-        log::log$("NVMe stride is: {}", driver.stride | fmt::FMT_HEX);
-        log::log$("NVMe queue slots: {}", driver.queue_slots);
+        fmt::log$("NVMe stride is: {}", driver.stride | fmt::FMT_HEX);
+        fmt::log$("NVMe queue slots: {}", driver.queue_slots);
 
         driver.admin_queues = try$(driver.create_queues(driver.queue_slots, 0, 0));
 
@@ -497,27 +497,27 @@ public:
 
             if (status & (1 << 1))
             {
-                log::err$("NVMe controller failed to start, fatal error: {}", status | fmt::FMT_HEX);
+                fmt::err$("NVMe controller failed to start, fatal error: {}", status | fmt::FMT_HEX);
                 return core::Result<NvmeController>::error("nvme controller failed to start");
             }
             asm volatile("pause");
         }
 
-        log::log$("NVMe controller started successfully!");
+        fmt::log$("NVMe controller started successfully!");
 
         try$(driver.identify());
 
-        log::log$("NVMe Identify Controller:");
-        log::log$("- Vendor ID       : {}", core::copy(driver.identify_controller->vid) | fmt::FMT_HEX);
-        log::log$("- Subsystem VID   : {}", core::copy(driver.identify_controller->ssvid) | fmt::FMT_HEX);
-        log::log$("- Serial Number   : {}", core::Str(driver.identify_controller->sn, 20));
-        log::log$("- Model Number    : {}", core::Str(driver.identify_controller->mn, 40));
-        log::log$("- Firmware Revision : {}", core::Str(driver.identify_controller->fr, 8));
-        log::log$("- Max Data Transfer Size : {}", 1 << driver.identify_controller->mdts);
-        log::log$("- Number of Namespaces : {}", core::copy(driver.identify_controller->nn));
-        log::log$("- Submission Queue Entry Size : {}", 1 << driver.identify_controller->sqes);
-        log::log$("- Completion Queue Entry Size : {}", 1 << driver.identify_controller->cqes);
-        log::log$("- Max Outstanding Commands : {}", driver.identify_controller->maxcmd + 1);
+        fmt::log$("NVMe Identify Controller:");
+        fmt::log$("- Vendor ID       : {}", core::copy(driver.identify_controller->vid) | fmt::FMT_HEX);
+        fmt::log$("- Subsystem VID   : {}", core::copy(driver.identify_controller->ssvid) | fmt::FMT_HEX);
+        fmt::log$("- Serial Number   : {}", core::Str(driver.identify_controller->sn, 20));
+        fmt::log$("- Model Number    : {}", core::Str(driver.identify_controller->mn, 40));
+        fmt::log$("- Firmware Revision : {}", core::Str(driver.identify_controller->fr, 8));
+        fmt::log$("- Max Data Transfer Size : {}", 1 << driver.identify_controller->mdts);
+        fmt::log$("- Number of Namespaces : {}", core::copy(driver.identify_controller->nn));
+        fmt::log$("- Submission Queue Entry Size : {}", 1 << driver.identify_controller->sqes);
+        fmt::log$("- Completion Queue Entry Size : {}", 1 << driver.identify_controller->cqes);
+        fmt::log$("- Max Outstanding Commands : {}", driver.identify_controller->maxcmd + 1);
 
         size_t nsids_len = driver.identify_controller->nn * sizeof(uint32_t);
         nsids_len = math::alignUp(nsids_len, 4096ul);
@@ -545,7 +545,7 @@ public:
             driver.max_transfer = 1 << 20; // 1 MB
         }
 
-        log::log$("Found {} namespaces:", core::copy(driver.identify_controller->nn));
+        fmt::log$("Found {} namespaces:", core::copy(driver.identify_controller->nn));
 
         try$(driver.nvme_set_queue_count(4));
         for (uint32_t i = 0; i < driver.identify_controller->nn; i++)
@@ -555,10 +555,10 @@ public:
 
             if (driver.nsids[i] > driver.identify_controller->mnan && driver.identify_controller->mnan != 0)
             {
-                log::err$("Namespace ID {} is greater than maximum number of namespaces {}", core::copy(driver.nsids[i]), core::copy(driver.identify_controller->mnan));
+                fmt::err$("Namespace ID {} is greater than maximum number of namespaces {}", core::copy(driver.nsids[i]), core::copy(driver.identify_controller->mnan));
                 continue;
             }
-            log::log$("- Namespace ID: {}", core::copy(driver.nsids[i]));
+            fmt::log$("- Namespace ID: {}", core::copy(driver.nsids[i]));
             try$(driver.nvme_register_device_namespace(driver.nsids[i]));
         }
 
@@ -579,7 +579,7 @@ struct ControllerEndpoint
 int main(int, char **)
 {
 
-    log::log$("hello world from nvme!");
+    fmt::log$("hello world from nvme!");
     Wingos::dev::PciController pci_controller;
     pci_controller.scan_bus(0);
 
@@ -591,7 +591,7 @@ int main(int, char **)
     {
         if (dev.class_code() == 0x01 && dev.subclass() == 0x08) // storage controller, NVMe
         {
-            log::log$("Found NVMe device: Bus {}, Device {}, Function {}, Vendor ID: {}, Device ID: {}",
+            fmt::log$("Found NVMe device: Bus {}, Device {}, Function {}, Vendor ID: {}, Device ID: {}",
                       dev.bus, dev.device, dev.function,
                       dev.vendor_id() | fmt::FMT_HEX, dev.device_id() | fmt::FMT_HEX);
             auto disk = NvmeController::setup(dev);
@@ -600,15 +600,15 @@ int main(int, char **)
                 disks.push(disk.take());
 
                 auto mapped = Wingos::Space::self().allocate_memory(4096, false);
-                log::log$("Allocated memory at: {}", (uintptr_t)mapped.ptr() | fmt::FMT_HEX);
+                fmt::log$("Allocated memory at: {}", (uintptr_t)mapped.ptr() | fmt::FMT_HEX);
 
                 disks[0].read_write_ptr(&disks[0].devices[0], false, 0, 8, mapped.ptr(), 4096);
 
-                log::log$("NVMe worked !");
+                fmt::log$("NVMe worked !");
             }
             else
             {
-                log::err$("Failed to setup NVMe driver: {}", disk.error());
+                fmt::err$("Failed to setup NVMe driver: {}", disk.error());
             }
         }
     }
@@ -617,7 +617,7 @@ int main(int, char **)
 
     if (v.is_error())
     {
-        log::err$("Failed to connect to VFS: {}", v.error());
+        fmt::err$("Failed to connect to VFS: {}", v.error());
         return 1;
     }
 
@@ -637,14 +637,14 @@ int main(int, char **)
             auto srv = prot::ManagedServer::create_registered_server(ep.name.view(), 1, 0);
             ep.server = srv.take();
 
-            log::log$("Registered endpoint {} with uid {} (ip: {})", ep.name.view(), ep.uid, ep.server.addr());
+            fmt::log$("Registered endpoint {} with uid {} (ip: {})", ep.name.view(), ep.uid, ep.server.addr());
 
             vfs.register_device(ep.name.view(), ep.server.addr()).assert();
             endpoints.push(core::move(ep));
         }
     }
 
-    log::log$("Entering main NVMe IPC loop");
+    fmt::log$("Entering main NVMe IPC loop");
 
     while (true)
     {
@@ -669,7 +669,7 @@ int main(int, char **)
 
                 uint64_t asset_handle = msg.received.data[3].asset_handle;
                 uint64_t mem_asset_off = msg.received.data[4].data;
-                //log::log$("Read sector off: {}", mem_asset_off);
+                //fmt::log$("Read sector off: {}", mem_asset_off);
                 auto asset = Wingos::MemoryAsset::from_handle(asset_handle);
 
                 uintptr_t buffer_ptr = asset.memory.start() ;
@@ -687,7 +687,7 @@ int main(int, char **)
 
                     if (res.is_error())
                     {
-                        log::err$("Failed to read sectors: {}", res.error());
+                        fmt::err$("Failed to read sectors: {}", res.error());
                         break;
                     }
                 }
@@ -714,11 +714,11 @@ int main(int, char **)
 
                 if (res.is_error())
                 {
-                    log::err$("Failed to write sectors: {}", res.error());
+                    fmt::err$("Failed to write sectors: {}", res.error());
                 }
                 else
                 {
-                    log::log$("Wrote sectors successful");
+                    fmt::log$("Wrote sectors successful");
                 }
 
                 IpcMessage reply = {};
@@ -730,7 +730,7 @@ int main(int, char **)
             }
 
             default:
-                log::warn$("Unknown IPC command received: {}", msg.received.data[0].data | fmt::FMT_HEX);
+                fmt::warn$("Unknown IPC command received: {}", msg.received.data[0].data | fmt::FMT_HEX);
                 break;
             }
         }

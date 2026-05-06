@@ -29,7 +29,7 @@ core::Lock _spaces_lock = {};
     auto vspace = VmmSpace::create(false);
     if (vspace.is_error())
     {
-        log::err$("space_create: failed to create vmm space: {}", vspace.error());
+        fmt::err$("space_create: failed to create vmm space: {}", vspace.error());
         delete root_space;
 
     }
@@ -39,7 +39,7 @@ core::Lock _spaces_lock = {};
     root_space->assets.push(
         AssetRef<Space>(root_space, 0).to_untyped());
 
-    _spaces.push({root_space, 0});
+    _spaces.push((SpacePtr){root_space, 0});
     root_space->assets[0].asset->ref_count.store(99999, std::memory_order_relaxed);
     return *(AssetRef<Space>*) &root_space->assets[0];
 
@@ -51,36 +51,36 @@ core::Lock _spaces_lock = {};
 void Space::dump_assets()
 {
         lock.lock();
-        log::log$("Assets in space {}:", uid);
+        fmt::log$("Assets in space {}:", uid);
         for (size_t i = 0; i < assets.len(); i++)
         {
-            log::log$("  Asset[{}]: handle={}, kind={}", i, assets[i].handle, assetKind2Str(assets[i].asset->kind));
+            fmt::log$("  Asset[{}]: handle={}, kind={}", i, assets[i].handle, assetKind2Str(assets[i].asset->kind));
             if(assets[i].asset->kind == OBJECT_KIND_IPC_SERVER)
             {
                 auto server = assets[i].asset->casted<AssetServer>();
-                log::log$("    parent: {} | server handle: {} | connections: {}", server->server->parent_space, server->server->handle, server->server->connections.len());
+                fmt::log$("    parent: {} | server handle: {} | connections: {}", server->server->parent_space, server->server->handle, server->server->connections.len());
             }
 
             if(assets[i].asset->kind == OBJECT_KIND_IPC_CONNECTION)
             {
                 auto conn = assets[i].asset->casted<AssetConnection>();
-                log::log$("     accepted: {} | closed: {} | server: {} | msg count: {}", conn->accepted, (int)conn->closed_status, (int)conn->server_handle, conn->message_sent.len());
+                fmt::log$("     accepted: {} | closed: {} | server: {} | msg count: {}", conn->accepted, (int)conn->closed_status, (int)conn->server_handle, conn->message_sent.len());
 
             }
             if(assets[i].asset->kind == OBJECT_KIND_MEMORY)
             {
                 auto mem = assets[i].asset->casted<AssetMemory>();
 
-                log::log$("    Memory addr: {}-{}", mem->addr | fmt::FMT_HEX,
+                fmt::log$("    Memory addr: {}-{}", mem->addr | fmt::FMT_HEX,
                           (mem->addr + mem->size) | fmt::FMT_HEX);
-                log::log$("    Memory allocated: {}", mem->allocated);
+                fmt::log$("    Memory allocated: {}", mem->allocated);
             }
 
             if(assets[i].asset->kind == OBJECT_KIND_MAPPING)
             {
                 auto mapping = assets[i].asset->casted<AssetMapping>();
 
-                log::log$("    Mapping: {}-{} (W: {}, EX: {})", mapping->start | fmt::FMT_HEX, mapping->end | fmt::FMT_HEX,
+                fmt::log$("    Mapping: {}-{} (W: {}, EX: {})", mapping->start | fmt::FMT_HEX, mapping->end | fmt::FMT_HEX,
                     mapping->writable ? "Y" : "N", mapping->executable ? "Y" : "N"
                 );
             }
@@ -106,7 +106,7 @@ core::Result<AssetRef<Space>> Space::create_space([[maybe_unused]] uint64_t flag
 
     if (vspace.is_error())
     {
-        log::err$("space_create: failed to create vmm space: {}", vspace.error());
+        fmt::err$("space_create: failed to create vmm space: {}", vspace.error());
         asset->lock.release();
         asset_release(ptr);
         return vspace.error();

@@ -81,14 +81,14 @@ struct TestGroup
         // test not failed but was expected to fail
         if (test_result && tst.expect_failure)
         {
-            log::err$("{} * [FAILED] Test '{}' expected failure: '{}' but got success", fmt::Tabbed(depth), tst.name, tst.expected_failure_msg);
+            fmt::err$("{} * [FAILED] Test '{}' expected failure: '{}' but got success", fmt::Tabbed(depth), tst.name, tst.expected_failure_msg);
             result.failed = 1;
         }
 
         // test failed but was not expected to fail
         if (!test_result && !tst.expect_failure)
         {
-            log::err$("{} * [FAILED] Test '{}' with error: {}", tst.name, test_result.error());
+            fmt::err$("{} * [FAILED] Test '{}' with error: {}", tst.name, test_result.error());
             result.failed = 1;
         }
 
@@ -97,19 +97,19 @@ struct TestGroup
         {
             if (core::Str(tst.expected_failure_msg) != core::Str(test_result.error()))
             {
-                log::err$("{} * [FAILED] Test '{}' expected failure: '{}' but got: '{}'", fmt::Tabbed(depth), tst.name, tst.expected_failure_msg, test_result.error());
+                fmt::err$("{} * [FAILED] Test '{}' expected failure: '{}' but got: '{}'", fmt::Tabbed(depth), tst.name, tst.expected_failure_msg, test_result.error());
                 result.failed = 1;
             }
             else
             {
-                log::log$("{} * [OK] Test '{}' ", fmt::Tabbed(depth), tst.name);
+                fmt::log$("{} * [OK] Test '{}' ", fmt::Tabbed(depth), tst.name);
                 result.failed = 0;
             }
         }
         // test passed and was not expected to fail
         else if (test_result && !tst.expect_failure)
         {
-            log::log$("{} * [OK] Test '{}' ", fmt::Tabbed(depth), tst.name);
+            fmt::log$("{} * [OK] Test '{}' ", fmt::Tabbed(depth), tst.name);
             result.failed = 0;
         }
         result.count = 1;
@@ -120,7 +120,7 @@ struct TestGroup
     TestGroupResult execute(int depth)
     {
         TestGroupResult result;
-        log::log$("{} -> Executing test group: {}", fmt::Tabbed(depth), name);
+        fmt::log$("{} -> Executing test group: {}", fmt::Tabbed(depth), name);
         if (is_end)
         {
             for (size_t i = 0; i < count; i++)
@@ -146,12 +146,12 @@ struct TestGroup
         if (result.failed > 0)
         {
 
-            log::err$("{} - [FAILED] Test group {} finished with {} failed tests out of {}", fmt::Tabbed(depth), name, result.failed, result.count);
-            //        log::err$("{} - [FAILED] Test group {} with {} failed tests out of {}", fmt::Tabbed(depth), childs[i].name, child_result.failed, child_result.count);
+            fmt::err$("{} - [FAILED] Test group {} finished with {} failed tests out of {}", fmt::Tabbed(depth), name, result.failed, result.count);
+            //        fmt::err$("{} - [FAILED] Test group {} with {} failed tests out of {}", fmt::Tabbed(depth), childs[i].name, child_result.failed, child_result.count);
         }
         else
         {
-            log::log$("{} - [OK] Test group {} finished with {} success ", fmt::Tabbed(depth), name, result.count);
+            fmt::log$("{} - [OK] Test group {} finished with {} success ", fmt::Tabbed(depth), name, result.count);
         }
 
         return result;

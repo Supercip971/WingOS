@@ -23,7 +23,7 @@ void fun1()
     while (true)
     {
         lock_scope$(kernel_lock);
-        log::log$("fun1 {}", Cpu::currentId());
+        fmt::log$("fun1 {}", Cpu::currentId());
         asm volatile("pause");
     }
 }
@@ -33,7 +33,7 @@ void fun2()
     while (true)
     {
         lock_scope$(kernel_lock);
-        log::log$("fun2 {}", Cpu::currentId());
+        fmt::log$("fun2 {}", Cpu::currentId());
         asm volatile("pause");
     }
 }
@@ -43,7 +43,7 @@ void fun3()
     while (true)
     {
         lock_scope$(kernel_lock);
-        log::log$("fun3 {}", Cpu::currentId());
+        fmt::log$("fun3 {}", Cpu::currentId());
         asm volatile("pause");
     }
 }
@@ -52,7 +52,7 @@ void fun4()
     while (true)
     {
         lock_scope$(kernel_lock);
-        log::log$("fun4 {}", Cpu::currentId());
+        fmt::log$("fun4 {}", Cpu::currentId());
         asm volatile("pause");
     }
 }
@@ -61,7 +61,7 @@ void fun5()
     while (true)
     {
         lock_scope$(kernel_lock);
-        log::log$("fun5 {}", Cpu::currentId());
+        fmt::log$("fun5 {}", Cpu::currentId());
 
         asm volatile("pause");
     }
@@ -72,7 +72,7 @@ void kernel_entry(const mcx::MachineContext *context)
 
     (void)context;
 
-    log::log$("started kernel");
+    fmt::log$("started kernel");
 
     kernel::scheduler_init(Cpu::count()).assert();
 
@@ -88,19 +88,19 @@ void kernel_entry(const mcx::MachineContext *context)
 
         if (!core::Str(mod.path).start_with("/bin/init"))
         {
-            log::log$("skipping module {}: {}", i, mod.path);
+            fmt::log$("skipping module {}: {}", i, mod.path);
             continue;
         }
-        log::log$("module {}: {}", i, mod.path);
+        fmt::log$("module {}: {}", i, mod.path);
         auto loader = (elf::ElfLoader::load(mod.range.as<VirtAddr>()));
 
         if (loader.is_error())
         {
-            log::err$("unable to load module {}: {}", i, loader.error());
+            fmt::err$("unable to load module {}: {}", i, loader.error());
             continue;
         }
 
-        log::log$("module {} loaded: {}", i, mod.path);
+        fmt::log$("module {} loaded: {}", i, mod.path);
 
         start_module_execution(loader.unwrap(), context).unwrap();
     }
@@ -110,7 +110,7 @@ void kernel_entry(const mcx::MachineContext *context)
 
     if (v.is_error())
     {
-        log::err$("unable to get global space: {}", v.error());
+        fmt::err$("unable to get global space: {}", v.error());
         while (true)
             ;
     }

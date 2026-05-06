@@ -65,7 +65,7 @@ void PciController::dump()
 {
     for (const auto &device : devices)
     {
-        log::log$(
+        fmt::log$(
             "PCI Device: Bus {}, Device {}, Function {}, Vendor ID: {}, Device ID: {}, Class: {}, Subclass: {}",
             device.bus, device.device, device.function,
             device.vendor_id() | fmt::FMT_HEX, device.device_id() | fmt::FMT_HEX,

@@ -6,7 +6,7 @@
 #include <libcore/fmt/fmt.hpp>
 #include <libcore/io/writer.hpp>
 #include <libcore/str.hpp>
-namespace log
+namespace fmt
 {
 
 void provide_log_target(core::Writer *writer);
@@ -45,7 +45,7 @@ inline constexpr core::Str file_name(const char *s)
     return str;
 }
 
-#define __LOG_FILENAME__ ([]() {constexpr const char* _s = __FILE__; return log::file_name(_s); })()
+#define __LOG_FILENAME__ ([]() {constexpr const char* _s = __FILE__; return fmt::file_name(_s); })()
 
 
 #ifdef KERNEL
@@ -58,7 +58,7 @@ inline consteval core::Str color_from_filename(const char *s)
 inline consteval core::Str color_from_filename(const char *s)
 {
 
-    core::Str str2 = log::file_name(s);
+    core::Str str2 = fmt::file_name(s);
     core::Str str3 = str2.remove_after('/');
     size_t hash = 0;
     for (size_t i = 0; i < str3.len(); i++)
@@ -93,7 +93,7 @@ inline consteval core::Str color_from_filename(const char *s)
 
 #ifndef LOG_DEFAULT_COLOR
 
-#    define LOG_DEFAULT_COLOR log::color_from_filename(__FILE__)
+#    define LOG_DEFAULT_COLOR fmt::color_from_filename(__FILE__)
 
 
 #endif
@@ -102,30 +102,30 @@ inline consteval core::Str color_from_filename(const char *s)
 #ifndef NO_LOG_COLOR
 #    define log$(...)                                   \
         log_lock(); \
-        log::log("\033[38;5;{}m[{}]:\033[0m ",  LOG_DEFAULT_COLOR,  __LOG_FILENAME__); \
-        log::log(__VA_ARGS__);                          \
-        log::log("\n"); \
-        log::log_release()
+        fmt::log("\033[38;5;{}m[{}]:\033[0m ",  LOG_DEFAULT_COLOR,  __LOG_FILENAME__); \
+        fmt::log(__VA_ARGS__);                          \
+        fmt::log("\n"); \
+        fmt::log_release()
 
 #    define err$(...)                                   \
         log_lock(); \
-        log::log("\033[91m[{}] (<!!!!>):\033[0m ", __LOG_FILENAME__); \
-        log::log(__VA_ARGS__);                          \
-        log::log("\n"); \
-        log::log_release()
+        fmt::log("\033[91m[{}] (<!!!!>):\033[0m ", __LOG_FILENAME__); \
+        fmt::log(__VA_ARGS__);                          \
+        fmt::log("\n"); \
+        fmt::log_release()
 
 #    define warn$(...)\
         log_lock(); \
-        log::log("\033[93m[{}] (<!>):\033[0m ", __LOG_FILENAME__); \
-        log::log(__VA_ARGS__);                          \
-        log::log("\n"); \
-        log::log_release()
+        fmt::log("\033[93m[{}] (<!>):\033[0m ", __LOG_FILENAME__); \
+        fmt::log(__VA_ARGS__);                          \
+        fmt::log("\n"); \
+        fmt::log_release()
 
 #else
 #    define log$(...)                    \
         log("[{}]: ", __LOG_FILENAME__); \
-        log::log(__VA_ARGS__);           \
-        log::log("\n")
+        fmt::log(__VA_ARGS__);           \
+        fmt::log("\n")
 
 #endif
 
@@ -143,7 +143,7 @@ inline void core::Result<ValT, ErrT>::assert()
 {
     if (is_error())
     {
-        log::log("Result assert failed: {}", _error);
+        fmt::log("Result assert failed: {}", _error);
         unreachable$();
 
         while (true)
@@ -159,7 +159,7 @@ inline void core::Result<void, ErrT>::assert()
 {
     if (is_error())
     {
-        log::log("Result assert failed: {}", _error);
+        fmt::log("Result assert failed: {}", _error);
 
         unreachable$();
 

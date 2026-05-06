@@ -122,7 +122,7 @@ core::Result<uintptr_t> ksyscall_map(kernel::Task* caller, SyscallMap *map)
     // was corrupted or simply passed invalid values.
     if (map->start >= map->end)
     {
-        log::err$("ksyscall_map: invalid range start>=end (start={}, end={})",
+        fmt::err$("ksyscall_map: invalid range start>=end (start={}, end={})",
                   map->start | fmt::FMT_HEX,
                   map->end | fmt::FMT_HEX);
         return core::Result<uintptr_t>::error("invalid mapping range");
@@ -518,11 +518,11 @@ core::Result<size_t> ksyscall_server_receive(kernel::Task* caller, SyscallIpcSer
 
     if (!connection.asset->accepted)
     {
-        log::err$("for ipc connection: ({}): {}", space->uid, receive->connection_handle);
+        fmt::err$("for ipc connection: ({}): {}", space->uid, receive->connection_handle);
 
-        log::err$("for server: {}", receive->server_handle);
-        log::err$("in space: {}", space->uid);
-        log::log$("connection is not accepted");
+        fmt::err$("for server: {}", receive->server_handle);
+        fmt::err$("in space: {}", space->uid);
+        fmt::log$("connection is not accepted");
         return core::Result<size_t>::error("connection is not accepted");
     }
 
@@ -539,11 +539,11 @@ core::Result<size_t> ksyscall_server_receive(kernel::Task* caller, SyscallIpcSer
             {
                 if (connection.asset->server_handle != kernel_server->handle)
                 {
-                    log::err$("[IPC-BUG] Server mismatch detected!");
-                    log::err$("  Connection thinks it belongs to server: {}", connection.asset->server_handle);
-                    log::err$("  But receive is being called from server: {}", kernel_server->handle);
-                    log::err$("  Connection handle: {}, Server asset handle: {}", receive->connection_handle, receive->server_handle);
-                    log::err$("  Client space: {}, Server space: {}", connection.asset->client_space_handle, connection.asset->server_space_handle);
+                    fmt::err$("[IPC-BUG] Server mismatch detected!");
+                    fmt::err$("  Connection thinks it belongs to server: {}", connection.asset->server_handle);
+                    fmt::err$("  But receive is being called from server: {}", kernel_server->handle);
+                    fmt::err$("  Connection handle: {}, Server asset handle: {}", receive->connection_handle, receive->server_handle);
+                    fmt::err$("  Client space: {}, Server space: {}", connection.asset->client_space_handle, connection.asset->server_space_handle);
                     return core::Result<size_t>::error("connection belongs to different server");
                 }
             }
@@ -603,8 +603,8 @@ core::Result<size_t> ksyscall_client_receive_reply(kernel::Task* caller, Syscall
 
     if (r_connection.is_error())
     {
-        log::log$("in space({}), handle {}", receive->space_handle, receive->connection_handle);
-        log::err$("Connection not found: {}", r_connection.error());
+        fmt::log$("in space({}), handle {}", receive->space_handle, receive->connection_handle);
+        fmt::err$("Connection not found: {}", r_connection.error());
         return core::Result<size_t>::error("CLIENT RECEIVE: connection not found");
     }
     auto connection = r_connection.unwrap();
@@ -612,11 +612,11 @@ core::Result<size_t> ksyscall_client_receive_reply(kernel::Task* caller, Syscall
     if (!connection.asset->accepted)
     {
 
-        log::err$("for server: {}", connection.asset->server_handle);
-        log::err$("in space: (client) {}", connection.asset->client_space_handle);
-        log::err$("in space: (server) {}", connection.asset->server_space_handle);
+        fmt::err$("for server: {}", connection.asset->server_handle);
+        fmt::err$("in space: (client) {}", connection.asset->client_space_handle);
+        fmt::err$("in space: (server) {}", connection.asset->server_space_handle);
 
-        log::log$("connection is not accepted");
+        fmt::log$("connection is not accepted");
         return core::Result<size_t>::error("connection is not accepted");
     }
 
@@ -786,7 +786,7 @@ core::Result<size_t> ksyscall_ipc_status(kernel::Task* caller, SyscallIpcStatus 
         space = try$(
                     caller->space()->by_handle<Space>(status->space_handle))
                     .asset;
-        log::log$("using custom space handle: {}", status->space_handle);
+        fmt::log$("using custom space handle: {}", status->space_handle);
     }
     else
     {
@@ -858,7 +858,7 @@ core::Result<size_t> ksyscall_ipc_asset_info(kernel::Task* caller, SyscallAssetI
         break;
     }
     default:
-        log::warn$("Asset info for kind {} not implemented", asset.asset->kind);
+        fmt::warn$("Asset info for kind {} not implemented", asset.asset->kind);
         break;
     }
 
@@ -900,8 +900,8 @@ core::Result<size_t> ksyscall_ipc_x86_port(kernel::Task* caller, SyscallIpcX86Po
             port->returned_value = arch::x86::in32(port->port);
             break;
         default:
-            log::err$("Invalid port size: {}", port->size);
-            log::err$("Port: {}", port->port);
+            fmt::err$("Invalid port size: {}", port->size);
+            fmt::err$("Port: {}", port->port);
             return core::Result<size_t>::error("invalid size");
         }
     }
@@ -919,9 +919,9 @@ core::Result<size_t> ksyscall_ipc_x86_port(kernel::Task* caller, SyscallIpcX86Po
             arch::x86::out32(port->port, (uint32_t)port->data);
             break;
         default:
-            log::err$("Invalid port size: {}", port->size);
-            log::err$("Port: {}", port->port);
-            log::err$("Data: {}", port->data);
+            fmt::err$("Invalid port size: {}", port->size);
+            fmt::err$("Port: {}", port->port);
+            fmt::err$("Data: {}", port->data);
             return core::Result<size_t>::error("invalid size");
         }
     }
@@ -935,11 +935,11 @@ core::Result<size_t> syscall_handle(SyscallInterface syscall, kernel::Task* call
     {
     case SYSCALL_DEBUG_LOG_ID:
     {
-        log::log_lock();
+        fmt::log_lock();
         auto debug = syscall_debug_decode(syscall);
-        log::log("{}", caller->uid());
-        log::log("{}", debug.message);
-        log::log_release();
+        fmt::log("{}", caller->uid());
+        fmt::log("{}", debug.message);
+        fmt::log_release();
 
         return 0ul;
     }

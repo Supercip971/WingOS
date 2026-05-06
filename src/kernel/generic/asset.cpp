@@ -55,7 +55,7 @@ void Asset::release(Asset *asset)
     {
         auto server = asset->casted<AssetServer>();
 
-        
+
         if (server->server != nullptr)
         {
             server->server->destroyed = true;
@@ -103,8 +103,8 @@ void Asset::deref(Asset *asset)
     {
         // This means ref_count was already 0 before we decremented restore and bail
    //     asset->ref_count.fetch_add(1, std::memory_order_relaxed);
-        log::err$("asset_release: asset is already released");
-        log::err$("double free detected");
+        fmt::err$("asset_release: asset is already released");
+        fmt::err$("double free detected");
         return;
     }
 
@@ -114,7 +114,7 @@ void Asset::deref(Asset *asset)
         // Lock to ensure exclusive access during cleanup
         asset->lock.lock();
 
-        //   log::log$("freeing asset");
+        //   fmt::log$("freeing asset");
         if (asset->kind == OBJECT_KIND_MEMORY)
         {
             auto mem = asset->casted<AssetMemory>();
@@ -132,7 +132,7 @@ void Asset::deref(Asset *asset)
         else if (asset->kind == OBJECT_KIND_IPC_CONNECTION)
         {
 
-//            log::log$("({}) destroying connection: {}", Cpu::currentId(), (uintptr_t)asset | fmt::FMT_HEX);
+//            fmt::log$("({}) destroying connection: {}", Cpu::currentId(), (uintptr_t)asset | fmt::FMT_HEX);
 
 
              auto conn = asset->casted<AssetConnection>();
@@ -158,14 +158,14 @@ void Asset::deref(Asset *asset)
             // If query failed, server was already unregistered - nothing to do
 
 
-            
+
         }
 
         else if (asset->kind == OBJECT_KIND_IPC_SERVER)
         {
             auto server = asset->casted<AssetServer>();
 
-           
+
             if (server->server != nullptr)
             {
                 if (!server->server->destroyed)
@@ -213,14 +213,14 @@ void Asset::deref(Asset *asset)
         {
             // auto sp = asset->casted<Space>();
 
-            log::warn$("asset_release: space asset is not supported yet");
+            fmt::warn$("asset_release: space asset is not supported yet");
             // Check if we should auto-release the space when last connection is gone
 
             // sp->vmm_space.release();
         }
         else if (asset->kind == OBJECT_KIND_TASK)
         {
-            log::warn$("asset_release: task asset is not supported yet");
+            fmt::warn$("asset_release: task asset is not supported yet");
         }
 
         // Don't release the lock before deleting - the asset is about to be freed
@@ -255,8 +255,8 @@ core::Result<AssetRef<AssetMemory>> Space::create_memory(AssetMemoryCreateParams
         if (res.is_error())
         {
 
-            log::log$("asked size: {} (page count)", math::alignUp<size_t>(params.size, arch::amd64::PAGE_SIZE) / arch::amd64::PAGE_SIZE);
-            log::err$("asset_create_memory: unable to allocate memory: {}", res.error());
+            fmt::log$("asked size: {} (page count)", math::alignUp<size_t>(params.size, arch::amd64::PAGE_SIZE) / arch::amd64::PAGE_SIZE);
+            fmt::err$("asset_create_memory: unable to allocate memory: {}", res.error());
 
             ptr.asset->lock.release();
             _asset_remove(ptr.handle);
@@ -280,7 +280,7 @@ core::Result<AssetRef<AssetMemory>> Space::create_memory(AssetMemoryCreateParams
                 }
                 else if (map.type != mcx::MemoryMap::Type::FREE)
                 {
-                    log::err$("asset_create_memory: memory range {} is not free ({})", range, (int)map.type);
+                    fmt::err$("asset_create_memory: memory range {} is not free ({})", range, (int)map.type);
                 }
 
                 break;
@@ -403,7 +403,7 @@ core::Result<AssetRef<AssetConnection>> Space::create_ipc_connection(AssetIpcCon
     auto query_res = query_server_locked(params.server_handle);
     if (query_res.is_error())
     {
-        log::err$("asset_create_ipc_connection: unable to query server: {} for {}", query_res.error(), params.server_handle);
+        fmt::err$("asset_create_ipc_connection: unable to query server: {} for {}", query_res.error(), params.server_handle);
 
         ptr.asset->lock.release();
 
@@ -423,7 +423,7 @@ core::Result<AssetRef<AssetConnection>> Space::create_ipc_connection(AssetIpcCon
 
     if (server_self.asset == nullptr)
     {
-        log::err$("asset_create_ipc_connection: server->self is null for server handle {}", params.server_handle);
+        fmt::err$("asset_create_ipc_connection: server->self is null for server handle {}", params.server_handle);
         ptr.asset->lock.release();
         asset_release(ptr);
         return ("server self-reference not initialized");
@@ -444,7 +444,7 @@ core::Result<AssetRef<AssetConnection>> Space::create_ipc_connection(AssetIpcCon
     auto server_space_res = Space::global_space_by_handle(server_parent_space);
     if (server_space_res.is_error())
     {
-        log::err$("asset_create_ipc_connection: failed to get server space {}", server_parent_space);
+        fmt::err$("asset_create_ipc_connection: failed to get server space {}", server_parent_space);
         _asset_remove(ptr.handle);
 
         return ("failed to get server space");
@@ -456,7 +456,7 @@ core::Result<AssetRef<AssetConnection>> Space::create_ipc_connection(AssetIpcCon
     auto copy_res = asset_copy(this, server_space, ptr);
     if (copy_res.is_error())
     {
-        log::err$("asset_create_ipc_connection: failed to copy asset to server space: {}", copy_res.error());
+        fmt::err$("asset_create_ipc_connection: failed to copy asset to server space: {}", copy_res.error());
         _asset_remove(ptr.handle);
 
         return ("failed to copy asset to server space");

@@ -11,7 +11,7 @@ core::Result<void> wgfx::initialize_platform()
 {
     if (SDL_Init(SDL_INIT_VIDEO) == 0)
     {
-        log::err$("SDL_Init Error: {}", SDL_GetError());
+        fmt::err$("SDL_Init Error: {}", SDL_GetError());
         return "failed to initialize SDL";
     }
     return {};

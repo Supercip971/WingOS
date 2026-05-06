@@ -51,10 +51,15 @@ void wgfx::RasterCanvas::rectRoundedFlatAligned(RectCommand const &cmd)
         blend((long)end_x + cmd.rect.start.x, y + cmd.rect.start.y, color, ((end_x - fs2)));
     }
 }
+
+static size_t l = 0;
 void wgfx::RasterCanvas::rectFlatAligned(RectCommand const &cmd)
 {
+
     Rgba8 color = cmd.paint.color.toRgba8();
 
+    color.r = l;
+    l ++;
     long sy = cmd.rect.start.y;
     long ey = cmd.rect.end.y;
 
@@ -64,6 +69,12 @@ void wgfx::RasterCanvas::rectFlatAligned(RectCommand const &cmd)
     ey = core::min(ey, (long)height);
     sx = core::max(sx, 0L);
     ex = core::min(ex, (long)width);
+
+    sy = core::max(sy, size.start.y);
+    ey = core::min(ey, size.end.y);
+    sx = core::max(sx, size.start.x);
+    ex = core::min(ex, size.end.x);
+
 
     for (long y = sy; y < ey; y++)
     {

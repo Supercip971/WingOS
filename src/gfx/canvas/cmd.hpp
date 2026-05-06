@@ -53,6 +53,7 @@ enum class RenderCommandKind
     RENDER_KIND_TEXT,
     RENDER_KIND_CONTOUR,
     RENDER_KIND_SHAPE,
+    RENDER_KIND_SCISSOR,
 
 };
 
@@ -94,6 +95,12 @@ struct TextCommand
 
 };
 
+struct ScissorCommand
+{
+    static constexpr auto KIND = RenderCommandKind::RENDER_KIND_SCISSOR;
+
+    GRect rect;
+};
 
 struct RenderCommand
 {
@@ -107,6 +114,7 @@ public:
         FillCommand fill;
         ContourCommand contour;
         RectCommand rect;
+        ScissorCommand scissor;
 
     };
 
@@ -131,6 +139,9 @@ public:
                 break;
             case RenderCommandKind::RENDER_KIND_CONTOUR:
                 new (&contour) ContourCommand(other.contour);
+                break;
+            case RenderCommandKind::RENDER_KIND_SCISSOR:
+                new (&scissor) ScissorCommand(other.scissor);
                 break;
             default:
                 break;
@@ -159,6 +170,9 @@ public:
                     break;
                 case RenderCommandKind::RENDER_KIND_CONTOUR:
                     new (&contour) ContourCommand(other.contour);
+                    break;
+                case RenderCommandKind::RENDER_KIND_SCISSOR:
+                    new (&scissor) ScissorCommand(other.scissor);
                     break;
                 default:
                     break;
@@ -203,6 +217,10 @@ public:
         else if constexpr (T::KIND == RenderCommandKind::RENDER_KIND_CONTOUR)
         {
             new (&cmd.contour) ContourCommand(r);
+        }
+        else if constexpr (T::KIND == RenderCommandKind::RENDER_KIND_SCISSOR)
+        {
+            new (&cmd.scissor) ScissorCommand(r);
         }
         return cmd;
     }

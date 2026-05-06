@@ -77,14 +77,18 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
             raster_canvas->width = width();
             raster_canvas->height = height();
             raster_canvas->buffer = (Rgba8 *)raster_buffer;
-            return (Canvas*)raster_canvas;
+            raster_canvas->size.start = {0, 0};
+            raster_canvas->size.end.x =raster_canvas->width;
+            raster_canvas->size.end.y =raster_canvas->height;
+
+            return (Canvas *)raster_canvas;
         }
         case wgfx::BACKEND_KIND_OPENGL:
         {
 
             opengl_canvas->width = width();
             opengl_canvas->height = height();
-            return (Canvas*)opengl_canvas;
+            return (Canvas *)opengl_canvas;
         }
         default:
         {
@@ -93,9 +97,9 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
         }
         return nullptr;
     }
-    virtual float dpi() override {
-        return SDL_GetWindowDisplayScale(window
-        );
+    virtual float dpi() override
+    {
+        return SDL_GetWindowDisplayScale(window);
     }
 
     virtual void end_frame(Canvas *frame) override
@@ -224,7 +228,6 @@ wgfx::PlatformWindow::create_native(wgfx::BackendsKinds preferred_backend)
         SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_VULKAN_BOOLEAN, 0);
 
         SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_EXTERNAL_GRAPHICS_CONTEXT_BOOLEAN, 1);
-
     }
     window->window = SDL_CreateWindowWithProperties(props);
 

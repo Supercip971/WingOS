@@ -1,7 +1,8 @@
 #pragma once
 
-#include "gfx/canvas/cmd.hpp"
 #include "gfx/canvas/draw_context.hpp"
+
+#include "gfx/canvas/cmd.hpp"
 #include "gfx/color.hpp"
 #include "gfx/geometry/rect.hpp"
 #include "gfx/text/utf-text.hpp"
@@ -10,9 +11,6 @@
 namespace wgfx
 {
 
-
-
-
 using RenderCommands = core::Vec<RenderCommand>;
 
 class Canvas
@@ -20,13 +18,11 @@ class Canvas
 protected:
     RenderCommands commands;
 
-
-
 public:
-
     wgfx::GRect size;
+    wgfx::GRect context_size;
+    core::Vec<wgfx::GRect> scissor_stack;
     virtual ~Canvas() {}
-
 
     Canvas record()
     {
@@ -34,19 +30,27 @@ public:
         return canvas;
     }
 
-    RenderCommands& stopRecord() {
+    RenderCommands &stopRecord()
+    {
         return commands;
     }
 
-    void recordApply(RenderCommands const & cmds, wgfx::GRect constraint)
+    void recordApply(RenderCommands const &cmds, wgfx::GRect constraint)
     {
+        if(cmds.len() == 0)
+        {
+            return;
+        }
+        startScissor(constraint);
         for (auto &cmd : cmds)
         {
+
             auto cmd_copy = cmd;
             (void)constraint;
 
             commands.push(cmd);
         }
+        endScissor();
     }
 
     void clear(CompositeColor color)
@@ -58,9 +62,6 @@ public:
         commands.clear();
         commands.push(cmd);
     }
-
-
-
 
     void drawRect(wgfx::GRect rect, Painter paint, float radius = 0.0f)
     {
@@ -85,8 +86,7 @@ public:
         commands.push(cmd);
     }
 
-
-    void drawContour(core::SharedPtr<Contour> & contour, CompositeColor color, Vec2 pos)
+    void drawContour(core::SharedPtr<Contour> &contour, CompositeColor color, Vec2 pos)
     {
         RenderCommand cmd = RenderCommand::from((ContourCommand){
             .paint = color,
@@ -96,6 +96,21 @@ public:
         commands.push(cmd);
     }
 
+    void startScissor(wgfx::GRect rect)
+    {
+        RenderCommand cmd = RenderCommand::from((ScissorCommand){
+            .rect = rect,
+        });
+        commands.push(cmd);
+    }
+
+    void endScissor()
+    {
+        RenderCommand cmd = RenderCommand::from((ScissorCommand){
+            .rect = {},
+        });
+        commands.push(cmd);
+    }
 
     virtual void apply(DrawContext const &ctx, RenderCommand const &cmd)
     {
@@ -104,12 +119,32 @@ public:
     };
     virtual void flush()
     {
+        auto original_size = size;
         DrawContext ctx = {};
         for (auto &cmd : commands)
         {
-            apply(ctx, cmd);
+            if (cmd.kind == RenderCommandKind::RENDER_KIND_SCISSOR)
+            {
+                if (cmd.scissor.rect != wgfx::GRect{})
+                {
+                    scissor_stack.push(size);
+
+                    size = cmd.scissor.rect.intersect(size);
+                }
+                else
+                {
+                    size = scissor_stack.pop();
+                }
+            }
+            else
+            {
+
+                apply(ctx, cmd);
+            }
         }
         commands.clear();
+        scissor_stack.clear();
+        size = original_size;
     };
 };
 } // namespace wgfx

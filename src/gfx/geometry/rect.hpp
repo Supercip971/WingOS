@@ -65,6 +65,14 @@ struct GRect
             core::min(end.y, other.end.y));
     }
 
+    GRect merge(const GRect &other) const
+    {
+        return GRect(
+            core::min(start.x, other.start.x),
+            core::min(start.y, other.start.y),
+            core::max(end.x, other.end.x),
+            core::max(end.y, other.end.y));
+    }
     Vec2 contained(const Vec2 &p) const
     {
         return Vec2(

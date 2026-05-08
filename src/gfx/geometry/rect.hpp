@@ -85,6 +85,10 @@ struct GRect
     constexpr GRect(const Vec2 &start, const Vec2 &end) : start(start), end(end) {}
     constexpr GRect() {};
 
+    static constexpr GRect from_start_end(Vec2 start, Vec2 end)
+    {
+        return GRect(start, end);
+    }
     static constexpr GRect from_start_end(float sx, float sy, float ex, float ey)
     {
         return GRect(sx, sy, ex - sx, ey - sy);

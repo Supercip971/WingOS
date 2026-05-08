@@ -92,12 +92,13 @@ public:
 
         (void)ctx;
 
+        auto s = constraint.with_size(preferred_size(constraint.size()));
         for (auto &child : childs)
         {
-            child->update_layout(ctx, constraint);
+            child->update_layout(ctx, s);
         }
 
-        return constraint.with_size(preferred_size(constraint.size()));
+        return s;
     }
 
     virtual void render(UiContext const &ctx, wgfx::Canvas &canvas) const
@@ -150,14 +151,6 @@ public:
         return result;
     };
 
-    virtual void dispatch_relayout(UiContext const &ctx, wgfx::GRect constraint)
-    {
-        for (auto child : childs)
-        {
-            child->relayout(ctx, constraint);
-        }
-    }
-
     virtual void relayout(UiContext const &ctx, wgfx::GRect constraint)
     {
         fmt::log$("relayout: {} - {} {} {} {}", name(), (long)constraint.start.x, (long)constraint.start.y, (long)constraint.end.x, (long)constraint.end.y);
@@ -178,7 +171,8 @@ public:
     {
         if (_render_dirty)
         {
-            return _old_render_layout.merge(_layout);
+            auto m = _old_render_layout.merge(_layout);
+            return m;
         }
 
         if (childs.len() == 0)
@@ -229,12 +223,12 @@ public:
         for (auto &child : childs)
         {
             auto r = child->render_dirty_rect();
+
             if (!r.has_value())
             {
                 continue;
             }
-
-            canvas.recordApply(rendering, r.value());
+            canvas.recordApply(rendering, (r.value()));
 
             child->render_dirty(ctx, canvas);
         }
@@ -270,27 +264,33 @@ public:
 
     virtual void update_layout(UiContext const &ctx, wgfx::GRect constraint)
     {
-        for (auto &child : childs)
-        {
-            child->update_layout(ctx, constraint);
-        }
+
         if (_layout_dirty)
         {
             relayout(ctx, constraint);
         }
     }
 
-    virtual void update_dirty(UiContext const &ctx)
+    virtual bool update_dirty(UiContext const &ctx)
+
     {
+        bool d = false;
         for (auto &child : childs)
         {
-            child->update_dirty(ctx);
+            d |= child->update_dirty(ctx);
         }
 
+        if (d)
+        {
+            this->_layout_dirty = true;
+        }
         if (_dirty)
         {
+            d = true;
             rebuild(ctx);
         }
+
+        return d;
     }
 
     virtual bool transferTo(Widget &other)
@@ -298,6 +298,7 @@ public:
 
         (void)other;
         other._layout = _layout;
+        other._old_render_layout = _old_render_layout;
         other.rendering = rendering;
         other.childs = core::move(childs);
         return false;

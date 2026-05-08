@@ -12,7 +12,10 @@
 #include "gfx/text/font.hpp"
 #include "libcore/result.hpp"
 #include "libcore/shared.hpp"
+#include "ui/widgets/centered.hpp"
+#include "ui/widgets/container.hpp"
 #include "ui/widgets/root.hpp"
+#include "ui/widgets/sized.hpp"
 #include "ui/widgets/statefull.hpp"
 #include "ui/widgets/text.hpp"
 #include "ui/widgets/vflex.hpp"
@@ -49,15 +52,15 @@ public:
     core::SharedPtr<fc::Widget> build(const fc::UiContext &) override
     {
 
-        //   setState([&]
-        //           { counter += 1; });
-
-        auto res = fmt::format_str("Counter: {}", counter);
-
-        return $<fc::_Root>(wgfx::SLATE_WHITE,
-                            $<fc::VFlex>(
-                                $<CustomWidget2>(),
-                                $<fc::TextWidget>(core::move(res.take()), sfont)));
+        return $<fc::_Root>(wgfx::SLATE_DARK,
+                $<fc::Centered>(
+                    $<fc::Sized>(
+                        fc::LayoutSize(800.f, 800.f).min_width(300).max_width(1920),
+                        $<fc::Container>(
+                            fc::ContainerParms().bg(wgfx::SLATE_WHITE).border(wgfx::SLATE_DARK, 4).radius(0.2),
+                            $<fc::Centered>($<CustomWidget2>())
+                    ))
+        ));
     }
 };
 int main(int argc, char **argv)

@@ -1,14 +1,23 @@
 #include "gfx/canvas/cmd.hpp"
 #include "rasterCanvas.hpp"
 
+//static size_t l = 0;
 void wgfx::RasterCanvas::rectRoundedFlatAligned(RectCommand const &cmd)
 {
+
     Rgba8 color = cmd.paint.color.toRgba8();
+    //color.r = l;
+    //l++;
+
     float roundeness = core::min(cmd.radius, 1.0f);
 
     float radius = cmd.rect.width() > cmd.rect.height() ? cmd.rect.width() : cmd.rect.height();
     radius *= roundeness / 2.f;
-    for (long y = 0; y < cmd.rect.height(); y++)
+
+
+    long clip_start_y = core::max(cmd.rect.start.y, size.start.y) - cmd.rect.start.y;
+    long clip_end_y = core::min(cmd.rect.end.y, size.end.y) - cmd.rect.start.y;
+    for (long y = clip_start_y; y < clip_end_y; y++)
     {
 
         // x = r cos ((y / r) * pi/2) for the top left
@@ -40,8 +49,13 @@ void wgfx::RasterCanvas::rectRoundedFlatAligned(RectCommand const &cmd)
             end_x = cmd.rect.width();
         }
 
+        start_x = core::max(start_x, size.start.x - cmd.rect.start.x - 1.f);
+        end_x = core::min(end_x, size.end.x - cmd.rect.start.x);
         float fs2 = floorf(end_x);
         float fs1 = floorf(start_x);
+
+
+
         for (long x = (long)(start_x + 1.f); x < (long)fs2; x++)
         {
             colorize(x + cmd.rect.start.x, y + cmd.rect.start.y, color);
@@ -52,14 +66,13 @@ void wgfx::RasterCanvas::rectRoundedFlatAligned(RectCommand const &cmd)
     }
 }
 
-static size_t l = 0;
 void wgfx::RasterCanvas::rectFlatAligned(RectCommand const &cmd)
 {
 
     Rgba8 color = cmd.paint.color.toRgba8();
 
-    color.r = l;
-    l++;
+    //color.r = l;
+    //l++;
     long sy = cmd.rect.start.y;
     long ey = cmd.rect.end.y;
 
@@ -87,8 +100,10 @@ void wgfx::RasterCanvas::rectFlatAligned(RectCommand const &cmd)
 void wgfx::RasterCanvas::rectStrokeRoundedFlatAligned(RectCommand const &cmd)
 {
 
+
     Rgba8 color = cmd.paint.color.toRgba8();
-    float roundeness = core::min(cmd.radius, 1.0f);
+
+   float roundeness = core::min(cmd.radius, 1.0f);
 
     float w = cmd.paint.stroke.width;
     float sy = -w;
@@ -108,32 +123,38 @@ void wgfx::RasterCanvas::rectStrokeRoundedFlatAligned(RectCommand const &cmd)
     //  outer_radius += w;
 
     // top
-    for (long y = cmd.rect.start.y + inner_radius + sy; y < cmd.rect.start.y + ey - inner_radius; y++)
+    for (long y = core::max(cmd.rect.start.y + inner_radius + sy, size.start.y);
+        y < core::min(cmd.rect.start.y + ey - inner_radius, size.end.y);
+        y++)
     {
-        for (long x = sx - w; x < sx; x++)
+        for (long x = core::max(sx - w, size.start.x); x < core::min(sx, size.end.x); x++)
         {
             buffer[(long)cmd.rect.start.x + x + y * width] = color;
         }
 
-        for (long x = ex; x < ex + w; x++)
+        for (long x = core::max(ex, size.start.x); x < core::min(ex + w, size.end.x); x++)
         {
             buffer[(long)cmd.rect.start.x + x + y * width] = color;
         }
     }
-    for (long x = cmd.rect.start.x + inner_radius + sy; x < cmd.rect.start.x + ex - inner_radius; x++)
+
+    for (long x = core::max(cmd.rect.start.x + inner_radius + sx, size.start.x);
+        x < core::min(cmd.rect.start.x + ex - inner_radius, size.end.x);
+        x++)
     {
-        for (long y = sy - w; y < sy; y++)
+        for (long y = core::max(sy - w, size.start.y); y < core::min(sy, size.end.y); y++)
         {
             buffer[(long)x + (long)(y + cmd.rect.start.y) * width] = color;
         }
 
-        for (long y = ey; y < ey + w; y++)
+        for (long y = core::max(ey, size.start.y); y < core::min(ey + w, size.end.y); y++)
         {
             buffer[(long)x + (long)(y + cmd.rect.start.y) * width] = color;
         }
     }
     // tops  corner
-    for (float y = sy; y < sy + outer_radius; y++)
+
+    for (float y = core::max(sy, size.start.y); y < core::min(sy + outer_radius, size.end.y); y++)
     {
         float msx = sx;
         float mex = ex;
@@ -160,7 +181,7 @@ void wgfx::RasterCanvas::rectStrokeRoundedFlatAligned(RectCommand const &cmd)
 
         float absolute_sy = sy + cmd.rect.start.y;
 
-        for (long x = (long)(fs1 + 1.f); x < (long)(fs2); x++)
+        for (long x = core::max((long)(fs1), size.start.x)+1.f; x < core::min((long)(fs2), size.end.x); x++)
         {
 
             // top left
@@ -175,17 +196,17 @@ void wgfx::RasterCanvas::rectStrokeRoundedFlatAligned(RectCommand const &cmd)
             colorizeChecked(x + absolute_sx, fh - y + absolute_sy, color);
         }
 
-        blendGamma((long)msx + absolute_sx, y + absolute_sy, color, 1.0f - ((msx - fs1)));
-        blendGamma((long)mex + absolute_sx, y + absolute_sy, color, ((mex - fs2)));
+        blendGammaChecked((long)msx + absolute_sx, y + absolute_sy, color, 1.0f - ((msx - fs1)));
+        blendGammaChecked((long)mex + absolute_sx, y + absolute_sy, color, ((mex - fs2)));
 
-        blendGamma((fw - (long)msx + absolute_sx), y + absolute_sy, color, 1.0f - ((msx - fs1)));
-        blendGamma((fw - (long)mex + absolute_sx), y + absolute_sy, color, ((mex - fs2)));
+        blendGammaChecked((fw - (long)msx + absolute_sx), y + absolute_sy, color, 1.0f - ((msx - fs1)));
+        blendGammaChecked((fw - (long)mex + absolute_sx), y + absolute_sy, color, ((mex - fs2)));
 
-        blendGamma((long)msx + absolute_sx, fh - y + absolute_sy, color, 1.0f - ((msx - fs1)));
-        blendGamma((long)mex + absolute_sx, fh - y + absolute_sy, color, ((mex - fs2)));
+        blendGammaChecked((long)msx + absolute_sx, fh - y + absolute_sy, color, 1.0f - ((msx - fs1)));
+        blendGammaChecked((long)mex + absolute_sx, fh - y + absolute_sy, color, ((mex - fs2)));
 
-        blendGamma((fw - (long)msx + absolute_sx), fh - y + absolute_sy, color, 1.0f - ((msx - fs1)));
-        blendGamma((fw - (long)mex + absolute_sx), fh - y + absolute_sy, color, ((mex - fs2)));
+        blendGammaChecked((fw - (long)msx + absolute_sx), fh - y + absolute_sy, color, 1.0f - ((msx - fs1)));
+        blendGammaChecked((fw - (long)mex + absolute_sx), fh - y + absolute_sy, color, ((mex - fs2)));
     }
 }
 

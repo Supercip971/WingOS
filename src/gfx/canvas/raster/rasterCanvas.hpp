@@ -41,11 +41,20 @@ public:
 
     inline constexpr void blendGamma(long x, long y, Rgba8 col, float factor)
     {
+
         buffer[x + y * width].blendGamma(col, factor);
+    }
+    inline constexpr void blendGammaChecked(long x, long y, Rgba8 col, float factor)
+    {
+
+        if (x >= size.start.x && x < (long)size.end.x && y >= size.start.y && y < (long)size.end.y)
+        {
+            buffer[x + y * width].blendGamma(col, factor);
+        }
     }
     inline constexpr void blendChecked(long x, long y, Rgba8 col, float factor)
     {
-        if (x >= 0 && x < (long)width && y >= 0 && y < (long)height)
+        if (x >= size.start.x && x < (long)size.end.x && y >= size.start.y && y < (long)size.end.y)
         {
             buffer[x + y * width].blend(col, factor);
         }

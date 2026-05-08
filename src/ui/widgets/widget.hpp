@@ -2,6 +2,7 @@
 #include <typeinfo>
 
 #include "gfx/canvas/canvas.hpp"
+#include "gfx/event/event.hpp"
 #include "gfx/geometry/rect.hpp"
 #include "gfx/geometry/vec2.hpp"
 #include "libcore/ds/vec.hpp"
@@ -37,6 +38,26 @@ class Widget
     wgfx::RenderCommands rendering;
 
 public:
+    bool acquireEvent(wgfx::UEvent *ev)
+    {
+        if (ev->kind == core::Str("mouse"))
+        {
+            auto mev = static_cast<wgfx::UEventMouse *>(ev);
+
+            if (!this->_layout.contains(mev->at))
+            {
+                return false;
+            }
+        }
+        for (auto &child : childs)
+        {
+            if (child->acquireEvent(ev))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
     template <typename T, typename... Args>
     static core::SharedPtr<Widget> $(Args &&...args)
     {

@@ -1,6 +1,7 @@
 #pragma once
 #include "controller.hpp"
 #include "libcore/ds/vec.hpp"
+#include "hw/hi/mouse.hpp"
 
 namespace Ps2
 {
@@ -24,18 +25,12 @@ typedef enum
     PS2_MOUSE_CMD_SET_SCALING = 0xe6,
 } Ps2MouseCommands;
 
-struct MouseEvent
-{
-    int offx, offy, scroll;
-    bool left, right, middle;
-};
-
 class Mouse
 {
     Controller &_controller;
     bool has_wheel = {};
     size_t cycle = {};
-    core::Vec<MouseEvent> _events = {};
+    core::Vec<hw::MouseEvent> _events = {};
     uint8_t buf[4] = {};
 
 public:
@@ -43,7 +38,7 @@ public:
     {
     }
 
-    core::Result<MouseEvent> poll_event()
+    core::Result<hw::MouseEvent> poll_event()
     {
         if (_events.len() == 0)
         {
@@ -89,7 +84,7 @@ public:
 
         cycle = 0;
 
-        MouseEvent ev;
+        hw::MouseEvent ev;
 
         int flags = buf[0];
         ev.offx = (uint8_t)buf[1];

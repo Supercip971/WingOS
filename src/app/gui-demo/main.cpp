@@ -57,7 +57,7 @@ public:
                     $<fc::Sized>(
                         fc::LayoutSize(800.f, 800.f).min_width(300).max_width(1920),
                         $<fc::Container>(
-                            fc::ContainerParms().bg(wgfx::SLATE_WHITE).border(wgfx::SLATE_DARK, 4).radius(0.2),
+                            fc::ContainerParms().bg(wgfx::CONTAINER_FILL).border(wgfx::CONTAINER_BORDER, 2).radius(0.01),
                             $<fc::Centered>($<CustomWidget2>())
                     ))
         ));

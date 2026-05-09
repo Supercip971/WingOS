@@ -82,9 +82,7 @@ public:
 
 
         auto b= this->bounds();
-        b.start += wgfx::Vec2(this->_parms._border_size, this->_parms._border_size)*0.5f;
 
-        b.end -= wgfx::Vec2(this->_parms._border_size, this->_parms._border_size)*0.5f;
         canvas.drawRect(this->bounds(), paint, this->_parms._radius);
         if (this->_parms._border_size > 0.f)
         {

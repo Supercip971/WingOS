@@ -233,6 +233,11 @@ static constexpr CompositeColor ROSE = CompositeColor::fromOklch(64.5f / 100.f, 
 static constexpr CompositeColor SLATE_WHITE = CompositeColor::fromOklch(98.4f / 100.f, 0.003, 247.858);
 static constexpr CompositeColor SLATE_DARK = CompositeColor::fromOklch(12.9f / 100.f, 0.042, 264.695);
 
+static constexpr CompositeColor CONTAINER_FILL = CompositeColor::fromOklch(0.2497, 0.0058, 236.78);
+static constexpr CompositeColor CONTAINER_BORDER = CompositeColor::fromOklch(0.5086, 0.006, 247.95);
+static constexpr CompositeColor CONTAINER_TEXT = CompositeColor::fromOklch(0.9642, 0.005, 245.9);
+
+
 template <typename T>
 concept ColorChannelable = requires(T const color) {
     {

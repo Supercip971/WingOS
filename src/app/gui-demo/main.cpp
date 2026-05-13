@@ -10,8 +10,10 @@
 #include "gfx/platform/app.hpp"
 #include "gfx/platform/window.hpp"
 #include "gfx/text/font.hpp"
+#include "libcore/fmt/flags.hpp"
 #include "libcore/result.hpp"
 #include "libcore/shared.hpp"
+#include "ui/widgets/button.hpp"
 #include "ui/widgets/centered.hpp"
 #include "ui/widgets/container.hpp"
 #include "ui/widgets/root.hpp"
@@ -35,12 +37,18 @@ public:
     core::SharedPtr<fc::Widget> build(const fc::UiContext &) override
     {
 
-        setState([&]
-                 { counter += 1; });
-
-        auto res = fmt::format_str("Counter 2: {}", counter);
+        auto res = fmt::format_str("Counter 2: {}", counter | fmt::FMT_PAD_ZERO);
 
         return $<fc::VFlex>(
+            $<fc::Button>(
+                fc::ButtonParams()
+                    .bg(
+                        wgfx::CompositeColor::fromOklch(0.7245, 0.1239, 156.12))
+                    .border(
+                        wgfx::CompositeColor::fromOklch(0.5937, 0.0999, 156.09))
+                    .shadowy(
+                        wgfx::CompositeColor::fromOklch(0.6554, 0.114, 156.2)),
+                $<fc::TextWidget>("hello world!", sfont)),
             $<fc::TextWidget>("Hello, World!", sfont),
             $<fc::TextWidget>(core::move(res.take()), sfont));
     }
@@ -53,14 +61,12 @@ public:
     {
 
         return $<fc::_Root>(wgfx::SLATE_DARK,
-                $<fc::Centered>(
-                    $<fc::Sized>(
-                        fc::LayoutSize(800.f, 800.f).min_width(300).max_width(1920),
-                        $<fc::Container>(
-                            fc::ContainerParms().bg(wgfx::CONTAINER_FILL).border(wgfx::CONTAINER_BORDER, 2).radius(0.01),
-                            $<fc::Centered>($<CustomWidget2>())
-                    ))
-        ));
+                            $<fc::Centered>(
+                                $<fc::Sized>(
+                                    fc::LayoutSize(800.f, 800.f).min_width(300).max_width(1920),
+                                    $<fc::Container>(
+                                        fc::ContainerParms().bg(wgfx::CONTAINER_FILL).border(wgfx::CONTAINER_BORDER, 2).radius(0.01),
+                                        $<fc::Centered>($<CustomWidget2>())))));
     }
 };
 int main(int argc, char **argv)
@@ -121,13 +127,16 @@ int main(int argc, char **argv)
 
     auto vwidgt = core::SharedPtr<CustomWidget>::make().static_pointer_cast<fc::Widget>();
 
-    vwidgt->mount({});
+    fc::UiContext ctx = {};
+    ctx.theme = fc::Theme::wingos();
+
+    vwidgt->mount(ctx);
     // vwidgt->build({});
-    vwidgt->relayout({}, wgfx::GRect(0, 0, window->width(), window->height()));
+    vwidgt->relayout(ctx, wgfx::GRect(0, 0, window->width(), window->height()));
 
-    vwidgt->update_dirty({});
+    vwidgt->update_dirty(ctx);
 
-    vwidgt->update_layout({}, wgfx::GRect(0, 0, window->width(), window->height()));
+    vwidgt->update_layout(ctx, wgfx::GRect(0, 0, window->width(), window->height()));
 
     while (true)
     {
@@ -136,9 +145,9 @@ int main(int argc, char **argv)
 
         wgfx::Canvas *frame = window->create_frame();
 
-        vwidgt->update_dirty({});
+        vwidgt->update_dirty(ctx);
 
-        vwidgt->update_layout({}, wgfx::GRect(0, 0, window->width(), window->height()));
+        vwidgt->update_layout(ctx, wgfx::GRect(0, 0, window->width(), window->height()));
 
         //   fmt::log$("green: l:{} - a:{} - b:{}", (long)(wgfx::GREEN.lightness * 100), (long)(wgfx::GREEN.a_green_rediness * 100), (long)(wgfx::GREEN.b_blue_yelowness * 100));
 
@@ -152,7 +161,7 @@ int main(int argc, char **argv)
         (void)l;
         // wgfx::CompositeColor color = wgfx::CompositeColor::fromOklch(70.4f/100.f, 0.295, l);
 
-        vwidgt->render_dirty({}, *frame);
+        vwidgt->render_dirty(ctx, *frame);
         // vwidgt->dump();
         // frame->drawRect(wgfx::GRect(x, y, 256, 256), wgfx::CompositeColor::fromOklch((float)63.7/100, 0, 0));
 

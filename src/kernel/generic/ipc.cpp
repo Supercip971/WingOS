@@ -157,6 +157,11 @@ core::Result<AssetRef<>> server_accept_connection(KernelIpcServer *server)
     for (size_t i = 0; i < server->connections.len(); /* i incremented in loop */)
     {
         auto &ref = server->connections[i];
+        if (ref.asset == nullptr)
+        {
+            server->connections.pop(i);
+            continue;
+        }
 
         // Try to lock the asset - use try_lock to avoid deadlock
         ref.asset->lock.lock();
@@ -166,8 +171,8 @@ core::Result<AssetRef<>> server_accept_connection(KernelIpcServer *server)
             fmt::err$("server_accept_connection: invalid asset kind {} in connection {} of server {}",
                       (uint64_t)ref.asset->kind, i, server->handle);
             ref.asset->lock.release();
-            server->self.asset->lock.release();
-            return "invalid asset kind in connection";
+            server->connections.pop(i);
+            continue;
         }
 
         auto conn = ref.asset->casted<AssetConnection>();
@@ -192,8 +197,15 @@ core::Result<AssetRef<>> server_accept_connection(KernelIpcServer *server)
             //  }
             //            fmt::err$("  Client process: {}", asset->ipc_connection->client_process_handle);
             ref.asset->lock.release();
-            i++;
+            server->connections.pop(i);
 
+            continue;
+        }
+
+        if (conn->closed_status != IPC_STILL_OPEN)
+        {
+            ref.asset->lock.release();
+            server->connections.pop(i);
             continue;
         }
 

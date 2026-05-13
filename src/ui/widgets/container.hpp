@@ -14,12 +14,12 @@ namespace fc
 
 struct ContainerParms
 {
-    wgfx::CompositeColor _bg = wgfx::SLATE_WHITE;
-    wgfx::CompositeColor _border = wgfx::SLATE_DARK;
-    float _border_size = 0.0f;
+    wgfx::CompositeColor _bg = wgfx::CONTAINER_FILL;
+    wgfx::CompositeColor _border = wgfx::CONTAINER_BORDER;
+    float _border_size = 0.2f;
 
     float _elevation = 0.f;
-    float _radius = 0.f;
+    float _radius = 0.15f;
 
     constexpr ContainerParms() = default;
 
@@ -80,15 +80,14 @@ public:
 
         wgfx::Painter paint = this->_parms._bg;
 
-
-        auto b= this->bounds();
+        auto b = this->bounds();
 
         canvas.drawRect(this->bounds(), paint, this->_parms._radius);
         if (this->_parms._border_size > 0.f)
         {
 
             paint.type = wgfx::PaintType::PAINT_MODE_STROKE;
-            paint.stroke.width = this->_parms._border_size*2.f;
+            paint.stroke.width = this->_parms._border_size * 2.f;
             paint.color = this->_parms._border;
 
             canvas.drawRect(b, paint, this->_parms._radius);

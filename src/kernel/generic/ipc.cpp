@@ -157,6 +157,7 @@ core::Result<AssetRef<>> server_accept_connection(KernelIpcServer *server)
     for (size_t i = 0; i < server->connections.len(); /* i incremented in loop */)
     {
         auto &ref = server->connections[i];
+        auto connection_handle = ref.handle;
         if (ref.asset == nullptr)
         {
             server->connections.pop(i);
@@ -168,8 +169,8 @@ core::Result<AssetRef<>> server_accept_connection(KernelIpcServer *server)
 
         if (ref.asset->kind != OBJECT_KIND_IPC_CONNECTION)
         {
-            fmt::err$("server_accept_connection: invalid asset kind {} in connection {} of server {}",
-                      (uint64_t)ref.asset->kind, i, server->handle);
+            fmt::err$("server_accept_connection: invalid asset kind {} for connection handle {} in server {}",
+                      (uint64_t)ref.asset->kind, connection_handle, server->handle);
             ref.asset->lock.release();
             server->connections.pop(i);
             continue;
@@ -187,6 +188,7 @@ core::Result<AssetRef<>> server_accept_connection(KernelIpcServer *server)
             fmt::err$("  Removing misrouted connection from list");
 
             fmt::err$("  Client space: {}", conn->client_space_handle);
+            fmt::err$("  Connection handle: {}", connection_handle);
             // fmt::err$("  Connection handle: {}", asset->ipc_connection.);
 
             //  for(size_t j = 0; j < registered_servers.len(); j++)

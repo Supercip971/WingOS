@@ -4,17 +4,20 @@
 
 #include "gfx/canvas/cmd.hpp"
 #include "gfx/color.hpp"
+#include "gfx/event/event.hpp"
 #include "gfx/geometry/rect.hpp"
 #include "gfx/geometry/vec2.hpp"
 #include "gfx/text/font.hpp"
 #include "libcore/ds/vec.hpp"
 #include "libcore/shared.hpp"
 #include "ui/widgets/centered.hpp"
+#include "ui/widgets/statefull.hpp"
 #include "widget.hpp"
 
 namespace fc
 {
 
+using callbackType = decltype([]() {});
 struct ButtonParams
 {
     wgfx::CompositeColor _bg = wgfx::CONTAINER_FILL;
@@ -61,28 +64,58 @@ struct ButtonParams
     }
 };
 
-class Button : public Widget
+struct ButtonState
+{
+
+    ButtonParams _parms;
+};
+class Button : public Statefull<ButtonState>
 {
 
 public:
     core::SharedPtr<Widget> child;
-
-    ButtonParams _parms;
+    float o_elevation;
 
     ~Button() override = default;
     template <typename T>
     Button(ButtonParams parms, T args)
-        : _parms(parms)
+
     {
+        o_elevation = parms._elevation;
+        _parms = parms;
         child = (args);
     }
 
+    bool acquireEvent(wgfx::UEvent ev) override
+    {
+        if (ev.kind == wgfx::UEvent::Kind::MOUSE_MOVE)
+        {
+            setState([&]()
+                     { _parms._elevation = 0.9 * o_elevation; });
+            return true;
+        }
+        else if (ev.kind == wgfx::UEvent::Kind::MOUSE_CLICK)
+        {
+
+            setState([&]()
+                     { _parms._elevation = 0; });
+            return true;
+        }
+        else if (_parms._elevation != o_elevation)
+        {
+
+            setState([&]()
+                     { _parms._elevation = o_elevation; });
+            return true;
+        }
+        return false;
+    }
     virtual wgfx::Vec2 preferred_size(wgfx::Vec2 constraint) const override
     {
 
         wgfx::Vec2 c2 = constraint;
         c2.y -= this->_parms._elevation;
-        return child->preferred_size(c2) + wgfx::Vec2(0,  this->_parms._elevation);
+        return child->preferred_size(c2) + wgfx::Vec2(0, this->_parms._elevation);
     }
 
     void render(UiContext const &ctx, wgfx::Canvas &canvas) const override

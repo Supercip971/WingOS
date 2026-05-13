@@ -6,6 +6,7 @@
 #include "gfx/backend.hpp"
 #include "gfx/canvas/cmd.hpp"
 #include "gfx/color.hpp"
+#include "gfx/event/event.hpp"
 #include "gfx/geometry/vec2.hpp"
 #include "gfx/platform/app.hpp"
 #include "gfx/platform/window.hpp"
@@ -141,7 +142,21 @@ int main(int argc, char **argv)
     while (true)
     {
 
+        wgfx::UEvent ev = {};
+
+        do
+        {
+            ev = window->query_event();
+
+            if(ev.kind != wgfx::UEvent::Kind::NONE)
+            {
+                fmt::log$("Event: {} at ({}, {})", (long)ev.kind, (long)ev.at.x, (long)ev.at.y);
+                vwidgt->acquireEvent(ev);
+            }
+        } while (ev.kind != wgfx::UEvent::Kind::NONE);
+
         // fmt::log$("ran frame");
+
 
         wgfx::Canvas *frame = window->create_frame();
 

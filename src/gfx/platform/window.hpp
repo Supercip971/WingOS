@@ -2,10 +2,12 @@
 #pragma once
 #include "gfx/backend.hpp"
 #include "gfx/canvas/canvas.hpp"
+#include "gfx/event/event.hpp"
 #include "libcore/ds/vec.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/shared.hpp"
 #include "libcore/type-utils.hpp"
+#include "ui/context.hpp"
 
 namespace wgfx
 {
@@ -60,6 +62,13 @@ public:
     virtual void set_height(size_t height [[maybe_unused]])
     {
         fmt::warn$("Window::set_height not implemented");
+    }
+
+
+    virtual wgfx::UEvent query_event()
+    {
+        fmt::warn$("Window::query_event not implemented");
+        return {};
     }
 
     static core::Result<core::SharedPtr<PlatformWindow>> create_native(BackendsKinds preferred_backend = BackendsKinds::BACKEND_KIND_RASTER);

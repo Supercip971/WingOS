@@ -8,26 +8,28 @@
 namespace wgfx
 {
 
+
     class UEvent
     {
 
         public:
-
-        core::Str kind;
-    };
-
-
-    class UEventMouse : public UEvent
-    {
-        public:
-
-        wgfx::Vec2 at;
-
-        hw::MouseEvent mev;
-
-        static core::Str kind()
+        enum class Kind
         {
-            return "mouse";
-        }
+            NONE,
+            MOUSE_MOVE,
+            MOUSE_CLICK,
+            MOUSE_RELEASE,
+
+        };
+
+        Kind kind;
+        wgfx::Vec2 at;
+        union  {
+            hw::MouseEvent mouse;
+        };
+
+        UEvent() : kind(Kind::NONE){};
+
     };
+
 }

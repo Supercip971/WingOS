@@ -91,7 +91,7 @@ struct GRect
     }
     static constexpr GRect from_start_end(float sx, float sy, float ex, float ey)
     {
-        return GRect(sx, sy, ex - sx, ey - sy);
+        return GRect(sx, sy, ex , ey);
     }
     static constexpr GRect from_size(float sx, float sy, float width, float height)
     {

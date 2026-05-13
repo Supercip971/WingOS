@@ -1,4 +1,8 @@
+#include <SDL3/SDL_events.h>
+#include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_properties.h>
+
+#include "gfx/event/event.hpp"
 #define EXTERNAL_INCLUDED
 
 #include <SDL3/SDL.h>
@@ -127,7 +131,8 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
             newtime = SDL_GetTicksNS();
             fps = newtime - oldtime;
             oldtime = newtime;
-            printf("%f\n", (1000.f * 1000.f * 1000.f) / (float)fps);
+            (void)fps;
+        //    printf("%f\n", (1000.f * 1000.f * 1000.f) / (float)fps);
             break;
         }
         default:
@@ -198,6 +203,56 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
             return "Backend not supported";
         }
         }
+        return {};
+    }
+    wgfx::UEvent query_event() override
+    {
+        SDL_Event ev = {};
+
+        while (SDL_PollEvent(&ev))
+        {
+            if (ev.type == SDL_EVENT_QUIT)
+            {
+                exit(0);
+            }
+
+            else if (ev.type == SDL_EVENT_MOUSE_MOTION)
+            {
+                wgfx::UEvent mouse = {};
+
+                mouse.mouse.offx = ev.motion.xrel * this->dpi();
+                mouse.mouse.offy = ev.motion.yrel * this->dpi();
+                mouse.at.x = ev.motion.x * this->dpi();
+                mouse.at.y = ev.motion.y * this->dpi();
+
+                mouse.kind = wgfx::UEvent::Kind::MOUSE_MOVE;
+
+                return mouse;
+            }
+            else if (ev.type == SDL_EVENT_MOUSE_BUTTON_DOWN || ev.type == SDL_EVENT_MOUSE_BUTTON_UP)
+            {
+                wgfx::UEvent mouse = {};
+
+                mouse.mouse.left = ev.button.button == SDL_BUTTON_LEFT;
+                mouse.mouse.right = ev.button.button == SDL_BUTTON_RIGHT;
+                mouse.mouse.middle = ev.button.button == SDL_BUTTON_MIDDLE;
+
+                mouse.at.x = ev.button.x * this->dpi();
+                mouse.at.y = ev.motion.y * this->dpi();
+
+                if(ev.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
+                {
+                    mouse.kind = wgfx::UEvent::Kind::MOUSE_CLICK;
+                }
+                else
+                {
+                    mouse.kind = wgfx::UEvent::Kind::MOUSE_RELEASE;
+                }
+                return mouse;
+
+            }
+        }
+
         return {};
     }
 };

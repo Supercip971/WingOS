@@ -38,13 +38,14 @@ class Widget
     wgfx::RenderCommands rendering;
 
 public:
-    bool acquireEvent(wgfx::UEvent *ev)
-    {
-        if (ev->kind == core::Str("mouse"))
-        {
-            auto mev = static_cast<wgfx::UEventMouse *>(ev);
 
-            if (!this->_layout.contains(mev->at))
+    auto name() const { return typeid(*this).name(); };
+    virtual bool acquireEvent(wgfx::UEvent ev)
+    {
+        if (ev.kind == wgfx::UEvent::Kind::MOUSE_MOVE || ev.kind == wgfx::UEvent::Kind::MOUSE_CLICK)
+        {
+            if (this->_layout.size() != wgfx::Vec2(0, 0) &&
+                !this->_layout.contains(ev.at))
             {
                 return false;
             }
@@ -119,7 +120,6 @@ public:
         _dirty = true;
     }
 
-    auto name() const { return typeid(*this).name(); };
 
     virtual core::Str info() const { return ""; };
     void dump(int depth = 0) const

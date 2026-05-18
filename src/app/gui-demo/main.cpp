@@ -15,6 +15,7 @@
 #include "libcore/result.hpp"
 #include "libcore/shared.hpp"
 #include "ui/widgets/button.hpp"
+#include "ui/widgets/callback.hpp"
 #include "ui/widgets/centered.hpp"
 #include "ui/widgets/container.hpp"
 #include "ui/widgets/root.hpp"
@@ -41,7 +42,10 @@ public:
         auto res = fmt::format_str("Counter 2: {}", counter | fmt::FMT_PAD_ZERO);
 
         return $<fc::VFlex>(
+
+            $<fc::TextWidget>(core::move(res.take()), sfont),
             $<fc::Button>(
+
                 fc::ButtonParams()
                     .bg(
                         wgfx::CompositeColor::fromOklch(0.7245, 0.1239, 156.12))
@@ -49,9 +53,13 @@ public:
                         wgfx::CompositeColor::fromOklch(0.5937, 0.0999, 156.09))
                     .shadowy(
                         wgfx::CompositeColor::fromOklch(0.6554, 0.114, 156.2)),
-                $<fc::TextWidget>("hello world!", sfont)),
-            $<fc::TextWidget>("Hello, World!", sfont),
-            $<fc::TextWidget>(core::move(res.take()), sfont));
+
+                    fc::AutoCallback$([](CustomWidget2* w) {
+                            w->setState([&]()
+                                        { w->counter++; });
+                    }),
+                $<fc::TextWidget>("hello world!", sfont))
+        );
     }
 };
 class CustomWidget : public fc::Statefull<MyState>
@@ -148,7 +156,7 @@ int main(int argc, char **argv)
         {
             ev = window->query_event();
 
-            if(ev.kind != wgfx::UEvent::Kind::NONE)
+            if (ev.kind != wgfx::UEvent::Kind::NONE)
             {
                 fmt::log$("Event: {} at ({}, {})", (long)ev.kind, (long)ev.at.x, (long)ev.at.y);
                 vwidgt->acquireEvent(ev);
@@ -156,7 +164,6 @@ int main(int argc, char **argv)
         } while (ev.kind != wgfx::UEvent::Kind::NONE);
 
         // fmt::log$("ran frame");
-
 
         wgfx::Canvas *frame = window->create_frame();
 

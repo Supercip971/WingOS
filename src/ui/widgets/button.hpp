@@ -10,6 +10,7 @@
 #include "gfx/text/font.hpp"
 #include "libcore/ds/vec.hpp"
 #include "libcore/shared.hpp"
+#include "ui/widgets/callback.hpp"
 #include "ui/widgets/centered.hpp"
 #include "ui/widgets/statefull.hpp"
 #include "widget.hpp"
@@ -66,9 +67,9 @@ struct ButtonParams
 
 struct ButtonState
 {
-
     ButtonParams _parms;
 };
+
 class Button : public Statefull<ButtonState>
 {
 
@@ -76,29 +77,34 @@ public:
     core::SharedPtr<Widget> child;
     float o_elevation;
 
+    Callback _on_click = nullptr;
     ~Button() override = default;
     template <typename T>
-    Button(ButtonParams parms, T args)
-
+    Button(ButtonParams parms, Callback callback, T args)
     {
         o_elevation = parms._elevation;
+
+        _on_click = callback;
         _parms = parms;
         child = (args);
     }
 
     bool acquireEvent(wgfx::UEvent ev) override
     {
+        /*
         if (ev.kind == wgfx::UEvent::Kind::MOUSE_MOVE)
         {
             setState([&]()
-                     { _parms._elevation = 0.9 * o_elevation; });
+                     { _parms._elevation = 0.5 * o_elevation; });
             return true;
-        }
-        else if (ev.kind == wgfx::UEvent::Kind::MOUSE_CLICK)
+            }*/
+        if (ev.kind == wgfx::UEvent::Kind::MOUSE_CLICK)
         {
 
             setState([&]()
                      { _parms._elevation = 0; });
+
+            _on_click.call();
             return true;
         }
         else if (_parms._elevation != o_elevation)
@@ -125,7 +131,7 @@ public:
         wgfx::Painter paint = this->_parms._shadowy;
 
         auto b = this->bounds();
-
+        
         canvas.drawRect(this->bounds(), paint, this->_parms._radius);
 
         auto bu = this->bounds();

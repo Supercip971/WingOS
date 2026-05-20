@@ -23,7 +23,7 @@ public:
                                                                             a(_a) {};
 
     // FIXME: verify this, this is an easy quick way to do it
-    constexpr Rgba8 blended(Rgba8 to)
+    inline constexpr Rgba8 blended(Rgba8 to)
     {
         return Rgba8(
             (uint8_t)(((uint16_t)r * a + (uint16_t)to.r * to.a) / (a + to.a)),
@@ -32,7 +32,7 @@ public:
             (uint8_t)(((uint16_t)a)));
     }
 
-    constexpr void blend(Rgba8 to)
+    inline constexpr void blend(Rgba8 to)
     {
         r = (uint8_t)(((uint16_t)r * a + (uint16_t)to.r * to.a) / ((uint16_t)a + (uint16_t)to.a));
         g = (uint8_t)(((uint16_t)g * a + (uint16_t)to.g * to.a) / ((uint16_t)a + (uint16_t)to.a));
@@ -40,7 +40,7 @@ public:
         a = (uint8_t)(((uint16_t)a));
     }
 
-    constexpr void blendGamma(Rgba8 to, float alpha)
+    inline constexpr void blendGamma(Rgba8 to, float alpha)
     {
         r = (uint8_t)sqrtf(((float)(r * r) * (1.0f - alpha) + (float)(to.r * to.r) * alpha));
         g = (uint8_t)sqrtf(((float)(g * g) * (1.0f - alpha) + (float)(to.g * to.g) * alpha));
@@ -48,7 +48,7 @@ public:
         a = (uint8_t)(((uint16_t)a));
     }
 
-    constexpr void blend(Rgba8 to, float alpha)
+    inline constexpr void blend(Rgba8 to, float alpha)
     {
         r = (uint8_t)(((float)r * (1.0f - alpha) + (float)to.r * alpha));
         g = (uint8_t)(((float)g * (1.0f - alpha) + (float)to.g * alpha));

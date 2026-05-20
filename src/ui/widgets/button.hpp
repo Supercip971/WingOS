@@ -24,7 +24,7 @@ struct ButtonParams
     wgfx::CompositeColor _bg = wgfx::CONTAINER_FILL;
     wgfx::CompositeColor _border = wgfx::CONTAINER_BORDER;
     wgfx::CompositeColor _shadowy = wgfx::CONTAINER_BORDER;
-    float _radius = 0.1f;
+    float _radius = 16.f;
     float _elevation = 12.0f;
 
     constexpr ButtonParams() = default;
@@ -131,7 +131,7 @@ public:
         wgfx::Painter paint = this->_parms._shadowy;
 
         auto b = this->bounds();
-        
+
         canvas.drawRect(this->bounds(), paint, this->_parms._radius);
 
         auto bu = this->bounds();

@@ -18,6 +18,7 @@
 #include "ui/widgets/callback.hpp"
 #include "ui/widgets/centered.hpp"
 #include "ui/widgets/container.hpp"
+#include "ui/widgets/padded.hpp"
 #include "ui/widgets/root.hpp"
 #include "ui/widgets/sized.hpp"
 #include "ui/widgets/statefull.hpp"
@@ -58,7 +59,7 @@ public:
                             w->setState([&]()
                                         { w->counter++; });
                     }),
-                $<fc::TextWidget>("hello world!", sfont))
+                $<fc::LPadded>(fc::Padded().horizontal(32), $<fc::TextWidget>("hello world!", sfont)))
         );
     }
 };
@@ -74,7 +75,7 @@ public:
                                 $<fc::Sized>(
                                     fc::LayoutSize(800.f, 800.f).min_width(300).max_width(1920),
                                     $<fc::Container>(
-                                        fc::ContainerParms().bg(wgfx::CONTAINER_FILL).border(wgfx::CONTAINER_BORDER, 2).radius(0.01),
+                                        fc::ContainerParms().bg(wgfx::CONTAINER_FILL).border(wgfx::CONTAINER_BORDER, 2).radius(16),
                                         $<fc::Centered>($<CustomWidget2>())))));
     }
 };

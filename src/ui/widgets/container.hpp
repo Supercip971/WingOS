@@ -19,7 +19,7 @@ struct ContainerParms
     float _border_size = 0.2f;
 
     float _elevation = 0.f;
-    float _radius = 0.15f;
+    float _radius = 16.f;
 
     constexpr ContainerParms() = default;
 

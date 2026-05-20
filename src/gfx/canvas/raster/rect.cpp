@@ -1,19 +1,23 @@
 #include "gfx/canvas/cmd.hpp"
 #include "rasterCanvas.hpp"
 
-//static size_t l = 0;
-void wgfx::RasterCanvas::rectRoundedFlatAligned(RectCommand const &cmd)
+// static size_t l = 0;
+void wgfx::RasterCanvas::rectRoundedFlatAligned(RectCommand const &cmdc)
 {
 
+    auto cmd = cmdc;
+    cmd.rect.start.x = ceilf(cmd.rect.start.x);
+    cmd.rect.start.y = ceilf(cmd.rect.start.y);
+    cmd.rect.end.x = floorf(cmd.rect.end.x);
+    cmd.rect.end.y = floorf(cmd.rect.end.y);
+
     Rgba8 color = cmd.paint.color.toRgba8();
-    //color.r = l;
-    //l++;
+    // color.r = l;
+    // l++;
 
-    float roundeness = core::min(cmd.radius, 1.0f);
+    float roundeness = cmd.radius;
 
-    float radius = cmd.rect.width() > cmd.rect.height() ? cmd.rect.width() : cmd.rect.height();
-    radius *= roundeness / 2.f;
-
+    float radius = roundeness;
 
     long clip_start_y = core::max(cmd.rect.start.y, size.start.y) - cmd.rect.start.y;
     long clip_end_y = core::min(cmd.rect.end.y, size.end.y) - cmd.rect.start.y;
@@ -54,13 +58,13 @@ void wgfx::RasterCanvas::rectRoundedFlatAligned(RectCommand const &cmd)
         float fs2 = floorf(end_x);
         float fs1 = floorf(start_x);
 
-
-
         for (long x = (long)(start_x + 1.f); x < (long)fs2; x++)
         {
             colorize(x + cmd.rect.start.x, y + cmd.rect.start.y, color);
         }
 
+        (void)fs1;
+        (void)color;
         blend((long)start_x + cmd.rect.start.x, y + cmd.rect.start.y, color, (1.0f - ((start_x)-fs1)));
         blend((long)end_x + cmd.rect.start.x, y + cmd.rect.start.y, color, ((end_x - fs2)));
     }
@@ -71,8 +75,8 @@ void wgfx::RasterCanvas::rectFlatAligned(RectCommand const &cmd)
 
     Rgba8 color = cmd.paint.color.toRgba8();
 
-    //color.r = l;
-    //l++;
+    // color.r = l;
+    // l++;
     long sy = cmd.rect.start.y;
     long ey = cmd.rect.end.y;
 
@@ -100,131 +104,167 @@ void wgfx::RasterCanvas::rectFlatAligned(RectCommand const &cmd)
 void wgfx::RasterCanvas::rectStrokeRoundedFlatAligned(RectCommand const &cmd2)
 {
 
-
     RectCommand cmd = cmd2;
 
-    cmd.rect.start.x += cmd.paint.stroke.width*2.f;
-    cmd.rect.start.y += cmd.paint.stroke.width*2.f;
-    cmd.rect.end.x -= cmd.paint.stroke.width*2.f;
-    cmd.rect.end.y -= cmd.paint.stroke.width*2.f;
+    // cmd.rect.start.x += cmd.paint.stroke.width * 2.f;
+    // cmd.rect.start.y += cmd.paint.stroke.width * 2.f;
+    // cmd.rect.end.x -= cmd.paint.stroke.width * 2.f;
+    // cmd.rect.end.y -= cmd.paint.stroke.width * 2.f;
+    cmd.rect.start.x = ceilf(cmd.rect.start.x);
+    cmd.rect.start.y = ceilf(cmd.rect.start.y);
+    cmd.rect.end.x = floorf(cmd.rect.end.x);
+    cmd.rect.end.y = floorf(cmd.rect.end.y);
+
     Rgba8 color = cmd.paint.color.toRgba8();
 
-   float roundeness = core::min(cmd.radius, 1.0f);
+    float roundeness = cmd.radius;
 
+    float w = floorf(cmd.paint.stroke.width);
 
-    float w = cmd.paint.stroke.width;
-    float sy = -w;
-    float ey = w + cmd.rect.height();
-
-    float sx = -w;
-    float ex = cmd.rect.width() + w;
-
-    float fh = ey - sy;
-    float fw = ex - sx;
+    float rw = cmd.rect.width();
+    float rh = cmd.rect.height();
     float inner_radius = cmd.rect.width() > cmd.rect.height() ? cmd.rect.width() : cmd.rect.height();
 
-    float outer_radius = fw > fh ? fw : fh;
-
-    outer_radius *= roundeness / 2.f;
+    float outer_radius = roundeness;
     inner_radius = outer_radius - w;
+
+    // inner_radius = floorf(inner_radius);
+    // outer_radius = ceilf(outer_radius);
     //  outer_radius += w;
 
-
     // top
-    for (long y = core::max(cmd.rect.start.y + inner_radius + sy, size.start.y);
-        y < core::min(cmd.rect.start.y + ey - inner_radius, size.end.y);
-        y++)
+    for (long y = core::max<long>((cmd.rect.start.y + outer_radius), size.start.y);
+         y <= core::min<long>(ceilf(cmd.rect.end.y - outer_radius), size.end.y - 1);
+         y++)
     {
-        for (long x = core::max(cmd.rect.start.x + sx - w, size.start.x); x < core::min(cmd.rect.start.x + sx, size.end.x); x++)
+        for (long x = core::max<long>(floorf(cmd.rect.start.x), size.start.x); x < core::min<long>((cmd.rect.start.x + w), size.end.x); x++)
         {
+            //   blend((long)x, y, color, 0.5f);
             buffer[(long)x + y * width] = color;
         }
 
-        for (long x = core::max(cmd.rect.start.x + ex, size.start.x); x < core::min(cmd.rect.start.x + ex + w, size.end.x); x++)
+        for (long x = core::max<long>((cmd.rect.end.x - w), size.start.x); x < core::min<long>(cmd.rect.end.x, size.end.x); x++)
         {
-            buffer[(long) x + y * width] = color;
+            //   blend((long)x, y, color, 0.5f);
+            buffer[(long)x + y * width] = color;
         }
     }
 
-    for (long x = core::max(cmd.rect.start.x + inner_radius + sx, size.start.x);
-        x < core::min(cmd.rect.start.x + ex - inner_radius, size.end.x);
-        x++)
+    for (long x = core::max<long>(cmd.rect.start.x + outer_radius, size.start.x);
+         x <= core::min<long>(ceilf(cmd.rect.end.x - outer_radius), size.end.x - 1);
+         x++)
     {
-        for (long y = core::max(cmd.rect.start.y + sy - w, size.start.y); y < core::min(cmd.rect.start.y + sy, size.end.y); y++)
+        for (long y = core::max<long>(floorf(cmd.rect.start.y), size.start.y); y < core::min<long>((cmd.rect.start.y + w), size.end.y); y++)
         {
-            buffer[(long)x + (long)(y) * width] = color;
+            //   blend((long)x, y, color, 0.5f);
+            buffer[(long)x + (long)(y)*width] = color;
         }
 
-        for (long y = core::max(cmd.rect.start.y + ey, size.start.y); y < core::min(cmd.rect.start.y + ey + w, size.end.y); y++)
+        for (long y = core::max<long>(cmd.rect.end.y - w, size.start.y); y < core::min<long>(cmd.rect.end.y, size.end.y); y++)
         {
-            buffer[(long)x + (long)(y) * width] = color;
+            //   blend((long)x, y, color, 0.5f);
+            buffer[(long)x + (long)(y)*width] = color;
         }
     }
     // tops  corner
 
-    for (float y = core::max(sy, size.start.y - cmd.rect.start.y); y < core::min(sy + outer_radius, size.end.y - cmd.rect.start.y); y++)
+    for (float y = core::max(0, size.start.y - cmd.rect.start.y); y < core::min((outer_radius), size.end.y - cmd.rect.start.y); y++)
     {
-        float msx = sx;
-        float mex = ex;
 
-        msx = outer_radius - sqrtf(outer_radius * outer_radius - (outer_radius - (float)(y + w)) * (outer_radius - (float)(y + w)));
+        for (float x = core::max<float>((0), size.start.x - cmd.rect.start.x); x < core::min<float>((outer_radius), size.end.x - cmd.rect.start.x); x++)
 
-        if (y < 0.f)
         {
-            mex = outer_radius + w;
+            float rel_x = outer_radius - x;
+            float rel_y = outer_radius - y;
+
+            float rel_x_f = (outer_radius - x) - 0.9f;
+            float rel_y_f = (outer_radius - y);
+
+            float rel_x_c = (outer_radius - x) + 0.9f;
+            float rel_y_c = (outer_radius - y);
+
+            // avoid using sqrt
+            if (rel_x * rel_x + rel_y * rel_y < outer_radius * outer_radius &&
+                rel_x * rel_x + rel_y * rel_y > (inner_radius) * (inner_radius))
+            {
+                // blend(x + cmd.rect.start.x, y + cmd.rect.start.y, color, 0.5f); // TOP LEFT
+                // blend(x + cmd.rect.start.x, rh - y + cmd.rect.start.y, color, 0.5f); // TOP RIGHT
+                // blend(rw- (x)  + cmd.rect.start.x, y + cmd.rect.start.y, color, 0.5f); // BOTTOM RIGHT
+                // blend(rw- (x)  + cmd.rect.start.x, rh -y + cmd.rect.start.y, color, 0.5f); // BOTTOM LEFT
+                colorize(x + cmd.rect.start.x, y + cmd.rect.start.y, color);           // TOP LEFT
+                colorize(x + cmd.rect.start.x, rh - y + cmd.rect.start.y, color);      // TOP RIGHT
+                colorize(rw - x + cmd.rect.start.x, y + cmd.rect.start.y, color);      // BOTTOM RIGHT
+                colorize(rw - x + cmd.rect.start.x, rh - y + cmd.rect.start.y, color); // BOTTOM LEFT
+            }
+            else if ((rel_x_f * rel_x_f + rel_y_f * rel_y_f) < (outer_radius * outer_radius) &&
+                     (rel_x_f * rel_x_f + rel_y_f * rel_y_f) > ((inner_radius) * (inner_radius)))
+            {
+
+                //   blendGammaChecked(x + cmd.rect.start.x, y + cmd.rect.start.y, RED.toRgba8(), (rel_x - rel_x_f) * (rel_y - rel_y_f));
+                float avg = 0.0f;
+
+                for (float xi = 0.0f; xi <= 1.f; xi += 0.24f)
+                {
+                    float reli_x = outer_radius - x - xi;
+                    float reli_y = outer_radius - y;
+                    if (reli_x * reli_x + reli_y * reli_y < outer_radius * outer_radius &&
+                        reli_x * reli_x + reli_y * reli_y > (inner_radius) * (inner_radius))
+                    {
+
+                        avg += 1.f;
+                    }
+                }
+                blendChecked(x + cmd.rect.start.x, y + cmd.rect.start.y, color, avg / (4.f));
+                blendChecked(x + cmd.rect.start.x, cmd.rect.end.y - y, color, avg / (4.f));
+                blendChecked(cmd.rect.end.x - x, y + cmd.rect.start.y, color, avg / (4.f));
+                blendChecked(cmd.rect.end.x - x, cmd.rect.end.y - y, color, avg / (4.f));
+            }
+            else if ((rel_x_c * rel_x_c + rel_y_c * rel_y_c) < (outer_radius * outer_radius) &&
+                     (rel_x_c * rel_x_c + rel_y_c * rel_y_c) > ((inner_radius) * (inner_radius)))
+            {
+
+                //   blendGammaChecked(x + cmd.rect.start.x, y + cmd.rect.start.y, RED.toRgba8(), (rel_x - rel_x_f) * (rel_y - rel_y_f));
+                float avg = 0.0f;
+
+                // 0.1 => 0.5 => 0.9
+                for (float xi = 0.0f; xi <= 1.f; xi += 0.24f)
+                {
+                    float reli_x = outer_radius - x + xi;
+                    float reli_y = outer_radius - y;
+                    if (reli_x * reli_x + reli_y * reli_y < outer_radius * outer_radius &&
+                        reli_x * reli_x + reli_y * reli_y > (inner_radius) * (inner_radius))
+                    {
+
+                        avg += 1.f;
+                    }
+                }
+
+                blendChecked(x + cmd.rect.start.x, y + cmd.rect.start.y, color, avg / (4.f));
+                blendChecked(x + cmd.rect.start.x, cmd.rect.end.y - y, color, avg / (4.f));
+                blendChecked(cmd.rect.end.x - x, y + cmd.rect.start.y, color, avg / (4.f));
+                blendChecked(cmd.rect.end.x - x, cmd.rect.end.y - y, color, avg / (4.f));
+            }
+
+            // rel_x = inner_radius - (ex - x);
+            // rel_y = inner_radius - y;
         }
-        else
-        {
 
-            mex = inner_radius - sqrtf(inner_radius * inner_radius - (inner_radius - (float)(y)) * (inner_radius - (float)(y)));
-        }
-
-        msx -= w;
-        //        mex -= w;
-        //   printf("%f %f\n", msx, mex);
-
-
-        // verify sign
-        float fs1 = floorf(msx);
-        float fs2 = floorf(mex);
-        float absolute_sx = sx + cmd.rect.start.x;
-
-        float absolute_sy = sy + cmd.rect.start.y;
-
-        for (long x = core::max((long)(fs1), size.start.x - cmd.rect.start.x)+1.f; x < core::min((long)(fs2), size.end.x - cmd.rect.start.x); x++)
-        {
-
-            // top left
-            colorize(x + absolute_sx, y + absolute_sy, color);
-            // top right
-            colorize(fw - x + absolute_sx, y + absolute_sy, color);
-
-            // bottom right
-            colorize(fw - x + absolute_sx, fh - y + absolute_sy, color);
-
-            // bottom left
-            colorize(x + absolute_sx, fh - y + absolute_sy, color);
-        }
-
-        blendGamma((long)msx + absolute_sx, y + absolute_sy, color, 1.0f - ((msx - fs1)));
-        blendGamma((long)mex + absolute_sx, y + absolute_sy, color, ((mex - fs2)));
-
-        blendGamma((fw - (long)msx + absolute_sx), y + absolute_sy, color, 1.0f - ((msx - fs1)));
-        blendGamma((fw - (long)mex + absolute_sx), y + absolute_sy, color, ((mex - fs2)));
-
-        blendGamma((long)msx + absolute_sx, fh - y + absolute_sy, color, 1.0f - ((msx - fs1)));
-        blendGamma((long)mex + absolute_sx, fh - y + absolute_sy, color, ((mex - fs2)));
-
-        blendGamma((fw - (long)msx + absolute_sx), fh - y + absolute_sy, color, 1.0f - ((msx - fs1)));
-        blendGamma((fw - (long)mex + absolute_sx), fh - y + absolute_sy, color, ((mex - fs2)));
+        //
     }
 }
 
-void wgfx::RasterCanvas::rectStrokeFlatAligned(RectCommand const &cmd)
+void wgfx::RasterCanvas::rectStrokeFlatAligned(RectCommand const &cmdw)
 {
 
+    auto cmd = cmdw;
     Rgba8 color = cmd.paint.color.toRgba8();
     float w = cmd.paint.stroke.width;
+
+    cmd.rect.start.x = ceilf(cmd.rect.start.x);
+    cmd.rect.start.y = ceilf(cmd.rect.start.y);
+    cmd.rect.end.x = floorf(cmd.rect.end.x);
+    cmd.rect.end.y = floorf(cmd.rect.end.y);
+
     long sy = core::max(cmd.rect.start.y - w, 0);
     long ey = core::min(cmd.rect.end.y + w, (long)height);
 

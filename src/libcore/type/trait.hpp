@@ -165,4 +165,11 @@ concept IsConvertibleTo = __is_convertible_to(From, To);
 template <class T>
 concept IsDefaultConstructible = requires { T{}; };
 
+
+template<class A, class B>
+concept IsComparable = requires(const A& l, const B& r) {
+    { l == r } -> IsConvertibleTo<bool>;
+    { l != r } -> IsConvertibleTo<bool>;
+};
+
 } // namespace core

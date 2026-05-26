@@ -5,6 +5,7 @@
 #include "tests/libcore/fmt_test.hpp"
 #include "tests/libcore/llist_test.hpp"
 #include "tests/libcore/result_test.hpp"
+#include "tests/libcore/umap_test.hpp"
 #include "tests/libcore/vec_test.hpp"
 
 #include "../test.hpp"
@@ -17,6 +18,7 @@ static constexpr TestGroup libcoreTests = {
         bitmapTests,
         vecTests,
         llistTests,
+        umapTests,
         fmtTestWStr,
         sharedPtrTests,
         resultTests),

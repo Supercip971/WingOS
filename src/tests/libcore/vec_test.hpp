@@ -120,7 +120,7 @@ static constexpr TestGroup vecTests = {
                     try$(b.push(i + 2048));
                 }
 
-                try$(a.push(core::move(b)));
+                try$(a.push_elements(core::move(b)));
 
                 for (int i = 0; i < (int)a.len(); i++)
                 {

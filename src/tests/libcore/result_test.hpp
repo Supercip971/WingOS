@@ -663,7 +663,8 @@ static constexpr TestGroup resultTests = {
                         return core::Result<ResultTestObject, const char *>(ResultTestObject(42));
                     };
 
-                    ResultTestObject obj = make_result().unwrap();
+                    auto result = make_result();
+                    ResultTestObject obj = core::move(result).unwrap();
                     if (obj.value != 42)
                         return "unwrapped value should be 42";
                 }

@@ -253,7 +253,7 @@ public:
         {
             _count--;
 
-            auto v = _data[_count];
+            auto v = core::move(_data[_count]);
 
             _data[_count].~T();
 

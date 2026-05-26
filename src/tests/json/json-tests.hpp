@@ -45,7 +45,7 @@ static constexpr TestGroup jsonTests = {
                                 }
 
                                 auto val = key_str.unwrap();
-                                if (val->as_string().unwrap() != core::Str("value"))
+                                if (val.as_string().unwrap() != core::Str("value"))
                                 {
                                     return "Expected value for key-str";
                                 }
@@ -68,7 +68,7 @@ static constexpr TestGroup jsonTests = {
                                     return key_int.error();
                                 }
                                 auto val = key_int.unwrap();
-                                if (val->as_number().unwrap() != 123)
+                                if (val.as_number().unwrap() != 123)
                                 {
                                     return "Expected 123 for key-int";
                                 }
@@ -91,7 +91,7 @@ static constexpr TestGroup jsonTests = {
                                     return key_bool.error();
                                 }
                                 auto val = key_bool.unwrap();
-                                if (val->as_bool().unwrap() != true)
+                                if (val.as_bool().unwrap() != true)
                                 {
                                     return "Expected true for key-bool";
                                 }
@@ -113,7 +113,7 @@ static constexpr TestGroup jsonTests = {
                                     return key_null.error();
                                 }
                                 auto val = key_null.unwrap();
-                                if (!val->is_null())
+                                if (!val.is_null())
                                 {
                                     return "Expected null for key-null";
                                 }
@@ -135,11 +135,11 @@ static constexpr TestGroup jsonTests = {
                                     return key_array.error();
                                 }
                                 auto val = key_array.unwrap();
-                                if (val->type != wjson::JsonType::Array)
+                                if (val.type != wjson::JsonType::Array)
                                 {
                                     return "Expected array type for key-array";
                                 }
-                                auto &arr = val->children();
+                                auto &arr = val.children();
                                 if (arr.len() != 3 || try$(arr[0].as_number()) != 1 || try$(arr[1].as_number()) != 2 || try$(arr[2].as_number()) != 3)
                                 {
 
@@ -163,17 +163,17 @@ static constexpr TestGroup jsonTests = {
                                     return key_object.error();
                                 }
                                 auto val = key_object.unwrap();
-                                if (val->type != wjson::JsonType::Object)
+                                if (val.type != wjson::JsonType::Object)
                                 {
                                     return "Expected object type for key-object";
                                 }
                                 auto obj = val;
-                                auto nested_key = obj->get("nested-key");
+                                auto nested_key = obj.get("nested-key");
                                 if (nested_key.is_error())
                                 {
                                     return nested_key.error();
                                 }
-                                if (nested_key.unwrap()->as_string().unwrap() != core::Str("nested-value"))
+                                if (nested_key.unwrap().as_string().unwrap() != core::Str("nested-value"))
                                 {
                                     return "Expected nested-value for nested-key";
                                 }

@@ -168,6 +168,34 @@ public:
         _len = 0;
     }
 
+    bool operator==(const WStr &other) const
+    {
+        if (this->len() != other.len())
+        {
+            return false;
+        }
+        for (size_t i = 0; i < this->len(); i++)
+        {
+            if (this->_data[i] != other._data[i])
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool operator==(const char* other) const
+    {
+
+        for (size_t i = 0; i < this->len() && other[i] != '\0'; i++)
+        {
+            if (this->_data[i] != other[i])
+            {
+                return false;
+            }
+        }
+        return true;
+    }
     void release()
     {
         if (_data != nullptr)

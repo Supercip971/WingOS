@@ -137,13 +137,13 @@ void wgfx::RasterCanvas::rectStrokeRoundedFlatAligned(RectCommand const &cmd2)
          y <= core::min<long>(ceilf(cmd.rect.end.y - outer_radius), size.end.y - 1);
          y++)
     {
-        for (long x = core::max<long>(floorf(cmd.rect.start.x), size.start.x); x < core::min<long>((cmd.rect.start.x + w), size.end.x); x++)
+        for (long x = core::max<long>(floorf(cmd.rect.start.x), size.start.x); x <= core::min<long>((cmd.rect.start.x + w), size.end.x-1); x++)
         {
             //   blend((long)x, y, color, 0.5f);
             buffer[(long)x + y * width] = color;
         }
 
-        for (long x = core::max<long>((cmd.rect.end.x - w), size.start.x); x < core::min<long>(cmd.rect.end.x, size.end.x); x++)
+        for (long x = core::max<long>(floorf(cmd.rect.end.x - w), size.start.x); x <= core::min<long>(cmd.rect.end.x, size.end.x-1); x++)
         {
             //   blend((long)x, y, color, 0.5f);
             buffer[(long)x + y * width] = color;
@@ -154,13 +154,13 @@ void wgfx::RasterCanvas::rectStrokeRoundedFlatAligned(RectCommand const &cmd2)
          x <= core::min<long>(ceilf(cmd.rect.end.x - outer_radius), size.end.x - 1);
          x++)
     {
-        for (long y = core::max<long>(floorf(cmd.rect.start.y), size.start.y); y < core::min<long>((cmd.rect.start.y + w), size.end.y); y++)
+        for (long y = core::max<long>(floorf(cmd.rect.start.y), size.start.y); y <= core::min<long>((cmd.rect.start.y + w), size.end.y-1); y++)
         {
             //   blend((long)x, y, color, 0.5f);
             buffer[(long)x + (long)(y)*width] = color;
         }
 
-        for (long y = core::max<long>(cmd.rect.end.y - w, size.start.y); y < core::min<long>(cmd.rect.end.y, size.end.y); y++)
+        for (long y = core::max<long>(cmd.rect.end.y - w, size.start.y); y <= core::min<long>(cmd.rect.end.y, size.end.y-1); y++)
         {
             //   blend((long)x, y, color, 0.5f);
             buffer[(long)x + (long)(y)*width] = color;

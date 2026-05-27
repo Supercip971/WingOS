@@ -9,7 +9,6 @@
 #endif
 #include "external/stb/stb_truetype.h"
 
-#include "gfx/canvas/cmd.hpp"
 #include "gfx/geometry/shape.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/result.hpp"

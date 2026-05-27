@@ -49,7 +49,6 @@
         "-Wno-builtin-declaration-mismatch",
         "-std=c++23",
         "-fno-threadsafe-statics",
-        "-fno-stack-protector",
         "-mavx",
         "-Wnull-dereference",
         "-Wstack-protector",

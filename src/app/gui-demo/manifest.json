@@ -3,5 +3,5 @@
   "id": "gui-demo",
   "type": "exe",
   "description": "WingOS gui demo",
-  "requires": ["libcore", "libc", "iol", "json", "gfx-backend"]
+  "requires": ["libcore", "libc", "iol", "json", "gfx-backend", "fly-catcher"]
 }

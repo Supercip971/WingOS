@@ -86,6 +86,9 @@ struct ContourCommand
     Vec2 pos = {};
 };
 
+
+
+
 struct TextCommand
 {
 
@@ -93,7 +96,7 @@ struct TextCommand
 
     Painter paint;
     Utf8Str str;
-    core::SharedPtr<Font> font;
+    core::SharedPtr<wgfx::Font> font;
     Vec2 pos;
 };
 

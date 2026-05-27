@@ -3,6 +3,5 @@
   "type": "lib",
   "id": "fly-catcher",
   "description": "Wingos gui library",
-  "requires": ["libcore", "gfx"],
-  "provides": ["fly-catcher"]
+  "requires": ["libcore", "gfx-backend"]
 }

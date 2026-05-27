@@ -14,6 +14,7 @@
 #include "libcore/fmt/flags.hpp"
 #include "libcore/result.hpp"
 #include "libcore/shared.hpp"
+#include "ui/font-manager.hpp"
 #include "ui/widgets/button.hpp"
 #include "ui/widgets/callback.hpp"
 #include "ui/widgets/centered.hpp"
@@ -26,7 +27,6 @@
 #include "ui/widgets/vflex.hpp"
 #include "ui/widgets/widget.hpp"
 
-core::SharedPtr<wgfx::Font> sfont;
 
 struct MyState
 {
@@ -44,7 +44,8 @@ public:
 
         return $<fc::VFlex>(
 
-            $<fc::TextWidget>(core::move(res.take()), sfont),
+            $<fc::TextWidget>(core::move(res.take()),
+                fc::FontsRepo::the().find("oswald@96")),
             $<fc::Button>(
 
                 fc::ButtonParams()
@@ -59,7 +60,8 @@ public:
                             w->setState([&]()
                                         { w->counter++; });
                     }),
-                $<fc::LPadded>(fc::Padded().horizontal(32), $<fc::TextWidget>("hello world!", sfont)))
+                $<fc::LPadded>(fc::Padded().horizontal(32), $<fc::TextWidget>("hello world!",
+                    fc::FontsRepo::the().find("oswald@96"))))
         );
     }
 };
@@ -96,42 +98,8 @@ int main(int argc, char **argv)
 
     window->attach();
 
-    auto t = wgfx::Typeface::from_file("./meta/assets/oswald.ttf").copied();
+    fc::FontsRepo::the().load(core::WStr::copy("oswald@96"), "./meta/assets/oswald.ttf", 96 * window->dpi());
 
-    auto font = wgfx::Font::load_font(t, 96 * window->dpi()).copied();
-
-    sfont = core::SharedPtr<wgfx::Font>::make(font);
-
-    (void)t;
-
-    float i = 0;
-    (void)i;
-
-    auto contour = font.shapes['@'].gfx_contour;
-
-    for (size_t j = 0; j < contour->strokes.len(); j++)
-    {
-        switch (contour->strokes[j].a.action)
-        {
-        case wgfx::PathAction::GMOVE:
-            fmt::log$("GMOVE");
-            break;
-        case wgfx::PathAction::GCURVE:
-            fmt::log$("GCURVE");
-            break;
-        case wgfx::PathAction::GCUBIC_CURVE:
-            fmt::log$("GCUBIC");
-            break;
-        default:
-            fmt::log$("UNKNOWN: ({}, {})", (long)contour->strokes[j].a.pos.x, (long)contour->strokes[j].a.pos.y);
-            break;
-        }
-        fmt::log$("start: ({}, {})", (long)contour->strokes[j].a.pos.x, (long)contour->strokes[j].a.pos.y);
-        fmt::log$("end: ({}, {})", (long)contour->strokes[j].b.pos.x, (long)contour->strokes[j].b.pos.y);
-        fmt::log$("control: ({}, {})", (long)contour->strokes[j].a.curve.control.x, (long)contour->strokes[j].a.curve.control.y);
-        fmt::log$("control2: ({}, {})", (long)contour->strokes[j].a.cubic_curve.control2.x, (long)contour->strokes[j].a.cubic_curve.control2.y);
-        fmt::log$("");
-    }
 
     float l = 0.f;
 

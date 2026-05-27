@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gfx/canvas/cmd.hpp"
+#include "gfx/geometry/rect.hpp"
 #include "gfx/geometry/vec2.hpp"
 #include "libcore/ds/vec.hpp"
 

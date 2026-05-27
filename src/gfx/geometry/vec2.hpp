@@ -66,7 +66,7 @@ public:
         return *this;
     }
 
-    constexpr Vec2 rounded(float factor) const
+     Vec2 rounded(float factor) const
     {
 
         return Vec2(roundf(x * factor) / factor, roundf(y * factor) / factor);

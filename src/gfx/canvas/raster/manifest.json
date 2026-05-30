@@ -3,7 +3,7 @@
   "id": "gfx-canvas-backend-raster-default",
   "type": "lib",
   "provides": ["gfx-canvas-backend-raster"],
-  "requires": ["stb", "libmath"],
+  "requires": ["stb", "libmath", "libgfx-image"],
 
   "props": {
     "export-headers": "."

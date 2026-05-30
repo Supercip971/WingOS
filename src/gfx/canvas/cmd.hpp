@@ -5,6 +5,7 @@
 #include "gfx/color.hpp"
 #include "gfx/geometry/rect.hpp"
 #include "gfx/geometry/shape.hpp"
+#include "gfx/image/texture.hpp"
 #include "gfx/text/font.hpp"
 #include "gfx/text/utf-text.hpp"
 #include "libcore/shared.hpp"
@@ -57,6 +58,7 @@ enum class RenderCommandKind
     RENDER_KIND_CONTOUR,
     RENDER_KIND_SHAPE,
     RENDER_KIND_SCISSOR,
+    RENDER_KIND_TEXTURE,
 
 };
 
@@ -86,9 +88,6 @@ struct ContourCommand
     Vec2 pos = {};
 };
 
-
-
-
 struct TextCommand
 {
 
@@ -107,6 +106,14 @@ struct ScissorCommand
     GRect rect;
 };
 
+struct TextureCommand
+{
+    static constexpr auto KIND = RenderCommandKind::RENDER_KIND_TEXTURE;
+
+    core::SharedPtr<wgfx::Texture> tex;
+    GRect rect;
+};
+
 struct RenderCommand
 {
 public:
@@ -120,6 +127,7 @@ public:
         ContourCommand contour;
         RectCommand rect;
         ScissorCommand scissor;
+        TextureCommand tex;
     };
 
     // Default constructor
@@ -146,6 +154,9 @@ public:
             break;
         case RenderCommandKind::RENDER_KIND_SCISSOR:
             new (&scissor) ScissorCommand(other.scissor);
+            break;
+        case RenderCommandKind::RENDER_KIND_TEXTURE:
+            new (&tex) TextureCommand(other.tex);
             break;
         default:
             break;
@@ -178,6 +189,9 @@ public:
             case RenderCommandKind::RENDER_KIND_SCISSOR:
                 new (&scissor) ScissorCommand(other.scissor);
                 break;
+            case RenderCommandKind::RENDER_KIND_TEXTURE:
+                new (&tex) TextureCommand(other.tex);
+                break;
             default:
                 break;
             }
@@ -195,6 +209,9 @@ public:
             break;
         case RenderCommandKind::RENDER_KIND_CONTOUR:
             contour.~ContourCommand();
+            break;
+        case RenderCommandKind::RENDER_KIND_TEXTURE:
+            tex.~TextureCommand();
             break;
         default:
             break;
@@ -226,6 +243,11 @@ public:
         {
             new (&cmd.scissor) ScissorCommand(r);
         }
+        else if constexpr (T::KIND == RenderCommandKind::RENDER_KIND_TEXTURE)
+        {
+            new (&cmd.tex) TextureCommand(r);
+        }
+
         return cmd;
     }
 };

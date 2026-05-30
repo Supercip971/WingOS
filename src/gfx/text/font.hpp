@@ -7,7 +7,8 @@
 #ifndef STBTT_assert
 #    define STBTT_assert(x) ((void)(x))
 #endif
-#include "external/stb/stb_truetype.h"
+
+#include "external/stb/stb_truetype.hpp"
 
 #include "gfx/geometry/shape.hpp"
 #include "libcore/fmt/log.hpp"

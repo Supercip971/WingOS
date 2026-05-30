@@ -26,8 +26,14 @@ public:
 
     wgfx::Vec2 preferred_size(wgfx::Vec2 constraint) const override
     {
+
+
         (void)constraint;
-        return font->get_render_rect(val.view());
+        auto v = font->get_render_rect(val.view());
+
+        //v.y = core::max(v.y, constraint.y);
+
+        return v;
     }
 
     core::Str info() const override { return val.view(); }

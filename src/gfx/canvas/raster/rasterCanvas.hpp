@@ -79,6 +79,9 @@ public:
 
     void rect(RectCommand const &cmd);
 
+    void texture(TextureCommand const &cmd);
+    void texturePixelAlignedFlat(TextureCommand const &cmd);
+
     // https://fr.wikipedia.org/wiki/Algorithme_de_trac%C3%A9_de_segment_de_Xiaolin_Wu
 
     void pathFillFlat(ContourCommand const &shape, Vec2 off);

@@ -25,6 +25,11 @@ void wgfx::RasterCanvas::apply(DrawContext const &ctx, RenderCommand const &cmd)
         text(cmd.text);
         break;
     }
+    case wgfx::RenderCommandKind::RENDER_KIND_TEXTURE:
+    {
+        texture(cmd.tex);
+        break;
+    }
 
     default:
     {

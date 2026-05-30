@@ -86,6 +86,14 @@ public:
         commands.push(cmd);
     }
 
+    void drawImage(core::SharedPtr<wgfx::Texture> const &texture, wgfx::GRect rect)
+    {
+        commands.push(RenderCommand::from((TextureCommand){
+            .tex = texture,
+            .rect = rect,
+        }));
+    }
+
     void drawContour(core::SharedPtr<Contour> &contour, CompositeColor color, Vec2 pos)
     {
         RenderCommand cmd = RenderCommand::from((ContourCommand){

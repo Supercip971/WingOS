@@ -17,6 +17,7 @@ public:
     core::Result<void> load(core::WStr const &name, core::Str path, size_t size = 96)
     {
 
+        fmt::log$("loading font({}): {}", name.view(), path);
         auto t = wgfx::Typeface::from_file(path).copied();
 
         _fonts.insert(

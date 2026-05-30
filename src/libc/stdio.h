@@ -27,6 +27,11 @@ int rename(const char* old_filename, const char* new_filename);
 
 int mkdir(const char* pathname, unsigned int mode);
 
+int fgetc(FILE *stream);
+int ungetc(int c, FILE *stream);
+
+int feof(FILE *stream);
+int ferror(FILE *stream);
 
 void fflush(FILE* stream);
 

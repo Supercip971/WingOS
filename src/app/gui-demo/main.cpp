@@ -15,13 +15,16 @@
 #include "libcore/result.hpp"
 #include "libcore/shared.hpp"
 #include "ui/font-manager.hpp"
+#include "ui/image-manager.hpp"
 #include "ui/widgets/button.hpp"
 #include "ui/widgets/callback.hpp"
 #include "ui/widgets/centered.hpp"
 #include "ui/widgets/container.hpp"
+#include "ui/widgets/image.hpp"
 #include "ui/widgets/padded.hpp"
 #include "ui/widgets/root.hpp"
 #include "ui/widgets/sized.hpp"
+#include "ui/widgets/stacked.hpp"
 #include "ui/widgets/statefull.hpp"
 #include "ui/widgets/text.hpp"
 #include "ui/widgets/vflex.hpp"
@@ -73,12 +76,17 @@ public:
     {
 
         return $<fc::_Root>(wgfx::SLATE_DARK,
-                            $<fc::Centered>(
+
+            $<fc::Stacked>(
+                $<fc::ImageWidget>(
+                    fc::TextureRepo::the().find("liquid-blue")
+                ),
+            $<fc::Centered>(
                                 $<fc::Sized>(
                                     fc::LayoutSize(800.f, 800.f).min_width(300).max_width(1920),
                                     $<fc::Container>(
                                         fc::ContainerParms().bg(wgfx::CONTAINER_FILL).border(wgfx::CONTAINER_BORDER, 2).radius(16),
-                                        $<fc::Centered>($<CustomWidget2>())))));
+                                        $<fc::Centered>($<CustomWidget2>()))))));
     }
 };
 int main(int argc, char **argv)
@@ -99,6 +107,8 @@ int main(int argc, char **argv)
     window->attach();
 
     fc::FontsRepo::the().load(core::WStr::copy("oswald@96"), "./meta/assets/oswald.ttf", 96 * window->dpi());
+    fc::TextureRepo::the().load(core::WStr::copy("liquid-blue"), "./meta/assets/pawel-czerwinski-blue-liquid-halfres.png");
+
 
 
     float l = 0.f;

@@ -18,6 +18,17 @@ The project is about creating an operating system that is easy to program for, w
 - It tries to experiment with new ideas and API, ditching old and legacy concepts when possible.
 - WingOS is a **microkernel** based operating system, currently targetting x86_64. It tries to be a capability based OS, with a focus on security and stability. 
 - The userspace is beginning to be fleshed out, with a VFS+ext4+nvme support. 
+- Wingos has a **working progress UI library** inspired by flutter with a rasterizer and a widget system.
+
+
+<div align="center">
+<br>
+
+![Wingos-ui](meta/doc/wingos-ui.png)
+
+A demonstration of the UI library of wingos, layout, and widgets. Here displaying an image, and a button with a counter reacting to it. 
+
+</div>
 
 <div align="center">
 <br>
@@ -73,13 +84,6 @@ For now the kernel is still in development, but it has a few key features:
 - [ ] Create a shell 
 - [ ] Above and beyond 
 
-## Roadmap (UI)
-
-- [x] Basic Render 
-- [x] Render fill 
-- [ ] Render text  
-- [ ] Transform 
-- [ ] Shader 
 
 ## Building the project
 

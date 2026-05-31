@@ -132,7 +132,7 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
             fps = newtime - oldtime;
             oldtime = newtime;
             (void)fps;
-        //    printf("%f\n", (1000.f * 1000.f * 1000.f) / (float)fps);
+            //printf("%f\n", (1000.f * 1000.f * 1000.f) / (float)fps);
             break;
         }
         default:

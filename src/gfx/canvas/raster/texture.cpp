@@ -22,12 +22,10 @@ void wgfx::RasterCanvas::texturePixelAlignedFlat(TextureCommand const &cmd)
 }
 void wgfx::RasterCanvas::texture(TextureCommand const &cmd)
 {
-    if (!cmd.tex)
-        return;
-
     if (cmd.tex->query_image_rgba8().has_value())
     {
         auto &image = cmd.tex->query_image_rgba8().value();
+
 
         for (long y = core::max(cmd.rect.start.y, size.start.y); y < core::min(cmd.rect.end.y, size.end.y); y++)
         {

@@ -38,7 +38,6 @@ class Widget
     wgfx::RenderCommands rendering;
 
 public:
-
     auto name() const { return typeid(*this).name(); };
     virtual bool acquireEvent(wgfx::UEvent ev)
     {
@@ -120,7 +119,6 @@ public:
         _dirty = true;
     }
 
-
     virtual core::Str info() const { return ""; };
     void dump(int depth = 0) const
     {
@@ -180,7 +178,7 @@ public:
             return {};
         }
 
-        core::Optional<wgfx::GRect> f = {};
+        core::Optional<wgfx::GRect> f {core::novalue};
         for (auto &child : childs)
         {
             auto rect = child->render_dirty_rect();
@@ -205,6 +203,7 @@ public:
 
         if (_render_dirty)
         {
+
             auto ncanvas = canvas.record();
             this->render(ctx, ncanvas);
             rendering = ncanvas.stopRecord();
@@ -220,15 +219,35 @@ public:
             return true;
         }
 
+        core::Optional<wgfx::GRect> dirty_rect = this->render_dirty_rect();
+
+        if (!dirty_rect.has_value())
+        {
+            return false;
+        }
+
+        canvas.recordApply(rendering, (dirty_rect.value()));
         for (auto &child : childs)
         {
             auto r = child->render_dirty_rect();
 
+
+            // child is not dirty but inside a dirty rect:
+            // for example a stacked widget, that has 2 widget on top of each other with one transparent
+            // meaning that we need to rerender the one behind even if it is not dirty
             if (!r.has_value())
             {
+
+                if(child->_old_render_layout.does_intersect(dirty_rect.value()))
+                {
+                    canvas.recordApply(child->rendering,
+                        child->_old_render_layout.intersect(dirty_rect.value())
+                    );
+
+                }
                 continue;
             }
-            canvas.recordApply(rendering, (r.value()));
+
 
             child->render_dirty(ctx, canvas);
         }

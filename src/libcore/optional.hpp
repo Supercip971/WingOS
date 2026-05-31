@@ -105,6 +105,9 @@ class NoneValue
 public:
 };
 
+
+constexpr static inline NoneValue novalue = {};
+
 template <class T>
 class Optional
 {

@@ -7,6 +7,7 @@ void wgfx::RasterCanvas::apply(DrawContext const &ctx, RenderCommand const &cmd)
     {
     case wgfx::RenderCommandKind::RENDER_KIND_FILL:
     {
+
         clear(cmd.fill);
         break;
     }

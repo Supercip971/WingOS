@@ -23,6 +23,9 @@ struct Painter
     CompositeColor color;
     PaintType type;
 
+    float blur = 0.0f;
+    float noise = 0.0f;
+
     union
     {
         struct
@@ -48,6 +51,25 @@ struct Painter
         a.stroke.width = w;
         return a;
     };
+
+    constexpr static Painter blurred(CompositeColor col, float blur)
+    {
+        Painter a;
+        a.color = col;
+        a.type = PAINT_MODE_FILLED;
+        a.blur = blur;
+        return a;
+    };
+
+    constexpr static Painter noised(CompositeColor col, float noise)
+    {
+        Painter a;
+        a.color = col;
+        a.type = PAINT_MODE_FILLED;
+        a.noise = noise;
+        return a;
+    };
+
 };
 enum class RenderCommandKind
 {

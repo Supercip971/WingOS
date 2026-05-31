@@ -65,6 +65,11 @@ struct GRect
             core::min(end.y, other.end.y));
     }
 
+    bool does_intersect(const GRect &other) const
+    {
+        return start.x < other.end.x && end.x > other.start.x && start.y < other.end.y && end.y > other.start.y;
+    }
+
     GRect merge(const GRect &other) const
     {
         return GRect(

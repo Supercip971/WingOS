@@ -12,6 +12,7 @@ void wgfx::RasterCanvas::rectRoundedFlatAligned(RectCommand const &cmdc)
     cmd.rect.end.y = floorf(cmd.rect.end.y);
 
     Rgba8 color = cmd.paint.color.toRgba8();
+
     // color.r = l;
     // l++;
 
@@ -58,15 +59,27 @@ void wgfx::RasterCanvas::rectRoundedFlatAligned(RectCommand const &cmdc)
         float fs2 = floorf(end_x);
         float fs1 = floorf(start_x);
 
-        for (long x = (long)(start_x + 1.f); x < (long)fs2; x++)
+        float a = (float)color.a / 255.f;
+        if (color.a > 254)
         {
-            colorize(x + cmd.rect.start.x, y + cmd.rect.start.y, color);
-        }
 
+            for (long x = (long)(start_x + 1.f); x < (long)fs2; x++)
+            {
+                colorize(x + cmd.rect.start.x, y + cmd.rect.start.y, color);
+            }
+        }
+        else
+        {
+
+            for (long x = (long)(start_x + 1.f); x < (long)fs2; x++)
+            {
+                blend(x + cmd.rect.start.x, y + cmd.rect.start.y, color, (float)a);
+            }
+        }
         (void)fs1;
         (void)color;
-        blend((long)start_x + cmd.rect.start.x, y + cmd.rect.start.y, color, (1.0f - ((start_x)-fs1)));
-        blend((long)end_x + cmd.rect.start.x, y + cmd.rect.start.y, color, ((end_x - fs2)));
+        blend((long)start_x + cmd.rect.start.x, y + cmd.rect.start.y, color, (1.0f - ((start_x)-fs1)) * a);
+        blend((long)end_x + cmd.rect.start.x, y + cmd.rect.start.y, color, ((end_x - fs2)) * a);
     }
 }
 
@@ -92,11 +105,26 @@ void wgfx::RasterCanvas::rectFlatAligned(RectCommand const &cmd)
     sx = core::max(sx, size.start.x);
     ex = core::min(ex, size.end.x);
 
-    for (long y = sy; y < ey; y++)
+    if (color.a > 254)
     {
-        for (long x = sx; x < ex; x++)
+
+        for (long y = sy; y < ey; y++)
         {
-            buffer[x + y * width] = color;
+            for (long x = sx; x < ex; x++)
+            {
+                buffer[x + y * width] = color;
+            }
+        }
+    }
+    else
+    {
+        float a = (float)color.a / 255.f;
+        for (long y = sy; y < ey; y++)
+        {
+            for (long x = sx; x < ex; x++)
+            {
+                blend(x, y, color, a);
+            }
         }
     }
 }
@@ -137,13 +165,13 @@ void wgfx::RasterCanvas::rectStrokeRoundedFlatAligned(RectCommand const &cmd2)
          y <= core::min<long>(ceilf(cmd.rect.end.y - outer_radius), size.end.y - 1);
          y++)
     {
-        for (long x = core::max<long>(floorf(cmd.rect.start.x), size.start.x); x <= core::min<long>((cmd.rect.start.x + w), size.end.x-1); x++)
+        for (long x = core::max<long>(floorf(cmd.rect.start.x), size.start.x); x <= core::min<long>((cmd.rect.start.x + w), size.end.x - 1); x++)
         {
             //   blend((long)x, y, color, 0.5f);
             buffer[(long)x + y * width] = color;
         }
 
-        for (long x = core::max<long>(floorf(cmd.rect.end.x - w), size.start.x); x <= core::min<long>(cmd.rect.end.x, size.end.x-1); x++)
+        for (long x = core::max<long>(floorf(cmd.rect.end.x - w), size.start.x); x <= core::min<long>(cmd.rect.end.x, size.end.x - 1); x++)
         {
             //   blend((long)x, y, color, 0.5f);
             buffer[(long)x + y * width] = color;
@@ -154,13 +182,13 @@ void wgfx::RasterCanvas::rectStrokeRoundedFlatAligned(RectCommand const &cmd2)
          x <= core::min<long>(ceilf(cmd.rect.end.x - outer_radius), size.end.x - 1);
          x++)
     {
-        for (long y = core::max<long>(floorf(cmd.rect.start.y), size.start.y); y <= core::min<long>((cmd.rect.start.y + w), size.end.y-1); y++)
+        for (long y = core::max<long>(floorf(cmd.rect.start.y), size.start.y); y <= core::min<long>((cmd.rect.start.y + w), size.end.y - 1); y++)
         {
             //   blend((long)x, y, color, 0.5f);
             buffer[(long)x + (long)(y)*width] = color;
         }
 
-        for (long y = core::max<long>(cmd.rect.end.y - w, size.start.y); y <= core::min<long>(cmd.rect.end.y, size.end.y-1); y++)
+        for (long y = core::max<long>(cmd.rect.end.y - w, size.start.y); y <= core::min<long>(cmd.rect.end.y, size.end.y - 1); y++)
         {
             //   blend((long)x, y, color, 0.5f);
             buffer[(long)x + (long)(y)*width] = color;

@@ -160,6 +160,16 @@ public:
     float b_blue_yelowness;
     float transparency;
 
+
+    constexpr CompositeColor transparentize(float alpha) const
+    {
+        return {
+            .lightness = lightness,
+            .a_green_rediness = a_green_rediness,
+            .b_blue_yelowness = b_blue_yelowness,
+            .transparency = alpha};
+    }
+
     static constexpr CompositeColor fromOklch(float L, float C, float H, float alpha = 1.0f)
     {
         // why +PI/2 ? I don't know, it is not specified anywhere in the spec, nor in the CSS doc

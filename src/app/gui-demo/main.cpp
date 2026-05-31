@@ -30,7 +30,6 @@
 #include "ui/widgets/vflex.hpp"
 #include "ui/widgets/widget.hpp"
 
-
 struct MyState
 {
 
@@ -48,7 +47,7 @@ public:
         return $<fc::VFlex>(
 
             $<fc::TextWidget>(core::move(res.take()),
-                fc::FontsRepo::the().find("oswald@96")),
+                              fc::FontsRepo::the().find("oswald@96")),
             $<fc::Button>(
 
                 fc::ButtonParams()
@@ -59,13 +58,11 @@ public:
                     .shadowy(
                         wgfx::CompositeColor::fromOklch(0.6554, 0.114, 156.2)),
 
-                    fc::AutoCallback$([](CustomWidget2* w) {
-                            w->setState([&]()
-                                        { w->counter++; });
-                    }),
+                fc::AutoCallback$([](CustomWidget2 *w)
+                                  { w->setState([&]()
+                                                { w->counter++; }); }),
                 $<fc::LPadded>(fc::Padded().horizontal(32), $<fc::TextWidget>("hello world!",
-                    fc::FontsRepo::the().find("oswald@96"))))
-        );
+                                                                              fc::FontsRepo::the().find("oswald@96")))));
     }
 };
 class CustomWidget : public fc::Statefull<MyState>
@@ -75,18 +72,17 @@ public:
     core::SharedPtr<fc::Widget> build(const fc::UiContext &) override
     {
 
-        return $<fc::_Root>(wgfx::SLATE_DARK,
+        return $<fc::_Root>(wgfx::BLUE,
 
-            $<fc::Stacked>(
-                $<fc::ImageWidget>(
-                    fc::TextureRepo::the().find("liquid-blue")
-                ),
-            $<fc::Centered>(
-                                $<fc::Sized>(
-                                    fc::LayoutSize(800.f, 800.f).min_width(300).max_width(1920),
-                                    $<fc::Container>(
-                                        fc::ContainerParms().bg(wgfx::CONTAINER_FILL).border(wgfx::CONTAINER_BORDER, 2).radius(16),
-                                        $<fc::Centered>($<CustomWidget2>()))))));
+                            $<fc::Stacked>(
+                                $<fc::ImageWidget>(
+                                    fc::TextureRepo::the().find("liquid-blue")),
+                                $<fc::Centered>(
+                                    $<fc::Sized>(
+                                        fc::LayoutSize(800.f, 800.f).min_width(300).max_width(1920),
+                                        $<fc::Container>(
+                                            fc::ContainerParms().bg(wgfx::CONTAINER_FILL.transparentize(0.3)).border(wgfx::CONTAINER_BORDER, 2).radius(16),
+                                            $<fc::Centered>($<CustomWidget2>()))))));
     }
 };
 int main(int argc, char **argv)
@@ -108,8 +104,6 @@ int main(int argc, char **argv)
 
     fc::FontsRepo::the().load(core::WStr::copy("oswald@96"), "./meta/assets/oswald.ttf", 96 * window->dpi());
     fc::TextureRepo::the().load(core::WStr::copy("liquid-blue"), "./meta/assets/pawel-czerwinski-blue-liquid-halfres.png");
-
-
 
     float l = 0.f;
 

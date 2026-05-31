@@ -44,10 +44,6 @@ public:
         startScissor(constraint);
         for (auto &cmd : cmds)
         {
-
-            auto cmd_copy = cmd;
-            (void)constraint;
-
             commands.push(cmd);
         }
         endScissor();

@@ -15,8 +15,8 @@
       "requires": ["@fs", "human-interface", "clock"]
     },
     {
-      "name": "doomgeneric",
-      "path": "/bin/doomgeneric",
+      "name": "gui-demo",
+      "path": "/bin/gui-demo",
       "requires": ["human-interface", "clock", "compositor", "@fs"]
     },
     {

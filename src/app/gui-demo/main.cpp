@@ -102,8 +102,8 @@ int main(int argc, char **argv)
 
     window->attach();
 
-    fc::FontsRepo::the().load(core::WStr::copy("oswald@96"), "./meta/assets/oswald.ttf", 96 * window->dpi());
-    fc::TextureRepo::the().load(core::WStr::copy("liquid-blue"), "./meta/assets/pawel-czerwinski-blue-liquid-halfres.png");
+    fc::TextureRepo::the().load(core::WStr::copy("liquid-blue"), "/meta/assets/pawel-czerwinski-blue-liquid-halfres.png");
+    fc::FontsRepo::the().load(core::WStr::copy("oswald@96"), "/meta/assets/oswald.ttf", 96 * window->dpi());
 
     float l = 0.f;
 
@@ -114,11 +114,16 @@ int main(int argc, char **argv)
 
     vwidgt->mount(ctx);
     // vwidgt->build({});
+    //
+
     vwidgt->relayout(ctx, wgfx::GRect(0, 0, window->width(), window->height()));
+
 
     vwidgt->update_dirty(ctx);
 
+
     vwidgt->update_layout(ctx, wgfx::GRect(0, 0, window->width(), window->height()));
+
 
     while (true)
     {
@@ -136,7 +141,6 @@ int main(int argc, char **argv)
             }
         } while (ev.kind != wgfx::UEvent::Kind::NONE);
 
-        // fmt::log$("ran frame");
 
         wgfx::Canvas *frame = window->create_frame();
 
@@ -157,6 +161,8 @@ int main(int argc, char **argv)
         // wgfx::CompositeColor color = wgfx::CompositeColor::fromOklch(70.4f/100.f, 0.295, l);
 
         vwidgt->render_dirty(ctx, *frame);
+
+
         // vwidgt->dump();
         // frame->drawRect(wgfx::GRect(x, y, 256, 256), wgfx::CompositeColor::fromOklch((float)63.7/100, 0, 0));
 
@@ -193,5 +199,6 @@ int main(int argc, char **argv)
         }
 
         window->end_frame(frame);
+
     }
 }

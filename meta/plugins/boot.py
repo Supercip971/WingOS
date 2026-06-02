@@ -1,5 +1,6 @@
 import os
 import shutil
+import subprocess
 
 from cutekit import builder, cli, const, jexpr, model, rules, shell, vt100
 from typing_extensions import Self
@@ -7,6 +8,12 @@ from typing_extensions import Self
 
 def kvmAvailable() -> bool:
     return os.path.exists("/dev/kvm") and os.access("/dev/kvm", os.R_OK)
+
+
+def sdlAvailable() -> bool:
+    return "sdl" in str(
+        subprocess.check_output(["qemu-system-x86_64", "-display", "help"])
+    )
 
 
 class LimineCfg:
@@ -55,6 +62,9 @@ class LimineCfg:
         bootDir = shell.mkdir(os.path.join(self.imageDirBoot, "boot"))
         binDirBoot = shell.mkdir(os.path.join(self.imageDirBoot, "bin"))
         binDirDisk = shell.mkdir(os.path.join(self.imageDirDisk, "bin"))
+
+        assetDirDisk = shell.mkdir(os.path.join(self.imageDirDisk, "meta", "assets"))
+        shell.cpTree(os.path.join(const.META_DIR, "assets"), assetDirDisk)
 
         limine = shell.wget(
             "https://raw.githubusercontent.com/limine-bootloader/limine/v4.x-branch-binary/BOOTX64.EFI"
@@ -123,7 +133,7 @@ class LimineCfg:
             "-bios",
             ovmf,
             "-m",
-            "4G",
+            "8G",
             "-smp",
             "4",
             "-device",
@@ -132,8 +142,9 @@ class LimineCfg:
             f"file={self.diskImagePath},if=none,id=nvm",
             "-boot",
             "c",
+            "-vga",
+            "virtio",
             "-s",
-            "-S",
             #  f"file=fat:rw:{self.imageDir},media=disk,format=raw",
             #  "-d", "cpu_reset",
             # "-d", "guest_errors",
@@ -144,6 +155,11 @@ class LimineCfg:
             qemuCmd += ["-enable-kvm", "-cpu", "host"]
         else:
             print("KVM not available, running in TCG mode")
+
+        if sdlAvailable():
+            qemuCmd += ["-display", "sdl"]
+        else:
+            print("SDL not available, running in headless mode")
 
         shell.exec(*qemuCmd)
 

@@ -28,14 +28,15 @@ struct stackframe
     uint64_t rip;
 } __attribute__((packed));
 
-void dump_stackframe(void *rbp)
+void dump_stackframe(void *rbp, uintptr_t abase)
 {
 
     stackframe *frame = reinterpret_cast<stackframe *>(rbp);
     int size = 0;
 
-    fmt::log$("stackframe:");
+    fmt::log$(" == stackframe == ");
     fmt::log_lock();
+    fmt::log("{} ", abase | fmt::FMT_HEX);
     while (frame && size++ < 20)
     {
         auto rip = frame->rip;
@@ -45,6 +46,7 @@ void dump_stackframe(void *rbp)
     }
     fmt::log_release();
 
+    fmt::log("\n == == == \n");
     if (size >= 20)
     {
         fmt::log$("... (stackframe too deep)");
@@ -119,9 +121,9 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
 
         // dump_stackframe((void*)Cpu::current()->currentTask()->cpu_context()->);
         fmt::log$("kernel stacktrace:");
-        dump_stackframe((void *)frame->rbp);
+        dump_stackframe((void *)frame->rbp, frame->rip);
 
-        Cpu::current()->debug_context.dump();
+//        Cpu::current()->debug_context.dump();
         // task syscall and user space stack range from cpu task context
 
         uintptr_t sys_task_stack_start = (uintptr_t)Cpu::current()->currentTask()->cpu_context()->syscall_stack_ptr;
@@ -150,7 +152,7 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
         fmt::log$("gs[0x0]: {}", gs0 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
         fmt::log$("gs[0x8]: {}", gs8 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
 
-        kernel::dump_current_running_task(frame->interrupt_number != 2);
+       // kernel::dump_current_running_task(frame->interrupt_number != 2);
 
         inside_error = false;
         int_lock.write_release();

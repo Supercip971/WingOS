@@ -4,7 +4,6 @@
   "type": "lib",
   "requires": ["libc"],
   "enableIf": {
-    "sys": ["linux"],
     "kernel": [false]
   },
 

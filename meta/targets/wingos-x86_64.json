@@ -44,7 +44,6 @@
         "-g",
         "-Isrc/libc",
         "-fno-exceptions",
-        "-fno-rtti",
         "-fno-stack-protector",
         "-Wno-builtin-declaration-mismatch",
         "-std=c++23",
@@ -67,6 +66,8 @@
     "ld": {
       "cmd": "meta/build/cross/bin/x86_64-pc-wingos-ld",
       "args": [
+        "-lsupc++",
+        "-Lmeta/build/sysroot/lib",
         "-m",
         "elf_x86_64",
         "-T",

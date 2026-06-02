@@ -99,9 +99,42 @@ size_t fread(void *__restrict ptr, size_t size, size_t n, FILE *__restrict file)
     {
     case FILE_KIND_FILE:
     {
-        file->file->read(ptr, file->cursor, size * n);
-        file->cursor += size * n;
-        return n;
+        size_t total = size * n;
+        uint8_t *dst = (uint8_t *)ptr;
+        size_t done = 0;
+
+        // Drain ungetc buffer
+        if (file->ungetc_buf != -1 && total > 0)
+        {
+            dst[0] = (uint8_t)file->ungetc_buf;
+            file->ungetc_buf = -1;
+            done = 1;
+        }
+
+        if (done < total)
+        {
+            if (file->cursor >= file->end)
+            {
+                file->eof_flag = 1;
+                return done / size;
+            }
+            // Clamp to the data actually present in the file so FsFile::read
+            // never requests bytes beyond EOF (the IPC returned byte-count is
+            // unreliable, so FsFile::read always copies the full `len` it receives).
+            size_t available = file->end - file->cursor;
+            size_t to_read = (total - done < available) ? (total - done) : available;
+
+            fmt::log$("from size: {} to reading {} + {}", size*n, to_read, done);
+            auto read_result = file->file->read(dst + done, file->cursor, to_read);
+            if (!read_result.is_error())
+            {
+                size_t bytes_read = read_result.unwrap();
+                file->cursor += bytes_read;
+                done += bytes_read;
+            }
+            file->eof_flag = (file->cursor >= file->end) ? 1 : 0;
+        }
+        return done / size;
     }
     case FILE_KIND_READER:
     {
@@ -173,6 +206,10 @@ FILE *fopen(const char *filename, const char *mode)
     f->buffer = core::WStr::copy(filename);
     f->file = file;
 
+    f->end = file->get_info().unwrap().size;
+    f->eof_flag = 0;
+    f->error_flag = 0;
+    f->ungetc_buf = -1;
     f->cursor = 0;
     return f;
 }
@@ -266,6 +303,8 @@ int fseek(FILE *stream, long offset, int origin)
         fmt::err$("fseek: file handle is invalid (use-after-fclose detected!)");
         return -1;
     }
+
+    stream->ungetc_buf = -1;
     switch (stream->kind)
     {
     case FILE_KIND_FILE:
@@ -275,11 +314,20 @@ int fseek(FILE *stream, long offset, int origin)
         case SEEK_SET:
         {
             stream->cursor = offset;
+            if(stream->cursor >= stream->end)
+            {
+                stream->eof_flag = 1;
+            }
+            else
+            {
+                stream->eof_flag = 0;
+            }
             return 0;
         }
         case SEEK_CUR:
         {
             stream->cursor += offset;
+            stream->eof_flag = (stream->cursor >= stream->end) ? 1 : 0;
             return 0;
         }
         case SEEK_END:
@@ -290,6 +338,8 @@ int fseek(FILE *stream, long offset, int origin)
                 return -1;
             }
             stream->cursor = info.unwrap().size + offset;
+            stream->eof_flag = 1;
+
             return 0;
         }
         default:
@@ -375,6 +425,7 @@ int fgetc(FILE *stream)
         stream->eof_flag = 1;
         return -1; // EOF
     }
+    stream->eof_flag = 0;
     return c;
 }
 

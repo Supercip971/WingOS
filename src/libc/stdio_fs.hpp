@@ -19,10 +19,12 @@ struct _IO_FILE
 {
     FILEKind kind;
     size_t cursor;
+    size_t end;
     int eof_flag;
     int error_flag;
     int ungetc_buf; // -1 if empty, otherwise the ungotten char
     core::WStr buffer;
+
 
     union
     {

@@ -191,29 +191,39 @@ public:
             auto &entry = cache_entries[i];
             if (offset >= entry.offset && (offset + len) <= (entry.offset + entry.size))
             {
+                fmt::log$("cache hit: offset={} len={}", offset, len);
                 size_t cache_offset = offset - entry.offset;
+
                 memcpy(buffer, (void *)((uintptr_t)entry.mapped.ptr() + cache_offset), len);
                 entry.score++;
                 return len;
             }
         }
-
         size_t aoffset = math::alignDown(offset, 4096ul);
 
-        size_t alen = math::alignUp(len * 2 + offset, 4096ul) - aoffset;
+        size_t alen = math::alignUp(len + offset, 4096ul) - aoffset;
 
         size_t delta_offset = offset - aoffset;
         Wingos::MemoryAsset masset = Wingos::Space::self().allocate_physical_memory(alen);
 
-        auto res = try$(this->read(masset, aoffset, alen));
+
+        try$(this->read(masset, aoffset, alen));
 
         Wingos::VirtualMemoryAsset mapped = Wingos::Space::self().map_memory(masset, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
+        if (mapped.ptr() == nullptr)
+        {
+            fmt::err$("FsFile::read: failed to map physical memory (handle={}, mem=[{},{}])",
+                      masset.handle,
+                      masset.memory.start() | fmt::FMT_HEX,
+                      masset.memory.end() | fmt::FMT_HEX);
+            Wingos::Space::self().release_asset(masset);
+            return "FsFile::read: failed to map memory";
+        }
         memcpy(buffer, (void *)((uintptr_t)mapped.ptr() + delta_offset), len);
 
         this->add_cache_entry(aoffset, alen, masset, mapped);
-        // Wingos::Space::self().release_asset(mapped);
-        //  Wingos::Space::self().release_asset(masset);
-        return res;
+        return len;
+        // return res;
     }
 
     core::Result<size_t> write(Wingos::MemoryAsset &asset, size_t offset, size_t len)

@@ -193,6 +193,7 @@ core::Result<uint64_t> Ext4Filesystem::inode_find_block(Ext4InodeRef const &inod
     }
     else
     {
+        fmt::warn$("triple indirect blocks not supported yet");
         return "triple indirect blocks not supported yet";
     }
 
@@ -208,6 +209,7 @@ core::Result<uint64_t> Ext4Filesystem::inode_find_block(Ext4InodeRef const &inod
 core::Result<size_t> Ext4Filesystem::inode_read(Ext4InodeRef const &inode, Wingos::MemoryAsset &out, size_t off, size_t len, size_t mem_asset_off)
 
 {
+    fmt::log$("inode_read: inode={}, off={}, len={}", inode.inode_id, off, len);
     size_t const file_size = (size_t)inode.inode.size_lo;
     if (off >= file_size)
     {

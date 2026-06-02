@@ -22,8 +22,8 @@ struct LayoutSize
 
     LayoutSize() = default;
 
-    constexpr LayoutSize(float min_w, float max_w, float min_h, float max_h)
-        : min_w(min_w), max_w(max_w), min_h(min_h), max_h(max_h)
+    constexpr LayoutSize(float _min_w, float _max_w, float _min_h, float _max_h)
+        : min_w(_min_w), max_w(_max_w), min_h(_min_h), max_h(_max_h)
     {
     }
 

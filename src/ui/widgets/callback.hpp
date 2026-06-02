@@ -17,10 +17,10 @@ namespace fc
 
             CallbackType *callback;
 
-            Callback(CallbackType *callback) : callback(callback) {}
+            Callback(CallbackType *_callback) : callback(_callback) {}
             Callback() : callback(nullptr) {}
 
-            Callback(Widget* linked, CallbackType* callback ) :  linked(linked), callback(callback) {}
+            Callback(Widget* _linked, CallbackType* _callback ) :  linked(_linked), callback(_callback) {}
 
 
             void call()

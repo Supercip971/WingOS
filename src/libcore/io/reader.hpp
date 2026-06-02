@@ -11,6 +11,7 @@ namespace core
 class Reader
 {
 public:
+    Reader() = default;
     virtual Result<size_t> read(char *data, size_t size) const
     {
         (void)data;
@@ -18,9 +19,7 @@ public:
         return size_t(0);
     };
 
-    constexpr virtual ~Reader()
-    {
-    }
+    virtual ~Reader();
 };
 
 template <typename T>

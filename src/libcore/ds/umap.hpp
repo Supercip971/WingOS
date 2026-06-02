@@ -76,7 +76,7 @@ class UMap
         size_t _bucket_ingroup;
 
         UMapIterator() = default;
-        UMapIterator(UMap *map) : map(map), current(nullptr), _bucket_group(0), _bucket_ingroup(0)
+        UMapIterator(UMap *_map) : map(_map), current(nullptr), _bucket_group(0), _bucket_ingroup(0)
         {
             if (map->_buckets.len() == 0)
             {

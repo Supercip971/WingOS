@@ -9,3 +9,4 @@
 -Wextra
 -Werror
 -D__ck_clangd_NEW__
+-Wshadow

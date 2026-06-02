@@ -9,7 +9,7 @@ namespace fmt
 struct Tabbed
 {
     int tab_count;
-    constexpr Tabbed(int tab_count) : tab_count(tab_count) {}
+    constexpr Tabbed(int _tab_count) : tab_count(_tab_count) {}
 };
 
 template <core::Writable Targ>

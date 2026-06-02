@@ -20,8 +20,8 @@ public:
     wgfx::CompositeColor bg;
     ~_Root() override = default;
     template <typename T>
-    _Root(wgfx::CompositeColor bg, T args)
-        : bg(bg)
+    _Root(wgfx::CompositeColor _bg, T args)
+        : bg(_bg)
     {
         elements = (args);
     }

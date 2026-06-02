@@ -11,7 +11,7 @@ public:
     float x;
     float y;
 
-    constexpr Vec2(float x, float y) : x(x), y(y) {}
+    constexpr Vec2(float _x, float _y) : x(_x), y(_y) {}
 
     constexpr Vec2() : x(0), y(0) {}
 

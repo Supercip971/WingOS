@@ -17,8 +17,15 @@ enum class SeekFrom
 class Seeker
 {
 public:
-    constexpr virtual Result<void> seek(size_t offset, SeekFrom from = SeekFrom::SEEK_BEGIN) = 0;
-    constexpr virtual Result<size_t> tell() = 0;
+    Seeker() = default;
+    virtual ~Seeker() ;
+    constexpr virtual Result<void> seek(size_t offset, SeekFrom from = SeekFrom::SEEK_BEGIN)
+    {
+        (void)offset;
+        (void)from;
+        return {};
+    };
+    constexpr virtual Result<size_t> tell() { return {}; };
 
     constexpr virtual Result<size_t> size()
     {

@@ -13,7 +13,7 @@ namespace wgfx
 template <>
 core::Result<Image<Rgba01>> Image<Rgba01>::load_from_file(core::Str filename)
 {
-    int width, height, nrChannels;
+    int width=0, height=0, nrChannels=0;
     float*data = stbi_loadf(filename.data(), &width, &height, &nrChannels, 4);
     if (!data)
     {

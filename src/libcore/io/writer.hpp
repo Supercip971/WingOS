@@ -11,6 +11,7 @@ namespace core
 class Writer
 {
 public:
+    Writer() = default;
     constexpr virtual Result<void> write(const char *data, size_t size)
     {
         (void)data;
@@ -31,9 +32,7 @@ public:
         return write(view.data(), view.len());
     }
 
-    constexpr virtual ~Writer()
-    {
-    }
+    virtual ~Writer();
 };
 
 template <typename T>

@@ -7,6 +7,7 @@ void *operator new[](size_t size);
 void operator delete(void *p) noexcept;
 void operator delete[](void *p) noexcept;
 
+
 #ifdef __ck_clangd_NEW__
 
 // inline void *operator new(size_t, void *p)  throw() { return p; }

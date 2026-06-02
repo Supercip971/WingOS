@@ -76,14 +76,14 @@ for i in $(seq 1 5); do
     echo "Attempting to mount boot partition... (attempt $i/5)"
     BOOT_DISK_PATH_S="`udisksctl mount -b $BOOT_DISK_PART 2>&1`"
     status=$?
-    
+
     if [ $status -eq 0 ]; then
         BOOT_DISK_PATH=${BOOT_DISK_PATH_S#*at }
         BOOT_DISK_PATH=$(echo "$BOOT_DISK_PATH" | tr -d '.')
         echo "Successfully mounted boot partition at $BOOT_DISK_PATH"
         break
     fi
-    
+
     # Check if already mounted - extract path between backtick and single quote
     # Format: "...is already mounted at \`/run/media/user/xxx'."
     case "$BOOT_DISK_PATH_S" in
@@ -96,7 +96,7 @@ for i in $(seq 1 5); do
             fi
             ;;
     esac
-    
+
     echo "Mount failed, retrying..."
     sleep 1
 done
@@ -108,6 +108,7 @@ if [ -z "$BOOT_DISK_PATH" ]; then
 fi
 
 cp -r .cutekit/wingos-boot/* $BOOT_DISK_PATH
+
 if [ $? -ne 0 ]; then
     echo "Failed to copy files to boot partition"
     udisksctl unmount -b $BOOT_DISK_PART
@@ -177,6 +178,7 @@ if [ -z "$MAIN_DISK_PATH" ]; then
     exit 1
 fi
 cp -r .cutekit/wingos-disk/* $MAIN_DISK_PATH
+
 if [ $? -ne 0 ]; then
     echo "Failed to copy files to system partition"
     udisksctl unmount -b $MAIN_DISK_PART

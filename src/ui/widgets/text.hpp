@@ -20,9 +20,9 @@ class TextWidget : public Widget
 
 public:
     ~TextWidget() override = default;
-    TextWidget(core::Str from, core::SharedPtr<wgfx::Font> font) : val(core::WStr::copy(from)), font(font) {}
+    TextWidget(core::Str from, core::SharedPtr<wgfx::Font> _font) : val(core::WStr::copy(from)), font(_font) {}
 
-    TextWidget(core::WStr &&from, core::SharedPtr<wgfx::Font> font) : val(core::move(from)), font(font) {}
+    TextWidget(core::WStr &&from, core::SharedPtr<wgfx::Font> _font) : val(core::move(from)), font(_font) {}
 
     wgfx::Vec2 preferred_size(wgfx::Vec2 constraint) const override
     {

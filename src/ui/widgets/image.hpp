@@ -41,11 +41,11 @@ class ImageWidget : public Widget
 
 public:
     ~ImageWidget() override = default;
-    ImageWidget(core::SharedPtr<wgfx::Texture> &img) : img(img) {}
+    ImageWidget(core::SharedPtr<wgfx::Texture> &_img) : img(_img) {}
 
-    ImageWidget(core::SharedPtr<wgfx::Texture> img) : img(img) {}
+    ImageWidget(core::SharedPtr<wgfx::Texture> _img) : img(_img) {}
 
-    ImageWidget(core::SharedPtr<wgfx::Texture> &img, ImageWidgetLayout layout) : img(img), _layout(layout) {}
+    ImageWidget(core::SharedPtr<wgfx::Texture> _img, ImageWidgetLayout layout) : img(_img), _layout(layout) {}
 
     wgfx::Vec2 preferred_size(wgfx::Vec2 constraint) const override
     {

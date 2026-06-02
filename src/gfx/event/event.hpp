@@ -4,7 +4,6 @@
 
 #include "gfx/geometry/vec2.hpp"
 #include "hw/hi/mouse.hpp"
-#include "libcore/str.hpp"
 namespace wgfx
 {
 
@@ -28,7 +27,7 @@ namespace wgfx
             hw::MouseEvent mouse;
         };
 
-        UEvent() : kind(Kind::NONE){};
+        UEvent() : kind(Kind::NONE), at(0, 0), mouse({0, 0, 0, false, false, false}) {};
 
     };
 

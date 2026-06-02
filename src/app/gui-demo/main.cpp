@@ -58,9 +58,9 @@ public:
                     .shadowy(
                         wgfx::CompositeColor::fromOklch(0.6554, 0.114, 156.2)),
 
-                fc::AutoCallback$([](CustomWidget2 *w)
-                                  { w->setState([&]()
-                                                { w->counter++; }); }),
+                fc::AutoCallback$([](CustomWidget2 *w2)
+                                  { w2->setState([&]()
+                                                { w2->counter++; }); }),
                 $<fc::LPadded>(fc::Padded().horizontal(32), $<fc::TextWidget>("hello world!",
                                                                               fc::FontsRepo::the().find("oswald@96")))));
     }

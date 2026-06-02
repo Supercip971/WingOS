@@ -5,6 +5,7 @@
 #include "gfx/canvas/canvas.hpp"
 #include "gfx/canvas/cmd.hpp"
 #include "gfx/color.hpp"
+#include "gfx/geometry/rect.hpp"
 #include "gfx/geometry/shape.hpp"
 #include "gfx/geometry/vec2.hpp"
 #include "libcore/fmt/log.hpp"
@@ -59,6 +60,8 @@ public:
             buffer[x + y * width].blend(col, factor);
         }
     }
+
+    void blurArea(GRect area, float factor);
 
     // important keywords definition:
     // - flat: unique color for the fill (gradient not valid)

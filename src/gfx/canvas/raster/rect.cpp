@@ -1,4 +1,5 @@
 #include "gfx/canvas/cmd.hpp"
+#include "gfx/color.hpp"
 #include "rasterCanvas.hpp"
 
 // static size_t l = 0;
@@ -161,6 +162,7 @@ void wgfx::RasterCanvas::rectStrokeRoundedFlatAligned(RectCommand const &cmd2)
     //  outer_radius += w;
 
     // top
+
     for (long y = core::max<long>((cmd.rect.start.y + outer_radius), size.start.y);
          y <= core::min<long>(ceilf(cmd.rect.end.y - outer_radius), size.end.y - 1);
          y++)
@@ -334,6 +336,39 @@ void wgfx::RasterCanvas::rectStrokeFlatAligned(RectCommand const &cmdw)
     }
 }
 
+void wgfx::RasterCanvas::blurArea(GRect area, float factor)
+{
+    Rgba8 *temp_buffer = new Rgba8[width * height];
+
+    for (long y = area.start.y; y < area.end.y; y++)
+    {
+        for (long x = area.start.x; x < area.end.x; x++)
+        {
+            float r = 0, g = 0, b = 0, a = 0;
+            for (long iy = -factor/2.f; iy <= factor/2.f; iy++)
+            {
+                for (long ix = -factor/2.f; ix <= factor/2.f; ix++)
+                {
+
+                    r += buffer[(x + ix) + (y + iy) * width].r;
+                    g += buffer[(x + ix) + (y + iy) * width].g;
+                    b += buffer[(x + ix) + (y + iy) * width].b;
+                    a += buffer[(x + ix) + (y + iy) * width].a;
+                }
+            }
+            temp_buffer[x + y * width] = Rgba8(r / (factor * factor), g / (factor * factor), b / (factor * factor), a / (factor * factor));
+
+        }
+    }
+    for (long y = area.start.y; y < area.end.y; y++)
+    {
+        for (long x = area.start.x; x < area.end.x; x++)
+        {
+            buffer[x + y * width] = temp_buffer[x + y * width];
+        }
+    }
+    delete[] temp_buffer;
+}
 void wgfx::RasterCanvas::rect(RectCommand const &cmd)
 {
 
@@ -349,12 +384,23 @@ void wgfx::RasterCanvas::rect(RectCommand const &cmd)
         }
         return;
     }
+
     if (cmd.radius <= 0.0001f)
     {
+
+        if (cmd.paint.blur >= 1.f)
+        {
+            blurArea(cmd.rect.intersect(size), cmd.paint.blur);
+        }
         rectFlatAligned(cmd);
     }
     else
     {
+        if (cmd.paint.blur >= 1.f)
+        {
+            blurArea(cmd.rect.intersect(size), cmd.paint.blur);
+        }
+
         rectRoundedFlatAligned(cmd);
     }
 }

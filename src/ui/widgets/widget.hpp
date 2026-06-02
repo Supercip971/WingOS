@@ -37,7 +37,12 @@ class Widget
     wgfx::GRect _layout;
     wgfx::RenderCommands rendering;
 
+    float dirty_dep_width;
+
 public:
+
+    float dirty_dependence_around() const { return dirty_dep_width;}
+    void dirty_depenced_around(float val) { dirty_dep_width = val;}
     auto name() const { return typeid(*this).name(); };
     virtual bool acquireEvent(wgfx::UEvent ev)
     {
@@ -170,6 +175,13 @@ public:
         if (_render_dirty)
         {
             auto m = _old_render_layout.merge(_layout);
+            if (dirty_dep_width != 0)
+            {
+                m.start.x -= dirty_dep_width;
+                m.end.x += dirty_dep_width;
+                m.start.y -= dirty_dep_width;
+                m.end.y += dirty_dep_width;
+            }
             return m;
         }
 
@@ -178,10 +190,11 @@ public:
             return {};
         }
 
-        core::Optional<wgfx::GRect> f {core::novalue};
+        core::Optional<wgfx::GRect> f{core::novalue};
         for (auto &child : childs)
         {
             auto rect = child->render_dirty_rect();
+
             if (!rect.has_value())
             {
                 continue;
@@ -195,6 +208,15 @@ public:
             {
                 f = rect;
             }
+        }
+
+        if (f.has_value())
+        {
+
+            f->start.x -= dirty_dep_width;
+            f->end.x += dirty_dep_width;
+            f->start.y -= dirty_dep_width;
+            f->end.y += dirty_dep_width;
         }
         return f;
     }
@@ -231,23 +253,19 @@ public:
         {
             auto r = child->render_dirty_rect();
 
-
             // child is not dirty but inside a dirty rect:
             // for example a stacked widget, that has 2 widget on top of each other with one transparent
             // meaning that we need to rerender the one behind even if it is not dirty
             if (!r.has_value())
             {
 
-                if(child->_old_render_layout.does_intersect(dirty_rect.value()))
+                if (child->_old_render_layout.does_intersect(dirty_rect.value()))
                 {
                     canvas.recordApply(child->rendering,
-                        child->_old_render_layout.intersect(dirty_rect.value())
-                    );
-
+                                       child->_old_render_layout.intersect(dirty_rect.value()));
                 }
                 continue;
             }
-
 
             child->render_dirty(ctx, canvas);
         }

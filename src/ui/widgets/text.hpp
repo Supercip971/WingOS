@@ -41,7 +41,7 @@ public:
     {
         fmt::log$("renderign text at: {}-{} {}", (long)bounds().start.x, (long)bounds().start.y, val.view());
         (void)ctx;
-        canvas.drawText(bounds().start + wgfx::Vec2(0.f, 96.f), val.view(), font, wgfx::CONTAINER_TEXT);
+        canvas.drawText(bounds().start + wgfx::Vec2(0.f, font->ascent + font->descent + font->line_gap), val.view(), font, wgfx::CONTAINER_TEXT);
     }
 };
 } // namespace fc

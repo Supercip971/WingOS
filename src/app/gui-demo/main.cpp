@@ -39,7 +39,7 @@ class CustomWidget2 : public fc::Statefull<MyState>
 {
 
 public:
-    core::SharedPtr<fc::Widget> build(const fc::UiContext &) override
+    core::SharedPtr<fc::Widget> build(const fc::UiContext & ctx) override
     {
 
         auto res = fmt::format_str("Counter 2: {}", counter | fmt::FMT_PAD_ZERO);
@@ -61,7 +61,7 @@ public:
                 fc::AutoCallback$([](CustomWidget2 *w2)
                                   { w2->setState([&]()
                                                 { w2->counter++; }); }),
-                $<fc::LPadded>(fc::Padded().horizontal(32), $<fc::TextWidget>("hello world!",
+                $<fc::LPadded>(fc::Padded().horizontal(16 * ctx.dpi).down(100.f), $<fc::TextWidget>("hello world! j  @g",
                                                                               fc::FontsRepo::the().find("oswald@96")))));
     }
 };
@@ -69,7 +69,7 @@ class CustomWidget : public fc::Statefull<MyState>
 {
 
 public:
-    core::SharedPtr<fc::Widget> build(const fc::UiContext &) override
+    core::SharedPtr<fc::Widget> build(const fc::UiContext & ctx) override
     {
 
         return $<fc::_Root>(wgfx::BLUE,
@@ -79,9 +79,9 @@ public:
                                     fc::TextureRepo::the().find("liquid-blue")),
                                 $<fc::Centered>(
                                     $<fc::Sized>(
-                                        fc::LayoutSize(800.f, 800.f).min_width(300).max_width(1920),
+                                        fc::LayoutSize(300.f * ctx.dpi, 300.f * ctx.dpi).min_width(200 * ctx.dpi).max_width(800 * ctx.dpi),
                                         $<fc::Container>(
-                                            fc::ContainerParms().bg(wgfx::CONTAINER_FILL.transparentize(0.3)).border(wgfx::CONTAINER_BORDER, 2).radius(16),
+                                            fc::ContainerParms().bg(wgfx::CONTAINER_FILL.transparentize(0.3)).border(wgfx::CONTAINER_BORDER, 1).radius(8),
                                             $<fc::Centered>($<CustomWidget2>()))))));
     }
 };
@@ -92,18 +92,14 @@ int main(int argc, char **argv)
 
     fmt::log$("Hello, World!");
 
-    float x = 0;
-    float y = 0;
-    float dx = 1;
-    float dy = 1;
     wgfx::initialize_platform();
 
     auto window = wgfx::PlatformWindow::create_native(wgfx::BackendsKinds::BACKEND_KIND_RASTER).copied();
 
     window->attach();
 
-    fc::TextureRepo::the().load(core::WStr::copy("liquid-blue"), "/meta/assets/pawel-czerwinski-blue-liquid-halfres.png");
-    fc::FontsRepo::the().load(core::WStr::copy("oswald@96"), "/meta/assets/oswald.ttf", 96 * window->dpi());
+    fc::TextureRepo::the().load(core::WStr::copy("liquid-blue"), "./meta/assets/pawel-czerwinski-blue-liquid-halfres.png");
+    fc::FontsRepo::the().load(core::WStr::copy("oswald@96"), "./meta/assets/oswald.ttf", 96 * window->dpi());
 
     float l = 0.f;
 
@@ -112,6 +108,8 @@ int main(int argc, char **argv)
     fc::UiContext ctx = {};
     ctx.theme = fc::Theme::wingos();
 
+    ctx.dpi = window->dpi();
+//    ctx.enable_debug_layout = true;
     vwidgt->mount(ctx);
     // vwidgt->build({});
     //
@@ -186,17 +184,6 @@ int main(int argc, char **argv)
         //      wgfx::Painter::stroked(wgfx::FUCHSIA, 10.f),
         //      (cosf(l*0.001f) +1.f)/2.f);
 
-        x += dx;
-        y += dy;
-
-        if (x >= ((long)window->width() - 256) || x <= 0)
-        {
-            dx = -dx;
-        }
-        if (y >= (long)(window->height() - 256) || y <= 0)
-        {
-            dy = -dy;
-        }
 
         window->end_frame(frame);
 

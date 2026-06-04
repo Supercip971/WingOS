@@ -12,6 +12,7 @@
 #include "libcore/shared.hpp"
 #include "ui/widgets/callback.hpp"
 #include "ui/widgets/centered.hpp"
+#include "ui/widgets/padded.hpp"
 #include "ui/widgets/statefull.hpp"
 #include "widget.hpp"
 
@@ -76,6 +77,7 @@ class Button : public Statefull<ButtonState>
 public:
     core::SharedPtr<Widget> child;
     float o_elevation;
+    float max_elevation;
 
     Callback _on_click = nullptr;
     ~Button() override = default;
@@ -83,10 +85,28 @@ public:
     Button(ButtonParams parms, Callback callback, T args)
     {
         o_elevation = parms._elevation;
+        max_elevation = parms._elevation;
 
         _on_click = callback;
         _parms = parms;
         child = (args);
+    }
+    wgfx::GRect layout(UiContext const &ctx, wgfx::GRect constraint) override
+    {
+        auto c2 = constraint;
+        c2.start.y += this->max_elevation - this->_parms._elevation;
+
+        auto csize = child->preferred_size(c2.size());
+        child->relayout(ctx, c2.with_size(csize));
+        return constraint.with_size(constraint.size() + wgfx::Vec2(0, this->max_elevation));
+    }
+
+
+    wgfx::GRect layout_with_elevation() const
+    {
+        auto b = this->bounds();
+        b.start.y += this->max_elevation - this->_parms._elevation;
+        return b;
     }
 
     bool acquireEvent(wgfx::UEvent ev) override
@@ -120,8 +140,8 @@ public:
     {
 
         wgfx::Vec2 c2 = constraint;
-        c2.y -= this->_parms._elevation;
-        return child->preferred_size(c2) + wgfx::Vec2(0, this->_parms._elevation);
+        c2.y -= this->max_elevation;
+        return child->preferred_size(c2) + wgfx::Vec2(0, this->max_elevation);
     }
 
     void render(UiContext const &ctx, wgfx::Canvas &canvas) const override
@@ -130,17 +150,17 @@ public:
 
         wgfx::Painter paint = this->_parms._shadowy;
 
-        auto b = this->bounds();
+        auto b = layout_with_elevation();
 
-        canvas.drawRect(this->bounds(), paint, this->_parms._radius);
+        canvas.drawRect(layout_with_elevation(), paint, this->_parms._radius);
 
-        auto bu = this->bounds();
+        auto bu = layout_with_elevation();
         bu.end.y -= this->_parms._elevation;
         paint.color = this->_parms._bg;
         canvas.drawRect(bu, paint, this->_parms._radius);
 
         paint.type = wgfx::PaintType::PAINT_MODE_STROKE;
-        paint.stroke.width = 2.f * 2.f;
+        paint.stroke.width =  2.f * ctx.dpi;
         paint.color = this->_parms._border;
 
         canvas.drawRect(bu, paint, this->_parms._radius);
@@ -156,7 +176,8 @@ public:
     core::SharedPtr<Widget> build(UiContext const &v) override
     {
         (void)v;
-        return $<fc::Centered>(child);
+        return child;
+    ;
     };
 };
 

@@ -15,10 +15,10 @@ namespace fc
 struct Padded
 {
 
-    float _pleft = -1;
-    float _pright = -1;
-    float _pdown = -1;
-    float _ptop = -1;
+    float _pleft = 0;
+    float _pright = 0;
+    float _pdown = 0;
+    float _ptop = 0;
 
     Padded() = default;
 
@@ -26,7 +26,6 @@ struct Padded
         : _pleft(pleft), _pright(pright), _pdown(pdown), _ptop(ptop)
     {
     }
-
 
     constexpr Padded left(float w) const
     {
@@ -93,12 +92,16 @@ public:
     virtual wgfx::Vec2 preferred_size(wgfx::Vec2 constraint) const override
     {
 
-        constraint.x =  core::max(constraint.x - _parms._pleft, 0);
-        constraint.x =  core::max(constraint.x - _parms._pright, 0);
-        constraint.y =  core::max(constraint.y - _parms._ptop,0);
-        constraint.y =  core::max(constraint.y - _parms._pdown,0);
-        auto c =  child->preferred_size(constraint);
+        /*         constraint.x =  core::max(constraint.x - _parms._pleft, 0);
+                constraint.x =  core::max(constraint.x - _parms._pright, 0);
+                constraint.y =  core::max(constraint.y - _parms._ptop,0);
+                constraint.y =  core::max(constraint.y - _parms._pdown,0);
+                auto c =  child->preferred_size(constraint);
 
+                c.x += _parms._pleft + _parms._pright;
+                c.y += _parms._ptop + _parms._pdown;*/
+
+        auto c=  child->preferred_size(constraint);
         c.x += _parms._pleft + _parms._pright;
         c.y += _parms._ptop + _parms._pdown;
         return c;
@@ -111,18 +114,16 @@ public:
 
         (void)ctx;
 
-
         wgfx::GRect inner_constraint = constraint;
         inner_constraint.start.x += _parms._pleft;
         inner_constraint.start.y += _parms._ptop;
         inner_constraint.end.x -= _parms._pright;
         inner_constraint.end.y -= _parms._pdown;
-        child->relayout(ctx, inner_constraint);
+        auto csize = child->preferred_size(inner_constraint.size());
 
-            return constraint;
+        child->relayout(ctx, inner_constraint.with_size(csize));
 
-
-
+        return constraint;
     }
     void render(UiContext const &ctx, wgfx::Canvas &canvas) const override
     {

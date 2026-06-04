@@ -2,6 +2,7 @@
 #include <typeinfo>
 
 #include "gfx/canvas/canvas.hpp"
+#include "gfx/canvas/cmd.hpp"
 #include "gfx/event/event.hpp"
 #include "gfx/geometry/rect.hpp"
 #include "gfx/geometry/vec2.hpp"
@@ -30,19 +31,17 @@ public:
 class Widget
 {
 
-    bool _dirty;
-    bool _layout_dirty;
-    bool _render_dirty;
-    wgfx::GRect _old_render_layout;
-    wgfx::GRect _layout;
-    wgfx::RenderCommands rendering;
-
-    float dirty_dep_width;
+    bool _dirty = true;
+    bool _layout_dirty = true;
+    bool _render_dirty = true;
+    wgfx::GRect _old_render_layout = {};
+    wgfx::GRect _layout{};
+    wgfx::RenderCommands rendering = {};
+    float dirty_dep_width = 0.0f;
 
 public:
-
-    float dirty_dependence_around() const { return dirty_dep_width;}
-    void dirty_depenced_around(float val) { dirty_dep_width = val;}
+    float dirty_dependence_around() const { return dirty_dep_width; }
+    void dirty_depenced_around(float val) { dirty_dep_width = val; }
     auto name() const { return typeid(*this).name(); };
     virtual bool acquireEvent(wgfx::UEvent ev)
     {

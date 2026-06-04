@@ -66,8 +66,7 @@ public:
         if (_layout._keep_ratio)
         {
 
-
-            if(_layout._filled)
+            if (_layout._filled)
             {
                 float ratio = (float)img->image()->width() / (float)img->image()->height();
 
@@ -75,7 +74,7 @@ public:
 
                 // height > width
 
-                if(ratio > 1.0f)
+                if (ratio > 1.0f)
                 {
                     vbounds.width(vbounds.height() * ratio);
                 }
@@ -84,7 +83,7 @@ public:
                     vbounds.height(vbounds.width() / ratio);
                 }
 
-                if(ratio > 1.0f)
+                if (ratio > 1.0f)
                 {
                     vbounds = vbounds.with_size(vbounds.size() * bounds().width() / vbounds.width());
                 }
@@ -98,20 +97,19 @@ public:
             else
             {
 
-            float ratio = (float)img->image()->width() / (float)img->image()->height();
+                float ratio = (float)img->image()->width() / (float)img->image()->height();
 
-            auto vbounds = bounds();
-            if (ratio > 1.0f)
-            {
+                auto vbounds = bounds();
+                if (ratio > 1.0f)
+                {
 
-                vbounds.width(vbounds.height() * ratio);
-            }
-            else
-            {
-                vbounds.height(vbounds.width() / ratio);
-            }
-            canvas.drawImage(img, vbounds);
-
+                    vbounds.width(vbounds.height() * ratio);
+                }
+                else
+                {
+                    vbounds.height(vbounds.width() / ratio);
+                }
+                canvas.drawImage(img, vbounds);
             }
         }
         else

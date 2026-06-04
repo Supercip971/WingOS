@@ -228,6 +228,12 @@ public:
 
             auto ncanvas = canvas.record();
             this->render(ctx, ncanvas);
+
+            if (ctx.enable_debug_layout)
+            {
+                ncanvas.drawRect(this->_layout, wgfx::Painter::stroked(wgfx::RED, 2.f));
+            }
+
             rendering = ncanvas.stopRecord();
             canvas.recordApply(rendering, _layout);
 

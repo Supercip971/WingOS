@@ -16,6 +16,8 @@ class UiContext
 public:
     UiContext() = default;
 
+    float dpi;
+    bool enable_debug_layout = false;
     Theme theme;
     ContextSnapshot snapshot() const { return ContextSnapshot(); }
 };

@@ -4,13 +4,14 @@
 
 #include "gfx/text/font.hpp"
 #include "libcore/ds/umap.hpp"
+#include "libcore/path.hpp"
 #include "libcore/shared.hpp"
 namespace fc
 {
 class FontsRepo
 {
 
-    core::UMap<core::WStr, core::SharedPtr<wgfx::Font>> _fonts;
+    core::UMap<core::WStr, core::SharedPtr<wgfx::Font>> _fonts = {};
 
 public:
     using AppRessource = core::SharedPtr<wgfx::Font>;
@@ -18,7 +19,8 @@ public:
     {
 
         fmt::log$("loading font({}): {}", name.view(), path);
-        auto t = wgfx::Typeface::from_file(path).copied();
+        auto fpath = core::finalizePath(path);
+        auto t = wgfx::Typeface::from_file(fpath.view()).copied();
 
         _fonts.insert(
             core::WStr::copy(name.view()),

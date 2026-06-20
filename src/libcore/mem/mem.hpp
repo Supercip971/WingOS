@@ -50,7 +50,7 @@ public:
     constexpr T *begin() { return _data; }
     constexpr T *end() { return _data + _len; }
 
-    constexpr operator bool() const { return _data != nullptr; }
+    explicit constexpr operator bool() const { return _data != nullptr; }
 
     constexpr bool operator==(const MemView<T> &other) const
     {

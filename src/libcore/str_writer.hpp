@@ -39,7 +39,7 @@ public:
 
     static WStr own(char *buffer, size_t len, size_t capacity = 0)
     {
-        WStr str;
+        WStr str = {};
         str._data = buffer;
         str._len = len;
         str._capacity = (capacity == 0) ? len + 1 : capacity;
@@ -88,6 +88,7 @@ public:
         this->_capacity = other._capacity;
         other._data = nullptr;
         other._len = 0;
+        other._capacity = 0;
         return *this;
     }
     WStr &operator=(const char *str)
@@ -183,8 +184,7 @@ public:
         }
         return true;
     }
-
-    bool operator==(const char* other) const
+    bool operator==(const char *other) const
     {
 
         for (size_t i = 0; i < this->len() && other[i] != '\0'; i++)
@@ -195,6 +195,25 @@ public:
             }
         }
         return true;
+
+    }
+    bool operator==(core::Str const &other) const
+    {
+
+        if (this->len() != other.len())
+        {
+            return false;
+        }
+        for (size_t i = 0; i < this->len(); i++)
+        {
+            if (this->_data[i] != other[i])
+            {
+                return false;
+            }
+        }
+        return true;
+
+
     }
     void release()
     {

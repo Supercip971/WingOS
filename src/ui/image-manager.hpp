@@ -6,6 +6,7 @@
 #include "gfx/image/texture.hpp"
 #include "gfx/text/font.hpp"
 #include "libcore/ds/umap.hpp"
+#include "libcore/path.hpp"
 #include "libcore/shared.hpp"
 namespace fc
 {
@@ -20,11 +21,12 @@ public:
     {
 
         fmt::log$("loading texture({}): {}", name.view(), path);
+        auto fpath = core::finalizePath(path);
         _texture.insert(
             core::WStr::copy(name.view()),
             core::SharedPtr<wgfx::Texture>::make(
                 core::SharedPtr<wgfx::Image01>::make(try$(
-                    wgfx::Image01::load_from_file(path)))));
+                    wgfx::Image01::load_from_file(fpath.view())))));
         _texture[name.view()]->compute_image_rgba8();
         return {};
     }

@@ -98,8 +98,8 @@ int main(int argc, char **argv)
 
     window->attach();
 
-    fc::TextureRepo::the().load(core::WStr::copy("liquid-blue"), "./meta/assets/pawel-czerwinski-blue-liquid-halfres.png");
-    fc::FontsRepo::the().load(core::WStr::copy("oswald@96"), "./meta/assets/oswald.ttf", 96 * window->dpi());
+    fc::TextureRepo::the().load(core::WStr::copy("liquid-blue"), "/meta/assets/pawel-czerwinski-blue-liquid-halfres.png");
+    fc::FontsRepo::the().load(core::WStr::copy("oswald@96"), "/meta/assets/oswald.ttf", 96 * window->dpi());
 
     float l = 0.f;
 

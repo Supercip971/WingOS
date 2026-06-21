@@ -8,6 +8,7 @@
 #include "gfx/geometry/rect.hpp"
 #include "gfx/geometry/shape.hpp"
 #include "gfx/geometry/vec2.hpp"
+#include "libcore/ds/vec.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/logic.hpp"
 #include "libcore/shared.hpp"
@@ -16,6 +17,10 @@ namespace wgfx
 
 class RasterCanvas : public wgfx::Canvas
 {
+
+    core::Vec<Rgba8> _backdrop_workspace1 = {};
+    core::Vec<Rgba8> _backdrop_workspace2 = {};
+
 public:
     Rgba8 *buffer;
     size_t width;
@@ -62,6 +67,12 @@ public:
     }
 
     void blurArea(GRect area, float factor);
+
+    void boxBlur4(Rgba8 *scl, Rgba8 *dst, long w, long h, float factor);
+
+    void boxBlur4_H(Rgba8 *scl, Rgba8 *dst, long w, long h, float factor);
+
+    void boxBlur4_T(Rgba8 *scl, Rgba8 *dst, long w, long h, float factor);
 
     // important keywords definition:
     // - flat: unique color for the fill (gradient not valid)

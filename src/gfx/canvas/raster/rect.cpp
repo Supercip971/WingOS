@@ -336,39 +336,178 @@ void wgfx::RasterCanvas::rectStrokeFlatAligned(RectCommand const &cmdw)
     }
 }
 
+// https://blog.ivank.net/fastest-gaussian-blur.html
+
+void compute_gauss_size(float sigma, float& s1, float& s2, float& s3)
+{
+    static constexpr int n = 3;
+
+    float ideal = sqrtf((12 * sigma * sigma)/n+1.f);
+    long wl = floorf(ideal);
+    if(wl % 2 == 0)
+    {
+        wl--;
+    }
+    long wu = wl +2;
+
+    float mideal = (12 * sigma * sigma - n*wl*wl - 4*n*wl - 3*n)/(-4.f*wl - 4);
+
+    float m = roundf(mideal);
+    s1 = (0 < m ? wl : wu);
+    s2 = (1 < m ? wl : wu);
+    s3 = (2 < m ? wl : wu);
+}
+
+
+
+void wgfx::RasterCanvas::boxBlur4(Rgba8* scl, Rgba8* dst, long w, long h, float factor)
+{
+
+    for (long x = 0; x < w; x++)
+    {
+        for (long y = 0; y < h; y++)
+        {
+            dst[x + y * w] = scl[x + y * w];
+        }
+    }
+
+    boxBlur4_H(dst, scl, w, h, factor);
+    boxBlur4_T(scl, dst, w, h, factor);
+}
+
+void wgfx::RasterCanvas::boxBlur4_H(Rgba8* scl, Rgba8* dst, long w, long h, float factor)
+{
+    float iarr = 1.f / (factor + factor+1.f);
+    for(int y = 0; y < h; y++)
+    {
+        int ty = y * w, ly = ty, ry = ty + factor;
+        auto fv = scl[ty], lv = scl[ty + w - 1];
+        uint64_t r = (factor+1)*fv.r, g = (factor+1)*fv.g, b = (factor+1)*fv.b, a = (factor+1)*fv.a;
+        for(int x = 0; x < factor; x++)
+        {
+            auto c = scl[ty + x];
+            r += c.r;
+            g += c.g;
+            b += c.b;
+            a += c.a;
+        }
+        for(int x = 0; x <= factor; x++)
+        {
+            auto c = scl[ry++];
+            r += c.r - fv.r;
+            g += c.g - fv.g;
+            b += c.b - fv.b;
+            a += c.a - fv.a;
+            dst[ty++] = Rgba8(r * iarr, g * iarr, b * iarr, a * iarr);
+        }
+        for(int x = factor + 1; x < w - factor; x++)
+        {
+            auto c = scl[ry++];
+            auto l = scl[ly++];
+            r += c.r - l.r;
+            g += c.g - l.g;
+            b += c.b - l.b;
+            a += c.a - l.a;
+            dst[ty++] = Rgba8(r * iarr, g * iarr, b * iarr, a * iarr);
+        }
+        for(int x = w - factor ; x < w; x++)
+        {
+            auto c = scl[ly++];
+            r += lv.r - c.r;
+            g += lv.g - c.g;
+            b += lv.b - c.b;
+            a += lv.a - c.a;
+            dst[ty++] = Rgba8(r * iarr, g * iarr, b * iarr, a * iarr);
+        }
+
+    }
+}
+
+void wgfx::RasterCanvas::boxBlur4_T(Rgba8* scl, Rgba8* dst, long w, long h, float factor)
+{
+    float iarr = 1.f / (factor + factor+1.f);
+    for(int x = 0; x < w; x++)
+    {
+        int tx = x, lx = tx, rx = tx + factor * w;
+        auto fv = scl[tx], lv = scl[tx + (h - 1) * w];
+        uint64_t r = (factor+1)*fv.r, g = (factor+1)*fv.g, b = (factor+1)*fv.b, a = (factor+1)*fv.a;
+        for(int y = 0; y < factor; y++)
+        {
+            auto c = scl[tx + y * w];
+            r += c.r;
+            g += c.g;
+            b += c.b;
+            a += c.a;
+        }
+        for(int y = 0; y <= factor; y++)
+        {
+            auto c = scl[rx];
+            r += c.r - fv.r;
+            g += c.g - fv.g;
+            b += c.b - fv.b;
+            a += c.a - fv.a;
+            dst[tx] = Rgba8(r * iarr, g * iarr, b * iarr, a * iarr);
+            tx += w;
+            rx += w;
+        }
+        for(int y = factor + 1; y < h - factor; y++)
+        {
+            auto c = scl[rx];
+            auto l = scl[lx];
+            r += c.r - l.r;
+            g += c.g - l.g;
+            b += c.b - l.b;
+            a += c.a - l.a;
+            dst[tx] = Rgba8(r * iarr, g * iarr, b * iarr, a * iarr);
+            tx += w;
+            lx += w;
+            rx += w;
+        }
+        for(int y = h - factor ; y < h; y++)
+        {
+            auto c = scl[lx];
+            r += lv.r - c.r;
+            g += lv.g - c.g;
+            b += lv.b - c.b;
+            a += lv.a - c.a;
+            dst[tx] = Rgba8(r * iarr, g * iarr, b * iarr, a * iarr);
+            tx += w;
+            lx += w;
+        }
+
+    }
+}
+
 void wgfx::RasterCanvas::blurArea(GRect area, float factor)
 {
-    Rgba8 *temp_buffer = new Rgba8[width * height];
+    _backdrop_workspace1.reserve(width * height);
+    _backdrop_workspace2.reserve(width * height);
+    float s1, s2, s3;
+    compute_gauss_size(factor, s1, s2, s3);
 
-    for (long y = area.start.y; y < area.end.y; y++)
+    for(long y = 0; y < area.height(); y++)
     {
-        for (long x = area.start.x; x < area.end.x; x++)
+        for(long x = 0; x < area.width(); x++)
+
         {
-            float r = 0, g = 0, b = 0, a = 0;
-            for (long iy = -factor/2.f; iy <= factor/2.f; iy++)
-            {
-                for (long ix = -factor/2.f; ix <= factor/2.f; ix++)
-                {
-
-                    r += buffer[(x + ix) + (y + iy) * width].r;
-                    g += buffer[(x + ix) + (y + iy) * width].g;
-                    b += buffer[(x + ix) + (y + iy) * width].b;
-                    a += buffer[(x + ix) + (y + iy) * width].a;
-                }
-            }
-            temp_buffer[x + y * width] = Rgba8(r / (factor * factor), g / (factor * factor), b / (factor * factor), a / (factor * factor));
-
+            auto c = buffer[(x+(long)area.start.x) + (y+(long)area.start.y) * width];
+            _backdrop_workspace1[x + y * area.width()] = c;
         }
     }
-    for (long y = area.start.y; y < area.end.y; y++)
+
+    boxBlur4(_backdrop_workspace1.data(), _backdrop_workspace2.data(), area.width(), area.height(), (s1 -1)/2.f);
+    boxBlur4(_backdrop_workspace2.data(), _backdrop_workspace1.data(), area.width(), area.height(), (s2 -1)/2.f);
+    boxBlur4(_backdrop_workspace1.data(), _backdrop_workspace2.data(), area.width(), area.height(), (s3 -1)/2.f);
+
+    for (long y = 0; y < area.height(); y++)
     {
-        for (long x = area.start.x; x < area.end.x; x++)
+        for (long x = 0; x < area.width(); x++)
         {
-            buffer[x + y * width] = temp_buffer[x + y * width];
+            buffer[(x + (long)area.start.x) + (y + (long)area.start.y) * width] = _backdrop_workspace1[x + y * area.width()];
         }
     }
-    delete[] temp_buffer;
 }
+
 void wgfx::RasterCanvas::rect(RectCommand const &cmd)
 {
 

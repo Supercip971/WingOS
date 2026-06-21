@@ -17,6 +17,8 @@ enum PaintType
     PAINT_MODE_FILLED,
     PAINT_MODE_STROKE
 };
+
+
 struct Painter
 {
     // Complete Color, is raw encoded color (with HDR and everything), then converted to rawColor (rgba 255bit)
@@ -25,6 +27,11 @@ struct Painter
 
     float blur = 0.0f;
     float noise = 0.0f;
+
+    bool needBackdrop() const
+    {
+        return blur > 0.01f;
+    }
 
     union
     {

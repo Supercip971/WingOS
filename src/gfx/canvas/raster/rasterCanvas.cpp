@@ -1,4 +1,5 @@
 #include "gfx/canvas/raster/rasterCanvas.hpp"
+#include "gfx/canvas/cmd.hpp"
 
 void wgfx::RasterCanvas::apply(DrawContext const &ctx, RenderCommand const &cmd)
 {
@@ -13,6 +14,7 @@ void wgfx::RasterCanvas::apply(DrawContext const &ctx, RenderCommand const &cmd)
     }
     case wgfx::RenderCommandKind::RENDER_KIND_RECT:
     {
+
         rect(cmd.rect);
         break;
     }

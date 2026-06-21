@@ -142,7 +142,6 @@ public:
             }
             else
             {
-
                 apply(ctx, cmd);
             }
         }

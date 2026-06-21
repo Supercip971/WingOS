@@ -82,6 +82,8 @@ public:
 
         wgfx::Painter paint = this->_parms._bg;
 
+        paint.blur = 64.f;
+
         auto b = this->bounds();
 
         canvas.drawRect(this->bounds(), paint, this->_parms._radius);

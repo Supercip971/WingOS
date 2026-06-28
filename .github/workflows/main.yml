@@ -1,0 +1,79 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # Runs a single command using the runners shell
+      - name: setup_1
+        run: |
+          sudo apt update
+          git submodule update --init --recursive
+
+          sudo apt install -y make build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo nasm
+          sudo apt install -y mtools wget unzip fuse libfuse-dev
+          sudo apt install -y uuid-dev
+          sudo apt install -y gcc binutils parted dosfstools
+          sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)" llvm 22 all
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.11"
+
+      - name: cache-toolchain
+        uses: actions/cache@v6
+        env:
+          cache-name: cached-cross-compiler
+        with:
+          path: |
+            **/meta/build/
+          key: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/meta/build/make_cross_compilers.sh', '**/meta/build/toolchains/gcc.patch', '**/meta/build/toolchains/binutils.patch') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/meta/build/make_cross_compilers.sh', '**/meta/build/toolchains/gcc.patch', '**/meta/build/toolchains/binutils.patch') }}
+
+      - name: setup_toolchain
+        run: |
+          bash meta/build/make_cross_compilers.sh
+
+      # Runs a single command using the runners shell
+      - name: setup_cutekit
+        run: |
+          pip3 install -r meta/plugins/requirements.txt
+          mkdir -p .cutekit
+          python3 -m venv .cutekit/venv
+          source .cutekit/venv/bin/activate
+          pip3 install -r meta/plugins/requirements.txt
+          ck clean
+
+      - name: unit-test
+        run: |
+          ck test
+
+      - name: OS
+        run: |
+          ck prep
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: "OS disk"
+          path: ".cutekit/disk.hdd"

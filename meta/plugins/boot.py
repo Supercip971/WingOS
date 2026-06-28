@@ -128,8 +128,14 @@ class LimineCfg:
             "qemu-system-x86_64",
             "-no-reboot",
             "-no-shutdown",
+            "-chardev",
+            "stdio,id=char0",
+            "-chardev",
+            "file,id=char1,path=debug.txt",
             "-serial",
-            "stdio",
+            "chardev:char0",
+            "-serial",
+            "chardev:char1",
             "-bios",
             ovmf,
             "-m",
@@ -255,19 +261,14 @@ def buildSystem(args: model.TargetArgs) -> LimineCfg:
     return limine.createImage()
 
 
-@cli.command("rec", "Record qemu runtime")
-def recordFunc(args: model.TargetArgs):
-    buildSystem(args).record()
-
-
-@cli.command("rep", "Replay qemu runtime")
-def recordFunc(args: model.TargetArgs):
-    buildSystem(args).replay()
-
-
 @cli.command("s", "Boot Wingos")
 def bootFunc(args: model.TargetArgs):
     buildSystem(args).run()
+
+
+@cli.command("prep", "Prepare Wingos disk")
+def prepFunc(args: model.TargetArgs):
+    buildSystem(args).createDiskImage()
 
 
 # cmds.append(

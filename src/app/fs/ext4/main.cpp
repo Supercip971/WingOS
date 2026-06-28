@@ -35,6 +35,7 @@ struct Ext4FsEndpoint
 };
 
 core::Vec<Ext4FsEndpoint *> ext4_fs_endpoints = {};
+
 bool update_endpoint(Ext4FsEndpoint *dev, Ext4FileEndpoint *endpoint)
 {
     // Accept all pending connections (there may be multiple)

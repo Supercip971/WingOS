@@ -42,6 +42,7 @@ public:
     {
         _locked.store(0, core::MemoryOrder::Release);
     }
+
     bool try_acquire()
     {
         int expected = 0;

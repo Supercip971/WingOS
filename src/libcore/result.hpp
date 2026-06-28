@@ -8,6 +8,7 @@ namespace core
 {
 
 class Str;
+
 template <typename ValT, typename ErrT = const char *>
 struct Result : public NoCopy
 {
@@ -26,6 +27,7 @@ public:
     };
 
     bool _is_error = true;
+
     constexpr Result() : _error("empty result"), _is_error(true) {}
 
     constexpr ~Result()
@@ -87,6 +89,7 @@ public:
         }
         return *this;
     }
+
     template <typename U>
     static constexpr Result<ValT, ErrT> success(U val bounded$)
         requires core::IsConvertibleTo<U, ValueType>
@@ -106,7 +109,9 @@ public:
         res._error = (core::forward<E>(err));
         return res;
     }
+
     void assert();
+
     ValT &unwrap() & bounded$
     {
         assert();
@@ -139,6 +144,7 @@ public:
     {
         return _error;
     }
+
     constexpr ErrT &error() bounded$
     {
         return _error;
@@ -159,9 +165,11 @@ public:
 
         ErrT _error;
     };
+
     bool _is_error;
     using ErrorType = RemoveReference<ErrT>;
     using ValueType = void;
+
     constexpr Result() : _error("empty result"), _is_error(false) {}
 
     constexpr Result(const ErrT &error) : _error(error), _is_error(true) {}

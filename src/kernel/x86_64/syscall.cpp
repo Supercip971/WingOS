@@ -54,6 +54,7 @@ void dump_stackframe(void *rbp)
 }
 
 SRWLock _syscall_lock = {};
+
 extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
 {
     //  log("syscall", LOG_INFO, "called syscall higher handler in: {} (stack: {})", stackframe->rip, stackframe->rsp);

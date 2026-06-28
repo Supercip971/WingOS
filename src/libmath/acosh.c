@@ -14,6 +14,7 @@ double acosh(double x)
         double f;
         uint64_t i;
     } u = {.f = x};
+
     unsigned e = u.i >> 52 & 0x7ff;
 
     /* x < 1 domain error is handled in the called functions */

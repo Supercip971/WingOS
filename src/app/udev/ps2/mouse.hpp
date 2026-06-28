@@ -1,7 +1,7 @@
 #pragma once
 #include "controller.hpp"
-#include "libcore/ds/vec.hpp"
 #include "hw/hi/mouse.hpp"
+#include "libcore/ds/vec.hpp"
 
 namespace Ps2
 {

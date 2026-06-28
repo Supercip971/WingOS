@@ -13,6 +13,7 @@ static __attribute__((aligned(4096))) uint8_t
     initial_context_data[4096] = {0};
 
 static core::Lock simd_init_lock = {};
+
 namespace arch::x86_64
 {
 

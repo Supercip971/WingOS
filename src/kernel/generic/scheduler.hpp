@@ -15,6 +15,7 @@ using TUID = uint64_t;
 
 static constexpr size_t TASK_QUEUE_COUNT = 128;
 class Task;
+
 struct SchedulerControlBlock
 {
     bool is_idle = false;
@@ -30,6 +31,7 @@ struct SchedulerControlBlock
     long priority = 0;
 
     SchedulerControlBlock() : priority(0) {}
+
     SchedulerControlBlock(size_t _priority) : priority(_priority) {}
 
     void tick()
@@ -70,6 +72,7 @@ core::Result<void> resolve_blocked_tasks();
 void schedule_if_task_blocked();
 
 } // namespace kernel
+
 // arch implemented
 void trigger_reschedule(CoreId cpu);
 void trigger_reschedule_unblocked(CoreId cpu);

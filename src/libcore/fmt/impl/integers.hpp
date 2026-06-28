@@ -9,6 +9,7 @@
 #include "libcore/result.hpp"
 #include "libcore/type-utils.hpp"
 #include "libcore/type/trait.hpp"
+
 namespace fmt
 {
 
@@ -177,6 +178,7 @@ constexpr core::Result<int> format_v(Targ &target, FormatFlags<T> &&v)
         return r;
     }
 }
+
 template <core::IsIdentityIntegral T, core::Writable Targ>
 constexpr core::Result<int> format_v(Targ &target, const FormatFlags<T> &v)
 {

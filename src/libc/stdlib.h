@@ -1,42 +1,40 @@
 #pragma once
 
-
 #include <stddef.h>
 
 // malloc
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-int abs(int x);
-long labs(long j);
-long long llabs(long long x);
+    int abs(int x);
+    long labs(long j);
+    long long llabs(long long x);
 
-double fabs(double x);
-float fabsf(float x);
-long double fabsl(long double x);
+    double fabs(double x);
+    float fabsf(float x);
+    long double fabsl(long double x);
 
+    void *malloc(size_t size);
+    void free(void *ptr);
+    void *realloc(void *ptr, size_t size);
 
-void *malloc(size_t size);
-void free(void *ptr);
-void *realloc(void *ptr, size_t size);
+    void *calloc(size_t nmemb, size_t size);
 
-void *calloc(size_t nmemb, size_t size);
+    [[noreturn]]
+    void exit(int code);
 
+    [[noreturn]]
+    void abort(void);
 
-[[noreturn]]
-void exit(int code);
+    long strtol(const char *nptr, char **endptr, int base);
+    long long strtoll(const char *nptr, char **endptr, int base);
+    int atoi(const char *str);
 
-[[noreturn]]
-void abort(void);
+    double strtod(const char *nptr, char **endptr);
 
-long strtol(const char *nptr, char **endptr, int base);
-long long strtoll(const char *nptr, char **endptr, int base);
-int atoi(const char* str);
-
-double strtod(const char* nptr, char** endptr);
-
-double atof(const char* str);
+    double atof(const char *str);
 #ifdef __cplusplus
 }
 #endif

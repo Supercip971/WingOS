@@ -18,6 +18,7 @@ private:
 public:
     using Type = T;
     constexpr Range() {};
+
     constexpr Range(T start, T end) : _start(start), _end(end) {}
 
     constexpr T start() const { return _start; }
@@ -29,6 +30,7 @@ public:
     {
         return _end - _start;
     }
+
     constexpr size_t len() const
         requires(!core::IsIdentityIntegral<T>)
     {
@@ -78,6 +80,7 @@ public:
     {
         return Range<T>(_start - offset, _end - offset);
     }
+
     constexpr Range<T> div(size_t div) const
     {
         return Range<T>(_start / div, _end / div);

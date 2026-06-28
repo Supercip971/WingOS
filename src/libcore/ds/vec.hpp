@@ -7,9 +7,11 @@
 #include "libcore/alloc/alloc.hpp"
 #include "libcore/logic.hpp"
 #include "libcore/result.hpp"
+
 namespace core
 {
 void dump_vec(uintptr_t _this, uintptr_t _data, bool start);
+
 template <typename T>
 class Vec
 {
@@ -179,6 +181,7 @@ public:
     {
         return _data[_count - 1];
     }
+
     Result<void> push(const T &value)
     {
         try$(reserve(_count + 1));
@@ -334,6 +337,7 @@ public:
     {
         return _data + _count;
     }
+
     constexpr const T *cbegin() const
     {
         return _data;
@@ -343,6 +347,7 @@ public:
     {
         return _data + _count;
     }
+
     constexpr const T *begin() const
     {
         return _data;
@@ -364,6 +369,7 @@ public:
         }
         return false;
     }
+
     template <typename V>
     constexpr void add_sorted(V AminusB, T const &el)
     {

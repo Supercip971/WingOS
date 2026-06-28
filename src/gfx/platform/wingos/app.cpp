@@ -72,6 +72,7 @@ struct WingosWindowImpl : public wgfx::PlatformWindow
         }
         return nullptr;
     }
+
     virtual float dpi() override
     {
         return 1.f;
@@ -98,7 +99,7 @@ struct WingosWindowImpl : public wgfx::PlatformWindow
             fps = newtime - oldtime;
             oldtime = newtime;
             (void)fps;
-       //     printf("%f\n", (1000.f * 1000.f) / (float)fps);
+            //     printf("%f\n", (1000.f * 1000.f) / (float)fps);
             break;
         }
         default:
@@ -144,6 +145,7 @@ struct WingosWindowImpl : public wgfx::PlatformWindow
         }
         return {};
     }
+
     wgfx::UEvent query_event() override
     {
 

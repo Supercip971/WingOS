@@ -164,6 +164,7 @@ struct [[gnu::packed]] Ext4DirEntry
     uint8_t file_type;
     char name[];
 };
+
 using BlockGroupId = uint64_t;
 using InodeId = uint64_t;
 using Blockid = uint64_t;
@@ -180,6 +181,7 @@ struct Ext4CacheNode
     void *data;
     size_t score;
 };
+
 class Ext4Filesystem
 {
     core::Vec<Ext4CacheNode> cache_nodes;
@@ -226,6 +228,7 @@ public:
     {
         return (1024 << superblock.log_block_size);
     }
+
     // use temp buffer
 
     BlockGroupId blockgroup_from_inode(InodeId inode) const

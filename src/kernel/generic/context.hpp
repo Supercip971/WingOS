@@ -4,6 +4,7 @@
 #include "kernel/generic/paging.hpp"
 #include "libcore/lock/lock.hpp"
 #include "libcore/result.hpp"
+
 namespace kernel
 {
 
@@ -54,6 +55,7 @@ public:
     {
         return static_cast<T *>(this);
     }
+
     template <typename T>
     T const *as() const
     {

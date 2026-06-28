@@ -8,6 +8,7 @@ float asinhf(float x)
         float f;
         uint32_t i;
     } u = {.f = x};
+
     uint32_t i = u.i & 0x7fffffff;
     unsigned s = u.i >> 31;
 

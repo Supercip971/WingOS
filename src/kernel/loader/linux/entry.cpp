@@ -23,10 +23,12 @@ static void done(void)
         __asm__("hlt");
     }
 }
+
 extern "C" uintptr_t kernel_physical_base()
 {
     return 0;
 }
+
 extern "C" uintptr_t kernel_virtual_base()
 {
     return 0;
@@ -37,6 +39,7 @@ extern "C" void __cxa_pure_virtual()
     // limine_writer.writeV(core::Str("Pure virtual function called!"));
     done();
 }
+
 void load_mcx(mcx::MachineContext *context)
 {
     (void)context;
@@ -66,6 +69,7 @@ public:
         return {};
     }
 };
+
 // The following will be our kernel's entry point.
 void _start(void)
 {

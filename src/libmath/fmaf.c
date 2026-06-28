@@ -39,11 +39,13 @@
 float fmaf(float x, float y, float z)
 {
     double xy, result;
+
     union
     {
         double f;
         uint64_t i;
     } u;
+
     int e;
 
     xy = (double)x * y;

@@ -2,6 +2,7 @@
 #include "controller.hpp"
 #include "libcore/ds/vec.hpp"
 #include "stdint.h"
+
 namespace Ps2
 {
 
@@ -10,6 +11,7 @@ struct Ps2KeyboardEvent
     uint8_t key;
     bool down;
 };
+
 class Ps2Keyboard
 {
     Controller &_controller;

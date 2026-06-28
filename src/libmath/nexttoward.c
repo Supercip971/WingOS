@@ -13,6 +13,7 @@ double nexttoward(double x, long double y)
         double f;
         uint64_t i;
     } ux = {x};
+
     int e;
 
     if (isnan(x) || isnan(y))

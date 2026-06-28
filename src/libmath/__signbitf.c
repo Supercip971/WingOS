@@ -8,5 +8,6 @@ int __signbitf(float x)
         float f;
         uint32_t i;
     } y = {x};
+
     return y.i >> 31;
 }

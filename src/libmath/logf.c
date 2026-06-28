@@ -32,6 +32,7 @@ float logf(float x)
         float f;
         uint32_t i;
     } u = {x};
+
     float_t hfsq, f, s, z, R, w, t1, t2, dk;
     uint32_t ix;
     int k;

@@ -14,6 +14,7 @@
 #include "libcore/str.hpp"
 #include "libcore/type-utils.hpp"
 #include "ui/context.hpp"
+
 namespace fc
 {
 class Widget;
@@ -28,6 +29,7 @@ class State
 public:
     Widget *parent;
 };
+
 class Widget
 {
 
@@ -41,8 +43,11 @@ class Widget
 
 public:
     float dirty_dependence_around() const { return dirty_dep_width; }
+
     void dirty_depenced_around(float val) { dirty_dep_width = val; }
+
     auto name() const { return typeid(*this).name(); };
+
     virtual bool acquireEvent(wgfx::UEvent ev)
     {
         if (ev.kind == wgfx::UEvent::Kind::MOUSE_MOVE || ev.kind == wgfx::UEvent::Kind::MOUSE_CLICK)
@@ -62,6 +67,7 @@ public:
         }
         return false;
     }
+
     template <typename T, typename... Args>
     static core::SharedPtr<Widget> $(Args &&...args)
     {
@@ -124,6 +130,7 @@ public:
     }
 
     virtual core::Str info() const { return ""; };
+
     void dump(int depth = 0) const
     {
 
@@ -141,6 +148,7 @@ public:
     }
 
     virtual core::SharedPtr<Widget> build(UiContext const &) { return {}; }
+
     virtual core::Vec<core::SharedPtr<Widget>> build_childs(UiContext const &v)
     {
         core::Vec<core::SharedPtr<Widget>> result = {};
@@ -219,6 +227,7 @@ public:
         }
         return f;
     }
+
     virtual bool render_dirty(UiContext const &ctx, wgfx::Canvas &canvas)
     {
 
@@ -352,6 +361,7 @@ public:
         *this = *t;
         rebuild(ctx);
     }
+
     virtual void mount(UiContext const &ctx)
     {
         rebuild(ctx);
@@ -360,6 +370,7 @@ public:
     virtual void unmount()
     {
     }
+
     virtual void rebuild(UiContext const &ctx)
     {
         _dirty = false;

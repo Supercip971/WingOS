@@ -26,6 +26,7 @@ class ClockConnection
 
 public:
     Wingos::IpcClient &raw_client() { return connection; }
+
     static core::Result<ClockConnection> connect()
     {
         ClockConnection conn{};

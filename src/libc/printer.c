@@ -51,7 +51,7 @@ int print_integer(PrintTarget *targ, unsigned long long value, struct PrintInteg
         negative = 1;
         value = -(long long)value;
     }
-    
+
     if (value == 0)
     {
         *ptr = '0';
@@ -76,7 +76,7 @@ int print_integer(PrintTarget *targ, unsigned long long value, struct PrintInteg
             value /= flags.base;
         }
     }
-    
+
     // Pad with zeros for precision
     while (digit_count < flags.precision)
     {
@@ -138,13 +138,12 @@ int print_impl(PrintTarget targ, const char *fmt, va_list va)
         // skip flags for now
         while (*p == '-' || *p == '+' || *p == ' ' || *p == '#' || *p == '0')
         {
-            if(*p == '0')
+            if (*p == '0')
             {
                 flags.pad_char = '0';
             }
             p++;
         }
-
 
         while (*p >= '0' && *p <= '9')
         {

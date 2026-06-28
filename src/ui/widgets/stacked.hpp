@@ -18,6 +18,7 @@ public:
     core::Vec<core::SharedPtr<Widget>> elements;
 
     ~Stacked() override = default;
+
     template <typename... T>
     Stacked(T... args)
     {

@@ -13,14 +13,11 @@ core::Result<void *> Ext4Filesystem::read_block_tmp(Wingos::MemoryAsset &target,
         return "short disk read for block";
     }
 
-    // add to cache
-
     return mapped_disk_asset.ptr();
 }
 
 core::Result<void *> Ext4Filesystem::read_block_tmp(size_t block_num)
 {
-
     for (size_t i = 0; i < cache_nodes.len(); i++)
     {
         if (cache_nodes[i].block_num == block_num)
@@ -30,9 +27,9 @@ core::Result<void *> Ext4Filesystem::read_block_tmp(size_t block_num)
         }
     }
 
-    size_t block_bytes = (1024 << superblock.log_block_size);
-    auto bytes_read = try$(disk.read(disk_asset, start_lba + (block_num * block_bytes) / disk_block_size, block_bytes));
-    if (bytes_read != block_bytes)
+    size_t block_size = (1024 << superblock.log_block_size);
+    auto bytes_read = try$(disk.read(disk_asset, start_lba + (block_num * block_size) / disk_block_size, block_size));
+    if (bytes_read != block_size)
     {
         return "short disk read for cached block";
     }
@@ -42,8 +39,8 @@ core::Result<void *> Ext4Filesystem::read_block_tmp(size_t block_num)
     {
         Ext4CacheNode node;
         node.block_num = block_num;
-        node.data = core::mem_alloc((1024 << superblock.log_block_size)).unwrap();
-        memcpy(node.data, mapped_disk_asset.ptr(), (1024 << superblock.log_block_size));
+        node.data = core::mem_alloc(block_size).copied();
+        memcpy(node.data, mapped_disk_asset.ptr(), block_size);
         node.score = 1;
         cache_nodes.push(node);
         // Return the cached copy, not mapped_disk_asset which can be overwritten by subsequent reads
@@ -66,7 +63,7 @@ core::Result<void *> Ext4Filesystem::read_block_tmp(size_t block_num)
 
         // replace
         cache_nodes[lowest_score_index].block_num = block_num;
-        memcpy(cache_nodes[lowest_score_index].data, mapped_disk_asset.ptr(), (1024 << superblock.log_block_size));
+        memcpy(cache_nodes[lowest_score_index].data, mapped_disk_asset.ptr(), block_size);
         cache_nodes[lowest_score_index].score = 1;
         // Return the cached copy, not mapped_disk_asset which can be overwritten by subsequent reads
         return cache_nodes[lowest_score_index].data;
@@ -131,6 +128,7 @@ core::Result<Ext4InodeRef> Ext4Filesystem::read_inode(InodeId inode)
     inode_ref.inode = *(Ext4Inode *)inode_ptr;
     return inode_ref;
 }
+
 core::Result<uint64_t> Ext4Filesystem::inode_find_block(Ext4InodeRef const &inode, size_t block)
 {
     // blocks_lo is in 512-byte sectors, convert to filesystem blocks
@@ -276,6 +274,7 @@ core::Result<size_t> Ext4Filesystem::inode_read(Ext4InodeRef const &inode, Wingo
     Wingos::Space::self().release_asset(vfile);
     return bytes_read;
 }
+
 core::Result<BlockGroupId> Ext4Filesystem::find_available_group_for_alloc(BlockGroupId start_from)
 {
     BlockGroupId bg_id = start_from;
@@ -393,6 +392,7 @@ core::Result<void> Ext4Filesystem::inode_add_block(Ext4InodeRef &inode)
 
     return {};
 }
+
 core::Result<void> Ext4Filesystem::write_inode(InodeId inode, Ext4Inode const &data)
 {
     auto bg_id = blockgroup_from_inode(inode);
@@ -483,6 +483,7 @@ core::Result<void *> Ext4Filesystem::inode_read_blck_off(Ext4InodeRef const &ino
 
     return read_block_tmp(out, block_num_res, mem_asset_off);
 }
+
 core::Result<void *> Ext4Filesystem::inode_read_tmp(Ext4InodeRef const &inode, size_t block)
 {
     // block is offset

@@ -12,6 +12,7 @@ void wgfx::RasterCanvas::clearFlat(FillCommand const &cmd)
         }
     }
 }
+
 void wgfx::RasterCanvas::clear(FillCommand const &cmd)
 {
     clearFlat(cmd);

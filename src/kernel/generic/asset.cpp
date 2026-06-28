@@ -87,6 +87,7 @@ void Asset::release(Asset *asset)
 }
 
 uintptr_t last_asset = 0;
+
 void Asset::deref(Asset *asset)
 {
     if (asset == nullptr)
@@ -288,6 +289,7 @@ core::Result<AssetRef<AssetMemory>> Space::create_memory(AssetMemoryCreateParams
     ptr.asset->lock.release();
     return ptr;
 }
+
 core::Result<AssetRef<AssetMapping>> Space::create_mapping(AssetMappingCreateParams params)
 {
     params.physical_mem.lock();

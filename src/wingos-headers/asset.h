@@ -19,8 +19,8 @@ extern "C"
 
     typedef enum
     {
-        ASSET_MAPPING_FLAG_READ = 1 << 0,  // if the mapping is readable
-        ASSET_MAPPING_FLAG_WRITE = 1 << 1, // if the mapping is writable
+        ASSET_MAPPING_FLAG_READ = 1 << 0,    // if the mapping is readable
+        ASSET_MAPPING_FLAG_WRITE = 1 << 1,   // if the mapping is writable
         ASSET_MAPPING_FLAG_EXECUTE = 1 << 2, // if the mapping is executable
     } AssetMappingFlags;
 

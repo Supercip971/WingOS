@@ -16,6 +16,7 @@ enum DiskImplementationMessageType
 {
     DISK_CREATE_ROOT_ENDPOINT = 1,
 };
+
 struct MountedDiskResult
 {
     IpcServerHandle fs_endpoint;

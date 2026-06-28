@@ -24,6 +24,7 @@ class CompositorConnection
 
 public:
     Wingos::IpcClient &raw_client() { return connection; }
+
     static core::Result<CompositorConnection> connect()
     {
         CompositorConnection conn{};

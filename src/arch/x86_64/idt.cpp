@@ -1,6 +1,7 @@
 #include "arch/x86_64/idt.hpp"
 
 #include "arch/x86_64/gdt.hpp"
+
 namespace arch::amd64
 {
 

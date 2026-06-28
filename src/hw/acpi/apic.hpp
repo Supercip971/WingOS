@@ -5,6 +5,7 @@
 #include "hw/acpi/rsdp.hpp"
 #include "libcore/result.hpp"
 #include "mcx/mcx.hpp"
+
 namespace hw::acpi
 {
 

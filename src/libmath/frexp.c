@@ -8,6 +8,7 @@ double frexp(double x, int *e)
         double d;
         uint64_t i;
     } y = {x};
+
     int ee = y.i >> 52 & 0x7ff;
 
     if (!ee)

@@ -10,11 +10,13 @@ double exp10(double x)
         1, 1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9,
         1e10, 1e11, 1e12, 1e13, 1e14, 1e15};
     double n, y = modf(x, &n);
+
     union
     {
         double f;
         uint64_t i;
     } u = {n};
+
     /* fabs(n) < 16 without raising invalid on nan */
     if ((u.i >> 52 & 0x7ff) < 0x3ff + 4)
     {

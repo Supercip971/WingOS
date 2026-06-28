@@ -11,6 +11,7 @@
 #include "scheduler.hpp"
 #include "wingos-headers/asset.h"
 #include "wingos-headers/ipc.h"
+
 struct KernelIpcServerRegistered
 {
     IpcServerHandle handle;
@@ -326,6 +327,7 @@ core::Result<IpcMessageServer> update_handle_from_client_to_server(AssetRef<IpcC
 
     return (message);
 }
+
 core::Result<IpcMessageClient> update_handle_from_server_to_client(AssetRef<IpcConnection> &connection, IpcMessageServer message)
 {
     if (connection.asset == nullptr)
@@ -480,6 +482,7 @@ core::Result<ReceivedIpcMessage> client_receive_message(AssetRef<IpcConnection> 
 
     return ("no message found");
 }
+
 core::Result<ReceivedIpcMessage> client_receive_response(AssetRef<IpcConnection> &connection, MessageHandle handle)
 {
     if (connection.asset == nullptr)

@@ -107,6 +107,7 @@ public:
 
         return substr(0, last);
     }
+
     constexpr Str sub_penultimate_char(char v) const
     {
         int penultimate = _len + 1;
@@ -187,6 +188,7 @@ public:
     {
         return _len == 0;
     }
+
     constexpr void copy_to(char *buffer, size_t buffer_len) const
     {
         size_t len = _len;

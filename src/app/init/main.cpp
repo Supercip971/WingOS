@@ -13,10 +13,11 @@ int main(int, char **)
     {
     }
 };
+
 int _main(StartupInfo *info)
 {
-
     mcx::MachineContext *context = &info->machine_context_optional;
+
     fmt::log$("hello world from init!");
 
     auto server = Wingos::Space::self().create_ipc_server(true);

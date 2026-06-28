@@ -12,7 +12,6 @@
 namespace fc
 {
 
-
 class Centered : public Widget
 {
 
@@ -20,8 +19,9 @@ public:
     core::SharedPtr<Widget> child;
 
     ~Centered() override = default;
+
     template <typename T>
-    Centered( T args)
+    Centered(T args)
     {
         child = (args);
     }
@@ -47,7 +47,7 @@ public:
     }
 
     template <typename T>
-    static core::SharedPtr<Widget> construct( T args)
+    static core::SharedPtr<Widget> construct(T args)
     {
         return core::SharedPtr<Centered>::make(args).template static_pointer_cast<Widget>();
     }

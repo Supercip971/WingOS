@@ -50,6 +50,7 @@ class NvmeController
         {
             return (tail + 1) >= count;
         }
+
         core::Result<T *> allocate()
         {
             T *res = (T *)(base_addr + tail * sizeof(T));
@@ -134,6 +135,7 @@ class NvmeController
 
         return queues;
     }
+
     // Queue<SubmissionQueueEntry> io_command_queue;
     // Queue<CompletionQueueEntry> io_complete_queue;
 
@@ -161,6 +163,7 @@ class NvmeController
 
         return mapped_nvme_addr_space.ptr();
     }
+
     uint32_t read(int reg)
     {
         void *base = mapped_nvme_addr_space.ptr();
@@ -169,6 +172,7 @@ class NvmeController
 
         return *offseted;
     }
+
     uint64_t read64(int reg)
     {
         void *base = mapped_nvme_addr_space.ptr();
@@ -186,6 +190,7 @@ class NvmeController
 
         *offseted = val;
     }
+
     void write64(int reg, uint64_t val)
     {
         void *base = mapped_nvme_addr_space.ptr();
@@ -280,6 +285,7 @@ class NvmeController
 
         return nvme_await_submit(&cmd, admin_queues);
     }
+
     core::Result<void> nvme_create_queues(NvmeDevice *dev, uint16_t queue_id)
     {
 
@@ -347,6 +353,7 @@ class NvmeController
 
 public:
     core::Vec<NvmeDevice> devices;
+
     core::Result<void> read_write_ptr(NvmeDevice *dev, bool is_write, uint64_t lba, uint16_t nlb, void *buffer, size_t buffer_len)
     {
         if (buffer_len == 0 || buffer == nullptr)

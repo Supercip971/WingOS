@@ -588,11 +588,13 @@ double exp2(double x)
 {
     double_t r, t, z;
     uint32_t ix, i0;
+
     union
     {
         double f;
         uint64_t i;
     } u = {x};
+
     union
     {
         uint32_t u;

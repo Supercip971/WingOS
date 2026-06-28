@@ -8,6 +8,7 @@ float fmodf(float x, float y)
         float f;
         uint32_t i;
     } ux = {x}, uy = {y};
+
     int ex = ux.i >> 23 & 0xff;
     int ey = uy.i >> 23 & 0xff;
     uint32_t sx = ux.i & 0x80000000;

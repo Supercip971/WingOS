@@ -14,6 +14,7 @@ class WStr : public MemAccess<char>
 {
 
     size_t _capacity = 0;
+
     static constexpr size_t compute_len(const char *str)
     {
         size_t i = 0;
@@ -91,6 +92,7 @@ public:
         other._capacity = 0;
         return *this;
     }
+
     WStr &operator=(const char *str)
     {
         if (this->_capacity > compute_len(str) + 1)
@@ -126,6 +128,7 @@ public:
         this->_len += 1;
         return true;
     }
+
     bool append(core::Str const &str)
     {
         if (str.len() == 0)
@@ -184,6 +187,7 @@ public:
         }
         return true;
     }
+
     bool operator==(const char *other) const
     {
 
@@ -195,8 +199,8 @@ public:
             }
         }
         return true;
-
     }
+
     bool operator==(core::Str const &other) const
     {
 
@@ -212,9 +216,8 @@ public:
             }
         }
         return true;
-
-
     }
+
     void release()
     {
         if (_data != nullptr)
@@ -225,6 +228,7 @@ public:
             _capacity = 0;
         }
     }
+
     ~WStr()
     {
         release();

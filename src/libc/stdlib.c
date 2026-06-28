@@ -1,25 +1,29 @@
 #include "stdlib.h"
 #include <stdio.h>
 #include <string.h>
-#include "liballoc/liballoc.h"
+
 #include "ctype.h"
+#include "liballoc/liballoc.h"
 
 void *malloc(size_t size)
 {
     return kmalloc(size);
 }
+
 void free(void *ptr)
 {
     kfree(ptr);
 }
+
 void *realloc(void *ptr, size_t size)
 {
     return krealloc(ptr, size);
 }
+
 void *calloc(size_t nmemb, size_t size)
 {
     size_t total_size = nmemb * size;
-    void* ptr = malloc(total_size);
+    void *ptr = malloc(total_size);
     if (ptr)
     {
         memset(ptr, 0, total_size);
@@ -31,14 +35,15 @@ void *calloc(size_t nmemb, size_t size)
 void abort(void)
 {
     printf("Aborted\n");
-    while (1){};
+    while (1)
+    {
+    };
 }
 
 long strtol(const char *nptr, char **endptr, int base)
 {
     return strtoll(nptr, endptr, base);
 }
-
 
 /*
  The  strtol()  function  converts the initial part of the string in nptr to a long
@@ -68,7 +73,7 @@ long strtol(const char *nptr, char **endptr, int base)
 */
 long long strtoll(const char *nptr, char **endptr, int base)
 {
-    if(base < 2 || base > 36)
+    if (base < 2 || base > 36)
     {
         if (endptr)
         {
@@ -76,7 +81,6 @@ long long strtoll(const char *nptr, char **endptr, int base)
         }
         return 0;
     }
-
 
     const char *s = nptr;
     while (isspace((unsigned char)*s))
@@ -94,26 +98,26 @@ long long strtoll(const char *nptr, char **endptr, int base)
         s++;
     }
 
-    if(*s == '0')
+    if (*s == '0')
     {
         s++;
-        if((*s == 'x' || *s == 'X') && (base == 0 || base == 16))
+        if ((*s == 'x' || *s == 'X') && (base == 0 || base == 16))
         {
             s++;
             base = 16;
         }
-        else if((*s == 'b' || *s == 'B') && (base == 0 || base == 2))
+        else if ((*s == 'b' || *s == 'B') && (base == 0 || base == 2))
         {
             s++;
             base = 2;
         }
-        else if(base == 0)
+        else if (base == 0)
         {
             base = 8;
         }
     }
 
-    if(base == 0)
+    if (base == 0)
     {
         base = 10;
     }
@@ -161,14 +165,13 @@ long long strtoll(const char *nptr, char **endptr, int base)
     }
 
     return sign * result;
-
 }
 
 #ifndef __ck_kernel__
 // FIXME: support exponent
-double strtod(const char* nptr, char** endptr)
+double strtod(const char *nptr, char **endptr)
 {
-    const char* s = nptr;
+    const char *s = nptr;
     while (isspace((unsigned char)*s))
         s++;
 
@@ -212,16 +215,15 @@ double strtod(const char* nptr, char** endptr)
     return sign * result;
 }
 
-
-double atof(const char* str)
+double atof(const char *str)
 {
-    char* endptr;
+    char *endptr;
     double val = strtod(str, &endptr);
     return val;
 }
 
 #endif
-int atoi(const char* str)
+int atoi(const char *str)
 {
     return (int)strtol(str, NULL, 10);
 }

@@ -43,6 +43,7 @@ core::Result<T *> syscall_check_ptr(kernel::Task *caller, uintptr_t ptr)
 
     return reinterpret_cast<T *>(ptr);
 }
+
 template <typename T>
 core::Result<T *> syscall_check_ptr(kernel::Task *caller, T *ptr)
 {
@@ -215,6 +216,7 @@ core::Result<size_t> ksyscall_space_create(kernel::Task *caller, SyscallSpaceCre
     args->returned_handle = asset.handle;
     return (uint64_t)asset.handle;
 }
+
 core::Result<size_t> ksyscall_mem_release(kernel::Task *caller, SyscallAssetRelease *release)
 {
     auto space = caller->space();
@@ -244,6 +246,7 @@ core::Result<size_t> ksyscall_mem_release(kernel::Task *caller, SyscallAssetRele
     space->asset_release(mem_asset);
     return 0ul;
 }
+
 core::Result<size_t> ksyscall_asset_release(kernel::Task *caller, SyscallAssetRelease *release)
 {
     if (release->asset_handle == 0 && release->addr != nullptr)
@@ -380,6 +383,7 @@ core::Result<size_t> ksyscall_create_server(kernel::Task *caller, SyscallIpcCrea
 
     return (uint64_t)asset.handle;
 }
+
 core::Result<size_t> ksyscall_create_pipe_connection(kernel::Task *caller, SyscallIpcConnect *create)
 {
 

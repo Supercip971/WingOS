@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gfx/color.hpp"
+
 namespace fc
 {
 class Theme
@@ -23,19 +24,17 @@ public:
         wgfx::CompositeColor text_color;
     } text;
 
-
-    static constexpr Theme wingos() {
+    static constexpr Theme wingos()
+    {
         Theme theme;
         theme.container = {
             .container_bg = wgfx::CONTAINER_FILL,
             .container_border = wgfx::CONTAINER_BORDER,
             .border_size = 2.f,
             .elevation = 0.f,
-            .radius = 0.015f
-        };
+            .radius = 0.015f};
         theme.text = {
-            .text_color = wgfx::SLATE_WHITE
-        };
+            .text_color = wgfx::SLATE_WHITE};
         return theme;
     }
 };

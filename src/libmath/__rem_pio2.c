@@ -51,6 +51,7 @@ static inline int medium(double x, double *y)
         double f;
         uint64_t i;
     } u = {x};
+
     double_t w, t, r, fn;
     uint32_t ix;
     int n, ex, ey;
@@ -94,6 +95,7 @@ int __rem_pio2(double x, double *y)
         double f;
         uint64_t i;
     } u = {x};
+
     double_t z;
     double tx[3], ty[2];
     uint32_t ix;

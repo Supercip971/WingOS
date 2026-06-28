@@ -5,6 +5,7 @@
 #include <libcore/mem/view.hpp>
 #include <stddef.h>
 #include <stdint.h>
+
 namespace core
 {
 
@@ -12,6 +13,7 @@ class Writer
 {
 public:
     Writer() = default;
+
     constexpr virtual Result<void> write(const char *data, size_t size)
     {
         (void)data;
@@ -25,6 +27,7 @@ public:
     {
         return write(view.data(), view.len());
     }
+
     template <Viewable T>
     constexpr Result<void> writeV(T view)
         requires(Viewable<T>)

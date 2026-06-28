@@ -7,6 +7,7 @@ float nextafterf(float x, float y)
         float f;
         uint32_t i;
     } ux = {x}, uy = {y};
+
     uint32_t ax, ay, e;
 
     if (isnan(x) || isnan(y))

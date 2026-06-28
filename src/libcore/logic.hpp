@@ -29,6 +29,7 @@ constexpr static inline auto min(auto a, auto b, auto c)
 {
     return min(a, min(b, c));
 }
+
 constexpr static inline auto abs(auto a)
 {
     return a < 0 ? -a : a;

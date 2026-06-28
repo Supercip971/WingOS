@@ -101,6 +101,7 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
         }
         return nullptr;
     }
+
     virtual float dpi() override
     {
         return SDL_GetWindowDisplayScale(window);
@@ -205,6 +206,7 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
         }
         return {};
     }
+
     wgfx::UEvent query_event() override
     {
         SDL_Event ev = {};
@@ -240,7 +242,7 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
                 mouse.at.x = ev.button.x * this->dpi();
                 mouse.at.y = ev.motion.y * this->dpi();
 
-                if(ev.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
+                if (ev.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
                 {
                     mouse.kind = wgfx::UEvent::Kind::MOUSE_CLICK;
                 }
@@ -249,7 +251,6 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
                     mouse.kind = wgfx::UEvent::Kind::MOUSE_RELEASE;
                 }
                 return mouse;
-
             }
         }
 

@@ -76,6 +76,7 @@ public:
         _last_write_acquire_line = line;
         return immediate;
     }
+
     bool write_acquire(const char *fn, int line)
     {
         // Do NOT use _waiters here. Setting _waiters blocks read_acquire()

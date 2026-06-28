@@ -46,6 +46,7 @@ int __rem_pio2f(float x, double *y)
         float f;
         uint32_t i;
     } u = {x};
+
     double tx[1], ty[1];
     double_t fn;
     uint32_t ix;

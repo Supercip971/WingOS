@@ -83,6 +83,7 @@ struct nonnull_arg_data
 };
 
 core::Lock locker = {};
+
 void dump_source_location(source_location *loc)
 {
     // In a real kernel, you would look up the file and line number in debug info.
@@ -102,6 +103,7 @@ static const char *__kinds[] = {
     "upcast of",
     "cast to virtual base of",
 };
+
 void dump_type_descriptor(type_descriptor *type)
 {
     fmt::err$("Type descriptor: {}", type->name);
@@ -137,6 +139,7 @@ extern "C" void __ubsan_handle_function_type_mismatch(type_mismatch_data *data,
     //  dump_source_location(&data->loc);
     //  fmt::err$("UBSan func type mismatch");
 }
+
 // #error https://wiki.osdev.org/Undefined_Behavior_Sanitization
 extern "C" void __ubsan_handle_type_mismatch(type_mismatch_data *data,
                                              unsigned long ptr __attribute__((unused)))
@@ -162,6 +165,7 @@ extern "C" void __ubsan_handle_type_mismatch(type_mismatch_data *data,
         dump_type_descriptor(data->type);
     }
 }
+
 extern "C" void __ubsan_handle_type_mismatch_v1(type_mismatch_data *data,
                                                 unsigned long ptr __attribute__((unused)))
 {
@@ -193,6 +197,7 @@ extern "C" void __ubsan_handle_type_mismatch_v1(type_mismatch_data *data,
     //  dump_source_location(&data->loc);
     //  fmt::err$("UBSan type mismatch");
 }
+
 extern "C" void __ubsan_handle_pointer_overflow(overflow_data *data,
                                                 unsigned long lhs __attribute__((unused)),
                                                 unsigned long rhs __attribute__((unused)))
@@ -201,6 +206,7 @@ extern "C" void __ubsan_handle_pointer_overflow(overflow_data *data,
     dump_source_location(&data->loc);
     fmt::err$("UBSan ptr overflow");
 }
+
 extern "C" void __ubsan_handle_add_overflow(overflow_data *data,
                                             unsigned long lhs __attribute__((unused)),
                                             unsigned long rhs __attribute__((unused)))
@@ -275,6 +281,7 @@ extern "C" void __ubsan_handle_builtin_unreachable(unreachable_data *data)
     {
     };
 }
+
 extern "C" void __ubsan_handle_unreachable(unreachable_data *data)
 {
     lock_scope$(locker);
@@ -309,6 +316,7 @@ extern "C" void __ubsan_handle_load_invalid_value(invalid_value_data *data,
     dump_source_location(&data->loc);
     fmt::err$("UBSan load invalid value");
 }
+
 extern "C" void __ubsan_handle_nonnull_return_v1(nonnull_arg_data *data)
 {
     lock_scope$(locker);

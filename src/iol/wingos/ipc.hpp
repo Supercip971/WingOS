@@ -4,6 +4,7 @@
 #include "iol/wingos/syscalls.h"
 #include "wingos-headers/ipc.h"
 #include "wingos-headers/syscalls.h"
+
 namespace Wingos
 
 {
@@ -11,6 +12,7 @@ namespace Wingos
 struct IpcConnection : public UAsset
 {
 };
+
 struct MessageServerReceived
 {
     IpcMessage received;
@@ -42,6 +44,7 @@ struct IpcServer : public UAsset
             }
         }
     }
+
     static IpcServer create(uint64_t space_handle, bool is_root = false)
     {
         IpcServer server = {};

@@ -34,6 +34,7 @@ float log10f(float x)
         float f;
         uint32_t i;
     } u = {x};
+
     float_t hfsq, f, s, z, R, w, t1, t2, dk, hi, lo;
     uint32_t ix;
     int k;

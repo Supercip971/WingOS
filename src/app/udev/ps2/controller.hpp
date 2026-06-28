@@ -134,6 +134,7 @@ public:
         command(PS2_CONTROLLER_CONFIG_READ);
         return data_read();
     }
+
     void config_write(uint8_t data)
     {
         command(PS2_CONTROLLER_CONFIG_WRITE);

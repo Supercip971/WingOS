@@ -6,6 +6,7 @@
 #include "protocols/init/init.hpp"
 #include "protocols/vfs/file.hpp"
 #include "wingos-headers/ipc.h"
+
 namespace prot
 {
 enum VfsMessageType
@@ -63,6 +64,7 @@ public:
 
         other.connected = false;
     }
+
     VfsConnection &operator=(VfsConnection &&other)
     {
         if (this != &other)
@@ -107,6 +109,7 @@ public:
 
         return {};
     }
+
     static core::Result<VfsConnection> connect(IpcServerHandle handle)
     {
         VfsConnection vfs_conn;

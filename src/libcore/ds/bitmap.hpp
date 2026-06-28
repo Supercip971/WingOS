@@ -25,10 +25,12 @@ public:
     {
         return _data[index / 8];
     }
+
     constexpr bool bit(size_t index) const
     {
         return (byte(index) & (1 << (index % 8)));
     }
+
     constexpr bool operator[](size_t index) const
     {
         return this->bit(index);

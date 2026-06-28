@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 #ifndef STBT_ASSERT
 #    define STBT_ASSERT(x) ((void)(x))
 #endif

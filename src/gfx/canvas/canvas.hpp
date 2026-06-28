@@ -8,6 +8,7 @@
 #include "gfx/text/utf-text.hpp"
 #include "libcore/ds/vec.hpp"
 #include "libcore/shared.hpp"
+
 namespace wgfx
 {
 
@@ -22,6 +23,7 @@ public:
     wgfx::GRect size;
     wgfx::GRect context_size;
     core::Vec<wgfx::GRect> scissor_stack;
+
     virtual ~Canvas() {}
 
     Canvas record()
@@ -121,6 +123,7 @@ public:
         (void)ctx;
         (void)cmd;
     };
+
     virtual void flush()
     {
         auto original_size = size;

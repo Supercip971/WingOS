@@ -26,6 +26,7 @@ double hypot(double x, double y)
         double f;
         uint64_t i;
     } ux = {x}, uy = {y}, ut;
+
     int ex, ey;
     double_t hx, lx, hy, ly, z;
 

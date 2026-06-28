@@ -8,6 +8,7 @@ double remquo(double x, double y, int *quo)
         double f;
         uint64_t i;
     } ux = {x}, uy = {y};
+
     int ex = ux.i >> 52 & 0x7ff;
     int ey = uy.i >> 52 & 0x7ff;
     int sx = ux.i >> 63;

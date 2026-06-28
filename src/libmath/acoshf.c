@@ -16,6 +16,7 @@ float acoshf(float x)
         float f;
         uint32_t i;
     } u = {x};
+
     uint32_t a = u.i & 0x7fffffff;
 
     if (a < 0x3f800000 + (1 << 23))

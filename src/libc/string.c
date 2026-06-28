@@ -1,6 +1,6 @@
 #include "string.h"
-#include <stdlib.h>
 #include <signal.h>
+#include <stdlib.h>
 #ifndef __clang__
 
 __attribute__((optimize("no-tree-loop-distribute-patterns")))
@@ -81,6 +81,7 @@ char *strchr(const char *s, int c)
     }
     return NULL;
 }
+
 char *strrchr(const char *s, int c)
 {
     const char *last = NULL;
@@ -106,6 +107,7 @@ char *strerror(int errnum)
 }
 
 static char *save_ptr = NULL;
+
 char *strtok(char *__restrict str, const char *__restrict delim)
 {
     return strtok_r(str, delim, &save_ptr);
@@ -114,9 +116,9 @@ char *strtok(char *__restrict str, const char *__restrict delim)
 char *strtok_r(char *__restrict str, const char *__restrict delim,
                char **__restrict saveptr)
 {
-    char* str_b = str ? str : *saveptr;
+    char *str_b = str ? str : *saveptr;
 
-    if(!str_b)
+    if (!str_b)
     {
         return NULL;
     }
@@ -147,8 +149,8 @@ char *strtok_r(char *__restrict str, const char *__restrict delim,
     }
 
     // Find end of token
-    char* bprk = strpbrk(str_b, delim);
-    if(bprk)
+    char *bprk = strpbrk(str_b, delim);
+    if (bprk)
     {
         *bprk = '\0';
         *saveptr = bprk + 1;
@@ -163,13 +165,13 @@ char *strtok_r(char *__restrict str, const char *__restrict delim,
 
 char *strpbrk(const char *s, const char *accept)
 {
-    while(*s)
+    while (*s)
     {
         const char *a = accept;
-        
-        while(*a)
+
+        while (*a)
         {
-            if(*s == *a)
+            if (*s == *a)
             {
                 return (char *)s;
             }
@@ -180,23 +182,25 @@ char *strpbrk(const char *s, const char *accept)
 
     return NULL;
 }
-char* strncpy( char * __restrict dest, const char * __restrict src, size_t n)
+
+char *strncpy(char *__restrict dest, const char *__restrict src, size_t n)
 {
     size_t i;
     for (i = 0; i < n && src[i] != '\0'; i++)
     {
         dest[i] = src[i];
     }
-    for ( ; i < n; i++)
+    for (; i < n; i++)
     {
         dest[i] = '\0';
     }
     return dest;
 }
-char* strdup(const char* s)
+
+char *strdup(const char *s)
 {
     size_t len = strlen(s);
-    char* dup = (char*)malloc(len + 1);
+    char *dup = (char *)malloc(len + 1);
     if (dup == NULL)
     {
         return NULL;
@@ -204,9 +208,10 @@ char* strdup(const char* s)
     memcpy(dup, s, len + 1);
     return dup;
 }
-int strcmp(const char* s1, const char* s2)
+
+int strcmp(const char *s1, const char *s2)
 {
-    while(*s1 && (*s1 == *s2))
+    while (*s1 && (*s1 == *s2))
     {
         s1++;
         s2++;
@@ -214,8 +219,7 @@ int strcmp(const char* s1, const char* s2)
     return (*s1 - *s2);
 }
 
-
-int strncmp(const char* s1, const char* s2, size_t n)
+int strncmp(const char *s1, const char *s2, size_t n)
 {
     size_t i;
     for (i = 0; i < n; i++)
@@ -230,22 +234,21 @@ int strncmp(const char* s1, const char* s2, size_t n)
         }
     }
     return 0;
-}    
+}
 
-
-const char* strstr(const char* haystack, const char* needle)
+const char *strstr(const char *haystack, const char *needle)
 {
     if (*needle == '\0')
     {
         return 0;
     }
 
-    const char* h = haystack;
-    const char* n = needle;
+    const char *h = haystack;
+    const char *n = needle;
 
     while (*h)
     {
-        const char* h_sub = h;
+        const char *h_sub = h;
         n = needle;
 
         while (*h_sub && *n && (*h_sub == *n))

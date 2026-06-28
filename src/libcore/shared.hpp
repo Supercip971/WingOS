@@ -28,6 +28,7 @@ public:
         {
         }
     };
+
     ControlBlock *control_block;
 
     template <typename T2>
@@ -53,11 +54,13 @@ public:
     }
 
     explicit operator bool() const { return control_block != nullptr; }
+
     SharedPtr()
         : control_block(nullptr)
 
     {
     }
+
     SharedPtr(SharedPtr &&val)
         : control_block(val.control_block)
     {

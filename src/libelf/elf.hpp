@@ -131,6 +131,7 @@ public:
     {
         return PhysRange(toPhys(_range.start()), toPhys(_range.end()));
     }
+
     core::Result<void> verify()
     {
         if (_header.magic[0] != 0x7f || _header.magic[1] != 'E' ||

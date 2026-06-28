@@ -31,11 +31,13 @@ static const float
 float expm1f(float x)
 {
     float_t y, hi, lo, c, t, e, hxs, hfx, r1, twopk;
+
     union
     {
         float f;
         uint32_t i;
     } u = {x};
+
     uint32_t hx = u.i & 0x7fffffff;
     int k, sign = u.i >> 31;
 

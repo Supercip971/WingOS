@@ -7,6 +7,7 @@
 #include "gfx/canvas/cmd.hpp"
 #include "gfx/color.hpp"
 #include "libcore/fmt/log.hpp"
+
 namespace wgfx
 {
 class OpenglCanvas : public Canvas
@@ -47,6 +48,7 @@ public:
         glClearColor(color.r, color.g, color.b, color.a);
         glClear(GL_COLOR_BUFFER_BIT);
     }
+
     virtual void apply(DrawContext const &ctx, RenderCommand const &cmd) override
     {
         (void)ctx;

@@ -47,6 +47,7 @@ struct RegisteredFs
     char name[80];
     prot::DiskFsManagerConnection endpoint;
 };
+
 core::Vec<RegisteredDevice> registered_services{};
 core::Vec<RegisteredFs> registered_fs{};
 size_t mounted_devices_count = 0;

@@ -16,6 +16,7 @@
 #include "math/align.hpp"
 #include "math/range.hpp"
 #include "mem.hpp"
+
 struct PmmSection
 {
     math::Range<uintptr_t> range;
@@ -48,6 +49,7 @@ struct Pmm
 
         return math::alignUp(size, page_size_byte);
     }
+
     static size_t pmm_section_count(const mcx::MachineContext *context)
     {
         return core::count(context->_memory_map.sub(context->_memory_map_count),

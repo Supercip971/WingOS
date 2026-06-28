@@ -84,16 +84,19 @@ static const double exp2ft[TBLSIZE] = {
 float exp2f(float x)
 {
     double_t t, r, z;
+
     union
     {
         float f;
         uint32_t i;
     } u = {x};
+
     union
     {
         double f;
         uint64_t i;
     } uk;
+
     uint32_t ix, i0, k;
 
     /* Filter out exceptional cases. */

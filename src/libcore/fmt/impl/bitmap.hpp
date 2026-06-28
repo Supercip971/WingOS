@@ -7,6 +7,7 @@
 #include "libcore/type/trait.hpp"
 
 #define flags fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO
+
 template <core::IsConvertibleTo<core::Bitmap> T, core::Writable Targ>
 constexpr core::Result<void> format_v(Targ &target, T &value)
 {
@@ -31,4 +32,5 @@ constexpr core::Result<void> format_v(Targ &target, T &value)
 
     return {};
 } // namespace fmt
+
 #undef flags

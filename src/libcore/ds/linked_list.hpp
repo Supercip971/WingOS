@@ -7,6 +7,7 @@
 #include "libcore/optional.hpp"
 #include "libcore/type-utils.hpp"
 #include "libcore/type/trait.hpp"
+
 namespace core
 {
 
@@ -29,7 +30,9 @@ public:
         Node *_ptr = nullptr;
 
         Iterator() {};
+
         Iterator(Node *ptr) { _ptr = ptr; };
+
         constexpr bool operator==(const Iterator &other)
         {
             return _ptr == other._ptr;

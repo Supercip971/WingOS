@@ -37,6 +37,7 @@ double cbrt(double x)
         double f;
         uint64_t i;
     } u = {x};
+
     double_t r, s, t, w;
     uint32_t hx = u.i >> 32 & 0x7fffffff;
 

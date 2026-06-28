@@ -124,7 +124,7 @@ size_t fread(void *__restrict ptr, size_t size, size_t n, FILE *__restrict file)
             size_t available = file->end - file->cursor;
             size_t to_read = (total - done < available) ? (total - done) : available;
 
-            fmt::log$("from size: {} to reading {} + {}", size*n, to_read, done);
+            fmt::log$("from size: {} to reading {} + {}", size * n, to_read, done);
             auto read_result = file->file->read(dst + done, file->cursor, to_read);
             if (!read_result.is_error())
             {
@@ -213,12 +213,14 @@ FILE *fopen(const char *filename, const char *mode)
     f->cursor = 0;
     return f;
 }
+
 int remove(const char *filename)
 {
     fmt::warn$("remove not implemented yet: {}", filename);
     // not implemented
     return 0;
 }
+
 int rename(const char *old_filename, const char *new_filename)
 {
     fmt::warn$("rename not implemented yet: {} {}", old_filename, new_filename);
@@ -239,6 +241,7 @@ void fflush(FILE *stream)
     // no buffering, so nothing to do
     (void)stream;
 }
+
 int mkdir(const char *pathname, unsigned int mode)
 {
     fmt::warn$("mkdir not implemented yet: {} {}", pathname, mode);
@@ -291,6 +294,7 @@ int fclose(FILE *stream)
     }
     }
 }
+
 int fseek(FILE *stream, long offset, int origin)
 {
     if (stream == nullptr)
@@ -314,7 +318,7 @@ int fseek(FILE *stream, long offset, int origin)
         case SEEK_SET:
         {
             stream->cursor = offset;
-            if(stream->cursor >= stream->end)
+            if (stream->cursor >= stream->end)
             {
                 stream->eof_flag = 1;
             }
@@ -360,6 +364,7 @@ int fseek(FILE *stream, long offset, int origin)
     }
     }
 }
+
 long ftell(FILE *stream)
 {
     if (stream == nullptr)

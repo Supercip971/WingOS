@@ -8,6 +8,7 @@ float atanhf(float x)
         float f;
         uint32_t i;
     } u = {.f = x};
+
     unsigned s = u.i >> 31;
     float_t y;
 

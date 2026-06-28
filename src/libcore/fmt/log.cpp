@@ -23,6 +23,7 @@ void log_release()
 {
     _log_lock.force_unlock();
 }
+
 void provide_log_target(core::Writer *writer)
 {
     target = writer;
@@ -34,6 +35,7 @@ core::Writer *log_target()
 }
 
 } // namespace fmt
+
 void core::debug_provide_info(const char *info, const char *data)
 {
     fmt::log$("{} {}", info, data);

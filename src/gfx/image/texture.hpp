@@ -13,6 +13,7 @@ enum FilterKind
     NEAREST,
     LINEAR,
 };
+
 class Texture
 {
 
@@ -28,7 +29,6 @@ public:
 
     Texture(const core::SharedPtr<Image01> &source) : _source(source) {}
 
-
     Texture(Texture &&) = default;
     Texture &operator=(Texture &&) = default;
 
@@ -39,7 +39,7 @@ public:
         float x0 = (x * _source->width());
         float y0 = (y * _source->height());
 
-        if(x0 == _source->width() || y0 == _source->height())
+        if (x0 == _source->width() || y0 == _source->height())
             return Rgba01(0, 0, 0, 0);
 
         long x0l = static_cast<long>(x0);

@@ -9,6 +9,7 @@
 #include "gfx/text/font.hpp"
 #include "gfx/text/utf-text.hpp"
 #include "libcore/shared.hpp"
+
 namespace wgfx
 {
 
@@ -17,7 +18,6 @@ enum PaintType
     PAINT_MODE_FILLED,
     PAINT_MODE_STROKE
 };
-
 
 struct Painter
 {
@@ -42,6 +42,7 @@ struct Painter
     };
 
     constexpr Painter() {}
+
     constexpr Painter(CompositeColor comp_color)
     {
         color = comp_color;
@@ -76,7 +77,6 @@ struct Painter
         a.noise = noise;
         return a;
     };
-
 };
 enum class RenderCommandKind
 {
@@ -148,6 +148,7 @@ struct RenderCommand
 public:
     RenderCommandKind kind;
     wgfx::GRect constraint;
+
     union
     {
 

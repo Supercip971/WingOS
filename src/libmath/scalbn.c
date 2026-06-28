@@ -8,6 +8,7 @@ double scalbn(double x, int n)
         double f;
         uint64_t i;
     } u;
+
     double_t y = x;
 
     if (n > 1023)

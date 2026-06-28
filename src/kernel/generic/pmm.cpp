@@ -7,15 +7,18 @@
 #include "mcx/mcx.hpp"
 #include "pmm.hpp"
 static Pmm instance = {};
+
 Pmm &Pmm::the()
 {
     return instance;
 }
+
 core::Result<void> Pmm::initialize(const mcx::MachineContext *context)
 {
     instance = try$(Pmm::create(context));
     return {};
 }
+
 core::Result<bool> Pmm::query_usage(PhysAddr addr)
 {
     lock_scope$(pmm_lock);
@@ -184,6 +187,7 @@ core::Result<void> Pmm::own(PhysAddr addr, Pages count)
 
     return ("Could not own memory");
 }
+
 core::Result<void> Pmm::release(PhysAddr addr, Pages count)
 {
     lock_scope$(pmm_lock);

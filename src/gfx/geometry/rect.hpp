@@ -2,6 +2,7 @@
 
 #include "gfx/geometry/vec2.hpp"
 #include "libcore/logic.hpp"
+
 namespace wgfx
 {
 struct GRect
@@ -28,10 +29,12 @@ struct GRect
 
         return new_rect;
     }
+
     constexpr void width(float value)
     {
         end.x = start.x + value;
     }
+
     constexpr void height(float value)
     {
         end.y = start.y + value;
@@ -41,6 +44,7 @@ struct GRect
     {
         return end.x - start.x;
     }
+
     constexpr float height() const
     {
         return end.y - start.y;
@@ -78,6 +82,7 @@ struct GRect
             core::max(end.x, other.end.x),
             core::max(end.y, other.end.y));
     }
+
     Vec2 contained(const Vec2 &p) const
     {
         return Vec2(
@@ -88,16 +93,19 @@ struct GRect
     constexpr GRect(float _x, float _y, float _ex, float _ey) : start(_x, _y), end(_ex, _ey) {}
 
     constexpr GRect(const Vec2 &_start, const Vec2 &_end) : start(_start), end(_end) {}
+
     constexpr GRect() {};
 
     static constexpr GRect from_start_end(Vec2 start, Vec2 end)
     {
         return GRect(start, end);
     }
+
     static constexpr GRect from_start_end(float sx, float sy, float ex, float ey)
     {
-        return GRect(sx, sy, ex , ey);
+        return GRect(sx, sy, ex, ey);
     }
+
     static constexpr GRect from_size(float sx, float sy, float width, float height)
     {
         return GRect(sx, sy, sx + width, sy + height);
@@ -107,6 +115,7 @@ struct GRect
     {
         return start == other.start && end == other.end;
     }
+
     bool operator!=(const GRect &other) const
     {
         return start != other.start || end != other.end;
@@ -116,6 +125,7 @@ struct GRect
     {
         return GRect(start + offset, end + offset);
     }
+
     GRect operator-(const Vec2 &offset) const
     {
         return GRect(start - offset, end - offset);
@@ -127,6 +137,7 @@ struct GRect
         end += offset;
         return *this;
     }
+
     GRect operator-=(const Vec2 &offset)
     {
         start -= offset;

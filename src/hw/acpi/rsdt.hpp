@@ -10,6 +10,7 @@
 #include "libcore/result.hpp"
 #include "libcore/str.hpp"
 #include "libcore/type/trait.hpp"
+
 namespace hw::acpi
 {
 
@@ -59,6 +60,7 @@ struct [[gnu::packed]] SRAT
     uint8_t data[];
     static constexpr core::Str signature = "SRAT";
 };
+
 // Maybe I'm over-engineering this
 // It's an excuse to explore further more concepts
 // And avoiding to use virtual functions

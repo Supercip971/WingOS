@@ -8,6 +8,7 @@ int __fpclassifyf(float x)
         float f;
         uint32_t i;
     } u = {x};
+
     int e = u.i >> 23 & 0xff;
     if (!e)
         return u.i << 1 ? FP_SUBNORMAL : FP_ZERO;

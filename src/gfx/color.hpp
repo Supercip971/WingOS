@@ -5,6 +5,7 @@
 
 #include "libcore/io/writer.hpp"
 #include "libcore/str.hpp"
+
 namespace wgfx
 {
 
@@ -17,6 +18,7 @@ public:
     uint8_t a;
 
     constexpr Rgba8() : b(0), g(0), r(0), a(255) {}
+
     constexpr Rgba8(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t _a = 255) : b(_b),
                                                                             g(_g),
                                                                             r(_r),
@@ -121,6 +123,7 @@ constexpr static inline float fast_cos(float x)
     x += (.225) * x * (rt_abs(x) - (1.));
     return x;
 }
+
 constexpr static inline float fast_sin(float x)
 {
     return fast_cos(x - M_PI_2);
@@ -159,7 +162,6 @@ public:
     float a_green_rediness;
     float b_blue_yelowness;
     float transparency;
-
 
     constexpr CompositeColor transparentize(float alpha) const
     {
@@ -247,7 +249,6 @@ static constexpr CompositeColor CONTAINER_FILL = CompositeColor::fromOklch(0.249
 static constexpr CompositeColor CONTAINER_BORDER = CompositeColor::fromOklch(0.5086, 0.006, 247.95);
 static constexpr CompositeColor CONTAINER_TEXT = CompositeColor::fromOklch(0.9642, 0.005, 245.9);
 
-
 template <typename T>
 concept ColorChannelable = requires(T const color) {
     {
@@ -263,6 +264,7 @@ concept ColorChannelable = requires(T const color) {
         color.a
     };
 };
+
 template <ColorChannelable C, core::Writable Targ>
 constexpr core::Result<int> format_v(Targ &target, C const &value)
 {
@@ -277,6 +279,7 @@ constexpr core::Result<int> format_v(Targ &target, C const &value)
     target.write(core::Str(" }"));
     return 0;
 }
+
 template <ColorChannelable C, core::Writable Targ>
 constexpr core::Result<int> format_v(Targ &target, fmt::FormatFlags<C> color)
 {
@@ -294,4 +297,5 @@ constexpr core::Result<int> format_v(Targ &target, fmt::FormatFlags<C> color)
 }
 
 }; // namespace wgfx
+
 ; // namespace wgfx

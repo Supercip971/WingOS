@@ -12,6 +12,7 @@
 #include "libcore/fmt/log.hpp"
 #include "libcore/logic.hpp"
 #include "libcore/shared.hpp"
+
 namespace wgfx
 {
 
@@ -40,6 +41,7 @@ public:
     {
         buffer[x + y * width] = col;
     }
+
     inline constexpr void blend(long x, long y, Rgba8 col, float factor)
     {
         buffer[x + y * width].blend(col, factor);
@@ -50,6 +52,7 @@ public:
 
         buffer[x + y * width].blendGamma(col, factor);
     }
+
     inline constexpr void blendGammaChecked(long x, long y, Rgba8 col, float factor)
     {
 
@@ -58,6 +61,7 @@ public:
             buffer[x + y * width].blendGamma(col, factor);
         }
     }
+
     inline constexpr void blendChecked(long x, long y, Rgba8 col, float factor)
     {
         if (x >= size.start.x && x < (long)size.end.x && y >= size.start.y && y < (long)size.end.y)
@@ -104,6 +108,7 @@ public:
     void contour(ContourCommand const &cmd);
 
     void textFlat(TextCommand const &cmd);
+
     void text(TextCommand const &cmd)
     {
         textFlat(cmd);

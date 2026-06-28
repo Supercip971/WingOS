@@ -121,11 +121,13 @@ static const double
 double expm1(double x)
 {
     double_t y, hi, lo, c, t, e, hxs, hfx, r1, twopk;
+
     union
     {
         double f;
         uint64_t i;
     } u = {x};
+
     uint32_t hx = u.i >> 32 & 0x7fffffff;
     int k, sign = u.i >> 63;
 

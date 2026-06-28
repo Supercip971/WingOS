@@ -5,6 +5,7 @@
 #include "kernel/generic/kernel.hpp"
 #include "libcore/alloc/alloc.hpp"
 #include "libcore/fmt/log.hpp"
+
 namespace arch::amd64
 {
 
@@ -21,6 +22,7 @@ Gdtr *load_default_gdt()
 
 extern "C" void gdtr_install(Gdtr *gdtr);
 extern "C" void tss_update();
+
 void gdt_use()
 {
     gdtr_install(CpuImpl::currentImpl()->gdtr());

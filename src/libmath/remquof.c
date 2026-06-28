@@ -8,6 +8,7 @@ float remquof(float x, float y, int *quo)
         float f;
         uint32_t i;
     } ux = {x}, uy = {y};
+
     int ex = ux.i >> 23 & 0xff;
     int ey = uy.i >> 23 & 0xff;
     int sx = ux.i >> 31;

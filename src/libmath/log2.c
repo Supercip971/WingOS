@@ -38,6 +38,7 @@ double log2(double x)
         double f;
         uint64_t i;
     } u = {x};
+
     double_t hfsq, f, s, z, R, w, t1, t2, y, hi, lo, val_hi, val_lo;
     uint32_t hx;
     int k;

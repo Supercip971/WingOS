@@ -24,6 +24,7 @@
 union ldshape
 {
     long double f;
+
     struct
     {
         uint64_t m;
@@ -34,6 +35,7 @@ union ldshape
 union ldshape
 {
     long double f;
+
     struct
     {
         uint64_t lo;
@@ -41,6 +43,7 @@ union ldshape
         uint16_t top;
         uint16_t se;
     } i;
+
     struct
     {
         uint64_t lo;
@@ -51,6 +54,7 @@ union ldshape
 union ldshape
 {
     long double f;
+
     struct
     {
         uint16_t se;
@@ -58,6 +62,7 @@ union ldshape
         uint32_t mid;
         uint64_t lo;
     } i;
+
     struct
     {
         uint64_t hi;

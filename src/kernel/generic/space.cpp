@@ -41,6 +41,7 @@ AssetRef<Space> Space::create_root()
     root_space->assets[0].asset->ref_count.store(99999, std::memory_order_relaxed);
     return *(AssetRef<Space> *)&root_space->assets[0];
 }
+
 // AssetRef is now defined (and fully implemented) in `asset_types.hpp`.
 // Keep `space.cpp` focused on Space logic to avoid ODR violations from duplicate
 // template out-of-line definitions.
@@ -125,6 +126,7 @@ core::Result<AssetRef<Space>> Space::create_space([[maybe_unused]] uint64_t flag
 
     return ptr;
 }
+
 // FIXME: this is not safe, because it does not check if the space exists in the parent space
 core::Result<AssetRef<Space>> Space::global_space_by_handle(uint64_t handle)
 {

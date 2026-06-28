@@ -4,6 +4,7 @@
 #include "arch/x86_64/simd.hpp"
 
 #include "kernel/generic/context.hpp"
+
 namespace arch::amd64
 {
 
@@ -15,6 +16,7 @@ public:
     StackFrame frame;
 
     x86_64::SimdContext simd_context;
+
     void _user_stack_addr(uintptr_t addr)
     {
         frame.rsp = addr;

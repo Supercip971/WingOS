@@ -9,6 +9,7 @@
 #include "libcore/enum-op.hpp"
 #include "libcore/result.hpp"
 #include "libcore/type/trait.hpp"
+
 namespace hw::acpi
 {
 
@@ -77,6 +78,7 @@ union LAPICInterruptCommandRegister
 {
 
     uint32_t raw;
+
     struct [[gnu::packed]]
     {
         uint8_t vector;
@@ -95,6 +97,7 @@ union LAPICInterruptCommandRegister
 union LAPICLocalVectorTable
 {
     uint32_t raw;
+
     struct [[gnu::packed]]
     {
         uint8_t vector;
@@ -109,6 +112,7 @@ union LAPICLocalVectorTable
         uint32_t _reserved2 : 14;
     } val;
 };
+
 // Intel volume 3A 12.5
 
 enum LAPICTimerDivision : uint8_t
@@ -127,6 +131,7 @@ class Lapic
 {
 
     VirtAddr mapped_registers;
+
     Lapic(VirtAddr lapic_addr) : mapped_registers(lapic_addr) {}
 
     size_t _timer_tick_in_16ms();

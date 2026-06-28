@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 struct ReceivedIpcMessage;
+
 namespace kernel
 {
 
@@ -84,6 +85,7 @@ struct BlockEvent
         }
     }
 };
+
 BlockEvent create_block(BlockEvent::Type type, uintptr_t data = 0);
 
 BlockEvent create_mutex_block(BlockMutex *msg);

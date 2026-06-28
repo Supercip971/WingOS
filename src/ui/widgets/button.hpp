@@ -20,6 +20,7 @@ namespace fc
 {
 
 using callbackType = decltype([]() {});
+
 struct ButtonParams
 {
     wgfx::CompositeColor _bg = wgfx::CONTAINER_FILL;
@@ -81,6 +82,7 @@ public:
 
     Callback _on_click = nullptr;
     ~Button() override = default;
+
     template <typename T>
     Button(ButtonParams parms, Callback callback, T args)
     {
@@ -91,6 +93,7 @@ public:
         _parms = parms;
         child = (args);
     }
+
     wgfx::GRect layout(UiContext const &ctx, wgfx::GRect constraint) override
     {
         auto c2 = constraint;
@@ -100,7 +103,6 @@ public:
         child->relayout(ctx, c2.with_size(csize));
         return constraint.with_size(constraint.size() + wgfx::Vec2(0, this->max_elevation));
     }
-
 
     wgfx::GRect layout_with_elevation() const
     {
@@ -136,6 +138,7 @@ public:
         }
         return false;
     }
+
     virtual wgfx::Vec2 preferred_size(wgfx::Vec2 constraint) const override
     {
 
@@ -160,7 +163,7 @@ public:
         canvas.drawRect(bu, paint, this->_parms._radius);
 
         paint.type = wgfx::PaintType::PAINT_MODE_STROKE;
-        paint.stroke.width =  2.f * ctx.dpi;
+        paint.stroke.width = 2.f * ctx.dpi;
         paint.color = this->_parms._border;
 
         canvas.drawRect(bu, paint, this->_parms._radius);
@@ -177,7 +180,7 @@ public:
     {
         (void)v;
         return child;
-    ;
+        ;
     };
 };
 

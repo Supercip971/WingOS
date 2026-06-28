@@ -7,6 +7,7 @@
 #include <libcore/fmt/fmt.hpp>
 #include <libcore/io/writer.hpp>
 #include <libcore/str.hpp>
+
 namespace fmt
 {
 

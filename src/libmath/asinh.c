@@ -10,6 +10,7 @@ double asinh(double x)
         double f;
         uint64_t i;
     } u = {.f = x};
+
     unsigned e = u.i >> 52 & 0x7ff;
     unsigned s = u.i >> 63;
 

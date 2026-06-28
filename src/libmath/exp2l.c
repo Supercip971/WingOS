@@ -331,6 +331,7 @@ long double exp2l(long double x)
     int e = u.i.se & 0x7fff;
     long double r, z;
     uint32_t i0;
+
     union
     {
         uint32_t u;
@@ -704,6 +705,7 @@ exp2l(long double x)
     int e = u.i.se & 0x7fff;
     long double r, z, t;
     uint32_t i0;
+
     union
     {
         uint32_t u;

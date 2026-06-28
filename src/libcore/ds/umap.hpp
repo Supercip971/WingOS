@@ -10,6 +10,7 @@
 #include "libcore/type-utils.hpp"
 #include "libcore/type/trait.hpp"
 #include "libcore/unreachable.h"
+
 namespace core
 {
 
@@ -31,14 +32,17 @@ static inline constexpr Hash hash(core::Str const &str_hash)
     }
     return hash;
 }
-static inline constexpr Hash hash(const char* str_hash)
+
+static inline constexpr Hash hash(const char *str_hash)
 {
     return hash(core::Str(str_hash));
 }
+
 static inline constexpr Hash hash(core::WStr const &str_hash)
 {
     return hash(str_hash.view());
 }
+
 template <typename K>
 concept Hashable =
 
@@ -58,6 +62,7 @@ class UMap
         KeyT key;
         ValueT value;
     };
+
     core::Vec<core::Vec<BucketEntry>> _buckets;
 
     template <IsComparable<KeyT> T>
@@ -76,6 +81,7 @@ class UMap
         size_t _bucket_ingroup;
 
         UMapIterator() = default;
+
         UMapIterator(UMap *_map) : map(_map), current(nullptr), _bucket_group(0), _bucket_ingroup(0)
         {
             if (map->_buckets.len() == 0)
@@ -99,6 +105,7 @@ class UMap
             it.current = nullptr;
             return it;
         }
+
         UMapIterator &operator++()
         {
             if (current == nullptr)
@@ -157,9 +164,10 @@ class UMap
 
 public:
     UMap() {};
+
     UMap(UMap &&other) : _buckets(core::move(other._buckets)), _count(other._count) {}
 
-    template<IsConvertibleTo<KeyT> KeyT2, IsConvertibleTo<ValueT> ValueT2>
+    template <IsConvertibleTo<KeyT> KeyT2, IsConvertibleTo<ValueT> ValueT2>
     void insert(KeyT2 &&key, ValueT2 &&value)
     {
         if (_buckets.len() == 0)
@@ -184,9 +192,9 @@ public:
 #endif
         _buckets[h].push((BucketEntry){
             (decltype(BucketEntry::key))
-            core::forward<decltype(key)>(key),
-(decltype(BucketEntry::value))
-            core::forward<decltype(value)>(value)});
+                core::forward<decltype(key)>(key),
+            (decltype(BucketEntry::value))
+                core::forward<decltype(value)>(value)});
         _count++;
         maybe_rehash();
     }
@@ -286,6 +294,7 @@ public:
         }
         return false;
     }
+
     core::Optional<ValueT &> find(KeyT const &key)
     {
         if (_buckets.len() == 0)
@@ -330,6 +339,5 @@ public:
         return UMapIterator::end();
     }
 };
-
 
 } // namespace core

@@ -7,11 +7,13 @@
 #include "libcore/fmt/log.hpp"
 
 #define USERSPACE_VIRT_BASE 0x0000002000000000
+
 namespace Wingos
 {
 struct Space
 {
     uint64_t handle; // the handle of the space
+
     static Space self()
     {
         Space space = {};

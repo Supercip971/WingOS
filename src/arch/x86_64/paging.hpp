@@ -24,33 +24,43 @@ struct [[gnu::packed]] Page
     uint64_t _address : 52;
 
     constexpr PhysAddr address() const { return PhysAddr(_address << 12); }
+
     constexpr void address(PhysAddr addr) { _address = addr._addr >> 12; }
 
     bool present() const { return _present; }
+
     void present(bool p) { _present = p; }
 
     bool writeable() const { return _writeable; }
+
     void writeable(bool w) { _writeable = w; }
 
     bool user() const { return _user; }
+
     void user(bool u) { _user = u; }
 
     bool write_through() const { return _write_through; }
+
     void write_through(bool wt) { _write_through = wt; }
 
     bool cache_disabled() const { return _cache_disabled; }
+
     void cache_disabled(bool cd) { _cache_disabled = cd; }
 
     bool accessed() const { return _accessed; }
+
     void accessed(bool a) { _accessed = a; }
 
     bool dirty() const { return _dirty; }
+
     void dirty(bool d) { _dirty = d; }
 
     bool huge_page() const { return _huge_page; }
+
     void huge_page(bool hp) { _huge_page = hp; }
 
     bool global() const { return _global; }
+
     void global(bool g) { _global = g; }
 };
 

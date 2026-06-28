@@ -67,9 +67,11 @@ class VmmSpace
 
 public:
     PhysAddr self_addr() const { return toPhys(VirtAddr((uintptr_t)self())); }
+
     void const *self() const { return _self; }
 
     void *self() { return _self; }
+
     static VmmSpace &kernel_page_table();
 
     static core::Result<VmmSpace> kernel_initialize(const mcx::MachineContext *ctx);

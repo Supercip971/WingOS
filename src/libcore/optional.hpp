@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "libcore/type/trait.hpp"
+
 namespace core
 {
 
@@ -17,6 +18,7 @@ union Storage
     [[gnu::aligned(alignof(T))]] uint8_t _data[sizeof(T)];
 
     T _val;
+
     constexpr const T *as_ptr() const
     {
         return (T const *)(_data);
@@ -33,10 +35,12 @@ union Storage
     }
 
     constexpr Storage() {}
+
     constexpr Storage(const T &value)
         : _val(value)
     {
     }
+
     constexpr Storage(T &&value bounded$)
         : _val(core::move(value))
     {
@@ -58,6 +62,7 @@ union Storage
     {
         value().~T();
     }
+
     constexpr ~Storage()
     {
     }
@@ -66,6 +71,7 @@ union Storage
     {
         return *as_ptr();
     }
+
     constexpr T const &value() const bounded$
     {
         return *as_ptr();
@@ -105,7 +111,6 @@ class NoneValue
 public:
 };
 
-
 constexpr static inline NoneValue novalue = {};
 
 template <class T>
@@ -119,7 +124,9 @@ public:
 
 public:
     constexpr Optional() : _contain_value(false) {}
+
     constexpr Optional(const Type &value) : _value(value), _contain_value(true) {}
+
     constexpr Optional(Type &&value) : _value(core::move(value)), _contain_value(true) {}
 
     explicit constexpr Optional([[maybe_unused]] NoneValue v) : _contain_value(false) {};
@@ -131,6 +138,7 @@ public:
             new (&_value) Storage<Type>(other._value);
         }
     }
+
     constexpr Optional(Optional &&other) : _contain_value(other._contain_value)
     {
         if (other._contain_value)
@@ -252,11 +260,13 @@ public:
     {
         return &_value.value();
     }
+
     constexpr Type take()
     {
         _contain_value = false;
         return core::move(_value.value());
     }
+
     constexpr Type &unwrap()
     {
         return (_value.value());

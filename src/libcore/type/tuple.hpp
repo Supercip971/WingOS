@@ -3,6 +3,7 @@
 #include <stddef.h>
 
 #include "libcore/type/trait.hpp"
+
 namespace core
 {
 
@@ -23,6 +24,7 @@ struct TypeTuple<Arg0, Args...>
     template <size_t Index>
     using TypeAt = core::ConditionalType<Index == 0, Arg0, typename TypeRest::template TypeAt<Index - 1>>;
 };
+
 template <typename Arg0>
 struct TypeTuple<Arg0>
 {

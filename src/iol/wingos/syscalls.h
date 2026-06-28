@@ -145,6 +145,7 @@ extern "C"
         (void)result;
         return connect;
     }
+
     static inline SyscallIpcConnect sys$ipc_connect_raw(SyscallIpcConnect connect)
     {
         SyscallInterface interface = syscall_ipc_connect_encode(&connect);

@@ -7,6 +7,7 @@ float nexttowardf(float x, long double y)
         float f;
         uint32_t i;
     } ux = {x};
+
     uint32_t e;
 
     if (isnan(x) || isnan(y))

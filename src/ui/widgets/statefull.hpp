@@ -22,6 +22,7 @@ public:
         other.childs = core::move(childs);
         return true;
     }
+
     virtual ~Statefull() override = default;
 };
 } // namespace fc

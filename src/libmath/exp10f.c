@@ -8,11 +8,13 @@ float exp10f(float x)
         1e-7f, 1e-6f, 1e-5f, 1e-4f, 1e-3f, 1e-2f, 1e-1f,
         1, 1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7};
     float n, y = modff(x, &n);
+
     union
     {
         float f;
         uint32_t i;
     } u = {n};
+
     /* fabsf(n) < 8 without raising invalid on nan */
     if ((u.i >> 23 & 0xff) < 0x7f + 3)
     {

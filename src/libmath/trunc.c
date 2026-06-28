@@ -7,6 +7,7 @@ double trunc(double x)
         double f;
         uint64_t i;
     } u = {x};
+
     int e = (int)(u.i >> 52 & 0x7ff) - 0x3ff + 12;
     uint64_t m;
 

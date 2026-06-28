@@ -82,6 +82,7 @@ public:
     Padded _parms;
 
     ~LPadded() override = default;
+
     template <typename T>
     LPadded(Padded parms, T args)
         : _parms(parms)
@@ -101,11 +102,12 @@ public:
                 c.x += _parms._pleft + _parms._pright;
                 c.y += _parms._ptop + _parms._pdown;*/
 
-        auto c=  child->preferred_size(constraint);
+        auto c = child->preferred_size(constraint);
         c.x += _parms._pleft + _parms._pright;
         c.y += _parms._ptop + _parms._pdown;
         return c;
     }
+
     virtual wgfx::GRect layout(UiContext const &ctx, wgfx::GRect constraint) override
     {
         // fmt::log$("== LAYOUT == ");
@@ -125,6 +127,7 @@ public:
 
         return constraint;
     }
+
     void render(UiContext const &ctx, wgfx::Canvas &canvas) const override
     {
         (void)ctx;

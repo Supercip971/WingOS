@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #include "libcore/str.hpp"
+
 namespace wgfx
 {
 

@@ -103,6 +103,7 @@ void draw_char(void *fb, size_t x, size_t y, char c, size_t window_width)
         }
     }
 }
+
 int main(int, char **)
 {
 

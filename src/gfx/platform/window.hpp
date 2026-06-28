@@ -54,6 +54,7 @@ public:
         (void)frame;
         fmt::warn$("Canvas was unable to be swapped");
     }
+
     virtual void set_width(size_t width [[maybe_unused]])
     {
         fmt::warn$("Window::set_width not implemented");
@@ -63,7 +64,6 @@ public:
     {
         fmt::warn$("Window::set_height not implemented");
     }
-
 
     virtual wgfx::UEvent query_event()
     {

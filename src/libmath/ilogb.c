@@ -1,4 +1,5 @@
 #include <limits.h>
+
 #include "libm.h"
 
 int ilogb(double x)
@@ -8,6 +9,7 @@ int ilogb(double x)
         double f;
         uint64_t i;
     } u = {x};
+
     uint64_t i = u.i;
     int e = i >> 52 & 0x7ff;
 

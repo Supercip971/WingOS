@@ -7,6 +7,7 @@
 #include "libcore/fmt/flags.hpp"
 
 static VmmSpace kernel_space;
+
 void VmmSpace::use_kernel(VmmSpace &space)
 {
     kernel_space = space;
@@ -16,6 +17,7 @@ VmmSpace &VmmSpace::kernel_page_table()
 {
     return kernel_space;
 }
+
 arch::amd64::Pml4 *as_root(VmmSpace &space)
 {
     return reinterpret_cast<arch::amd64::Pml4 *>(space.self());
@@ -45,6 +47,7 @@ void VmmSpace::use()
 
     asm volatile("mov %0, %%cr3" ::"r"(self_addr()) : "memory");
 }
+
 core::Result<void> VmmSpace::map(VirtRange virt, PhysRange phys, PageFlags flags)
 {
     auto root = as_root(*this);
@@ -76,6 +79,7 @@ core::Result<void> VmmSpace::map(VirtRange virt, PhysRange phys, PageFlags flags
 
     return {};
 }
+
 core::Result<void> VmmSpace::unmap(VirtRange virt, bool user)
 {
     auto root = as_root(*this);

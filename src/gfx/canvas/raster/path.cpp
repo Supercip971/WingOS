@@ -66,6 +66,7 @@ constexpr inline wgfx::Vec2 solvePoly(wgfx::Vec2 p1, wgfx::Vec2 p2, wgfx::Vec2 p
 
     return wgfx::Vec2(a.x * t1 * t1 + b.x * t1 + c.x, a.x * t2 * t2 + b.x * t2 + c.x);
 }
+
 // https://fr.wikipedia.org/wiki/Algorithme_de_trac%C3%A9_de_segment_de_Xiaolin_Wu
 
 void wgfx::RasterCanvas::pathFillFlat(ContourCommand const &shape, Vec2 off)
@@ -293,6 +294,7 @@ void wgfx::RasterCanvas::pathLineFlat(Vec2 start, Vec2 end, Rgba8 color)
         intery += gradient;
     }
 }
+
 void wgfx::RasterCanvas::contour(ContourCommand const &cmd)
 {
     Vec2 pos = {};

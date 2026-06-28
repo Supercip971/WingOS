@@ -13,6 +13,7 @@
 #include "libcore/fmt/log.hpp"
 
 static bool _ready = false;
+
 core::Result<void> arch::amd64::smp_initialize()
 {
     fmt::log$("initializing smp (cpu count: {})", CpuImpl::count());
@@ -52,6 +53,7 @@ void smp_entry_other(void)
 extern "C" uintptr_t start_cpu_entry;
 extern "C" uintptr_t end_cpu_entry;
 extern "C" uint64_t trampoline_start, trampoline_end;
+
 core::Result<void> _setup_trampoline(hw::acpi::LCpuId cpu_id)
 {
     arch::amd64::CpuImpl *cpu = arch::amd64::CpuImpl::getImpl(cpu_id);

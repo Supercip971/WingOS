@@ -47,6 +47,7 @@ void fun3()
         asm volatile("pause");
     }
 }
+
 void fun4()
 {
     while (true)
@@ -56,6 +57,7 @@ void fun4()
         asm volatile("pause");
     }
 }
+
 void fun5()
 {
     while (true)

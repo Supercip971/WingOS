@@ -12,6 +12,7 @@ namespace wgfx
 class PlatformApp;
 
 core::Result<void> initialize_platform();
+
 class PlatformApp
 {
 

@@ -73,6 +73,7 @@ double log1p(double x)
         double f;
         uint64_t i;
     } u = {x};
+
     double_t hfsq, f, c, s, z, R, w, t1, t2, dk;
     uint32_t hx, hu;
     int k;

@@ -28,6 +28,7 @@ float log1pf(float x)
         float f;
         uint32_t i;
     } u = {x};
+
     float_t hfsq, f, c, s, z, R, w, t1, t2, dk;
     uint32_t ix, iu;
     int k;

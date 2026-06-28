@@ -8,6 +8,7 @@ float frexpf(float x, int *e)
         float f;
         uint32_t i;
     } y = {x};
+
     int ee = y.i >> 23 & 0xff;
 
     if (!ee)

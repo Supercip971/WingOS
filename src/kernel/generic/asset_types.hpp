@@ -26,6 +26,7 @@ struct Asset : public core::NoCopy
     AssetKind kind{AssetKind::OBJECT_KIND_UNKNOWN};
 
     static constexpr AssetKind IDENT = AssetKind::OBJECT_KIND_UNKNOWN;
+
     explicit Asset(AssetKind kind_value)
         : ref_count(0), kind(kind_value)
     {

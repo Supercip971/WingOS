@@ -6,9 +6,10 @@ int abs(int j)
     }
     return j;
 }
+
 long labs(long j)
 {
-    if(j < 0)
+    if (j < 0)
     {
         return -j;
     }

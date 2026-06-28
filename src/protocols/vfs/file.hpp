@@ -12,6 +12,7 @@
 #include "libcore/str.hpp"
 #include "math/align.hpp"
 #include "protocols/init/init.hpp"
+
 namespace prot
 {
 
@@ -36,6 +37,7 @@ struct DirList
 {
     core::Vec<DirListEntry> entries;
 };
+
 enum FsFileMessageType
 {
 
@@ -65,6 +67,7 @@ struct FsFileCacheEntry
     Wingos::VirtualMemoryAsset mapped;
     int score;
 };
+
 class FsFile
 {
     Wingos::IpcClient connection;
@@ -206,7 +209,6 @@ public:
         size_t delta_offset = offset - aoffset;
         Wingos::MemoryAsset masset = Wingos::Space::self().allocate_physical_memory(alen);
 
-
         try$(this->read(masset, aoffset, alen));
 
         Wingos::VirtualMemoryAsset mapped = Wingos::Space::self().map_memory(masset, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
@@ -333,6 +335,7 @@ public:
             }
         }
     }
+
     core::Result<DirList> list_dir()
     {
 

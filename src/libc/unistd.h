@@ -1,14 +1,15 @@
-#pragma once 
+#pragma once
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 #include <stddef.h>
-char *getcwd(char* buf, size_t size);
+    char *getcwd(char *buf, size_t size);
 
-int chdir(const char* path);
+    int chdir(const char *path);
 
-void _exit(int status);
+    void _exit(int status);
 
 #ifdef __cplusplus
 }

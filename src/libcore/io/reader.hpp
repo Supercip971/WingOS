@@ -12,6 +12,7 @@ class Reader
 {
 public:
     Reader() = default;
+
     virtual Result<size_t> read(char *data, size_t size) const
     {
         (void)data;

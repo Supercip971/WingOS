@@ -13,9 +13,11 @@ struct DurationUnit
     {
         return _value;
     }
+
     static constexpr unsigned long Scale = scale;
 
     constexpr DurationUnit() = default;
+
     constexpr DurationUnit(long value) : _value(value) {}
 
     constexpr DurationUnit<scale> operator+(const DurationUnit<scale> &other) const
@@ -73,6 +75,7 @@ struct DurationUnit
     {
         return _value <= other._value;
     }
+
     constexpr bool operator>=(const DurationUnit &other) const
     {
         return _value >= other._value;

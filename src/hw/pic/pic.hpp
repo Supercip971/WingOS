@@ -15,6 +15,7 @@ public:
         PIC2_COMMAND = 0xa0,
         PIC2_DATA = 0xa1,
     };
+
     static void disable()
     {
 

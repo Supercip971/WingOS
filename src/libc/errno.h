@@ -1,10 +1,8 @@
 #pragma once
 
+typedef int errno_t;
 
-typedef int  errno_t;
-
-extern errno_t  errno;
-
+extern errno_t errno;
 
 #define EINVAL 22
 #define EISDIR 21

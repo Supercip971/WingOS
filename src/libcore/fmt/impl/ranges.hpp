@@ -15,6 +15,7 @@ constexpr core::Result<int> format_v(Targ &target, C &&value)
     target.write(core::Str(" }"));
     return 0;
 }
+
 template <math::IntRangeable C, core::Writable Targ>
 constexpr core::Result<int> format_v(Targ &target, fmt::FormatFlags<C> range)
 {

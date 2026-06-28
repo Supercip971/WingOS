@@ -1,6 +1,7 @@
 
 
 #include "arch/x86_64/interrupts.hpp"
+
 int enter_critical_context()
 {
 
@@ -11,6 +12,7 @@ int enter_critical_context()
     }
     return 0;
 }
+
 void exit_critical_context(int previous_state)
 {
     if (previous_state)

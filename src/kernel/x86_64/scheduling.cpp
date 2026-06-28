@@ -8,6 +8,7 @@
 #include "kernel/generic/cpu.hpp"
 #include "kernel/generic/scheduler.hpp"
 #include "libcore/fmt/log.hpp"
+
 uintptr_t _scheduler_impl(uintptr_t stack)
 {
 
@@ -43,6 +44,7 @@ void trigger_reschedule(CoreId cpu)
 {
     hw::acpi::Lapic::the().send_interrupt(cpu, 100);
 }
+
 void trigger_reschedule_unblocked(CoreId cpu)
 {
     hw::acpi::Lapic::the().send_interrupt(cpu, 101);

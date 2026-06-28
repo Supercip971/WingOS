@@ -7,6 +7,7 @@
 #include "math/align.hpp"
 #include "mcx/mcx.hpp"
 #include "wingos-headers/syscalls.h"
+
 namespace Wingos
 {
 
@@ -136,6 +137,7 @@ struct MemoryAsset : public UAsset
         return asset;
     }
 };
+
 struct TaskAsset : public UAsset
 {
     uint64_t launch_addr;

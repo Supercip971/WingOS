@@ -1,4 +1,5 @@
 #include "gfx/canvas/raster/rasterCanvas.hpp"
+
 #include "gfx/canvas/cmd.hpp"
 
 void wgfx::RasterCanvas::apply(DrawContext const &ctx, RenderCommand const &cmd)

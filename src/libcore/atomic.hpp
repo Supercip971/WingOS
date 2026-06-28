@@ -22,6 +22,7 @@ class Atomic
 
 public:
     Atomic() : _value(T{}) {}
+
     Atomic(T value) : _value(value) {}
 
     // Delete copy and move
@@ -190,6 +191,7 @@ class Atomic
 
 public:
     Atomic() : _value(T{}) {}
+
     Atomic(T value) : _value(value) {}
 
     // Delete copy and move

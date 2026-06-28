@@ -13,6 +13,7 @@
 core::Array<arch::amd64::CpuImpl, arch::amd64::max_cpu> cpus = {};
 
 static int initialized_count = 0;
+
 size_t Cpu::count()
 {
     return initialized_count;
@@ -102,6 +103,7 @@ void setup_entry_gs()
     Msr::Write(MsrReg::KERNEL_GS_BASE, (uintptr_t)Cpu::current());
 }
 } // namespace arch::amd64
+
 Cpu *Cpu::current()
 {
     auto id = Cpu::currentId();
@@ -114,6 +116,7 @@ Cpu *Cpu::current()
     }
     return Cpu::get(id);
 }
+
 Cpu *Cpu::get(int id)
 {
     return &cpus[id];

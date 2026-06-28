@@ -11,7 +11,7 @@ namespace core
 class VoidRW : public Reader, public Writer
 {
 public:
-     VoidRW() {}
+    VoidRW() {}
 
     virtual Result<size_t> read(char *buffer, size_t size) const override
     {
@@ -28,7 +28,7 @@ public:
         return {};
     }
 
-     virtual ~VoidRW() override;
+    virtual ~VoidRW() override;
 };
 
 } // namespace core

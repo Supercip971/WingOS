@@ -1,4 +1,5 @@
 #include <limits.h>
+
 #include "libm.h"
 
 int ilogbf(float x)
@@ -8,6 +9,7 @@ int ilogbf(float x)
         float f;
         uint32_t i;
     } u = {x};
+
     uint32_t i = u.i;
     int e = i >> 23 & 0xff;
 

@@ -57,6 +57,7 @@ union [[gnu::packed]] NvmeConfig
         uint8_t iosqes : 4; // I/O Submission Queue Entry Size
         uint8_t iocqes : 4; // I/O Completion Queue Entry Size
     };
+
     uint32_t raw_value;
 };
 
@@ -89,6 +90,7 @@ struct [[gnu::packed]] NvmeCmd
     uint64_t mptr;
     uint64_t prp1;
     uint64_t prp2;
+
     union
     {
         struct [[gnu::packed]]
@@ -110,6 +112,7 @@ struct [[gnu::packed]] NvmeCmd
             uint32_t _reserved : 14;
             uint16_t iv; // interrupt vector
         } CreateIoCompletionQueue;
+
         // Results:
         // 0x1 : Invalid queue identifier
         // 0x2 : Invalid queue size
@@ -126,6 +129,7 @@ struct [[gnu::packed]] NvmeCmd
             uint16_t nvmsetid; // nvme set id
             uint16_t _reserved2;
         } CreateIoSubmissionQueue;
+
         // results:
         // 0 : Invalid completion queue
 
@@ -316,6 +320,7 @@ union [[gnu::packed]] NvmeIdentifyController
 
     uint8_t raw[4096];
 };
+
 enum NvmeBaseReg
 {
     NVME_CAP = 0x0,
@@ -332,6 +337,7 @@ enum NvmeBaseReg
     NVME_QUEUE_TAIL_DOORBELL_BASE = 0x1000,
     NVME_QUEUE_HEAD_DOORBELL_BASE = 0x1000,
 };
+
 enum NvmeAdminOpcode
 {
     NVME_AOP_DELETE_SUBMISSION_QUEUE = 0x0,
@@ -345,6 +351,7 @@ enum NvmeAdminOpcode
 
     // ... other op in the doc but not really usefull
 };
+
 // Nvme express command set specification 1.2 - 3.3 NVM Command set Commands
 enum NvmeOpcodes
 {

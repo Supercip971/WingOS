@@ -54,6 +54,7 @@ public:
             }
         }
     }
+
     core::Result<size_t> read(Wingos::MemoryAsset &asset, uint64_t lba, uint64_t len, uint64_t asset_start = 0)
     {
         if (len < MAX_IPC_BUFFER_SIZE)

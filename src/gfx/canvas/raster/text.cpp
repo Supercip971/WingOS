@@ -1,5 +1,6 @@
 
 #include "gfx/canvas/raster/rasterCanvas.hpp"
+
 void wgfx::RasterCanvas::textFlat(TextCommand const &cmd)
 {
     Vec2 pos = cmd.pos;

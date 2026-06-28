@@ -35,12 +35,17 @@ struct StrokePoint
     Vec2 pos;
 
     constexpr StrokePoint(PathAction _action, const Vec2 &_pos) : action(_action), pos(_pos) {}
+
     constexpr StrokePoint(Vec2 const &cpos, const Curve &_curve) : action(PathAction::GCURVE), pos(cpos), curve(_curve) {}
+
     constexpr StrokePoint(Vec2 const &cpos, const CubicCurve &_cubic_curve) : action(PathAction::GCUBIC_CURVE), pos(cpos), cubic_curve(_cubic_curve) {}
 
     constexpr static StrokePoint moved(const Vec2 &pos) { return StrokePoint(PathAction::GMOVE, pos); }
+
     constexpr static StrokePoint point(const Vec2 &pos) { return StrokePoint(PathAction::GPOINT, pos); }
+
     constexpr static StrokePoint curved(const Vec2 &pos, const Vec2 &control) { return StrokePoint(pos, Curve{control}); }
+
     constexpr static StrokePoint cubic_curved(const Vec2 &pos, const Vec2 &control1, const Vec2 &control2) { return StrokePoint(pos, CubicCurve{control1, control2}); }
 
     union
@@ -50,6 +55,7 @@ struct StrokePoint
     };
 
     constexpr StrokePoint() : action(PathAction::GMOVE), pos(Vec2(0, 0)) {}
+
     constexpr StrokePoint(const StrokePoint &other) : action(other.action), pos(other.pos)
     {
         if (action == PathAction::GCURVE)

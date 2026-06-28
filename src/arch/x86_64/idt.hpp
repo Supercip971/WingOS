@@ -5,15 +5,18 @@
 
 #include "libcore/ds/array.hpp"
 #include "libcore/enum-op.hpp"
+
 namespace arch::amd64
 {
 struct IDTRegister
 {
     uint16_t _size;
     uint64_t _addr;
+
     constexpr IDTRegister() : _size{0}, _addr{0}
     {
     }
+
     constexpr IDTRegister(unsigned short size, uintptr_t addr) : _size{size}, _addr{addr} {};
 } __attribute__((packed));
 

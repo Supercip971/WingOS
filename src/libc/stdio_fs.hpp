@@ -25,7 +25,6 @@ struct _IO_FILE
     int ungetc_buf; // -1 if empty, otherwise the ungotten char
     core::WStr buffer;
 
-
     union
     {
         prot::FsFile *file;

@@ -15,10 +15,10 @@ extern "C"
     typedef uint64_t IpcServerHandle;
     typedef uint64_t IpcConnectionHandle;
 
-// first IPC server manager,
-// each server is a string and a handle and
-// either need to register or unregister
-// and the handle is used to connect to the server
+    // first IPC server manager,
+    // each server is a string and a handle and
+    // either need to register or unregister
+    // and the handle is used to connect to the server
 
 #define IPC_MESSAGE_FLAG_NONE 0x0
 #define IPC_MESSAGE_FLAG_DISCONNECT 0x1
@@ -31,13 +31,14 @@ extern "C"
     struct IpcData
     {
 
-        struct [[gnu::packed]] {
+        struct [[gnu::packed]]
+        {
 
-        bool is_asset : 1;
-        bool copy_asset : 1;
-        bool _reserved_is_mapping : 1; // only used by the kernel 
-
+            bool is_asset : 1;
+            bool copy_asset : 1;
+            bool _reserved_is_mapping : 1; // only used by the kernel
         };
+
         union
         {
             uint64_t data;         // the data for the IPC message
@@ -56,7 +57,7 @@ extern "C"
         {
         }
 
-        constexpr IpcMessage(IpcMessage && other) noexcept
+        constexpr IpcMessage(IpcMessage &&other) noexcept
             : message_id(other.message_id), flags(other.flags), len(other.len)
         {
 
@@ -71,7 +72,6 @@ extern "C"
                 buffer[i] = other.buffer[i];
             }
         }
-
 
         constexpr IpcMessage &operator=(IpcMessage &&other) noexcept
         {
@@ -94,6 +94,7 @@ extern "C"
             }
             return *this;
         }
+
         constexpr static IpcMessage copy(const IpcMessage &other)
         {
             IpcMessage msg;
@@ -122,7 +123,7 @@ struct IpcMessage
 
         uint16_t len;
 
-        union 
+        union
         {
 
             uint64_t buffer[MAX_IPC_BUFFER_SIZE / sizeof(uint64_t)]; // buffer for the message, used for IPC payload

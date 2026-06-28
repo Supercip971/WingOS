@@ -23,6 +23,7 @@ struct Test
     constexpr Test(const char *name, T f) : name(name), func(f), expect_failure(false), expected_failure_msg(nullptr)
     {
     }
+
     template <typename T>
     constexpr Test(const char *name, T f, const char *expect_failure) : name(name), func(f), expect_failure(true), expected_failure_msg(expect_failure)
     {
@@ -52,11 +53,13 @@ struct TestGroup
     bool is_end;
     const char *name;
     size_t count;
+
     union
     {
         Test *tests;
         TestGroup *childs;
     };
+
     constexpr TestGroup() : is_end(false) {}
 
     constexpr TestGroup(bool is_end, const char *name, size_t count, Test *tests) : is_end(is_end), name(name), count(count), tests(tests) {}

@@ -6,6 +6,7 @@
 
 #include "kernel/generic/cpu.hpp"
 #include "libcore/result.hpp"
+
 namespace arch::amd64
 {
 
@@ -20,6 +21,7 @@ public:
     Gdt *gdt();
     Gdtr *gdtr();
     Tss *tss();
+
     int lapic() const { return _lapic; };
 
     CpuImpl(int id, int lapic) : Cpu(id, true), _lapic(lapic) {};
@@ -28,6 +30,7 @@ public:
     static size_t max_processors();
 
     PhysAddr trampoline_stack() const { return _trampoline_stack; }
+
     void trampoline_stack(PhysAddr stack) { _trampoline_stack = stack; }
 
     CpuImpl() : Cpu(-1, false), _lapic(-1) {};

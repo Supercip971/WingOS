@@ -17,6 +17,7 @@ extern "C" int liballoc_lock()
     // FIXME: implement
     return 0;
 }
+
 /** This function unlocks what was previously locked by the liballoc_lock
  * function.  If it disabled interrupts, it enables interrupts. If it
  * had acquiried a spinlock, it releases the spinlock. etc.
@@ -28,6 +29,7 @@ extern "C" int liballoc_unlock()
     // FIXME: implement
     return 0;
 }
+
 /** This is the hook into the local system which allocates pages. It
  * accepts an integer parameter which is the number of pages
  * required.  The page size was set up in the liballoc_init function.

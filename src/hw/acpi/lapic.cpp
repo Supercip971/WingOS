@@ -12,6 +12,7 @@
 #include "libcore/result.hpp"
 
 static hw::acpi::Lapic main_lapic = {};
+
 namespace hw::acpi
 {
 
@@ -22,6 +23,7 @@ Lapic &Lapic::the()
 
 using AMsr = arch::amd64::Msr;
 using MsrReg = arch::amd64::MsrReg;
+
 core::Result<void> Lapic::enable()
 {
 
@@ -105,6 +107,7 @@ size_t Lapic::_timer_tick_in_16ms()
 
     return 0xFFFFFFFF - read(LAPICReg::TIMER_CURRENT_COUNT);
 }
+
 core::Result<void> Lapic::timer_initialize()
 {
     write(LAPICReg::TIMER_DIVIDE_CONFIGURATION, LAPIC_TIMER_DIVIDE_BY_16);
@@ -127,6 +130,7 @@ core::Result<void> Lapic::timer_initialize()
 
     return {};
 }
+
 void Lapic::send_interrupt(LCpuId cpu, uint8_t vector)
 {
     write(LAPICReg::INTERRUPT_COMMAND_START_2, (static_cast<uint64_t>(cpu) << 24));

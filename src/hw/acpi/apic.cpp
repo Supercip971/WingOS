@@ -159,6 +159,7 @@ core::Result<void> _raw_redirect_interrupt(LCpuId cpu, uint8_t vector, bool enab
 
     return {};
 }
+
 core::Result<void> redirect_interrupt(LCpuId cpu, uint8_t irq, uint8_t vector, bool enabled)
 {
 

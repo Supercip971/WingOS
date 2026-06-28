@@ -10,6 +10,7 @@
 #include "libcore/result.hpp"
 #include "libcore/str.hpp"
 #include "libcore/type/trait.hpp"
+
 namespace hw::acpi
 {
 
@@ -64,6 +65,7 @@ struct [[gnu::packed]] MadtEntryIso
     uint32_t global_system_interrupt;
     uint16_t flags;
 };
+
 struct [[gnu::packed]] MadtEntryIoapicNmi
 {
     MadtEntry header;

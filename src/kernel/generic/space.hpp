@@ -78,11 +78,13 @@ struct AssetTask : public Asset
 };
 
 struct KernelIpcServer;
+
 struct AssetServer : public Asset
 {
     KernelIpcServer *server;
 
     static constexpr size_t IDENT = AssetKind::OBJECT_KIND_IPC_SERVER;
+
     AssetServer(KernelIpcServer *server_value)
         : Asset(AssetKind::OBJECT_KIND_IPC_SERVER), server(server_value) {}
 };
@@ -111,6 +113,7 @@ struct AssetTaskCreateParams
 {
     kernel::CpuContextLaunch launch;
 };
+
 struct AssetIpcServerCreateParams
 {
     bool is_root; // if true, the server will be created as a root server, otherwise it will be created as a child server
@@ -206,6 +209,7 @@ struct Space : public Asset
 
         return "asset not found";
     }
+
     template <typename T>
     core::Result<AssetRef<T>> by_handle(uint64_t handle)
     {
@@ -265,6 +269,7 @@ struct Space : public Asset
 
         return core::Result<AssetRef<T>>::error("asset not found");
     }
+
     core::Result<AssetRef<>> by_handle_ptr(uint64_t handle)
     {
         lock.lock();

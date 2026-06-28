@@ -1,7 +1,8 @@
 #pragma once
 
-#include <stddef.h>
 #include <libcore/fmt/log.hpp>
+#include <stddef.h>
+
 #include "libcore/str_writer.hpp"
 
 struct UMapTestKey;
@@ -11,9 +12,8 @@ namespace core
 static inline constexpr size_t hash(UMapTestKey const &key);
 }
 
-#include "libcore/ds/umap.hpp"
-
 #include "../test.hpp"
+#include "libcore/ds/umap.hpp"
 
 struct UMapTestKey
 {
@@ -264,22 +264,16 @@ static constexpr TestGroup umapTests = {
             "basic umap",
             []() -> Test::RetFn
             {
-
                 auto map = core::UMap<core::WStr, int>();
-
-
-
-
 
                 map.insert(core::WStr::copy("bob"), 10);
 
-                if(map["bob"] != 10)
+                if (map["bob"] != 10)
                 {
                     return "operator[] failed to retrieve value";
                 }
                 return {};
-            }
-            ),
+            }),
         Test(
             "umap iterator",
             []() -> Test::RetFn

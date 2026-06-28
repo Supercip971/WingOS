@@ -173,6 +173,7 @@ double pow(double x, double y)
                     double f;
                     uint64_t i;
                 } u = {y};
+
                 uint64_t i = u.i & -1ULL / 2;
                 if (i >> 52 == 0 && (i & (i - 1)))
                     FORCE_EVAL((float)y);

@@ -1,6 +1,7 @@
 #include "json.hpp"
 
 #include "parser/scanner.hpp"
+
 namespace wjson
 {
 
@@ -130,6 +131,7 @@ core::Result<JsonValue> parse_json_value(core::Scanner<char> &scanner)
 
     return result;
 }
+
 core::Result<Json> Json::parse(core::MemView<char> reader)
 {
 

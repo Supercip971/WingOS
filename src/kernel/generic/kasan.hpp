@@ -8,6 +8,7 @@
 #include "libcore/lock/lock.hpp"
 #include "libcore/result.hpp"
 #include "mcx/mcx.hpp"
+
 namespace kernel
 {
 
@@ -19,6 +20,7 @@ enum KasanTags : uint8_t
     KASAN_TAG_KERNEL = 0xFF,
     KASAN_UNAVAILABLE = 0xFE
 };
+
 class Kasan
 {
 
@@ -54,7 +56,9 @@ public:
     void preload(mcx::MachineContext *ctx);
 
     void enable() { _enabled = true; }
+
     void disable() { _enabled = false; }
+
     void assert_write_access(uintptr_t addr, size_t size);
     void assert_read_access(uintptr_t addr, size_t size);
     Kasan() = default;

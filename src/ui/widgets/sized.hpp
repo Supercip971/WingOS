@@ -70,6 +70,7 @@ public:
     LayoutSize _parms;
 
     ~Sized() override = default;
+
     template <typename T>
     Sized(LayoutSize parms, T args)
         : _parms(parms)
@@ -88,6 +89,7 @@ public:
 
         return child->preferred_size(constraint);
     }
+
     virtual wgfx::GRect layout(UiContext const &ctx, wgfx::GRect constraint) override
     {
         // fmt::log$("== LAYOUT == ");
@@ -96,12 +98,12 @@ public:
 
         (void)ctx;
 
-
         wgfx::GRect child_constraint = constraint.with_size(preferred_size(constraint.size()));
         child->relayout(ctx, child_constraint);
 
         return constraint.with_size(preferred_size(constraint.size()));
     }
+
     void render(UiContext const &ctx, wgfx::Canvas &canvas) const override
     {
         (void)ctx;

@@ -7,6 +7,7 @@ float modff(float x, float *iptr)
         float f;
         uint32_t i;
     } u = {x};
+
     uint32_t mask;
     int e = (int)(u.i >> 23 & 0xff) - 0x7f;
 

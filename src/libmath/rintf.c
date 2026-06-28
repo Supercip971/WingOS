@@ -18,6 +18,7 @@ float rintf(float x)
         float f;
         uint32_t i;
     } u = {x};
+
     int e = u.i >> 23 & 0xff;
     int s = u.i >> 31;
     float_t y;

@@ -11,6 +11,7 @@ double tanh(double x)
         double f;
         uint64_t i;
     } u = {.f = x};
+
     uint32_t w;
     int sign;
     double_t t;

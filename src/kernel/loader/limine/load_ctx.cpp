@@ -27,6 +27,7 @@ __attribute__((used)) static volatile struct limine_module_request module = {
     .revision = 0,
     .response = NULL,
 };
+
 static mcx::MemoryMap::Type limine_type_to_mcx(int type)
 {
     switch (type)
@@ -82,6 +83,7 @@ static void load_mcx_mmap(mcx::MachineContext *context)
     }
     context->_memory_map_count = mmap_size;
 }
+
 void load_mcx(mcx::MachineContext *context)
 {
     load_mcx_mmap(context);

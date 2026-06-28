@@ -8,6 +8,7 @@ float hypotf(float x, float y)
         float f;
         uint32_t i;
     } ux = {x}, uy = {y}, ut;
+
     float_t z;
 
     ux.i &= -1U >> 1;

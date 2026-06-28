@@ -5,6 +5,7 @@
 
 #include "iol/ports.hpp"
 #include "libcore/ds/vec.hpp"
+
 namespace Wingos::dev
 {
 constexpr size_t CONFIG_ADDRESS = 0xCF8;
@@ -34,9 +35,11 @@ struct [[gnu::packed]] PciConfigReg
     uint8_t _reserved : 7;
     uint8_t enable : 1; // 1 to enable, 0 to disable
 };
+
 static_assert(sizeof(PciConfigReg) == 4, "PciConfigReg must be 4 bytes");
 
 constexpr uint32_t pci_register_0 = 0;
+
 struct [[gnu::packed]] PciReg0
 {
     uint16_t vendor_id; // 0x00
@@ -44,6 +47,7 @@ struct [[gnu::packed]] PciReg0
 };
 
 constexpr uint32_t pci_register_1 = 0x4;
+
 struct [[gnu::packed]] PciReg1
 {
     uint16_t command; // 0x04
@@ -51,6 +55,7 @@ struct [[gnu::packed]] PciReg1
 };
 
 constexpr uint32_t pci_register_2 = 0x8;
+
 struct [[gnu::packed]] PciReg2
 {
     uint8_t revision_id; // 0x08
@@ -60,6 +65,7 @@ struct [[gnu::packed]] PciReg2
 };
 
 constexpr uint32_t pci_register_3 = 0xc;
+
 struct [[gnu::packed]] PciReg3
 {
     uint8_t cache_line_size; // 0x0C
@@ -87,6 +93,7 @@ constexpr uint32_t pci_reg_bridge_BAR0 = 0x10;
 constexpr uint32_t pci_reg_bridge_BAR1 = 0x14;
 
 constexpr uint32_t pci_reg_bridge_secondary_bus = 0x18;
+
 struct [[gnu::packed]] PciBridgeRegSecBus
 {
 
@@ -98,6 +105,7 @@ struct [[gnu::packed]] PciBridgeRegSecBus
 };
 
 constexpr uint32_t pci_reg_bridge_io_base_stat = 0x1C;
+
 struct [[gnu::packed]] PciBridgeRegIoBaseStat
 {
     uint8_t io_base;           // 0x1C
@@ -106,6 +114,7 @@ struct [[gnu::packed]] PciBridgeRegIoBaseStat
 };
 
 constexpr uint32_t pci_reg_bridge_mem_base_stat = 0x20;
+
 struct [[gnu::packed]] PciBridgeRegMemBaseStat
 {
     uint16_t mem_base;  // 0x20
@@ -134,6 +143,7 @@ struct PciDevice
             PciConfigReg reg;
             uint32_t as_uint32;
         } u;
+
         u.reg = reg;
         uint32_t address = u.as_uint32;
 
@@ -148,6 +158,7 @@ struct PciDevice
     {
         return read_config(bus, device, function, off);
     }
+
     uint32_t read_config(uint8_t off, size_t func) const
     {
         return read_config(bus, device, func, off);
@@ -206,6 +217,7 @@ struct PciDevice
             PciConfigReg reg;
             uint32_t as_uint32;
         } u;
+
         u.reg = reg;
         uint32_t address = u.as_uint32;
 
@@ -225,11 +237,13 @@ struct PciDevice
     T read_config(size_t reg) const
     {
         uint32_t value = read_config(reg);
+
         union
         {
             uint32_t as_uint32;
             T as_type;
         } u;
+
         u.as_uint32 = value;
 
         return u.as_type;
@@ -239,6 +253,7 @@ struct PciDevice
     T read_config(size_t reg, size_t func) const
     {
         uint32_t value = read_config(reg, func);
+
         union
         {
             uint32_t as_uint32;
@@ -298,6 +313,7 @@ struct PciDevice
     {
         return read_config<PciReg3>(pci_register_3).header_type & ~(0x80);
     }
+
     bool is_bridge() const
     {
         return header() == PciHeaderType::HEADER_TYPE_PCI_TO_PCI_BRIDGE &&

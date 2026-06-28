@@ -14,17 +14,20 @@ enum class SeekFrom
     SEEK_CURRENT,
     SEEK_END
 };
+
 class Seeker
 {
 public:
     Seeker() = default;
-    virtual ~Seeker() ;
+    virtual ~Seeker();
+
     constexpr virtual Result<void> seek(size_t offset, SeekFrom from = SeekFrom::SEEK_BEGIN)
     {
         (void)offset;
         (void)from;
         return {};
     };
+
     constexpr virtual Result<size_t> tell() { return {}; };
 
     constexpr virtual Result<size_t> size()

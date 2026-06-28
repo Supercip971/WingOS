@@ -7,6 +7,7 @@ double nextafter(double x, double y)
         double f;
         uint64_t i;
     } ux = {x}, uy = {y};
+
     uint64_t ax, ay;
     int e;
 

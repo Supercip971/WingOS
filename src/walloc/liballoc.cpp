@@ -8,6 +8,7 @@
 #define ALLOC_PAGE_SIZE 4096
 
 #define ALLOC_MAGIC 0xDEADEEDEAD
+
 struct WingosAllocNode
 {
     unsigned long magic;

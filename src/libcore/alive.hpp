@@ -2,6 +2,7 @@
 
 #include "libcore/fmt/log.hpp"
 #include "libcore/str.hpp"
+
 namespace core
 {
 class Alive

@@ -19,6 +19,7 @@ struct IpcMessageContent
     uint64_t flags;      // flags for the message
     IpcData data[8];     // data for the message, can be used for IPC payload
 };
+
 using IpcMessageServer = IpcMessageContent;
 using IpcMessageClient = IpcMessageContent;
 
@@ -187,6 +188,7 @@ typedef enum
 } IpcConnectionClosedStatus;
 
 struct KernelIpcServer;
+
 struct IpcConnection : public Asset
 {
     uint64_t message_alloc_id;

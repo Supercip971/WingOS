@@ -11,6 +11,7 @@ double sinh(double x)
         double f;
         uint64_t i;
     } u = {.f = x};
+
     uint32_t w;
     double t, h, absx;
 

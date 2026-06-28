@@ -54,6 +54,7 @@ struct MachineContextModule
     MemoryRange range;
     char path[128];
 };
+
 struct MachineContext
 {
 

@@ -7,6 +7,7 @@ float coshf(float x)
         float f;
         uint32_t i;
     } u = {.f = x};
+
     uint32_t w;
     float t;
 

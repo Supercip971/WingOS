@@ -3,6 +3,7 @@
 #include <math.h>
 
 #include "libcore/logic.hpp"
+
 namespace wgfx
 {
 class Vec2
@@ -19,14 +20,17 @@ public:
     {
         return Vec2(x + other.x, y + other.y);
     }
+
     constexpr Vec2 operator-(const Vec2 &other) const
     {
         return Vec2(x - other.x, y - other.y);
     }
+
     constexpr Vec2 operator*(float scalar) const
     {
         return Vec2(x * scalar, y * scalar);
     }
+
     constexpr Vec2 operator/(float scalar) const
     {
         return Vec2(x / scalar, y / scalar);
@@ -36,6 +40,7 @@ public:
     {
         return x == other.x && y == other.y;
     }
+
     constexpr bool operator!=(const Vec2 &other) const
     {
         return x != other.x || y != other.y;
@@ -47,18 +52,21 @@ public:
         y += other.y;
         return *this;
     }
+
     constexpr Vec2 &operator-=(const Vec2 &other)
     {
         x -= other.x;
         y -= other.y;
         return *this;
     }
+
     constexpr Vec2 &operator*=(float scalar)
     {
         x *= scalar;
         y *= scalar;
         return *this;
     }
+
     constexpr Vec2 &operator/=(float scalar)
     {
         x /= scalar;
@@ -66,7 +74,7 @@ public:
         return *this;
     }
 
-     Vec2 rounded(float factor) const
+    Vec2 rounded(float factor) const
     {
 
         return Vec2(roundf(x * factor) / factor, roundf(y * factor) / factor);

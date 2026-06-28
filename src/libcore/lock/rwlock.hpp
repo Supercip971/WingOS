@@ -5,6 +5,7 @@
 #include "arch/generic/instruction.hpp"
 #include "libcore/lock/lock.hpp"
 #include "libcore/type-utils.hpp"
+
 namespace core
 {
 
@@ -72,6 +73,7 @@ public:
             }
         }
     }
+
     bool write_acquire()
     {
         bool success = false;
@@ -121,6 +123,7 @@ public:
         }
         _access_lock.release();
     }
+
     bool read_acquire()
     {
         bool success = false;
@@ -142,6 +145,7 @@ public:
 
         return success;
     }
+
     void read_release()
     {
         _access_lock.lock();
@@ -170,6 +174,7 @@ public:
         _lock.read_release();
     }
 };
+
 class WriteCtxLocker : public NoCopy, NoMove
 {
     RWLock &_lock;

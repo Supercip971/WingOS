@@ -16,6 +16,7 @@ float roundf(float x)
         float f;
         uint32_t i;
     } u = {x};
+
     int e = u.i >> 23 & 0xff;
     float_t y;
 

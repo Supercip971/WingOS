@@ -13,6 +13,7 @@ struct IntegralConstant
     using value_type = decltype(value);
 
     constexpr operator value_type() const { return value; }
+
     constexpr value_type operator()() const { return value; }
 };
 
@@ -165,9 +166,8 @@ concept IsConvertibleTo = __is_convertible_to(From, To);
 template <class T>
 concept IsDefaultConstructible = requires { T{}; };
 
-
-template<class A, class B>
-concept IsComparable = requires(const A& l, const B& r) {
+template <class A, class B>
+concept IsComparable = requires(const A &l, const B &r) {
     { l == r } -> IsConvertibleTo<bool>;
     { l != r } -> IsConvertibleTo<bool>;
 };

@@ -7,6 +7,7 @@ extern "C"
         (void)__dso_handle;
         return 0;
     }
+
     void *__dso_handle;
 
     void __cxa_finalize(void *f)

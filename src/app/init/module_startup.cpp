@@ -23,6 +23,7 @@ struct ModuleLaunch
     core::Str name;
     core::Vec<core::Str> deps;
 };
+
 static core::Vec<ModuleLaunch> module_to_launch = {};
 static core::Vec<core::Str> started_modules = {};
 static core::Vec<core::Str> started_services = {};
@@ -40,6 +41,7 @@ VirtRange map_mcx_address(mcx::MemoryRange range)
 
     return VirtRange((uintptr_t)mem, (uintptr_t)mem + phys.len());
 }
+
 core::Result<size_t> start_service(mcx::MachineContext *context, mcx::MachineContextModule mod)
 {
     auto vrange = map_mcx_address(mod.range);
@@ -305,6 +307,7 @@ core::Result<bool> try_startup_modules_cycle_one(mcx::MachineContext *context)
 
     return false;
 }
+
 core::Result<void> try_startup_modules_cycle(mcx::MachineContext *context)
 {
     while (try$(try_startup_modules_cycle_one(context)))

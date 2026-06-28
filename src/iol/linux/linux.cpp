@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+
 class LinuxLogger : public core::Writer
 {
 public:
@@ -18,7 +19,9 @@ public:
         return {};
     }
 };
+
 extern "C" int main(int argc, char **argv);
+
 extern "C" int _linux_start(int argc, char **argv)
 {
 

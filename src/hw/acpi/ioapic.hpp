@@ -7,6 +7,7 @@
 
 #include "hw/acpi/madt.hpp"
 #include "libcore/result.hpp"
+
 namespace hw::acpi
 {
 
@@ -33,6 +34,7 @@ union IoapicRedirectionReg
 {
 
     uint64_t raw;
+
     struct [[gnu::packed]]
     {
         uint8_t vector;
@@ -57,7 +59,9 @@ union IoapicRedirectionReg
         uint8_t destination : 8;
     } val;
 };
+
 using IOApicIndex = size_t;
+
 class IOApic
 {
 
@@ -66,8 +70,11 @@ class IOApic
 
 public:
     IOApic() = default;
+
     IOApic(VirtAddr base) : _base(base) {}
+
     IOApic(MadtEntryIoapic entry, VirtAddr base) : _base(base), _entry(entry) {}
+
     template <typename T = uint32_t>
     T read(size_t reg)
     {

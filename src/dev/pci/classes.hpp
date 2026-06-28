@@ -2,6 +2,7 @@
 
 #include "libcore/fmt/log.hpp"
 #include "libcore/str.hpp"
+
 namespace Wingos::dev
 {
 constexpr core::Str dev_classes[] = {

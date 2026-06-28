@@ -42,6 +42,7 @@ struct Window
 
     Wingos::VirtualMemoryAsset framebuffer_mapped;
 };
+
 core::Vec<Window> windows = {};
 
 void *framebuffer_mapped = nullptr;
@@ -115,6 +116,7 @@ bool update_window(Window &window)
 
     return false;
 }
+
 int main(int, char **)
 {
     core::Alive alive{"compositor"};

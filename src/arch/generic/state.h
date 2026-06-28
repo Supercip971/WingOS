@@ -1,9 +1,10 @@
-#pragma once 
+#pragma once
 
 #include <stdint.h>
-struct JumpState 
+
+struct JumpState
 {
-    #ifdef __x86_64
+#ifdef __x86_64
     uint64_t rbx;
     uint64_t rbp;
     uint64_t r12;
@@ -12,7 +13,7 @@ struct JumpState
     uint64_t r15;
     uint64_t rsp;
     uint64_t rip;
-    #else 
-    #error "Unsupported architecture"
-    #endif
+#else
+#    error "Unsupported architecture"
+#endif
 };

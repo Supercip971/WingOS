@@ -4,6 +4,7 @@
 
 #include "libcore/ds/umap.hpp"
 #include "libcore/result.hpp"
+
 namespace fc
 {
 

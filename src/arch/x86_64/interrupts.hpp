@@ -2,6 +2,7 @@
 #pragma once
 #include <libcore/ds/array.hpp>
 #include <libcore/str.hpp>
+
 namespace arch::amd64
 {
 
@@ -11,6 +12,7 @@ static inline void interrupt_hold()
 {
     asm volatile("cli");
 }
+
 static inline bool interrupt_status()
 {
     uint64_t rflags;
@@ -18,10 +20,12 @@ static inline bool interrupt_status()
                  : "=r"(rflags) : : "memory");
     return (rflags & (1 << 9)) != 0;
 }
+
 static inline void interrupt_release()
 {
     asm volatile("sti");
 }
+
 static constexpr core::Array interrupts_names{
     core::Str("Divide by zero [#DE]"),
     "Debug [#DB]",

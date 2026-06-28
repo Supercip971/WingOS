@@ -19,6 +19,7 @@
 FILE *stdin;
 FILE *stdout;
 FILE *stderr;
+
 void set_stdout_pipe(prot::SenderPipe *pipe)
 {
     stdout = new FILE();
@@ -32,6 +33,7 @@ void set_stderr_pipe(prot::SenderPipe *pipe)
     stderr->kind = FILE_KIND_OUT;
     stderr->output = pipe;
 }
+
 void set_stdin_pipe(prot::ReceiverPipe *pipe)
 {
     stdin = new FILE();
@@ -133,6 +135,7 @@ extern "C" void run_constructors()
 }
 
 static core::WStr *cwd;
+
 char *iol_get_cwd()
 {
     return (char *)cwd->view().data();
@@ -193,6 +196,7 @@ int iol_change_cwd(const char *path)
 
     return 0;
 }
+
 extern "C"
     __attribute__((weak)) int
     __cxa_atexit(void (*destructor)(void *), void *arg, void *__dso_handle)
@@ -202,6 +206,7 @@ extern "C"
     (void)__dso_handle;
     return 0;
 }
+
 __attribute__((weak)) void *__dso_handle;
 
 extern "C" __attribute__((weak)) void _entry_point(StartupInfo *context)

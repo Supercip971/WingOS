@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+
 namespace arch
 {
 template <int V>
@@ -28,6 +29,7 @@ struct CpuCr
         }
         return value;
     }
+
     static inline void write(uint64_t value)
     {
         switch (V)

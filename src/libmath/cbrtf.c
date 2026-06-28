@@ -27,11 +27,13 @@ static const unsigned
 float cbrtf(float x)
 {
     double_t r, T;
+
     union
     {
         float f;
         uint32_t i;
     } u = {x};
+
     uint32_t hx = u.i & 0x7fffffff;
 
     if (hx >= 0x7f800000) /* cbrt(NaN,INF) is itself */

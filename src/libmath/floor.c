@@ -14,6 +14,7 @@ double floor(double x)
         double f;
         uint64_t i;
     } u = {x};
+
     int e = u.i >> 52 & 0x7ff;
     double_t y;
 

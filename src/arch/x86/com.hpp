@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "libcore/type-utils.hpp"
+
 namespace arch::x86
 {
 
@@ -100,6 +101,7 @@ public:
     core::Result<void> write(const char *data, size_t size) override;
 
     static core::Result<Com> initialize(Com::Port port);
+
     template <core::Viewable T>
     constexpr core::Result<void> write(T view)
         requires(core::Viewable<T>)

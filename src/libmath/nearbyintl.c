@@ -8,6 +8,7 @@ long double nearbyintl(long double x)
 }
 #else
 #    include <fenv.h>
+
 long double nearbyintl(long double x)
 {
 #    ifdef FE_INEXACT

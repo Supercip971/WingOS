@@ -1,6 +1,7 @@
 #pragma once
 
 #include <libcore/mem/view.hpp>
+
 namespace core
 {
 template <typename T, int size>

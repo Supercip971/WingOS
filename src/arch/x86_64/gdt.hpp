@@ -5,6 +5,7 @@
 #include <arch/x86_64/tss.hpp>
 
 #include "libcore/ds/array.hpp"
+
 namespace arch::amd64
 {
 struct Gdtr

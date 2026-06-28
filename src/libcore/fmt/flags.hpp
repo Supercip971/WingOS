@@ -1,6 +1,7 @@
 #pragma once
 
 #include "libcore/type-utils.hpp"
+
 namespace fmt
 {
 
@@ -92,6 +93,7 @@ constexpr FormatFlags<T> operator|(T &&a, FmtFlag flag)
         .value = core::forward<T>(a),
     };
 }
+
 template <typename T>
 constexpr FormatFlags<T> operator|(const FormatFlags<T> &a, FmtFlag flag)
 {

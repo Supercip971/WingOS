@@ -49,10 +49,12 @@ static inline const char *cpuSchedStateToStr(CpuSchedStates state)
         return "UNKNOWN";
     }
 }
+
 namespace kernel
 {
 class Task;
 };
+
 class [[gnu::packed]] Cpu
 {
 
@@ -76,6 +78,7 @@ public:
     DebuggedContext __attribute__((aligned(16))) debug_context;
 
     CpuSchedStates sched_state = CpuSchedStates::CPU_SCHED_RUNNING;
+
     bool in_interrupt()
     {
         return _in_interrupt;

@@ -26,6 +26,7 @@ struct ImageWidgetLayout
         _filled = filled;
         return *this;
     }
+
     ImageWidgetLayout keep_ratio(bool keep_ratio)
     {
         _keep_ratio = keep_ratio;
@@ -41,6 +42,7 @@ class ImageWidget : public Widget
 
 public:
     ~ImageWidget() override = default;
+
     ImageWidget(core::SharedPtr<wgfx::Texture> &_img) : img(_img) {}
 
     ImageWidget(core::SharedPtr<wgfx::Texture> _img) : img(_img) {}

@@ -38,10 +38,12 @@ static void done(void)
         __asm__("hlt");
     }
 }
+
 extern "C" uintptr_t kernel_physical_base()
 {
     return kernel_request.response->physical_base;
 }
+
 extern "C" uintptr_t kernel_virtual_base()
 {
     return kernel_request.response->virtual_base;
@@ -59,6 +61,7 @@ public:
                 terminal_request.response->write(terminal, data, size);*/
         return {};
     }
+
     template <core::Viewable T>
     constexpr core::Result<void> write(T view)
         requires(core::Viewable<T>)
@@ -72,6 +75,7 @@ extern "C" void __cxa_pure_virtual()
     // limine_writer.writeV(core::Str("Pure virtual function called!"));
     done();
 }
+
 void load_mcx(mcx::MachineContext *context);
 
 // The following will be our kernel's entry point.

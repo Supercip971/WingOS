@@ -1,6 +1,7 @@
 #pragma once
 #include <libcore/type/trait.hpp>
 #include <libcore/unreachable.h>
+
 namespace core
 {
 class NoCopy

@@ -1,6 +1,7 @@
 #pragma once
 #include <stddef.h>
 #include <stdint.h>
+
 #include "gfx/color.hpp"
 
 namespace wgfx
@@ -16,7 +17,9 @@ public:
     Format *_data;
     size_t _width;
     size_t _height;
+
     size_t width() const { return _width; }
+
     size_t height() const { return _height; }
 
     Format *data() const { return _data; }

@@ -6,6 +6,7 @@
 
 #include "libcore/fmt/log.hpp"
 #include "libcore/time/time.hpp"
+
 namespace hw::hpet
 {
 
@@ -88,6 +89,7 @@ core::Result<void> hpet_prepare_mapping(uintptr_t rsdp_addr, Fn fn)
     try$(fn((uintptr_t)hpet_base, hpet->header.length));
     return {};
 }
+
 void hpet_sleep(core::Milliseconds ms);
 
 core::Milliseconds hpet_clock_read();

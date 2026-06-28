@@ -32,6 +32,7 @@ enum MsrApicBits : uint64_t
 };
 
 ENUM_OP$(MsrApicBits);
+
 struct Msr
 {
     static inline uint64_t Read(MsrReg msr)
@@ -52,6 +53,7 @@ struct Msr
                      :
                      : "a"(low), "d"(high), "c"(static_cast<uint32_t>(msr)) : "memory");
     }
+
     static inline uint64_t Read(uint32_t msr)
     {
         uint32_t low, high;

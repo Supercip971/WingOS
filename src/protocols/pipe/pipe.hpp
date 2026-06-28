@@ -4,6 +4,7 @@
 #include "iol/wingos/space.hpp"
 #include "iol/wingos/syscalls.h"
 #include "wingos-headers/syscalls.h"
+
 namespace prot
 {
 struct Duplex
@@ -29,6 +30,7 @@ class SenderPipe
 {
 public:
     Wingos::IpcClient &raw_connection() { return _connection; }
+
     core::Result<void> send(const void *buffer, size_t len)
     {
         if (len > MAX_IPC_BUFFER_SIZE)
@@ -57,6 +59,7 @@ public:
     }
 
     SenderPipe() = default;
+
     SenderPipe(Wingos::IpcClient &&connection) : _connection(core::move(connection))
     {
     }
@@ -75,6 +78,7 @@ public:
         pipe._connection = Wingos::IpcClient::from(space.handle, handle);
         return core::Result<ReceiverPipe>::success(core::move(pipe));
     }
+
     static core::Result<ReceiverPipe> from(Wingos::IpcClient connection)
     {
         ReceiverPipe pipe;

@@ -1,5 +1,6 @@
 #include "unistd.h"
 #include <iol/iol.h>
+
 extern "C" char *getcwd(
     char *buf, size_t size)
 {
@@ -19,6 +20,7 @@ extern "C" char *getcwd(
 
     return buf;
 }
+
 int chdir(const char *path)
 {
     int res = iol_change_cwd(path);

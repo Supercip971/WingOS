@@ -8,5 +8,6 @@ int __signbit(double x)
         double d;
         uint64_t i;
     } y = {x};
+
     return y.i >> 63;
 }

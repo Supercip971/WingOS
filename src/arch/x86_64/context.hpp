@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #include "libcore/fmt/flags.hpp"
+
 namespace arch::amd64
 {
 

@@ -18,6 +18,7 @@ public:
     core::Vec<core::SharedPtr<Widget>> elements;
 
     ~VFlex() override = default;
+
     template <typename... T>
     VFlex(T... args)
     {

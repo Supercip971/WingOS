@@ -22,9 +22,11 @@ enum HIMessageType : uint32_t
     HI_START_LISTEN = 0,
 
 };
+
 struct HIEvent
 {
     EventType type;
+
     union
     {
         struct
@@ -33,6 +35,7 @@ struct HIEvent
             int32_t dy;
             uint8_t buttons;
         } mouse;
+
         struct
         {
             uint32_t keycode;
@@ -48,13 +51,16 @@ class HIEventQueue
 
 public:
     HIEventQueue() = default;
+
     HIEventQueue(ReceiverPipe &&rpipe) : _rpipe(core::move(rpipe))
     {
     }
+
     void push_event(const HIEvent &event)
     {
         _events.push(event);
     }
+
     core::Result<HIEvent> poll_event()
     {
         if (_events.len() == 0)
@@ -76,6 +82,7 @@ public:
         }
     }
 };
+
 class HIConnection
 {
     Wingos::IpcClient connection;

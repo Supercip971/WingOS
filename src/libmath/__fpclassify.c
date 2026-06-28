@@ -8,6 +8,7 @@ int __fpclassify(double x)
         double f;
         uint64_t i;
     } u = {x};
+
     int e = u.i >> 52 & 0x7ff;
     if (!e)
         return u.i << 1 ? FP_SUBNORMAL : FP_ZERO;

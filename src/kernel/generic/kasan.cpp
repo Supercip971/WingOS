@@ -15,6 +15,7 @@
 static kernel::Kasan _instance = {};
 
 #define no_kasan __attribute__((no_sanitize("address")))
+
 // source: https://github.com/FireflyOS/Firefly-Kernel/blob/master/firefly/kernel/trace/sanitizer/kasan.cpp#L88
 
 core::Result<void> kernel::Kasan::initialize(size_t memory_size)

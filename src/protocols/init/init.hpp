@@ -18,6 +18,7 @@ enum InitMessageType
     INIT_SIGNAL_FS_AVAILABLE = 5,
     INIT_QUERY_FB = 6,
 };
+
 struct InitRegisterServer
 {
     // wingos/disk
@@ -133,6 +134,7 @@ public:
 
         return {};
     }
+
     core::Result<InitGetServerResponse> get_server(InitGetServer const &reg)
     {
         IpcMessage message = {};

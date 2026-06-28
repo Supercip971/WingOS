@@ -283,6 +283,7 @@ static long summed_weights()
 
     return sum;
 }
+
 static void update_runned_task_for_cpu(CoreId cpu)
 {
 
@@ -347,6 +348,7 @@ core::Result<size_t> resolve_blocked_tasks_scheduler()
 
     return unblocked_count;
 }
+
 static void update_runned_tasks()
 {
     // actually quick because of linked list
@@ -622,6 +624,7 @@ core::Result<void> schedule_all()
     }
     return {};
 }
+
 void schedule_other_cpus()
 {
     for (size_t i = 0; i < running_cpu_count; i++)
@@ -694,6 +697,7 @@ core::Result<void> dump_current_running_task(bool complete)
 
     return {};
 }
+
 core::Result<void> dump_all_current_running_tasks()
 {
     fmt::log$("Dumping all current running tasks:");
@@ -715,6 +719,7 @@ core::Result<void> dump_all_current_running_tasks()
     }
     return {};
 }
+
 core::Result<void> reschedule_only_one(CoreId core)
 {
 
@@ -746,6 +751,7 @@ core::Result<void> reschedule_all()
 
     return {};
 }
+
 core::Result<Task *> schedule_self(Task *current, void *state, CoreId core)
 {
 

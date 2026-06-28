@@ -8,6 +8,7 @@ float scalbnf(float x, int n)
         float f;
         uint32_t i;
     } u;
+
     float_t y = x;
 
     if (n > 127)

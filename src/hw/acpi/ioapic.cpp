@@ -9,6 +9,7 @@
 #include "libcore/ds/array.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/result.hpp"
+
 namespace hw::acpi
 {
 // CONFIGURABLE

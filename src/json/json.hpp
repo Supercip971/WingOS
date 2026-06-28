@@ -6,6 +6,7 @@
 #include "libcore/result.hpp"
 #include "libcore/str.hpp"
 #include "libcore/type-utils.hpp"
+
 namespace wjson
 {
 
@@ -60,6 +61,7 @@ struct JsonChilds
         return *this;
     }
 };
+
 struct JsonStorage
 {
     core::Str raw;
@@ -247,6 +249,7 @@ struct JsonValue
         };
         return storage.childs.values[0];
     }
+
     JsonValue &operator[](const core::Str &key)
     {
         for (size_t i = 0; i < storage.childs.keys.len(); i++)

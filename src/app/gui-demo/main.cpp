@@ -35,11 +35,12 @@ struct MyState
 
     int counter;
 };
+
 class CustomWidget2 : public fc::Statefull<MyState>
 {
 
 public:
-    core::SharedPtr<fc::Widget> build(const fc::UiContext & ctx) override
+    core::SharedPtr<fc::Widget> build(const fc::UiContext &ctx) override
     {
 
         auto res = fmt::format_str("Counter 2: {}", counter | fmt::FMT_PAD_ZERO);
@@ -60,16 +61,17 @@ public:
 
                 fc::AutoCallback$([](CustomWidget2 *w2)
                                   { w2->setState([&]()
-                                                { w2->counter++; }); }),
+                                                 { w2->counter++; }); }),
                 $<fc::LPadded>(fc::Padded().horizontal(16 * ctx.dpi).down(100.f), $<fc::TextWidget>("hello world! j  @g",
-                                                                              fc::FontsRepo::the().find("oswald@96")))));
+                                                                                                    fc::FontsRepo::the().find("oswald@96")))));
     }
 };
+
 class CustomWidget : public fc::Statefull<MyState>
 {
 
 public:
-    core::SharedPtr<fc::Widget> build(const fc::UiContext & ctx) override
+    core::SharedPtr<fc::Widget> build(const fc::UiContext &ctx) override
     {
 
         return $<fc::_Root>(wgfx::BLUE,
@@ -85,6 +87,7 @@ public:
                                             $<fc::Centered>($<CustomWidget2>()))))));
     }
 };
+
 int main(int argc, char **argv)
 {
     (void)argc;
@@ -109,19 +112,16 @@ int main(int argc, char **argv)
     ctx.theme = fc::Theme::wingos();
 
     ctx.dpi = window->dpi();
-//    ctx.enable_debug_layout = true;
+    //    ctx.enable_debug_layout = true;
     vwidgt->mount(ctx);
     // vwidgt->build({});
     //
 
     vwidgt->relayout(ctx, wgfx::GRect(0, 0, window->width(), window->height()));
 
-
     vwidgt->update_dirty(ctx);
 
-
     vwidgt->update_layout(ctx, wgfx::GRect(0, 0, window->width(), window->height()));
-
 
     while (true)
     {
@@ -138,7 +138,6 @@ int main(int argc, char **argv)
                 vwidgt->acquireEvent(ev);
             }
         } while (ev.kind != wgfx::UEvent::Kind::NONE);
-
 
         wgfx::Canvas *frame = window->create_frame();
 
@@ -159,7 +158,6 @@ int main(int argc, char **argv)
         // wgfx::CompositeColor color = wgfx::CompositeColor::fromOklch(70.4f/100.f, 0.295, l);
 
         vwidgt->render_dirty(ctx, *frame);
-
 
         // vwidgt->dump();
         // frame->drawRect(wgfx::GRect(x, y, 256, 256), wgfx::CompositeColor::fromOklch((float)63.7/100, 0, 0));
@@ -184,8 +182,6 @@ int main(int argc, char **argv)
         //      wgfx::Painter::stroked(wgfx::FUCHSIA, 10.f),
         //      (cosf(l*0.001f) +1.f)/2.f);
 
-
         window->end_frame(frame);
-
     }
 }

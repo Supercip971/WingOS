@@ -10,6 +10,7 @@
 #include "scheduler.hpp"
 
 struct Space;
+
 namespace kernel
 {
 
@@ -34,6 +35,7 @@ enum TaskPriority : uint32_t
 };
 
 struct SchedulerControlBlock;
+
 class Task
 {
     TUID _uid = 0;
@@ -54,6 +56,7 @@ public:
     {
         return _scheduler_block;
     }
+
     Space *_space_owner;
 
     Space *space()
@@ -62,6 +65,7 @@ public:
     }
 
     TaskState state() const { return _state; }
+
     void state(TaskState state) { _state = state; }
 
     Task(TUID uid) : _uid(uid) {};

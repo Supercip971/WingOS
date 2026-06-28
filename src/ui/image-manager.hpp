@@ -8,6 +8,7 @@
 #include "libcore/ds/umap.hpp"
 #include "libcore/path.hpp"
 #include "libcore/shared.hpp"
+
 namespace fc
 {
 class TextureRepo
@@ -17,6 +18,7 @@ class TextureRepo
 
 public:
     using AppRessource = core::SharedPtr<wgfx::Texture>;
+
     core::Result<void> load(core::WStr const &name, core::Str path)
     {
 
@@ -30,22 +32,27 @@ public:
         _texture[name.view()]->compute_image_rgba8();
         return {};
     }
+
     core::SharedPtr<wgfx::Texture> &find(core::Str const &name)
     {
         return _texture[name];
     }
+
     core::SharedPtr<wgfx::Texture> const &find(core::Str const &name) const
     {
         return _texture[name];
     }
+
     core::UMap<core::WStr, core::SharedPtr<wgfx::Texture>> &raw()
     {
         return _texture;
     }
+
     core::UMap<core::WStr, core::SharedPtr<wgfx::Texture>> const &raw() const
     {
         return _texture;
     }
+
     static TextureRepo &the();
 };
 

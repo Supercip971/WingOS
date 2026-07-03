@@ -66,8 +66,8 @@
     "ld": {
       "cmd": "meta/build/cross/bin/x86_64-pc-wingos-ld",
       "args": [
-        "-lsupc++",
         "-Lmeta/build/sysroot/lib",
+        "-lstdc++",
         "-m",
         "elf_x86_64",
         "-T",

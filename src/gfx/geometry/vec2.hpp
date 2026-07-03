@@ -14,14 +14,7 @@ public:
 
     constexpr Vec2(float _x, float _y) : x(_x), y(_y) {}
 
-    constexpr Vec2(const Vec2 &other) : x(other.x), y(other.y) {}
-
     constexpr Vec2() : x(0), y(0) {}
-
-    constexpr Vec2 operator=(const Vec2 &other) const
-    {
-        return Vec2(other.x, other.y);
-    }
 
     constexpr Vec2 operator+(const Vec2 &other) const
     {

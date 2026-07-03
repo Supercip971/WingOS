@@ -1,5 +1,6 @@
 ./build/
 .cutekit/
+debug.txt
 meta/plugins/__pycache__
 .cache/
 meta/build/cross/bin/

@@ -27,11 +27,10 @@ jobs:
         run: |
           sudo apt update
           git submodule update --init --recursive
-
           sudo apt install -y make build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo nasm
           sudo apt install -y mtools wget unzip fuse libfuse-dev
           sudo apt install -y uuid-dev
-          sudo apt install -y gcc binutils parted dosfstools
+          sudo apt install -y gcc binutils parted dosfstools g++ libffi-dev libncurses5-dev libx11-dev libxext-dev libxrender-dev libxrandr-dev libxpm-dev
           sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)" llvm 22 all
 
       - name: Set up Python

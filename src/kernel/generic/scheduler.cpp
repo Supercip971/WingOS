@@ -1,10 +1,9 @@
 #include "kernel/generic/scheduler.hpp"
+#include <atomic>
 
 #include "arch/x86_64/interrupts.hpp"
 #include "kernel/generic/cpu_tree.hpp"
 #include "kernel/generic/smart_lock.hpp"
-#include "kernel/x86_64/cpu.hpp"
-#include "libcore/ds/linked_list.hpp"
 
 #include "kernel/generic/context.hpp"
 #include "kernel/generic/cpu.hpp"
@@ -14,7 +13,6 @@
 #include "libcore/ds/array.hpp"
 #include "libcore/ds/vec.hpp"
 #include "libcore/fmt/log.hpp"
-#include "libcore/lock/rwlock.hpp"
 #include "libcore/result.hpp"
 #include "libcore/type-utils.hpp"
 

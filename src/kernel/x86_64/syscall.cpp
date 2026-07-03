@@ -9,15 +9,12 @@
 #include "hw/acpi/lapic.hpp"
 #include "kernel/generic/cpu.hpp"
 #include "kernel/generic/ipc.hpp"
-#include "kernel/generic/kernel.hpp"
 #include "kernel/generic/scheduler.hpp"
 #include "kernel/generic/space.hpp"
 #include "kernel/generic/syscalls.hpp"
-#include "libcore/alloc/alloc.hpp"
+#include "libcore/fmt/flags.hpp"
 #include "libcore/fmt/log.hpp"
-#include "libcore/lock/lock.hpp"
-#include "libcore/lock/rwlock.hpp"
-#include "wingos-headers/asset.h"
+#include "libcore/result.hpp"
 
 namespace arch::amd64
 {

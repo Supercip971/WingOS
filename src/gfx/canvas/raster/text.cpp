@@ -1,5 +1,7 @@
 
+#include "gfx/canvas/cmd.hpp"
 #include "gfx/canvas/raster/rasterCanvas.hpp"
+#include "gfx/geometry/vec2.hpp"
 
 void wgfx::RasterCanvas::textFlat(TextCommand const &cmd)
 {

@@ -6,12 +6,8 @@
 #include "gfx/canvas/cmd.hpp"
 #include "gfx/color.hpp"
 #include "gfx/geometry/rect.hpp"
-#include "gfx/geometry/shape.hpp"
 #include "gfx/geometry/vec2.hpp"
 #include "libcore/ds/vec.hpp"
-#include "libcore/fmt/log.hpp"
-#include "libcore/logic.hpp"
-#include "libcore/shared.hpp"
 
 namespace wgfx
 {

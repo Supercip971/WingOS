@@ -2,6 +2,7 @@
 
 #include <arch/generic/syscalls.h>
 
+#include "wingos-headers/asset.h"
 #include "wingos-headers/ipc.h"
 #include "wingos-headers/syscalls.h"
 

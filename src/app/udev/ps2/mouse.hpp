@@ -2,6 +2,7 @@
 #include "controller.hpp"
 #include "hw/hi/mouse.hpp"
 #include "libcore/ds/vec.hpp"
+#include "libcore/result.hpp"
 
 namespace Ps2
 {

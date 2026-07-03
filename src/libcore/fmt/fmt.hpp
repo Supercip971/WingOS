@@ -1,10 +1,8 @@
-
 #pragma once
 #include <libcore/fmt/impl/integers.hpp>
 #include <libcore/fmt/impl/ranges.hpp>
 #include <libcore/io/writer.hpp>
 #include <libcore/str.hpp>
-#include <math/range.hpp>
 
 #include "libcore/fmt/impl/asset_kind.hpp"
 

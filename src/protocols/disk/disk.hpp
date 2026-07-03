@@ -1,8 +1,14 @@
 #pragma once
 
+#include "iol/wingos/asset.hpp"
 #include "iol/wingos/ipc.hpp"
+#include "libcore/fmt/log.hpp"
+#include "libcore/result.hpp"
 #include "libcore/str.hpp"
+#include "math/align.hpp"
 #include "protocols/init/init.hpp"
+#include "wingos-headers/asset.h"
+#include "wingos-headers/ipc.h"
 
 namespace prot
 {

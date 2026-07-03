@@ -1,5 +1,4 @@
 
-#include <libcore/fmt/log.hpp>
 #include <mcx/mcx.hpp>
 
 #include "limine.hpp"

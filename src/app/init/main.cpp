@@ -4,6 +4,8 @@
 #include "app/init/module_startup.hpp"
 #include "app/init/service_register.hpp"
 
+#include "libcore/fmt/flags.hpp"
+#include "libcore/fmt/log.hpp"
 #include "mcx/mcx.hpp"
 #include "wingos-headers/startup.hpp"
 

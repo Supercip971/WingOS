@@ -1,11 +1,17 @@
 #include "protocols/server_helper.hpp"
 
 #include "ext4.hpp"
+#include "iol/wingos/asset.hpp"
+#include "libcore/ds/vec.hpp"
 #include "libcore/fmt/log.hpp"
+#include "libcore/result.hpp"
+#include "libcore/str.hpp"
+#include "libcore/type-utils.hpp"
 #include "protocols/disk/disk.hpp"
 #include "protocols/vfs/file.hpp"
 #include "protocols/vfs/fsManager.hpp"
 #include "protocols/vfs/vfs.hpp"
+#include "wingos-headers/ipc.h"
 
 bool is_ext4_filesystem(uint8_t *data)
 {

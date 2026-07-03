@@ -1,5 +1,4 @@
 #include "kernel/generic/blocker.hpp"
-#include <generic/ipc.hpp>
 static size_t block_event_id = 0;
 
 namespace kernel

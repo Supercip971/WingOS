@@ -3,8 +3,6 @@
 
 #include "libcore/enum-op.hpp"
 #include "libcore/result.hpp"
-#include "libcore/str.hpp"
-#include "libcore/type-utils.hpp"
 
 namespace arch::x86
 {

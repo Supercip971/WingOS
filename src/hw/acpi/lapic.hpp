@@ -2,13 +2,10 @@
 
 #include <stdint.h>
 
-#include "arch/x86_64/msr.hpp"
 #include "hw/mem/addr_space.hpp"
 
 #include "hw/acpi/madt.hpp"
-#include "libcore/enum-op.hpp"
 #include "libcore/result.hpp"
-#include "libcore/type/trait.hpp"
 
 namespace hw::acpi
 {

@@ -3,7 +3,9 @@
 #include <libcore/fmt/log.hpp>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
+
+#include "libcore/io/writer.hpp"
+#include "libcore/result.hpp"
 
 class LinuxLogger : public core::Writer
 {

@@ -2,6 +2,8 @@
 
 #include "arch/x86_64/gdt.hpp"
 
+#include "libcore/mem/view.hpp"
+
 namespace arch::amd64
 {
 

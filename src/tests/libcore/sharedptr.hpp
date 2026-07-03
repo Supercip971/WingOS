@@ -1,9 +1,9 @@
 #pragma once
 
-#include <libcore/fmt/log.hpp>
 #include <libcore/shared.hpp>
 
 #include "../test.hpp"
+#include "libcore/type-utils.hpp"
 
 // Helper class to track construction/destruction
 struct TestObject

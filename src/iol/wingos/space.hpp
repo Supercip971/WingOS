@@ -4,7 +4,9 @@
 
 #include "iol/wingos/asset.hpp"
 #include "iol/wingos/ipc.hpp"
+#include "iol/wingos/syscalls.h"
 #include "libcore/fmt/log.hpp"
+#include "wingos-headers/asset.h"
 
 #define USERSPACE_VIRT_BASE 0x0000002000000000
 

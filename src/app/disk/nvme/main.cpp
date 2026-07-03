@@ -8,9 +8,12 @@
 #include "dev/pci/pci.hpp"
 #include "iol/wingos/asset.hpp"
 #include "iol/wingos/space.hpp"
-#include "iol/wingos/syscalls.h"
+#include "libcore/ds/vec.hpp"
 #include "libcore/fmt/flags.hpp"
 #include "libcore/fmt/log.hpp"
+#include "libcore/result.hpp"
+#include "libcore/str.hpp"
+#include "libcore/type-utils.hpp"
 #include "libcore/type/trait.hpp"
 #include "math/align.hpp"
 #include "mcx/mcx.hpp"
@@ -18,7 +21,6 @@
 #include "protocols/vfs/vfs.hpp"
 #include "spec.hpp"
 #include "wingos-headers/asset.h"
-#include "wingos-headers/syscalls.h"
 
 uint64_t device_uid;
 

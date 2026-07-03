@@ -1,7 +1,6 @@
 #include "kernel/x86_64/cpu.hpp"
 #include <arch/x86_64/gdt.hpp>
 
-#include "kernel/generic/cpu.hpp"
 #include "kernel/generic/kernel.hpp"
 #include "libcore/alloc/alloc.hpp"
 #include "libcore/fmt/log.hpp"

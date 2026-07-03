@@ -4,8 +4,11 @@
 #include <stdint.h>
 
 #include "iol/wingos/syscalls.h"
+#include "libcore/fmt/flags.hpp"
+#include "libcore/result.hpp"
 #include "math/align.hpp"
 #include "mcx/mcx.hpp"
+#include "wingos-headers/asset.h"
 #include "wingos-headers/syscalls.h"
 
 namespace Wingos

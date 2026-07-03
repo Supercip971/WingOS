@@ -1,6 +1,9 @@
 #include "gfx/canvas/raster/rasterCanvas.hpp"
 
+#include "gfx/canvas/draw_context.hpp"
+
 #include "gfx/canvas/cmd.hpp"
+#include "libcore/fmt/log.hpp"
 
 void wgfx::RasterCanvas::apply(DrawContext const &ctx, RenderCommand const &cmd)
 {

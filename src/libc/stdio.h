@@ -7,6 +7,7 @@ extern "C"
 #include <stdarg.h>
 #include <stddef.h>
 
+    struct _IO_FILE;
     typedef struct _IO_FILE FILE;
 
 #define EOF (-1)

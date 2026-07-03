@@ -2,15 +2,16 @@
 #include <string.h>
 
 #include "hw/mem/addr_space.hpp"
+#include "iol/mem_flags.h"
 #include "kernel/x86_64/cpu.hpp" // Ensure `CpuImpl` and `max_cpu` are available
 
 #include "hw/acpi/lapic.hpp"
-#include "kernel/generic/cpu.hpp"
 #include "kernel/generic/kernel.hpp"
 #include "kernel/generic/paging.hpp"
 #include "kernel/generic/pmm.hpp"
 #include "libcore/fmt/flags.hpp"
 #include "libcore/fmt/log.hpp"
+#include "libcore/result.hpp"
 
 static bool _ready = false;
 

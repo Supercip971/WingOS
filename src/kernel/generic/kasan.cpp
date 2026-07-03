@@ -5,11 +5,10 @@
 
 #include "hw/mem/addr_space.hpp"
 
-#include "kernel/generic/cpu.hpp"
-#include "kernel/generic/paging.hpp"
-#include "kernel/generic/pmm.hpp"
 #include "libcore/alloc/alloc.hpp"
 #include "libcore/fmt/flags.hpp"
+#include "libcore/result.hpp"
+#include "libcore/unreachable.h"
 #include "mcx/mcx.hpp"
 
 static kernel::Kasan _instance = {};

@@ -3,7 +3,9 @@
 #include <libcore/fmt/fmt.hpp>
 #include <stdint.h>
 
+#include "libcore/fmt/flags.hpp"
 #include "libcore/io/writer.hpp"
+#include "libcore/result.hpp"
 #include "libcore/str.hpp"
 
 namespace wgfx

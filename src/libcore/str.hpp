@@ -1,8 +1,6 @@
 #pragma once
 #include <libcore/ds/vec.hpp>
-#include <libcore/io/reader.hpp>
 #include <libcore/mem/view.hpp>
-#include <libcore/type-utils.hpp>
 #include <stddef.h>
 
 namespace core

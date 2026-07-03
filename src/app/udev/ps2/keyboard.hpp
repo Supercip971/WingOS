@@ -1,6 +1,7 @@
 #pragma once
 #include "controller.hpp"
 #include "libcore/ds/vec.hpp"
+#include "libcore/result.hpp"
 #include "stdint.h"
 
 namespace Ps2

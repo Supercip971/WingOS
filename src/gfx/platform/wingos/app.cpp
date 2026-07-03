@@ -1,10 +1,13 @@
 #include "protocols/hi/human_interface.hpp"
 
+#include "gfx/canvas/canvas.hpp"
 #include "gfx/event/event.hpp"
+#include "libcore/fmt/log.hpp"
+#include "libcore/result.hpp"
+#include "libcore/shared.hpp"
 #include "protocols/clock/clock.hpp"
 #include "protocols/compositor/window.hpp"
 #define EXTERNAL_INCLUDED
-#include <gfx/platform/app.hpp>
 #include <gfx/platform/window.hpp>
 #include <string.h>
 

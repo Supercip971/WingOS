@@ -13,7 +13,8 @@
 #include "hw/acpi/rsdp.hpp"
 #include "hw/acpi/rsdt.hpp"
 #include "hw/pic/pic.hpp"
-#include "kernel/generic/cpu.hpp"
+#include "libcore/ds/array.hpp"
+#include "libcore/fmt/flags.hpp"
 #include "libcore/result.hpp"
 #include "mcx/mcx.hpp"
 

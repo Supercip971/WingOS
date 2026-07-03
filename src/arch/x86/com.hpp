@@ -1,12 +1,12 @@
 #pragma once
 
-#include <arch/x86/port.hpp>
 #include <libcore/enum-op.hpp>
 #include <libcore/io/writer.hpp>
 #include <libcore/lock/lock.hpp>
 #include <libcore/result.hpp>
 #include <stdint.h>
 
+#include "libcore/mem/view.hpp"
 #include "libcore/type-utils.hpp"
 
 namespace arch::x86

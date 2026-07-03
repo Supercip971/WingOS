@@ -1,6 +1,5 @@
 #pragma once
 
-#include "kernel/generic/space.hpp"
 #include "libcore/result.hpp"
 #include "libelf/elf.hpp"
 #include "mcx/mcx.hpp"

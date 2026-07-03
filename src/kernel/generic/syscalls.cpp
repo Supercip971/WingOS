@@ -2,20 +2,20 @@
 
 #include "arch/x86_64/paging.hpp"
 #include "hw/mem/addr_space.hpp"
-#include "libcore/fmt/impl/asset_kind.hpp"
+#include "kernel/generic/asset_types.hpp"
 
 #include "arch/x86/port.hpp"
 #include "kernel/generic/asset.hpp"
-#include "kernel/generic/context.hpp"
 #include "kernel/generic/cpu.hpp"
 #include "kernel/generic/ipc.hpp"
 #include "kernel/generic/scheduler.hpp"
 #include "kernel/generic/space.hpp"
 #include "kernel/generic/task.hpp"
-#include "libcore/core.hpp"
 #include "libcore/fmt/flags.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/lock/lock.hpp"
+#include "libcore/result.hpp"
+#include "libcore/type-utils.hpp"
 #include "wingos-headers/asset.h"
 #include "wingos-headers/syscalls.h"
 

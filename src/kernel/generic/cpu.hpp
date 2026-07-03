@@ -3,7 +3,6 @@
 
 // generally used by implementation
 #include <libcore/fmt/log.hpp>
-#include <libcore/lock/lock.hpp>
 #include <stddef.h>
 #include <stdint.h>
 using CoreId = int;

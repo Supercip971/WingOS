@@ -1,9 +1,10 @@
 #pragma once
 #include <libcore/ds/bitmap.hpp>
 #include <libcore/fmt/fmt.hpp>
-#include <libcore/fmt/impl/integers.hpp>
 
 #include "libcore/fmt/flags.hpp"
+#include "libcore/io/writer.hpp"
+#include "libcore/result.hpp"
 #include "libcore/type/trait.hpp"
 
 #define flags fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO

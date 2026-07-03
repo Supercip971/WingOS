@@ -1,6 +1,7 @@
 #pragma once
 #include "../test.hpp"
 #include "libcore/mem/view.hpp"
+#include "libcore/str.hpp"
 #include "parser/scanner.hpp"
 
 static constexpr TestGroup parserTest = {

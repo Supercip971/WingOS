@@ -1,5 +1,4 @@
 #include "io.hpp"
-#include <libcore/fmt/log.hpp>
 
 #include "reader.hpp"
 #include "seekable.hpp"

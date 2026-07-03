@@ -1,30 +1,17 @@
 #include <stddef.h>
 #include <string.h>
-#include <sys/types.h>
 
-#include "libcore/fmt/fmt_str.hpp"
-#include "libcore/str_writer.hpp"
 #include "protocols/hi/human_interface.hpp"
 #include "protocols/server_helper.hpp"
 
 #include "app/udev/ps2/controller.hpp"
 #include "app/udev/ps2/keyboard.hpp"
 #include "app/udev/ps2/mouse.hpp"
-#include "arch/generic/syscalls.h"
-#include "iol/ports.hpp"
-#include "iol/wingos/execute.hpp"
 #include "iol/wingos/space.hpp"
-#include "iol/wingos/syscalls.h"
-#include "libcore/alive.hpp"
+#include "libcore/ds/vec.hpp"
 #include "libcore/fmt/log.hpp"
-#include "mcx/mcx.hpp"
-#include "protocols/compositor/compositor.hpp"
-#include "protocols/compositor/window.hpp"
-#include "protocols/init/init.hpp"
+#include "libcore/type-utils.hpp"
 #include "protocols/pipe/pipe.hpp"
-#include "protocols/vfs/vfs.hpp"
-#include "wingos-headers/startup.hpp"
-#include "wingos-headers/syscalls.h"
 
 // source: derived from brutal OS but
 // I wrote the brutal PS2 code

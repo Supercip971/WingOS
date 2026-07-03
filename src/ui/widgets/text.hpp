@@ -2,11 +2,16 @@
 
 #include "libcore/str_writer.hpp"
 
+#include "gfx/canvas/canvas.hpp"
 #include "gfx/color.hpp"
 #include "gfx/geometry/rect.hpp"
 #include "gfx/geometry/vec2.hpp"
 #include "gfx/text/font.hpp"
+#include "libcore/fmt/log.hpp"
 #include "libcore/shared.hpp"
+#include "libcore/str.hpp"
+#include "libcore/type-utils.hpp"
+#include "ui/context.hpp"
 #include "widget.hpp"
 
 namespace fc

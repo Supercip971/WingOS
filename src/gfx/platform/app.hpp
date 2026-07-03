@@ -3,9 +3,8 @@
 #include <stddef.h>
 
 #include "libcore/ds/vec.hpp"
-#include "libcore/fmt/log.hpp"
+#include "libcore/result.hpp"
 #include "libcore/shared.hpp"
-#include "libcore/type-utils.hpp"
 
 namespace wgfx
 {

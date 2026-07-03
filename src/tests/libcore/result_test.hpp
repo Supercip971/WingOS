@@ -1,10 +1,11 @@
 #pragma once
 
-#include <libcore/fmt/log.hpp>
 #include <libcore/result.hpp>
 #include <libcore/str.hpp>
 
 #include "../test.hpp"
+#include "libcore/io/writer.hpp"
+#include "libcore/type-utils.hpp"
 
 // Helper class to track construction/destruction for Result tests
 struct ResultTestObject

@@ -1,11 +1,11 @@
 #pragma once
 
 #include <libcore/fmt/log.hpp>
-#include <libcore/str.hpp>
 
 #include "../test.hpp"
 #include "libcore/ds/vec.hpp"
-#include "libcore/mem/mem.hpp"
+#include "libcore/result.hpp"
+#include "libcore/type-utils.hpp"
 
 // Helper class to track construction/destruction for vector tests
 struct VecTestObject

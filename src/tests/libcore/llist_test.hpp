@@ -1,6 +1,5 @@
 #pragma once
 #include <libcore/fmt/log.hpp>
-#include <libcore/str.hpp>
 
 #include "libcore/ds/linked_list.hpp"
 

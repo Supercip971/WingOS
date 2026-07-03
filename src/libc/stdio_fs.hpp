@@ -2,6 +2,8 @@
 
 #include "libcore/str_writer.hpp"
 
+#include "libcore/io/reader.hpp"
+#include "libcore/io/writer.hpp"
 #include "protocols/pipe/pipe.hpp"
 #include "protocols/vfs/file.hpp"
 

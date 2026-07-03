@@ -1,5 +1,6 @@
 #include "gfx/canvas/cmd.hpp"
 #include "gfx/color.hpp"
+#include "libcore/logic.hpp"
 #include "rasterCanvas.hpp"
 
 // static size_t l = 0;

@@ -1,8 +1,6 @@
 #ifndef _LIBALLOC_H
 #define _LIBALLOC_H
 
-#include <iol/mem.h>
-#include <libcore/unreachable.h>
 #include <stddef.h>
 /** \defgroup ALLOCHOOKS liballoc hooks
  *

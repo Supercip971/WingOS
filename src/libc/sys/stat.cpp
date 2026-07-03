@@ -2,6 +2,8 @@
 #include <protocols/vfs/file.hpp>
 #include <protocols/vfs/vfs.hpp>
 
+#include "libcore/str.hpp"
+
 int stat(const char *__restrict path, struct stat *__restrict buf)
 {
     auto file_conn_res = prot::VfsConnection::connect();

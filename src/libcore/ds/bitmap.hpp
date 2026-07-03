@@ -6,7 +6,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "libcore/fmt/log.hpp"
+#include "libcore/type-utils.hpp"
 
 namespace core
 {

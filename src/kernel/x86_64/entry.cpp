@@ -2,12 +2,8 @@
 #include <kernel/generic/pmm.hpp>
 
 #include "hw/acpi/lapic.hpp"
-#include "hw/acpi/rsdp.hpp"
-#include "hw/acpi/rsdt.hpp"
 #include "hw/hpet/hpet.hpp"
-#include "kernel/generic/mem.hpp"
 #include "kernel/generic/paging.hpp"
-#include "libcore/fmt/impl/bitmap.hpp"
 // ee
 #include <hw/acpi/apic.hpp>
 #include <hw/acpi/madt.hpp>
@@ -17,7 +13,6 @@
 
 #include "arch/x86_64/idt.hpp"
 #include "arch/x86_64/simd.hpp"
-#include "iol/mem_flags.h"
 #include "kernel/generic/cpu_tree.hpp"
 #include "kernel/x86_64/numa.hpp"
 #include "kernel/x86_64/smp.hpp"
@@ -26,6 +21,7 @@
 // ee
 
 #include "cpu.hpp"
+#include "libcore/result.hpp"
 
 volatile size_t _running_cpu_count = 0;
 using InitializerPtr = void (*)();

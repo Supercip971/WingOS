@@ -1,7 +1,6 @@
 #pragma once
 
 #include <libcore/result.hpp>
-#include <libcore/type-utils.hpp>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -10,9 +9,9 @@ namespace core
 
 enum class SeekFrom
 {
-    SEEK_BEGIN,
-    SEEK_CURRENT,
-    SEEK_END
+    FROM_BEGIN,
+    FROM_CURRENT,
+    FROM_END
 };
 
 class Seeker
@@ -21,7 +20,7 @@ public:
     Seeker() = default;
     virtual ~Seeker();
 
-    constexpr virtual Result<void> seek(size_t offset, SeekFrom from = SeekFrom::SEEK_BEGIN)
+    constexpr virtual Result<void> seek(size_t offset, SeekFrom from = SeekFrom::FROM_BEGIN)
     {
         (void)offset;
         (void)from;
@@ -33,15 +32,15 @@ public:
     constexpr virtual Result<size_t> size()
     {
         size_t current = try$(tell());
-        seek(0, SeekFrom::SEEK_END);
+        seek(0, SeekFrom::FROM_END);
         size_t size = try$(tell());
-        seek(current, SeekFrom::SEEK_BEGIN);
+        seek(current, SeekFrom::FROM_BEGIN);
         return size;
     }
 
     constexpr virtual Result<size_t> rewind()
     {
-        seek(0, SeekFrom::SEEK_BEGIN);
+        seek(0, SeekFrom::FROM_BEGIN);
         return tell();
     }
 };
@@ -49,7 +48,7 @@ public:
 template <typename T>
 concept Seekable = requires(T *x) {
     {
-        x->seek(0, SeekFrom::SEEK_BEGIN)
+        x->seek(0, SeekFrom::FROM_BEGIN)
     } -> IsConvertibleToResult<void>;
     {
         x->tell()

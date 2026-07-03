@@ -1,8 +1,17 @@
 #pragma once
 
 #include <libcore/bound.hpp>
-#include <libcore/optional.hpp>
 #include <libcore/type-utils.hpp>
+// NOLINTBEGIN
+#include <libcore/core.hpp>
+// NOLINTEND
+
+#include "libcore/unreachable.h"
+
+void assert_dump(const char *error);
+
+template <typename ErrT>
+void assert_dump(ErrT error);
 
 namespace core
 {
@@ -110,7 +119,18 @@ public:
         return res;
     }
 
-    void assert();
+    void assert() const
+    {
+        if (is_error())
+        {
+            assert_dump(_error);
+
+            unreachable$();
+            while (true)
+            {
+            };
+        }
+    }
 
     ValT &unwrap() & bounded$
     {
@@ -185,7 +205,18 @@ public:
         return *this;
     }
 
-    void assert();
+    void assert() const
+    {
+        if (is_error())
+        {
+            assert_dump(_error);
+
+            unreachable$();
+            while (true)
+            {
+            };
+        }
+    }
 
     void unwrap()
     {

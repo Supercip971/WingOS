@@ -1,20 +1,24 @@
 #include "asset.hpp"
-#include <new>
+#include <atomic>
 
 #include "arch/x86_64/paging.hpp"
 #include "hw/mem/addr_space.hpp"
 #include "iol/mem_flags.h"
+#include "kernel/generic/asset_types.hpp"
 #include <arch/x86_64/barrier.hpp>
 
 // Make sure IPC public types (e.g. IpcServerHandle) are visible before this TU
 // pulls in headers that depend on them transitively.
 #include "kernel/generic/ipc.hpp"
+#include "kernel/generic/mem.hpp"
 #include "kernel/generic/space.hpp"
 #include "kernel/generic/task.hpp"
+#include "libcore/fmt/log.hpp"
+#include "libcore/result.hpp"
+#include "libcore/type-utils.hpp"
 #include "math/align.hpp"
 #include "mcx/mcx.hpp"
 #include "wingos-headers/asset.h"
-#include "wingos-headers/ipc.h"
 
 void Asset::own(Asset *asset)
 {

@@ -3,6 +3,13 @@
 #include <libcore/result.hpp>
 #include <protocols/disk/disk.hpp>
 
+#include "libcore/str_writer.hpp"
+
+#include "iol/wingos/asset.hpp"
+#include "libcore/type-utils.hpp"
+#include "math/align.hpp"
+#include "wingos-headers/asset.h"
+
 core::Result<Wingos::GPTDiskParseResult> Wingos::parse_gpt(core::Str &device)
 {
     Wingos::GPTDiskParseResult result = {};

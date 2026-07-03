@@ -1,5 +1,10 @@
 #include "json.hpp"
 
+#include "libcore/fmt/log.hpp"
+#include "libcore/mem/view.hpp"
+#include "libcore/result.hpp"
+#include "libcore/str.hpp"
+#include "libcore/type-utils.hpp"
 #include "parser/scanner.hpp"
 
 namespace wjson

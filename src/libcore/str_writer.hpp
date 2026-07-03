@@ -3,10 +3,9 @@
 #include <libcore/io/writer.hpp>
 #include <libcore/mem/mem.hpp>
 #include <libcore/str.hpp>
-#include <libcore/type-utils.hpp>
 #include <stddef.h>
 
-#include "libcore/ds/vec.hpp"
+#include "libcore/result.hpp"
 
 namespace core
 {

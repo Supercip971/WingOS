@@ -2,21 +2,18 @@
 
 #include "protocols/server_helper.hpp"
 
-#include "arch/generic/syscalls.h"
 #include "iol/wingos/asset.hpp"
 #include "iol/wingos/ipc.hpp"
 #include "iol/wingos/space.hpp"
-#include "iol/wingos/syscalls.h"
 #include "libcore/alive.hpp"
 #include "libcore/ds/vec.hpp"
 #include "libcore/fmt/log.hpp"
-#include "mcx/mcx.hpp"
+#include "libcore/type-utils.hpp"
 #include "protocols/compositor/compositor.hpp"
 #include "protocols/compositor/window.hpp"
 #include "protocols/init/init.hpp"
-#include "protocols/vfs/vfs.hpp"
+#include "wingos-headers/asset.h"
 #include "wingos-headers/ipc.h"
-#include "wingos-headers/syscalls.h"
 
 struct FramebufferInfo
 {

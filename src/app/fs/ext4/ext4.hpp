@@ -2,7 +2,15 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "iol/wingos/asset.hpp"
+#include "libcore/ds/vec.hpp"
+#include "libcore/fmt/log.hpp"
+#include "libcore/result.hpp"
+#include "libcore/str.hpp"
+#include "libcore/type-utils.hpp"
+#include "math/align.hpp"
 #include "protocols/disk/disk.hpp"
+#include "wingos-headers/asset.h"
 
 struct [[gnu::packed]] Ext4Superblock
 {

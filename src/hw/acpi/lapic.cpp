@@ -6,8 +6,8 @@
 
 #include "hw/acpi/madt.hpp"
 #include "hw/hpet/hpet.hpp"
-#include "hw/pic/pic.hpp"
 #include "lapic.hpp"
+#include "libcore/fmt/flags.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/result.hpp"
 

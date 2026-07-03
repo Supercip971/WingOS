@@ -2,6 +2,7 @@
 #pragma once
 
 #include "arch/x86_64/gdt.hpp"
+#include "arch/x86_64/tss.hpp"
 #include "hw/mem/addr_space.hpp"
 
 #include "kernel/generic/cpu.hpp"

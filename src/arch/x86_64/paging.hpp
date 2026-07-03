@@ -3,7 +3,9 @@
 #include <kernel/generic/pmm.hpp>
 
 #include "hw/mem/addr_space.hpp"
+#include "iol/mem_flags.h"
 
+#include "libcore/result.hpp"
 #include "math/align.hpp"
 
 namespace arch::amd64

@@ -3,6 +3,8 @@
 #include <stdint.h>
 
 #include "gfx/color.hpp"
+#include "libcore/result.hpp"
+#include "libcore/str.hpp"
 
 namespace wgfx
 {

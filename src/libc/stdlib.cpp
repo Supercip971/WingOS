@@ -1,10 +1,8 @@
 
 
 #include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
-
-#include "libcore/fmt/flags.hpp"
-#include "libcore/fmt/log.hpp"
 
 namespace __cxxabiv1
 {

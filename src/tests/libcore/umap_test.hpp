@@ -5,6 +5,8 @@
 
 #include "libcore/str_writer.hpp"
 
+#include "libcore/type-utils.hpp"
+
 struct UMapTestKey;
 
 namespace core

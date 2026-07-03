@@ -2,7 +2,13 @@
 
 #include "libcore/str_writer.hpp"
 
+#include "iol/wingos/asset.hpp"
 #include "libcore/alloc/alloc.hpp"
+#include "libcore/fmt/log.hpp"
+#include "libcore/logic.hpp"
+#include "libcore/result.hpp"
+#include "libcore/type-utils.hpp"
+#include "wingos-headers/asset.h"
 
 core::Result<void *> Ext4Filesystem::read_block_tmp(Wingos::MemoryAsset &target, size_t block_num, size_t mem_asset_off)
 {

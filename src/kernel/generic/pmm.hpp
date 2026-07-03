@@ -1,21 +1,21 @@
 #pragma once
 
 #include <libcore/ds/bitmap.hpp>
-#include <libcore/fmt/log.hpp>
 #include <mcx/mcx.hpp>
 #include <stdint.h>
 
 #include "hw/mem/addr_space.hpp"
 #include <iol/mem_flags.h>
 
+#include "libcore/fmt/flags.hpp"
 #include "libcore/fmt/impl/bitmap.hpp"
+#include "libcore/io/writer.hpp"
 #include "libcore/lock/lock.hpp"
-#include "libcore/mem/mem.hpp"
-#include "libcore/type-utils.hpp"
+#include "libcore/mem/view.hpp"
+#include "libcore/result.hpp"
 #include "libcore/type/trait.hpp"
 #include "math/align.hpp"
 #include "math/range.hpp"
-#include "mem.hpp"
 
 struct PmmSection
 {

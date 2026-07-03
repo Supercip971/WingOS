@@ -2,8 +2,10 @@
 
 #include "iol/wingos/ipc.hpp"
 #include "iol/wingos/space.hpp"
-#include "iol/wingos/syscalls.h"
-#include "wingos-headers/syscalls.h"
+#include "libcore/result.hpp"
+#include "libcore/type-utils.hpp"
+#include "math/align.hpp"
+#include "wingos-headers/ipc.h"
 
 namespace prot
 {

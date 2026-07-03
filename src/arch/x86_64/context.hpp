@@ -3,6 +3,9 @@
 #include <stdint.h>
 
 #include "libcore/fmt/flags.hpp"
+#include "libcore/io/writer.hpp"
+#include "libcore/result.hpp"
+#include "libcore/type/trait.hpp"
 
 namespace arch::amd64
 {

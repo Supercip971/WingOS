@@ -1,6 +1,7 @@
 #pragma once
-#include <libcore/type-utils.hpp>
 #include <stdint.h>
+
+#include "libcore/type/trait.hpp"
 
 #define ENUM_OP$(ENUM)                                                                                                     \
     inline constexpr ENUM                                                                                                  \

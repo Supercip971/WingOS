@@ -1,8 +1,12 @@
 #include "service_register.hpp"
 
+#include "app/init/module_startup.hpp"
+
 #include "iol/wingos/ipc.hpp"
-#include "iol/wingos/space.hpp"
+#include "libcore/ds/vec.hpp"
 #include "libcore/fmt/log.hpp"
+#include "libcore/result.hpp"
+#include "libcore/str.hpp"
 #include "protocols/init/init.hpp"
 #include "wingos-headers/ipc.h"
 

@@ -2,6 +2,7 @@
 
 #include "iol/wingos/ipc.hpp"
 #include "iol/wingos/space.hpp"
+#include "libcore/result.hpp"
 #include "libcore/str.hpp"
 #include "protocols/init/init.hpp"
 #include "wingos-headers/ipc.h"

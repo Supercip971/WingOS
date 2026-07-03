@@ -3,6 +3,7 @@
 #include "gfx/geometry/rect.hpp"
 #include "gfx/geometry/vec2.hpp"
 #include "libcore/ds/vec.hpp"
+#include "libcore/logic.hpp"
 
 namespace wgfx
 {

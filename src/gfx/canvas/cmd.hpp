@@ -1,10 +1,9 @@
 #pragma once
 
-#include <libcore/core.hpp>
-
 #include "gfx/color.hpp"
 #include "gfx/geometry/rect.hpp"
 #include "gfx/geometry/shape.hpp"
+#include "gfx/geometry/vec2.hpp"
 #include "gfx/image/texture.hpp"
 #include "gfx/text/font.hpp"
 #include "gfx/text/utf-text.hpp"

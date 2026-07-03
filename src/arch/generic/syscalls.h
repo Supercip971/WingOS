@@ -1,7 +1,6 @@
 #pragma once
 
 #include <stdint.h>
-#include <wingos-headers/syscalls.h>
 #ifdef __cplusplus
 extern "C"
 {

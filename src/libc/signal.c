@@ -1,5 +1,6 @@
 
 #include "signal.h"
+#include <sys/types.h>
 
 int sigemptyset(sigset_t *__sigset)
 {

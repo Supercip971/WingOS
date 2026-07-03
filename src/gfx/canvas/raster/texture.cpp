@@ -1,5 +1,8 @@
 
+#include "gfx/canvas/cmd.hpp"
 #include "gfx/canvas/raster/rasterCanvas.hpp"
+#include "libcore/fmt/log.hpp"
+#include "libcore/logic.hpp"
 
 void wgfx::RasterCanvas::texturePixelAlignedFlat(TextureCommand const &cmd)
 {

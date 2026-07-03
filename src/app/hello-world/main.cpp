@@ -1,18 +1,7 @@
 #include "protocols/hi/human_interface.hpp"
 
-#include "arch/generic/syscalls.h"
-#include "iol/wingos/space.hpp"
-#include "iol/wingos/syscalls.h"
-#include "libcore/alive.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/result.hpp"
-#include "mcx/mcx.hpp"
-#include "protocols/compositor/compositor.hpp"
-#include "protocols/compositor/window.hpp"
-#include "protocols/init/init.hpp"
-#include "protocols/pipe/pipe.hpp"
-#include "protocols/vfs/vfs.hpp"
-#include "wingos-headers/syscalls.h"
 
 int main(int, char **)
 {

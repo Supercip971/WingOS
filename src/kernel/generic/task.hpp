@@ -1,11 +1,9 @@
 #pragma once
 #include <stdint.h>
 
-#include "arch/x86_64/context.hpp"
-
 #include "kernel/generic/context.hpp"
 #include "kernel/generic/paging.hpp"
-#include "libcore/lock/lock.hpp"
+#include "libcore/bound.hpp"
 #include "libcore/result.hpp"
 #include "scheduler.hpp"
 

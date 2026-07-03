@@ -2,6 +2,10 @@
 
 #include "asset.hpp"
 #include "iol/wingos/syscalls.h"
+#include "libcore/ds/vec.hpp"
+#include "libcore/fmt/log.hpp"
+#include "libcore/result.hpp"
+#include "libcore/type-utils.hpp"
 #include "wingos-headers/ipc.h"
 #include "wingos-headers/syscalls.h"
 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <libcore/fmt/fmt.hpp>
-#include <libcore/io/writer.hpp>
 #include <libcore/result.hpp>
 
 #include <libcore/str_writer.hpp>

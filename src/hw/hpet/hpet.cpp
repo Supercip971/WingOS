@@ -4,6 +4,10 @@
 
 #include "hw/mem/addr_space.hpp"
 
+#include "hw/acpi/rsdp.hpp"
+#include "hw/acpi/rsdt.hpp"
+#include "libcore/fmt/log.hpp"
+#include "libcore/result.hpp"
 #include "libcore/time/time.hpp"
 
 static VirtAddr hpet_base = 0;

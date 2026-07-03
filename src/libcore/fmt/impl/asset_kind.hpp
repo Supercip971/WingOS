@@ -3,6 +3,10 @@
 #include <wingos-headers/asset.h>
 
 #include "libcore/fmt/flags.hpp"
+#include "libcore/io/writer.hpp"
+#include "libcore/result.hpp"
+#include "libcore/str.hpp"
+#include "libcore/type/trait.hpp"
 
 namespace fmt
 {

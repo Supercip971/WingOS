@@ -3,7 +3,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "libcore/type-utils.hpp"
 #include "wingos-headers/asset.h"
 #include "wingos-headers/ipc.h"
 

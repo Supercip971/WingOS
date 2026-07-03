@@ -1,7 +1,7 @@
 #pragma once
 
-#include "libcore/io/reader.hpp"
 #include "libcore/mem/view.hpp"
+#include "libcore/result.hpp"
 
 namespace core
 {

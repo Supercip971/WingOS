@@ -4,7 +4,6 @@
 
 #include "hw/mem/addr_space.hpp"
 
-#include "libcore/ds/vec.hpp"
 #include "libcore/lock/lock.hpp"
 #include "libcore/result.hpp"
 #include "mcx/mcx.hpp"

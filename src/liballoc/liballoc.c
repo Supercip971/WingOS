@@ -2,6 +2,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "iol/mem.h"
+#include "libcore/unreachable.h"
+
 /**  Durand's Amazing Super Duper Memory functions.  */
 
 #define VERSION "1.1"

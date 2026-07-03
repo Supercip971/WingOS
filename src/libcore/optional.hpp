@@ -1,6 +1,5 @@
 #pragma once
 #include <libcore/bound.hpp>
-#include <libcore/core.hpp>
 #include <libcore/type-utils.hpp>
 #include <stdint.h>
 

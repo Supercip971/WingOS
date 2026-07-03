@@ -2,8 +2,6 @@
 
 #include <stdint.h>
 
-#include "arch/x86_64/context.hpp"
-
 #include "hw/acpi/lapic.hpp"
 #include "kernel/generic/cpu.hpp"
 #include "kernel/generic/scheduler.hpp"

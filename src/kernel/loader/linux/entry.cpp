@@ -1,8 +1,5 @@
 
-#include <arch/x86/com.hpp>
 #include <kernel/generic/kernel.hpp>
-#include <kernel/loader/limine/limine.hpp>
-#include <libcore/fmt/fmt.hpp>
 #include <stddef.h>
 #include <stdint.h>
 #include <sys/syscall.h> /* Definition of SYS_* constants */
@@ -10,7 +7,7 @@
 
 #include "libcore/fmt/log.hpp"
 #include "libcore/io/writer.hpp"
-#include "libcore/str.hpp"
+#include "libcore/result.hpp"
 #include "mcx/mcx.hpp"
 void _start(void);
 

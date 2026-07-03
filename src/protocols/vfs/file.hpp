@@ -9,9 +9,14 @@
 #include "iol/wingos/ipc.hpp"
 #include "iol/wingos/space.hpp"
 #include "libcore/ds/vec.hpp"
+#include "libcore/fmt/flags.hpp"
+#include "libcore/fmt/log.hpp"
+#include "libcore/result.hpp"
 #include "libcore/str.hpp"
+#include "libcore/type-utils.hpp"
 #include "math/align.hpp"
-#include "protocols/init/init.hpp"
+#include "wingos-headers/asset.h"
+#include "wingos-headers/ipc.h"
 
 namespace prot
 {

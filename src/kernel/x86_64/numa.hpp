@@ -2,7 +2,7 @@
 
 #include "kernel/generic/cpu_tree.hpp"
 
-#include "kernel/generic/cpu.hpp"
+#include "libcore/result.hpp"
 
 core::Result<CpuTreeNode *> initialize_cpu_tree();
 

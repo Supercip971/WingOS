@@ -1,15 +1,18 @@
-#include <new>
 #include <string.h>
 
 #include "app/init/service_register.hpp"
+#include "hw/mem/addr_space.hpp"
 #include "module_startup.hpp"
 
 #include "dev/pci/classes.hpp"
 #include "dev/pci/pci.hpp"
 #include "iol/wingos/space.hpp"
 #include "json/json.hpp"
+#include "libcore/ds/vec.hpp"
 #include "libcore/fmt/flags.hpp"
 #include "libcore/fmt/log.hpp"
+#include "libcore/result.hpp"
+#include "libcore/str.hpp"
 #include "libelf/elf.hpp"
 #include "math/align.hpp"
 #include "mcx/mcx.hpp"

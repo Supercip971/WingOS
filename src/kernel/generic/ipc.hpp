@@ -6,8 +6,9 @@
 #include "kernel/generic/space.hpp"
 #include "libcore/ds/vec.hpp"
 #include "libcore/lock/lock.hpp"
+#include "libcore/result.hpp"
 #include "math/align.hpp"
-#include "scheduler.hpp"
+#include "wingos-headers/asset.h"
 #include "wingos-headers/ipc.h"
 
 // Forward declarations to avoid pulling `space.hpp` (and its dependencies) into IPC.

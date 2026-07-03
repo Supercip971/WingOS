@@ -4,6 +4,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "libcore/result.hpp"
+#include "libcore/type/trait.hpp"
+
 struct Pages
 {
     uint64_t _count = 0;

@@ -2,7 +2,6 @@
 
 #include <libcore/io/void.hpp>
 #include <libcore/io/writer.hpp>
-#include <libcore/str.hpp>
 
 #include "libcore/fmt/log.hpp"
 #include "libcore/lock/lock.hpp"

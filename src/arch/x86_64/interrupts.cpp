@@ -3,17 +3,15 @@
 #include <libcore/fmt/log.hpp>
 
 #include "arch/x86_64/context.hpp"
-#include "arch/x86_64/idt.hpp"
 #include "arch/x86_64/interrupts.hpp"
 #include "arch/x86_64/registers.hpp"
 
 #include "hw/acpi/lapic.hpp"
 #include "kernel/generic/cpu.hpp"
-#include "kernel/generic/mem.hpp"
 #include "kernel/generic/scheduler.hpp"
 #include "kernel/generic/task.hpp"
 #include "libcore/encourage.hpp"
-#include "libcore/lock/lock.hpp"
+#include "libcore/fmt/flags.hpp"
 #include "libcore/lock/rwlock.hpp"
 uint64_t ccount;
 volatile bool inside_error = false;

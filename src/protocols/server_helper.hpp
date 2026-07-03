@@ -1,6 +1,12 @@
 #pragma once
 
+#include "iol/wingos/ipc.hpp"
+#include "libcore/fmt/log.hpp"
+#include "libcore/result.hpp"
+#include "libcore/str.hpp"
+#include "libcore/type-utils.hpp"
 #include "protocols/init/init.hpp"
+#include "wingos-headers/ipc.h"
 
 namespace prot
 {

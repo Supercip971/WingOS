@@ -4,7 +4,9 @@
 
 #include "hw/mem/addr_space.hpp"
 
-#include "libcore/fmt/log.hpp"
+#include "hw/acpi/rsdp.hpp"
+#include "libcore/result.hpp"
+#include "libcore/str.hpp"
 #include "libcore/time/time.hpp"
 
 namespace hw::hpet

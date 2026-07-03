@@ -1,23 +1,16 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "libcore/fmt/fmt_str.hpp"
 #include "libcore/str_writer.hpp"
 
-#include "arch/generic/syscalls.h"
 #include "iol/wingos/execute.hpp"
 #include "iol/wingos/space.hpp"
-#include "iol/wingos/syscalls.h"
-#include "libcore/alive.hpp"
 #include "libcore/fmt/log.hpp"
-#include "mcx/mcx.hpp"
-#include "protocols/compositor/compositor.hpp"
+#include "libcore/str.hpp"
+#include "libcore/type-utils.hpp"
 #include "protocols/compositor/window.hpp"
-#include "protocols/init/init.hpp"
 #include "protocols/pipe/pipe.hpp"
-#include "protocols/vfs/vfs.hpp"
 #include "wingos-headers/startup.hpp"
-#include "wingos-headers/syscalls.h"
 
 #define ASCII_FONT_IMPLEMENTATION
 #include "ascii_font.h"

@@ -1,5 +1,6 @@
 #pragma once
-#include "libcore/fmt/log.hpp"
+#include "hw/mem/addr_space.hpp"
+
 #include "libcore/result.hpp"
 #include "libelf/elf.hpp"
 #include "mcx/mcx.hpp"

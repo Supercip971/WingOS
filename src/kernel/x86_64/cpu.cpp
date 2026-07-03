@@ -4,11 +4,13 @@
 
 #include "arch/x86_64/gdt.hpp"
 #include "arch/x86_64/msr.hpp"
+#include "arch/x86_64/tss.hpp"
 #include <kernel/x86_64/cpu.hpp>
 
 #include "hw/acpi/lapic.hpp"
 #include "kernel/generic/cpu.hpp"
 #include "libcore/ds/array.hpp"
+#include "libcore/lock/lock.hpp"
 #include "libcore/result.hpp"
 core::Array<arch::amd64::CpuImpl, arch::amd64::max_cpu> cpus = {};
 

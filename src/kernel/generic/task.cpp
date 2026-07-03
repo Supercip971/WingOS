@@ -1,11 +1,14 @@
+#include <atomic>
 #include <libcore/fmt/log.hpp>
 #include <stdint.h>
 
 #include "hw/mem/addr_space.hpp"
 #include <libcore/ds/linked_list.hpp>
 
+#include "kernel/generic/context.hpp"
 #include "kernel/generic/kernel.hpp"
 #include "kernel/generic/paging.hpp"
+#include "kernel/generic/scheduler.hpp"
 #include "kernel/generic/task.hpp"
 #include "libcore/lock/rwlock.hpp"
 #include "libcore/result.hpp"

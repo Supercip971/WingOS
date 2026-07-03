@@ -1,8 +1,7 @@
 #pragma once
 
+#include <stddef.h>
 #include <stdint.h>
-
-#include "libcore/ds/array.hpp"
 
 namespace arch::amd64
 {

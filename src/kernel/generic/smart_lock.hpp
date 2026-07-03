@@ -1,10 +1,14 @@
 #pragma once
 
+#include <atomic>
+
 #include "arch/x86_64/interrupts.hpp"
 
+#include "arch/generic/instruction.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/lock/lock.hpp"
 #include "libcore/lock/rwlock.hpp"
+#include "libcore/str.hpp"
 
 // a drop in replacement for RWLock that adds some debugging features, such as dumping the state of the lock
 class SRWLock : private core::RWLock

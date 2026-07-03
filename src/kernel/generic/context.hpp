@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <atomic>
+
 #include "kernel/generic/paging.hpp"
 #include "libcore/lock/lock.hpp"
 #include "libcore/result.hpp"

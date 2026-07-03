@@ -3,8 +3,8 @@
 #include <libcore/funcs.hpp>
 #include <stdint.h>
 
-#include "libcore/ds/array.hpp"
 #include "libcore/enum-op.hpp"
+#include "libcore/mem/view.hpp"
 
 namespace arch::amd64
 {

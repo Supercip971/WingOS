@@ -1,10 +1,10 @@
 #pragma once
 
-#include <libcore/io/reader.hpp>
-#include <libcore/io/seekable.hpp>
 #include <libcore/mem/view.hpp>
 #include <stddef.h>
 #include <stdint.h>
+
+#include "libcore/result.hpp"
 
 namespace core
 {

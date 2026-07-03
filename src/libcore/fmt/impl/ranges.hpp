@@ -2,6 +2,10 @@
 #include <libcore/fmt/impl/integers.hpp>
 
 #include "libcore/fmt/flags.hpp"
+#include "libcore/io/writer.hpp"
+#include "libcore/result.hpp"
+#include "libcore/str.hpp"
+#include "math/range.hpp"
 
 namespace fmt
 {

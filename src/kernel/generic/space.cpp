@@ -1,11 +1,14 @@
 #include "space.hpp"
-#include <new>
+#include <atomic>
 
 #include "kernel/generic/asset_types.hpp"
 
 #include "kernel/generic/asset.hpp"
+#include "kernel/generic/ipc.hpp"
+#include "kernel/generic/paging.hpp"
 #include "libcore/ds/vec.hpp"
 #include "libcore/fmt/flags.hpp"
+#include "libcore/fmt/log.hpp"
 #include "libcore/lock/lock.hpp"
 #include "libcore/result.hpp"
 #include "wingos-headers/asset.h"

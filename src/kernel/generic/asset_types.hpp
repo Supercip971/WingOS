@@ -3,10 +3,10 @@
 #include <atomic>
 #include <stdint.h>
 
-#include "libcore/core.hpp"
 #include "libcore/lock/lock.hpp"
 #include "libcore/result.hpp"
 #include "libcore/type-utils.hpp"
+#include "libcore/unreachable.h"
 #include "wingos-headers/asset.h"
 
 // Canonical kernel-side Asset + AssetRef definitions.

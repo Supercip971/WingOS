@@ -1,5 +1,17 @@
 #include "file.hpp"
 
+#include "libcore/str_writer.hpp"
+#include "protocols/server_helper.hpp"
+
+#include "libcore/ds/vec.hpp"
+#include "libcore/fmt/log.hpp"
+#include "libcore/result.hpp"
+#include "libcore/str.hpp"
+#include "libcore/type-utils.hpp"
+#include "protocols/init/init.hpp"
+#include "protocols/vfs/file.hpp"
+#include "wingos-headers/ipc.h"
+
 core::Vec<MountedFs> mounted_filesystems = {};
 core::Vec<VfsFileEndpoint *> opened_file_endpoints = {};
 

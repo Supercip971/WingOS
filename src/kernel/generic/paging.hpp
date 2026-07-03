@@ -2,7 +2,7 @@
 #include <libcore/result.hpp>
 #include <mcx/mcx.hpp>
 
-#include "mem.hpp"
+#include "hw/mem/addr_space.hpp"
 
 struct PageFlags
 {

@@ -1,7 +1,6 @@
 #pragma once
 
-#include <typeinfo>
-
+#include "libcore/type/trait.hpp"
 #include "tuple.hpp"
 
 namespace core

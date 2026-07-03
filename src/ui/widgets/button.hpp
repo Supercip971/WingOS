@@ -1,18 +1,14 @@
 #pragma once
 
-#include "libcore/str_writer.hpp"
-
+#include "gfx/canvas/canvas.hpp"
 #include "gfx/canvas/cmd.hpp"
 #include "gfx/color.hpp"
 #include "gfx/event/event.hpp"
 #include "gfx/geometry/rect.hpp"
 #include "gfx/geometry/vec2.hpp"
-#include "gfx/text/font.hpp"
-#include "libcore/ds/vec.hpp"
 #include "libcore/shared.hpp"
+#include "ui/context.hpp"
 #include "ui/widgets/callback.hpp"
-#include "ui/widgets/centered.hpp"
-#include "ui/widgets/padded.hpp"
 #include "ui/widgets/statefull.hpp"
 #include "widget.hpp"
 

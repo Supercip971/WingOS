@@ -1,5 +1,4 @@
 #include "string.h"
-#include <signal.h>
 #include <stdlib.h>
 #ifndef __clang__
 
@@ -103,7 +102,7 @@ char *strrchr(const char *s, int c)
 char *strerror(int errnum)
 {
     (void)errnum;
-    return "Unknown error";
+    return (char *)"Unknown error";
 }
 
 static char *save_ptr = NULL;

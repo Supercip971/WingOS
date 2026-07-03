@@ -5,7 +5,7 @@
 #include "arch/generic/instruction.hpp"
 #include "libcore/atomic.hpp"
 #include "libcore/type-utils.hpp"
-#include "libcore/type/trait.hpp"
+#include "libcore/unreachable.h"
 
 namespace core
 {

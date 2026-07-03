@@ -3,7 +3,6 @@
 #include <stdint.h>
 
 #include "libcore/enum-op.hpp"
-#include "libcore/type/trait.hpp"
 
 namespace arch::amd64
 {

@@ -1,21 +1,23 @@
 #include <stddef.h>
 #include <string.h>
-#include <sys/types.h>
 
 #include "hw/mem/addr_space.hpp"
 #include "protocols/server_helper.hpp"
 
+#include "hw/acpi/rsdp.hpp"
 #include "hw/acpi/rsdt.hpp"
 #include "hw/hpet/hpet.hpp"
 #include "iol/wingos/ipc.hpp"
 #include "iol/wingos/space.hpp"
 #include "libcore/ds/vec.hpp"
+#include "libcore/fmt/flags.hpp"
 #include "libcore/fmt/log.hpp"
+#include "libcore/result.hpp"
 #include "libcore/time/time.hpp"
-#include "math/align.hpp"
+#include "libcore/type-utils.hpp"
 #include "math/range.hpp"
 #include "protocols/clock/clock.hpp"
-#include "protocols/pipe/pipe.hpp"
+#include "wingos-headers/asset.h"
 #include "wingos-headers/ipc.h"
 #include "wingos-headers/startup.hpp"
 

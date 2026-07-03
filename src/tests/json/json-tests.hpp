@@ -1,13 +1,11 @@
 
 #pragma once
 
-#include <libcore/fmt/log.hpp>
 #include <libcore/str.hpp>
 
 #include "../test.hpp"
 #include "json/json.hpp"
-#include "libcore/ds/bitmap.hpp"
-#include "libcore/mem/mem.hpp"
+#include "libcore/result.hpp"
 
 static core::Str tjbuf = core::Str("{\"key-str\": \"value\", \"key-int\": 123, \"key-bool\": true, \"key-null\": null, \"key-array\": [1, 2, 3], \"key-object\": {\"nested-key\": \"nested-value\"}}");
 static constexpr TestGroup jsonTests = {

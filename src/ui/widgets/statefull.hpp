@@ -1,11 +1,5 @@
 #pragma once
 
-#include "gfx/color.hpp"
-#include "gfx/geometry/rect.hpp"
-#include "gfx/geometry/vec2.hpp"
-#include "gfx/text/font.hpp"
-#include "libcore/ds/vec.hpp"
-#include "libcore/shared.hpp"
 #include "widget.hpp"
 
 namespace fc

@@ -2,6 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "gfx/geometry/rect.hpp"
+#include "libcore/ds/vec.hpp"
+#include "libcore/logic.hpp"
+
 // Prevent stb_truetype.h from including <assert.h>, which defines the
 // `assert` macro and conflicts with core::Result::assert() defined in log.hpp.
 #ifndef STBTT_assert

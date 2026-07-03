@@ -2,6 +2,8 @@
 
 #include "libcore/str_writer.hpp"
 
+#include "libcore/str.hpp"
+
 namespace core
 {
 

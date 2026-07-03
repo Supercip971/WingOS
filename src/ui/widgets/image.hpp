@@ -1,14 +1,12 @@
 #pragma once
 
-#include "libcore/str_writer.hpp"
-
-#include "gfx/color.hpp"
+#include "gfx/canvas/canvas.hpp"
 #include "gfx/geometry/rect.hpp"
 #include "gfx/geometry/vec2.hpp"
 #include "gfx/image/image.hpp"
 #include "gfx/image/texture.hpp"
-#include "gfx/text/font.hpp"
 #include "libcore/shared.hpp"
+#include "ui/context.hpp"
 #include "widget.hpp"
 
 namespace fc

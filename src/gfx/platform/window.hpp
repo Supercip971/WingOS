@@ -3,11 +3,10 @@
 #include "gfx/backend.hpp"
 #include "gfx/canvas/canvas.hpp"
 #include "gfx/event/event.hpp"
-#include "libcore/ds/vec.hpp"
 #include "libcore/fmt/log.hpp"
+#include "libcore/result.hpp"
 #include "libcore/shared.hpp"
 #include "libcore/type-utils.hpp"
-#include "ui/context.hpp"
 
 namespace wgfx
 {

@@ -1,4 +1,3 @@
-#include <liballoc/liballoc.h>
 
 // allocate linux pages
 
@@ -6,11 +5,8 @@
 
 #include "arch/x86_64/paging.hpp"
 
-#include "arch/generic/syscalls.h"
 #include "iol/wingos/space.hpp"
-#include "iol/wingos/syscalls.h"
 #include "libcore/fmt/log.hpp"
-#include "wingos-headers/asset.h"
 
 extern "C" int liballoc_lock()
 {

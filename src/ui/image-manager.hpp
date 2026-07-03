@@ -4,10 +4,12 @@
 
 #include "gfx/image/image.hpp"
 #include "gfx/image/texture.hpp"
-#include "gfx/text/font.hpp"
 #include "libcore/ds/umap.hpp"
+#include "libcore/fmt/log.hpp"
 #include "libcore/path.hpp"
+#include "libcore/result.hpp"
 #include "libcore/shared.hpp"
+#include "libcore/str.hpp"
 
 namespace fc
 {

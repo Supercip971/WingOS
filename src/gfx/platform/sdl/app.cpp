@@ -1,18 +1,19 @@
+#include <SDL3/SDL_error.h>
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_properties.h>
 
+#include "gfx/canvas/canvas.hpp"
 #include "gfx/event/event.hpp"
+#include "libcore/fmt/log.hpp"
+#include "libcore/result.hpp"
+#include "libcore/shared.hpp"
 #define EXTERNAL_INCLUDED
 
-#include <SDL3/SDL.h>
-#include <gfx/platform/app.hpp>
 #include <gfx/platform/window.hpp>
 
-#include <SDL3/SDL_oldnames.h>
 #include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_render.h>
-#include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_timer.h>
 #include <SDL3/SDL_video.h>
 

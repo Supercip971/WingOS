@@ -14,7 +14,14 @@ public:
 
     constexpr Vec2(float _x, float _y) : x(_x), y(_y) {}
 
+    constexpr Vec2(const Vec2 &other) : x(other.x), y(other.y) {}
+
     constexpr Vec2() : x(0), y(0) {}
+
+    constexpr Vec2 operator=(const Vec2 &other) const
+    {
+        return Vec2(other.x, other.y);
+    }
 
     constexpr Vec2 operator+(const Vec2 &other) const
     {
@@ -74,11 +81,13 @@ public:
         return *this;
     }
 
+    // NOLINTBEGIN
     Vec2 rounded(float factor) const
     {
-
         return Vec2(roundf(x * factor) / factor, roundf(y * factor) / factor);
     }
+
+    // NOLINTEND
 
     constexpr bool nearlyEqual(const Vec2 &other) const
     {

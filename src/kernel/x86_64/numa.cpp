@@ -1,6 +1,11 @@
 #include "numa.hpp"
 #include <libcore/fmt/log.hpp>
 
+#include "kernel/generic/cpu_tree.hpp"
+
+#include "kernel/generic/cpu.hpp"
+#include "libcore/result.hpp"
+
 core::Result<CpuTreeNode *> _initialize_cpu_tree_impl()
 {
     return core::Result<CpuTreeNode *>::error("not implemented, as QEMU don't export an SRAT structure");

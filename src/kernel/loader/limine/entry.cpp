@@ -2,13 +2,14 @@
 #include <arch/x86/com.hpp>
 #include <kernel/generic/kernel.hpp>
 #include <kernel/loader/limine/limine.hpp>
-#include <libcore/fmt/fmt.hpp>
 #include <stddef.h>
 #include <stdint.h>
 
 #include "libcore/fmt/log.hpp"
 #include "libcore/io/writer.hpp"
-#include "libcore/str.hpp"
+#include "libcore/mem/view.hpp"
+#include "libcore/result.hpp"
+#include "libcore/type-utils.hpp"
 #include "mcx/mcx.hpp"
 
 // The Limine requests can be placed anywhere, but it is important that

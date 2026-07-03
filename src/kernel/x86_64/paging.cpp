@@ -1,10 +1,12 @@
 #include <kernel/generic/paging.hpp>
 
+#include "hw/mem/addr_space.hpp"
 #include "iol/mem_flags.h"
 #include <arch/x86_64/paging.hpp>
 
-#include "kernel/generic/mem.hpp"
 #include "libcore/fmt/flags.hpp"
+#include "libcore/fmt/log.hpp"
+#include "libcore/result.hpp"
 
 static VmmSpace kernel_space;
 

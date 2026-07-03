@@ -1,5 +1,8 @@
 #include "image.hpp"
 
+#include "libcore/result.hpp"
+#include "libcore/str.hpp"
+
 #ifndef STBI_ASSERT
 #    define STBI_ASSERT(x) ((void)(x))
 #endif

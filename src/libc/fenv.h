@@ -1,4 +1,3 @@
-
 #pragma once
 
 /* --- 7.6 - Floating-point environment ------------------------------------- */

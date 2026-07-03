@@ -4,17 +4,15 @@
 #include <string.h>
 
 #include "hw/mem/addr_space.hpp"
+#include "kernel/generic/asset_types.hpp"
 
 #include "kernel/generic/asset.hpp"
-#include "kernel/generic/kernel.hpp"
-#include "kernel/generic/pmm.hpp"
 #include "kernel/generic/scheduler.hpp"
 #include "kernel/generic/space.hpp"
 #include "kernel/generic/task.hpp"
-#include "libcore/alloc/alloc.hpp"
 #include "libcore/enum-op.hpp"
 #include "libcore/fmt/log.hpp"
-#include "libcore/type/trait.hpp"
+#include "libcore/result.hpp"
 #include "libelf/elf.hpp"
 #include "math/align.hpp"
 #include "mcx/mcx.hpp"

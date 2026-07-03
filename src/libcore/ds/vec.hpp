@@ -1,12 +1,13 @@
 #pragma once
 
-#include <libcore/core.hpp>
 #include <libcore/mem/view.hpp>
 #include <stdlib.h>
 
 #include "libcore/alloc/alloc.hpp"
 #include "libcore/logic.hpp"
 #include "libcore/result.hpp"
+#include "libcore/type-utils.hpp"
+#include "libcore/unreachable.h"
 
 namespace core
 {

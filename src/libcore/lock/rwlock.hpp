@@ -5,6 +5,7 @@
 #include "arch/generic/instruction.hpp"
 #include "libcore/lock/lock.hpp"
 #include "libcore/type-utils.hpp"
+#include "libcore/unreachable.h"
 
 namespace core
 {

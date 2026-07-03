@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #include "iol/mem.h"
+#include "libcore/unreachable.h"
 #include "math/align.hpp"
 
 #define ALLOC_PAGE_SIZE 4096

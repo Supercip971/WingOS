@@ -4,7 +4,9 @@
 #include "hw/mem/addr_space.hpp"
 
 #include "kernel/generic/mem.hpp"
+#include "libcore/fmt/flags.hpp"
 #include "libcore/fmt/log.hpp"
+#include "libcore/result.hpp"
 #include "mcx/mcx.hpp"
 
 // FIXME: maybe should be moved to x86_64 ?????

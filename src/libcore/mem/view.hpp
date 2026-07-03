@@ -1,8 +1,9 @@
 #pragma once
 
-#include <libcore/type-utils.hpp>
 #include <stddef.h>
 #include <stdint.h>
+
+#include "libcore/type/trait.hpp"
 
 namespace core
 {

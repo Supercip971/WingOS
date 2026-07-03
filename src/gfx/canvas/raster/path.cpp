@@ -1,5 +1,12 @@
 
+#include "gfx/canvas/cmd.hpp"
+#include "gfx/geometry/shape.hpp"
 #include "gfx/geometry/vec2.hpp"
+#include "libcore/ds/vec.hpp"
+#include "libcore/fmt/log.hpp"
+#include "libcore/logic.hpp"
+#include "libcore/shared.hpp"
+#include "libcore/type-utils.hpp"
 #include "rasterCanvas.hpp"
 
 // https://terathon.com/i3d2018_lengyel.pdf public domain

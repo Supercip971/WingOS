@@ -2,8 +2,15 @@
 #include <libcore/fmt/log.hpp>
 
 #include "hw/mem/addr_space.hpp"
+#include "iol/mem_flags.h"
 
-#include "kernel/generic/mem.hpp"
+#include "libcore/fmt/flags.hpp"
+#include "libcore/lock/lock.hpp"
+#include "libcore/mem/mem.hpp"
+#include "libcore/result.hpp"
+#include "libcore/type-utils.hpp"
+#include "libcore/unreachable.h"
+#include "math/align.hpp"
 #include "mcx/mcx.hpp"
 #include "pmm.hpp"
 static Pmm instance = {};

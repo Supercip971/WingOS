@@ -1,5 +1,4 @@
 
-#include "hw/acpi/ioapic.hpp"
 #include "hw/acpi/lapic.hpp"
 #include "hw/acpi/madt.hpp"
 #include "hw/acpi/rsdp.hpp"

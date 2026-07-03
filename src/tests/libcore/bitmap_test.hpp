@@ -1,8 +1,5 @@
 #pragma once
 
-#include <libcore/fmt/log.hpp>
-#include <libcore/str.hpp>
-
 #include "../test.hpp"
 #include "libcore/ds/bitmap.hpp"
 #include "libcore/mem/mem.hpp"

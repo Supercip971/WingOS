@@ -1,4 +1,6 @@
+#include "gfx/canvas/cmd.hpp"
 #include "gfx/canvas/raster/rasterCanvas.hpp"
+#include "gfx/color.hpp"
 
 void wgfx::RasterCanvas::clearFlat(FillCommand const &cmd)
 {

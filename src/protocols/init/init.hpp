@@ -3,6 +3,7 @@
 
 #include "iol/wingos/ipc.hpp"
 #include "iol/wingos/space.hpp"
+#include "libcore/fmt/log.hpp"
 #include "libcore/result.hpp"
 #include "wingos-headers/ipc.h"
 

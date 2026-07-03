@@ -1,7 +1,6 @@
 #include "iol/ports.hpp"
 
 #include "iol/wingos/syscalls.h"
-#include "wingos-headers/syscalls.h"
 
 namespace iol
 {

@@ -7,15 +7,13 @@
 
 #include "hw/mem/addr_space.hpp"
 
-#include "hw/acpi/lapic.hpp"
+#include "kernel/generic/cpu.hpp"
 #include "kernel/generic/execute.hpp"
-#include "kernel/generic/paging.hpp"
-#include "kernel/generic/pmm.hpp"
 #include "kernel/generic/scheduler.hpp"
 #include "kernel/generic/space.hpp"
 #include "kernel/generic/task.hpp"
-#include "libcore/fmt/flags.hpp"
 #include "libcore/lock/lock.hpp"
+#include "mcx/mcx.hpp"
 core::Lock kernel_lock;
 
 void fun1()

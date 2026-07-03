@@ -1,7 +1,6 @@
 #pragma once
 
 #include "libcore/ds/vec.hpp"
-#include "libcore/fmt/log.hpp"
 #include "libcore/mem/view.hpp"
 #include "libcore/result.hpp"
 #include "libcore/str.hpp"

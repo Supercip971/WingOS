@@ -3,6 +3,8 @@
 #include <libcore/io/reader.hpp>
 #include <libcore/io/writer.hpp>
 
+#include "libcore/result.hpp"
+
 namespace core
 {
 

@@ -1,17 +1,11 @@
 #include "protocols/server_helper.hpp"
 
-#include "arch/generic/syscalls.h"
 #include "ext4.hpp"
-#include "iol/wingos/space.hpp"
-#include "iol/wingos/syscalls.h"
 #include "libcore/fmt/log.hpp"
-#include "mcx/mcx.hpp"
 #include "protocols/disk/disk.hpp"
-#include "protocols/init/init.hpp"
 #include "protocols/vfs/file.hpp"
 #include "protocols/vfs/fsManager.hpp"
 #include "protocols/vfs/vfs.hpp"
-#include "wingos-headers/syscalls.h"
 
 bool is_ext4_filesystem(uint8_t *data)
 {
@@ -245,7 +239,7 @@ core::Result<void> update_endpoints(Ext4FsEndpoint *dev)
             IpcMessage reply = {};
             reply.data[0].data = 1; // success
             Ext4FileEndpoint *new_endpoint = new Ext4FileEndpoint{
-                .inode = dev->attached_fs->read_inode(2).unwrap(),
+                .inode = dev->attached_fs->read_inode(2).copied(),
                 .file_server = try$(prot::ManagedServer::create_server()),
             };
             reply.data[1].data = new_endpoint->file_server.addr();

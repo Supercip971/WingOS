@@ -1,0 +1,5 @@
+---
+CheckOptions:
+  - key: "misc-include-cleaner.IgnoreHeaders"
+    value: "cstdlib;cstdint;cstddef;cstring;cmath;cstdarg;cstdio"
+...

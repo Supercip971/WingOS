@@ -13,28 +13,28 @@ template <typename T>
 concept AppRessourceProvider = requires(T *app, const T *appc) {
     {
         app->get_default()
-    } -> core::IsConvertibleTo<typename T::AppRessource *>;
+    } -> fc::IsConvertibleTo<typename T::AppRessource *>;
     {
         appc->get_default()
-    } -> core::IsConvertibleTo<typename T::AppRessource const *>;
+    } -> fc::IsConvertibleTo<typename T::AppRessource const *>;
     {
-        app->load(core::WStr())
-    } -> core::IsConvertibleToResult<void>;
+        app->load(fc::WStr())
+    } -> fc::IsConvertibleToResult<void>;
     {
-        app->find(core::WStr())
-    } -> core::IsConvertibleTo<typename T::AppRessource &>;
+        app->find(fc::WStr())
+    } -> fc::IsConvertibleTo<typename T::AppRessource &>;
     {
-        app->find(core::WStr())
-    } -> core::IsConvertibleTo<typename T::AppRessource const &>;
+        app->find(fc::WStr())
+    } -> fc::IsConvertibleTo<typename T::AppRessource const &>;
     {
         app->raw()
-    } -> core::IsConvertibleTo<core::UMap<core::WStr, typename T::AppRessource>>;
+    } -> fc::IsConvertibleTo<fc::UMap<fc::WStr, typename T::AppRessource>>;
     {
         T::the()
-    } -> core::IsConvertibleTo<T &>;
+    } -> fc::IsConvertibleTo<T &>;
     {
-        app->provide(core::WStr(), new typename T::AppRessource())
-    } -> core::IsConvertibleToResult<void>;
+        app->provide(fc::WStr(), new typename T::AppRessource())
+    } -> fc::IsConvertibleToResult<void>;
 };
 
 } // namespace fc

@@ -7,7 +7,7 @@
 #include "libcore/logic.hpp"
 
 // Prevent stb_truetype.h from including <assert.h>, which defines the
-// `assert` macro and conflicts with core::Result::assert() defined in log.hpp.
+// `assert` macro and conflicts with fc::Result::assert() defined in log.hpp.
 #ifndef STBTT_assert
 #    define STBTT_assert(x) ((void)(x))
 #endif
@@ -28,9 +28,9 @@ public:
     uint8_t *buffer;
     stbtt_fontinfo raw;
 
-    static core::Result<core::SharedPtr<Typeface>> from_file(core::Str path)
+    static fc::Result<fc::SharedPtr<Typeface>> from_file(fc::Str path)
     {
-        core::SharedPtr<Typeface> result = core::SharedPtr<Typeface>::make();
+        fc::SharedPtr<Typeface> result = fc::SharedPtr<Typeface>::make();
         FILE *f = fopen(path._data, "rb");
 
         fseek(f, 0, SEEK_END);
@@ -50,7 +50,7 @@ public:
 class Font
 {
 public:
-    core::SharedPtr<Typeface> _from;
+    fc::SharedPtr<Typeface> _from;
     float height;
     float weight;
     float rscale;
@@ -66,13 +66,13 @@ public:
         char c;
         stbtt_vertex *vertices;
         int num_vertices;
-        core::SharedPtr<Contour> gfx_contour;
+        fc::SharedPtr<Contour> gfx_contour;
         wgfx::GRect ibound;
         float advance;
         float bearing;
     };
 
-    core::Vec<CharacterShape> shapes;
+    fc::Vec<CharacterShape> shapes;
 
     static Contour from_stbtt_vertices(float scale, stbtt_vertex *vertices, int num_vertices)
     {
@@ -110,7 +110,7 @@ public:
         return stbtt_GetCodepointKernAdvance(&_from->raw, a, b) * rscale;
     }
 
-    static core::Result<Font> load_font(core::SharedPtr<Typeface> &from, float height)
+    static fc::Result<Font> load_font(fc::SharedPtr<Typeface> &from, float height)
     {
         Font fn = {};
         fn._from = from;
@@ -156,11 +156,11 @@ public:
             {
                 char str[3] = {shape.c, 0};
                 fmt::log$("loading font: char {}", str);
-                shape.gfx_contour = core::SharedPtr<Contour>::make(Font::from_stbtt_vertices(rscale, shape.vertices, shape.num_vertices));
+                shape.gfx_contour = fc::SharedPtr<Contour>::make(Font::from_stbtt_vertices(rscale, shape.vertices, shape.num_vertices));
             }
             else
             {
-                shape.gfx_contour = core::SharedPtr<Contour>::make();
+                shape.gfx_contour = fc::SharedPtr<Contour>::make();
             }
             //            shape.gfx_contour->bound(GRect::from_start_end((sx-1) * rscale, (sy-1) * rscale,  (ex+1)*rscale,  (ey+1) * rscale));
             fn.shapes.push(shape);
@@ -168,7 +168,7 @@ public:
         return fn;
     }
 
-    wgfx::Vec2 get_render_rect(core::Str string) const
+    wgfx::Vec2 get_render_rect(fc::Str string) const
     {
         float w = 0;
         float h = 0;
@@ -177,11 +177,11 @@ public:
         {
             auto &shape = shapes[c];
             auto off = last == 0 ? 0 : additionalOffset(last, c);
-            w += core::abs(shape.advance + off);
-            h = core::max(h, ascent + line_gap);
+            w += fc::abs(shape.advance + off);
+            h = fc::max(h, ascent + line_gap);
 
-            // h = core::max(h, core::abs(line_gap) + core::abs(shape.ibound.start.y) + shape.ibound.height());
-            //  h = core::max(h, height);
+            // h = fc::max(h, fc::abs(line_gap) + fc::abs(shape.ibound.start.y) + shape.ibound.height());
+            //  h = fc::max(h, height);
 
             last = c;
         }

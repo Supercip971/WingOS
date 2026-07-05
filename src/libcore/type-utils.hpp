@@ -1,7 +1,7 @@
 #pragma once
 #include <libcore/type/trait.hpp>
 
-namespace core
+namespace fc
 {
 class NoCopy
 {
@@ -50,9 +50,9 @@ constexpr T copy(T const &t)
 template <typename T>
 constexpr void swap(T &a, T &b)
 {
-    T c = core::move(a);
-    a = core::move(b);
-    b = core::move(c);
+    T c = fc::move(a);
+    a = fc::move(b);
+    b = fc::move(c);
 }
 
-} // namespace core
+} // namespace fc

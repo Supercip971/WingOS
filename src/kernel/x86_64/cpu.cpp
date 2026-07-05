@@ -12,7 +12,7 @@
 #include "libcore/ds/array.hpp"
 #include "libcore/lock/lock.hpp"
 #include "libcore/result.hpp"
-core::Array<arch::amd64::CpuImpl, arch::amd64::max_cpu> cpus = {};
+fc::Array<arch::amd64::CpuImpl, arch::amd64::max_cpu> cpus = {};
 
 static int initialized_count = 0;
 
@@ -30,7 +30,7 @@ void Cpu::interrupt_hold()
     this->interrupt_depth++;
 }
 
-core::Lock _locker = {};
+fc::Lock _locker = {};
 
 bool Cpu::begin_syscall()
 {
@@ -61,7 +61,7 @@ void Cpu::interrupt_release(bool re_enable_int)
 
 namespace arch::amd64
 {
-core::Result<void> cpuContextInit(int id, int lapic)
+fc::Result<void> cpuContextInit(int id, int lapic)
 {
     if (id > max_cpu) [[unlikely]]
     {

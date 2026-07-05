@@ -62,10 +62,10 @@ static prot::ReceiverPipe _stdin_pipe;
 
 static prot::FsFile *_pwd;
 
-class WingosLogger : public core::Writer
+class WingosLogger : public fc::Writer
 {
 public:
-    virtual core::Result<void> write(const char *data, size_t size) override
+    virtual fc::Result<void> write(const char *data, size_t size) override
     {
 
         for (size_t i = 0; i < size; i++)
@@ -95,10 +95,10 @@ public:
     }
 };
 
-class EmptyReader : public core::Reader
+class EmptyReader : public fc::Reader
 {
 public:
-    virtual core::Result<size_t> read(char *buffer, size_t size) const override
+    virtual fc::Result<size_t> read(char *buffer, size_t size) const override
     {
         (void)buffer;
         (void)size;
@@ -137,7 +137,7 @@ extern "C" void run_constructors()
     }
 }
 
-static core::WStr *cwd;
+static fc::WStr *cwd;
 
 char *iol_get_cwd()
 {
@@ -176,8 +176,8 @@ int iol_change_cwd(const char *path)
         path++;
     }
 
-    cwd->append(core::Str(path));
-    core::Str p = path;
+    cwd->append(fc::Str(path));
+    fc::Str p = path;
     auto r = p.split('/');
     for (auto &part : r)
     {
@@ -188,9 +188,9 @@ int iol_change_cwd(const char *path)
         {
             return -1;
         }
-        auto new_f = core::move(n.unwrap());
+        auto new_f = fc::move(n.unwrap());
 
-        core::swap(new_f, *_pwd);
+        fc::swap(new_f, *_pwd);
 
         new_f.close();
     }
@@ -224,7 +224,7 @@ extern "C" __attribute__((weak)) void _entry_point(StartupInfo *context)
     if (context->stdout_handle != 0)
     {
 
-        cwd = new core::WStr();
+        cwd = new fc::WStr();
     }
 
     if (context->stdout_handle != 0)

@@ -53,7 +53,7 @@ class NvmeController
             return (tail + 1) >= count;
         }
 
-        core::Result<T *> allocate()
+        fc::Result<T *> allocate()
         {
             T *res = (T *)(base_addr + tail * sizeof(T));
 
@@ -68,7 +68,7 @@ class NvmeController
             return res;
         }
 
-        static core::Result<Queue<T>> create(size_t count)
+        static fc::Result<Queue<T>> create(size_t count)
         {
             Queue<T> queue = {};
 
@@ -76,13 +76,13 @@ class NvmeController
 
             queue.count = math::alignDown(len, sizeof(T)) / sizeof(T);
             fmt::log$("Creating queue of {} entries ({} bytes)", queue.count, len);
-            queue.is_completion = core::IsSame<T, CompletionQueueEntry>;
+            queue.is_completion = fc::IsSame<T, CompletionQueueEntry>;
             queue.tail = 0;
 
             auto memory = Wingos::Space::self().allocate_physical_memory(len, false);
             if (memory.handle == 0)
             {
-                return core::Result<Queue<T>>::error("failed to allocate memory for queue");
+                return fc::Result<Queue<T>>::error("failed to allocate memory for queue");
             }
             auto mapped = Wingos::Space::self().map_memory(memory, ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);
             queue.base_addr = (uint64_t)mapped.ptr();
@@ -93,7 +93,7 @@ class NvmeController
             return queue;
         };
 
-        core::Result<void> release()
+        fc::Result<void> release()
         {
             Wingos::Space::self().release_memory((void *)this->base_addr, this->page_size);
             return {};
@@ -114,7 +114,7 @@ class NvmeController
     };
 
     template <typename SubmitT = NvmeCmd, typename CompleteT = CompletionQueueEntry>
-    core::Result<Queues<SubmitT, CompleteT>> create_queues(size_t slots, size_t max_pgs_size, uint64_t id)
+    fc::Result<Queues<SubmitT, CompleteT>> create_queues(size_t slots, size_t max_pgs_size, uint64_t id)
     {
 
         Queues<SubmitT, CompleteT> queues;
@@ -148,7 +148,7 @@ class NvmeController
         Queues<> io_queues;
         uint32_t nsid;
         uint64_t sys_id;
-        core::Str name;
+        fc::Str name;
         size_t max_phys_rpgs;
         size_t lba_size;
         NvmeIdentifyNamespace *identify_namespace;
@@ -202,7 +202,7 @@ class NvmeController
         *offseted = val;
     }
 
-    core::Result<void> nvme_await_submit(NvmeCmd const *cmd, Queues<> &queues)
+    fc::Result<void> nvme_await_submit(NvmeCmd const *cmd, Queues<> &queues)
     {
         if (queues.complete_queue.will_loop())
         {
@@ -243,7 +243,7 @@ class NvmeController
         return {};
     }
 
-    core::Result<void> identify()
+    fc::Result<void> identify()
     {
         size_t len = math::alignUp(sizeof(NvmeIdentifyController), 4096ul);
         auto cmd = NvmeCmd{};
@@ -272,7 +272,7 @@ class NvmeController
         return {};
     };
 
-    core::Result<void> nvme_set_queue_count(uint16_t count)
+    fc::Result<void> nvme_set_queue_count(uint16_t count)
     {
         if (count == 0 || count > cap.max_queue_entries)
         {
@@ -288,7 +288,7 @@ class NvmeController
         return nvme_await_submit(&cmd, admin_queues);
     }
 
-    core::Result<void> nvme_create_queues(NvmeDevice *dev, uint16_t queue_id)
+    fc::Result<void> nvme_create_queues(NvmeDevice *dev, uint16_t queue_id)
     {
 
         dev->io_queues = try$(create_queues(queue_slots, dev->max_phys_rpgs, queue_id));
@@ -315,7 +315,7 @@ class NvmeController
         return {};
     }
 
-    core::Result<void> nvme_register_device_namespace(size_t nsid)
+    fc::Result<void> nvme_register_device_namespace(size_t nsid)
     {
         NvmeDevice device = {};
         device.nsid = nsid;
@@ -331,7 +331,7 @@ class NvmeController
         idns_cmd.prp2 = 0;
         try$(nvme_await_submit(&idns_cmd, admin_queues));
 
-        fmt::log$(" - Namespace {}: {} blocks of size {}", nsid, core::copy(device.identify_namespace->nsze), 1 << (device.identify_namespace->lbaf[device.identify_namespace->flbas & 0xf].lbads));
+        fmt::log$(" - Namespace {}: {} blocks of size {}", nsid, fc::copy(device.identify_namespace->nsze), 1 << (device.identify_namespace->lbaf[device.identify_namespace->flbas & 0xf].lbads));
 
         uint64_t flba = device.identify_namespace->flbas & 0xf;
         uint64_t lba_shift = (device.identify_namespace->lbaf[flba].lbads);
@@ -354,9 +354,9 @@ class NvmeController
     }
 
 public:
-    core::Vec<NvmeDevice> devices;
+    fc::Vec<NvmeDevice> devices;
 
-    core::Result<void> read_write_ptr(NvmeDevice *dev, bool is_write, uint64_t lba, uint16_t nlb, void *buffer, size_t buffer_len)
+    fc::Result<void> read_write_ptr(NvmeDevice *dev, bool is_write, uint64_t lba, uint16_t nlb, void *buffer, size_t buffer_len)
     {
         if (buffer_len == 0 || buffer == nullptr)
         {
@@ -433,7 +433,7 @@ public:
         return nvme_await_submit(&cmd, dev->io_queues);
     }
 
-    static core::Result<NvmeController> setup(Wingos::dev::PciDevice &dev)
+    static fc::Result<NvmeController> setup(Wingos::dev::PciDevice &dev)
     {
         NvmeController driver;
         uint64_t device_addr = dev.get_bar64(Wingos::dev::pci_reg_dev_BAR0); // Get the BAR0 address
@@ -500,7 +500,7 @@ public:
             if (status & (1 << 1))
             {
                 fmt::err$("NVMe controller failed to start, fatal error: {}", status | fmt::FMT_HEX);
-                return core::Result<NvmeController>::error("nvme controller failed to start");
+                return fc::Result<NvmeController>::error("nvme controller failed to start");
             }
             asm volatile("pause");
         }
@@ -510,13 +510,13 @@ public:
         try$(driver.identify());
 
         fmt::log$("NVMe Identify Controller:");
-        fmt::log$("- Vendor ID       : {}", core::copy(driver.identify_controller->vid) | fmt::FMT_HEX);
-        fmt::log$("- Subsystem VID   : {}", core::copy(driver.identify_controller->ssvid) | fmt::FMT_HEX);
-        fmt::log$("- Serial Number   : {}", core::Str(driver.identify_controller->sn, 20));
-        fmt::log$("- Model Number    : {}", core::Str(driver.identify_controller->mn, 40));
-        fmt::log$("- Firmware Revision : {}", core::Str(driver.identify_controller->fr, 8));
+        fmt::log$("- Vendor ID       : {}", fc::copy(driver.identify_controller->vid) | fmt::FMT_HEX);
+        fmt::log$("- Subsystem VID   : {}", fc::copy(driver.identify_controller->ssvid) | fmt::FMT_HEX);
+        fmt::log$("- Serial Number   : {}", fc::Str(driver.identify_controller->sn, 20));
+        fmt::log$("- Model Number    : {}", fc::Str(driver.identify_controller->mn, 40));
+        fmt::log$("- Firmware Revision : {}", fc::Str(driver.identify_controller->fr, 8));
         fmt::log$("- Max Data Transfer Size : {}", 1 << driver.identify_controller->mdts);
-        fmt::log$("- Number of Namespaces : {}", core::copy(driver.identify_controller->nn));
+        fmt::log$("- Number of Namespaces : {}", fc::copy(driver.identify_controller->nn));
         fmt::log$("- Submission Queue Entry Size : {}", 1 << driver.identify_controller->sqes);
         fmt::log$("- Completion Queue Entry Size : {}", 1 << driver.identify_controller->cqes);
         fmt::log$("- Max Outstanding Commands : {}", driver.identify_controller->maxcmd + 1);
@@ -547,7 +547,7 @@ public:
             driver.max_transfer = 1 << 20; // 1 MB
         }
 
-        fmt::log$("Found {} namespaces:", core::copy(driver.identify_controller->nn));
+        fmt::log$("Found {} namespaces:", fc::copy(driver.identify_controller->nn));
 
         try$(driver.nvme_set_queue_count(4));
         for (uint32_t i = 0; i < driver.identify_controller->nn; i++)
@@ -557,10 +557,10 @@ public:
 
             if (driver.nsids[i] > driver.identify_controller->mnan && driver.identify_controller->mnan != 0)
             {
-                fmt::err$("Namespace ID {} is greater than maximum number of namespaces {}", core::copy(driver.nsids[i]), core::copy(driver.identify_controller->mnan));
+                fmt::err$("Namespace ID {} is greater than maximum number of namespaces {}", fc::copy(driver.nsids[i]), fc::copy(driver.identify_controller->mnan));
                 continue;
             }
-            fmt::log$("- Namespace ID: {}", core::copy(driver.nsids[i]));
+            fmt::log$("- Namespace ID: {}", fc::copy(driver.nsids[i]));
             try$(driver.nvme_register_device_namespace(driver.nsids[i]));
         }
 
@@ -571,7 +571,7 @@ public:
 struct ControllerEndpoint
 {
     uint32_t uid;
-    core::WStr name;
+    fc::WStr name;
     NvmeController *controller;
     uint64_t device_id;
 
@@ -587,8 +587,8 @@ int main(int, char **)
 
     device_uid = 0;
 
-    core::Vec<NvmeController> disks = {};
-    core::Vec<ControllerEndpoint> endpoints = {};
+    fc::Vec<NvmeController> disks = {};
+    fc::Vec<ControllerEndpoint> endpoints = {};
     for (auto &dev : pci_controller.devices)
     {
         if (dev.class_code() == 0x01 && dev.subclass() == 0x08) // storage controller, NVMe
@@ -642,7 +642,7 @@ int main(int, char **)
             fmt::log$("Registered endpoint {} with uid {} (ip: {})", ep.name.view(), ep.uid, ep.server.addr());
 
             vfs.register_device(ep.name.view(), ep.server.addr()).assert();
-            endpoints.push(core::move(ep));
+            endpoints.push(fc::move(ep));
         }
     }
 
@@ -699,7 +699,7 @@ int main(int, char **)
                 reply.data[1].is_asset = true;
                 reply.data[1].asset_handle = asset.handle;
 
-                ep.server.reply(core::move(msg), reply).assert();
+                ep.server.reply(fc::move(msg), reply).assert();
                 break;
             }
             case prot::DISK_WRITE_SECTORS:
@@ -726,7 +726,7 @@ int main(int, char **)
                 reply.data[0].data = size; // number of bytes written
                 reply.data[0].is_asset = false;
 
-                ep.server.reply(core::move(msg), reply).assert();
+                ep.server.reply(fc::move(msg), reply).assert();
                 break;
             }
 

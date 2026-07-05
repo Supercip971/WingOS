@@ -192,7 +192,7 @@ struct Ext4CacheNode
 
 class Ext4Filesystem
 {
-    core::Vec<Ext4CacheNode> cache_nodes;
+    fc::Vec<Ext4CacheNode> cache_nodes;
     prot::DiskConnection disk;
     size_t start_lba;
 
@@ -209,28 +209,28 @@ class Ext4Filesystem
 
 public:
     // use temp buffer
-    core::Result<void *> read_block_tmp(size_t block_num);
-    core::Result<void *> read_block_tmp(Wingos::MemoryAsset &target, size_t block_num, size_t mem_asset_off);
+    fc::Result<void *> read_block_tmp(size_t block_num);
+    fc::Result<void *> read_block_tmp(Wingos::MemoryAsset &target, size_t block_num, size_t mem_asset_off);
 
-    core::Result<void> write_block_tmp(size_t block_num, void *data);
+    fc::Result<void> write_block_tmp(size_t block_num, void *data);
 
-    core::Result<size_t> inode_read(Ext4InodeRef const &inode, Wingos::MemoryAsset &out, size_t off, size_t len, size_t mem_asset_off);
+    fc::Result<size_t> inode_read(Ext4InodeRef const &inode, Wingos::MemoryAsset &out, size_t off, size_t len, size_t mem_asset_off);
 
-    core::Result<void *> inode_read_tmp(Ext4InodeRef const &inode, size_t block);
-    core::Result<void *> inode_read_blck_off(Ext4InodeRef const &inode, Wingos::MemoryAsset &out, size_t off, size_t mem_asset_off);
+    fc::Result<void *> inode_read_tmp(Ext4InodeRef const &inode, size_t block);
+    fc::Result<void *> inode_read_blck_off(Ext4InodeRef const &inode, Wingos::MemoryAsset &out, size_t off, size_t mem_asset_off);
 
-    core::Result<void> inode_write(Ext4InodeRef &inode, Wingos::MemoryAsset &out, size_t len, size_t block);
-    core::Result<void> inode_write_tmp(Ext4InodeRef &inode, size_t block, void *data);
+    fc::Result<void> inode_write(Ext4InodeRef &inode, Wingos::MemoryAsset &out, size_t len, size_t block);
+    fc::Result<void> inode_write_tmp(Ext4InodeRef &inode, size_t block, void *data);
 
-    core::Result<BlockGroupId> find_available_group_for_alloc(BlockGroupId start_from);
+    fc::Result<BlockGroupId> find_available_group_for_alloc(BlockGroupId start_from);
 
-    core::Result<uint64_t> allocate_block(BlockGroupId bg_id);
+    fc::Result<uint64_t> allocate_block(BlockGroupId bg_id);
 
-    core::Result<void> inode_add_block(Ext4InodeRef &inode);
+    fc::Result<void> inode_add_block(Ext4InodeRef &inode);
 
-    core::Result<uint64_t> inode_find_block(Ext4InodeRef const &inode, size_t block);
+    fc::Result<uint64_t> inode_find_block(Ext4InodeRef const &inode, size_t block);
 
-    core::Result<void> dump_subdir(Ext4InodeRef const &dir_inode, int depth);
+    fc::Result<void> dump_subdir(Ext4InodeRef const &dir_inode, int depth);
 
     size_t block_size() const
     {
@@ -255,14 +255,14 @@ public:
         return containing_block / block_size();
     }
 
-    core::Result<Ext4BlockGroupDescriptor> read_blockgroup_descriptor(BlockGroupId bg_id);
+    fc::Result<Ext4BlockGroupDescriptor> read_blockgroup_descriptor(BlockGroupId bg_id);
 
-    core::Result<void> write_blockgroup_descriptor(BlockGroupId bg_id, Ext4BlockGroupDescriptor const &bgd);
+    fc::Result<void> write_blockgroup_descriptor(BlockGroupId bg_id, Ext4BlockGroupDescriptor const &bgd);
 
-    core::Result<Ext4InodeRef> read_inode(InodeId inode);
-    core::Result<void> write_inode(InodeId inode, Ext4Inode const &data);
+    fc::Result<Ext4InodeRef> read_inode(InodeId inode);
+    fc::Result<void> write_inode(InodeId inode, Ext4Inode const &data);
 
-    static core::Result<Ext4Filesystem> initialize(prot::DiskConnection disk_conn, size_t start_lba, size_t end_lba)
+    static fc::Result<Ext4Filesystem> initialize(prot::DiskConnection disk_conn, size_t start_lba, size_t end_lba)
     {
         fmt::log$("ext4: initializing ext4 filesystem...");
         Ext4Filesystem fs;
@@ -282,16 +282,16 @@ public:
             return "not an ext4 filesystem (invalid magic)";
         }
 
-        fmt::log$("ext4: detected ext4 filesystem with {} inodes and {} blocks", core::copy(fs.superblock.inodes_count), fs.superblock.blocks_count_lo | ((uint64_t)fs.superblock.blocks_count_hi << 32));
+        fmt::log$("ext4: detected ext4 filesystem with {} inodes and {} blocks", fc::copy(fs.superblock.inodes_count), fs.superblock.blocks_count_lo | ((uint64_t)fs.superblock.blocks_count_hi << 32));
 
         fmt::log$("ext4: block size: {}", 1024 << fs.superblock.log_block_size);
-        fmt::log$("ext4: inode size: {}", core::copy(fs.superblock.inode_size));
-        fmt::log$("ext4: blocks per group: {}", core::copy(fs.superblock.blocks_per_group));
-        fmt::log$("ext4: inodes per group: {}", core::copy(fs.superblock.inodes_per_group));
-        fmt::log$("ext4: first inode: {}", core::copy(fs.superblock.first_ino));
-        fmt::log$("ext4: feature compat: {}", core::copy(fs.superblock.feature_compat));
-        fmt::log$("ext4: feature incompat: {}", core::copy(fs.superblock.feature_incompat));
-        fmt::log$("ext4: feature ro compat: {}", core::copy(fs.superblock.feature_ro_compat));
+        fmt::log$("ext4: inode size: {}", fc::copy(fs.superblock.inode_size));
+        fmt::log$("ext4: blocks per group: {}", fc::copy(fs.superblock.blocks_per_group));
+        fmt::log$("ext4: inodes per group: {}", fc::copy(fs.superblock.inodes_per_group));
+        fmt::log$("ext4: first inode: {}", fc::copy(fs.superblock.first_ino));
+        fmt::log$("ext4: feature compat: {}", fc::copy(fs.superblock.feature_compat));
+        fmt::log$("ext4: feature incompat: {}", fc::copy(fs.superblock.feature_incompat));
+        fmt::log$("ext4: feature ro compat: {}", fc::copy(fs.superblock.feature_ro_compat));
 
         fs.disk_asset = Wingos::Space::self().allocate_physical_memory(math::alignUp<size_t>((1024 << fs.superblock.log_block_size), (size_t)4096));
         fs.mapped_disk_asset = Wingos::Space::self().map_memory(fs.disk_asset, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
@@ -315,9 +315,9 @@ public:
 
         auto v = try$(fs.read_inode(2));
 
-        fmt::log$("ext4: root inode has {} blocks", core::copy(v.inode.blocks_lo));
+        fmt::log$("ext4: root inode has {} blocks", fc::copy(v.inode.blocks_lo));
         fmt::log$("ext4: root inode size: {}", (uint64_t)v.inode.size_lo);
-        fmt::log$("ext4: root inode first block pointer: {}", core::copy(v.inode.block[0]));
+        fmt::log$("ext4: root inode first block pointer: {}", fc::copy(v.inode.block[0]));
         fmt::log$("ext4: root inode type: {}", (uint16_t)v.inode.file_type);
 
         fs.dump_subdir(v, 0);
@@ -325,5 +325,5 @@ public:
         return fs;
     }
 
-    core::Result<Ext4InodeRef> get_subdir(Ext4InodeRef const &dir_inode, core::Str const &name);
+    fc::Result<Ext4InodeRef> get_subdir(Ext4InodeRef const &dir_inode, fc::Str const &name);
 };

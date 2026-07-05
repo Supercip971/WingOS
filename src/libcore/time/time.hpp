@@ -1,6 +1,6 @@
 #pragma once
 
-namespace core
+namespace fc
 {
 
 template <unsigned long scale>
@@ -100,4 +100,4 @@ using Minutes = DurationUnit<Seconds::Scale * 60>;
 using Hours = DurationUnit<Minutes::Scale * 60>;
 using Days = DurationUnit<Hours::Scale * 24>;
 
-} // namespace core
+} // namespace fc

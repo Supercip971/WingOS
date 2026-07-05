@@ -3,7 +3,7 @@
 
 #include "libcore/result.hpp"
 
-core::Result<void> wgfx::initialize_platform()
+fc::Result<void> wgfx::initialize_platform()
 {
     return {};
 }

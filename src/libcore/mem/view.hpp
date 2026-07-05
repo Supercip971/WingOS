@@ -5,7 +5,7 @@
 
 #include "libcore/type/trait.hpp"
 
-namespace core
+namespace fc
 {
 template <class T = uint8_t>
 class MemView
@@ -89,4 +89,4 @@ constexpr size_t count(const T &view, P predicate)
     }
     return count;
 }
-} // namespace core
+} // namespace fc

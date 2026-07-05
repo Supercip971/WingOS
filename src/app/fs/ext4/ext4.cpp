@@ -10,7 +10,7 @@
 #include "libcore/type-utils.hpp"
 #include "wingos-headers/asset.h"
 
-core::Result<void *> Ext4Filesystem::read_block_tmp(Wingos::MemoryAsset &target, size_t block_num, size_t mem_asset_off)
+fc::Result<void *> Ext4Filesystem::read_block_tmp(Wingos::MemoryAsset &target, size_t block_num, size_t mem_asset_off)
 {
     size_t block_bytes = (1024 << superblock.log_block_size);
     auto bytes_read = try$(disk.read(target, start_lba + (block_num * block_bytes) / disk_block_size, block_bytes, mem_asset_off));
@@ -22,7 +22,7 @@ core::Result<void *> Ext4Filesystem::read_block_tmp(Wingos::MemoryAsset &target,
     return mapped_disk_asset.ptr();
 }
 
-core::Result<void *> Ext4Filesystem::read_block_tmp(size_t block_num)
+fc::Result<void *> Ext4Filesystem::read_block_tmp(size_t block_num)
 {
     for (size_t i = 0; i < cache_nodes.len(); i++)
     {
@@ -45,7 +45,7 @@ core::Result<void *> Ext4Filesystem::read_block_tmp(size_t block_num)
     {
         Ext4CacheNode node;
         node.block_num = block_num;
-        node.data = core::mem_alloc(block_size).copied();
+        node.data = fc::mem_alloc(block_size).copied();
         memcpy(node.data, mapped_disk_asset.ptr(), block_size);
         node.score = 1;
         cache_nodes.push(node);
@@ -76,7 +76,7 @@ core::Result<void *> Ext4Filesystem::read_block_tmp(size_t block_num)
     }
 }
 
-core::Result<void> Ext4Filesystem::write_block_tmp(size_t block_num, void *data)
+fc::Result<void> Ext4Filesystem::write_block_tmp(size_t block_num, void *data)
 {
     if (mapped_disk_asset.ptr() != data)
     {
@@ -86,7 +86,7 @@ core::Result<void> Ext4Filesystem::write_block_tmp(size_t block_num, void *data)
     return {};
 }
 
-core::Result<void> Ext4Filesystem::write_blockgroup_descriptor(BlockGroupId bg_id, Ext4BlockGroupDescriptor const &bgd)
+fc::Result<void> Ext4Filesystem::write_blockgroup_descriptor(BlockGroupId bg_id, Ext4BlockGroupDescriptor const &bgd)
 {
 
     size_t block_group_entry_size = this->block_desc_size;
@@ -102,7 +102,7 @@ core::Result<void> Ext4Filesystem::write_blockgroup_descriptor(BlockGroupId bg_i
     return {};
 }
 
-core::Result<Ext4BlockGroupDescriptor> Ext4Filesystem::read_blockgroup_descriptor(BlockGroupId bg_id)
+fc::Result<Ext4BlockGroupDescriptor> Ext4Filesystem::read_blockgroup_descriptor(BlockGroupId bg_id)
 {
 
     size_t block_group_entry_size = this->block_desc_size;
@@ -115,7 +115,7 @@ core::Result<Ext4BlockGroupDescriptor> Ext4Filesystem::read_blockgroup_descripto
     return *(Ext4BlockGroupDescriptor *)bgd_ptr;
 }
 
-core::Result<Ext4InodeRef> Ext4Filesystem::read_inode(InodeId inode)
+fc::Result<Ext4InodeRef> Ext4Filesystem::read_inode(InodeId inode)
 {
     auto bg_id = blockgroup_from_inode(inode);
     auto bgd_res = try$(read_blockgroup_descriptor(bg_id));
@@ -135,7 +135,7 @@ core::Result<Ext4InodeRef> Ext4Filesystem::read_inode(InodeId inode)
     return inode_ref;
 }
 
-core::Result<uint64_t> Ext4Filesystem::inode_find_block(Ext4InodeRef const &inode, size_t block)
+fc::Result<uint64_t> Ext4Filesystem::inode_find_block(Ext4InodeRef const &inode, size_t block)
 {
     // blocks_lo is in 512-byte sectors, convert to filesystem blocks
     size_t blocks_in_sectors = inode.inode.blocks_lo;
@@ -210,7 +210,7 @@ core::Result<uint64_t> Ext4Filesystem::inode_find_block(Ext4InodeRef const &inod
     return block_ptr;
 }
 
-core::Result<size_t> Ext4Filesystem::inode_read(Ext4InodeRef const &inode, Wingos::MemoryAsset &out, size_t off, size_t len, size_t mem_asset_off)
+fc::Result<size_t> Ext4Filesystem::inode_read(Ext4InodeRef const &inode, Wingos::MemoryAsset &out, size_t off, size_t len, size_t mem_asset_off)
 
 {
     fmt::log$("inode_read: inode={}, off={}, len={}", inode.inode_id, off, len);
@@ -218,7 +218,7 @@ core::Result<size_t> Ext4Filesystem::inode_read(Ext4InodeRef const &inode, Wingo
     if (off >= file_size)
     {
         fmt::warn$("inode_read: offset {} beyond file size {} for inode {}", off, file_size, inode.inode_id);
-        return core::Result<size_t>::success(0);
+        return fc::Result<size_t>::success(0);
     }
 
     size_t original_len = len;
@@ -233,7 +233,7 @@ core::Result<size_t> Ext4Filesystem::inode_read(Ext4InodeRef const &inode, Wingo
     }
     if (len == 0)
     {
-        return core::Result<size_t>::success(0);
+        return fc::Result<size_t>::success(0);
     }
     size_t block_size_ = block_size();
     size_t start_block = off / block_size_;
@@ -252,7 +252,7 @@ core::Result<size_t> Ext4Filesystem::inode_read(Ext4InodeRef const &inode, Wingo
         //                v end here
         // ##------------- ############# <- Another block
         //      | len      #      |    #
-        size_t to_read = core::min(len, block_size_ - block_offset);
+        size_t to_read = fc::min(len, block_size_ - block_offset);
         memcpy((uint8_t *)vfile.ptr() + bytes_read + mem_asset_off, (uint8_t *)block_data_res + block_offset, to_read);
         bytes_read += to_read;
         start_block += 1;
@@ -281,7 +281,7 @@ core::Result<size_t> Ext4Filesystem::inode_read(Ext4InodeRef const &inode, Wingo
     return bytes_read;
 }
 
-core::Result<BlockGroupId> Ext4Filesystem::find_available_group_for_alloc(BlockGroupId start_from)
+fc::Result<BlockGroupId> Ext4Filesystem::find_available_group_for_alloc(BlockGroupId start_from)
 {
     BlockGroupId bg_id = start_from;
     while (true)
@@ -303,7 +303,7 @@ core::Result<BlockGroupId> Ext4Filesystem::find_available_group_for_alloc(BlockG
     }
 }
 
-core::Result<uint64_t> Ext4Filesystem::allocate_block(BlockGroupId bg_id)
+fc::Result<uint64_t> Ext4Filesystem::allocate_block(BlockGroupId bg_id)
 {
     auto group = find_available_group_for_alloc(bg_id);
     if (group.is_error())
@@ -353,7 +353,7 @@ core::Result<uint64_t> Ext4Filesystem::allocate_block(BlockGroupId bg_id)
     return "no free blocks found in bitmap";
 }
 
-core::Result<void> Ext4Filesystem::inode_add_block(Ext4InodeRef &inode)
+fc::Result<void> Ext4Filesystem::inode_add_block(Ext4InodeRef &inode)
 {
 
     // allocate new block
@@ -399,7 +399,7 @@ core::Result<void> Ext4Filesystem::inode_add_block(Ext4InodeRef &inode)
     return {};
 }
 
-core::Result<void> Ext4Filesystem::write_inode(InodeId inode, Ext4Inode const &data)
+fc::Result<void> Ext4Filesystem::write_inode(InodeId inode, Ext4Inode const &data)
 {
     auto bg_id = blockgroup_from_inode(inode);
     auto bgd_res = try$(read_blockgroup_descriptor(bg_id));
@@ -416,7 +416,7 @@ core::Result<void> Ext4Filesystem::write_inode(InodeId inode, Ext4Inode const &d
     return {};
 }
 
-core::Result<void> Ext4Filesystem::dump_subdir(Ext4InodeRef const &dir_inode, int depth)
+fc::Result<void> Ext4Filesystem::dump_subdir(Ext4InodeRef const &dir_inode, int depth)
 {
     size_t block_size_ = block_size();
     size_t dir_size = dir_inode.inode.size_lo;
@@ -439,8 +439,8 @@ core::Result<void> Ext4Filesystem::dump_subdir(Ext4InodeRef const &dir_inode, in
                 continue;
             }
 
-            core::WStr name = {};
-            core::WStr raw_name = {};
+            fc::WStr name = {};
+            fc::WStr raw_name = {};
 
             for (int i = 0; i < depth; i++)
             {
@@ -455,9 +455,9 @@ core::Result<void> Ext4Filesystem::dump_subdir(Ext4InodeRef const &dir_inode, in
                 raw_name.put(entry->name[i]);
             }
 
-            fmt::log$("{} (inode {}) {}", name.view(), core::copy(entry->inode), core::copy(entry->file_type));
+            fmt::log$("{} (inode {}) {}", name.view(), fc::copy(entry->inode), fc::copy(entry->file_type));
 
-            if (entry->file_type == 2 && raw_name.view() != core::Str(".") && raw_name.view() != core::Str(".."))
+            if (entry->file_type == 2 && raw_name.view() != fc::Str(".") && raw_name.view() != fc::Str(".."))
             {
                 dump_subdir(try$(read_inode(entry->inode)), depth + 1);
             }
@@ -466,7 +466,7 @@ core::Result<void> Ext4Filesystem::dump_subdir(Ext4InodeRef const &dir_inode, in
     return {};
 }
 
-core::Result<void> Ext4Filesystem::inode_write_tmp(Ext4InodeRef &inode, size_t block, void *data)
+fc::Result<void> Ext4Filesystem::inode_write_tmp(Ext4InodeRef &inode, size_t block, void *data)
 {
     // block is offset
 
@@ -481,7 +481,7 @@ core::Result<void> Ext4Filesystem::inode_write_tmp(Ext4InodeRef &inode, size_t b
     return {};
 }
 
-core::Result<void *> Ext4Filesystem::inode_read_blck_off(Ext4InodeRef const &inode, Wingos::MemoryAsset &out, size_t off, size_t mem_asset_off)
+fc::Result<void *> Ext4Filesystem::inode_read_blck_off(Ext4InodeRef const &inode, Wingos::MemoryAsset &out, size_t off, size_t mem_asset_off)
 {
     size_t block_size_ = block_size();
     size_t block = off / block_size_;
@@ -490,7 +490,7 @@ core::Result<void *> Ext4Filesystem::inode_read_blck_off(Ext4InodeRef const &ino
     return read_block_tmp(out, block_num_res, mem_asset_off);
 }
 
-core::Result<void *> Ext4Filesystem::inode_read_tmp(Ext4InodeRef const &inode, size_t block)
+fc::Result<void *> Ext4Filesystem::inode_read_tmp(Ext4InodeRef const &inode, size_t block)
 {
     // block is offset
 
@@ -501,7 +501,7 @@ core::Result<void *> Ext4Filesystem::inode_read_tmp(Ext4InodeRef const &inode, s
     return block_data_res;
 }
 
-core::Result<Ext4InodeRef> Ext4Filesystem::get_subdir(Ext4InodeRef const &dir_inode, core::Str const &name)
+fc::Result<Ext4InodeRef> Ext4Filesystem::get_subdir(Ext4InodeRef const &dir_inode, fc::Str const &name)
 {
     size_t block_size_ = block_size();
     size_t dir_size = dir_inode.inode.size_lo;
@@ -526,7 +526,7 @@ core::Result<Ext4InodeRef> Ext4Filesystem::get_subdir(Ext4InodeRef const &dir_in
                 continue;
             }
 
-            core::Str ename = core::Str(entry->name, entry->name_len);
+            fc::Str ename = fc::Str(entry->name, entry->name_len);
 
             if (ename == name)
             {
@@ -538,5 +538,5 @@ core::Result<Ext4InodeRef> Ext4Filesystem::get_subdir(Ext4InodeRef const &dir_in
     return "directory entry not found";
 }
 
-//  core::Result<void> Ext4Filesystem::inode_write(InodeId inode, Wingos::MemoryAsset& out, size_t len, size_t block);
-// core::Result<void> Ext4Filesystem::inode_write_tmp(InodeId inode, size_t block, void* data);
+//  fc::Result<void> Ext4Filesystem::inode_write(InodeId inode, Wingos::MemoryAsset& out, size_t len, size_t block);
+// fc::Result<void> Ext4Filesystem::inode_write_tmp(InodeId inode, size_t block, void* data);

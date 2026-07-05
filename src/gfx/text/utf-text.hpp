@@ -8,5 +8,5 @@ namespace wgfx
 {
 
 // TEMPORARY FOR NOW
-using Utf8Str = core::Str;
+using Utf8Str = fc::Str;
 } // namespace wgfx

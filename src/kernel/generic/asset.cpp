@@ -82,7 +82,7 @@ void Asset::release(Asset *asset)
 
             server->server->connections.release();
 
-            saved_self = core::move(server->server->self);
+            saved_self = fc::move(server->server->self);
         }
     }
 
@@ -196,7 +196,7 @@ void Asset::deref(Asset *asset)
                 // spinlock) -> deadlock.  By moving it out we let the
                 // destructor run after `delete asset` below (or at end of
                 // scope) when the lock is no longer held.
-                auto deferred_self = core::move(server->server->self);
+                auto deferred_self = fc::move(server->server->self);
 
                 delete server->server;
                 server->server = nullptr;
@@ -227,7 +227,7 @@ void Asset::deref(Asset *asset)
     }
 }
 
-core::Result<AssetRef<AssetMemory>> Space::create_memory(AssetMemoryCreateParams params)
+fc::Result<AssetRef<AssetMemory>> Space::create_memory(AssetMemoryCreateParams params)
 {
 
     if (params.size == 0)
@@ -246,9 +246,9 @@ core::Result<AssetRef<AssetMemory>> Space::create_memory(AssetMemoryCreateParams
         params.addr == 0));
     if (params.addr == 0)
     {
-        core::Result<PhysAddr> res = params.lower_half
-                                         ? Pmm::the().allocate(Pages::from_bytes_ceil(params.size), IOL_ALLOC_MEMORY_FLAG_LOWER_SPACE)
-                                         : Pmm::the().allocate(Pages::from_bytes_ceil(params.size));
+        fc::Result<PhysAddr> res = params.lower_half
+                                       ? Pmm::the().allocate(Pages::from_bytes_ceil(params.size), IOL_ALLOC_MEMORY_FLAG_LOWER_SPACE)
+                                       : Pmm::the().allocate(Pages::from_bytes_ceil(params.size));
 
         if (res.is_error())
         {
@@ -294,7 +294,7 @@ core::Result<AssetRef<AssetMemory>> Space::create_memory(AssetMemoryCreateParams
     return ptr;
 }
 
-core::Result<AssetRef<AssetMapping>> Space::create_mapping(AssetMappingCreateParams params)
+fc::Result<AssetRef<AssetMapping>> Space::create_mapping(AssetMappingCreateParams params)
 {
     params.physical_mem.lock();
     auto ptr = try$(allocate_asset<AssetMapping>(
@@ -350,7 +350,7 @@ core::Result<AssetRef<AssetMapping>> Space::create_mapping(AssetMappingCreatePar
     return ptr;
 }
 
-core::Result<AssetRef<AssetTask>> Space::create_task(AssetTaskCreateParams params)
+fc::Result<AssetRef<AssetTask>> Space::create_task(AssetTaskCreateParams params)
 {
     auto ptr = try$(allocate_asset<AssetTask>(
         kernel::Task::task_create().unwrap()));
@@ -371,7 +371,7 @@ core::Result<AssetRef<AssetTask>> Space::create_task(AssetTaskCreateParams param
 
 // asset_move and asset_copy are now template functions defined in space.hpp
 
-core::Result<AssetRef<AssetServer>> Space::create_ipc_server(AssetIpcServerCreateParams params)
+fc::Result<AssetRef<AssetServer>> Space::create_ipc_server(AssetIpcServerCreateParams params)
 {
     KernelIpcServer *server;
     if (params.is_root)
@@ -394,7 +394,7 @@ core::Result<AssetRef<AssetServer>> Space::create_ipc_server(AssetIpcServerCreat
     return ptr;
 }
 
-core::Result<AssetRef<AssetConnection>> Space::create_ipc_connection(AssetIpcConnectionCreateParams params)
+fc::Result<AssetRef<AssetConnection>> Space::create_ipc_connection(AssetIpcConnectionCreateParams params)
 {
     auto ptr = try$(allocate_asset<IpcConnection>());
 
@@ -461,19 +461,19 @@ core::Result<AssetRef<AssetConnection>> Space::create_ipc_connection(AssetIpcCon
         return ("failed to copy asset to server space");
     }
 
-    auto ptr_in_server = core::move(copy_res.unwrap());
+    auto ptr_in_server = fc::move(copy_res.unwrap());
 
     // Now lock server asset to modify connections.
     // server_self.asset is guaranteed non-null (checked above).
     server_self.asset->lock.lock();
     auto server_ptr = server_self.asset->casted<AssetServer>()->server;
-    try$(server_ptr->connections.push(core::move(ptr_in_server)));
+    try$(server_ptr->connections.push(fc::move(ptr_in_server)));
     server_self.asset->lock.release();
 
     return ptr;
 }
 
-core::Result<AssetIpcConnectionPipeCreateResult> Space::create_ipc_connections(
+fc::Result<AssetIpcConnectionPipeCreateResult> Space::create_ipc_connections(
     Space *space_sender, Space *space_receiver, AssetIpcConnectionPipeCreateParams params)
 {
     (void)params;

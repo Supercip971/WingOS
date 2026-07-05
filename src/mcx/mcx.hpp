@@ -63,10 +63,10 @@ struct MachineContext
 
 public:
     constexpr static int max_memory_map = 64;
-    core::Array<MemoryMap, max_memory_map> _memory_map;
+    fc::Array<MemoryMap, max_memory_map> _memory_map;
     int _memory_map_count = 0;
     constexpr static int max_modules = 64;
-    core::Array<MachineContextModule, max_modules> _modules;
+    fc::Array<MachineContextModule, max_modules> _modules;
     int _modules_count = 0;
 
     MachineFramebuffer _framebuffer;
@@ -74,8 +74,8 @@ public:
     uintptr_t _rsdp;
 };
 
-template <core::IsSame<const MachineContext *> T, core::Writable Targ>
-constexpr core::Result<void> format_v(Targ &target, T value)
+template <fc::IsSame<const MachineContext *> T, fc::Writable Targ>
+constexpr fc::Result<void> format_v(Targ &target, T value)
 {
     fmt::format(target, "\n MachineContext [ \n");
     fmt::format(target, "  _memory_map_count: {} \n", value->_memory_map_count);

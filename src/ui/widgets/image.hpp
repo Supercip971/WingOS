@@ -35,17 +35,17 @@ struct ImageWidgetLayout
 class ImageWidget : public Widget
 {
 
-    core::SharedPtr<wgfx::Texture> img;
+    fc::SharedPtr<wgfx::Texture> img;
     ImageWidgetLayout _layout = ImageWidgetLayout();
 
 public:
     ~ImageWidget() override = default;
 
-    ImageWidget(core::SharedPtr<wgfx::Texture> &_img) : img(_img) {}
+    ImageWidget(fc::SharedPtr<wgfx::Texture> &_img) : img(_img) {}
 
-    ImageWidget(core::SharedPtr<wgfx::Texture> _img) : img(_img) {}
+    ImageWidget(fc::SharedPtr<wgfx::Texture> _img) : img(_img) {}
 
-    ImageWidget(core::SharedPtr<wgfx::Texture> _img, ImageWidgetLayout layout) : img(_img), _layout(layout) {}
+    ImageWidget(fc::SharedPtr<wgfx::Texture> _img, ImageWidgetLayout layout) : img(_img), _layout(layout) {}
 
     wgfx::Vec2 preferred_size(wgfx::Vec2 constraint) const override
     {
@@ -54,7 +54,7 @@ public:
 
         return constraint;
 
-        // v.y = core::max(v.y, constraint.y);
+        // v.y = fc::max(v.y, constraint.y);
     }
 
     void render(UiContext const &ctx, wgfx::Canvas &canvas) const override

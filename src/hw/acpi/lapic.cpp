@@ -24,7 +24,7 @@ Lapic &Lapic::the()
 using AMsr = arch::amd64::Msr;
 using MsrReg = arch::amd64::MsrReg;
 
-core::Result<void> Lapic::enable()
+fc::Result<void> Lapic::enable()
 {
 
     // fmt::log$("Enabling LAPIC");
@@ -42,7 +42,7 @@ core::Result<void> Lapic::enable()
     return {};
 }
 
-core::Result<void> Lapic::initialize(Madt *madt)
+fc::Result<void> Lapic::initialize(Madt *madt)
 {
 
     PhysAddr lapic_addr = madt->local_apic_addr;
@@ -68,7 +68,7 @@ core::Result<void> Lapic::initialize(Madt *madt)
     return {};
 }
 
-core::Result<void> Lapic::init_cpu(LCpuId id)
+fc::Result<void> Lapic::init_cpu(LCpuId id)
 {
     LAPICInterruptCommandRegister reg = {0};
 
@@ -80,7 +80,7 @@ core::Result<void> Lapic::init_cpu(LCpuId id)
     return {};
 }
 
-core::Result<void> Lapic::send_sipi(LCpuId id, PhysAddr jump_addr)
+fc::Result<void> Lapic::send_sipi(LCpuId id, PhysAddr jump_addr)
 {
     LAPICInterruptCommandRegister reg = {0};
 
@@ -108,7 +108,7 @@ size_t Lapic::_timer_tick_in_16ms()
     return 0xFFFFFFFF - read(LAPICReg::TIMER_CURRENT_COUNT);
 }
 
-core::Result<void> Lapic::timer_initialize()
+fc::Result<void> Lapic::timer_initialize()
 {
     write(LAPICReg::TIMER_DIVIDE_CONFIGURATION, LAPIC_TIMER_DIVIDE_BY_16);
     auto ticks = _timer_tick_in_16ms(); // ticks in 16ms

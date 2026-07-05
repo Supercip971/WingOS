@@ -2,7 +2,7 @@
 
 #include <libcore/mem/view.hpp>
 
-namespace core
+namespace fc
 {
 template <typename T, int size>
 class Array
@@ -85,4 +85,4 @@ static_assert(Viewable<Array<char, 10>>);
 static_assert(sizeof(Array<char, 10>) == sizeof(char[10]));
 static_assert(sizeof(Array<float, 10>) == sizeof(float[10]));
 
-} // namespace core
+} // namespace fc

@@ -16,7 +16,7 @@ struct Ps2KeyboardEvent
 class Ps2Keyboard
 {
     Controller &_controller;
-    core::Vec<Ps2KeyboardEvent> _events;
+    fc::Vec<Ps2KeyboardEvent> _events;
 
     bool escape = false;
 
@@ -30,7 +30,7 @@ public:
         _controller.port1_init();
     }
 
-    core::Result<Ps2KeyboardEvent> poll_event()
+    fc::Result<Ps2KeyboardEvent> poll_event()
     {
         if (_events.len() == 0)
         {

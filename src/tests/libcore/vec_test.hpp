@@ -52,7 +52,7 @@ static constexpr TestGroup vecTests = {
             "vector create",
             []() -> Test::RetFn
             {
-                auto vec = core::Vec<int>();
+                auto vec = fc::Vec<int>();
 
                 try$(vec.reserve(16));
                 return {};
@@ -62,7 +62,7 @@ static constexpr TestGroup vecTests = {
             "vector push/pop",
             []() -> Test::RetFn
             {
-                auto vec = core::Vec<int>();
+                auto vec = fc::Vec<int>();
 
                 for (int i = 0; i < 16; i++)
                 {
@@ -89,7 +89,7 @@ static constexpr TestGroup vecTests = {
             "vector random set",
             []() -> Test::RetFn
             {
-                auto v = core::Vec<int>();
+                auto v = fc::Vec<int>();
 
                 for (int i = 0; i < 4096; i++)
                 {
@@ -111,8 +111,8 @@ static constexpr TestGroup vecTests = {
             "vev.push(vec<T>())",
             []() -> Test::RetFn
             {
-                auto a = core::Vec<int>();
-                auto b = core::Vec<int>();
+                auto a = fc::Vec<int>();
+                auto b = fc::Vec<int>();
 
                 for (int i = 0; i < 2048; i++)
                 {
@@ -120,7 +120,7 @@ static constexpr TestGroup vecTests = {
                     try$(b.push(i + 2048));
                 }
 
-                try$(a.push_elements(core::move(b)));
+                try$(a.push_elements(fc::move(b)));
 
                 for (int i = 0; i < (int)a.len(); i++)
                 {
@@ -144,7 +144,7 @@ static constexpr TestGroup vecTests = {
             {
                 VecTestObject::reset_counts();
                 {
-                    auto vec = core::Vec<VecTestObject>();
+                    auto vec = fc::Vec<VecTestObject>();
 
                     // Push 10 elements
                     for (int i = 0; i < 10; i++)
@@ -183,7 +183,7 @@ static constexpr TestGroup vecTests = {
             {
                 VecTestObject::reset_counts();
                 {
-                    auto vec = core::Vec<VecTestObject>();
+                    auto vec = fc::Vec<VecTestObject>();
 
                     // Push elements
                     for (int i = 0; i < 10; i++)
@@ -227,7 +227,7 @@ static constexpr TestGroup vecTests = {
             {
                 VecTestObject::reset_counts();
                 {
-                    auto vec = core::Vec<VecTestObject>();
+                    auto vec = fc::Vec<VecTestObject>();
 
                     // Push 5 elements
                     for (int i = 0; i < 5; i++)

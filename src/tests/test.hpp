@@ -8,7 +8,7 @@
 struct Test
 {
 
-    using RetFn = core::Result<void>;
+    using RetFn = fc::Result<void>;
     using TestFunc = RetFn (*)();
     const char *name;
     TestFunc func;
@@ -37,7 +37,7 @@ struct TestGroupResult
 
     TestGroupResult() : count(0), failed(0) {}
 
-    void add_result(core::Result<void> &&result)
+    void add_result(fc::Result<void> &&result)
     {
         count++;
         if (!result)
@@ -98,7 +98,7 @@ struct TestGroup
         // test failed and was expected to fail
         if (!test_result && tst.expect_failure)
         {
-            if (core::Str(tst.expected_failure_msg) != core::Str(test_result.error()))
+            if (fc::Str(tst.expected_failure_msg) != fc::Str(test_result.error()))
             {
                 fmt::err$("{} * [FAILED] Test '{}' expected failure: '{}' but got: '{}'", fmt::Tabbed(depth), tst.name, tst.expected_failure_msg, test_result.error());
                 result.failed = 1;

@@ -4,28 +4,28 @@
 
 #include "libcore/str.hpp"
 
-namespace core
+namespace fc
 {
 
-using Path = core::Str;
+using Path = fc::Str;
 
-static inline core::WStr finalizePath(const Path &path)
+static inline fc::WStr finalizePath(const Path &path)
 {
 
     if (!path.start_with("/"))
     {
-        return core::WStr::copy(path);
+        return fc::WStr::copy(path);
     }
 
 #ifdef __ck_host__
 
-    auto res = core::WStr::copy(".");
+    auto res = fc::WStr::copy(".");
     res.append(path);
     return res;
 
 #else
-    auto res = core::WStr::copy(path);
+    auto res = fc::WStr::copy(path);
     return res;
 #endif
 }
-} // namespace core
+} // namespace fc

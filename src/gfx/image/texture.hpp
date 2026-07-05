@@ -17,9 +17,9 @@ enum FilterKind
 class Texture
 {
 
-    core::SharedPtr<Image01> _source;
+    fc::SharedPtr<Image01> _source;
 
-    core::Optional<ImageRGBA8> _image_rgba8;
+    fc::Optional<ImageRGBA8> _image_rgba8;
     FilterKind _filter_kind = FilterKind::NEAREST;
 
 public:
@@ -27,7 +27,7 @@ public:
     Texture(const Texture &) = delete;
     Texture &operator=(const Texture &) = delete;
 
-    Texture(const core::SharedPtr<Image01> &source) : _source(source) {}
+    Texture(const fc::SharedPtr<Image01> &source) : _source(source) {}
 
     Texture(Texture &&) = default;
     Texture &operator=(Texture &&) = default;

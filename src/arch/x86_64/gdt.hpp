@@ -80,7 +80,7 @@ struct TssEntry
 
 struct [[gnu::packed]] Gdt
 {
-    core::Array<GdtEntry, 5> _entries;
+    fc::Array<GdtEntry, 5> _entries;
 
     TssEntry tss;
     static const int kernel_code_segment_id = 1;

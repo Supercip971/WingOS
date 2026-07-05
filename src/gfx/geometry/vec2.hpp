@@ -84,7 +84,7 @@ public:
 
     constexpr bool nearlyEqual(const Vec2 &other) const
     {
-        return core::abs(x - other.x) < 0.1f && core::abs(y - other.y) < 0.1f;
+        return fc::abs(x - other.x) < 0.1f && fc::abs(y - other.y) < 0.1f;
     }
 };
 } // namespace wgfx

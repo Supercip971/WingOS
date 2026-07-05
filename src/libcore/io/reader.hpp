@@ -5,7 +5,7 @@
 
 #include "libcore/io/seekable.hpp"
 
-namespace core
+namespace fc
 {
 
 class Reader
@@ -38,4 +38,4 @@ concept SeekableReader = requires(T *x) {
 
 static_assert(Readable<Reader>);
 
-} // namespace core
+} // namespace fc

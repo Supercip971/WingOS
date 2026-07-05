@@ -18,18 +18,18 @@
 #include "mcx/mcx.hpp"
 #include "protocols/vfs/vfs.hpp"
 #include "wingos-headers/asset.h"
-static core::Vec<core::Str> module_service = {};
-static core::Vec<core::Str> disk_service = {};
+static fc::Vec<fc::Str> module_service = {};
+static fc::Vec<fc::Str> disk_service = {};
 
 struct ModuleLaunch
 {
-    core::Str name;
-    core::Vec<core::Str> deps;
+    fc::Str name;
+    fc::Vec<fc::Str> deps;
 };
 
-static core::Vec<ModuleLaunch> module_to_launch = {};
-static core::Vec<core::Str> started_modules = {};
-static core::Vec<core::Str> started_services = {};
+static fc::Vec<ModuleLaunch> module_to_launch = {};
+static fc::Vec<fc::Str> started_modules = {};
+static fc::Vec<fc::Str> started_services = {};
 static wjson::Json json = {};
 
 VirtRange map_mcx_address(mcx::MemoryRange range)
@@ -45,7 +45,7 @@ VirtRange map_mcx_address(mcx::MemoryRange range)
     return VirtRange((uintptr_t)mem, (uintptr_t)mem + phys.len());
 }
 
-core::Result<size_t> start_service(mcx::MachineContext *context, mcx::MachineContextModule mod)
+fc::Result<size_t> start_service(mcx::MachineContext *context, mcx::MachineContextModule mod)
 {
     auto vrange = map_mcx_address(mod.range);
     auto loaded = elf::ElfLoader::load(vrange);
@@ -62,7 +62,7 @@ core::Result<size_t> start_service(mcx::MachineContext *context, mcx::MachineCon
     return v;
 }
 
-core::Result<size_t> start_service_fs(mcx::MachineContext *context, core::Str const &path)
+fc::Result<size_t> start_service_fs(mcx::MachineContext *context, fc::Str const &path)
 {
     fmt::log$("[INIT] starting module from fs: {}", path);
 
@@ -123,13 +123,13 @@ core::Result<size_t> start_service_fs(mcx::MachineContext *context, core::Str co
     return v;
 }
 
-core::Result<size_t> start_service(mcx::MachineContext *context, core::Str path)
+fc::Result<size_t> start_service(mcx::MachineContext *context, fc::Str path)
 {
     for (int i = 0; i < context->_modules_count; i++)
     {
         auto mod = context->_modules[i];
 
-        if (core::Str(mod.path) == path)
+        if (fc::Str(mod.path) == path)
         {
             return start_service(context, mod);
         }
@@ -192,7 +192,7 @@ void start_from_pci(wjson::JsonValue *pjson)
     }
 }
 
-core::Result<void> load_module_config(mcx::MachineContext *context)
+fc::Result<void> load_module_config(mcx::MachineContext *context)
 {
     module_service = {};
     disk_service = {};
@@ -207,7 +207,7 @@ core::Result<void> load_module_config(mcx::MachineContext *context)
     {
         auto mod = context->_modules[i];
 
-        if (core::Str(mod.path) == core::Str("/config/init-services.json"))
+        if (fc::Str(mod.path) == fc::Str("/config/init-services.json"))
         {
             fmt::log$("found config module: {}", mod.path);
             config_module = mod;
@@ -223,7 +223,7 @@ core::Result<void> load_module_config(mcx::MachineContext *context)
     auto config_range = map_mcx_address(config_module.range);
     auto loaded_config = (void *)(config_range.start());
 
-    auto dat = core::Str((const char *)loaded_config, config_range.len());
+    auto dat = fc::Str((const char *)loaded_config, config_range.len());
 
     json = try$(wjson::Json::parse(dat));
 
@@ -247,7 +247,7 @@ core::Result<void> load_module_config(mcx::MachineContext *context)
             auto deps_array_r = (deps_json.take());
             {
 
-                core::Vec<wjson::JsonValue> deps_array = try$(deps_array_r.as_array());
+                fc::Vec<wjson::JsonValue> deps_array = try$(deps_array_r.as_array());
                 {
 
                     for (auto d : deps_array)
@@ -264,14 +264,14 @@ core::Result<void> load_module_config(mcx::MachineContext *context)
         module_to_launch.push(ml);
 
         fmt::log$("nl-module: {}", name);
-        // module_service.push(core::Str(path));
+        // module_service.push(fc::Str(path));
     }
     fmt::log$("A:");
 
     return {};
 }
 
-core::Result<bool> try_startup_modules_cycle_one(mcx::MachineContext *context)
+fc::Result<bool> try_startup_modules_cycle_one(mcx::MachineContext *context)
 {
     for (size_t i = 0; i < module_to_launch.len(); i++)
     {
@@ -311,7 +311,7 @@ core::Result<bool> try_startup_modules_cycle_one(mcx::MachineContext *context)
     return false;
 }
 
-core::Result<void> try_startup_modules_cycle(mcx::MachineContext *context)
+fc::Result<void> try_startup_modules_cycle(mcx::MachineContext *context)
 {
     while (try$(try_startup_modules_cycle_one(context)))
     {
@@ -322,7 +322,7 @@ core::Result<void> try_startup_modules_cycle(mcx::MachineContext *context)
 
 mcx::MachineContext *gmcx = nullptr;
 
-core::Result<void> startup_module(mcx::MachineContext *context)
+fc::Result<void> startup_module(mcx::MachineContext *context)
 {
     gmcx = context;
 
@@ -340,7 +340,7 @@ core::Result<void> startup_module(mcx::MachineContext *context)
     return {};
 }
 
-core::Result<void> service_startup_callback(core::Str service_name)
+fc::Result<void> service_startup_callback(fc::Str service_name)
 {
     fmt::log$("[service_startup_callback] Service registered: {}", service_name);
 

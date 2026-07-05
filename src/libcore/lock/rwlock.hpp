@@ -7,7 +7,7 @@
 #include "libcore/type-utils.hpp"
 #include "libcore/unreachable.h"
 
-namespace core
+namespace fc
 {
 
 /* The RWLock class is a reader-writer lock that allows multiple readers or a single writer to access a resource.
@@ -196,4 +196,4 @@ public:
 
 #define lock_scope_writer$(lock) WriteCtxLocker _wlock(lock)
 
-} // namespace core
+} // namespace fc

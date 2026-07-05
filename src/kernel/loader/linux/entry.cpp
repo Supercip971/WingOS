@@ -33,7 +33,7 @@ extern "C" uintptr_t kernel_virtual_base()
 
 extern "C" void __cxa_pure_virtual()
 {
-    // limine_writer.writeV(core::Str("Pure virtual function called!"));
+    // limine_writer.writeV(fc::Str("Pure virtual function called!"));
     done();
 }
 
@@ -42,10 +42,10 @@ void load_mcx(mcx::MachineContext *context)
     (void)context;
 }
 
-class LinuxWriter : public core::Writer
+class LinuxWriter : public fc::Writer
 {
 public:
-    constexpr virtual core::Result<void> write(const char *buf, size_t len) override
+    constexpr virtual fc::Result<void> write(const char *buf, size_t len) override
     {
         // use linux write syscall
         size_t written = 0;

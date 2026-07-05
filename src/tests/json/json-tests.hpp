@@ -7,7 +7,7 @@
 #include "json/json.hpp"
 #include "libcore/result.hpp"
 
-static core::Str tjbuf = core::Str("{\"key-str\": \"value\", \"key-int\": 123, \"key-bool\": true, \"key-null\": null, \"key-array\": [1, 2, 3], \"key-object\": {\"nested-key\": \"nested-value\"}}");
+static fc::Str tjbuf = fc::Str("{\"key-str\": \"value\", \"key-int\": 123, \"key-bool\": true, \"key-null\": null, \"key-array\": [1, 2, 3], \"key-object\": {\"nested-key\": \"nested-value\"}}");
 static constexpr TestGroup jsonTests = {
     test_grouped_tests$("json",
                         Test(
@@ -43,7 +43,7 @@ static constexpr TestGroup jsonTests = {
                                 }
 
                                 auto val = key_str.unwrap();
-                                if (val.as_string().unwrap() != core::Str("value"))
+                                if (val.as_string().unwrap() != fc::Str("value"))
                                 {
                                     return "Expected value for key-str";
                                 }
@@ -171,7 +171,7 @@ static constexpr TestGroup jsonTests = {
                                 {
                                     return nested_key.error();
                                 }
-                                if (nested_key.unwrap().as_string().unwrap() != core::Str("nested-value"))
+                                if (nested_key.unwrap().as_string().unwrap() != fc::Str("nested-value"))
                                 {
                                     return "Expected nested-value for nested-key";
                                 }

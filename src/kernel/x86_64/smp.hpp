@@ -15,6 +15,6 @@ enum CpuSmpBaseAddress
     SMP_TRAMPOLINE_START = 0x1000
 };
 
-core::Result<void> smp_initialize();
-core::Result<void> smp_initialize_cpu(int apic, int id);
+fc::Result<void> smp_initialize();
+fc::Result<void> smp_initialize_cpu(int apic, int id);
 } // namespace arch::amd64

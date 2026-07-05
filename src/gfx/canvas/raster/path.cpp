@@ -19,10 +19,10 @@ constexpr inline wgfx::Vec2 solvePoly(wgfx::Vec2 p1, wgfx::Vec2 p2, wgfx::Vec2 p
     float t1 = 0.0f;
     float t2 = 0.0f;
 
-    if (core::abs(a.y) < 1e-4f)
+    if (fc::abs(a.y) < 1e-4f)
     {
 
-        if (core::abs(b.y) < 1e-4f)
+        if (fc::abs(b.y) < 1e-4f)
         {
             return {};
         }
@@ -32,7 +32,7 @@ constexpr inline wgfx::Vec2 solvePoly(wgfx::Vec2 p1, wgfx::Vec2 p2, wgfx::Vec2 p
             return {};
         }
 
-        if (core::abs(t1 - 1.0f) < 0.0001f)
+        if (fc::abs(t1 - 1.0f) < 0.0001f)
         {
             intersect1 = false;
         }
@@ -50,7 +50,7 @@ constexpr inline wgfx::Vec2 solvePoly(wgfx::Vec2 p1, wgfx::Vec2 p2, wgfx::Vec2 p
         {
             return {};
         }
-        float rt = sqrtf(core::max(dis, 0.0f));
+        float rt = sqrtf(fc::max(dis, 0.0f));
 
         t1 = (-b.y - rt) / (2.f * a.y);
         t2 = (-b.y + rt) / (2.f * a.y);
@@ -78,10 +78,10 @@ constexpr inline wgfx::Vec2 solvePoly(wgfx::Vec2 p1, wgfx::Vec2 p2, wgfx::Vec2 p
 
 void wgfx::RasterCanvas::pathFillFlat(ContourCommand const &shape, Vec2 off)
 {
-    core::SharedPtr<Contour> const &c = shape.contour;
+    fc::SharedPtr<Contour> const &c = shape.contour;
 
-    long sy = core::max(floorf(c->bound().start.y) - 1 + off.y, 0) - off.y;
-    long ey = core::min(ceilf(c->bound().end.y) + 1 + off.y, height - 1) - off.y;
+    long sy = fc::max(floorf(c->bound().start.y) - 1 + off.y, 0) - off.y;
+    long ey = fc::min(ceilf(c->bound().end.y) + 1 + off.y, height - 1) - off.y;
 
     struct RasterLine
     {
@@ -89,7 +89,7 @@ void wgfx::RasterCanvas::pathFillFlat(ContourCommand const &shape, Vec2 off)
         int winding;
     };
 
-    core::Vec<RasterLine> current = {};
+    fc::Vec<RasterLine> current = {};
     current.reserve(c->strokes.len());
 
     auto col = shape.paint.color.toRgba8();
@@ -189,8 +189,8 @@ void wgfx::RasterCanvas::pathFillFlat(ContourCommand const &shape, Vec2 off)
                     s2 = current[i].x_pos;
                 }
 
-                // s1 = core::clamp(s1, c->bound().start.x, c->bound().end.x);
-                // s2 = core::clamp(s2, c->bound().start.x, c->bound().end.x);
+                // s1 = fc::clamp(s1, c->bound().start.x, c->bound().end.x);
+                // s2 = fc::clamp(s2, c->bound().start.x, c->bound().end.x);
 
                 float fs2 = floorf(s2);
                 float fs1 = floorf(s1);
@@ -224,13 +224,13 @@ void wgfx::RasterCanvas::pathLineFlat(Vec2 start, Vec2 end, Rgba8 color)
     // Swap x and y if y has a greater difference than x
     if (steep)
     {
-        core::swap(end.x, end.y);
-        core::swap(start.x, start.y);
+        fc::swap(end.x, end.y);
+        fc::swap(start.x, start.y);
     }
     // Set the smaller x value to x0
     if (start.x > end.x)
     {
-        core::swap(start, end);
+        fc::swap(start, end);
     }
     delta = end - start;
 
@@ -276,15 +276,15 @@ void wgfx::RasterCanvas::pathLineFlat(Vec2 start, Vec2 end, Rgba8 color)
     // Move between endpoints
     if (steep)
     {
-        xpxl1 = core::clamp(xpxl1, rect.start.x, rect.end.x - 1);
-        xpxl2 = core::clamp(xpxl2, rect.start.y, rect.end.y - 1);
-        intery = core::clamp(intery, rect.start.x, rect.end.x - 1);
+        xpxl1 = fc::clamp(xpxl1, rect.start.x, rect.end.x - 1);
+        xpxl2 = fc::clamp(xpxl2, rect.start.y, rect.end.y - 1);
+        intery = fc::clamp(intery, rect.start.x, rect.end.x - 1);
     }
     else
     {
-        xpxl1 = core::clamp(xpxl1, rect.start.x, rect.end.x - 1);
-        xpxl2 = core::clamp(xpxl2, rect.start.x, rect.end.x - 1);
-        intery = core::clamp(intery, rect.start.y, rect.end.y - 2);
+        xpxl1 = fc::clamp(xpxl1, rect.start.x, rect.end.x - 1);
+        xpxl2 = fc::clamp(xpxl2, rect.start.x, rect.end.x - 1);
+        intery = fc::clamp(intery, rect.start.y, rect.end.y - 2);
     }
     for (int x = xpxl1 + 1; x < xpxl2; x++)
     {

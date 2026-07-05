@@ -12,7 +12,7 @@ static constexpr TestGroup parserTest = {
             "Basic cursor verification",
             []() -> Test::RetFn
             {
-                core::Scanner<char> scanner(core::MemView<char>(core::Str("Hello, World!")));
+                fc::Scanner<char> scanner(fc::MemView<char>(fc::Str("Hello, World!")));
                 if (scanner.size() != 13)
                 {
                     return "Size mismatch";
@@ -60,7 +60,7 @@ static constexpr TestGroup parserTest = {
             "Parsing skipping",
             []() -> Test::RetFn
             {
-                core::Scanner<char> scanner(core::MemView<char>(core::Str("Hello, World!")));
+                fc::Scanner<char> scanner(fc::MemView<char>(fc::Str("Hello, World!")));
                 if (!scanner.skip('H'))
                 {
                     return "Failed to skip 'H'";
@@ -71,7 +71,7 @@ static constexpr TestGroup parserTest = {
                     return "Tell mismatch after skip";
                 }
 
-                if (!scanner.skip_string(core::MemView<char>(core::Str("ello, "))))
+                if (!scanner.skip_string(fc::MemView<char>(fc::Str("ello, "))))
                 {
                     return "Failed to skip 'ello, '";
                 }
@@ -80,7 +80,7 @@ static constexpr TestGroup parserTest = {
                     return "Tell mismatch after skip_string";
                 }
 
-                if (!scanner.skip_any_of(core::MemView<char>(core::Str("W!"))))
+                if (!scanner.skip_any_of(fc::MemView<char>(fc::Str("W!"))))
                 {
                     return "Failed to skip 'W' or '!'";
                 }
@@ -103,13 +103,13 @@ static constexpr TestGroup parserTest = {
             "Parsing extract",
             []() -> Test::RetFn
             {
-                core::Scanner<char> scanner(core::MemView<char>(core::Str("Hello, World!")));
+                fc::Scanner<char> scanner(fc::MemView<char>(fc::Str("Hello, World!")));
                 auto res = scanner.read_until(',');
                 if (!res)
                 {
                     return res.error();
                 }
-                if (res.unwrap() != core::Str("Hello"))
+                if (res.unwrap() != fc::Str("Hello"))
                 {
                     return "Extracted string mismatch";
                 }

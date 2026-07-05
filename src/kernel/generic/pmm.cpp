@@ -20,13 +20,13 @@ Pmm &Pmm::the()
     return instance;
 }
 
-core::Result<void> Pmm::initialize(const mcx::MachineContext *context)
+fc::Result<void> Pmm::initialize(const mcx::MachineContext *context)
 {
     instance = try$(Pmm::create(context));
     return {};
 }
 
-core::Result<bool> Pmm::query_usage(PhysAddr addr)
+fc::Result<bool> Pmm::query_usage(PhysAddr addr)
 {
     lock_scope$(pmm_lock);
 
@@ -44,7 +44,7 @@ core::Result<bool> Pmm::query_usage(PhysAddr addr)
     return ("Could not query memory usage");
 }
 
-core::Result<Pmm> Pmm::_allocate_structure(const mcx::MachineContext *context)
+fc::Result<Pmm> Pmm::_allocate_structure(const mcx::MachineContext *context)
 {
     size_t const size = pmm_size(context);
     Pmm pmm;
@@ -87,7 +87,7 @@ core::Result<Pmm> Pmm::_allocate_structure(const mcx::MachineContext *context)
     return pmm;
 }
 
-core::Result<void> Pmm::_fill(const mcx::MachineContext *context)
+fc::Result<void> Pmm::_fill(const mcx::MachineContext *context)
 {
     PhysAddr bitmaps_start = _range.start() + sizeof(PmmSection) * pmm_section_count(context);
 
@@ -111,11 +111,11 @@ core::Result<void> Pmm::_fill(const mcx::MachineContext *context)
         auto entry_range = context->_memory_map[i].range.shrinkAlign(page_size_byte);
         section.range = entry_range;
 
-        core::MemAccess<uint8_t> bitmap_mem(
+        fc::MemAccess<uint8_t> bitmap_mem(
             toVirt(bitmaps_start).as<uint8_t>(),
             section.range.len() / page_size_byte);
 
-        section.bitmap = core::Bitmap(core::move(bitmap_mem));
+        section.bitmap = fc::Bitmap(fc::move(bitmap_mem));
         section.bitmap.fill(false);
 
         if (_section_location == i)
@@ -135,7 +135,7 @@ core::Result<void> Pmm::_fill(const mcx::MachineContext *context)
     return {};
 }
 
-core::Result<PhysAddr> Pmm::allocate(Pages count, IolAllocMemoryFlag flags)
+fc::Result<PhysAddr> Pmm::allocate(Pages count, IolAllocMemoryFlag flags)
 {
 
     lock_scope$(pmm_lock);
@@ -176,7 +176,7 @@ core::Result<PhysAddr> Pmm::allocate(Pages count, IolAllocMemoryFlag flags)
     return ("Could not allocate memory");
 }
 
-core::Result<void> Pmm::own(PhysAddr addr, Pages count)
+fc::Result<void> Pmm::own(PhysAddr addr, Pages count)
 {
     lock_scope$(pmm_lock);
 
@@ -195,7 +195,7 @@ core::Result<void> Pmm::own(PhysAddr addr, Pages count)
     return ("Could not own memory");
 }
 
-core::Result<void> Pmm::release(PhysAddr addr, Pages count)
+fc::Result<void> Pmm::release(PhysAddr addr, Pages count)
 {
     lock_scope$(pmm_lock);
 
@@ -220,7 +220,7 @@ core::Result<void> Pmm::release(PhysAddr addr, Pages count)
     return ("Could not release memory");
 }
 
-core::Result<Pmm> Pmm::create(const mcx::MachineContext *context)
+fc::Result<Pmm> Pmm::create(const mcx::MachineContext *context)
 {
     Pmm pmm = try$(_allocate_structure(context));
 

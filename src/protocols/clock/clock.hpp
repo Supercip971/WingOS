@@ -28,13 +28,13 @@ class ClockConnection
 public:
     Wingos::IpcClient &raw_client() { return connection; }
 
-    static core::Result<ClockConnection> connect()
+    static fc::Result<ClockConnection> connect()
     {
         ClockConnection conn{};
 
         auto reg = try$(InitConnection::connect());
 
-        auto handle = try$(reg.get_server(core::Str("clock"), 1, 0)).endpoint;
+        auto handle = try$(reg.get_server(fc::Str("clock"), 1, 0)).endpoint;
         conn.connection = Wingos::Space::self().connect_to_ipc_server(handle, 1, 0);
 
         conn.connection.wait_for_accept();
@@ -42,7 +42,7 @@ public:
         return conn;
     }
 
-    core::Result<ClockTime> get_system_time()
+    fc::Result<ClockTime> get_system_time()
     {
         IpcMessage message = {};
         message.data[0].data = CLOCK_GET_SYSTEM_TIME;
@@ -61,7 +61,7 @@ public:
         return time;
     }
 
-    core::Result<void> sleep_ms(uint64_t ms)
+    fc::Result<void> sleep_ms(uint64_t ms)
     {
         IpcMessage message = {};
         message.data[0].data = CLOCK_SLEEP_MS;

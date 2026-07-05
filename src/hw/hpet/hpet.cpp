@@ -23,7 +23,7 @@ void _hpet_write(uintptr_t reg, uint64_t value)
     (hpet_base + reg).vwrite<uint64_t>(value);
 }
 
-core::Result<void> hw::hpet::hpet_initialize(hw::acpi::Rsdp *rsdp)
+fc::Result<void> hw::hpet::hpet_initialize(hw::acpi::Rsdp *rsdp)
 {
     auto hpet = hw::acpi::rsdt_find<hw::hpet::HPETEntry>(rsdp).unwrap();
 
@@ -43,7 +43,7 @@ core::Result<void> hw::hpet::hpet_initialize(hw::acpi::Rsdp *rsdp)
     return {};
 }
 
-void hw::hpet::hpet_sleep(core::Milliseconds ms)
+void hw::hpet::hpet_sleep(fc::Milliseconds ms)
 {
 
 #ifndef __ck_kernel__
@@ -64,7 +64,7 @@ void hw::hpet::hpet_sleep(core::Milliseconds ms)
     }
 }
 
-core::Milliseconds hw::hpet::hpet_clock_read()
+fc::Milliseconds hw::hpet::hpet_clock_read()
 {
-    return core::Milliseconds((_hpet_read(HPET_MAIN_COUNTER) * (hpet_tick)) / 1'000'000'000'000); // in nanoseconds
+    return fc::Milliseconds((_hpet_read(HPET_MAIN_COUNTER) * (hpet_tick)) / 1'000'000'000'000); // in nanoseconds
 }

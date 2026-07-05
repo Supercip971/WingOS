@@ -15,14 +15,14 @@ class Stacked : public Widget
 {
 
 public:
-    core::Vec<core::SharedPtr<Widget>> elements;
+    fc::Vec<fc::SharedPtr<Widget>> elements;
 
     ~Stacked() override = default;
 
     template <typename... T>
     Stacked(T... args)
     {
-        elements = core::Vec<core::SharedPtr<Widget>>(args...);
+        elements = fc::Vec<fc::SharedPtr<Widget>>(args...);
     }
 
     wgfx::Vec2 preferred_size(wgfx::Vec2 constraint) const override
@@ -31,8 +31,8 @@ public:
         for (auto &child : childs)
         {
             auto c = child->preferred_size(constraint);
-            current_constraint.x = core::max(current_constraint.x, c.x);
-            current_constraint.y = core::max(current_constraint.y, c.y);
+            current_constraint.x = fc::max(current_constraint.x, c.x);
+            current_constraint.y = fc::max(current_constraint.y, c.y);
         }
         return current_constraint;
     }
@@ -47,7 +47,7 @@ public:
             constraint.start.x, constraint.start.y, constraint.end.x, constraint.end.y);
     }
 
-    core::Vec<core::SharedPtr<Widget>> build_childs(UiContext const &v) override
+    fc::Vec<fc::SharedPtr<Widget>> build_childs(UiContext const &v) override
     {
         (void)v;
         return elements;

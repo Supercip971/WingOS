@@ -25,13 +25,13 @@ public:
     constexpr T end() const { return _end; }
 
     constexpr T len() const
-        requires(core::IsIdentityIntegral<T>)
+        requires(fc::IsIdentityIntegral<T>)
     {
         return _end - _start;
     }
 
     constexpr size_t len() const
-        requires(!core::IsIdentityIntegral<T>)
+        requires(!fc::IsIdentityIntegral<T>)
     {
         return _end - _start;
     }
@@ -87,7 +87,7 @@ public:
 
     template <typename C>
     constexpr Range<C> as() const
-        requires(core::IsConvertibleTo<T, C>)
+        requires(fc::IsConvertibleTo<T, C>)
     {
         return Range<C>(C(_start), C(_end));
     }
@@ -99,21 +99,21 @@ template <typename T>
 concept IntRangeable = requires(T a) {
     {
         a.start()
-    } -> core::IsIdentityIntegral;
+    } -> fc::IsIdentityIntegral;
     {
         a.end()
-    } -> core::IsIdentityIntegral;
+    } -> fc::IsIdentityIntegral;
     {
         a.len()
-    } -> core::IsIdentityIntegral;
+    } -> fc::IsIdentityIntegral;
     {
         a.contains(a.start())
-    } -> core::IsIdentityIntegral;
+    } -> fc::IsIdentityIntegral;
     {
         a.contains(a)
-    } -> core::IsIdentityIntegral;
+    } -> fc::IsIdentityIntegral;
     {
         a.overlaps(a)
-    } -> core::IsIdentityIntegral;
+    } -> fc::IsIdentityIntegral;
 };
 } // namespace math

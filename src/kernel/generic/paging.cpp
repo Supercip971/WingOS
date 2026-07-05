@@ -10,7 +10,7 @@
 #include "mcx/mcx.hpp"
 
 // FIXME: maybe should be moved to x86_64 ?????
-core::Result<VmmSpace> VmmSpace::kernel_initialize(const mcx::MachineContext *ctx)
+fc::Result<VmmSpace> VmmSpace::kernel_initialize(const mcx::MachineContext *ctx)
 {
 
 #define flags fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO

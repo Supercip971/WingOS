@@ -7,7 +7,7 @@
 #include "libcore/type/trait.hpp"
 #include "libcore/unreachable.h"
 
-namespace core
+namespace fc
 {
 
 template <typename T>
@@ -79,16 +79,16 @@ public:
 
     LinkedList(LinkedList &&other)
     {
-        core::swap(head, other.head);
-        core::swap(tail, other.tail);
-        core::swap(_count, other._count);
+        fc::swap(head, other.head);
+        fc::swap(tail, other.tail);
+        fc::swap(_count, other._count);
     }
 
     LinkedList &operator=(LinkedList &&other)
     {
-        core::swap(head, other.head);
-        core::swap(tail, other.tail);
-        core::swap(_count, other._count);
+        fc::swap(head, other.head);
+        fc::swap(tail, other.tail);
+        fc::swap(_count, other._count);
         return *this;
     }
 
@@ -143,8 +143,8 @@ public:
     {
         auto node = (Node *)malloc(sizeof(Node));
 
-        new (&node->data) Storage<T>(core::forward<F>(v));
-        // node->data = core::forward<F>(v);
+        new (&node->data) Storage<T>(fc::forward<F>(v));
+        // node->data = fc::forward<F>(v);
         node->next = nullptr;
 
         if (tail != nullptr)
@@ -169,7 +169,7 @@ public:
             unreachable$();
         }
 
-        T res = core::move(head->data.take());
+        T res = fc::move(head->data.take());
         auto next = head->next;
 
         if (tail == head)
@@ -259,4 +259,4 @@ public:
 
 static_assert(Iterable<LinkedList<int>>);
 
-} // namespace core
+} // namespace fc

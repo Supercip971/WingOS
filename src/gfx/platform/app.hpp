@@ -10,7 +10,7 @@ namespace wgfx
 {
 class PlatformApp;
 
-core::Result<void> initialize_platform();
+fc::Result<void> initialize_platform();
 
 class PlatformApp
 {
@@ -18,9 +18,9 @@ class PlatformApp
 public:
     virtual ~PlatformApp() = default;
 
-    core::Vec<core::SharedPtr<PlatformWindow>> windows;
+    fc::Vec<fc::SharedPtr<PlatformWindow>> windows;
 
-    void attach(core::SharedPtr<PlatformWindow> &window)
+    void attach(fc::SharedPtr<PlatformWindow> &window)
     {
         windows.push(window);
     }

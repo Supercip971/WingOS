@@ -41,14 +41,14 @@ class CustomWidget2 : public fc::Statefull<MyState>
 {
 
 public:
-    core::SharedPtr<fc::Widget> build(const fc::UiContext &ctx) override
+    fc::SharedPtr<fc::Widget> build(const fc::UiContext &ctx) override
     {
 
         auto res = fmt::format_str("Counter 2: {}", counter | fmt::FMT_PAD_ZERO);
 
         return $<fc::VFlex>(
 
-            $<fc::TextWidget>(core::move(res.take()),
+            $<fc::TextWidget>(fc::move(res.take()),
                               fc::FontsRepo::the().find("oswald@96")),
             $<fc::Button>(
 
@@ -72,7 +72,7 @@ class CustomWidget : public fc::Statefull<MyState>
 {
 
 public:
-    core::SharedPtr<fc::Widget> build(const fc::UiContext &ctx) override
+    fc::SharedPtr<fc::Widget> build(const fc::UiContext &ctx) override
     {
 
         return $<fc::_Root>(wgfx::BLUE,
@@ -102,12 +102,12 @@ int main(int argc, char **argv)
 
     window->attach();
 
-    fc::TextureRepo::the().load(core::WStr::copy("liquid-blue"), "/meta/assets/pawel-czerwinski-blue-liquid-halfres.png");
-    fc::FontsRepo::the().load(core::WStr::copy("oswald@96"), "/meta/assets/oswald.ttf", 96 * window->dpi());
+    fc::TextureRepo::the().load(fc::WStr::copy("liquid-blue"), "/meta/assets/pawel-czerwinski-blue-liquid-halfres.png");
+    fc::FontsRepo::the().load(fc::WStr::copy("oswald@96"), "/meta/assets/oswald.ttf", 96 * window->dpi());
 
     float l = 0.f;
 
-    auto vwidgt = core::SharedPtr<CustomWidget>::make().static_pointer_cast<fc::Widget>();
+    auto vwidgt = fc::SharedPtr<CustomWidget>::make().static_pointer_cast<fc::Widget>();
 
     fc::UiContext ctx = {};
     ctx.theme = fc::Theme::wingos();

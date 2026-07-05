@@ -19,16 +19,16 @@ namespace fc
 class TextWidget : public Widget
 {
 
-    core::WStr val;
+    fc::WStr val;
 
-    core::SharedPtr<wgfx::Font> font;
+    fc::SharedPtr<wgfx::Font> font;
 
 public:
     ~TextWidget() override = default;
 
-    TextWidget(core::Str from, core::SharedPtr<wgfx::Font> _font) : val(core::WStr::copy(from)), font(_font) {}
+    TextWidget(fc::Str from, fc::SharedPtr<wgfx::Font> _font) : val(fc::WStr::copy(from)), font(_font) {}
 
-    TextWidget(core::WStr &&from, core::SharedPtr<wgfx::Font> _font) : val(core::move(from)), font(_font) {}
+    TextWidget(fc::WStr &&from, fc::SharedPtr<wgfx::Font> _font) : val(fc::move(from)), font(_font) {}
 
     wgfx::Vec2 preferred_size(wgfx::Vec2 constraint) const override
     {
@@ -36,12 +36,12 @@ public:
         (void)constraint;
         auto v = font->get_render_rect(val.view());
 
-        // v.y = core::max(v.y, constraint.y);
+        // v.y = fc::max(v.y, constraint.y);
 
         return v;
     }
 
-    core::Str info() const override { return val.view(); }
+    fc::Str info() const override { return val.view(); }
 
     void render(UiContext const &ctx, wgfx::Canvas &canvas) const override
     {

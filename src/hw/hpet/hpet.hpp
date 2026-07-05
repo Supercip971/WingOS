@@ -47,7 +47,7 @@ struct [[gnu::packed]] HPETEntry
     uint16_t minimum_tick;
     uint8_t page_protection;
 
-    static constexpr core::Str signature = "HPET";
+    static constexpr fc::Str signature = "HPET";
 };
 
 union [[gnu::packed]] HPETCaps
@@ -80,10 +80,10 @@ enum HPETConfiguration
     HPET_LEGACY_REPLACEMENT = 1 << 1,
 };
 
-core::Result<void> hpet_initialize(hw::acpi::Rsdp *rsdp);
+fc::Result<void> hpet_initialize(hw::acpi::Rsdp *rsdp);
 
 template <MappCallbackFn Fn>
-core::Result<void> hpet_prepare_mapping(uintptr_t rsdp_addr, Fn fn)
+fc::Result<void> hpet_prepare_mapping(uintptr_t rsdp_addr, Fn fn)
 {
     auto hpet = hw::acpi::rsdt_find<hw::hpet::HPETEntry>(toVirt(rsdp_addr).as<hw::acpi::Rsdp>()).unwrap();
 
@@ -92,8 +92,8 @@ core::Result<void> hpet_prepare_mapping(uintptr_t rsdp_addr, Fn fn)
     return {};
 }
 
-void hpet_sleep(core::Milliseconds ms);
+void hpet_sleep(fc::Milliseconds ms);
 
-core::Milliseconds hpet_clock_read();
+fc::Milliseconds hpet_clock_read();
 
 } // namespace hw::hpet

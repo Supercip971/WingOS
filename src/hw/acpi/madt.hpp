@@ -31,7 +31,7 @@ struct [[gnu::packed]] MadtEntryLapic
     MadtEntry header;
 
     constexpr static uint8_t HeaderType = 0;
-    constexpr static core::Str name = "LAPIC";
+    constexpr static fc::Str name = "LAPIC";
 
     uint8_t acpi_processor_id;
     uint8_t apic_id;
@@ -43,7 +43,7 @@ struct [[gnu::packed]] MadtEntryIoapic
     MadtEntry header;
 
     constexpr static uint8_t HeaderType = 1;
-    constexpr static core::Str name = "IOAPIC";
+    constexpr static fc::Str name = "IOAPIC";
 
     uint8_t ioapic_id;
     uint8_t _reserved;
@@ -56,7 +56,7 @@ struct [[gnu::packed]] MadtEntryIso
     MadtEntry header;
 
     constexpr static uint8_t HeaderType = 2;
-    constexpr static core::Str name = "ISO";
+    constexpr static fc::Str name = "ISO";
 
     uint8_t bus_source;
     uint8_t irq_source;
@@ -69,7 +69,7 @@ struct [[gnu::packed]] MadtEntryIoapicNmi
     MadtEntry header;
 
     constexpr static uint8_t HeaderType = 3;
-    constexpr static core::Str name = "IOAPIC NMI";
+    constexpr static fc::Str name = "IOAPIC NMI";
 
     uint8_t ioapic_id;
     uint8_t _reserved;
@@ -82,7 +82,7 @@ struct [[gnu::packed]] MadtEntryLapicNmi
     MadtEntry header;
 
     constexpr static uint8_t HeaderType = 4;
-    constexpr static core::Str name = "LAPIC NMI";
+    constexpr static fc::Str name = "LAPIC NMI";
 
     uint8_t acpi_processor_id;
     uint16_t flags;
@@ -94,7 +94,7 @@ struct [[gnu::packed]] MadtEntryLapicOverride
     MadtEntry header;
 
     constexpr static uint8_t HeaderType = 5;
-    constexpr static core::Str name = "LAPIC Override";
+    constexpr static fc::Str name = "LAPIC Override";
 
     uint16_t reserved;
     uint64_t local_apic_addr;
@@ -105,7 +105,7 @@ struct [[gnu::packed]] MadtEntryLapicX2
     MadtEntry header;
 
     constexpr static uint8_t HeaderType = 9;
-    constexpr static core::Str name = "L(x2)APIC";
+    constexpr static fc::Str name = "L(x2)APIC";
 
     uint16_t reserved;
     uint32_t processor_local_x2apicID;
@@ -117,23 +117,23 @@ template <typename T>
 concept MadtEntryT = requires(T entry) {
     {
         entry.header.type
-    } -> core::IsConvertibleTo<uint8_t>;
+    } -> fc::IsConvertibleTo<uint8_t>;
     {
         entry.header.length
-    } -> core::IsConvertibleTo<uint8_t>;
+    } -> fc::IsConvertibleTo<uint8_t>;
     {
         T::HeaderType
-    } -> core::IsConvertibleTo<uint8_t>;
+    } -> fc::IsConvertibleTo<uint8_t>;
     {
         T::name
-    } -> core::IsConvertibleTo<core::Str>;
+    } -> fc::IsConvertibleTo<fc::Str>;
 };
 
 struct [[gnu::packed]] Madt
 {
     SdtHeader header;
 
-    static constexpr core::Str signature = "APIC";
+    static constexpr fc::Str signature = "APIC";
 
     uint32_t local_apic_addr;
     uint32_t flags;
@@ -161,7 +161,7 @@ struct [[gnu::packed]] Madt
     }
 
     template <MadtEntryT T>
-    core::Result<T *> find_entry()
+    fc::Result<T *> find_entry()
     {
         for (MadtEntry *entry = begin(); entry < end(); entry = next(entry))
         {

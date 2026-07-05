@@ -52,7 +52,7 @@ static constexpr TestGroup llistTests = {
             "linked list create",
             []() -> Test::RetFn
             {
-                auto ll = core::LinkedList<int>();
+                auto ll = fc::LinkedList<int>();
                 for (int i = 0; i < 10; i++)
                 {
                     ll.push(10);
@@ -70,7 +70,7 @@ static constexpr TestGroup llistTests = {
             "llist push",
             []() -> Test::RetFn
             {
-                auto ll = core::LinkedList<int>();
+                auto ll = fc::LinkedList<int>();
 
                 for (int i = 0; i < 16; i++)
                 {
@@ -88,8 +88,8 @@ static constexpr TestGroup llistTests = {
                         fmt::log$("{} : {}", (uintptr_t)ll.begin()._ptr | fmt::FMT_HEX, (uintptr_t)ll.end()._ptr | fmt::FMT_HEX);
                         ;
 
-                        core::forEachIdx(ll, [&](auto &val, int idx)
-                                         { fmt::log$("[{}] = {}", idx, val); });
+                        fc::forEachIdx(ll, [&](auto &val, int idx)
+                                       { fmt::log$("[{}] = {}", idx, val); });
 
                         return "v[i] != i";
                     }
@@ -109,7 +109,7 @@ static constexpr TestGroup llistTests = {
             "llist push/pop",
             []() -> Test::RetFn
             {
-                auto ll = core::LinkedList<int>();
+                auto ll = fc::LinkedList<int>();
 
                 for (int i = 0; i < 16; i++)
                 {
@@ -133,8 +133,8 @@ static constexpr TestGroup llistTests = {
                         fmt::log$("[{}] = {}", i, v);
 
                         fmt::log$("{} : {}", (uintptr_t)ll.begin()._ptr | fmt::FMT_HEX, (uintptr_t)ll.end()._ptr | fmt::FMT_HEX);
-                        core::forEachIdx(ll, [&](auto &val, int idx)
-                                         {
+                        fc::forEachIdx(ll, [&](auto &val, int idx)
+                                       {
                             if(idx < 100)
                             {
                                 fmt::log$("[{}] = {}", idx, val);
@@ -152,15 +152,15 @@ static constexpr TestGroup llistTests = {
             "llist random set",
             []() -> Test::RetFn
             {
-                auto v = core::LinkedList<int>();
+                auto v = fc::LinkedList<int>();
 
                 for (int i = 0; i < 4096; i++)
                 {
                     v.push(i);
                 }
                 bool has_issue = false;
-                core::forEachIdx(v, [&](auto &v, int i)
-                                 {
+                fc::forEachIdx(v, [&](auto &v, int i)
+                               {
                     if(v != i)
                     {
                         has_issue = true;
@@ -186,7 +186,7 @@ static constexpr TestGroup llistTests = {
             {
                 LListTestObject::reset_counts();
                 {
-                    auto ll = core::LinkedList<LListTestObject>();
+                    auto ll = fc::LinkedList<LListTestObject>();
 
                     // Push 10 elements
                     for (int i = 0; i < 10; i++)
@@ -225,7 +225,7 @@ static constexpr TestGroup llistTests = {
             {
                 LListTestObject::reset_counts();
                 {
-                    auto ll = core::LinkedList<LListTestObject>();
+                    auto ll = fc::LinkedList<LListTestObject>();
 
                     // Push elements
                     for (int i = 0; i < 10; i++)
@@ -269,7 +269,7 @@ static constexpr TestGroup llistTests = {
             {
                 LListTestObject::reset_counts();
                 {
-                    auto ll = core::LinkedList<LListTestObject>();
+                    auto ll = fc::LinkedList<LListTestObject>();
 
                     // Push 5 elements
                     for (int i = 0; i < 5; i++)

@@ -16,7 +16,7 @@
 static __attribute__((aligned(4096))) uint8_t
     initial_context_data[4096] = {0};
 
-static core::Lock simd_init_lock = {};
+static fc::Lock simd_init_lock = {};
 
 namespace arch::x86_64
 {
@@ -59,7 +59,7 @@ void SimdContext::load() const
     }
 }
 
-core::Result<SimdContext> SimdContext::create()
+fc::Result<SimdContext> SimdContext::create()
 {
 
     SimdContext context = SimdContext();
@@ -82,15 +82,15 @@ core::Result<SimdContext> SimdContext::create()
 
     if (!context._data)
     {
-        return core::Result<SimdContext>::error("failed to allocate simd context");
+        return fc::Result<SimdContext>::error("failed to allocate simd context");
     }
 
     memcpy((void *)context._data, (void *)initial_context_data, context._data_size);
 
-    return core::Result<SimdContext>::success(core::move(context));
+    return fc::Result<SimdContext>::success(fc::move(context));
 }
 
-core::Result<void> SimdContext::initialize_cpu()
+fc::Result<void> SimdContext::initialize_cpu()
 {
     simd_init_lock.lock();
     arch::CpuCr<0>::write(arch::CpuCr<0>::read() & ~((uint64_t)CR0_EMULATION));

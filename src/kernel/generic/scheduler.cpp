@@ -16,19 +16,19 @@
 #include "libcore/result.hpp"
 #include "libcore/type-utils.hpp"
 
-using TaskQueue = core::Vec<kernel::Task *>;
+using TaskQueue = fc::Vec<kernel::Task *>;
 
 std::atomic<bool> currently_blocking = false;
 std::atomic<bool> blocked_task_dirty = false;
 
-core::Vec<size_t> _choosen = {};
-core::Vec<size_t> _retried = {};
+fc::Vec<size_t> _choosen = {};
+fc::Vec<size_t> _retried = {};
 
-core::Vec<CoreId> _blocked_cores_idle_candidates = {};
+fc::Vec<CoreId> _blocked_cores_idle_candidates = {};
 
-core::Vec<kernel::Task *> scheduler_idles = {};
-core::Vec<kernel::Task *> next_task_to_run = {};
-core::Vec<kernel::Task *> cpu_running = {};
+fc::Vec<kernel::Task *> scheduler_idles = {};
+fc::Vec<kernel::Task *> next_task_to_run = {};
+fc::Vec<kernel::Task *> cpu_running = {};
 
 bool expect_scheduling(CoreId cpu)
 {
@@ -39,7 +39,7 @@ bool expect_scheduling(CoreId cpu)
     return false;
 }
 
-core::Array<TaskQueue, kernel::TASK_QUEUE_COUNT> task_queues = {};
+fc::Array<TaskQueue, kernel::TASK_QUEUE_COUNT> task_queues = {};
 TaskQueue blocked_tasks = {};
 
 SRWLock scheduler_lock = {};
@@ -89,7 +89,7 @@ void idle()
     }
 }
 
-core::Result<void> scheduler_init_idle_task()
+fc::Result<void> scheduler_init_idle_task()
 {
     for (size_t i = 0; i < Cpu::count(); i++)
     {
@@ -118,7 +118,7 @@ core::Result<void> scheduler_init_idle_task()
     return {};
 }
 
-core::Result<void> scheduler_init(int cpu_count)
+fc::Result<void> scheduler_init(int cpu_count)
 {
     running_cpu_count = cpu_count;
 
@@ -144,28 +144,28 @@ core::Result<void> scheduler_init(int cpu_count)
     try$(scheduler_init_idle_task());
     scheduler_lock.write_release();
 
-    _choosen = try$(core::Vec<size_t>::with_capacity(running_cpu_count));
-    _retried = try$(core::Vec<size_t>::with_capacity(running_cpu_count));
-    _blocked_cores_idle_candidates = try$(core::Vec<CoreId>::with_capacity(running_cpu_count));
+    _choosen = try$(fc::Vec<size_t>::with_capacity(running_cpu_count));
+    _retried = try$(fc::Vec<size_t>::with_capacity(running_cpu_count));
+    _blocked_cores_idle_candidates = try$(fc::Vec<CoreId>::with_capacity(running_cpu_count));
 
     return {};
 }
 
-core::Result<void> scheduler_start()
+fc::Result<void> scheduler_start()
 {
     return {};
 }
 
-core::Result<void> scheduler_tick()
+fc::Result<void> scheduler_tick()
 {
     return {};
 }
 
-core::Result<kernel::Task *> next_task_select(CoreId core)
+fc::Result<kernel::Task *> next_task_select(CoreId core)
 {
     if ((size_t)core >= running_cpu_count)
     {
-        return core::Result<kernel::Task *>::error("invalid core id");
+        return fc::Result<kernel::Task *>::error("invalid core id");
     }
 
     auto task = next_task_to_run[core];
@@ -175,13 +175,13 @@ core::Result<kernel::Task *> next_task_select(CoreId core)
         {
             return scheduler_idles[core];
         }
-        return core::Result<kernel::Task *>::error("no idle task available for core");
+        return fc::Result<kernel::Task *>::error("no idle task available for core");
     }
 
     return task;
 }
 
-core::Result<void> task_run(TUID task_id, CoreId core)
+fc::Result<void> task_run(TUID task_id, CoreId core)
 {
     (void)core;
     auto task = Task::by_id(task_id);
@@ -223,7 +223,7 @@ static inline size_t scheduled_task_count()
     return count;
 }
 
-static core::Result<size_t> query_nearest_task(size_t queue_id, CoreId core, bool consider_siblings = false)
+static fc::Result<size_t> query_nearest_task(size_t queue_id, CoreId core, bool consider_siblings = false)
 {
     // For tasks in the given queue, choose the one whose CPU affinity is either unset,
     // already matching the given CPU, or whose affinity is “close” (i.e. sibling) to the given CPU.
@@ -314,7 +314,7 @@ static void update_runned_task_for_cpu(CoreId cpu)
     next_task_to_run[cpu]->sched().old_cpu_affinity = CpuCoreNone;
 }
 
-core::Result<size_t> resolve_blocked_tasks_scheduler()
+fc::Result<size_t> resolve_blocked_tasks_scheduler()
 {
     // Fast path: if no blocked tasks, return immediately
     if (blocked_tasks.len() == 0)
@@ -363,11 +363,11 @@ static void update_runned_tasks()
     {
         if (i == 0)
         {
-            task_queues[i] += core::move(task_queues[i + 1]);
+            task_queues[i] += fc::move(task_queues[i + 1]);
         }
         else
         {
-            task_queues[i] = core::move(task_queues[i + 1]);
+            task_queues[i] = fc::move(task_queues[i + 1]);
         }
     }
 
@@ -423,10 +423,10 @@ static void update_runned_tasks()
     }
 }
 
-static core::Result<void> fix_sched_affinity()
+static fc::Result<void> fix_sched_affinity()
 {
     size_t attempt = 0;
-    static core::Vec<CoreId> to_fix = {};
+    static fc::Vec<CoreId> to_fix = {};
 
     // technically, should be allocated once
     for (size_t i = 0; i < running_cpu_count; i++)
@@ -504,7 +504,7 @@ void run_task_queued(CoreId cpu, size_t queue_id, size_t queue_offset)
     next_task_to_run[cpu] = (task);
 }
 
-core::Result<void> schedule_one(CoreId cpu)
+fc::Result<void> schedule_one(CoreId cpu)
 {
     bool found_task = false;
     auto c = scheduled_task_count();
@@ -558,7 +558,7 @@ core::Result<void> schedule_one(CoreId cpu)
     return {};
 }
 
-core::Result<void> schedule_all()
+fc::Result<void> schedule_all()
 {
     auto *choosen_ptr = &_choosen;
     auto *retried_ptr = &_retried;
@@ -611,7 +611,7 @@ core::Result<void> schedule_all()
 
         // we retry for task with a lower priority by swapping the retried task,
 
-        core::swap(choosen_ptr, retried_ptr);
+        fc::swap(choosen_ptr, retried_ptr);
         retried_ptr->clear();
     }
 
@@ -658,7 +658,7 @@ void schedule_other_cpus()
     }
 }
 
-core::Result<void> dump_current_running_task(bool complete)
+fc::Result<void> dump_current_running_task(bool complete)
 {
 
     CoreId core = Cpu::currentId();
@@ -696,7 +696,7 @@ core::Result<void> dump_current_running_task(bool complete)
     return {};
 }
 
-core::Result<void> dump_all_current_running_tasks()
+fc::Result<void> dump_all_current_running_tasks()
 {
     fmt::log$("Dumping all current running tasks:");
     for (size_t i = 0; i < running_cpu_count; i++)
@@ -718,7 +718,7 @@ core::Result<void> dump_all_current_running_tasks()
     return {};
 }
 
-core::Result<void> reschedule_only_one(CoreId core)
+fc::Result<void> reschedule_only_one(CoreId core)
 {
 
     if (expect_scheduling(core))
@@ -733,7 +733,7 @@ core::Result<void> reschedule_only_one(CoreId core)
     return {};
 }
 
-core::Result<void> reschedule_all()
+fc::Result<void> reschedule_all()
 {
     {
         tick++;
@@ -750,7 +750,7 @@ core::Result<void> reschedule_all()
     return {};
 }
 
-core::Result<Task *> schedule_self(Task *current, void *state, CoreId core)
+fc::Result<Task *> schedule_self(Task *current, void *state, CoreId core)
 {
 
     // Sanity check: the current task pointer should either be null or match cpu_running[core]
@@ -805,7 +805,7 @@ core::Result<Task *> schedule_self(Task *current, void *state, CoreId core)
     return next;
 }
 
-core::Result<Task *> schedule(Task *current, void *state, CoreId core, bool soft)
+fc::Result<Task *> schedule(Task *current, void *state, CoreId core, bool soft)
 {
 
     CoreId cur = Cpu::currentId();
@@ -908,7 +908,7 @@ core::Result<Task *> schedule(Task *current, void *state, CoreId core, bool soft
     return next;
 }
 
-core::Result<void> block_current_task(BlockEvent event)
+fc::Result<void> block_current_task(BlockEvent event)
 {
 
     // there are two problems:
@@ -964,7 +964,7 @@ core::Result<void> block_current_task(BlockEvent event)
     return {};
 } // namespace kernel
 
-core::Result<void> resolve_blocked_tasks()
+fc::Result<void> resolve_blocked_tasks()
 {
     // Fast path: if no blocked tasks, skip locking entirely
     if (blocked_tasks.len() == 0)

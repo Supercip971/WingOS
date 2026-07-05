@@ -8,17 +8,17 @@
 namespace fmt
 {
 template <typename Fmt, typename... Args>
-constexpr core::Result<core::WStr> format_str(Fmt fmt, Args... args)
+constexpr fc::Result<fc::WStr> format_str(Fmt fmt, Args... args)
 {
-    core::WStr writer;
-    fmt::format(writer, core::Str(fmt), core::forward<Args>(args)...);
+    fc::WStr writer;
+    fmt::format(writer, fc::Str(fmt), fc::forward<Args>(args)...);
     return writer;
 }
 
 template <typename Fmt, typename... Args>
-constexpr core::Result<void> format_to_str(core::WStr &writer, Fmt fmt, Args... args)
+constexpr fc::Result<void> format_to_str(fc::WStr &writer, Fmt fmt, Args... args)
 {
-    fmt::format(writer, core::Str(fmt), core::forward<Args>(args)...);
+    fmt::format(writer, fc::Str(fmt), fc::forward<Args>(args)...);
     return {};
 }
 } // namespace fmt

@@ -61,11 +61,11 @@ struct IDT
 
     constexpr IDT() : _entries{} {};
 
-    template <core::Viewable T>
+    template <fc::Viewable T>
     void fill(const T &handler_table, int cs)
     {
-        core::forEachIdx(handler_table, [&](auto v, size_t index)
-                         { _entries[index] = IDTEntry(reinterpret_cast<uintptr_t>(v), cs, (index < 32) ? 0 : 1, IDTEntry::Type::GATE); });
+        fc::forEachIdx(handler_table, [&](auto v, size_t index)
+                       { _entries[index] = IDTEntry(reinterpret_cast<uintptr_t>(v), cs, (index < 32) ? 0 : 1, IDTEntry::Type::GATE); });
     }
 
     constexpr size_t size() const { return _size * sizeof(IDTEntry); }

@@ -5,7 +5,7 @@
 
 #include "libcore/type-utils.hpp"
 
-namespace core
+namespace fc
 {
 
 template <typename T>
@@ -24,7 +24,7 @@ public:
 
         template <typename... Args>
         ControlBlock(Args... args)
-            : ref_count(0), data(core::forward<Args>(args)...)
+            : ref_count(0), data(fc::forward<Args>(args)...)
         {
         }
     };
@@ -47,7 +47,7 @@ public:
     static SharedPtr<T> make(Args... args)
     {
         SharedPtr<T> ptr = {};
-        ptr.control_block = new ControlBlock(core::forward<Args>(args)...);
+        ptr.control_block = new ControlBlock(fc::forward<Args>(args)...);
 
         ptr.control_block->ref_count = 1;
         return ptr;
@@ -146,4 +146,4 @@ public:
         control_block = nullptr;
     }
 };
-} // namespace core
+} // namespace fc

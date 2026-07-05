@@ -99,8 +99,8 @@ class Contour
     StrokePoint last_stroke = StrokePoint::moved(Vec2(0, 0));
 
 public:
-    core::Vec<RawStroke> strokes = {};
-    core::Vec<StrokePoint> commands = {};
+    fc::Vec<RawStroke> strokes = {};
+    fc::Vec<StrokePoint> commands = {};
 
     void update_bound(Vec2 off)
     {
@@ -135,7 +135,7 @@ public:
         update_bound(point.pos);
         strokes.add_sorted(
             [](RawStroke const &left, RawStroke const &right)
-            { return core::min(left.a.pos.x, left.b.pos.x) - core::min(right.a.pos.x, right.b.pos.x); },
+            { return fc::min(left.a.pos.x, left.b.pos.x) - fc::min(right.a.pos.x, right.b.pos.x); },
             RawStroke{last_stroke, point});
         last_stroke = point;
     }

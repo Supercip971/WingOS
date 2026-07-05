@@ -69,7 +69,7 @@ struct VirtualMemoryAsset : public UAsset
         return asset;
     }
 
-    static core::Result<VirtualMemoryAsset> from_handle(uint64_t handle)
+    static fc::Result<VirtualMemoryAsset> from_handle(uint64_t handle)
     {
         VirtualMemoryAsset asset = {};
         asset.handle = handle;

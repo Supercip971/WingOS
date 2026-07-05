@@ -11,7 +11,7 @@ static IDT default_idt;
 static IDTRegister default_idt_register;
 extern "C" uint64_t __interrupt_vector[256];
 
-static constexpr core::MemView<uint64_t> interrupt_vector = core::MemView<uint64_t>(__interrupt_vector, 256);
+static constexpr fc::MemView<uint64_t> interrupt_vector = fc::MemView<uint64_t>(__interrupt_vector, 256);
 
 IDTRegister *load_default_idt()
 {

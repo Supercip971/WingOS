@@ -39,16 +39,16 @@ struct __attribute__((packed)) GPTPartitionEntries
 
 struct GPTDiskParseEntry
 {
-    core::WStr name;
+    fc::WStr name;
     GPTPartitionEntries *entry;
 };
 
 struct GPTDiskParseResult
 {
     GPT header;
-    core::Vec<GPTDiskParseEntry> entries;
+    fc::Vec<GPTDiskParseEntry> entries;
 };
 
-core::Result<GPTDiskParseResult> parse_gpt(core::Str &device);
+fc::Result<GPTDiskParseResult> parse_gpt(fc::Str &device);
 
 }; // namespace Wingos

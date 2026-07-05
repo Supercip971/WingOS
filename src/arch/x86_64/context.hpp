@@ -56,8 +56,8 @@ enum RFlagsValues
     RFLAGS_ID = (1 << 21),
 };
 
-template <core::IsConvertibleTo<StackFrame const> T, core::Writable Targ>
-constexpr core::Result<void> format_v(Targ &target, T value)
+template <fc::IsConvertibleTo<StackFrame const> T, fc::Writable Targ>
+constexpr fc::Result<void> format_v(Targ &target, T value)
 {
 
     // FIXME: add a way to use the same format for all parameters,
@@ -97,8 +97,8 @@ constexpr core::Result<void> format_v(Targ &target, T value)
     return {};
 }
 
-template <core::IsSame<StackFrame const *> T, core::Writable Targ>
-constexpr core::Result<void> format_v(Targ &target, T value)
+template <fc::IsSame<StackFrame const *> T, fc::Writable Targ>
+constexpr fc::Result<void> format_v(Targ &target, T value)
 {
     return format_v(target, *value);
 }

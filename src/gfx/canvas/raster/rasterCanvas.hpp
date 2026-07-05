@@ -15,8 +15,8 @@ namespace wgfx
 class RasterCanvas : public wgfx::Canvas
 {
 
-    core::Vec<Rgba8> _backdrop_workspace1 = {};
-    core::Vec<Rgba8> _backdrop_workspace2 = {};
+    fc::Vec<Rgba8> _backdrop_workspace1 = {};
+    fc::Vec<Rgba8> _backdrop_workspace2 = {};
 
 public:
     Rgba8 *buffer;

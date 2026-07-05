@@ -26,8 +26,8 @@ static inline void interrupt_release()
     asm volatile("sti");
 }
 
-static constexpr core::Array interrupts_names{
-    core::Str("Divide by zero [#DE]"),
+static constexpr fc::Array interrupts_names{
+    fc::Str("Divide by zero [#DE]"),
     "Debug [#DB]",
     "Non-maskable interrupt [#NMI]",
     "Breakpoint [#BP]",

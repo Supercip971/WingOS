@@ -16,7 +16,7 @@
 namespace wgfx
 {
 
-using RenderCommands = core::Vec<RenderCommand>;
+using RenderCommands = fc::Vec<RenderCommand>;
 
 class Canvas
 {
@@ -26,7 +26,7 @@ protected:
 public:
     wgfx::GRect size;
     wgfx::GRect context_size;
-    core::Vec<wgfx::GRect> scissor_stack;
+    fc::Vec<wgfx::GRect> scissor_stack;
 
     virtual ~Canvas() {}
 
@@ -76,7 +76,7 @@ public:
         commands.push(cmd);
     }
 
-    void drawText(Vec2 start, Utf8Str string, core::SharedPtr<Font> const &font, CompositeColor color)
+    void drawText(Vec2 start, Utf8Str string, fc::SharedPtr<Font> const &font, CompositeColor color)
     {
         RenderCommand cmd = RenderCommand::from((TextCommand){
             .paint = color,
@@ -88,7 +88,7 @@ public:
         commands.push(cmd);
     }
 
-    void drawImage(core::SharedPtr<wgfx::Texture> const &texture, wgfx::GRect rect)
+    void drawImage(fc::SharedPtr<wgfx::Texture> const &texture, wgfx::GRect rect)
     {
         commands.push(RenderCommand::from((TextureCommand){
             .tex = texture,
@@ -96,7 +96,7 @@ public:
         }));
     }
 
-    void drawContour(core::SharedPtr<Contour> &contour, CompositeColor color, Vec2 pos)
+    void drawContour(fc::SharedPtr<Contour> &contour, CompositeColor color, Vec2 pos)
     {
         RenderCommand cmd = RenderCommand::from((ContourCommand){
             .paint = color,

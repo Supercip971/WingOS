@@ -126,7 +126,7 @@ public:
         fill(Page{});
     }
 
-    core::Result<void> map(VirtAddr vaddr, Page page)
+    fc::Result<void> map(VirtAddr vaddr, Page page)
     {
         if constexpr (level == 1)
         {
@@ -166,7 +166,7 @@ public:
         return {};
     }
 
-    core::Result<void> unmap(VirtAddr vaddr, bool user)
+    fc::Result<void> unmap(VirtAddr vaddr, bool user)
     {
         if constexpr (level == 1)
         {
@@ -201,7 +201,7 @@ public:
         return {};
     }
 
-    core::Result<void> _verify(VirtAddr addr)
+    fc::Result<void> _verify(VirtAddr addr)
     {
         auto &page = page_from_addr(addr);
         if (!page.present())
@@ -221,7 +221,7 @@ public:
 
         if constexpr (level <= 1)
         {
-            return core::Result<void>();
+            return fc::Result<void>();
         }
         else
         {
@@ -229,7 +229,7 @@ public:
         }
     }
 
-    core::Result<void> verify(VirtAddr vaddr, size_t size)
+    fc::Result<void> verify(VirtAddr vaddr, size_t size)
     {
         auto begin = math::alignDown(vaddr._addr, (size_t)PAGE_SIZE);
         auto end = math::alignUp(begin + size, (size_t)PAGE_SIZE);

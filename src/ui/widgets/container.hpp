@@ -57,7 +57,7 @@ class Container : public Widget
 {
 
 public:
-    core::SharedPtr<Widget> child;
+    fc::SharedPtr<Widget> child;
 
     ContainerParms _parms;
 
@@ -100,12 +100,12 @@ public:
     }
 
     template <typename T>
-    static core::SharedPtr<Widget> construct(ContainerParms params, T args)
+    static fc::SharedPtr<Widget> construct(ContainerParms params, T args)
     {
-        return core::SharedPtr<Container>::make(params, args).template static_pointer_cast<Widget>();
+        return fc::SharedPtr<Container>::make(params, args).template static_pointer_cast<Widget>();
     }
 
-    core::SharedPtr<Widget> build(UiContext const &v) override
+    fc::SharedPtr<Widget> build(UiContext const &v) override
     {
         (void)v;
         return child;

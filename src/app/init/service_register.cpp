@@ -10,7 +10,7 @@
 #include "protocols/init/init.hpp"
 #include "wingos-headers/ipc.h"
 
-core::Vec<Wingos::IpcConnection *> connections = {};
+fc::Vec<Wingos::IpcConnection *> connections = {};
 
 struct RegisteredService
 {
@@ -21,9 +21,9 @@ struct RegisteredService
     uint64_t endpoint;
 };
 
-core::Vec<RegisteredService *> registered_services = {};
+fc::Vec<RegisteredService *> registered_services = {};
 
-core::Result<void> service_register(uint64_t endpoint, core::Str const &name, uint64_t major, uint64_t minor)
+fc::Result<void> service_register(uint64_t endpoint, fc::Str const &name, uint64_t major, uint64_t minor)
 
 {
     fmt::log$("registering service: {} ({}.{}) at {}", name, major, minor, endpoint);
@@ -48,14 +48,14 @@ core::Result<void> service_register(uint64_t endpoint, core::Str const &name, ui
     return {};
 }
 
-core::Result<IpcServerHandle> service_get(core::Str const &name, uint64_t major, uint64_t minor)
+fc::Result<IpcServerHandle> service_get(fc::Str const &name, uint64_t major, uint64_t minor)
 {
     for (size_t j = 0; j < registered_services.len(); j++)
     {
         auto &service = registered_services[j];
         bool name_match = true;
 
-        name_match = (core::Str(service->name) == name);
+        name_match = (fc::Str(service->name) == name);
         if (name_match && service->major == major && service->minor >= minor)
         {
             return {service->endpoint};
@@ -103,7 +103,7 @@ void startup_init_service(Wingos::IpcServer server, MachineContextShared shared)
                 fmt::log$("registered server: {}");
                 service_register(
                     msg.received.data[1].data,
-                    core::Str((char *)msg.received.raw_buffer, msg.received.len - 1),
+                    fc::Str((char *)msg.received.raw_buffer, msg.received.len - 1),
                     msg.received.data[2].data,
                     msg.received.data[3].data)
                     .assert();
@@ -120,7 +120,7 @@ void startup_init_service(Wingos::IpcServer server, MachineContextShared shared)
                 resp.endpoint = -1;
 
                 auto name_len = msg.received.len - 1;
-                core::Str name = core::Str((char *)msg.received.raw_buffer, name_len);
+                fc::Str name = fc::Str((char *)msg.received.raw_buffer, name_len);
 
                 auto service_res = service_get(
                     name,

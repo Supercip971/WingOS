@@ -14,7 +14,7 @@ struct Duplex
     Wingos::IpcClient connection_sender;
     Wingos::IpcClient connection_receiver;
 
-    static core::Result<Duplex> create(Wingos::Space const &sender_space, Wingos::Space const &receiver_space, uint64_t flags = 0)
+    static fc::Result<Duplex> create(Wingos::Space const &sender_space, Wingos::Space const &receiver_space, uint64_t flags = 0)
     {
 
         Wingos::IpcClient client_sender = {};
@@ -22,9 +22,9 @@ struct Duplex
         try$(Wingos::IpcClient::pipe_create(sender_space.handle, client_sender, receiver_space.handle, client_receiver, flags));
 
         Duplex result = {};
-        result.connection_sender = core::move(client_sender);
-        result.connection_receiver = core::move(client_receiver);
-        return core::Result<Duplex>::success(result);
+        result.connection_sender = fc::move(client_sender);
+        result.connection_receiver = fc::move(client_receiver);
+        return fc::Result<Duplex>::success(result);
     }
 };
 
@@ -33,7 +33,7 @@ class SenderPipe
 public:
     Wingos::IpcClient &raw_connection() { return _connection; }
 
-    core::Result<void> send(const void *buffer, size_t len)
+    fc::Result<void> send(const void *buffer, size_t len)
     {
         if (len > MAX_IPC_BUFFER_SIZE)
         {
@@ -53,16 +53,16 @@ public:
         return {};
     }
 
-    static core::Result<SenderPipe> from(Wingos::IpcClient connection)
+    static fc::Result<SenderPipe> from(Wingos::IpcClient connection)
     {
         SenderPipe pipe;
-        pipe._connection = core::move(connection);
-        return core::Result<SenderPipe>::success(core::move(pipe));
+        pipe._connection = fc::move(connection);
+        return fc::Result<SenderPipe>::success(fc::move(pipe));
     }
 
     SenderPipe() = default;
 
-    SenderPipe(Wingos::IpcClient &&connection) : _connection(core::move(connection))
+    SenderPipe(Wingos::IpcClient &&connection) : _connection(fc::move(connection))
     {
     }
 
@@ -74,21 +74,21 @@ class ReceiverPipe
 {
 
 public:
-    static core::Result<ReceiverPipe> from(Wingos::Space const &space, uint64_t handle)
+    static fc::Result<ReceiverPipe> from(Wingos::Space const &space, uint64_t handle)
     {
         ReceiverPipe pipe;
         pipe._connection = Wingos::IpcClient::from(space.handle, handle);
-        return core::Result<ReceiverPipe>::success(core::move(pipe));
+        return fc::Result<ReceiverPipe>::success(fc::move(pipe));
     }
 
-    static core::Result<ReceiverPipe> from(Wingos::IpcClient connection)
+    static fc::Result<ReceiverPipe> from(Wingos::IpcClient connection)
     {
         ReceiverPipe pipe;
-        pipe._connection = core::move(connection);
-        return core::Result<ReceiverPipe>::success(core::move(pipe));
+        pipe._connection = fc::move(connection);
+        return fc::Result<ReceiverPipe>::success(fc::move(pipe));
     }
 
-    core::Result<IpcMessage> receive_message()
+    fc::Result<IpcMessage> receive_message()
     {
         auto res = _connection.receive(false);
 
@@ -97,10 +97,10 @@ public:
             return "failed to receive message";
         }
 
-        return core::Result<IpcMessage>::success(core::move(res.unwrap().received));
+        return fc::Result<IpcMessage>::success(fc::move(res.unwrap().received));
     }
 
-    core::Result<size_t> receive(void *buffer, size_t len)
+    fc::Result<size_t> receive(void *buffer, size_t len)
     {
         if (len > MAX_IPC_BUFFER_SIZE)
         {
@@ -114,7 +114,7 @@ public:
             return "failed to receive message";
         }
 
-        auto received_message = core::move(res.unwrap().received);
+        auto received_message = fc::move(res.unwrap().received);
 
         size_t mlen = received_message.len;
         if (len < mlen)

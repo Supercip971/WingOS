@@ -28,13 +28,13 @@ class CompositorConnection
 public:
     Wingos::IpcClient &raw_client() { return connection; }
 
-    static core::Result<CompositorConnection> connect()
+    static fc::Result<CompositorConnection> connect()
     {
         CompositorConnection conn{};
 
         auto reg = try$(InitConnection::connect());
 
-        auto handle = try$(reg.get_server(core::Str("compositor"), 1, 0)).endpoint;
+        auto handle = try$(reg.get_server(fc::Str("compositor"), 1, 0)).endpoint;
         conn.connection = Wingos::Space::self().connect_to_ipc_server(handle, 1, 0);
 
         conn.connection.wait_for_accept();
@@ -54,7 +54,7 @@ public:
             fmt::err$("compositor: failed to send create window message");
         }
 
-        auto msg = core::move(sended_message.unwrap());
+        auto msg = fc::move(sended_message.unwrap());
         IpcServerHandle window_endpoint = msg.data[0].data;
 
         fmt::log$("compositor: created window with endpoint {}", window_endpoint);

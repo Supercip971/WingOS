@@ -34,7 +34,7 @@ class WindowConnection
 public:
     Wingos::IpcClient &raw_client() { return connection; }
 
-    static core::Result<WindowConnection> create(bool take_fb = false)
+    static fc::Result<WindowConnection> create(bool take_fb = false)
     {
         WindowConnection conn{};
         auto comp = try$(CompositorConnection::connect());
@@ -46,7 +46,7 @@ public:
         return conn;
     }
 
-    core::Result<WindowGetAttributeSize> get_attribute_size()
+    fc::Result<WindowGetAttributeSize> get_attribute_size()
     {
         IpcMessage message = {};
         message.data[0].data = WINDOW_GET_ATTRIBUTE_SIZE;
@@ -63,7 +63,7 @@ public:
         return ("failed to receive attribute size");
     }
 
-    core::Result<Wingos::VirtualMemoryAsset> get_framebuffer()
+    fc::Result<Wingos::VirtualMemoryAsset> get_framebuffer()
     {
         IpcMessage message = {};
         message.data[0].data = WINDOW_GET_FRAMEBUFFER;
@@ -82,7 +82,7 @@ public:
         return ("failed to receive framebuffer asset");
     }
 
-    core::Result<void> swap_buffers()
+    fc::Result<void> swap_buffers()
     {
 
         if (has_swap)

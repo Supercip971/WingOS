@@ -8,6 +8,6 @@ namespace wgfx
 
 class DrawContext
 {
-    core::Optional<wgfx::GRect> scissor;
+    fc::Optional<wgfx::GRect> scissor;
 };
 } // namespace wgfx

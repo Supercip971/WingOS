@@ -105,13 +105,13 @@ public:
 
     size_t max_redirect() { return (read(IOAPIC_REG_VERSION) & 0x00FF0000) >> 16; }
 
-    static core::Result<IOApic *> get(IOApicIndex index);
+    static fc::Result<IOApic *> get(IOApicIndex index);
 
     // in the case of multiple ioapics, we need to select the one
     // that is responsible for the interrupt
-    static core::Result<IOApicIndex> query_from_irq(size_t irq);
+    static fc::Result<IOApicIndex> query_from_irq(size_t irq);
 
-    static core::Result<void> initialize(IOApicIndex index, MadtEntryIoapic const *entry);
+    static fc::Result<void> initialize(IOApicIndex index, MadtEntryIoapic const *entry);
 };
 
 }; // namespace hw::acpi

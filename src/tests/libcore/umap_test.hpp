@@ -9,7 +9,7 @@
 
 struct UMapTestKey;
 
-namespace core
+namespace fc
 {
 static inline constexpr size_t hash(UMapTestKey const &key);
 }
@@ -81,13 +81,13 @@ struct UMapTestKey
     }
 };
 
-namespace core
+namespace fc
 {
 static inline constexpr size_t hash(UMapTestKey const &key)
 {
     return key.value;
 }
-} // namespace core
+} // namespace fc
 
 struct UMapTestValue
 {
@@ -150,7 +150,7 @@ static constexpr TestGroup umapTests = {
             "umap insert/has",
             []() -> Test::RetFn
             {
-                auto map = core::UMap<size_t, int>();
+                auto map = fc::UMap<size_t, int>();
 
                 map.insert(1, 10);
                 map.insert(2, 20);
@@ -171,7 +171,7 @@ static constexpr TestGroup umapTests = {
             "umap find present",
             []() -> Test::RetFn
             {
-                auto map = core::UMap<size_t, int>();
+                auto map = fc::UMap<size_t, int>();
 
                 map.insert(1, 10);
                 map.insert(2, 20);
@@ -203,7 +203,7 @@ static constexpr TestGroup umapTests = {
             "umap find missing",
             []() -> Test::RetFn
             {
-                auto map = core::UMap<size_t, int>();
+                auto map = fc::UMap<size_t, int>();
 
                 map.insert(1, 10);
                 map.insert(2, 20);
@@ -221,7 +221,7 @@ static constexpr TestGroup umapTests = {
             "umap remove existing",
             []() -> Test::RetFn
             {
-                auto map = core::UMap<size_t, int>();
+                auto map = fc::UMap<size_t, int>();
 
                 map.insert(10, 100);
                 map.insert(20, 200);
@@ -248,7 +248,7 @@ static constexpr TestGroup umapTests = {
             "umap remove missing",
             []() -> Test::RetFn
             {
-                auto map = core::UMap<size_t, int>();
+                auto map = fc::UMap<size_t, int>();
 
                 map.insert(10, 100);
                 map.insert(30, 300);
@@ -266,9 +266,9 @@ static constexpr TestGroup umapTests = {
             "basic umap",
             []() -> Test::RetFn
             {
-                auto map = core::UMap<core::WStr, int>();
+                auto map = fc::UMap<fc::WStr, int>();
 
-                map.insert(core::WStr::copy("bob"), 10);
+                map.insert(fc::WStr::copy("bob"), 10);
 
                 if (map["bob"] != 10)
                 {
@@ -280,7 +280,7 @@ static constexpr TestGroup umapTests = {
             "umap iterator",
             []() -> Test::RetFn
             {
-                auto map = core::UMap<size_t, int>();
+                auto map = fc::UMap<size_t, int>();
 
                 for (size_t i = 0; i < 5; i++)
                 {
@@ -331,7 +331,7 @@ static constexpr TestGroup umapTests = {
                 UMapTestKey::reset_counts();
                 UMapTestValue::reset_counts();
                 {
-                    auto map = core::UMap<UMapTestKey, UMapTestValue>();
+                    auto map = fc::UMap<UMapTestKey, UMapTestValue>();
 
                     for (int i = 0; i < 10; i++)
                     {
@@ -405,7 +405,7 @@ static constexpr TestGroup umapTests = {
                 UMapTestKey::reset_counts();
                 UMapTestValue::reset_counts();
                 {
-                    auto map = core::UMap<UMapTestKey, UMapTestValue>();
+                    auto map = fc::UMap<UMapTestKey, UMapTestValue>();
 
                     for (int i = 0; i < 80; i++)
                     {
@@ -423,7 +423,7 @@ static constexpr TestGroup umapTests = {
                         return "incorrect live value count after rehash";
                     }
 
-                    auto moved = core::UMap<UMapTestKey, UMapTestValue>(core::move(map));
+                    auto moved = fc::UMap<UMapTestKey, UMapTestValue>(fc::move(map));
 
                     if (UMapTestKey::live_count() != 80)
                     {

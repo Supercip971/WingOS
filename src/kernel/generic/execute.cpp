@@ -18,7 +18,7 @@
 #include "mcx/mcx.hpp"
 #include "wingos-headers/startup.hpp"
 
-core::Result<void> start_module_execution(elf::ElfLoader loaded, mcx::MachineContext const *context)
+fc::Result<void> start_module_execution(elf::ElfLoader loaded, mcx::MachineContext const *context)
 {
 
     AssetRef<Space> ptr = (Space::create_root());
@@ -81,7 +81,7 @@ core::Result<void> start_module_execution(elf::ElfLoader loaded, mcx::MachineCon
     for (size_t i = 0; i < loaded.program_count(); i++)
     {
         auto ph = try$(loaded.program_header(i));
-        if (ph.type != core::underlying_value(ElfProgramHeaderType::HEADER_LOAD))
+        if (ph.type != fc::underlying_value(ElfProgramHeaderType::HEADER_LOAD))
         {
             auto type_val = ph.type;
             fmt::warn$("skipping program header {}: type is not LOAD but {}", i, type_val);

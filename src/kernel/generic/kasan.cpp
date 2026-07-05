@@ -17,10 +17,10 @@ static kernel::Kasan _instance = {};
 
 // source: https://github.com/FireflyOS/Firefly-Kernel/blob/master/firefly/kernel/trace/sanitizer/kasan.cpp#L88
 
-core::Result<void> kernel::Kasan::initialize(size_t memory_size)
+fc::Result<void> kernel::Kasan::initialize(size_t memory_size)
 {
     _instance._shadow_memory_size = memory_size / 8;
-    _instance._shadow_memory = (uint8_t *)try$(core::mem_alloc(_instance._shadow_memory_size));
+    _instance._shadow_memory = (uint8_t *)try$(fc::mem_alloc(_instance._shadow_memory_size));
     memset(_instance._shadow_memory, KasanTags::KASAN_UNAVAILABLE, _instance._shadow_memory_size);
     _instance.enable();
     return {};

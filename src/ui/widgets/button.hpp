@@ -72,7 +72,7 @@ class Button : public Statefull<ButtonState>
 {
 
 public:
-    core::SharedPtr<Widget> child;
+    fc::SharedPtr<Widget> child;
     float o_elevation;
     float max_elevation;
 
@@ -167,12 +167,12 @@ public:
     }
 
     template <typename T>
-    static core::SharedPtr<Widget> construct(ButtonParams params, T args)
+    static fc::SharedPtr<Widget> construct(ButtonParams params, T args)
     {
-        return core::SharedPtr<ButtonParams>::make(params, args).template static_pointer_cast<Widget>();
+        return fc::SharedPtr<ButtonParams>::make(params, args).template static_pointer_cast<Widget>();
     }
 
-    core::SharedPtr<Widget> build(UiContext const &v) override
+    fc::SharedPtr<Widget> build(UiContext const &v) override
     {
         (void)v;
         return child;

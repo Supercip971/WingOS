@@ -111,7 +111,7 @@ struct ContourCommand
     static constexpr auto KIND = RenderCommandKind::RENDER_KIND_CONTOUR;
 
     Painter paint = {};
-    core::SharedPtr<wgfx::Contour> contour = {};
+    fc::SharedPtr<wgfx::Contour> contour = {};
 
     Vec2 pos = {};
 };
@@ -123,7 +123,7 @@ struct TextCommand
 
     Painter paint;
     Utf8Str str;
-    core::SharedPtr<wgfx::Font> font;
+    fc::SharedPtr<wgfx::Font> font;
     Vec2 pos;
 };
 
@@ -138,7 +138,7 @@ struct TextureCommand
 {
     static constexpr auto KIND = RenderCommandKind::RENDER_KIND_TEXTURE;
 
-    core::SharedPtr<wgfx::Texture> tex;
+    fc::SharedPtr<wgfx::Texture> tex;
     GRect rect;
 };
 

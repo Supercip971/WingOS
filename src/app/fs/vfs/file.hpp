@@ -11,10 +11,10 @@
 struct MountedFs
 {
     prot::DiskFsImplementationConnection endpoint;
-    core::WStr path;
+    fc::WStr path;
 };
 
-core::Result<void> mount_fs(IpcServerHandle device_name, core::WStr &&mount_path);
+fc::Result<void> mount_fs(IpcServerHandle device_name, fc::WStr &&mount_path);
 
 // app -> server -> connection to fs -> ext2
 class VfsFileEndpoint
@@ -23,7 +23,7 @@ public:
     prot::FsFile connection_to_fs = {};
 
     prot::ManagedServer server = {};
-    static core::Result<VfsFileEndpoint *> open_root();
+    static fc::Result<VfsFileEndpoint *> open_root();
 };
 
 void update_all_endpoints();

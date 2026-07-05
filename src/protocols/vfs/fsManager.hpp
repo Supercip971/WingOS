@@ -32,32 +32,32 @@ class DiskFsManagerConnection
     Wingos::IpcClient connection;
 
 public:
-    static core::Result<DiskFsManagerConnection> connect(core::Str fs_name)
+    static fc::Result<DiskFsManagerConnection> connect(fc::Str fs_name)
     {
         DiskFsManagerConnection conn = {};
         auto reg = InitConnection::connect();
         if (reg.is_error())
         {
-            return core::Result<DiskFsManagerConnection>::error("failed to connect to init");
+            return fc::Result<DiskFsManagerConnection>::error("failed to connect to init");
         }
         auto v = reg.unwrap();
-        auto handle = try$(v.get_server(core::Str(fs_name), 1, 0)).endpoint;
+        auto handle = try$(v.get_server(fc::Str(fs_name), 1, 0)).endpoint;
         conn.connection = Wingos::Space::self().connect_to_ipc_server(handle);
         conn.connection.wait_for_accept();
-        return core::Result<DiskFsManagerConnection>::success(core::move(conn));
+        return fc::Result<DiskFsManagerConnection>::success(fc::move(conn));
     }
 
-    static core::Result<DiskFsManagerConnection> connect(IpcServerHandle fs_endpoint)
+    static fc::Result<DiskFsManagerConnection> connect(IpcServerHandle fs_endpoint)
     {
         DiskFsManagerConnection conn = {};
         conn.connection = Wingos::Space::self().connect_to_ipc_server(fs_endpoint);
         conn.connection.wait_for_accept();
-        return core::Result<DiskFsManagerConnection>::success(core::move(conn));
+        return fc::Result<DiskFsManagerConnection>::success(fc::move(conn));
     }
 
     Wingos::IpcClient &raw_client() { return connection; }
 
-    core::Result<MountedDiskResult> mount_if_device_valid(core::Str name, IpcServerHandle endpoint, size_t begin_lba, size_t end_lba, size_t part_id)
+    fc::Result<MountedDiskResult> mount_if_device_valid(fc::Str name, IpcServerHandle endpoint, size_t begin_lba, size_t end_lba, size_t part_id)
     {
         IpcMessage message = {};
         message.data[0].data = DISK_FS_ATTEMPT_INITIALIZE_DISK;
@@ -96,15 +96,15 @@ class DiskFsImplementationConnection
     Wingos::IpcClient connection;
 
 public:
-    static core::Result<DiskFsImplementationConnection> connect(IpcServerHandle fs_endpoint)
+    static fc::Result<DiskFsImplementationConnection> connect(IpcServerHandle fs_endpoint)
     {
         DiskFsImplementationConnection conn;
         conn.connection = Wingos::Space::self().connect_to_ipc_server(fs_endpoint);
         conn.connection.wait_for_accept();
-        return core::Result<DiskFsImplementationConnection>::success(core::move(conn));
+        return fc::Result<DiskFsImplementationConnection>::success(fc::move(conn));
     }
 
-    core::Result<IpcServerHandle> create_root_endpoint()
+    fc::Result<IpcServerHandle> create_root_endpoint()
     {
         IpcMessage message = {};
         message.data[0].data = DISK_CREATE_ROOT_ENDPOINT;

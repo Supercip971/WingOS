@@ -22,8 +22,8 @@ struct KernelIpcServerRegistered
 
 static uint64_t next_free_ipc_server_handle = 16;
 
-static core::Lock ipc_server_lock;
-static core::Vec<KernelIpcServerRegistered> registered_servers = {};
+static fc::Lock ipc_server_lock;
+static fc::Vec<KernelIpcServerRegistered> registered_servers = {};
 
 KernelIpcServer *register_server(IpcServerHandle handle, uint64_t space_handle)
 {
@@ -86,7 +86,7 @@ void publish_server(KernelIpcServer *server)
     ipc_server_lock.release();
 }
 
-core::Result<KernelIpcServer *> query_server(IpcServerHandle handle)
+fc::Result<KernelIpcServer *> query_server(IpcServerHandle handle)
 {
     ipc_server_lock.lock();
     for (size_t i = 0; i < registered_servers.len(); i++)
@@ -105,7 +105,7 @@ core::Result<KernelIpcServer *> query_server(IpcServerHandle handle)
 
 // Query server and return with ipc_server_lock HELD.
 // Caller MUST call release_server_lock() after they are done with the server pointer.
-core::Result<KernelIpcServer *> query_server_locked(IpcServerHandle handle)
+fc::Result<KernelIpcServer *> query_server_locked(IpcServerHandle handle)
 {
     ipc_server_lock.lock();
     for (size_t i = 0; i < registered_servers.len(); i++)
@@ -142,7 +142,7 @@ void unregister_server(IpcServerHandle handle, uint64_t space_handle)
     fmt::warn$("unregister_server: server not found: {} {}", handle, space_handle);
 }
 
-core::Result<AssetRef<>> server_accept_connection(KernelIpcServer *server)
+fc::Result<AssetRef<>> server_accept_connection(KernelIpcServer *server)
 {
     if (server == nullptr)
     {
@@ -227,11 +227,11 @@ core::Result<AssetRef<>> server_accept_connection(KernelIpcServer *server)
 }
 
 // send message to the server
-core::Result<MessageHandle> _server_send_message(AssetRef<IpcConnection> &connection, IpcMessage *message, bool is_call)
+fc::Result<MessageHandle> _server_send_message(AssetRef<IpcConnection> &connection, IpcMessage *message, bool is_call)
 {
     if (connection.asset == nullptr)
     {
-        return core::Result<MessageHandle>("connection is null");
+        return fc::Result<MessageHandle>("connection is null");
     }
 
     connection.asset->lock.lock();
@@ -239,14 +239,14 @@ core::Result<MessageHandle> _server_send_message(AssetRef<IpcConnection> &connec
     if (connection.asset->accepted == false)
     {
         connection.asset->lock.release();
-        return core::Result<MessageHandle>("connection is not accepted (209)");
+        return fc::Result<MessageHandle>("connection is not accepted (209)");
     }
 
     if (connection.asset->closed_status != IPC_STILL_OPEN)
     {
         connection.asset->lock.release();
         // can't send message on closed connection
-        return core::Result<MessageHandle>("connection is closed");
+        return fc::Result<MessageHandle>("connection is closed");
     }
 
     ReceivedIpcMessage received_message = {};
@@ -271,7 +271,7 @@ core::Result<MessageHandle> _server_send_message(AssetRef<IpcConnection> &connec
     return uid; // return the unique id of the message
 }
 
-core::Result<MessageHandle> server_send_message(AssetRef<IpcConnection> &connection, IpcMessage *message, bool expect_reply)
+fc::Result<MessageHandle> server_send_message(AssetRef<IpcConnection> &connection, IpcMessage *message, bool expect_reply)
 {
     return _server_send_message(connection, message, expect_reply);
 }
@@ -279,12 +279,12 @@ core::Result<MessageHandle> server_send_message(AssetRef<IpcConnection> &connect
 // for now share the same code, but for later, we will have to differentiate between call and message
 // a call expects a reply and thus we can use some scheduling tricks to directly
 // handle the reply by jumping onto the server code
-core::Result<MessageHandle> server_send_call(AssetRef<IpcConnection> &connection, IpcMessage *message)
+fc::Result<MessageHandle> server_send_call(AssetRef<IpcConnection> &connection, IpcMessage *message)
 {
     return _server_send_message(connection, message, true);
 }
 
-core::Result<IpcMessageServer> update_handle_from_client_to_server(AssetRef<IpcConnection> &connection, IpcMessageClient message)
+fc::Result<IpcMessageServer> update_handle_from_client_to_server(AssetRef<IpcConnection> &connection, IpcMessageClient message)
 {
     if (connection.asset == nullptr)
     {
@@ -330,18 +330,18 @@ core::Result<IpcMessageServer> update_handle_from_client_to_server(AssetRef<IpcC
     return (message);
 }
 
-core::Result<IpcMessageClient> update_handle_from_server_to_client(AssetRef<IpcConnection> &connection, IpcMessageServer message)
+fc::Result<IpcMessageClient> update_handle_from_server_to_client(AssetRef<IpcConnection> &connection, IpcMessageServer message)
 {
     if (connection.asset == nullptr)
     {
-        return core::Result<IpcMessageClient>::error("server or connection is null");
+        return fc::Result<IpcMessageClient>::error("server or connection is null");
     }
 
     auto client_space_res = Space::global_space_by_handle(connection.asset->client_space_handle);
     auto server_space_res = Space::global_space_by_handle(connection.asset->server_space_handle);
     if (client_space_res.is_error() || server_space_res.is_error())
     {
-        return core::Result<IpcMessageClient>::error("unable to get client or server space");
+        return fc::Result<IpcMessageClient>::error("unable to get client or server space");
     }
     auto client_space = client_space_res.unwrap();
     auto server_space = server_space_res.unwrap();
@@ -356,7 +356,7 @@ core::Result<IpcMessageClient> update_handle_from_server_to_client(AssetRef<IpcC
 
             if (asset_ptr_res.is_error())
             {
-                return core::Result<IpcMessageClient>::error("asset not found in server space");
+                return fc::Result<IpcMessageClient>::error("asset not found in server space");
             }
 
             auto asset_ptr = asset_ptr_res.unwrap();
@@ -383,7 +383,7 @@ core::Result<IpcMessageClient> update_handle_from_server_to_client(AssetRef<IpcC
     return (message);
 }
 
-core::Result<ReceivedIpcMessage> server_receive_message(AssetRef<IpcConnection> &connection)
+fc::Result<ReceivedIpcMessage> server_receive_message(AssetRef<IpcConnection> &connection)
 {
     if (connection.asset == nullptr)
     {
@@ -439,7 +439,7 @@ core::Result<ReceivedIpcMessage> server_receive_message(AssetRef<IpcConnection> 
     return (null_message);
 }
 
-core::Result<ReceivedIpcMessage> client_receive_message(AssetRef<IpcConnection> &connection)
+fc::Result<ReceivedIpcMessage> client_receive_message(AssetRef<IpcConnection> &connection)
 {
     if (connection.asset == nullptr)
     {
@@ -485,7 +485,7 @@ core::Result<ReceivedIpcMessage> client_receive_message(AssetRef<IpcConnection> 
     return ("no message found");
 }
 
-core::Result<ReceivedIpcMessage> client_receive_response(AssetRef<IpcConnection> &connection, MessageHandle handle)
+fc::Result<ReceivedIpcMessage> client_receive_response(AssetRef<IpcConnection> &connection, MessageHandle handle)
 {
     if (connection.asset == nullptr)
     {
@@ -524,12 +524,12 @@ core::Result<ReceivedIpcMessage> client_receive_response(AssetRef<IpcConnection>
     return null_message;
 }
 
-core::Result<void> server_reply_message(AssetRef<IpcConnection> &connection, MessageHandle from, IpcMessage *message)
+fc::Result<void> server_reply_message(AssetRef<IpcConnection> &connection, MessageHandle from, IpcMessage *message)
 {
 
     if (connection.asset == nullptr)
     {
-        return core::Result<void>("connection is null");
+        return fc::Result<void>("connection is null");
     }
 
     connection.asset->lock.lock();
@@ -537,13 +537,13 @@ core::Result<void> server_reply_message(AssetRef<IpcConnection> &connection, Mes
     if (!connection.asset->accepted)
     {
         connection.asset->lock.release();
-        return core::Result<void>("connection is not accepted (516)");
+        return fc::Result<void>("connection is not accepted (516)");
     }
 
     if (connection.asset->closed_status != IPC_STILL_OPEN)
     {
         connection.asset->lock.release();
-        return core::Result<void>("connection is closed");
+        return fc::Result<void>("connection is closed");
     }
     for (size_t i = 0; i < connection.asset->message_sent.len(); i++)
     {
@@ -569,10 +569,10 @@ core::Result<void> server_reply_message(AssetRef<IpcConnection> &connection, Mes
     }
     connection.asset->lock.release();
 
-    return core::Result<void>("message not found in connection");
+    return fc::Result<void>("message not found in connection");
 }
 
-core::Result<IpcMessage> call_server_and_wait(AssetRef<IpcConnection> &connection, IpcMessage *message)
+fc::Result<IpcMessage> call_server_and_wait(AssetRef<IpcConnection> &connection, IpcMessage *message)
 {
     if (connection.asset == nullptr)
     {

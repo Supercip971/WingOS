@@ -3,7 +3,7 @@
 #include <libcore/mem/view.hpp>
 #include <stddef.h>
 
-namespace core
+namespace fc
 {
 
 class Str : public MemView<char>
@@ -139,9 +139,9 @@ public:
         return true;
     }
 
-    core::Vec<Str> split(char c) const
+    fc::Vec<Str> split(char c) const
     {
-        core::Vec<Str> result;
+        fc::Vec<Str> result;
         size_t start = 0;
 
         for (size_t i = 0; i < _len; i++)
@@ -216,4 +216,4 @@ constexpr char *StrChr(char *str, char c)
     return last;
 }
 
-} // namespace core
+} // namespace fc

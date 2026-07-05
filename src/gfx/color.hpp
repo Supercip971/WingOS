@@ -267,34 +267,34 @@ concept ColorChannelable = requires(T const color) {
     };
 };
 
-template <ColorChannelable C, core::Writable Targ>
-constexpr core::Result<int> format_v(Targ &target, C const &value)
+template <ColorChannelable C, fc::Writable Targ>
+constexpr fc::Result<int> format_v(Targ &target, C const &value)
 {
-    target.write(core::Str("{ "));
+    target.write(fc::Str("{ "));
     fmt::format_v(target, value.r);
-    target.write(core::Str("; "));
+    target.write(fc::Str("; "));
     fmt::format_v(target, value.g);
-    target.write(core::Str("; "));
+    target.write(fc::Str("; "));
     fmt::format_v(target, value.b);
-    target.write(core::Str("; "));
+    target.write(fc::Str("; "));
     fmt::format_v(target, value.a);
-    target.write(core::Str(" }"));
+    target.write(fc::Str(" }"));
     return 0;
 }
 
-template <ColorChannelable C, core::Writable Targ>
-constexpr core::Result<int> format_v(Targ &target, fmt::FormatFlags<C> color)
+template <ColorChannelable C, fc::Writable Targ>
+constexpr fc::Result<int> format_v(Targ &target, fmt::FormatFlags<C> color)
 {
 
-    target.write(core::Str("{ "));
+    target.write(fc::Str("{ "));
     fmt::format_v(target, color.forward_flags(color.value.r));
-    target.write(core::Str("; "));
+    target.write(fc::Str("; "));
     fmt::format_v(target, color.forward_flags(color.value.g));
-    target.write(core::Str("; "));
+    target.write(fc::Str("; "));
     fmt::format_v(target, color.forward_flags(color.value.b));
-    target.write(core::Str("; "));
+    target.write(fc::Str("; "));
     fmt::format_v(target, color.forward_flags(color.value.a));
-    target.write(core::Str(" }"));
+    target.write(fc::Str(" }"));
     return 0;
 }
 

@@ -18,7 +18,7 @@ volatile bool inside_error = false;
 extern uintptr_t _scheduler_impl(uintptr_t stack);
 extern uintptr_t _scheduler_impl_soft(uintptr_t stack);
 
-core::RWLock int_lock = {};
+fc::RWLock int_lock = {};
 void interrupt_release();
 
 struct stackframe
@@ -101,8 +101,8 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
             auto rip = frame->rip;
             uint64_t uid = interrupt_number ^ error_code ^ rax ^ rsp ^ rip ^ ccount;
 
-            uid = uid % (sizeof(core::isnt_encouraging_messages) / sizeof(core::isnt_encouraging_messages[0]));
-            fmt::log$("-> '{}'", core::isnt_encouraging_messages[uid]);
+            uid = uid % (sizeof(fc::isnt_encouraging_messages) / sizeof(fc::isnt_encouraging_messages[0]));
+            fmt::log$("-> '{}'", fc::isnt_encouraging_messages[uid]);
         }
 
         fmt::log$("{}", *(arch::amd64::StackFrame *)frame);

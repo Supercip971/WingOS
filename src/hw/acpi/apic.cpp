@@ -26,7 +26,7 @@ size_t current_iso = 0;
 
 // CONFIGURABLE
 constexpr int max_iso = 256;
-core::Array<hw::acpi::MadtEntryIso, max_iso> iso = {};
+fc::Array<hw::acpi::MadtEntryIso, max_iso> iso = {};
 
 namespace hw::acpi
 {
@@ -36,7 +36,7 @@ size_t apic_cpu_count()
     return _cpu_count;
 }
 
-core::Result<void> update_interrupt_source_override(MadtEntryIso const *entry)
+fc::Result<void> update_interrupt_source_override(MadtEntryIso const *entry)
 {
 
     if (current_iso >= max_iso - 1)
@@ -55,7 +55,7 @@ core::Result<void> update_interrupt_source_override(MadtEntryIso const *entry)
     return {};
 }
 
-core::Result<void> apic_enable()
+fc::Result<void> apic_enable()
 {
     try$(Lapic::the().enable());
     hw::Pic::disable();
@@ -67,7 +67,7 @@ hw::acpi::Rsdp *rsdp()
     return _rsdp;
 }
 
-core::Result<void> apic_initialize(mcx::MachineContext const *context, CpuDetectedFunc *cpu_callback)
+fc::Result<void> apic_initialize(mcx::MachineContext const *context, CpuDetectedFunc *cpu_callback)
 {
 
     current_iso = 0;
@@ -126,7 +126,7 @@ core::Result<void> apic_initialize(mcx::MachineContext const *context, CpuDetect
     return {};
 }
 
-core::Result<void> _raw_redirect_interrupt(LCpuId cpu, uint8_t vector, bool enabled, uint32_t target_gsi, uint16_t flags)
+fc::Result<void> _raw_redirect_interrupt(LCpuId cpu, uint8_t vector, bool enabled, uint32_t target_gsi, uint16_t flags)
 {
     auto ioapic_index = try$(IOApic::query_from_irq(target_gsi));
 
@@ -161,7 +161,7 @@ core::Result<void> _raw_redirect_interrupt(LCpuId cpu, uint8_t vector, bool enab
     return {};
 }
 
-core::Result<void> redirect_interrupt(LCpuId cpu, uint8_t irq, uint8_t vector, bool enabled)
+fc::Result<void> redirect_interrupt(LCpuId cpu, uint8_t irq, uint8_t vector, bool enabled)
 {
 
     fmt::log$("- redirecting interrupt: cpu: {} irq: {} to vector: {} enabled: {}", cpu, irq, vector, enabled);

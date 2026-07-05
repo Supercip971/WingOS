@@ -11,7 +11,7 @@
 namespace wgfx
 {
 
-class PlatformWindow : public core::NoCopy
+class PlatformWindow : public fc::NoCopy
 {
 public:
     uint64_t id;
@@ -19,7 +19,7 @@ public:
 
     BackendsKinds backend_kind;
 
-    virtual core::Result<void> attach() { return {}; };
+    virtual fc::Result<void> attach() { return {}; };
 
     virtual float dpi() { return 1.f; }
 
@@ -70,7 +70,7 @@ public:
         return {};
     }
 
-    static core::Result<core::SharedPtr<PlatformWindow>> create_native(BackendsKinds preferred_backend = BackendsKinds::BACKEND_KIND_RASTER);
+    static fc::Result<fc::SharedPtr<PlatformWindow>> create_native(BackendsKinds preferred_backend = BackendsKinds::BACKEND_KIND_RASTER);
 };
 
 } // namespace wgfx

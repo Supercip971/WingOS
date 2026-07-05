@@ -10,7 +10,7 @@
 #include "math/align.hpp"
 #include "wingos-headers/asset.h"
 
-core::Result<Wingos::GPTDiskParseResult> Wingos::parse_gpt(core::Str &device)
+fc::Result<Wingos::GPTDiskParseResult> Wingos::parse_gpt(fc::Str &device)
 {
     Wingos::GPTDiskParseResult result = {};
 
@@ -23,12 +23,12 @@ core::Result<Wingos::GPTDiskParseResult> Wingos::parse_gpt(core::Str &device)
 
     GPT *gpt_header = (GPT *)header_mapping.ptr();
     // dump:
-    fmt::log$("GPT Signature: {}", core::Str(gpt_header->signature, 8));
-    fmt::log$("GPT Revision: {}", core::copy(gpt_header->revision));
-    fmt::log$("GPT Size: {}", core::copy(gpt_header->size));
-    fmt::log$("GPT Partition Entry LBA: {}", core::copy(gpt_header->lba_start_guid_partition_entry));
-    fmt::log$("GPT Partition Count: {}", core::copy(gpt_header->partition_count));
-    fmt::log$("GPT Partition Entry Size: {}", core::copy(gpt_header->partition_entry_size));
+    fmt::log$("GPT Signature: {}", fc::Str(gpt_header->signature, 8));
+    fmt::log$("GPT Revision: {}", fc::copy(gpt_header->revision));
+    fmt::log$("GPT Size: {}", fc::copy(gpt_header->size));
+    fmt::log$("GPT Partition Entry LBA: {}", fc::copy(gpt_header->lba_start_guid_partition_entry));
+    fmt::log$("GPT Partition Count: {}", fc::copy(gpt_header->partition_count));
+    fmt::log$("GPT Partition Entry Size: {}", fc::copy(gpt_header->partition_entry_size));
 
     result.header = *gpt_header;
 
@@ -60,21 +60,21 @@ core::Result<Wingos::GPTDiskParseResult> Wingos::parse_gpt(core::Str &device)
         }
 
         // get partition name
-        core::WStr part_name;
+        fc::WStr part_name;
         for (size_t j = 0; j < 36; j++)
         {
             if (entry->name[j] == 0)
             {
                 break;
             }
-            part_name.append(core::Str((char *)&(entry->name[j]), 1)); // convert char16_t to char
+            part_name.append(fc::Str((char *)&(entry->name[j]), 1)); // convert char16_t to char
         }
-        fmt::log$("Found partition: {} (LBA {} - {})", part_name.view(), core::copy(entry->lba_start), core::copy(entry->lba_end));
+        fmt::log$("Found partition: {} (LBA {} - {})", part_name.view(), fc::copy(entry->lba_start), fc::copy(entry->lba_end));
 
         GPTDiskParseEntry parse_entry = {};
-        parse_entry.name = core::move(part_name);
+        parse_entry.name = fc::move(part_name);
         parse_entry.entry = entry;
-        result.entries.push(core::move(parse_entry));
+        result.entries.push(fc::move(parse_entry));
     }
 
     return (result);

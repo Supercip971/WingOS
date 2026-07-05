@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-namespace core
+namespace fc
 {
 
 // NON owned memory access
@@ -95,4 +95,4 @@ public:
 
 static_assert(Viewable<MemAccess<char>>);
 
-} // namespace core
+} // namespace fc

@@ -35,17 +35,17 @@ public:
 
     uintptr_t saved_syscall_stack;
 
-    core::Lock lock;
+    fc::Lock lock;
     std::atomic<bool> await_save;
     std::atomic<bool> await_load;
 
     VmmSpace *_vmm_space;
-    static core::Result<CpuContext *> create_empty();
-    static core::Result<CpuContext *> create(CpuContextLaunch launch);
+    static fc::Result<CpuContext *> create_empty();
+    static fc::Result<CpuContext *> create(CpuContextLaunch launch);
 
     void use_stack_addr(uintptr_t addr);
 
-    core::Result<void> prepare(CpuContextLaunch launch);
+    fc::Result<void> prepare(CpuContextLaunch launch);
     void dump();
 
     void save_in(void *state);

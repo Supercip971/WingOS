@@ -193,20 +193,20 @@ FILE *fopen(const char *filename, const char *mode)
         fmt::err$("fopen: failed to connect to VFS: {}", vfs_res.error());
         return nullptr;
     }
-    prot::VfsConnection vfs = core::move(vfs_res.unwrap());
+    prot::VfsConnection vfs = fc::move(vfs_res.unwrap());
 
-    auto path_res = vfs.open_path(core::Str(filename));
+    auto path_res = vfs.open_path(fc::Str(filename));
     if (path_res.is_error())
     {
         fmt::err$("fopen: failed to open path {}: {}", filename, path_res.error());
         return nullptr;
     }
 
-    prot::FsFile *file = new prot::FsFile(core::move(path_res.unwrap()));
+    prot::FsFile *file = new prot::FsFile(fc::move(path_res.unwrap()));
 
     FILE *f = new FILE();
     f->kind = FILE_KIND_FILE;
-    f->buffer = core::WStr::copy(filename);
+    f->buffer = fc::WStr::copy(filename);
     f->file = file;
 
     f->end = file->get_info().unwrap().size;

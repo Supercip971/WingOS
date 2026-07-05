@@ -148,7 +148,7 @@ struct Space : public Asset
     // Space *parent_space_handle; // the space that created this space
     VmmSpace vmm_space; // the virtual memory space of this space
 
-    core::Vec<AssetRef<>> assets;
+    fc::Vec<AssetRef<>> assets;
 
     Space()
         : Asset(AssetKind::OBJECT_KIND_SPACE), uid(0), alloc_uid(0), vmm_space(), assets()
@@ -158,7 +158,7 @@ struct Space : public Asset
     static AssetRef<Space> create_root();
 
     template <typename T>
-    core::Result<AssetRef<T>> by_fn(auto fn)
+    fc::Result<AssetRef<T>> by_fn(auto fn)
     {
 
         lock.lock();
@@ -181,7 +181,7 @@ struct Space : public Asset
         return "not found";
     }
 
-    core::Result<AssetRef<>> by_handle(uint64_t handle)
+    fc::Result<AssetRef<>> by_handle(uint64_t handle)
     {
 
         lock.lock();
@@ -213,7 +213,7 @@ struct Space : public Asset
     }
 
     template <typename T>
-    core::Result<AssetRef<T>> by_handle(uint64_t handle)
+    fc::Result<AssetRef<T>> by_handle(uint64_t handle)
     {
         lock.lock();
         for (size_t i = 0; i < assets.len(); i++)
@@ -224,7 +224,7 @@ struct Space : public Asset
                 lock.release();
 
                 // Untyped lookup: allow returning any asset when caller asks for `Asset`.
-                if constexpr (core::IsSame<T, Asset>)
+                if constexpr (fc::IsSame<T, Asset>)
                 {
 
                     return found;
@@ -248,7 +248,7 @@ struct Space : public Asset
                                   found.asset->kind,
                                   found.handle, this->uid);
 
-                        return core::Result<AssetRef<T>>::error("asset kind mismatch");
+                        return fc::Result<AssetRef<T>>::error("asset kind mismatch");
                     }
                 }
             }
@@ -269,10 +269,10 @@ struct Space : public Asset
 
         lock.release();
 
-        return core::Result<AssetRef<T>>::error("asset not found");
+        return fc::Result<AssetRef<T>>::error("asset not found");
     }
 
-    core::Result<AssetRef<>> by_handle_ptr(uint64_t handle)
+    fc::Result<AssetRef<>> by_handle_ptr(uint64_t handle)
     {
         lock.lock();
         for (size_t i = 0; i < assets.len(); i++)
@@ -290,7 +290,7 @@ struct Space : public Asset
     }
 
     template <typename T, typename... Args>
-    core::Result<AssetRef<T>> allocate_asset(Args &&...args)
+    fc::Result<AssetRef<T>> allocate_asset(Args &&...args)
     {
 
         T *res = new T(args...);
@@ -311,9 +311,9 @@ struct Space : public Asset
 
     // asset_release is defined as template below after _asset_remove
 
-    core::Result<AssetRef<Space>> create_space(uint64_t flags, uint64_t rights);
+    fc::Result<AssetRef<Space>> create_space(uint64_t flags, uint64_t rights);
 
-    static core::Result<AssetRef<Space>> global_space_by_handle(uint64_t handle);
+    static fc::Result<AssetRef<Space>> global_space_by_handle(uint64_t handle);
 
     AssetRef<> _asset_remove(uint64_t asset_handle)
     {
@@ -334,23 +334,23 @@ struct Space : public Asset
         unreachable$();
     }
 
-    core::Result<AssetRef<AssetMemory>> create_memory(AssetMemoryCreateParams params);
+    fc::Result<AssetRef<AssetMemory>> create_memory(AssetMemoryCreateParams params);
 
-    core::Result<AssetRef<AssetMapping>> create_mapping(AssetMappingCreateParams params);
+    fc::Result<AssetRef<AssetMapping>> create_mapping(AssetMappingCreateParams params);
 
-    core::Result<AssetRef<AssetTask>> create_task(AssetTaskCreateParams params);
+    fc::Result<AssetRef<AssetTask>> create_task(AssetTaskCreateParams params);
 
-    core::Result<AssetRef<AssetServer>> create_ipc_server(
+    fc::Result<AssetRef<AssetServer>> create_ipc_server(
         AssetIpcServerCreateParams params);
 
-    core::Result<AssetRef<AssetConnection>> create_ipc_connection(
+    fc::Result<AssetRef<AssetConnection>> create_ipc_connection(
         AssetIpcConnectionCreateParams params);
 
-    static core::Result<AssetIpcConnectionPipeCreateResult> create_ipc_connections(
+    static fc::Result<AssetIpcConnectionPipeCreateResult> create_ipc_connections(
         Space *sender, Space *receiver, AssetIpcConnectionPipeCreateParams params);
 
     template <typename T>
-    static core::Result<AssetRef<>> asset_move(
+    static fc::Result<AssetRef<>> asset_move(
         Space *from, Space *to, AssetRef<T> const &asset)
     {
         if (from == nullptr || to == nullptr)
@@ -404,7 +404,7 @@ struct Space : public Asset
     }
 
     template <typename T>
-    static core::Result<AssetRef<>> asset_copy(
+    static fc::Result<AssetRef<>> asset_copy(
         Space *from, Space *to, AssetRef<T> const &asset)
     {
         if (from == nullptr || to == nullptr)
@@ -463,4 +463,4 @@ struct Space : public Asset
 struct KernelIpcServer;
 struct IpcConnection;
 
-// core::Result<AssetRef> space_create(Space *parent, uint64_t flags, uint64_t rights);
+// fc::Result<AssetRef> space_create(Space *parent, uint64_t flags, uint64_t rights);

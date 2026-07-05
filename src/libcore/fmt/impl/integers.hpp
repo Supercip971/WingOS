@@ -18,19 +18,19 @@ typedef struct
     char pad_char;
 } FormatIntegerFlags;
 
-template <core::IsIdentityIntegral T, core::Writable Targ>
-constexpr core::Result<int> format_v(Targ &target, T v, FormatIntegerFlags flags)
+template <fc::IsIdentityIntegral T, fc::Writable Targ>
+constexpr fc::Result<int> format_v(Targ &target, T v, FormatIntegerFlags flags)
 {
     (void)flags;
 
-    core::Pure<T> value = v;
+    fc::Pure<T> value = v;
 
 #ifndef __clang__
 #    pragma GCC diagnostic push
 #    pragma GCC diagnostic ignored "-Wbool-compare"
 
 #endif
-    if ((core::Pure<T>)v < 0)
+    if ((fc::Pure<T>)v < 0)
     {
         target.write("-", 1);
         value = -value;
@@ -39,7 +39,7 @@ constexpr core::Result<int> format_v(Targ &target, T v, FormatIntegerFlags flags
 #ifndef __clang__
 #    pragma GCC diagnostic pop
 #endif
-    core::Pure<T> digit = value % 10;
+    fc::Pure<T> digit = value % 10;
     if (value == 0)
     {
         target.write("0", 1);
@@ -67,24 +67,24 @@ constexpr core::Result<int> format_v(Targ &target, T v, FormatIntegerFlags flags
     return 0;
 }
 
-template <core::IsIdentityIntegral T, core::Writable Targ>
-constexpr core::Result<int> format_v(Targ &target, T v)
+template <fc::IsIdentityIntegral T, fc::Writable Targ>
+constexpr fc::Result<int> format_v(Targ &target, T v)
 {
     return format_v(target, v, {false, 0, ' '});
 }
 
-template <core::IsIdentityIntegral T, core::Writable Targ>
-constexpr core::Result<int> format_v_hex(Targ &target, T v, FormatIntegerFlags flags)
+template <fc::IsIdentityIntegral T, fc::Writable Targ>
+constexpr fc::Result<int> format_v_hex(Targ &target, T v, FormatIntegerFlags flags)
 {
 
-    core::Pure<T> value = v;
+    fc::Pure<T> value = v;
 
 #ifndef __clang__
 #    pragma GCC diagnostic push
 #    pragma GCC diagnostic ignored "-Wbool-compare"
 
 #endif
-    if ((core::Pure<T>)v < 0)
+    if ((fc::Pure<T>)v < 0)
     {
         target.write("-", 1);
         value = -value;
@@ -93,7 +93,7 @@ constexpr core::Result<int> format_v_hex(Targ &target, T v, FormatIntegerFlags f
 #ifndef __clang__
 #    pragma GCC diagnostic pop
 #endif
-    core::Pure<T> digit = value % 16;
+    fc::Pure<T> digit = value % 16;
 
     constexpr int base = 17;
     char buffer[base];
@@ -140,14 +140,14 @@ constexpr core::Result<int> format_v_hex(Targ &target, T v, FormatIntegerFlags f
     return {};
 }
 
-template <core::IsIdentityIntegral T, core::Writable Targ>
-constexpr core::Result<int> format_v_hex(Targ &target, T v)
+template <fc::IsIdentityIntegral T, fc::Writable Targ>
+constexpr fc::Result<int> format_v_hex(Targ &target, T v)
 {
     return format_v_hex(target, v, {true, 0, ' '});
 }
 
-template <core::IsIdentityIntegral T, core::Writable Targ>
-constexpr core::Result<int> format_v(Targ &target, FormatFlags<T> &&v)
+template <fc::IsIdentityIntegral T, fc::Writable Targ>
+constexpr fc::Result<int> format_v(Targ &target, FormatFlags<T> &&v)
 {
     if (v.color != Color::NONE)
     {
@@ -157,7 +157,7 @@ constexpr core::Result<int> format_v(Targ &target, FormatFlags<T> &&v)
     }
     if (v.is_hex)
     {
-        auto r = format_v_hex(target, core::forward<T>(v.value), {v.is_hex, v.pad_size, v.pad_char});
+        auto r = format_v_hex(target, fc::forward<T>(v.value), {v.is_hex, v.pad_size, v.pad_char});
 
         if (v.color != Color::NONE)
         {
@@ -167,7 +167,7 @@ constexpr core::Result<int> format_v(Targ &target, FormatFlags<T> &&v)
     }
     else
     {
-        auto r = format_v(target, core::forward<T>(v.value), {v.is_hex, v.pad_size, v.pad_char});
+        auto r = format_v(target, fc::forward<T>(v.value), {v.is_hex, v.pad_size, v.pad_char});
         if (v.color != Color::NONE)
         {
             target.write("\033[0m", 4);
@@ -176,8 +176,8 @@ constexpr core::Result<int> format_v(Targ &target, FormatFlags<T> &&v)
     }
 }
 
-template <core::IsIdentityIntegral T, core::Writable Targ>
-constexpr core::Result<int> format_v(Targ &target, const FormatFlags<T> &v)
+template <fc::IsIdentityIntegral T, fc::Writable Targ>
+constexpr fc::Result<int> format_v(Targ &target, const FormatFlags<T> &v)
 {
     if (v.color != Color::NONE)
     {
@@ -187,7 +187,7 @@ constexpr core::Result<int> format_v(Targ &target, const FormatFlags<T> &v)
     }
     if (v.is_hex)
     {
-        auto r = format_v_hex(target, core::forward<T>(v.value), {v.is_hex, v.pad_size, v.pad_char});
+        auto r = format_v_hex(target, fc::forward<T>(v.value), {v.is_hex, v.pad_size, v.pad_char});
 
         if (v.color != Color::NONE)
         {
@@ -197,7 +197,7 @@ constexpr core::Result<int> format_v(Targ &target, const FormatFlags<T> &v)
     }
     else
     {
-        auto r = format_v(target, core::forward<T>(v.value), {v.is_hex, v.pad_size, v.pad_char});
+        auto r = format_v(target, fc::forward<T>(v.value), {v.is_hex, v.pad_size, v.pad_char});
         if (v.color != Color::NONE)
         {
             target.write("\033[0m", 4);

@@ -16,8 +16,8 @@
 // source: derived from brutal OS but
 // I wrote the brutal PS2 code
 
-core::Vec<prot::SenderPipe *> mouse_pipes = {};
-core::Vec<prot::SenderPipe *> keyboard_pipes = {};
+fc::Vec<prot::SenderPipe *> mouse_pipes = {};
+fc::Vec<prot::SenderPipe *> keyboard_pipes = {};
 
 int main(int, char **)
 {
@@ -33,7 +33,7 @@ int main(int, char **)
         return -1;
     }
 
-    prot::ManagedServer server = core::move(server_r.unwrap());
+    prot::ManagedServer server = fc::move(server_r.unwrap());
 
     fmt::log$("started ps2 service");
 
@@ -68,10 +68,10 @@ int main(int, char **)
                     break;
                 }
 
-                auto duplex = core::move(pipe.unwrap());
+                auto duplex = fc::move(pipe.unwrap());
 
                 fmt::log$("hio: duplex handles: {} {}", duplex.connection_sender.handle, duplex.connection_receiver.handle);
-                prot::SenderPipe *sender = new prot::SenderPipe(core::move(duplex.connection_sender));
+                prot::SenderPipe *sender = new prot::SenderPipe(fc::move(duplex.connection_sender));
 
                 if (event_types & prot::HI_EVENT_TYPE_MOUSE)
                 {
@@ -89,7 +89,7 @@ int main(int, char **)
                 resp.data[0].asset_handle = duplex.connection_receiver.handle;
                 fmt::log$("hio: replying with receiver handle: {}", resp.data[0].asset_handle);
                 resp.data[0].is_asset = true;
-                server.reply(core::move(msg), resp).unwrap();
+                server.reply(fc::move(msg), resp).unwrap();
 
                 break;
             }

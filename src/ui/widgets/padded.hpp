@@ -76,7 +76,7 @@ class LPadded : public Widget
 {
 
 public:
-    core::SharedPtr<Widget> child;
+    fc::SharedPtr<Widget> child;
 
     Padded _parms;
 
@@ -92,10 +92,10 @@ public:
     virtual wgfx::Vec2 preferred_size(wgfx::Vec2 constraint) const override
     {
 
-        /*         constraint.x =  core::max(constraint.x - _parms._pleft, 0);
-                constraint.x =  core::max(constraint.x - _parms._pright, 0);
-                constraint.y =  core::max(constraint.y - _parms._ptop,0);
-                constraint.y =  core::max(constraint.y - _parms._pdown,0);
+        /*         constraint.x =  fc::max(constraint.x - _parms._pleft, 0);
+                constraint.x =  fc::max(constraint.x - _parms._pright, 0);
+                constraint.y =  fc::max(constraint.y - _parms._ptop,0);
+                constraint.y =  fc::max(constraint.y - _parms._pdown,0);
                 auto c =  child->preferred_size(constraint);
 
                 c.x += _parms._pleft + _parms._pright;
@@ -134,12 +134,12 @@ public:
     }
 
     template <typename T>
-    static core::SharedPtr<Widget> construct(Padded params, T args)
+    static fc::SharedPtr<Widget> construct(Padded params, T args)
     {
-        return core::SharedPtr<Padded>::make(params, args).template static_pointer_cast<Widget>();
+        return fc::SharedPtr<Padded>::make(params, args).template static_pointer_cast<Widget>();
     }
 
-    core::SharedPtr<Widget> build(UiContext const &v) override
+    fc::SharedPtr<Widget> build(UiContext const &v) override
     {
         (void)v;
         return child;

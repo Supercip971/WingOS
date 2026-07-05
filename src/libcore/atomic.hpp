@@ -2,7 +2,7 @@
 
 #ifdef __ck_host__
 // For host builds, use custom atomic implementation to avoid system header conflicts
-namespace core
+namespace fc
 {
 
 enum class MemoryOrder
@@ -159,13 +159,13 @@ static inline void atomic_cache_sync()
     asm volatile("sfence" ::: "memory");
 }
 
-} // namespace core
+} // namespace fc
 
 #else
 // For kernel and embedded targets, use std::atomic from the standard library
 #    include <atomic>
 
-namespace core
+namespace fc
 {
 
 enum class MemoryOrder
@@ -178,7 +178,7 @@ enum class MemoryOrder
     SeqCst = static_cast<int>(std::memory_order_seq_cst)
 };
 
-// Wrapper around std::atomic that accepts core::MemoryOrder
+// Wrapper around std::atomic that accepts fc::MemoryOrder
 template <typename T>
 class Atomic
 {
@@ -274,6 +274,6 @@ static inline void atomic_cache_sync()
     std::atomic_thread_fence(std::memory_order_release);
 }
 
-} // namespace core
+} // namespace fc
 
 #endif

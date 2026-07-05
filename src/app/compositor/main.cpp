@@ -40,7 +40,7 @@ struct Window
     Wingos::VirtualMemoryAsset framebuffer_mapped;
 };
 
-core::Vec<Window> windows = {};
+fc::Vec<Window> windows = {};
 
 void *framebuffer_mapped = nullptr;
 
@@ -54,7 +54,7 @@ bool update_window(Window &window)
         return false;
     }
 
-    core::Vec<Wingos::MessageServerReceived> msgs = {};
+    fc::Vec<Wingos::MessageServerReceived> msgs = {};
 
     auto received = window.server.try_receive();
 
@@ -84,7 +84,7 @@ bool update_window(Window &window)
         reply.data[0].data = resp.width;
         reply.data[1].data = resp.height;
 
-        window.server.reply(core::move(msg), reply).unwrap();
+        window.server.reply(fc::move(msg), reply).unwrap();
         break;
     }
     case prot::WINDOW_GET_FRAMEBUFFER:
@@ -94,14 +94,14 @@ bool update_window(Window &window)
         reply.data[0].data = fb_asset.handle;
         reply.data[0].is_asset = true;
         reply.data[0].copy_asset = true;
-        window.server.reply(core::move(msg), reply).unwrap();
+        window.server.reply(fc::move(msg), reply).unwrap();
         break;
     }
     case prot::WINDOW_SWAP_BUFFERS:
     {
         IpcMessage reply = {}; // ack message
         memcpy((void *)framebuffer_mapped, (void *)window.framebuffer_mapped.ptr(), window.width * window.height * 4);
-        window.server.reply(core::move(msg), reply).unwrap();
+        window.server.reply(fc::move(msg), reply).unwrap();
         break;
     }
     default:
@@ -116,7 +116,7 @@ bool update_window(Window &window)
 
 int main(int, char **)
 {
-    core::Alive alive{"compositor"};
+    fc::Alive alive{"compositor"};
 
     auto serv_g = prot::ManagedServer::create_registered_server("compositor", 1, 0);
 
@@ -158,7 +158,7 @@ int main(int, char **)
         {
             continue;
         }
-        auto msg = core::move(received.unwrap());
+        auto msg = fc::move(received.unwrap());
 
         if (msg.received.flags & IPC_MESSAGE_FLAG_DISCONNECT)
         {
@@ -182,7 +182,7 @@ int main(int, char **)
             }
             else
             {
-                auto window_conn = core::move(window_conn_r.unwrap());
+                auto window_conn = fc::move(window_conn_r.unwrap());
                 resp.window_endpoint = window_conn.addr();
 
                 auto window_mem = Wingos::Space::self().allocate_physical_memory(fb.framebuffer_width * fb.framebuffer_height * 4);
@@ -190,7 +190,7 @@ int main(int, char **)
 
                 mdepth = cdepth + 1;
                 windows.push(Window{
-                    .server = core::move(window_conn),
+                    .server = fc::move(window_conn),
                     .width = fb.framebuffer_width,
                     .height = fb.framebuffer_height,
                     .is_framebuffer_taken = take_fb,
@@ -204,7 +204,7 @@ int main(int, char **)
 
             IpcMessage reply = {};
             reply.data[0].data = resp.window_endpoint;
-            serv.reply(core::move(msg), reply).unwrap();
+            serv.reply(fc::move(msg), reply).unwrap();
 
             break;
         }

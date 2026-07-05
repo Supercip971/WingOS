@@ -15,14 +15,14 @@ class VFlex : public Widget
 {
 
 public:
-    core::Vec<core::SharedPtr<Widget>> elements;
+    fc::Vec<fc::SharedPtr<Widget>> elements;
 
     ~VFlex() override = default;
 
     template <typename... T>
     VFlex(T... args)
     {
-        elements = core::Vec<core::SharedPtr<Widget>>(args...);
+        elements = fc::Vec<fc::SharedPtr<Widget>>(args...);
     }
 
     wgfx::Vec2 preferred_size(wgfx::Vec2 constraint) const override
@@ -32,9 +32,9 @@ public:
         {
             auto c = child->preferred_size(constraint);
             current_constraint.y += c.y;
-            current_constraint.x = core::max(current_constraint.x, c.x);
+            current_constraint.x = fc::max(current_constraint.x, c.x);
             constraint.y -= c.y;
-            constraint.x = core::max(constraint.x, c.x);
+            constraint.x = fc::max(constraint.x, c.x);
         }
         return current_constraint;
     }
@@ -52,7 +52,7 @@ public:
             constraint.start.x, constraint.start.y, constraint.end.x, current_constraint.start.y);
     }
 
-    core::Vec<core::SharedPtr<Widget>> build_childs(UiContext const &v) override
+    fc::Vec<fc::SharedPtr<Widget>> build_childs(UiContext const &v) override
     {
         (void)v;
         return elements;

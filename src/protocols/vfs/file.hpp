@@ -29,18 +29,18 @@ struct FileInfo
     uint64_t modified_at;
     uint64_t accessed_at;
     uint16_t is_directory;
-    core::WStr name;
+    fc::WStr name;
 };
 
 struct DirListEntry
 {
-    core::WStr name;
+    fc::WStr name;
     bool is_directory;
 };
 
 struct DirList
 {
-    core::Vec<DirListEntry> entries;
+    fc::Vec<DirListEntry> entries;
 };
 
 enum FsFileMessageType
@@ -77,7 +77,7 @@ class FsFile
 {
     Wingos::IpcClient connection;
     bool keep_alive = false;
-    core::Vec<FsFileCacheEntry> cache_entries;
+    fc::Vec<FsFileCacheEntry> cache_entries;
 
     void add_cache_entry(uint64_t offset, uint64_t size, Wingos::MemoryAsset &asset, Wingos::VirtualMemoryAsset &mapped)
     {
@@ -131,7 +131,7 @@ public:
 
     // Enable move
     FsFile(FsFile &&other)
-        : connection(other.connection), keep_alive(other.keep_alive), cache_entries(core::move(other.cache_entries))
+        : connection(other.connection), keep_alive(other.keep_alive), cache_entries(fc::move(other.cache_entries))
     {
     }
 
@@ -147,10 +147,10 @@ public:
             }
             cache_entries.clear();
 
-            core::swap(connection, other.connection);
-            core::swap(keep_alive, other.keep_alive);
+            fc::swap(connection, other.connection);
+            fc::swap(keep_alive, other.keep_alive);
 
-            cache_entries = core::move(other.cache_entries);
+            cache_entries = fc::move(other.cache_entries);
         }
         return *this;
     }
@@ -159,7 +159,7 @@ public:
 
     Wingos::IpcClient &raw_client() { return connection; }
 
-    static core::Result<FsFile> connect(IpcServerHandle fs_endpoint, bool keep_alive = false)
+    static fc::Result<FsFile> connect(IpcServerHandle fs_endpoint, bool keep_alive = false)
     {
         fmt::log$("FsFile::connect: connecting to server endpoint {}", fs_endpoint);
         FsFile file = {};
@@ -172,7 +172,7 @@ public:
         return (file);
     }
 
-    core::Result<size_t> read(Wingos::MemoryAsset &asset, size_t offset, size_t len)
+    fc::Result<size_t> read(Wingos::MemoryAsset &asset, size_t offset, size_t len)
     {
         IpcMessage message = {};
         message.data[0].data = FS_READ;
@@ -187,11 +187,11 @@ public:
         return received_len;
     }
 
-    core::Result<size_t> read(void *buffer, size_t offset, size_t len)
+    fc::Result<size_t> read(void *buffer, size_t offset, size_t len)
     {
         if (len == 0)
         {
-            return core::Result<size_t>::success(0);
+            return fc::Result<size_t>::success(0);
         }
 
         for (size_t i = 0; i < cache_entries.len(); i++)
@@ -233,7 +233,7 @@ public:
         // return res;
     }
 
-    core::Result<size_t> write(Wingos::MemoryAsset &asset, size_t offset, size_t len)
+    fc::Result<size_t> write(Wingos::MemoryAsset &asset, size_t offset, size_t len)
     {
         for (size_t i = 0; i < cache_entries.len(); i++)
         {
@@ -257,11 +257,11 @@ public:
         return received_len;
     }
 
-    core::Result<size_t> write(void *buffer, size_t offset, size_t len)
+    fc::Result<size_t> write(void *buffer, size_t offset, size_t len)
     {
         if (len == 0)
         {
-            return core::Result<size_t>::success(0);
+            return fc::Result<size_t>::success(0);
         }
 
         Wingos::MemoryAsset masset = Wingos::Space::self().allocate_physical_memory(len);
@@ -275,7 +275,7 @@ public:
         return res;
     }
 
-    core::Result<void> close()
+    fc::Result<void> close()
     {
         // Just disconnect - the IPC disconnect notification will tell the server to clean up.
         // Don't send FS_CLOSE AND disconnect as this creates a race condition where the server
@@ -284,7 +284,7 @@ public:
         return {};
     }
 
-    core::Result<FileInfo> get_info()
+    fc::Result<FileInfo> get_info()
     {
         IpcMessage message = {};
         message.data[0].data = FS_GET_INFO;
@@ -302,12 +302,12 @@ public:
         {
             name_buf[i] = msg.raw_buffer[i];
         }
-        info.name = core::WStr::copy(core::Str(name_buf, name_len));
+        info.name = fc::WStr::copy(fc::Str(name_buf, name_len));
 
         return info;
     }
 
-    core::Result<DirListEntry> list_dir_entry(size_t index)
+    fc::Result<DirListEntry> list_dir_entry(size_t index)
     {
         IpcMessage message = {};
         message.data[0].data = FS_LIST_DIR;
@@ -324,7 +324,7 @@ public:
             auto received = connection.receive_reply(message_handle);
             if (!received.is_error())
             {
-                auto msg = core::move(received.unwrap());
+                auto msg = fc::move(received.unwrap());
 
                 DirListEntry entry;
                 size_t name_len = msg.len;
@@ -333,7 +333,7 @@ public:
                 {
                     name_buf[i] = msg.raw_buffer[i];
                 }
-                entry.name = core::WStr::copy(core::Str(name_buf, name_len));
+                entry.name = fc::WStr::copy(fc::Str(name_buf, name_len));
                 entry.is_directory = msg.data[1].data != 0;
 
                 return entry;
@@ -341,7 +341,7 @@ public:
         }
     }
 
-    core::Result<DirList> list_dir()
+    fc::Result<DirList> list_dir()
     {
 
         auto l = this->get_info();
@@ -350,7 +350,7 @@ public:
             return l.error();
         }
 
-        FileInfo info = core::move(l.unwrap());
+        FileInfo info = fc::move(l.unwrap());
         if (!info.is_directory)
         {
             return ("not a directory");
@@ -365,13 +365,13 @@ public:
             {
                 break;
             }
-            dir_list.entries.push(core::move(entry_res.unwrap()));
+            dir_list.entries.push(fc::move(entry_res.unwrap()));
         }
 
         return dir_list;
     }
 
-    core::Result<FsFile> open_file(core::Str path)
+    fc::Result<FsFile> open_file(fc::Str path)
     {
         IpcMessage message = {};
         message.data[0].data = FS_OPEN_FILE;
@@ -388,7 +388,7 @@ public:
 
         auto received = connection.call(message);
 
-        auto msg = core::move(received.unwrap());
+        auto msg = fc::move(received.unwrap());
 
         if (msg.data[0].data == 0)
         {

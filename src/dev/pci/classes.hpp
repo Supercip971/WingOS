@@ -5,7 +5,7 @@
 
 namespace Wingos::dev
 {
-constexpr core::Str dev_classes[] = {
+constexpr fc::Str dev_classes[] = {
     "unknown",
     "storage",
     "network",
@@ -28,9 +28,9 @@ constexpr core::Str dev_classes[] = {
     "non-essential",
 };
 
-constexpr size_t dev_classes_count = sizeof(dev_classes) / sizeof(core::Str);
+constexpr size_t dev_classes_count = sizeof(dev_classes) / sizeof(fc::Str);
 
-constexpr core::Str dev_classes_storage[] = {
+constexpr fc::Str dev_classes_storage[] = {
     "scsi",
     "IDE",
     "floppy",
@@ -44,9 +44,9 @@ constexpr core::Str dev_classes_storage[] = {
 
 };
 
-constexpr size_t dev_classes_storage_count = sizeof(dev_classes_storage) / sizeof(core::Str);
+constexpr size_t dev_classes_storage_count = sizeof(dev_classes_storage) / sizeof(fc::Str);
 
-constexpr core::Str dev_classes_network[] = {
+constexpr fc::Str dev_classes_network[] = {
     "ethernet",
     "token ring",
     "FDDI",
@@ -58,15 +58,15 @@ constexpr core::Str dev_classes_network[] = {
     "Fabric",
 };
 
-constexpr size_t dev_classes_network_count = sizeof(dev_classes_network) / sizeof(core::Str);
+constexpr size_t dev_classes_network_count = sizeof(dev_classes_network) / sizeof(fc::Str);
 
-constexpr core::Str dev_classes_display[] = {
+constexpr fc::Str dev_classes_display[] = {
     "VGA",
     "XGA",
     "3D",
 };
 
-constexpr size_t dev_classes_display_count = sizeof(dev_classes_display) / sizeof(core::Str);
+constexpr size_t dev_classes_display_count = sizeof(dev_classes_display) / sizeof(fc::Str);
 
 static inline void log_dev(uint8_t class_code, uint8_t subclass)
 {
@@ -76,7 +76,7 @@ static inline void log_dev(uint8_t class_code, uint8_t subclass)
         return;
     }
 
-    core::Str class_str = dev_classes[class_code];
+    fc::Str class_str = dev_classes[class_code];
 
     if (class_code == 0x01) // storage
     {

@@ -29,7 +29,7 @@ using InitializerPtr = void (*)();
 extern "C" InitializerPtr __init_array_start[] __attribute__((weak, visibility("hidden")));
 extern "C" InitializerPtr __init_array_end[] __attribute__((weak, visibility("hidden")));
 
-static core::Result<void> cpu_detect(const hw::acpi::MadtEntryLapic *lapic)
+static fc::Result<void> cpu_detect(const hw::acpi::MadtEntryLapic *lapic)
 {
 
     try$(arch::amd64::cpuContextInit(lapic->acpi_processor_id, lapic->apic_id));

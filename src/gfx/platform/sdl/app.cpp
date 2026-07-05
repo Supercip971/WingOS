@@ -154,7 +154,7 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
         return raster_height;
     }
 
-    virtual core::Result<void> attach() override
+    virtual fc::Result<void> attach() override
     {
 
         switch (backend_kind)
@@ -259,11 +259,11 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
     }
 };
 
-core::Result<core::SharedPtr<wgfx::PlatformWindow>>
+fc::Result<fc::SharedPtr<wgfx::PlatformWindow>>
 
 wgfx::PlatformWindow::create_native(wgfx::BackendsKinds preferred_backend)
 {
-    core::SharedPtr<SDLWindowImpl> window = core::SharedPtr<SDLWindowImpl>::make();
+    fc::SharedPtr<SDLWindowImpl> window = fc::SharedPtr<SDLWindowImpl>::make();
 
     window->backend_kind = preferred_backend;
 

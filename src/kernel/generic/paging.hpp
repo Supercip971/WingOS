@@ -74,19 +74,19 @@ public:
 
     static VmmSpace &kernel_page_table();
 
-    static core::Result<VmmSpace> kernel_initialize(const mcx::MachineContext *ctx);
+    static fc::Result<VmmSpace> kernel_initialize(const mcx::MachineContext *ctx);
     // ------- external: implemented in kernel/{ARCH}  -------
     void use();
 
-    core::Result<void> map(VirtRange virt, PhysRange phys, PageFlags flags);
+    fc::Result<void> map(VirtRange virt, PhysRange phys, PageFlags flags);
 
-    core::Result<void> unmap(VirtRange virt, bool user);
+    fc::Result<void> unmap(VirtRange virt, bool user);
 
-    core::Result<void> virtual_map(VirtAddr virt, size_t count, PageFlags flags, size_t object_rid);
+    fc::Result<void> virtual_map(VirtAddr virt, size_t count, PageFlags flags, size_t object_rid);
 
-    core::Result<PhysAddr> get_phys(VirtAddr virt);
+    fc::Result<PhysAddr> get_phys(VirtAddr virt);
 
-    core::Result<void> verify(VirtAddr virt, size_t size);
+    fc::Result<void> verify(VirtAddr virt, size_t size);
 
     static void invalidate_address(VirtAddr virt)
     {
@@ -96,7 +96,7 @@ public:
     // empty: means that the higher half won't be copied from the kernel
     // this is used for the kernel page table
 
-    static core::Result<VmmSpace> create(bool empty);
+    static fc::Result<VmmSpace> create(bool empty);
 
     static void invalidate()
     {

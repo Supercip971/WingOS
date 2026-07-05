@@ -15,7 +15,7 @@
 #include "wingos-headers/asset.h"
 #include "wingos-headers/startup.hpp"
 
-core::Result<size_t> execute_program_from_mem(Wingos::Space &subspace, elf::ElfLoader loaded, StartupInfo const &args)
+fc::Result<size_t> execute_program_from_mem(Wingos::Space &subspace, elf::ElfLoader loaded, StartupInfo const &args)
 {
     auto startup_info_mem = Wingos::Space::self().allocate_physical_memory(sizeof(StartupInfo));
 
@@ -33,14 +33,14 @@ core::Result<size_t> execute_program_from_mem(Wingos::Space &subspace, elf::ElfL
     if (task_asset.handle == 0)
     {
         fmt::err$("failed to create task asset: {}", task_asset.handle);
-        return core::Result<size_t>::error("failed to create task asset");
+        return fc::Result<size_t>::error("failed to create task asset");
     }
 
     for (size_t i = 0; i < loaded.program_count(); i++)
     {
 
         auto ph = try$(loaded.program_header(i));
-        if (ph.type != core::underlying_value(ElfProgramHeaderType::HEADER_LOAD))
+        if (ph.type != fc::underlying_value(ElfProgramHeaderType::HEADER_LOAD))
         {
             fmt::warn$("skipping program header {}: type is not LOAD but {}", i, (uint32_t)ph.type);
             continue;
@@ -66,7 +66,7 @@ core::Result<size_t> execute_program_from_mem(Wingos::Space &subspace, elf::ElfL
     return 0ul;
 }
 
-core::Result<size_t> execute_program_from_path(Wingos::Space &subspace, const core::Str &path, StartupInfo const &args)
+fc::Result<size_t> execute_program_from_path(Wingos::Space &subspace, const fc::Str &path, StartupInfo const &args)
 {
     auto vfs_conn = try$(prot::VfsConnection::connect());
     auto file_asset = try$(vfs_conn.open_path(path));
@@ -83,5 +83,5 @@ core::Result<size_t> execute_program_from_path(Wingos::Space &subspace, const co
     auto range = VirtRange((uintptr_t)file_mapped.ptr(), (uintptr_t)file_mapped.ptr() + read_bytes);
     elf::ElfLoader prog = try$(elf::ElfLoader::load(range));
 
-    return execute_program_from_mem(subspace, core::move(prog), args);
+    return execute_program_from_mem(subspace, fc::move(prog), args);
 }

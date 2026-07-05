@@ -21,8 +21,8 @@ struct SpacePtr
     uint64_t handle; // the handle of the space in the space
 };
 
-core::Vec<SpacePtr> _spaces = {};
-core::Lock _spaces_lock = {};
+fc::Vec<SpacePtr> _spaces = {};
+fc::Lock _spaces_lock = {};
 
 AssetRef<Space> Space::create_root()
 {
@@ -89,7 +89,7 @@ void Space::dump_assets()
 }
 
 // asset_release is now a template function defined in space.hpp
-core::Result<AssetRef<Space>> Space::create_space([[maybe_unused]] uint64_t flags, [[maybe_unused]] uint64_t rights)
+fc::Result<AssetRef<Space>> Space::create_space([[maybe_unused]] uint64_t flags, [[maybe_unused]] uint64_t rights)
 {
 
     AssetRef<Space> ptr = try$(allocate_asset<Space>());
@@ -131,7 +131,7 @@ core::Result<AssetRef<Space>> Space::create_space([[maybe_unused]] uint64_t flag
 }
 
 // FIXME: this is not safe, because it does not check if the space exists in the parent space
-core::Result<AssetRef<Space>> Space::global_space_by_handle(uint64_t handle)
+fc::Result<AssetRef<Space>> Space::global_space_by_handle(uint64_t handle)
 {
     _spaces_lock.lock();
     for (auto &space_ptr : _spaces)

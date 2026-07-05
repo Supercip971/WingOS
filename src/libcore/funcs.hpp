@@ -5,7 +5,7 @@
 #include "libcore/optional.hpp"
 #include "libcore/type/trait.hpp"
 
-namespace core
+namespace fc
 {
 
 template <typename T>
@@ -68,4 +68,4 @@ constexpr size_t forEachIdx(T &view, F f)
     return idx;
 }
 
-} // namespace core
+} // namespace fc

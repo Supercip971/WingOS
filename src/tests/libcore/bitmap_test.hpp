@@ -14,7 +14,7 @@ static constexpr TestGroup bitmapTests = {
             "bitmap fill",
             []() -> Test::RetFn
             {
-                auto v = core::Bitmap(core::MemAccess<>(tbuf, sizeof(tbuf)));
+                auto v = fc::Bitmap(fc::MemAccess<>(tbuf, sizeof(tbuf)));
 
                 v.fill(true);
                 for (size_t i = 0; i < v.len(); i++)
@@ -40,7 +40,7 @@ static constexpr TestGroup bitmapTests = {
             "bitmap random set",
             []() -> Test::RetFn
             {
-                auto v = core::Bitmap(core::MemAccess<>(tbuf, sizeof(tbuf)));
+                auto v = fc::Bitmap(fc::MemAccess<>(tbuf, sizeof(tbuf)));
 
                 v.fill(false);
 

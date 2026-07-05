@@ -5,7 +5,7 @@
 
 #include "libcore/result.hpp"
 
-namespace core
+namespace fc
 {
 
 // Always returns 0
@@ -33,4 +33,4 @@ public:
     virtual ~VoidRW() override;
 };
 
-} // namespace core
+} // namespace fc

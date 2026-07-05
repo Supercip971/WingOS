@@ -13,7 +13,7 @@ void assert_dump(const char *error);
 template <typename ErrT>
 void assert_dump(ErrT error);
 
-namespace core
+namespace fc
 {
 
 class Str;
@@ -53,21 +53,21 @@ public:
 
     constexpr Result(const ValueType &value) : _value(value), _is_error(false) {}
 
-    constexpr Result(ValueType &&value) : _value(core::move(value)), _is_error(false) {}
+    constexpr Result(ValueType &&value) : _value(fc::move(value)), _is_error(false) {}
 
     constexpr Result(const ErrorType &error) : _error(error), _is_error(true) {}
 
-    constexpr Result(ErrorType &&error) : _error(core::move(error)), _is_error(true) {}
+    constexpr Result(ErrorType &&error) : _error(fc::move(error)), _is_error(true) {}
 
     constexpr Result(Result &&other) : _is_error(other._is_error)
     {
         if (_is_error)
         {
-            new (&_error) ErrorType(core::move(other._error));
+            new (&_error) ErrorType(fc::move(other._error));
         }
         else
         {
-            new (&_value) ValueType(core::move(other._value));
+            new (&_value) ValueType(fc::move(other._value));
         }
     }
 
@@ -90,38 +90,38 @@ public:
         _is_error = other._is_error;
         if (_is_error)
         {
-            new (&_error) ErrorType(core::move(other._error));
+            new (&_error) ErrorType(fc::move(other._error));
         }
         else
         {
-            new (&_value) ValueType(core::move(other._value));
+            new (&_value) ValueType(fc::move(other._value));
         }
         return *this;
     }
 
     template <typename U>
     static constexpr Result<ValT, ErrT> success(U val bounded$)
-        requires core::IsConvertibleTo<U, ValueType>
+        requires fc::IsConvertibleTo<U, ValueType>
     {
         Result<ValT, ErrT> res{};
         res._is_error = false;
-        res._value = (core::forward<U>(val));
+        res._value = (fc::forward<U>(val));
         return res;
     }
 
     template <typename E>
     static constexpr Result<ValT, ErrT> error(E err bounded$)
-        requires core::IsConvertibleTo<E, ErrorType>
+        requires fc::IsConvertibleTo<E, ErrorType>
     {
         Result<ValT, ErrT> res{};
         res._is_error = true;
-        res._error = (core::forward<E>(err));
+        res._error = (fc::forward<E>(err));
         return res;
     }
 
     void assert() const
     {
-        if (is_error())
+        if (is_error()) [[unlikely]]
         {
             assert_dump(_error);
 
@@ -146,13 +146,13 @@ public:
     ValT unwrap() && bounded$
     {
         assert();
-        return core::move(_value);
+        return fc::move(_value);
     }
 
     ValT take()
     {
         assert();
-        return core::move(_value);
+        return fc::move(_value);
     }
 
     explicit constexpr operator bool() const
@@ -194,14 +194,14 @@ public:
 
     constexpr Result(const ErrT &error) : _error(error), _is_error(true) {}
 
-    constexpr Result(ErrT &&error) : _error(core::move(error)), _is_error(true) {}
+    constexpr Result(ErrT &&error) : _error(fc::move(error)), _is_error(true) {}
 
-    constexpr Result(Result &&other) : _error(core::move(other._error)), _is_error(other._is_error) {}
+    constexpr Result(Result &&other) : _error(fc::move(other._error)), _is_error(other._is_error) {}
 
     constexpr Result &operator=(Result &&other)
     {
         _is_error = other._is_error;
-        _error = core::move(other._error);
+        _error = fc::move(other._error);
         return *this;
     }
 
@@ -251,7 +251,7 @@ public:
 
 template <typename A, typename T>
 concept IsConvertibleToResult =
-    core::IsConvertibleTo<typename A::ValueType, T>;
+    fc::IsConvertibleTo<typename A::ValueType, T>;
 
 template <typename T>
 using EResult = Result<T, Str>;
@@ -261,18 +261,18 @@ extern void debug_provide_info(const char *info, const char *data);
 #define STRINGIZE_DETAIL(x) #x
 #define STRINGIZE(x) STRINGIZE_DETAIL(x)
 
-#define try_v$(expr, vname) ({                                               \
-    auto vname = (expr);                                                     \
-    if (vname.is_error()) [[unlikely]]                                       \
-    {                                                                        \
-        core::debug_provide_info("error:    ", (const char *)vname.error()); \
-        core::debug_provide_info("at:       ", #expr);                       \
-        core::debug_provide_info("function: ", __FUNCTION__);                \
-        core::debug_provide_info("file:     ", __FILE__);                    \
-        core::debug_provide_info("line:     ", STRINGIZE(__LINE__));         \
-        return vname.error();                                                \
-    }                                                                        \
-    vname.take();                                                            \
+#define try_v$(expr, vname) ({                                             \
+    auto vname = (expr);                                                   \
+    if (vname.is_error()) [[unlikely]]                                     \
+    {                                                                      \
+        fc::debug_provide_info("error:    ", (const char *)vname.error()); \
+        fc::debug_provide_info("at:       ", #expr);                       \
+        fc::debug_provide_info("function: ", __FUNCTION__);                \
+        fc::debug_provide_info("file:     ", __FILE__);                    \
+        fc::debug_provide_info("line:     ", STRINGIZE(__LINE__));         \
+        return vname.error();                                              \
+    }                                                                      \
+    vname.take();                                                          \
 })
 
 #define CONCAT_IMPL(x, y) x##y
@@ -280,4 +280,4 @@ extern void debug_provide_info(const char *info, const char *data);
 
 #define try$(expr) try_v$((expr), MACRO_CONCAT(_result, __COUNTER__))
 
-} // namespace core
+} // namespace fc

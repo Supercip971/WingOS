@@ -165,7 +165,7 @@ extern "C" void syscall_handle();
 //  - Entry SS  = KERNEL_CODE_SELECTOR + 8  = KERNEL_DATA_SELECTOR
 //  - Return CS = USER32_CODE_SELECTOR + 16 = USER_CODE_SELECTOR
 //  - Return SS = USER32_CODE_SELECTOR + 8  = USER_DATA_SELECTOR
-core::Result<void> syscall_init_for_current_cpu()
+fc::Result<void> syscall_init_for_current_cpu()
 {
 
     Msr::Write(MsrReg::EFER, Msr::Read(MsrReg::EFER) | 1); // turn on syscall
@@ -186,7 +186,7 @@ core::Result<void> syscall_init_for_current_cpu()
     Msr::Write(MsrReg::LSTAR, (uint64_t)syscall_handle);
     Msr::Write(MsrReg::SYSCALL_FLAG_MASK, ((uint32_t)(RFLAGS_INTERRUPT_ENABLE)) | 0xfffffffe);
 
-    //  Cpu::current()->syscall_stack = (void *)((uintptr_t)try$(core::mem_alloc(kernel::kernel_stack_size)) +
+    //  Cpu::current()->syscall_stack = (void *)((uintptr_t)try$(fc::mem_alloc(kernel::kernel_stack_size)) +
     //                                           kernel::kernel_stack_size - 16); // allocate a stack for syscall handling
 
     return {};

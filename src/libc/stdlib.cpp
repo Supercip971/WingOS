@@ -30,7 +30,7 @@ extern "C" void __cxa_guard_abort(__guard *)
 }
 } // namespace __cxxabiv1
 
-namespace core
+namespace fc
 {
 void dump_vec(uintptr_t _this, uintptr_t _data, bool start)
 {
@@ -40,7 +40,7 @@ void dump_vec(uintptr_t _this, uintptr_t _data, bool start)
     (void)start;
     // fmt::log$("Vec destructed: {} - {} (begin: {})", (uintptr_t)_this | fmt::FMT_HEX, (uintptr_t)_data | fmt::FMT_HEX, start);
 }
-} // namespace core
+} // namespace fc
 
 __attribute__((weak)) void *operator new(size_t size)
 {

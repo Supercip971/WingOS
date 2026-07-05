@@ -52,12 +52,12 @@ struct HIEvent
 class HIEventQueue
 {
     ReceiverPipe _rpipe = {};
-    core::Vec<HIEvent> _events = {};
+    fc::Vec<HIEvent> _events = {};
 
 public:
     HIEventQueue() = default;
 
-    HIEventQueue(ReceiverPipe &&rpipe) : _rpipe(core::move(rpipe))
+    HIEventQueue(ReceiverPipe &&rpipe) : _rpipe(fc::move(rpipe))
     {
     }
 
@@ -66,11 +66,11 @@ public:
         _events.push(event);
     }
 
-    core::Result<HIEvent> poll_event()
+    fc::Result<HIEvent> poll_event()
     {
         if (_events.len() == 0)
         {
-            return core::Result<HIEvent>::error("no event");
+            return fc::Result<HIEvent>::error("no event");
         }
         return _events.pop(0);
     }
@@ -98,7 +98,7 @@ public:
 
     HIEventQueue &event_queue() { return _event_queue; }
 
-    core::Result<void> start_listen()
+    fc::Result<void> start_listen()
     {
         IpcMessage message = {};
         message.data[0].data = HI_START_LISTEN;
@@ -111,24 +111,24 @@ public:
             return "failed to send HI start listen message";
         }
 
-        auto msg = core::move(res.unwrap());
+        auto msg = fc::move(res.unwrap());
 
         auto rpipe = try$(ReceiverPipe::from(Wingos::Space::self(), msg.data[0].asset_handle));
-        _event_queue = HIEventQueue(core::move(rpipe));
+        _event_queue = HIEventQueue(fc::move(rpipe));
 
         return {};
     }
 
-    static core::Result<HIConnection> connect()
+    static fc::Result<HIConnection> connect()
     {
         HIConnection hi_conn;
         auto reg = InitConnection::connect();
         if (reg.is_error())
         {
-            return core::Result<HIConnection>::error("failed to connect to init");
+            return fc::Result<HIConnection>::error("failed to connect to init");
         }
         auto v = reg.unwrap();
-        auto handle = try$(v.get_server(core::Str("human-interface"), 1, 0)).endpoint;
+        auto handle = try$(v.get_server(fc::Str("human-interface"), 1, 0)).endpoint;
         hi_conn.connection = Wingos::Space::self().connect_to_ipc_server(handle);
         hi_conn.connection.wait_for_accept();
         return hi_conn;

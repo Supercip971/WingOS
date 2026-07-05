@@ -4,7 +4,7 @@
 
 #include "libcore/type/trait.hpp"
 
-namespace core
+namespace fc
 {
 
 template <typename... Args>
@@ -22,7 +22,7 @@ struct TypeTuple<Arg0, Args...>
     static constexpr size_t count = 1 + TypeRest::count;
 
     template <size_t Index>
-    using TypeAt = core::ConditionalType<Index == 0, Arg0, typename TypeRest::template TypeAt<Index - 1>>;
+    using TypeAt = fc::ConditionalType<Index == 0, Arg0, typename TypeRest::template TypeAt<Index - 1>>;
 };
 
 template <typename Arg0>
@@ -35,4 +35,4 @@ struct TypeTuple<Arg0>
     using TypeAt = Arg0;
 };
 
-}; // namespace core
+}; // namespace fc

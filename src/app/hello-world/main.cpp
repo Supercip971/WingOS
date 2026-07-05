@@ -16,7 +16,7 @@ int main(int, char **)
 
 
 
-    auto b3 = conn.open_path(core::Str("/boot/config/init-services.json")).unwrap();
+    auto b3 = conn.open_path(fc::Str("/boot/config/init-services.json")).unwrap();
 
     auto data_asset = Wingos::Space::self().allocate_physical_memory(4096);
 
@@ -26,7 +26,7 @@ int main(int, char **)
 
     fmt::log$("read {} bytes from /boot/config/init-services.json:", res);
 
-    fmt::log$("{}", core::Str((const char *)data_ptr.ptr(), res));
+    fmt::log$("{}", fc::Str((const char *)data_ptr.ptr(), res));
 */
 
     prot::HIConnection hi_conn = prot::HIConnection::connect().unwrap();
@@ -35,7 +35,7 @@ int main(int, char **)
     while (true)
     {
         hi_conn.event_queue().update_event();
-        core::Result<prot::HIEvent> event_res = hi_conn.event_queue().poll_event();
+        fc::Result<prot::HIEvent> event_res = hi_conn.event_queue().poll_event();
         while (!event_res.is_error())
         {
             prot::HIEvent event = event_res.unwrap();

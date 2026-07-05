@@ -7,7 +7,7 @@
 
 #include "libcore/result.hpp"
 
-namespace core
+namespace fc
 {
 class WStr : public MemAccess<char>
 {
@@ -46,7 +46,7 @@ public:
         return str;
     }
 
-    static WStr copy(core::Str const &from)
+    static WStr copy(fc::Str const &from)
     {
         char *buffer = (char *)malloc(sizeof(char) * (from.len() + 1));
         for (size_t i = 0; i < from.len(); i++)
@@ -105,7 +105,7 @@ public:
             return *this;
         }
 
-        *this = WStr::copy(core::Str(str));
+        *this = WStr::copy(fc::Str(str));
         return *this;
     }
 
@@ -128,7 +128,7 @@ public:
         return true;
     }
 
-    bool append(core::Str const &str)
+    bool append(fc::Str const &str)
     {
         if (str.len() == 0)
         {
@@ -156,11 +156,11 @@ public:
 
     constexpr Result<void> write(const char *data, size_t size)
     {
-        this->append(core::Str(data, size));
+        this->append(fc::Str(data, size));
         return {};
     }
 
-    constexpr Result<void> write(core::Str str)
+    constexpr Result<void> write(fc::Str str)
     {
         return write(str.data(), str.len());
     }
@@ -200,7 +200,7 @@ public:
         return true;
     }
 
-    bool operator==(core::Str const &other) const
+    bool operator==(fc::Str const &other) const
     {
 
         if (this->len() != other.len())
@@ -235,4 +235,4 @@ public:
 };
 
 static_assert(Writable<WStr>);
-} // namespace core
+} // namespace fc

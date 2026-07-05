@@ -9,25 +9,25 @@
 
 namespace fmt
 {
-template <math::IntRangeable C, core::Writable Targ>
-constexpr core::Result<int> format_v(Targ &target, C &&value)
+template <math::IntRangeable C, fc::Writable Targ>
+constexpr fc::Result<int> format_v(Targ &target, C &&value)
 {
-    target.write(core::Str("{ "));
+    target.write(fc::Str("{ "));
     format_v(target, value.start());
-    target.write(core::Str(" - "));
+    target.write(fc::Str(" - "));
     format_v(target, value.end());
-    target.write(core::Str(" }"));
+    target.write(fc::Str(" }"));
     return 0;
 }
 
-template <math::IntRangeable C, core::Writable Targ>
-constexpr core::Result<int> format_v(Targ &target, fmt::FormatFlags<C> range)
+template <math::IntRangeable C, fc::Writable Targ>
+constexpr fc::Result<int> format_v(Targ &target, fmt::FormatFlags<C> range)
 {
-    target.write(core::Str("{ "));
+    target.write(fc::Str("{ "));
     format_v(target, range.forward_flags(range.value.start()));
-    target.write(core::Str(" - "));
+    target.write(fc::Str(" - "));
     format_v(target, range.forward_flags(range.value.end()));
-    target.write(core::Str(" }"));
+    target.write(fc::Str(" }"));
     return 0;
 }
 

@@ -122,7 +122,7 @@ struct WingosWindowImpl : public wgfx::PlatformWindow
         return raster_height;
     }
 
-    virtual core::Result<void> attach() override
+    virtual fc::Result<void> attach() override
     {
 
         switch (backend_kind)
@@ -204,11 +204,11 @@ struct WingosWindowImpl : public wgfx::PlatformWindow
     }
 };
 
-core::Result<core::SharedPtr<wgfx::PlatformWindow>>
+fc::Result<fc::SharedPtr<wgfx::PlatformWindow>>
 
 wgfx::PlatformWindow::create_native(wgfx::BackendsKinds preferred_backend)
 {
-    core::SharedPtr<WingosWindowImpl> window = core::SharedPtr<WingosWindowImpl>::make();
+    fc::SharedPtr<WingosWindowImpl> window = fc::SharedPtr<WingosWindowImpl>::make();
 
     window->backend_kind = preferred_backend;
 

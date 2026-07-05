@@ -23,23 +23,23 @@ enum VfsMessageType
 
 struct VfsRegister
 {
-    core::Str device_name;
+    fc::Str device_name;
     IpcServerHandle device_endpoint;
 };
 
 struct VfsRegisterFs
 {
-    core::Str fs_name;
+    fc::Str fs_name;
     IpcServerHandle fs_endpoint;
 };
 
 struct VfsMount
 {
-    core::Str path;
-    core::Str device_name;
+    fc::Str path;
+    fc::Str device_name;
 };
 
-class VfsConnection : public core::NoCopy
+class VfsConnection : public fc::NoCopy
 {
     Wingos::IpcClient connection;
     bool connected = false;
@@ -84,7 +84,7 @@ public:
 
     VfsConnection() = default;
 
-    core::Result<void> register_device(core::Str name, IpcServerHandle endpoint)
+    fc::Result<void> register_device(fc::Str name, IpcServerHandle endpoint)
     {
         IpcMessage message = {};
         message.data[0].data = VFS_REGISTER;
@@ -112,7 +112,7 @@ public:
         return {};
     }
 
-    static core::Result<VfsConnection> connect(IpcServerHandle handle)
+    static fc::Result<VfsConnection> connect(IpcServerHandle handle)
     {
         VfsConnection vfs_conn;
         vfs_conn.connection = Wingos::Space::self().connect_to_ipc_server(handle);
@@ -121,16 +121,16 @@ public:
         return vfs_conn;
     }
 
-    static core::Result<VfsConnection> connect()
+    static fc::Result<VfsConnection> connect()
     {
         VfsConnection vfs_conn = {};
         auto reg = InitConnection::connect();
         if (reg.is_error())
         {
-            return core::Result<VfsConnection>::error("failed to connect to init");
+            return fc::Result<VfsConnection>::error("failed to connect to init");
         }
         auto v = reg.unwrap();
-        auto handle = try$(v.get_server(core::Str("vfs"), 1, 0)).endpoint;
+        auto handle = try$(v.get_server(fc::Str("vfs"), 1, 0)).endpoint;
 
         vfs_conn.connection = Wingos::Space::self().connect_to_ipc_server(handle);
         vfs_conn.connection.wait_for_accept();
@@ -138,7 +138,7 @@ public:
         return vfs_conn;
     }
 
-    core::Result<void> register_fs(core::Str name, IpcServerHandle endpoint)
+    fc::Result<void> register_fs(fc::Str name, IpcServerHandle endpoint)
     {
         IpcMessage message = {};
         message.data[0].data = VFS_REGISTER_FS;
@@ -165,7 +165,7 @@ public:
         return {};
     }
 
-    core::Result<FsFile> open_root()
+    fc::Result<FsFile> open_root()
     {
         IpcMessage message = {};
         message.data[0].data = VFS_ROOT_ACCESS;
@@ -181,7 +181,7 @@ public:
         return file_res;
     }
 
-    core::Result<FsFile> open_path(core::Str const &path)
+    fc::Result<FsFile> open_path(fc::Str const &path)
     {
         fmt::log$("VfsConnection::open_path: opening path {}", path.view());
         if (path[0] != '/')
@@ -192,7 +192,7 @@ public:
 
         fmt::log$("opening path {}", path.view());
         auto root_res = try$(open_root());
-        auto current_dir = core::move(root_res);
+        auto current_dir = fc::move(root_res);
         auto components = path.substr(1).split('/');
 
         for (size_t i = 0; i < components.len(); i++)
@@ -203,7 +203,7 @@ public:
         {
             auto next_dir_res = try$(current_dir.open_file(components[i]));
             current_dir.close();
-            current_dir = core::move(next_dir_res);
+            current_dir = fc::move(next_dir_res);
         }
 
         return current_dir;

@@ -22,9 +22,9 @@ static constexpr TestGroup fmtTestWStr = {
             "WStr write",
             []() -> Test::RetFn
             {
-                core::WStr writer;
+                fc::WStr writer;
                 writer.write("hello", 5);
-                if (writer.view() != core::Str("hello"))
+                if (writer.view() != fc::Str("hello"))
                 {
                     return "WStr write failed";
                 }
@@ -34,15 +34,15 @@ static constexpr TestGroup fmtTestWStr = {
             "WStr put/append",
             []() -> Test::RetFn
             {
-                core::WStr writer = core::WStr::copy(core::Str("ab"));
+                fc::WStr writer = fc::WStr::copy(fc::Str("ab"));
 
                 writer.put('c');
-                if (writer.view() != core::Str("abc"))
+                if (writer.view() != fc::Str("abc"))
                 {
                     return "WStr put failed";
                 }
-                writer.append(core::Str("def"));
-                if (writer.view() != core::Str("abcdef"))
+                writer.append(fc::Str("def"));
+                if (writer.view() != fc::Str("abcdef"))
                 {
                     return "WStr append failed";
                 }
@@ -58,7 +58,7 @@ static constexpr TestGroup fmtTestWStr = {
                     return "format_str returned error";
                 }
                 auto writer = r.take();
-                if (writer.view() != core::Str("Value: 42 - test"))
+                if (writer.view() != fc::Str("Value: 42 - test"))
                 {
                     return "format_str result mismatch";
                 }

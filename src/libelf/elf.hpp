@@ -132,7 +132,7 @@ public:
         return PhysRange(toPhys(_range.start()), toPhys(_range.end()));
     }
 
-    core::Result<void> verify()
+    fc::Result<void> verify()
     {
         if (_header.magic[0] != 0x7f || _header.magic[1] != 'E' ||
             _header.magic[2] != 'L' || _header.magic[3] != 'F')
@@ -140,12 +140,12 @@ public:
             return "invalid ELF magic number";
         }
 
-        if (_header.elf_class != core::underlying_value(ElfClass::CLASS_64))
+        if (_header.elf_class != fc::underlying_value(ElfClass::CLASS_64))
         {
             return "unsupported ELF class";
         }
 
-        if (_header.ordering != core::underlying_value(ElfDataEncoding::ENC_LITTLE_ENDIAN))
+        if (_header.ordering != fc::underlying_value(ElfDataEncoding::ENC_LITTLE_ENDIAN))
         {
             return "unsupported data encoding";
         }
@@ -158,7 +158,7 @@ public:
         return {};
     }
 
-    static core::Result<ElfLoader> load(VirtRange range)
+    static fc::Result<ElfLoader> load(VirtRange range)
     {
         if (range.len() < sizeof(Elf64Header))
         {
@@ -195,7 +195,7 @@ public:
         return this->_header.entry_point;
     }
 
-    core::Result<Elf64SectionHeader> section_header(size_t index) const
+    fc::Result<Elf64SectionHeader> section_header(size_t index) const
     {
         if (index >= this->section_count())
         {
@@ -204,7 +204,7 @@ public:
         return *(Elf64SectionHeader *)((uintptr_t)this->_range.start() + this->_header.section_header_offset + index * this->_header.section_header_size);
     }
 
-    core::Result<Elf64ProgramHeader> program_header(size_t index) const
+    fc::Result<Elf64ProgramHeader> program_header(size_t index) const
     {
         if (index >= this->section_count())
         {

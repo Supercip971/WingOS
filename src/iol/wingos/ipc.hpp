@@ -27,7 +27,7 @@ struct IpcServer : public UAsset
 {
 
     uint64_t space_handle; // the space the server belongs to
-    core::Vec<IpcConnection *> connections = {};
+    fc::Vec<IpcConnection *> connections = {};
     IpcServerHandle addr; // the adress of the server
 
     void disconnect(IpcConnection *connection)
@@ -60,7 +60,7 @@ struct IpcServer : public UAsset
         return server;
     }
 
-    core::Result<IpcConnection *> accept(bool block = false)
+    fc::Result<IpcConnection *> accept(bool block = false)
     {
         auto res = sys$ipc_accept(block, space_handle, this->handle);
 
@@ -70,19 +70,19 @@ struct IpcServer : public UAsset
             connection->handle = res.connection_handle;
             connections.push(connection);
 
-            return core::Result<IpcConnection *>::success(connection);
+            return fc::Result<IpcConnection *>::success(connection);
         }
-        return core::Result<IpcConnection *>::error("failed to accept connection");
+        return fc::Result<IpcConnection *>::error("failed to accept connection");
     }
 
-    core::Result<MessageServerReceived> receive(IpcConnectionHandle connection_handle, bool block = false)
+    fc::Result<MessageServerReceived> receive(IpcConnectionHandle connection_handle, bool block = false)
     {
         IpcMessage res_message = {};
         auto res = sys$ipc_receive_server(block, space_handle, this->handle, connection_handle, &res_message);
         if (res.contain_response)
         {
             MessageServerReceived msg = {};
-            msg.received = core::move(res_message);
+            msg.received = fc::move(res_message);
             msg.received.message_id = res.returned_msg_handle;
             return msg;
         }
@@ -94,7 +94,7 @@ struct IpcServer : public UAsset
 
             return msg;
         }
-        return core::Result<MessageServerReceived>::error("failed to receive message");
+        return fc::Result<MessageServerReceived>::error("failed to receive message");
     }
 
     void remove()
@@ -108,7 +108,7 @@ struct IpcServer : public UAsset
         sys$asset_release(space_handle, this->handle);
     }
 
-    core::Result<MessageServerReceived> receive(bool block = false)
+    fc::Result<MessageServerReceived> receive(bool block = false)
     {
         for (auto &connection : connections)
         {
@@ -122,15 +122,15 @@ struct IpcServer : public UAsset
             {
                 continue; // try next connection
             }
-            auto v = core::move(res.unwrap());
+            auto v = fc::move(res.unwrap());
             v.connection = connection;
 
             return v;
         }
-        return core::Result<MessageServerReceived>::error("no connection available to receive message");
+        return fc::Result<MessageServerReceived>::error("no connection available to receive message");
     }
 
-    core::Result<void> reply(MessageServerReceived const &to, IpcMessage &message)
+    fc::Result<void> reply(MessageServerReceived const &to, IpcMessage &message)
     {
         sys$ipc_reply(space_handle, this->addr, to.connection->handle, to.received.message_id, &message);
         return {};
@@ -165,7 +165,7 @@ public:
         return client;
     }
 
-    static core::Result<void> pipe_create(uint64_t sender_space, IpcClient &sender, uint64_t receiver_space, IpcClient &receiver, uint64_t flags = 0)
+    static fc::Result<void> pipe_create(uint64_t sender_space, IpcClient &sender, uint64_t receiver_space, IpcClient &receiver, uint64_t flags = 0)
     {
         SyscallIpcConnect conn = {
             .block = false,
@@ -220,15 +220,15 @@ public:
         return false; // should never reach here
     }
 
-    core::Result<MessageHandle> send(IpcMessage &message, bool expect_reply = false)
+    fc::Result<MessageHandle> send(IpcMessage &message, bool expect_reply = false)
     {
 
         SyscallIpcSend send = sys$ipc_send(associated_space_handle, handle, &message, expect_reply);
 
-        return core::Result<size_t>::success(send.returned_msg_handle);
+        return fc::Result<size_t>::success(send.returned_msg_handle);
     }
 
-    core::Result<MessageServerReceived> receive(bool block = false)
+    fc::Result<MessageServerReceived> receive(bool block = false)
     {
 
         MessageServerReceived msg = {};
@@ -237,21 +237,21 @@ public:
         if (res.contain_response)
         {
 
-            msg.received = core::move(res_message);
+            msg.received = fc::move(res_message);
             msg.received.message_id = res.returned_msg_handle;
-            return core::Result<MessageServerReceived>::success(core::move(msg));
+            return fc::Result<MessageServerReceived>::success(fc::move(msg));
         }
 
         if (res.is_disconnect)
         {
             msg.received.flags |= IPC_MESSAGE_FLAG_DISCONNECT;
 
-            return core::Result<MessageServerReceived>::success(core::move(msg));
+            return fc::Result<MessageServerReceived>::success(fc::move(msg));
         }
-        return core::Result<MessageServerReceived>::error("failed to receive message");
+        return fc::Result<MessageServerReceived>::error("failed to receive message");
     }
 
-    core::Result<IpcMessage> call(IpcMessage &message)
+    fc::Result<IpcMessage> call(IpcMessage &message)
     {
         IpcMessage res = {};
         SyscallIpcCall call = sys$ipc_call(associated_space_handle, handle, &message, &res);
@@ -259,10 +259,10 @@ public:
         {
             return res;
         }
-        return core::Result<IpcMessage>::error("failed to call server");
+        return fc::Result<IpcMessage>::error("failed to call server");
     }
 
-    core::Result<IpcMessage> receive_reply(MessageHandle message_handle, bool block = false)
+    fc::Result<IpcMessage> receive_reply(MessageHandle message_handle, bool block = false)
     {
         IpcMessage res;
         SyscallIpcClientReceiveReply receive = sys$ipc_receive_reply_client(block, associated_space_handle, handle, message_handle, &res);
@@ -271,7 +271,7 @@ public:
         {
             return res;
         }
-        return core::Result<IpcMessage>::error("failed to receive reply");
+        return fc::Result<IpcMessage>::error("failed to receive reply");
     }
 };
 

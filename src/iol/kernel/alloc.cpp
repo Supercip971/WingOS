@@ -4,7 +4,7 @@
 #include "kernel/generic/pmm.hpp"
 #include "libcore/lock/lock.hpp"
 
-core::LockCritical _liballoc_lock{};
+fc::LockCritical _liballoc_lock{};
 
 extern "C" int liballoc_lock()
 {

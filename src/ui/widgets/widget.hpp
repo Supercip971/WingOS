@@ -70,19 +70,19 @@ public:
     }
 
     template <typename T, typename... Args>
-    static core::SharedPtr<Widget> $(Args &&...args)
+    static fc::SharedPtr<Widget> $(Args &&...args)
     {
-        return core::SharedPtr<T>::make(
-                   core::forward<Args>(args)...)
+        return fc::SharedPtr<T>::make(
+                   fc::forward<Args>(args)...)
             .template static_pointer_cast<Widget>();
     }
 
     Widget() {};
 
     bool is_mutable = false;
-    core::Str _key = "";
+    fc::Str _key = "";
 
-    core::Vec<core::SharedPtr<Widget>> childs;
+    fc::Vec<fc::SharedPtr<Widget>> childs;
 
     virtual ~Widget() {}
 
@@ -130,7 +130,7 @@ public:
         _dirty = true;
     }
 
-    virtual core::Str info() const { return ""; };
+    virtual fc::Str info() const { return ""; };
 
     void dump(int depth = 0) const
     {
@@ -148,11 +148,11 @@ public:
         return typeid(*this) == typeid(rhs) && this->_key == rhs._key;
     }
 
-    virtual core::SharedPtr<Widget> build(UiContext const &) { return {}; }
+    virtual fc::SharedPtr<Widget> build(UiContext const &) { return {}; }
 
-    virtual core::Vec<core::SharedPtr<Widget>> build_childs(UiContext const &v)
+    virtual fc::Vec<fc::SharedPtr<Widget>> build_childs(UiContext const &v)
     {
-        core::Vec<core::SharedPtr<Widget>> result = {};
+        fc::Vec<fc::SharedPtr<Widget>> result = {};
 
         auto v2 = build(v);
         if (v2)
@@ -178,7 +178,7 @@ public:
         _layout_dirty = false;
     }
 
-    virtual core::Optional<wgfx::GRect> render_dirty_rect()
+    virtual fc::Optional<wgfx::GRect> render_dirty_rect()
     {
         if (_render_dirty)
         {
@@ -198,7 +198,7 @@ public:
             return {};
         }
 
-        core::Optional<wgfx::GRect> f{core::novalue};
+        fc::Optional<wgfx::GRect> f{fc::novalue};
         for (auto &child : childs)
         {
             auto rect = child->render_dirty_rect();
@@ -256,7 +256,7 @@ public:
             return true;
         }
 
-        core::Optional<wgfx::GRect> dirty_rect = this->render_dirty_rect();
+        fc::Optional<wgfx::GRect> dirty_rect = this->render_dirty_rect();
 
         if (!dirty_rect.has_value())
         {
@@ -352,11 +352,11 @@ public:
         other._layout = _layout;
         other._old_render_layout = _old_render_layout;
         other.rendering = rendering;
-        other.childs = core::move(childs);
+        other.childs = fc::move(childs);
         return false;
     }
 
-    virtual void update(UiContext const &ctx, core::SharedPtr<Widget> t)
+    virtual void update(UiContext const &ctx, fc::SharedPtr<Widget> t)
     {
         (void)ctx;
         *this = *t;
@@ -408,7 +408,7 @@ public:
             return;
         }
 
-        core::Vec<core::SharedPtr<Widget>> new_childs = {};
+        fc::Vec<fc::SharedPtr<Widget>> new_childs = {};
 
         size_t old_idx = 0;
 
@@ -420,7 +420,7 @@ public:
         //
         for (size_t i = 0; i < rebuild_widget.len(); i++)
         {
-            core::SharedPtr<Widget> matched_elm = {};
+            fc::SharedPtr<Widget> matched_elm = {};
 
             if (!rebuild_widget[i]->_key.is_empty())
             {
@@ -470,14 +470,14 @@ public:
             }
         }
 
-        childs = core::move(new_childs);
+        childs = fc::move(new_childs);
     }
 };
 
 template <typename T, typename... Args>
-core::SharedPtr<Widget> mount(UiContext const &ctx, Args &&...args)
+fc::SharedPtr<Widget> mount(UiContext const &ctx, Args &&...args)
 {
-    return T::construct(ctx, core::forward<Args>(args)...);
+    return T::construct(ctx, fc::forward<Args>(args)...);
 }
 
 } // namespace fc

@@ -6,12 +6,12 @@
 #include "kernel/generic/cpu.hpp"
 #include "libcore/result.hpp"
 
-core::Result<CpuTreeNode *> _initialize_cpu_tree_impl()
+fc::Result<CpuTreeNode *> _initialize_cpu_tree_impl()
 {
-    return core::Result<CpuTreeNode *>::error("not implemented, as QEMU don't export an SRAT structure");
+    return fc::Result<CpuTreeNode *>::error("not implemented, as QEMU don't export an SRAT structure");
 }
 
-core::Result<CpuTreeNode *> initialize_cpu_tree()
+fc::Result<CpuTreeNode *> initialize_cpu_tree()
 {
     auto root = _initialize_cpu_tree_impl();
 
@@ -26,7 +26,7 @@ core::Result<CpuTreeNode *> initialize_cpu_tree()
     return root;
 }
 
-core::Result<CpuTreeNode *> fallback_use_guessed()
+fc::Result<CpuTreeNode *> fallback_use_guessed()
 {
     auto root = new CpuTreeNode();
 

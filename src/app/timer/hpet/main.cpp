@@ -27,14 +27,14 @@ int main(int, char **) { return 0; };
 
 struct Waiter
 {
-    core::Milliseconds start_time;
-    core::Milliseconds end_time;
+    fc::Milliseconds start_time;
+    fc::Milliseconds end_time;
     Wingos::MessageServerReceived msg;
 };
 
 int _main(StartupInfo *context)
 {
-    core::Vec<Waiter> waiters = {};
+    fc::Vec<Waiter> waiters = {};
     fmt::log$("clock from rsdp addr: {}", context->machine_context_optional._rsdp | fmt::FMT_HEX);
 
     uintptr_t phys_rsdp = context->machine_context_optional._rsdp - 0xffff800000000000;
@@ -47,7 +47,7 @@ int _main(StartupInfo *context)
         fmt::log$("mapping hpet rsdp region: {} - {}", vrange.start() | fmt::FMT_HEX, vrange.end() | fmt::FMT_HEX);
 
         Wingos::Space::self().map_physical_memory(vrange.start(), vrange.len(), ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
-        return core::Result<size_t>{
+        return fc::Result<size_t>{
             vrange.start()
         }; })
         .unwrap();
@@ -60,7 +60,7 @@ int _main(StartupInfo *context)
 
         fmt::log$("mapping hpet region: {} - {}", vrange.start() | fmt::FMT_HEX, vrange.end() | fmt::FMT_HEX);
         Wingos::Space::self().map_physical_memory(vrange.start(), vrange.len(), ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
-        return core::Result<size_t>{
+        return fc::Result<size_t>{
             vrange.start()
         }; })
         .unwrap();
@@ -76,15 +76,15 @@ int _main(StartupInfo *context)
         return -1;
     }
 
-    prot::ManagedServer server = core::move(server_r.unwrap());
+    prot::ManagedServer server = fc::move(server_r.unwrap());
 
     fmt::log$("started clock service");
     while (true)
     {
 
-        // fmt::log$("1 second to ms: {} ->{}", core::Seconds(1).value(), core::Seconds(1).to<core::Milliseconds>().value());
+        // fmt::log$("1 second to ms: {} ->{}", fc::Seconds(1).value(), fc::Seconds(1).to<fc::Milliseconds>().value());
 
-        //        hw::hpet::hpet_sleep(core::Seconds(1));
+        //        hw::hpet::hpet_sleep(fc::Seconds(1));
         //        fmt::log$("tick");
 
         server.accept_connection();
@@ -97,7 +97,7 @@ int _main(StartupInfo *context)
             {
                 IpcMessage reply = {};
                 reply.data[0].data = 0; // success
-                server.reply(core::move(w.msg), reply).unwrap();
+                server.reply(fc::move(w.msg), reply).unwrap();
                 waiters.pop(i);
                 i--;
             }
@@ -106,23 +106,23 @@ int _main(StartupInfo *context)
         auto received = server.try_receive();
         if (!received.is_error())
         {
-            auto msg = core::move(received.unwrap());
+            auto msg = fc::move(received.unwrap());
 
             switch (msg.received.data[0].data)
             {
             case prot::CLOCK_GET_SYSTEM_TIME:
             {
                 IpcMessage reply = {};
-                core::Milliseconds ms = hw::hpet::hpet_clock_read();
+                fc::Milliseconds ms = hw::hpet::hpet_clock_read();
                 //         fmt::log$("hpet: system time: {}ms", ms.value());
                 reply.data[1].data = ms.value() / 1000;
                 reply.data[2].data = ms.value();
-                server.reply(core::move(msg), reply).unwrap();
+                server.reply(fc::move(msg), reply).unwrap();
                 break;
             }
             case prot::CLOCK_SLEEP_MS:
             {
-                core::Milliseconds ms = core::Milliseconds(msg.received.data[1].data);
+                fc::Milliseconds ms = fc::Milliseconds(msg.received.data[1].data);
 
                 auto start = hw::hpet::hpet_clock_read();
                 auto end = start + ms;
@@ -130,8 +130,8 @@ int _main(StartupInfo *context)
                 Waiter w = {};
                 w.start_time = start;
                 w.end_time = end;
-                w.msg = core::move(msg);
-                waiters.push(core::move(w));
+                w.msg = fc::move(msg);
+                waiters.push(fc::move(w));
                 break;
             }
             default:

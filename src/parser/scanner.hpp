@@ -3,7 +3,7 @@
 #include "libcore/mem/view.hpp"
 #include "libcore/result.hpp"
 
-namespace core
+namespace fc
 {
 
 template <typename Base = char>
@@ -46,58 +46,58 @@ public:
         return _cursor;
     }
 
-    core::Result<Base> current() const
+    fc::Result<Base> current() const
     {
         if (ended())
         {
-            return core::Result<Base>("End of buffer reached");
+            return fc::Result<Base>("End of buffer reached");
         }
         return _buffer[_cursor];
     }
 
-    core::Result<Base> peek(size_t offset = 0) const
+    fc::Result<Base> peek(size_t offset = 0) const
     {
         if (offset + _cursor >= _buffer.len())
         {
-            return core::Result<Base>("End of buffer reached");
+            return fc::Result<Base>("End of buffer reached");
         }
         return _buffer[_cursor + offset];
     }
 
-    core::Result<Base> next()
+    fc::Result<Base> next()
     {
         if (ended())
         {
-            return core::Result<Base>("End of buffer reached");
+            return fc::Result<Base>("End of buffer reached");
         }
         return _buffer[_cursor++];
     }
 
-    core::Result<void> skip(size_t count)
+    fc::Result<void> skip(size_t count)
     {
         if (_cursor + count >= _buffer.len())
         {
-            return core::Result<void>("End of buffer reached");
+            return fc::Result<void>("End of buffer reached");
         }
         _cursor += count;
         return {};
     }
 
-    core::Result<void> rewind(size_t count)
+    fc::Result<void> rewind(size_t count)
     {
         if (_cursor < count)
         {
-            return core::Result<void>("Cannot rewind beyond the start of the buffer");
+            return fc::Result<void>("Cannot rewind beyond the start of the buffer");
         }
         _cursor -= count;
         return {};
     }
 
-    core::Result<bool> skip(Base value)
+    fc::Result<bool> skip(Base value)
     {
         if (ended())
         {
-            return core::Result<bool>("End of buffer reached");
+            return fc::Result<bool>("End of buffer reached");
         }
         if (_buffer[_cursor] == value)
         {
@@ -107,12 +107,12 @@ public:
         return false;
     }
 
-    core::Result<bool> skip_spaced(Base value)
+    fc::Result<bool> skip_spaced(Base value)
     {
         skip_spaces();
         if (ended())
         {
-            return core::Result<bool>("End of buffer reached");
+            return fc::Result<bool>("End of buffer reached");
         }
         if (_buffer[_cursor] == value)
         {
@@ -122,11 +122,11 @@ public:
         return false;
     }
 
-    core::Result<bool> skip_string(MemView<Base> str)
+    fc::Result<bool> skip_string(MemView<Base> str)
     {
         if (_cursor + str.len() > _buffer.len())
         {
-            return core::Result<bool>("End of buffer reached");
+            return fc::Result<bool>("End of buffer reached");
         }
         for (size_t i = 0; i < str.len(); i++)
         {
@@ -139,11 +139,11 @@ public:
         return true;
     }
 
-    core::Result<bool> skip_any_of(MemView<Base> chars)
+    fc::Result<bool> skip_any_of(MemView<Base> chars)
     {
         if (ended())
         {
-            return core::Result<bool>("End of buffer reached");
+            return fc::Result<bool>("End of buffer reached");
         }
         for (size_t i = 0; i < chars.len(); i++)
         {
@@ -156,11 +156,11 @@ public:
         return false;
     }
 
-    core::Result<bool> skip_spaces()
+    fc::Result<bool> skip_spaces()
     {
         if (ended())
         {
-            return core::Result<bool>("End of buffer reached");
+            return fc::Result<bool>("End of buffer reached");
         }
         while (_cursor < _buffer.len() && (_buffer[_cursor] == ' ' || _buffer[_cursor] == '\t' || _buffer[_cursor] == '\n' || _buffer[_cursor] == '\r'))
         {
@@ -169,18 +169,18 @@ public:
         return true;
     }
 
-    core::Result<MemView<Base>> read(size_t count)
+    fc::Result<MemView<Base>> read(size_t count)
     {
         if (_cursor + count > _buffer.len())
         {
-            return core::Result<MemView<Base>>("End of buffer reached");
+            return fc::Result<MemView<Base>>("End of buffer reached");
         }
         MemView<Base> result(_buffer.data() + _cursor, count);
         _cursor += count;
         return result;
     }
 
-    core::Result<MemView<Base>> read_until(Base delimiter)
+    fc::Result<MemView<Base>> read_until(Base delimiter)
     {
         size_t start = _cursor;
         while (_cursor < _buffer.len() && _buffer[_cursor] != delimiter)
@@ -189,17 +189,17 @@ public:
         }
         if (_cursor >= _buffer.len() && delimiter != '\0')
         {
-            return core::Result<MemView<Base>>("End of buffer reached");
+            return fc::Result<MemView<Base>>("End of buffer reached");
         }
         MemView<Base> result(_buffer.data() + start, _cursor - start);
         return result;
     }
 
-    core::Result<int> skip_int()
+    fc::Result<int> skip_int()
     {
         if (ended())
         {
-            return core::Result<int>("End of buffer reached");
+            return fc::Result<int>("End of buffer reached");
         }
         size_t origin = _cursor;
         int value = 0;
@@ -218,7 +218,7 @@ public:
         if (_cursor >= _buffer.len() || !(_buffer[_cursor] >= '0' && _buffer[_cursor] <= '9'))
         {
             _cursor = origin; // reset cursor
-            return core::Result<int>("Expected digit");
+            return fc::Result<int>("Expected digit");
         }
 
         while (_cursor < _buffer.len() && _buffer[_cursor] >= '0' && _buffer[_cursor] <= '9')
@@ -235,4 +235,4 @@ public:
         return value;
     }
 };
-}; // namespace core
+}; // namespace fc

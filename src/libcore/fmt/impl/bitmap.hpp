@@ -9,8 +9,8 @@
 
 #define flags fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO
 
-template <core::IsConvertibleTo<core::Bitmap> T, core::Writable Targ>
-constexpr core::Result<void> format_v(Targ &target, T &value)
+template <fc::IsConvertibleTo<fc::Bitmap> T, fc::Writable Targ>
+constexpr fc::Result<void> format_v(Targ &target, T &value)
 {
 
     bool last = value.bit(0);

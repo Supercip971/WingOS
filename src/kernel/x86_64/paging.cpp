@@ -50,7 +50,7 @@ void VmmSpace::use()
     asm volatile("mov %0, %%cr3" ::"r"(self_addr()) : "memory");
 }
 
-core::Result<void> VmmSpace::map(VirtRange virt, PhysRange phys, PageFlags flags)
+fc::Result<void> VmmSpace::map(VirtRange virt, PhysRange phys, PageFlags flags)
 {
     auto root = as_root(*this);
 
@@ -82,7 +82,7 @@ core::Result<void> VmmSpace::map(VirtRange virt, PhysRange phys, PageFlags flags
     return {};
 }
 
-core::Result<void> VmmSpace::unmap(VirtRange virt, bool user)
+fc::Result<void> VmmSpace::unmap(VirtRange virt, bool user)
 {
     auto root = as_root(*this);
 
@@ -102,7 +102,7 @@ core::Result<void> VmmSpace::unmap(VirtRange virt, bool user)
     return {};
 }
 
-core::Result<VmmSpace> VmmSpace::create(bool empty)
+fc::Result<VmmSpace> VmmSpace::create(bool empty)
 {
     VmmSpace result = {};
     // allocate to lower half because SMP need the pagetable address to be in the lower 4GB
@@ -126,7 +126,7 @@ core::Result<VmmSpace> VmmSpace::create(bool empty)
     return result;
 }
 
-core::Result<void> VmmSpace::verify(VirtAddr virt, size_t size)
+fc::Result<void> VmmSpace::verify(VirtAddr virt, size_t size)
 {
     auto root = as_root(*this);
 

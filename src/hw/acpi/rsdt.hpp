@@ -37,7 +37,7 @@ struct [[gnu::packed]] Rsdt
     SdtHeader header;
     uint32_t entries[];
 
-    static constexpr core::Str signature = "RSDT";
+    static constexpr fc::Str signature = "RSDT";
 
     using childType = uint32_t;
 };
@@ -47,7 +47,7 @@ struct [[gnu::packed]] Xsdt
     SdtHeader header;
     PhysAddr entries[];
 
-    static constexpr core::Str signature = "XSDT";
+    static constexpr fc::Str signature = "XSDT";
 
     using childType = PhysAddr;
 };
@@ -58,7 +58,7 @@ struct [[gnu::packed]] SRAT
     uint8_t reserved[8];
 
     uint8_t data[];
-    static constexpr core::Str signature = "SRAT";
+    static constexpr fc::Str signature = "SRAT";
 };
 
 // Maybe I'm over-engineering this
@@ -69,38 +69,38 @@ template <typename T>
 concept SdtEntry = requires(T sdt) {
     {
         sdt.signature
-    } -> core::IsConvertibleTo<core::Str>;
+    } -> fc::IsConvertibleTo<fc::Str>;
     {
         sdt.header
-    } -> core::IsConvertibleTo<SdtHeader>;
+    } -> fc::IsConvertibleTo<SdtHeader>;
 };
 
 template <typename T>
 concept SdTable = SdtEntry<T> &&
-                  core::IsConvertibleTo<uintptr_t, typename T::childType>;
+                  fc::IsConvertibleTo<uintptr_t, typename T::childType>;
 
 static_assert(SdTable<Xsdt>);
 static_assert(SdTable<Rsdt>);
 
 template <SdTable T, SdtEntry K>
-core::Result<K *> SdtFind(T *table)
+fc::Result<K *> SdtFind(T *table)
 {
 
     for (size_t i = 0; i < (table->header.child_len()) / sizeof(table->entries[0]); i++)
     {
         auto entry = table->entries[i];
         auto *entry_header = toVirt(entry).template as<SdtHeader>();
-        auto s1 = core::Str(entry_header->signature, 4);
+        auto s1 = fc::Str(entry_header->signature, 4);
 
         if (s1 == K::signature)
             return reinterpret_cast<K *>(entry_header);
     }
 
-    return core::Result<K *>::error("Not found");
+    return fc::Result<K *>::error("Not found");
 }
 
 template <SdtEntry K>
-core::Result<K *> rsdt_find(hw::acpi::Rsdp *_rsdp)
+fc::Result<K *> rsdt_find(hw::acpi::Rsdp *_rsdp)
 {
     auto addr = _rsdp->rsdt_phys_addr();
     if (addr.type == hw::acpi::RsdtTypes::RSDT)
@@ -116,7 +116,7 @@ core::Result<K *> rsdt_find(hw::acpi::Rsdp *_rsdp)
 }
 
 template <MappCallbackFn T>
-core::Result<void> prepare_mapping(uintptr_t rsdp_addr, T fn)
+fc::Result<void> prepare_mapping(uintptr_t rsdp_addr, T fn)
 {
     try$(fn(rsdp_addr, sizeof(hw::acpi::Rsdp)));
     hw::acpi::Rsdp *rsdp = toVirt(rsdp_addr).as<hw::acpi::Rsdp>();
@@ -189,9 +189,9 @@ constexpr void dump(T *d)
 {
     SdtForeach(d, [](SdtHeader *entry)
                {
-                   auto s1 = core::Str(entry->signature, 4);
-                   auto s2 = core::Str(entry->oem_id, 6);
-                   auto s3 = core::Str(entry->oem_table_id, 8);
+                   auto s1 = fc::Str(entry->signature, 4);
+                   auto s2 = fc::Str(entry->oem_id, 6);
+                   auto s3 = fc::Str(entry->oem_table_id, 8);
 
                    fmt::log$("entry:");
                    fmt::log$("- signature: {}", s1);

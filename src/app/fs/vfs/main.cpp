@@ -19,10 +19,10 @@ struct RegisteredDevicePartition
 
     uint64_t id;
     IpcServerHandle endpoint;
-    core::WStr part_name;
-    core::WStr part_dev_name;
+    fc::WStr part_name;
+    fc::WStr part_dev_name;
     bool has_fs;
-    core::WStr fs_name;
+    fc::WStr fs_name;
     IpcServerHandle fs_endpoint;
 };
 
@@ -31,13 +31,13 @@ struct RegisteredDevice
     char name[80];
     IpcServerHandle endpoint;
     bool has_partitions;
-    core::Vec<RegisteredDevicePartition> partitions;
+    fc::Vec<RegisteredDevicePartition> partitions;
 };
 
 struct MountedDevice
 {
     IpcServerHandle endpoint;
-    core::WStr path;
+    fc::WStr path;
 };
 
 struct RegisteredFs
@@ -46,8 +46,8 @@ struct RegisteredFs
     prot::DiskFsManagerConnection endpoint;
 };
 
-core::Vec<RegisteredDevice> registered_services{};
-core::Vec<RegisteredFs> registered_fs{};
+fc::Vec<RegisteredDevice> registered_services{};
+fc::Vec<RegisteredFs> registered_fs{};
 size_t mounted_devices_count = 0;
 
 void try_create_disk_endpoint()
@@ -66,30 +66,30 @@ void try_create_disk_endpoint()
             for (auto &fs : registered_fs)
             {
 
-                fmt::log$("trying to mount partition {} of device {} with fs {} on {}", part.part_name.view(), part.part_dev_name.view(), core::Str(fs.name), device.endpoint);
+                fmt::log$("trying to mount partition {} of device {} with fs {} on {}", part.part_name.view(), part.part_dev_name.view(), fc::Str(fs.name), device.endpoint);
 
-                auto res = fs.endpoint.mount_if_device_valid(core::Str(device.name), device.endpoint, part.begin, part.end, part.id).unwrap();
+                auto res = fs.endpoint.mount_if_device_valid(fc::Str(device.name), device.endpoint, part.begin, part.end, part.id).unwrap();
 
                 if (res.success)
                 {
                     part.has_fs = true;
                     part.fs_endpoint = res.fs_endpoint;
-                    part.fs_name = core::WStr::copy(core::Str(fs.name));
+                    part.fs_name = fc::WStr::copy(fc::Str(fs.name));
 
                     MountedDevice mdev{};
                     mdev.endpoint = res.fs_endpoint;
                     if (mounted_devices_count == 0)
                     {
-                        mdev.path = core::WStr::copy(core::Str("/"));
+                        mdev.path = fc::WStr::copy(fc::Str("/"));
                     }
                     else
                     {
-                        mdev.path = core::WStr::copy(core::Str("/mnt/") + device.name);
+                        mdev.path = fc::WStr::copy(fc::Str("/mnt/") + device.name);
                     }
 
                     mounted_devices_count++;
 
-                    mount_fs(mdev.endpoint, core::move(mdev.path)).unwrap();
+                    mount_fs(mdev.endpoint, fc::move(mdev.path)).unwrap();
 
                     fmt::log$("detected partition {} of device {} with fs {}", part.part_name.view(), part.part_dev_name.view(), part.fs_name.view());
                     break;
@@ -115,8 +115,8 @@ int main(int, char **)
 
     auto server = server_r.take();
 
-    registered_services = core::Vec<RegisteredDevice>();
-    registered_fs = core::Vec<RegisteredFs>();
+    registered_services = fc::Vec<RegisteredDevice>();
+    registered_fs = fc::Vec<RegisteredFs>();
 
     while (true)
     {
@@ -128,7 +128,7 @@ int main(int, char **)
 
         if (!received.is_error())
         {
-            auto msg = core::move(received.unwrap());
+            auto msg = fc::move(received.unwrap());
 
             if (msg.received.flags & IPC_MESSAGE_FLAG_DISCONNECT)
             {
@@ -155,7 +155,7 @@ int main(int, char **)
 
                 fmt::log$("(server) registered device: {} with endpoint: {}", device.name, device.endpoint);
 
-                core::Str v = core::Str(device.name);
+                fc::Str v = fc::Str(device.name);
                 auto v2_res = Wingos::parse_gpt(v);
                 auto v2 = v2_res.take();
 
@@ -165,19 +165,19 @@ int main(int, char **)
                     RegisteredDevicePartition part{};
                     part.id = part_id++;
                     part.endpoint = device.endpoint;
-                    core::WStr part_name = core::move(fmt::format_str("{}-{}", device.name, part.id).unwrap());
-                    part.part_dev_name = core::WStr::copy(part_name.view());
-                    part.part_name = core::WStr::copy(entry.name.view());
+                    fc::WStr part_name = fc::move(fmt::format_str("{}-{}", device.name, part.id).unwrap());
+                    part.part_dev_name = fc::WStr::copy(part_name.view());
+                    part.part_name = fc::WStr::copy(entry.name.view());
                     part.has_fs = false;
                     part.begin = entry.entry->lba_start;
                     part.end = entry.entry->lba_end;
 
                     fmt::log$("(server) detected partition: {} -> (LBA {} - {})", part.part_name.view(), part.part_dev_name.view(), part.begin, part.end);
 
-                    device.partitions.push(core::move(part));
+                    device.partitions.push(fc::move(part));
                 }
 
-                registered_services.push(core::move(device));
+                registered_services.push(fc::move(device));
                 (void)v2;
 
                 recheck_mount = true;
@@ -194,7 +194,7 @@ int main(int, char **)
 
                 registered_fs.push(filesystem);
 
-                fmt::log$("(server) registered filesystem: {} with endpoint: {}", core::Str(filesystem.name), msg.received.data[1].data);
+                fmt::log$("(server) registered filesystem: {} with endpoint: {}", fc::Str(filesystem.name), msg.received.data[1].data);
 
                 recheck_mount = true;
                 break;
@@ -231,7 +231,7 @@ int main(int, char **)
                     reply.data[1].data = 0;
                 }
 
-                auto send_res = server.reply(core::move(msg), reply);
+                auto send_res = server.reply(fc::move(msg), reply);
                 if (send_res.is_error())
                 {
                     fmt::err$("(server) failed to send root access reply: {}", send_res.error());

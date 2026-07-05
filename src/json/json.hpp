@@ -24,13 +24,13 @@ struct JsonValue;
 struct JsonChilds
 {
 
-    core::Vec<JsonValue> values = {};
-    core::Vec<core::Str> keys = {}; // for objects
+    fc::Vec<JsonValue> values = {};
+    fc::Vec<fc::Str> keys = {}; // for objects
 
     JsonChilds() : values(), keys() {};
 
     JsonChilds(JsonChilds &&other) noexcept
-        : values(core::move(other.values)), keys(core::move(other.keys))
+        : values(fc::move(other.values)), keys(fc::move(other.keys))
     {
     }
 
@@ -43,8 +43,8 @@ struct JsonChilds
     {
         if (this != &other)
         {
-            core::swap(values, other.values);
-            core::swap(keys, other.keys);
+            fc::swap(values, other.values);
+            fc::swap(keys, other.keys);
         }
         return *this;
     }
@@ -63,7 +63,7 @@ struct JsonChilds
 
 struct JsonStorage
 {
-    core::Str raw;
+    fc::Str raw;
     bool boolean;
     double number;
     int integer;
@@ -76,7 +76,7 @@ struct JsonStorage
           boolean(other.boolean),
           number(other.number),
           integer(other.integer),
-          childs(core::move(other.childs))
+          childs(fc::move(other.childs))
     {
     }
 
@@ -94,11 +94,11 @@ struct JsonStorage
     {
         if (this != &other)
         {
-            core::swap(raw, other.raw);
+            fc::swap(raw, other.raw);
             boolean = other.boolean;
             number = other.number;
             integer = other.integer;
-            core::swap(childs, other.childs);
+            fc::swap(childs, other.childs);
         }
         return *this;
     }
@@ -127,7 +127,7 @@ struct JsonValue
     JsonValue() : type(JsonType::Null), storage() {};
 
     JsonValue(JsonValue &&other) noexcept
-        : type(other.type), storage(core::move(other.storage))
+        : type(other.type), storage(fc::move(other.storage))
     {
         other.type = JsonType::Null;
     }
@@ -142,7 +142,7 @@ struct JsonValue
         if (this != &other)
         {
             type = other.type;
-            core::swap(storage, other.storage);
+            fc::swap(storage, other.storage);
         }
         return *this;
     }
@@ -165,11 +165,11 @@ struct JsonValue
         type = JsonType::Null;
     }
 
-    core::Result<JsonValue> get(const core::Str &key)
+    fc::Result<JsonValue> get(const fc::Str &key)
     {
         if (type != JsonType::Object)
         {
-            return core::Result<JsonValue>::error(("Not an object"));
+            return fc::Result<JsonValue>::error(("Not an object"));
         }
         for (size_t i = 0; i < storage.childs.keys.len(); i++)
         {
@@ -178,20 +178,20 @@ struct JsonValue
                 return storage.childs.values[i];
             }
         }
-        return core::Result<JsonValue>::error(("Key not found"));
+        return fc::Result<JsonValue>::error(("Key not found"));
     }
 
-    core::Result<JsonValue> get(size_t index)
+    fc::Result<JsonValue> get(size_t index)
     {
         if (type != JsonType::Array)
         {
-            return core::Result<JsonValue>::error(("Not an array"));
+            return fc::Result<JsonValue>::error(("Not an array"));
         }
         if (index < storage.childs.values.len())
         {
             return storage.childs.values[index];
         }
-        return core::Result<JsonValue>::error(("Index out of bounds"));
+        return fc::Result<JsonValue>::error(("Index out of bounds"));
     }
 
     bool is_null()
@@ -199,41 +199,41 @@ struct JsonValue
         return type == JsonType::Null;
     }
 
-    core::Result<bool> as_bool()
+    fc::Result<bool> as_bool()
     {
         if (type == JsonType::Boolean)
         {
             return storage.boolean;
         }
-        return core::Result<bool>::error("Not a boolean");
+        return fc::Result<bool>::error("Not a boolean");
     }
 
-    core::Result<int> as_number()
+    fc::Result<int> as_number()
     {
         if (type == JsonType::Number)
         {
             return storage.integer;
         }
-        return core::Result<int>::error("Not a number");
+        return fc::Result<int>::error("Not a number");
     }
 
-    core::Result<core::Str> as_string()
+    fc::Result<fc::Str> as_string()
     {
         if (type == JsonType::String)
         {
             return storage.raw;
         }
-        return core::Result<core::Str>::error("Not a string");
+        return fc::Result<fc::Str>::error("Not a string");
     }
 
-    core::Result<core::Vec<JsonValue>> as_array()
+    fc::Result<fc::Vec<JsonValue>> as_array()
     {
         if (type == JsonType::Array)
         {
             return storage.childs.values;
         }
 
-        return core::Result<core::Vec<JsonValue>>::error("Not an array");
+        return fc::Result<fc::Vec<JsonValue>>::error("Not an array");
     }
 
     JsonValue &operator[](size_t index)
@@ -249,7 +249,7 @@ struct JsonValue
         return storage.childs.values[0];
     }
 
-    JsonValue &operator[](const core::Str &key)
+    JsonValue &operator[](const fc::Str &key)
     {
         for (size_t i = 0; i < storage.childs.keys.len(); i++)
         {
@@ -265,7 +265,7 @@ struct JsonValue
     }
 
     // Convenience getter for array children
-    core::Vec<JsonValue> &children()
+    fc::Vec<JsonValue> &children()
     {
         return storage.childs.values;
     }
@@ -275,7 +275,7 @@ class Json
 {
 
     JsonValue _root = {};
-    core::MemView<char> data;
+    fc::MemView<char> data;
 
 public:
     JsonValue &root()
@@ -283,6 +283,6 @@ public:
         return _root;
     }
 
-    static core::Result<Json> parse(core::MemView<char> reader);
+    static fc::Result<Json> parse(fc::MemView<char> reader);
 };
 }; // namespace wjson

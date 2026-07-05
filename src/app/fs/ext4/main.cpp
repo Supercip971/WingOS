@@ -29,12 +29,12 @@ struct Ext4FileEndpoint
 
 struct Ext4FsEndpoint
 {
-    core::Vec<Ext4FileEndpoint *> ext4_file_endpoints = {};
+    fc::Vec<Ext4FileEndpoint *> ext4_file_endpoints = {};
     Ext4Filesystem *attached_fs;
     prot::ManagedServer root_server = {};
 };
 
-core::Vec<Ext4FsEndpoint *> ext4_fs_endpoints = {};
+fc::Vec<Ext4FsEndpoint *> ext4_fs_endpoints = {};
 
 bool update_endpoint(Ext4FsEndpoint *dev, Ext4FileEndpoint *endpoint)
 {
@@ -85,7 +85,7 @@ bool update_endpoint(Ext4FsEndpoint *dev, Ext4FileEndpoint *endpoint)
     {
         fmt::log$("ext4: get_info request for inode {}", endpoint->inode.inode_id);
 
-        fmt::log$("    indode size: {}", core::copy(endpoint->inode.inode.size_lo));
+        fmt::log$("    indode size: {}", fc::copy(endpoint->inode.inode.size_lo));
         fmt::log$("    inode type: {}", (int)endpoint->inode.inode.file_type);
         IpcMessage reply = {};
         reply.data[0].data = 1; // success
@@ -94,7 +94,7 @@ bool update_endpoint(Ext4FsEndpoint *dev, Ext4FileEndpoint *endpoint)
         reply.data[3].data = endpoint->inode.inode.mtime;
         reply.data[4].data = endpoint->inode.inode.atime;
         reply.data[5].data = (uint16_t)(endpoint->inode.inode.file_type);
-        endpoint->file_server.reply(core::move(msg), reply);
+        endpoint->file_server.reply(fc::move(msg), reply);
         return true;
     }
     case prot::FS_CLOSE:
@@ -121,13 +121,13 @@ bool update_endpoint(Ext4FsEndpoint *dev, Ext4FileEndpoint *endpoint)
     {
 
         IpcMessage reply = {};
-        core::Str path;
+        fc::Str path;
         char path_buf[256];
         for (size_t i = 0; i < msg.received.len && i < 256; i++)
         {
             path_buf[i] = msg.received.raw_buffer[i];
         }
-        path = core::Str(path_buf, msg.received.len);
+        path = fc::Str(path_buf, msg.received.len);
         fmt::log$("ext4: open file request for path: {}", path.view());
 
         auto file_res = dev->attached_fs->get_subdir(
@@ -139,7 +139,7 @@ bool update_endpoint(Ext4FsEndpoint *dev, Ext4FileEndpoint *endpoint)
             fmt::err$("ext4: failed to open file {}: {}", path.view(), file_res.error());
             reply.data[0].data = 0; // failure
             reply.data[1].data = 0;
-            endpoint->file_server.reply(core::move(msg), reply);
+            endpoint->file_server.reply(fc::move(msg), reply);
         }
         else
         {
@@ -154,7 +154,7 @@ bool update_endpoint(Ext4FsEndpoint *dev, Ext4FileEndpoint *endpoint)
                 fmt::err$("ext4: failed to create file endpoint for file {}: {}", path.view(), serv.error());
                 reply.data[0].data = 0; // failure
                 reply.data[1].data = 0;
-                endpoint->file_server.reply(core::move(msg), reply);
+                endpoint->file_server.reply(fc::move(msg), reply);
                 return true;
             }
 
@@ -167,7 +167,7 @@ bool update_endpoint(Ext4FsEndpoint *dev, Ext4FileEndpoint *endpoint)
             reply.data[0].data = 1; // success
             reply.data[1].data = dev->ext4_file_endpoints.last()->file_server.addr();
 
-            endpoint->file_server.reply(core::move(msg), reply);
+            endpoint->file_server.reply(fc::move(msg), reply);
 
             fmt::log$("ext4: provided file endpoint {} for file {}", reply.data[1].data, path.view());
             return true;
@@ -198,7 +198,7 @@ bool update_endpoint(Ext4FsEndpoint *dev, Ext4FileEndpoint *endpoint)
             };
             IpcMessage reply = {};
             reply.data[0].data = 0; // failure
-            endpoint->file_server.reply(core::move(msg), reply);
+            endpoint->file_server.reply(fc::move(msg), reply);
             break;
         }
         IpcMessage reply = {};
@@ -206,7 +206,7 @@ bool update_endpoint(Ext4FsEndpoint *dev, Ext4FileEndpoint *endpoint)
         reply.data[1].data = r.unwrap();
         reply.data[2].asset_handle = mem_asset.handle;
         reply.data[2].is_asset = true;
-        endpoint->file_server.reply(core::move(msg), reply);
+        endpoint->file_server.reply(fc::move(msg), reply);
 
         break;
     }
@@ -219,7 +219,7 @@ bool update_endpoint(Ext4FsEndpoint *dev, Ext4FileEndpoint *endpoint)
     return false;
 };
 
-core::Result<void> update_endpoints(Ext4FsEndpoint *dev)
+fc::Result<void> update_endpoints(Ext4FsEndpoint *dev)
 {
 
     while (dev->root_server.accept_connection())
@@ -229,7 +229,7 @@ core::Result<void> update_endpoints(Ext4FsEndpoint *dev)
     auto received = dev->root_server.try_receive();
     if (!received.is_error())
     {
-        auto msg = core::move(received.unwrap());
+        auto msg = fc::move(received.unwrap());
         switch (msg.received.data[0].data)
         {
         case prot::DISK_CREATE_ROOT_ENDPOINT:
@@ -251,7 +251,7 @@ core::Result<void> update_endpoints(Ext4FsEndpoint *dev)
             reply.data[1].data = new_endpoint->file_server.addr();
 
             dev->ext4_file_endpoints.push(new_endpoint);
-            dev->root_server.reply(core::move(msg), reply);
+            dev->root_server.reply(fc::move(msg), reply);
             fmt::log$("ext4: provided root endpoint {}", dev->root_server.addr());
             break;
         }
@@ -288,7 +288,7 @@ int main(int, char **)
 
     prot::VfsConnection vfs = prot::VfsConnection::connect().take();
 
-    vfs.register_fs(core::Str("ext4"), serv.addr()).unwrap();
+    vfs.register_fs(fc::Str("ext4"), serv.addr()).unwrap();
     fmt::log$("ext4: registered fs manager with vfs");
     fmt::log$("ext4: entering main loop");
     while (true)
@@ -310,7 +310,7 @@ int main(int, char **)
             continue;
         }
 
-        auto msg = core::move(received.unwrap());
+        auto msg = fc::move(received.unwrap());
         if (msg.received.flags & IPC_MESSAGE_FLAG_DISCONNECT)
         {
             fmt::log$("ext4: disconnecting from vfs");
@@ -326,13 +326,13 @@ int main(int, char **)
             size_t end_lba = msg.received.data[3].data;
             size_t part_id = msg.received.data[4].data;
 
-            core::Str name;
+            fc::Str name;
             char name_buf[80];
             for (size_t i = 0; i < msg.received.len && i < 80; i++)
             {
                 name_buf[i] = msg.received.raw_buffer[i];
             }
-            name = core::Str(name_buf, msg.received.len);
+            name = fc::Str(name_buf, msg.received.len);
 
             fmt::log$("ext4: mount request for device {} (part id {})", name.view(), part_id);
 
@@ -354,7 +354,7 @@ int main(int, char **)
 
                 IpcMessage reply = {};
                 reply.data[0].data = 0; // fs endpoint 0 means failure
-                auto send_res = serv.reply(core::move(msg), reply);
+                auto send_res = serv.reply(fc::move(msg), reply);
                 if (send_res.is_error())
                 {
                     fmt::err$("ext4: failed to send mount failure reply: {}", send_res.error());
@@ -380,7 +380,7 @@ int main(int, char **)
             (void)end_lba;
             fmt::log$("ext4: ext4 filesystem detected on device {}, mounting...", name.view());
 
-            auto send_res = serv.reply(core::move(msg), reply);
+            auto send_res = serv.reply(fc::move(msg), reply);
             if (send_res.is_error())
             {
                 fmt::err$("ext4: failed to send mount success reply: {}", send_res.error());

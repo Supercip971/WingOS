@@ -144,8 +144,8 @@ int ResultTestError::move_assign_count = 0;
 int ResultTestError::destruct_count = 0;
 
 // Add format_v for ResultTestError to support logging
-template <core::Writable Targ>
-constexpr core::Result<void> format_v(Targ &target, const ResultTestError &err)
+template <fc::Writable Targ>
+constexpr fc::Result<void> format_v(Targ &target, const ResultTestError &err)
 {
     return fmt::format(target, "error({})", err.code);
 }
@@ -157,7 +157,7 @@ static constexpr TestGroup resultTests = {
             "basic success creation",
             []() -> Test::RetFn
             {
-                core::Result<int, const char *> result = 42;
+                fc::Result<int, const char *> result = 42;
 
                 if (result.is_error())
                     return "result should not be error";
@@ -170,11 +170,11 @@ static constexpr TestGroup resultTests = {
             "basic error creation",
             []() -> Test::RetFn
             {
-                core::Result<int, const char *> result = "error message";
+                fc::Result<int, const char *> result = "error message";
 
                 if (!result.is_error())
                     return "result should be error";
-                if (core::Str(result.error()) != core::Str("error message"))
+                if (fc::Str(result.error()) != fc::Str("error message"))
                     return "error message mismatch";
 
                 return {};
@@ -183,7 +183,7 @@ static constexpr TestGroup resultTests = {
             "success static factory",
             []() -> Test::RetFn
             {
-                auto result = core::Result<int, const char *>::success(100);
+                auto result = fc::Result<int, const char *>::success(100);
 
                 if (result.is_error())
                     return "result should not be error";
@@ -196,11 +196,11 @@ static constexpr TestGroup resultTests = {
             "error static factory",
             []() -> Test::RetFn
             {
-                auto result = core::Result<int, const char *>::error("test error");
+                auto result = fc::Result<int, const char *>::error("test error");
 
                 if (!result.is_error())
                     return "result should be error";
-                if (core::Str(result.error()) != core::Str("test error"))
+                if (fc::Str(result.error()) != fc::Str("test error"))
                     return "error message mismatch";
 
                 return {};
@@ -209,7 +209,7 @@ static constexpr TestGroup resultTests = {
             "bool operator on success",
             []() -> Test::RetFn
             {
-                core::Result<int, const char *> result = 42;
+                fc::Result<int, const char *> result = 42;
 
                 if (!(bool)result)
                     return "bool operator should be true for success";
@@ -222,7 +222,7 @@ static constexpr TestGroup resultTests = {
             "bool operator on error",
             []() -> Test::RetFn
             {
-                core::Result<int, const char *> result = "error";
+                fc::Result<int, const char *> result = "error";
 
                 if ((bool)result)
                     return "bool operator should be false for error";
@@ -235,7 +235,7 @@ static constexpr TestGroup resultTests = {
             "take() moves value",
             []() -> Test::RetFn
             {
-                core::Result<int, const char *> result = 42;
+                fc::Result<int, const char *> result = 42;
 
                 int value = result.take();
                 if (value != 42)
@@ -254,7 +254,7 @@ static constexpr TestGroup resultTests = {
                     if (ResultTestObject::construct_count != 1)
                         return "construct_count should be 1";
 
-                    core::Result<ResultTestObject, const char *> result = core::move(obj);
+                    fc::Result<ResultTestObject, const char *> result = fc::move(obj);
                     // Constructor + move constructor
                     if (ResultTestObject::construct_count != 2)
                         return "construct_count should be 2 after move to result";
@@ -279,7 +279,7 @@ static constexpr TestGroup resultTests = {
                     if (ResultTestError::construct_count != 1)
                         return "construct_count should be 1";
 
-                    core::Result<int, ResultTestError> result = core::move(err);
+                    fc::Result<int, ResultTestError> result = fc::move(err);
                     // Constructor + move constructor
                     if (ResultTestError::construct_count != 2)
                         return "construct_count should be 2 after move to result";
@@ -300,11 +300,11 @@ static constexpr TestGroup resultTests = {
                 ResultTestObject::reset_counts();
 
                 {
-                    core::Result<ResultTestObject, const char *> result1 = ResultTestObject(42);
+                    fc::Result<ResultTestObject, const char *> result1 = ResultTestObject(42);
                     if (ResultTestObject::construct_count != 2)
                         return "construct_count should be 2";
 
-                    core::Result<ResultTestObject, const char *> result2 = core::move(result1);
+                    fc::Result<ResultTestObject, const char *> result2 = fc::move(result1);
                     if (ResultTestObject::construct_count != 3)
                         return "construct_count should be 3 after move constructor";
                     if (ResultTestObject::move_construct_count != 2)
@@ -328,11 +328,11 @@ static constexpr TestGroup resultTests = {
                 ResultTestError::reset_counts();
 
                 {
-                    core::Result<int, ResultTestError> result1 = ResultTestError(500);
+                    fc::Result<int, ResultTestError> result1 = ResultTestError(500);
                     if (ResultTestError::construct_count != 2)
                         return "construct_count should be 2";
 
-                    core::Result<int, ResultTestError> result2 = core::move(result1);
+                    fc::Result<int, ResultTestError> result2 = fc::move(result1);
                     if (ResultTestError::construct_count != 3)
                         return "construct_count should be 3 after move constructor";
                     if (ResultTestError::move_construct_count != 2)
@@ -356,13 +356,13 @@ static constexpr TestGroup resultTests = {
                 ResultTestObject::reset_counts();
 
                 {
-                    core::Result<ResultTestObject, const char *> result1 = ResultTestObject(10);
-                    core::Result<ResultTestObject, const char *> result2 = ResultTestObject(20);
+                    fc::Result<ResultTestObject, const char *> result1 = ResultTestObject(10);
+                    fc::Result<ResultTestObject, const char *> result2 = ResultTestObject(20);
 
                     int before_construct = ResultTestObject::construct_count;
                     int before_destruct = ResultTestObject::destruct_count;
 
-                    result2 = core::move(result1);
+                    result2 = fc::move(result1);
 
                     // One destruction (old value in result2) + one construction (move)
                     if (ResultTestObject::destruct_count != before_destruct + 1)
@@ -388,13 +388,13 @@ static constexpr TestGroup resultTests = {
                 ResultTestError::reset_counts();
 
                 {
-                    core::Result<int, ResultTestError> result1 = ResultTestError(100);
-                    core::Result<int, ResultTestError> result2 = ResultTestError(200);
+                    fc::Result<int, ResultTestError> result1 = ResultTestError(100);
+                    fc::Result<int, ResultTestError> result2 = ResultTestError(200);
 
                     int before_construct = ResultTestError::construct_count;
                     int before_destruct = ResultTestError::destruct_count;
 
-                    result2 = core::move(result1);
+                    result2 = fc::move(result1);
 
                     // One destruction (old error in result2) + one construction (move)
                     if (ResultTestError::destruct_count != before_destruct + 1)
@@ -421,15 +421,15 @@ static constexpr TestGroup resultTests = {
                 ResultTestError::reset_counts();
 
                 {
-                    core::Result<ResultTestObject, ResultTestError> result1 = ResultTestObject(42);
-                    core::Result<ResultTestObject, ResultTestError> result2 = ResultTestError(404);
+                    fc::Result<ResultTestObject, ResultTestError> result1 = ResultTestObject(42);
+                    fc::Result<ResultTestObject, ResultTestError> result2 = ResultTestError(404);
 
                     if (result1.is_error())
                         return "result1 should not be error";
                     if (!result2.is_error())
                         return "result2 should be error";
 
-                    result2 = core::move(result1);
+                    result2 = fc::move(result1);
 
                     if (result2.is_error())
                         return "result2 should not be error after move";
@@ -452,15 +452,15 @@ static constexpr TestGroup resultTests = {
                 ResultTestError::reset_counts();
 
                 {
-                    core::Result<ResultTestObject, ResultTestError> result1 = ResultTestError(500);
-                    core::Result<ResultTestObject, ResultTestError> result2 = ResultTestObject(99);
+                    fc::Result<ResultTestObject, ResultTestError> result1 = ResultTestError(500);
+                    fc::Result<ResultTestObject, ResultTestError> result2 = ResultTestObject(99);
 
                     if (!result1.is_error())
                         return "result1 should be error";
                     if (result2.is_error())
                         return "result2 should not be error";
 
-                    result2 = core::move(result1);
+                    result2 = fc::move(result1);
 
                     if (!result2.is_error())
                         return "result2 should be error after move";
@@ -482,12 +482,12 @@ static constexpr TestGroup resultTests = {
                 ResultTestObject::reset_counts();
 
                 {
-                    core::Result<ResultTestObject, const char *> result = ResultTestObject(123);
+                    fc::Result<ResultTestObject, const char *> result = ResultTestObject(123);
 
                     int before_construct = ResultTestObject::construct_count;
                     int before_destruct = ResultTestObject::destruct_count;
 
-                    result = core::move(result);
+                    result = fc::move(result);
 
                     // Self assignment should not create or destroy anything
                     if (ResultTestObject::construct_count != before_construct)
@@ -510,7 +510,7 @@ static constexpr TestGroup resultTests = {
             "void result success",
             []() -> Test::RetFn
             {
-                core::Result<void, const char *> result;
+                fc::Result<void, const char *> result;
 
                 if (result.is_error())
                     return "void result should not be error";
@@ -523,11 +523,11 @@ static constexpr TestGroup resultTests = {
             "void result error",
             []() -> Test::RetFn
             {
-                core::Result<void, const char *> result = "void error";
+                fc::Result<void, const char *> result = "void error";
 
                 if (!result.is_error())
                     return "void result should be error";
-                if (core::Str(result.error()) != core::Str("void error"))
+                if (fc::Str(result.error()) != fc::Str("void error"))
                     return "error message mismatch";
 
                 return {};
@@ -539,8 +539,8 @@ static constexpr TestGroup resultTests = {
                 ResultTestError::reset_counts();
 
                 {
-                    core::Result<void, ResultTestError> result1 = ResultTestError(123);
-                    core::Result<void, ResultTestError> result2 = core::move(result1);
+                    fc::Result<void, ResultTestError> result1 = ResultTestError(123);
+                    fc::Result<void, ResultTestError> result2 = fc::move(result1);
 
                     if (!result2.is_error())
                         return "result2 should be error";
@@ -560,10 +560,10 @@ static constexpr TestGroup resultTests = {
                 ResultTestError::reset_counts();
 
                 {
-                    core::Result<void, ResultTestError> result1 = ResultTestError(100);
-                    core::Result<void, ResultTestError> result2 = ResultTestError(200);
+                    fc::Result<void, ResultTestError> result1 = ResultTestError(100);
+                    fc::Result<void, ResultTestError> result2 = ResultTestError(200);
 
-                    result2 = core::move(result1);
+                    result2 = fc::move(result1);
 
                     if (!result2.is_error())
                         return "result2 should be error";
@@ -583,7 +583,7 @@ static constexpr TestGroup resultTests = {
                 ResultTestObject::reset_counts();
 
                 {
-                    core::Result<ResultTestObject, const char *> result = ResultTestObject(1);
+                    fc::Result<ResultTestObject, const char *> result = ResultTestObject(1);
 
                     result = ResultTestObject(2);
                     result = ResultTestObject(3);
@@ -609,7 +609,7 @@ static constexpr TestGroup resultTests = {
                 ResultTestError::reset_counts();
 
                 {
-                    core::Result<int, ResultTestError> result = ResultTestError(999);
+                    fc::Result<int, ResultTestError> result = ResultTestError(999);
                     if (!result.is_error())
                         return "result should be error";
                 }
@@ -627,7 +627,7 @@ static constexpr TestGroup resultTests = {
                 ResultTestObject::reset_counts();
 
                 {
-                    core::Result<ResultTestObject, const char *> result = ResultTestObject(888);
+                    fc::Result<ResultTestObject, const char *> result = ResultTestObject(888);
                     if (result.is_error())
                         return "result should not be error";
                 }
@@ -642,7 +642,7 @@ static constexpr TestGroup resultTests = {
             "unwrap returns reference",
             []() -> Test::RetFn
             {
-                core::Result<int, const char *> result = 100;
+                fc::Result<int, const char *> result = 100;
 
                 int &ref = result.unwrap();
                 ref = 200;
@@ -661,11 +661,11 @@ static constexpr TestGroup resultTests = {
                 {
                     auto make_result = []()
                     {
-                        return core::Result<ResultTestObject, const char *>(ResultTestObject(42));
+                        return fc::Result<ResultTestObject, const char *>(ResultTestObject(42));
                     };
 
                     auto result = make_result();
-                    ResultTestObject obj = core::move(result).unwrap();
+                    ResultTestObject obj = fc::move(result).unwrap();
                     if (obj.value != 42)
                         return "unwrapped value should be 42";
                 }
@@ -683,10 +683,10 @@ static constexpr TestGroup resultTests = {
                 ResultTestError::reset_counts();
 
                 {
-                    core::Result<ResultTestObject, ResultTestError> r1 = ResultTestObject(1);
-                    core::Result<ResultTestObject, ResultTestError> r2 = ResultTestError(2);
-                    core::Result<ResultTestObject, ResultTestError> r3 = ResultTestObject(3);
-                    core::Result<ResultTestObject, ResultTestError> r4 = ResultTestError(4);
+                    fc::Result<ResultTestObject, ResultTestError> r1 = ResultTestObject(1);
+                    fc::Result<ResultTestObject, ResultTestError> r2 = ResultTestError(2);
+                    fc::Result<ResultTestObject, ResultTestError> r3 = ResultTestObject(3);
+                    fc::Result<ResultTestObject, ResultTestError> r4 = ResultTestError(4);
 
                     // Mix of success and error states
                     if (r1.is_error())

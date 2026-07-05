@@ -41,7 +41,7 @@ static constexpr TestGroup sharedPtrTests = {
             {
                 TestObject::reset_counts();
                 {
-                    auto ptr = core::SharedPtr<TestObject>::make(42);
+                    auto ptr = fc::SharedPtr<TestObject>::make(42);
 
                     if (TestObject::construct_count != 1)
                     {
@@ -61,7 +61,7 @@ static constexpr TestGroup sharedPtrTests = {
             "shared_ptr dereference operators",
             []() -> Test::RetFn
             {
-                auto ptr = core::SharedPtr<TestObject>::make(100);
+                auto ptr = fc::SharedPtr<TestObject>::make(100);
 
                 if ((*ptr).value != 100)
                 {
@@ -89,7 +89,7 @@ static constexpr TestGroup sharedPtrTests = {
             {
                 TestObject::reset_counts();
                 {
-                    auto ptr1 = core::SharedPtr<TestObject>::make(50);
+                    auto ptr1 = fc::SharedPtr<TestObject>::make(50);
 
                     if (TestObject::construct_count != 1)
                     {
@@ -144,8 +144,8 @@ static constexpr TestGroup sharedPtrTests = {
             {
                 TestObject::reset_counts();
                 {
-                    auto ptr1 = core::SharedPtr<TestObject>::make(10);
-                    auto ptr2 = core::SharedPtr<TestObject>::make(20);
+                    auto ptr1 = fc::SharedPtr<TestObject>::make(10);
+                    auto ptr2 = fc::SharedPtr<TestObject>::make(20);
 
                     if (TestObject::construct_count != 2)
                     {
@@ -187,9 +187,9 @@ static constexpr TestGroup sharedPtrTests = {
             {
                 TestObject::reset_counts();
                 {
-                    auto ptr1 = core::SharedPtr<TestObject>::make(99);
+                    auto ptr1 = fc::SharedPtr<TestObject>::make(99);
 
-                    auto ptr2 = core::move(ptr1); // Move constructor
+                    auto ptr2 = fc::move(ptr1); // Move constructor
 
                     if (TestObject::construct_count != 1)
                     {
@@ -216,10 +216,10 @@ static constexpr TestGroup sharedPtrTests = {
             {
                 TestObject::reset_counts();
                 {
-                    auto ptr1 = core::SharedPtr<TestObject>::make(111);
-                    auto ptr2 = core::SharedPtr<TestObject>::make(222);
+                    auto ptr1 = fc::SharedPtr<TestObject>::make(111);
+                    auto ptr2 = fc::SharedPtr<TestObject>::make(222);
 
-                    ptr2 = core::move(ptr1); // Move assignment
+                    ptr2 = fc::move(ptr1); // Move assignment
 
                     // ptr2's old object should be destroyed
                     if (TestObject::destruct_count != 1)
@@ -247,7 +247,7 @@ static constexpr TestGroup sharedPtrTests = {
             {
                 TestObject::reset_counts();
                 {
-                    auto ptr1 = core::SharedPtr<TestObject>::make(5);
+                    auto ptr1 = fc::SharedPtr<TestObject>::make(5);
                     auto ptr2 = ptr1;
                     auto ptr3 = ptr2;
                     auto ptr4 = ptr3;
@@ -289,7 +289,7 @@ static constexpr TestGroup sharedPtrTests = {
             {
                 TestObject::reset_counts();
                 {
-                    auto ptr = core::SharedPtr<TestObject>::make(123);
+                    auto ptr = fc::SharedPtr<TestObject>::make(123);
                     ptr = ptr; // Self assignment
 
                     if (TestObject::construct_count != 1)
@@ -320,7 +320,7 @@ static constexpr TestGroup sharedPtrTests = {
             "shared_ptr with simple types",
             []() -> Test::RetFn
             {
-                auto int_ptr = core::SharedPtr<int>::make(42);
+                auto int_ptr = fc::SharedPtr<int>::make(42);
 
                 if (*int_ptr != 42)
                 {

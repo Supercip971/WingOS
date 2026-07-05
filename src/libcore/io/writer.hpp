@@ -6,7 +6,7 @@
 
 #include "libcore/result.hpp"
 
-namespace core
+namespace fc
 {
 
 class Writer
@@ -50,4 +50,4 @@ concept Writable = requires(T *x) {
 
 static_assert(Writable<Writer>);
 
-} // namespace core
+} // namespace fc

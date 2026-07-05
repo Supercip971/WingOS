@@ -16,7 +16,7 @@ class _Root : public Widget
 {
 
 public:
-    core::SharedPtr<Widget> elements;
+    fc::SharedPtr<Widget> elements;
 
     wgfx::CompositeColor bg;
     ~_Root() override = default;
@@ -42,12 +42,12 @@ public:
     }
 
     template <typename T>
-    static core::SharedPtr<Widget> construct(wgfx::CompositeColor bg, T args)
+    static fc::SharedPtr<Widget> construct(wgfx::CompositeColor bg, T args)
     {
-        return core::SharedPtr<_Root>::make(bg, args).template static_pointer_cast<Widget>();
+        return fc::SharedPtr<_Root>::make(bg, args).template static_pointer_cast<Widget>();
     }
 
-    core::SharedPtr<Widget> build(UiContext const &v) override
+    fc::SharedPtr<Widget> build(UiContext const &v) override
     {
         (void)v;
         return elements;

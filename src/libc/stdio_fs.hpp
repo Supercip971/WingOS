@@ -25,15 +25,15 @@ struct _IO_FILE
     int eof_flag;
     int error_flag;
     int ungetc_buf; // -1 if empty, otherwise the ungotten char
-    core::WStr buffer;
+    fc::WStr buffer;
 
     union
     {
         prot::FsFile *file;
         prot::SenderPipe *output;
         prot::ReceiverPipe *input;
-        core::Writer *writer;
-        core::Reader *reader;
+        fc::Writer *writer;
+        fc::Reader *reader;
     };
 
     _IO_FILE() : kind(FILE_KIND_VOID), cursor(0), eof_flag(0), error_flag(0), ungetc_buf(-1) {};

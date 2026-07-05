@@ -16,12 +16,12 @@
 // - Avoid circular includes between `space.hpp`, `ipc.hpp`, and other kernel headers
 // - Keep this header minimal (no Space / IPC / Task includes)
 
-struct Asset : public core::NoCopy
+struct Asset : public fc::NoCopy
 {
     // Provide an IDENT constant so templates written against typed assets can also be instantiated with `Asset`.
     // static constexpr size_t IDENT = (size_t)OBJECT_KIND_UNKNOWN;
 
-    core::Lock lock{};
+    fc::Lock lock{};
     std::atomic<size_t> ref_count{0};
     AssetKind kind{AssetKind::OBJECT_KIND_UNKNOWN};
 
@@ -52,7 +52,7 @@ struct Asset : public core::NoCopy
     }
 
     template <typename T>
-    core::Result<T *> as()
+    fc::Result<T *> as()
     {
         if (kind != T::IDENT)
         {
@@ -62,7 +62,7 @@ struct Asset : public core::NoCopy
     }
 
     template <typename T>
-    core::Result<T const *> as() const
+    fc::Result<T const *> as() const
     {
         if (kind != T::IDENT)
         {

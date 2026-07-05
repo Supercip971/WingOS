@@ -10,7 +10,7 @@
 
 namespace prot
 {
-class ManagedServer : public core::NoCopy
+class ManagedServer : public fc::NoCopy
 {
 
     IpcServerHandle self_endpoint;
@@ -23,7 +23,7 @@ public:
 
     size_t connection_count() const { return ipc_server.connections.len(); }
 
-    static core::Result<ManagedServer> create_registered_server(core::Str name, uint64_t major = 1, uint64_t minor = 0)
+    static fc::Result<ManagedServer> create_registered_server(fc::Str name, uint64_t major = 1, uint64_t minor = 0)
     {
         ManagedServer server = {};
 
@@ -57,7 +57,7 @@ public:
         return (server);
     }
 
-    static core::Result<ManagedServer> create_server()
+    static fc::Result<ManagedServer> create_server()
     {
         ManagedServer server = {};
         auto ipc_server = Wingos::Space::self().create_ipc_server();
@@ -111,22 +111,22 @@ public:
         ipc_server.remove();
     }
 
-    core::Result<Wingos::MessageServerReceived> try_receive()
+    fc::Result<Wingos::MessageServerReceived> try_receive()
     {
 
         auto msg = ipc_server.receive();
 
         if (msg.is_error())
         {
-            return core::Result<Wingos::MessageServerReceived>::error("no message received");
+            return fc::Result<Wingos::MessageServerReceived>::error("no message received");
         }
 
         return msg;
     }
 
-    core::Result<void> reply(Wingos::MessageServerReceived &&to, IpcMessage &message)
+    fc::Result<void> reply(Wingos::MessageServerReceived &&to, IpcMessage &message)
     {
-        return ipc_server.reply(core::move(to), message);
+        return ipc_server.reply(fc::move(to), message);
     }
 };
 } // namespace prot

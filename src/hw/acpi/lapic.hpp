@@ -160,20 +160,20 @@ public:
         return ((uint64_t)read(LAPICReg::ID) >> 24) & (uint64_t)0xff;
     }
 
-    static core::Result<void> initialize(Madt *madt);
+    static fc::Result<void> initialize(Madt *madt);
 
     void eoi()
     {
         write(LAPICReg::EOI, 0);
     }
 
-    core::Result<void> enable();
+    fc::Result<void> enable();
 
-    core::Result<void> init_cpu(LCpuId id);
+    fc::Result<void> init_cpu(LCpuId id);
 
-    core::Result<void> send_sipi(LCpuId id, PhysAddr jump_addr);
+    fc::Result<void> send_sipi(LCpuId id, PhysAddr jump_addr);
 
-    core::Result<void> timer_initialize();
+    fc::Result<void> timer_initialize();
 
     void send_interrupt(LCpuId cpu, uint8_t vector);
 };

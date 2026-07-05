@@ -2,7 +2,7 @@
 #include <libcore/ds/array.hpp>
 #include <libcore/str.hpp>
 
-namespace core
+namespace fc
 {
 
 constexpr Array isnt_encouraging_messages =
@@ -25,4 +25,4 @@ constexpr Array isnt_encouraging_messages =
         "Don't shut down the watercooling, or moon will fall",
 };
 
-} // namespace core
+} // namespace fc

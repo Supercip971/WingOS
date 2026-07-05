@@ -65,7 +65,7 @@ class InitConnection
 public:
     Wingos::IpcClient &raw_client() { return connection; }
 
-    static core::Result<InitConnection> connect()
+    static fc::Result<InitConnection> connect()
     {
         fmt::log$("connectin'");
         InitConnection conn{};
@@ -82,7 +82,7 @@ public:
         // connection.();
     }
 
-    core::Result<void> register_server(InitRegisterServer const &reg)
+    fc::Result<void> register_server(InitRegisterServer const &reg)
     {
         IpcMessage message = {};
         message.data[0].data = INIT_REGISTER_SERVER;
@@ -116,7 +116,7 @@ public:
         return {};
     }
 
-    core::Result<void> unregister_server(InitUnregisterServer const &reg)
+    fc::Result<void> unregister_server(InitUnregisterServer const &reg)
     {
         IpcMessage message = {};
         message.data[0].data = INIT_UNREGISTER_SERVER;
@@ -136,7 +136,7 @@ public:
         return {};
     }
 
-    core::Result<InitGetServerResponse> get_server(InitGetServer const &reg)
+    fc::Result<InitGetServerResponse> get_server(InitGetServer const &reg)
     {
         IpcMessage message = {};
         message.data[0].data = INIT_GET_SERVER;
@@ -203,7 +203,7 @@ public:
         return ("failed to receive get server response");
     }
 
-    core::Result<InitGetServerResponse> get_server(core::Str name, uint64_t major, uint64_t minor)
+    fc::Result<InitGetServerResponse> get_server(fc::Str name, uint64_t major, uint64_t minor)
     {
         InitGetServer get = {
 
@@ -217,7 +217,7 @@ public:
         return get_server(get);
     }
 
-    core::Result<void> signal_fs_available()
+    fc::Result<void> signal_fs_available()
     {
         IpcMessage message = {};
         message.data[0].data = INIT_SIGNAL_FS_AVAILABLE;
@@ -233,7 +233,7 @@ public:
         return {};
     }
 
-    core::Result<InitQueryFbResponse> query_framebuffer()
+    fc::Result<InitQueryFbResponse> query_framebuffer()
     {
         IpcMessage message = {};
         message.data[0].data = INIT_QUERY_FB;

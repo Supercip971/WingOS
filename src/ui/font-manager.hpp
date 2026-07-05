@@ -15,40 +15,40 @@ namespace fc
 class FontsRepo
 {
 
-    core::UMap<core::WStr, core::SharedPtr<wgfx::Font>> _fonts = {};
+    fc::UMap<fc::WStr, fc::SharedPtr<wgfx::Font>> _fonts = {};
 
 public:
-    using AppRessource = core::SharedPtr<wgfx::Font>;
+    using AppRessource = fc::SharedPtr<wgfx::Font>;
 
-    core::Result<void> load(core::WStr const &name, core::Str path, size_t size = 96)
+    fc::Result<void> load(fc::WStr const &name, fc::Str path, size_t size = 96)
     {
 
         fmt::log$("loading font({}): {}", name.view(), path);
-        auto fpath = core::finalizePath(path);
+        auto fpath = fc::finalizePath(path);
         auto t = wgfx::Typeface::from_file(fpath.view()).copied();
 
         _fonts.insert(
-            core::WStr::copy(name.view()),
-            core::SharedPtr<wgfx::Font>::make(try$(wgfx::Font::load_font(t, size))));
+            fc::WStr::copy(name.view()),
+            fc::SharedPtr<wgfx::Font>::make(try$(wgfx::Font::load_font(t, size))));
         return {};
     }
 
-    core::SharedPtr<wgfx::Font> &find(core::Str const &name)
+    fc::SharedPtr<wgfx::Font> &find(fc::Str const &name)
     {
         return _fonts[name];
     }
 
-    core::SharedPtr<wgfx::Font> const &find(core::Str const &name) const
+    fc::SharedPtr<wgfx::Font> const &find(fc::Str const &name) const
     {
         return _fonts[name];
     }
 
-    core::UMap<core::WStr, core::SharedPtr<wgfx::Font>> &raw()
+    fc::UMap<fc::WStr, fc::SharedPtr<wgfx::Font>> &raw()
     {
         return _fonts;
     }
 
-    core::UMap<core::WStr, core::SharedPtr<wgfx::Font>> const &raw() const
+    fc::UMap<fc::WStr, fc::SharedPtr<wgfx::Font>> const &raw() const
     {
         return _fonts;
     }

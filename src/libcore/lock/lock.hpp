@@ -7,7 +7,7 @@
 #include "libcore/type-utils.hpp"
 #include "libcore/unreachable.h"
 
-namespace core
+namespace fc
 {
 
 template <bool _Critical = false>
@@ -15,32 +15,32 @@ class _Lock : public NoCopy
 {
 
 public:
-    core::Atomic<int> _locked = {};
-    core::Atomic<int> _secure_ctx = {};
+    fc::Atomic<int> _locked = {};
+    fc::Atomic<int> _secure_ctx = {};
 
     _Lock() : _locked(0), _secure_ctx(0) {}
 
     _Lock(_Lock &&v)
     {
-        _locked.store(v._locked.load(core::MemoryOrder::Acquire), core::MemoryOrder::Relaxed);
-        _secure_ctx.store(v._secure_ctx.load(core::MemoryOrder::Acquire), core::MemoryOrder::Relaxed);
+        _locked.store(v._locked.load(fc::MemoryOrder::Acquire), fc::MemoryOrder::Relaxed);
+        _secure_ctx.store(v._secure_ctx.load(fc::MemoryOrder::Acquire), fc::MemoryOrder::Relaxed);
     }
 
     _Lock &operator=(_Lock &&v)
     {
-        _locked.store(v._locked.load(core::MemoryOrder::Acquire), core::MemoryOrder::Relaxed);
-        _secure_ctx.store(v._secure_ctx.load(core::MemoryOrder::Acquire), core::MemoryOrder::Relaxed);
+        _locked.store(v._locked.load(fc::MemoryOrder::Acquire), fc::MemoryOrder::Relaxed);
+        _secure_ctx.store(v._secure_ctx.load(fc::MemoryOrder::Acquire), fc::MemoryOrder::Relaxed);
         return *this;
     }
 
     ~_Lock()
     {
-        _locked.store(0, core::MemoryOrder::Relaxed);
+        _locked.store(0, fc::MemoryOrder::Relaxed);
     }
 
     void force_unlock()
     {
-        _locked.store(0, core::MemoryOrder::Release);
+        _locked.store(0, fc::MemoryOrder::Release);
     }
 
     bool try_acquire()
@@ -52,7 +52,7 @@ public:
 
             int ctx = enter_critical_context();
 
-            auto v = _locked.compare_exchange_weak(expected, 1, core::MemoryOrder::Acquire, core::MemoryOrder::Relaxed);
+            auto v = _locked.compare_exchange_weak(expected, 1, fc::MemoryOrder::Acquire, fc::MemoryOrder::Relaxed);
 
             if (v)
             {
@@ -68,7 +68,7 @@ public:
         }
         else
         {
-            auto v = _locked.compare_exchange_weak(expected, 1, core::MemoryOrder::Acquire, core::MemoryOrder::Relaxed);
+            auto v = _locked.compare_exchange_weak(expected, 1, fc::MemoryOrder::Acquire, fc::MemoryOrder::Relaxed);
 
             __atomic_thread_fence(__ATOMIC_SEQ_CST);
 
@@ -83,7 +83,7 @@ public:
 
     bool view_locked()
     {
-        return _locked.load(core::MemoryOrder::Acquire);
+        return _locked.load(fc::MemoryOrder::Acquire);
     }
 
     void lock()
@@ -117,16 +117,16 @@ public:
     void release()
     {
 
-        if (_locked.load(core::MemoryOrder::Acquire) == 0)
+        if (_locked.load(fc::MemoryOrder::Acquire) == 0)
         {
             unreachable$();
             return;
         }
         __atomic_thread_fence(__ATOMIC_SEQ_CST);
 
-        auto ctx = _secure_ctx.load(core::MemoryOrder::Acquire);
+        auto ctx = _secure_ctx.load(fc::MemoryOrder::Acquire);
 
-        _locked.store(0, core::MemoryOrder::Release);
+        _locked.store(0, fc::MemoryOrder::Release);
         if constexpr (_Critical)
         {
             exit_critical_context(ctx);
@@ -153,6 +153,6 @@ public:
     }
 };
 
-} // namespace core
+} // namespace fc
 
-#define lock_scope$(lock) core::CtxLocker _lock(lock)
+#define lock_scope$(lock) fc::CtxLocker _lock(lock)

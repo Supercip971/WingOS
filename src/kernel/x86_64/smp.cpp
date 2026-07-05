@@ -15,7 +15,7 @@
 
 static bool _ready = false;
 
-core::Result<void> arch::amd64::smp_initialize()
+fc::Result<void> arch::amd64::smp_initialize()
 {
     fmt::log$("initializing smp (cpu count: {})", CpuImpl::count());
 
@@ -55,7 +55,7 @@ extern "C" uintptr_t start_cpu_entry;
 extern "C" uintptr_t end_cpu_entry;
 extern "C" uint64_t trampoline_start, trampoline_end;
 
-core::Result<void> _setup_trampoline(hw::acpi::LCpuId cpu_id)
+fc::Result<void> _setup_trampoline(hw::acpi::LCpuId cpu_id)
 {
     arch::amd64::CpuImpl *cpu = arch::amd64::CpuImpl::getImpl(cpu_id);
     uint64_t trampoline_len = (uintptr_t)&trampoline_end - (uintptr_t)&trampoline_start;
@@ -97,7 +97,7 @@ core::Result<void> _setup_trampoline(hw::acpi::LCpuId cpu_id)
     return {};
 }
 
-core::Result<void> arch::amd64::smp_initialize_cpu(int apic, int id)
+fc::Result<void> arch::amd64::smp_initialize_cpu(int apic, int id)
 {
     fmt::log$("initializing cpu: {} (lapic: {})...", id, apic);
 

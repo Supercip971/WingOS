@@ -50,10 +50,10 @@ extern "C" uintptr_t kernel_virtual_base()
     return kernel_request.response->virtual_base;
 }
 
-class LimineWriter : public core::Writer
+class LimineWriter : public fc::Writer
 {
 public:
-    core::Result<void> write(const char *data, size_t size) override
+    fc::Result<void> write(const char *data, size_t size) override
     {
         (void)data;
         (void)size;
@@ -63,9 +63,9 @@ public:
         return {};
     }
 
-    template <core::Viewable T>
-    constexpr core::Result<void> write(T view)
-        requires(core::Viewable<T>)
+    template <fc::Viewable T>
+    constexpr fc::Result<void> write(T view)
+        requires(fc::Viewable<T>)
     {
         return write(view.data(), view.len());
     }
@@ -73,7 +73,7 @@ public:
 
 extern "C" void __cxa_pure_virtual()
 {
-    // limine_writer.writeV(core::Str("Pure virtual function called!"));
+    // limine_writer.writeV(fc::Str("Pure virtual function called!"));
     done();
 }
 
@@ -92,7 +92,7 @@ void _start(void)
     {
         done();
     }
-    auto com2 = core::move(c.take());
+    auto com2 = fc::move(c.take());
 
     fmt::provide_log_target(&com2);
 

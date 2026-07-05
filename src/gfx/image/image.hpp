@@ -68,7 +68,7 @@ public:
 
     template <typename OtherFormat = Format>
     Image<OtherFormat> copy();
-    static core::Result<Image<Format>> load_from_file(core::Str filename);
+    static fc::Result<Image<Format>> load_from_file(fc::Str filename);
 };
 
 using ImageRGBA8 = Image<Rgba8>;

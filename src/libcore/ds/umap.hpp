@@ -11,7 +11,7 @@
 #include "libcore/type/trait.hpp"
 #include "libcore/unreachable.h"
 
-namespace core
+namespace fc
 {
 
 using Hash = size_t;
@@ -21,7 +21,7 @@ static inline constexpr Hash hash(size_t default_hash)
     return default_hash;
 }
 
-static inline constexpr Hash hash(core::Str const &str_hash)
+static inline constexpr Hash hash(fc::Str const &str_hash)
 {
 
     unsigned long hash = 0;
@@ -35,10 +35,10 @@ static inline constexpr Hash hash(core::Str const &str_hash)
 
 static inline constexpr Hash hash(const char *str_hash)
 {
-    return hash(core::Str(str_hash));
+    return hash(fc::Str(str_hash));
 }
 
-static inline constexpr Hash hash(core::WStr const &str_hash)
+static inline constexpr Hash hash(fc::WStr const &str_hash)
 {
     return hash(str_hash.view());
 }
@@ -48,8 +48,8 @@ concept Hashable =
 
     requires(K const &key) {
         {
-            core::hash(key)
-        } -> core::IsConvertibleTo<Hash>;
+            fc::hash(key)
+        } -> fc::IsConvertibleTo<Hash>;
     };
 
 template <Hashable KeyT, typename ValueT>
@@ -63,7 +63,7 @@ class UMap
         ValueT value;
     };
 
-    core::Vec<core::Vec<BucketEntry>> _buckets;
+    fc::Vec<fc::Vec<BucketEntry>> _buckets;
 
     template <IsComparable<KeyT> T>
     Hash contained_hash(T const &key) const
@@ -165,18 +165,18 @@ class UMap
 public:
     UMap() {};
 
-    UMap(UMap &&other) : _buckets(core::move(other._buckets)), _count(other._count) {}
+    UMap(UMap &&other) : _buckets(fc::move(other._buckets)), _count(other._count) {}
 
     template <IsConvertibleTo<KeyT> KeyT2, IsConvertibleTo<ValueT> ValueT2>
     void insert(KeyT2 &&key, ValueT2 &&value)
     {
         if (_buckets.len() == 0)
         {
-            _buckets = core::Vec<core::Vec<BucketEntry>>();
+            _buckets = fc::Vec<fc::Vec<BucketEntry>>();
             _buckets.reserve(16);
             for (size_t i = 0; i < 16; i++)
             {
-                _buckets.push(core::Vec<BucketEntry>());
+                _buckets.push(fc::Vec<BucketEntry>());
             }
         }
         auto h = contained_hash(key);
@@ -192,9 +192,9 @@ public:
 #endif
         _buckets[h].push((BucketEntry){
             (decltype(BucketEntry::key))
-                core::forward<decltype(key)>(key),
+                fc::forward<decltype(key)>(key),
             (decltype(BucketEntry::value))
-                core::forward<decltype(value)>(value)});
+                fc::forward<decltype(value)>(value)});
         _count++;
         maybe_rehash();
     }
@@ -260,12 +260,12 @@ public:
             return;
         }
 
-        auto old_buckets = core::move(_buckets);
-        _buckets = core::Vec<core::Vec<BucketEntry>>();
+        auto old_buckets = fc::move(_buckets);
+        _buckets = fc::Vec<fc::Vec<BucketEntry>>();
         _buckets.reserve(old_buckets.len() * 2);
         for (size_t i = 0; i < old_buckets.len() * 2; i++)
         {
-            _buckets.push(core::Vec<BucketEntry>());
+            _buckets.push(fc::Vec<BucketEntry>());
         }
         for (auto &bucket : old_buckets)
         {
@@ -273,7 +273,7 @@ public:
             while (bucket.len() != 0)
             {
                 auto entry = bucket.pop();
-                insert(core::move(entry.key), core::move(entry.value));
+                insert(fc::move(entry.key), fc::move(entry.value));
             }
         }
     }
@@ -295,7 +295,7 @@ public:
         return false;
     }
 
-    core::Optional<ValueT &> find(KeyT const &key)
+    fc::Optional<ValueT &> find(KeyT const &key)
     {
         if (_buckets.len() == 0)
         {
@@ -312,7 +312,7 @@ public:
         return {};
     }
 
-    core::Optional<ValueT const &> find(KeyT const &key) const
+    fc::Optional<ValueT const &> find(KeyT const &key) const
     {
         if (_buckets.len() == 0)
         {
@@ -340,4 +340,4 @@ public:
     }
 };
 
-} // namespace core
+} // namespace fc

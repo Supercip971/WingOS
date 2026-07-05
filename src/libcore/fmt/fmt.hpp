@@ -14,17 +14,17 @@
 namespace fmt
 {
 
-template <core::IsConvertibleTo<core::Str> T, core::Writable Targ>
-constexpr core::Result<void> format_v(Targ &target, T &&value)
+template <fc::IsConvertibleTo<fc::Str> T, fc::Writable Targ>
+constexpr fc::Result<void> format_v(Targ &target, T &&value)
 {
-    target.write(core::Str(value));
+    target.write(fc::Str(value));
     return {};
 }
 
 // What I have done ?
 
-template <core::Writable Targ>
-constexpr core::Result<void> format_impl(Targ &target, core::Str fmt, int _c)
+template <fc::Writable Targ>
+constexpr fc::Result<void> format_impl(Targ &target, fc::Str fmt, int _c)
 {
     size_t c = _c;
 
@@ -32,8 +32,8 @@ constexpr core::Result<void> format_impl(Targ &target, core::Str fmt, int _c)
     return {};
 }
 
-template <core::Writable Targ, typename Arg>
-constexpr core::Result<void> format_impl(Targ &target, core::Str fmt, int _c, Arg &&a)
+template <fc::Writable Targ, typename Arg>
+constexpr fc::Result<void> format_impl(Targ &target, fc::Str fmt, int _c, Arg &&a)
 {
     size_t c = _c;
     while (c < fmt.len() && fmt[c] != '{')
@@ -48,24 +48,24 @@ constexpr core::Result<void> format_impl(Targ &target, core::Str fmt, int _c, Ar
     if (c + 1 < fmt.len() && fmt[c] == '{' && fmt[c + 1] == '}')
     {
 
-        format_v(target, core::forward<Arg>(a));
+        format_v(target, fc::forward<Arg>(a));
         return format_impl(target, fmt, c + 2);
     }
     else
     {
         c++;
-        return format_impl(target, fmt, c, core::forward<Arg>(a));
+        return format_impl(target, fmt, c, fc::forward<Arg>(a));
     }
 }
 
-template <core::Writable Targ, typename Arg, typename... Args>
-constexpr core::Result<void> format_impl(Targ &target, core::Str fmt, int _c, Arg &&a, Args &&...args)
+template <fc::Writable Targ, typename Arg, typename... Args>
+constexpr fc::Result<void> format_impl(Targ &target, fc::Str fmt, int _c, Arg &&a, Args &&...args)
 {
 
     size_t c = _c;
     if (fmt.data() == nullptr)
     {
-        return format_v(target, core::Str("{null}"));
+        return format_v(target, fc::Str("{null}"));
     }
 
     while (c < fmt.len() && fmt[c] != '{')
@@ -81,8 +81,8 @@ constexpr core::Result<void> format_impl(Targ &target, core::Str fmt, int _c, Ar
     {
         if constexpr (sizeof...(args) > 0)
         {
-            format_v(target, core::forward<Arg>(a));
-            return format_impl(target, fmt, c + 2, core::forward<Args>(args)...);
+            format_v(target, fc::forward<Arg>(a));
+            return format_impl(target, fmt, c + 2, fc::forward<Args>(args)...);
         }
         else
         {
@@ -92,14 +92,14 @@ constexpr core::Result<void> format_impl(Targ &target, core::Str fmt, int _c, Ar
     else
     {
         c++;
-        return format_impl(target, fmt, c, core::forward<Arg>(a), core::forward<Args>(args)...);
+        return format_impl(target, fmt, c, fc::forward<Arg>(a), fc::forward<Args>(args)...);
     }
 }
 
-template <core::Writable Targ, core::IsConvertibleTo<core::Str> Fmt, typename... Args>
-constexpr core::Result<void> format(Targ &target, Fmt &&fmt, Args &&...args)
+template <fc::Writable Targ, fc::IsConvertibleTo<fc::Str> Fmt, typename... Args>
+constexpr fc::Result<void> format(Targ &target, Fmt &&fmt, Args &&...args)
 {
-    return format_impl(target, core::Str(fmt), 0, core::forward<Args>(args)...);
+    return format_impl(target, fc::Str(fmt), 0, fc::forward<Args>(args)...);
 }
 
 } // namespace fmt

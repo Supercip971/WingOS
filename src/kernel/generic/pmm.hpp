@@ -20,7 +20,7 @@
 struct PmmSection
 {
     math::Range<uintptr_t> range;
-    core::Bitmap bitmap;
+    fc::Bitmap bitmap;
 };
 
 struct Pmm
@@ -30,7 +30,7 @@ struct Pmm
 
     mcx::MemoryRange _range;
     PmmSection *_sections;
-    core::Lock pmm_lock;
+    fc::Lock pmm_lock;
     mcx::MemoryMapIdx _section_location;
     size_t _sections_count;
     const mcx::MachineContext *_context;
@@ -52,33 +52,33 @@ struct Pmm
 
     static size_t pmm_section_count(const mcx::MachineContext *context)
     {
-        return core::count(context->_memory_map.sub(context->_memory_map_count),
-                           [](auto v)
-                           {
-                               return v.type == mcx::MemoryMap::Type::FREE;
-                           });
+        return fc::count(context->_memory_map.sub(context->_memory_map_count),
+                         [](auto v)
+                         {
+                             return v.type == mcx::MemoryMap::Type::FREE;
+                         });
     }
 
     static Pmm &the();
 
-    static core::Result<void> initialize(const mcx::MachineContext *context);
+    static fc::Result<void> initialize(const mcx::MachineContext *context);
 
-    static core::Result<Pmm> _allocate_structure(const mcx::MachineContext *context);
+    static fc::Result<Pmm> _allocate_structure(const mcx::MachineContext *context);
 
-    core::Result<void> _fill(const mcx::MachineContext *context);
+    fc::Result<void> _fill(const mcx::MachineContext *context);
 
-    static core::Result<Pmm> create(const mcx::MachineContext *context);
+    static fc::Result<Pmm> create(const mcx::MachineContext *context);
 
-    core::Result<PhysAddr> allocate(Pages count, IolAllocMemoryFlag flags = IOL_ALLOC_MEMORY_FLAG_NONE);
+    fc::Result<PhysAddr> allocate(Pages count, IolAllocMemoryFlag flags = IOL_ALLOC_MEMORY_FLAG_NONE);
 
-    core::Result<void> own(PhysAddr addr, Pages count);
-    core::Result<void> release(PhysAddr addr, Pages count);
+    fc::Result<void> own(PhysAddr addr, Pages count);
+    fc::Result<void> release(PhysAddr addr, Pages count);
 
-    core::Result<bool> query_usage(PhysAddr addr);
+    fc::Result<bool> query_usage(PhysAddr addr);
 };
 
-template <core::IsConvertibleTo<Pmm> T, core::Writable Targ>
-constexpr core::Result<void> format_v(Targ &target, T &value)
+template <fc::IsConvertibleTo<Pmm> T, fc::Writable Targ>
+constexpr fc::Result<void> format_v(Targ &target, T &value)
 {
 
     fmt::format(target, "Pmm [ \n");
@@ -91,7 +91,7 @@ constexpr core::Result<void> format_v(Targ &target, T &value)
         fmt::format(target, "  - range: {} ({}) \n", value._sections[i].range | fmt::FMT_HEX, value._sections[i].range.len());
         fmt::format(target, "  - bitmap: \n");
 
-        format_v(target, (core::Bitmap &)value._sections[i].bitmap);
+        format_v(target, (fc::Bitmap &)value._sections[i].bitmap);
     }
     return {};
 }

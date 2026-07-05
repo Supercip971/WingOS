@@ -10,7 +10,7 @@ namespace kernel
 
 struct BlockMutex
 {
-    core::Lock lock = {};
+    fc::Lock lock = {};
 
     // if a task block a mutex, then it release it, then relock it but another task wait on the old one,
     // acquire_uid will change

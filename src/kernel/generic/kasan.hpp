@@ -36,7 +36,7 @@ class Kasan
         return reinterpret_cast<T>(addr_val);
     }
 
-    core::Lock _lock;
+    fc::Lock _lock;
 
 public:
     void set_region_tag(VirtRange range, KasanTags tag);
@@ -61,7 +61,7 @@ public:
     void assert_write_access(uintptr_t addr, size_t size);
     void assert_read_access(uintptr_t addr, size_t size);
     Kasan() = default;
-    static core::Result<void> initialize(size_t memory_size);
+    static fc::Result<void> initialize(size_t memory_size);
     static Kasan &the();
 };
 } // namespace kernel

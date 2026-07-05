@@ -11,7 +11,7 @@
 #include "libcore/str.hpp"
 
 // a drop in replacement for RWLock that adds some debugging features, such as dumping the state of the lock
-class SRWLock : private core::RWLock
+class SRWLock : private fc::RWLock
 {
 
     std::atomic<const char *> _last_write_acquire_fn = nullptr;
@@ -129,12 +129,12 @@ public:
 
     bool try_write_acquire(int ini_retry)
     {
-        return core::RWLock::try_write_acquire(ini_retry);
+        return fc::RWLock::try_write_acquire(ini_retry);
     }
 
     bool read_acquire(const char *fn, int line)
     {
-        auto v = core::RWLock::read_acquire();
+        auto v = fc::RWLock::read_acquire();
 
         // Track (best-effort) where readers came from, without going out of bounds.
         int idx = allocated_readers;
@@ -160,7 +160,7 @@ public:
 
     bool try_write_acquire(const char *fn, int line)
     {
-        auto v = core::RWLock::try_write_acquire();
+        auto v = fc::RWLock::try_write_acquire();
 
         if (v)
         {
@@ -187,19 +187,19 @@ public:
         }
         __atomic_thread_fence(__ATOMIC_SEQ_CST);
 
-        core::RWLock::write_release();
+        fc::RWLock::write_release();
     }
 
     void release_mutability()
     {
         //  _last_write_acquire_fn = "released mutability";
         //  _last_write_acquire_line = 0;
-        core::RWLock::release_mutability();
+        fc::RWLock::release_mutability();
     }
 
     void read_release()
     {
-        core::RWLock::read_release();
+        fc::RWLock::read_release();
     }
 
     void dump()
@@ -221,7 +221,7 @@ public:
         int rcount = _readers;
         int wwaiters = _waiters;
         fmt::log$("SRWLock state: {} writer(s), {} reader(s), {} waiting writer(s)", wcount, rcount, wwaiters);
-        fmt::log$("SRWLock dump: last write acquire at {}:{}", core::Str(state), line);
+        fmt::log$("SRWLock dump: last write acquire at {}:{}", fc::Str(state), line);
 
         for (int i = 0; i < allocated_readers; i++)
         {

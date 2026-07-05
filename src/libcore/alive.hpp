@@ -3,16 +3,16 @@
 #include "libcore/fmt/log.hpp"
 #include "libcore/str.hpp"
 
-namespace core
+namespace fc
 {
 class Alive
 {
 
-    core::Str _name;
+    fc::Str _name;
     size_t _tick = 0;
 
 public:
-    Alive(core::Str name) : _name(name)
+    Alive(fc::Str name) : _name(name)
     {
     }
 
@@ -26,4 +26,4 @@ public:
         }
     }
 };
-} // namespace core
+} // namespace fc

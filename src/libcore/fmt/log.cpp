@@ -9,9 +9,9 @@
 namespace fmt
 {
 
-core::Lock _log_lock = {};
-static core::VoidRW default_target{};
-static core::Writer *target = &default_target;
+fc::Lock _log_lock = {};
+static fc::VoidRW default_target{};
+static fc::Writer *target = &default_target;
 
 void log_lock()
 {
@@ -23,19 +23,19 @@ void log_release()
     _log_lock.force_unlock();
 }
 
-void provide_log_target(core::Writer *writer)
+void provide_log_target(fc::Writer *writer)
 {
     target = writer;
 }
 
-core::Writer *log_target()
+fc::Writer *log_target()
 {
     return target;
 }
 
 } // namespace fmt
 
-void core::debug_provide_info(const char *info, const char *data)
+void fc::debug_provide_info(const char *info, const char *data)
 {
     fmt::log$("{} {}", info, data);
 }

@@ -31,7 +31,7 @@ class Mouse
     Controller &_controller;
     bool has_wheel = {};
     size_t cycle = {};
-    core::Vec<hw::MouseEvent> _events = {};
+    fc::Vec<hw::MouseEvent> _events = {};
     uint8_t buf[4] = {};
 
 public:
@@ -39,7 +39,7 @@ public:
     {
     }
 
-    core::Result<hw::MouseEvent> poll_event()
+    fc::Result<hw::MouseEvent> poll_event()
     {
         if (_events.len() == 0)
         {

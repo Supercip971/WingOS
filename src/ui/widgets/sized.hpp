@@ -65,7 +65,7 @@ class Sized : public Widget
 {
 
 public:
-    core::SharedPtr<Widget> child;
+    fc::SharedPtr<Widget> child;
 
     LayoutSize _parms;
 
@@ -81,11 +81,11 @@ public:
     virtual wgfx::Vec2 preferred_size(wgfx::Vec2 constraint) const override
     {
 
-        constraint.x = _parms.max_w >= 0 ? core::min(constraint.x, _parms.max_w) : constraint.x;
-        constraint.y = _parms.max_h >= 0 ? core::min(constraint.y, _parms.max_h) : constraint.y;
+        constraint.x = _parms.max_w >= 0 ? fc::min(constraint.x, _parms.max_w) : constraint.x;
+        constraint.y = _parms.max_h >= 0 ? fc::min(constraint.y, _parms.max_h) : constraint.y;
 
-        constraint.x = _parms.min_w >= 0 ? core::max(constraint.x, _parms.min_w) : constraint.x;
-        constraint.y = _parms.min_h >= 0 ? core::max(constraint.y, _parms.min_h) : constraint.y;
+        constraint.x = _parms.min_w >= 0 ? fc::max(constraint.x, _parms.min_w) : constraint.x;
+        constraint.y = _parms.min_h >= 0 ? fc::max(constraint.y, _parms.min_h) : constraint.y;
 
         return child->preferred_size(constraint);
     }
@@ -111,12 +111,12 @@ public:
     }
 
     template <typename T>
-    static core::SharedPtr<Widget> construct(LayoutSize params, T args)
+    static fc::SharedPtr<Widget> construct(LayoutSize params, T args)
     {
-        return core::SharedPtr<Sized>::make(params, args).template static_pointer_cast<Widget>();
+        return fc::SharedPtr<Sized>::make(params, args).template static_pointer_cast<Widget>();
     }
 
-    core::SharedPtr<Widget> build(UiContext const &v) override
+    fc::SharedPtr<Widget> build(UiContext const &v) override
     {
         (void)v;
         return child;

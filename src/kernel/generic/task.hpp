@@ -68,7 +68,7 @@ public:
 
     Task(TUID uid) : _uid(uid) {};
 
-    core::Result<void> _initialize(CpuContextLaunch params, VmmSpace *target_vspace);
+    fc::Result<void> _initialize(CpuContextLaunch params, VmmSpace *target_vspace);
 
     virtual ~Task() = default;
 
@@ -81,9 +81,9 @@ public:
 
     static Task *by_id_unsafe(TUID uid);
 
-    static core::Result<Task *> by_id(TUID uid);
+    static fc::Result<Task *> by_id(TUID uid);
 
-    static core::Result<Task *> task_create();
+    static fc::Result<Task *> task_create();
 
     VmmSpace &vmm_space() { return *_cpu_context->_vmm_space; };
 

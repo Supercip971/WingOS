@@ -7,7 +7,7 @@
 #include "libcore/fmt/log.hpp"
 #include "libcore/result.hpp"
 
-core::Result<void> wgfx::initialize_platform()
+fc::Result<void> wgfx::initialize_platform()
 {
     if (SDL_Init(SDL_INIT_VIDEO) == 0)
     {

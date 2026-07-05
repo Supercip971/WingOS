@@ -14,9 +14,9 @@ namespace hw::acpi
 {
 // CONFIGURABLE
 constexpr int max_ioapic = 256;
-static core::Array<IOApic, max_ioapic> ioapics = {};
+static fc::Array<IOApic, max_ioapic> ioapics = {};
 
-core::Result<IOApic *> IOApic::get(IOApicIndex index)
+fc::Result<IOApic *> IOApic::get(IOApicIndex index)
 {
     if (index >= max_ioapic)
     {
@@ -25,7 +25,7 @@ core::Result<IOApic *> IOApic::get(IOApicIndex index)
     return &ioapics[index];
 }
 
-core::Result<void> IOApic::initialize(IOApicIndex index, MadtEntryIoapic const *entry)
+fc::Result<void> IOApic::initialize(IOApicIndex index, MadtEntryIoapic const *entry)
 {
     if (index >= max_ioapic)
     {
@@ -47,7 +47,7 @@ core::Result<void> IOApic::initialize(IOApicIndex index, MadtEntryIoapic const *
     return {};
 }
 
-core::Result<IOApicIndex> IOApic::query_from_irq(size_t irq)
+fc::Result<IOApicIndex> IOApic::query_from_irq(size_t irq)
 {
     for (size_t i = 0; i < max_ioapic; i++)
     {

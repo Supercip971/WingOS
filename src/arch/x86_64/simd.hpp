@@ -19,15 +19,15 @@ public:
 
     void load() const;
 
-    static core::Result<SimdContext> create();
+    static fc::Result<SimdContext> create();
 
-    static core::Result<void> initialize_cpu();
+    static fc::Result<void> initialize_cpu();
 
     void release()
     {
         if (_real_data)
         {
-            core::mem_free(_real_data);
+            fc::mem_free(_real_data);
             _real_data = nullptr;
             _data = nullptr;
         }

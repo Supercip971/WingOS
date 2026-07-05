@@ -63,10 +63,10 @@ struct GRect
     GRect intersect(const GRect &other) const
     {
         return GRect(
-            core::max(start.x, other.start.x),
-            core::max(start.y, other.start.y),
-            core::min(end.x, other.end.x),
-            core::min(end.y, other.end.y));
+            fc::max(start.x, other.start.x),
+            fc::max(start.y, other.start.y),
+            fc::min(end.x, other.end.x),
+            fc::min(end.y, other.end.y));
     }
 
     bool does_intersect(const GRect &other) const
@@ -77,17 +77,17 @@ struct GRect
     GRect merge(const GRect &other) const
     {
         return GRect(
-            core::min(start.x, other.start.x),
-            core::min(start.y, other.start.y),
-            core::max(end.x, other.end.x),
-            core::max(end.y, other.end.y));
+            fc::min(start.x, other.start.x),
+            fc::min(start.y, other.start.y),
+            fc::max(end.x, other.end.x),
+            fc::max(end.y, other.end.y));
     }
 
     Vec2 contained(const Vec2 &p) const
     {
         return Vec2(
-            core::max(start.x, core::min(p.x, end.x)),
-            core::max(start.y, core::min(p.y, end.y)));
+            fc::max(start.x, fc::min(p.x, end.x)),
+            fc::max(start.y, fc::min(p.y, end.y)));
     }
 
     constexpr GRect(float _x, float _y, float _ex, float _ey) : start(_x, _y), end(_ex, _ey) {}

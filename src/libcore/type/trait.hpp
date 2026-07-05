@@ -2,7 +2,7 @@
 
 #include <type_traits>
 
-namespace core
+namespace fc
 {
 
 template <class T, T v>
@@ -21,12 +21,12 @@ using TrueType = IntegralConstant<bool, true>;
 using FalseType = IntegralConstant<bool, false>;
 
 template <class A, class B>
-struct IsSame_i : core::FalseType
+struct IsSame_i : fc::FalseType
 {
 };
 
 template <class A>
-struct IsSame_i<A, A> : core::TrueType
+struct IsSame_i<A, A> : fc::TrueType
 {
 };
 
@@ -147,9 +147,9 @@ auto test_implicit_convertible(...) -> FalseType;
 
 template <class From, class To>
 struct IsImplicitlyConvertible :
-    core::IntegralConstant<bool,
-                           decltype(core::IsConvertibleImpl::test_implicit_convertible<From, To>(0))::value ||
-                               (IsSame<From, void> && IsSame<To, void>)>
+    fc::IntegralConstant<bool,
+                         decltype(fc::IsConvertibleImpl::test_implicit_convertible<From, To>(0))::value ||
+                             (IsSame<From, void> && IsSame<To, void>)>
 
 {
 };
@@ -172,4 +172,4 @@ concept IsComparable = requires(const A &l, const B &r) {
     { l != r } -> IsConvertibleTo<bool>;
 };
 
-} // namespace core
+} // namespace fc

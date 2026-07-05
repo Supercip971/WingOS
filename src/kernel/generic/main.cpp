@@ -14,7 +14,7 @@
 #include "kernel/generic/task.hpp"
 #include "libcore/lock/lock.hpp"
 #include "mcx/mcx.hpp"
-core::Lock kernel_lock;
+fc::Lock kernel_lock;
 
 void fun1()
 {
@@ -86,7 +86,7 @@ void kernel_entry(const mcx::MachineContext *context)
     {
         auto mod = context->_modules[i];
 
-        if (!core::Str(mod.path).start_with("/bin/init"))
+        if (!fc::Str(mod.path).start_with("/bin/init"))
         {
             fmt::log$("skipping module {}: {}", i, mod.path);
             continue;

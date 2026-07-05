@@ -193,7 +193,7 @@ struct KernelIpcServer;
 struct IpcConnection : public Asset
 {
     uint64_t message_alloc_id;
-    core::Lock lock;
+    fc::Lock lock;
 
     // FIXME: store maybe space as ptr for performance ?
     uint64_t client_space_handle; // the space handle of the client that created this connection
@@ -207,7 +207,7 @@ struct IpcConnection : public Asset
 
     kernel::BlockMutex client_mutex;
     kernel::BlockMutex server_mutex;
-    core::Vec<ReceivedIpcMessage> message_sent;
+    fc::Vec<ReceivedIpcMessage> message_sent;
 
     static constexpr size_t IDENT = AssetKind::OBJECT_KIND_IPC_CONNECTION;
 
@@ -233,8 +233,8 @@ struct KernelIpcServer
 
     IpcServerHandle handle;
     uint64_t parent_space;
-    AssetRef<> self;                   // the asset that represents this server
-    core::Vec<AssetRef<>> connections; // the connections to this server (untyped; returned by Space::asset_copy)
+    AssetRef<> self;                 // the asset that represents this server
+    fc::Vec<AssetRef<>> connections; // the connections to this server (untyped; returned by Space::asset_copy)
     bool destroyed;
 };
 
@@ -251,25 +251,25 @@ void publish_server(KernelIpcServer *server);
 
 void unregister_server(IpcServerHandle handle, uint64_t space_handle);
 
-core::Result<KernelIpcServer *> query_server(IpcServerHandle handle);
+fc::Result<KernelIpcServer *> query_server(IpcServerHandle handle);
 
 // This prevents the server from being unregistered/deleted while the caller uses it.
-core::Result<KernelIpcServer *> query_server_locked(IpcServerHandle handle);
+fc::Result<KernelIpcServer *> query_server_locked(IpcServerHandle handle);
 void release_server_lock();
 
 // create a connection object for the server,
 // Note: keep this API untyped to avoid requiring `AssetConnection` in this header.
-core::Result<AssetRef<>> server_accept_connection(KernelIpcServer *server);
+fc::Result<AssetRef<>> server_accept_connection(KernelIpcServer *server);
 
-core::Result<MessageHandle> server_send_message(AssetRef<AssetConnection> &connection, IpcMessage *message, bool expect_reply = false);
-core::Result<MessageHandle> server_send_call(AssetRef<AssetConnection> &connection, IpcMessage *message);
+fc::Result<MessageHandle> server_send_message(AssetRef<AssetConnection> &connection, IpcMessage *message, bool expect_reply = false);
+fc::Result<MessageHandle> server_send_call(AssetRef<AssetConnection> &connection, IpcMessage *message);
 
-core::Result<void> server_reply_message(AssetRef<AssetConnection> &connection, MessageHandle from, IpcMessage *message);
+fc::Result<void> server_reply_message(AssetRef<AssetConnection> &connection, MessageHandle from, IpcMessage *message);
 
-core::Result<ReceivedIpcMessage> server_receive_message(AssetRef<AssetConnection> &connection);
+fc::Result<ReceivedIpcMessage> server_receive_message(AssetRef<AssetConnection> &connection);
 
-core::Result<ReceivedIpcMessage> client_receive_message(AssetRef<AssetConnection> &connection);
+fc::Result<ReceivedIpcMessage> client_receive_message(AssetRef<AssetConnection> &connection);
 
-core::Result<ReceivedIpcMessage> client_receive_response(AssetRef<AssetConnection> &connection, MessageHandle handle);
+fc::Result<ReceivedIpcMessage> client_receive_response(AssetRef<AssetConnection> &connection, MessageHandle handle);
 
-core::Result<IpcMessage> call_server_and_wait(AssetRef<AssetConnection> &connection, IpcMessage *message);
+fc::Result<IpcMessage> call_server_and_wait(AssetRef<AssetConnection> &connection, IpcMessage *message);

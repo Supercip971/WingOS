@@ -3,58 +3,58 @@
 
 #include "libcore/type/trait.hpp"
 
-#define ENUM_OP$(ENUM)                                                                                                     \
-    inline constexpr ENUM                                                                                                  \
-    operator&(ENUM x, ENUM y)                                                                                              \
-    {                                                                                                                      \
-        return static_cast<ENUM>(static_cast<core::UnderlyingType<ENUM>>(x) & static_cast<core::UnderlyingType<ENUM>>(y)); \
-    }                                                                                                                      \
-                                                                                                                           \
-    inline constexpr ENUM                                                                                                  \
-    operator|(ENUM x, ENUM y)                                                                                              \
-    {                                                                                                                      \
-        return static_cast<ENUM>(static_cast<core::UnderlyingType<ENUM>>(x) | static_cast<core::UnderlyingType<ENUM>>(y)); \
-    }                                                                                                                      \
-                                                                                                                           \
-    inline constexpr ENUM                                                                                                  \
-    operator^(ENUM x, ENUM y)                                                                                              \
-    {                                                                                                                      \
-        return static_cast<ENUM>(static_cast<core::UnderlyingType<ENUM>>(x) ^ static_cast<core::UnderlyingType<ENUM>>(y)); \
-    }                                                                                                                      \
-                                                                                                                           \
-    inline constexpr ENUM                                                                                                  \
-    operator~(ENUM x)                                                                                                      \
-    {                                                                                                                      \
-        return static_cast<ENUM>(~static_cast<core::UnderlyingType<ENUM>>(x));                                             \
-    }                                                                                                                      \
-                                                                                                                           \
-    inline ENUM &                                                                                                          \
-    operator&=(ENUM &x, ENUM y)                                                                                            \
-    {                                                                                                                      \
-        x = x & y;                                                                                                         \
-        return x;                                                                                                          \
-    }                                                                                                                      \
-                                                                                                                           \
-    inline ENUM &                                                                                                          \
-    operator|=(ENUM &x, ENUM y)                                                                                            \
-    {                                                                                                                      \
-        x = x | y;                                                                                                         \
-        return x;                                                                                                          \
-    }                                                                                                                      \
-                                                                                                                           \
-    inline ENUM &                                                                                                          \
-    operator^=(ENUM &x, ENUM y)                                                                                            \
-    {                                                                                                                      \
-        x = x ^ y;                                                                                                         \
-        return x;                                                                                                          \
+#define ENUM_OP$(ENUM)                                                                                                 \
+    inline constexpr ENUM                                                                                              \
+    operator&(ENUM x, ENUM y)                                                                                          \
+    {                                                                                                                  \
+        return static_cast<ENUM>(static_cast<fc::UnderlyingType<ENUM>>(x) & static_cast<fc::UnderlyingType<ENUM>>(y)); \
+    }                                                                                                                  \
+                                                                                                                       \
+    inline constexpr ENUM                                                                                              \
+    operator|(ENUM x, ENUM y)                                                                                          \
+    {                                                                                                                  \
+        return static_cast<ENUM>(static_cast<fc::UnderlyingType<ENUM>>(x) | static_cast<fc::UnderlyingType<ENUM>>(y)); \
+    }                                                                                                                  \
+                                                                                                                       \
+    inline constexpr ENUM                                                                                              \
+    operator^(ENUM x, ENUM y)                                                                                          \
+    {                                                                                                                  \
+        return static_cast<ENUM>(static_cast<fc::UnderlyingType<ENUM>>(x) ^ static_cast<fc::UnderlyingType<ENUM>>(y)); \
+    }                                                                                                                  \
+                                                                                                                       \
+    inline constexpr ENUM                                                                                              \
+    operator~(ENUM x)                                                                                                  \
+    {                                                                                                                  \
+        return static_cast<ENUM>(~static_cast<fc::UnderlyingType<ENUM>>(x));                                           \
+    }                                                                                                                  \
+                                                                                                                       \
+    inline ENUM &                                                                                                      \
+    operator&=(ENUM &x, ENUM y)                                                                                        \
+    {                                                                                                                  \
+        x = x & y;                                                                                                     \
+        return x;                                                                                                      \
+    }                                                                                                                  \
+                                                                                                                       \
+    inline ENUM &                                                                                                      \
+    operator|=(ENUM &x, ENUM y)                                                                                        \
+    {                                                                                                                  \
+        x = x | y;                                                                                                     \
+        return x;                                                                                                      \
+    }                                                                                                                  \
+                                                                                                                       \
+    inline ENUM &                                                                                                      \
+    operator^=(ENUM &x, ENUM y)                                                                                        \
+    {                                                                                                                  \
+        x = x ^ y;                                                                                                     \
+        return x;                                                                                                      \
     }
 
-namespace core
+namespace fc
 {
 template <typename T>
-core::UnderlyingType<T>
+fc::UnderlyingType<T>
 underlying_value(T &&x)
 {
-    return static_cast<core::UnderlyingType<T>>(x);
+    return static_cast<fc::UnderlyingType<T>>(x);
 }
-} // namespace core
+} // namespace fc

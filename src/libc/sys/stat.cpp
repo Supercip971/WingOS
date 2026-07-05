@@ -15,7 +15,7 @@ int stat(const char *__restrict path, struct stat *__restrict buf)
 
     auto file_conn = file_conn_res.take();
 
-    auto file_res = file_conn.open_path((core::Str(path)));
+    auto file_res = file_conn.open_path((fc::Str(path)));
 
     if (file_res.is_error())
     {

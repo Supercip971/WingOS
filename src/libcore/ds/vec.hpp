@@ -9,7 +9,7 @@
 #include "libcore/type-utils.hpp"
 #include "libcore/unreachable.h"
 
-namespace core
+namespace fc
 {
 void dump_vec(uintptr_t _this, uintptr_t _data, bool start);
 
@@ -48,7 +48,7 @@ public:
     {
         if (other._count != 0)
         {
-            _data = core::mem_alloc<T>(other._capacity).copied();
+            _data = fc::mem_alloc<T>(other._capacity).copied();
             _capacity = other._capacity;
             for (long i = 0; i < other._count; i++)
             {
@@ -64,9 +64,9 @@ public:
         {
             return *this;
         }
-        core::swap(_data, other._data);
-        core::swap(_count, other._count);
-        core::swap(_capacity, other._capacity);
+        fc::swap(_data, other._data);
+        fc::swap(_count, other._count);
+        fc::swap(_capacity, other._capacity);
         return *this;
     }
 
@@ -90,11 +90,11 @@ public:
         reserve(_count + other._count);
         for (long i = 0; i < other._count; i++)
         {
-            new (&_data[_count + i]) T(core::move(other._data[i]));
-            //  _data[_count + i] = core::move(other._data[i]);
+            new (&_data[_count + i]) T(fc::move(other._data[i]));
+            //  _data[_count + i] = fc::move(other._data[i]);
         }
         _count += other._count;
-        core::mem_free(other._data);
+        fc::mem_free(other._data);
 
         other._capacity = 0;
         other._data = nullptr;
@@ -130,7 +130,7 @@ public:
         if (_data != nullptr && _capacity != 0)
         {
             clear();
-            core::mem_free(_data);
+            fc::mem_free(_data);
             _data = nullptr;
             _capacity = 0;
         }
@@ -147,17 +147,17 @@ public:
 
     Result<void> reserve(size_t capacity)
     {
-        long ncap = core::max(capacity, 8ul);
+        long ncap = fc::max(capacity, 8ul);
 
         if (_capacity == 0 && ncap > 0)
         {
-            _data = try$(core::mem_alloc<T>(ncap * 2));
+            _data = try$(fc::mem_alloc<T>(ncap * 2));
             _capacity = ncap * 2;
             return {};
         }
         if (ncap > _capacity)
         {
-            T *new_data = try$(core::mem_realloc<T>(_data, ncap * 2));
+            T *new_data = try$(fc::mem_realloc<T>(_data, ncap * 2));
             _data = new_data;
             _capacity = ncap * 2;
         }
@@ -168,7 +168,7 @@ public:
     Result<void> push(T &&value)
     {
         try$(reserve(_count + 1));
-        new (&_data[_count]) T(core::move(value));
+        new (&_data[_count]) T(fc::move(value));
         _count++;
         return Result<void>();
     }
@@ -196,7 +196,7 @@ public:
         try$(reserve(_count + arr.len()));
         for (size_t i = 0; i < arr.len(); i++)
         {
-            new (&_data[_count + i]) T(core::move(arr[i]));
+            new (&_data[_count + i]) T(fc::move(arr[i]));
         }
         _count += arr.len();
         return Result<void>{};
@@ -257,7 +257,7 @@ public:
         {
             _count--;
 
-            auto v = core::move(_data[_count]);
+            auto v = fc::move(_data[_count]);
 
             _data[_count].~T();
 
@@ -275,11 +275,11 @@ public:
             unreachable$();
         }
 
-        T value = core::move(_data[id]);
+        T value = fc::move(_data[id]);
 
         for (long i = id; i < _count - 1; i++)
         {
-            _data[i] = core::move(_data[i + 1]);
+            _data[i] = fc::move(_data[i + 1]);
         }
 
         _data[_count - 1].~T();
@@ -288,7 +288,7 @@ public:
         return value;
     }
 
-    core::Result<void> insert(long id, T const &el)
+    fc::Result<void> insert(long id, T const &el)
     {
         if (id > _count)
         {
@@ -302,7 +302,7 @@ public:
 
         for (long i = _count; i > (long)id; i--)
         {
-            _data[i] = core::move(_data[i - 1]);
+            _data[i] = fc::move(_data[i - 1]);
         }
 
         new (&_data[id]) T(el);
@@ -403,7 +403,7 @@ public:
             return;
         }
 
-        r = core::min((long)_count - 1, r);
+        r = fc::min((long)_count - 1, r);
 
         long sI = l - 1;
         T pivot = _data[r];
@@ -413,15 +413,15 @@ public:
             {
 
                 sI++;
-                core::swap(_data[sI], _data[j]);
+                fc::swap(_data[sI], _data[j]);
             }
         }
 
-        core::swap(_data[sI + 1], _data[r]);
+        fc::swap(_data[sI + 1], _data[r]);
         quick_sort(AminusB, l, sI);
         quick_sort(AminusB, sI + 2, r);
     }
 };
 
 static_assert(Viewable<Vec<int>>);
-} // namespace core
+} // namespace fc

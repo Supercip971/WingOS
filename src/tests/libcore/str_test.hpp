@@ -12,9 +12,9 @@ static constexpr TestGroup strTests = {
             "str equality",
             []() -> Test::RetFn
             {
-                core::Str a = "Hello";
-                core::Str b = "Hello";
-                core::Str c = "World";
+                fc::Str a = "Hello";
+                fc::Str b = "Hello";
+                fc::Str c = "World";
 
                 if (a != b)
                 {
@@ -32,14 +32,14 @@ static constexpr TestGroup strTests = {
             "str length",
             []() -> Test::RetFn
             {
-                core::Str empty;
+                fc::Str empty;
 
                 if (empty.len() != 0)
                 {
                     return "''.length() != 0";
                 }
 
-                core::Str a = "Hello";
+                fc::Str a = "Hello";
 
                 if (a.len() != 5)
                 {
@@ -52,17 +52,17 @@ static constexpr TestGroup strTests = {
             "sub str",
             []() -> Test::RetFn
             {
-                core::Str a = "Hello World";
-                core::Str b = a.substr(6);
+                fc::Str a = "Hello World";
+                fc::Str b = a.substr(6);
 
-                if (b != core::Str("World"))
+                if (b != fc::Str("World"))
                 {
                     return "'Hello World'.substr(6) != 'World'";
                 }
 
-                core::Str c = a.substr(0, 5);
+                fc::Str c = a.substr(0, 5);
 
-                if (c != core::Str("Hello"))
+                if (c != fc::Str("Hello"))
                 {
                     return "'Hello World'.substr(0, 5) != 'Hello'";
                 }

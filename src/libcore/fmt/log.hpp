@@ -7,35 +7,35 @@
 namespace fmt
 {
 
-void provide_log_target(core::Writer *writer);
+void provide_log_target(fc::Writer *writer);
 
 void log_lock();
 void log_release();
-core::Writer *log_target();
+fc::Writer *log_target();
 
 template <typename S>
 constexpr void log_impl(S &&arg)
 {
-    log_target()->write(core::Str(arg));
+    log_target()->write(fc::Str(arg));
 }
 
 template <typename S, typename... Args>
 constexpr void log_impl(S &&arg, Args &&...args)
 {
-    log_target()->write(core::Str(arg));
+    log_target()->write(fc::Str(arg));
     log_impl((args)...);
 }
 
 template <typename Fmt, typename... Args>
 constexpr void log(Fmt &&fmt, Args &&...args)
 {
-    fmt::format(*log_target(), (fmt), core::forward<Args>(args)...);
+    fmt::format(*log_target(), (fmt), fc::forward<Args>(args)...);
 }
 
-inline constexpr core::Str file_name(const char *s)
+inline constexpr fc::Str file_name(const char *s)
 {
-    core::Str str(s);
-    core::Str sub = str.sub_penultimate_char('/');
+    fc::Str str(s);
+    fc::Str sub = str.sub_penultimate_char('/');
     if (sub)
     {
         return sub.substr(1);
@@ -46,17 +46,17 @@ inline constexpr core::Str file_name(const char *s)
 #define __LOG_FILENAME__ ([]() {constexpr const char* _s = __FILE__; return fmt::file_name(_s); })()
 
 #ifdef KERNEL
-inline consteval core::Str color_from_filename(const char *s)
+inline consteval fc::Str color_from_filename(const char *s)
 {
     (void)s;
-    return core::Str("5");
+    return fc::Str("5");
 }
 #else
-inline consteval core::Str color_from_filename(const char *s)
+inline consteval fc::Str color_from_filename(const char *s)
 {
 
-    core::Str str2 = fmt::file_name(s);
-    core::Str str3 = str2.remove_after('/');
+    fc::Str str2 = fmt::file_name(s);
+    fc::Str str3 = str2.remove_after('/');
     size_t hash = 0;
     for (size_t i = 0; i < str3.len(); i++)
     {
@@ -83,7 +83,7 @@ inline consteval core::Str color_from_filename(const char *s)
         "200", "201", "202", "203", "204", "205", "206", "207", "208", "209",
         "210", "211", "212", "213", "214", "215", "216", "217", "218", "219",
         "220", "221", "222", "223", "224", "225", "226", "227", "228", "229"};
-    return core::Str(colors[hash % (sizeof(colors) / sizeof(colors[0]))]);
+    return fc::Str(colors[hash % (sizeof(colors) / sizeof(colors[0]))]);
 }
 #endif
 

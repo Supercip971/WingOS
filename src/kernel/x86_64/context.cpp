@@ -17,7 +17,7 @@
 
 namespace kernel
 {
-core::Result<CpuContext *> CpuContext::create_empty()
+fc::Result<CpuContext *> CpuContext::create_empty()
 {
 
     arch::amd64::CpuContextAmd64 *data = new arch::amd64::CpuContextAmd64{};
@@ -84,7 +84,7 @@ void CpuContext::load_to(void *state)
 
     data->simd_context.load();
 
-    core::atomic_cache_flush();
+    fc::atomic_cache_flush();
     {
 
         lock_scope$(this->lock);
@@ -121,7 +121,7 @@ void CpuContext::save_in(void *state)
     // this->saved_syscall_stack = Cpu::current()->saved_stack;
     data->simd_context.save();
 
-    core::atomic_cache_sync();
+    fc::atomic_cache_sync();
     this->await_save = false;
 }
 
@@ -131,11 +131,11 @@ void CpuContext::release()
 
     if (data->stack_ptr != nullptr)
     {
-        core::mem_free(data->stack_ptr);
+        fc::mem_free(data->stack_ptr);
     }
     if (data->kernel_stack_ptr != nullptr)
     {
-        core::mem_free(data->kernel_stack_ptr);
+        fc::mem_free(data->kernel_stack_ptr);
     }
     data->simd_context.release();
 
@@ -149,16 +149,16 @@ void CpuContext::use_stack_addr(uintptr_t addr)
     data->_user_stack_addr(addr);
 }
 
-core::Result<void> CpuContext::prepare(CpuContextLaunch launch)
+fc::Result<void> CpuContext::prepare(CpuContextLaunch launch)
 {
 
     auto data = this->as<arch::amd64::CpuContextAmd64>();
 
-    data->stack_ptr = try$(core::mem_alloc(kernel::userspace_stack_size));
+    data->stack_ptr = try$(fc::mem_alloc(kernel::userspace_stack_size));
 
-    data->kernel_stack_ptr = try$(core::mem_alloc(kernel::kernel_stack_size));
+    data->kernel_stack_ptr = try$(fc::mem_alloc(kernel::kernel_stack_size));
 
-    data->syscall_stack_ptr = try$(core::mem_alloc(kernel::kernel_stack_size)); // allocate a stack for syscall handling
+    data->syscall_stack_ptr = try$(fc::mem_alloc(kernel::kernel_stack_size)); // allocate a stack for syscall handling
 
     data->stack_top = (void *)((uintptr_t)data->stack_ptr + kernel::userspace_stack_size);
     data->kernel_stack_top = (void *)((uintptr_t)data->kernel_stack_ptr + kernel::kernel_stack_size);
@@ -196,7 +196,7 @@ core::Result<void> CpuContext::prepare(CpuContextLaunch launch)
     return {};
 }
 
-core::Result<CpuContext *> CpuContext::create(CpuContextLaunch launch)
+fc::Result<CpuContext *> CpuContext::create(CpuContextLaunch launch)
 {
     auto ctx = try$(create_empty());
     try$(ctx->prepare(launch));

@@ -7,16 +7,16 @@
 #include "libcore/io/writer.hpp"
 #include "libcore/result.hpp"
 
-class LinuxLogger : public core::Writer
+class LinuxLogger : public fc::Writer
 {
 public:
-    virtual core::Result<void> write(const char *data, size_t size) override
+    virtual fc::Result<void> write(const char *data, size_t size) override
     {
 
         size_t v = fwrite(data, 1, size, stdout);
         if (v != size)
         {
-            return core::Result<void>("Failed to write to stdout");
+            return fc::Result<void>("Failed to write to stdout");
         }
         return {};
     }

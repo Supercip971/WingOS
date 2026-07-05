@@ -13,10 +13,10 @@
 #include "libcore/lock/rwlock.hpp"
 #include "libcore/result.hpp"
 
-core::LinkedList<kernel::Task> task_list = {};
+fc::LinkedList<kernel::Task> task_list = {};
 bool loaded = false;
 std::atomic<kernel::TUID> next_uid = 1;
-core::RWLock _task_lock = {};
+fc::RWLock _task_lock = {};
 
 kernel::Task *kernel::Task::_task_allocate()
 {
@@ -28,7 +28,7 @@ kernel::Task *kernel::Task::_task_allocate()
 
         loaded = true;
     }
-    core::lock_scope_writer$(_task_lock);
+    fc::lock_scope_writer$(_task_lock);
 
     kernel::Task task{};
 
@@ -42,7 +42,7 @@ kernel::Task *kernel::Task::_task_allocate()
 
 kernel::Task *kernel::Task::by_id_unsafe(kernel::TUID uid)
 {
-    core::lock_scope_reader$(_task_lock);
+    fc::lock_scope_reader$(_task_lock);
 
     for (auto b = task_list.begin(); b != task_list.end(); ++b)
     {
@@ -55,7 +55,7 @@ kernel::Task *kernel::Task::by_id_unsafe(kernel::TUID uid)
     return nullptr;
 }
 
-core::Result<kernel::Task *> kernel::Task::by_id(kernel::TUID uid)
+fc::Result<kernel::Task *> kernel::Task::by_id(kernel::TUID uid)
 {
     auto task = kernel::Task::by_id_unsafe(uid);
     if (task == nullptr)
@@ -67,7 +67,7 @@ core::Result<kernel::Task *> kernel::Task::by_id(kernel::TUID uid)
     return task;
 }
 
-core::Result<kernel::Task *> kernel::Task::task_create()
+fc::Result<kernel::Task *> kernel::Task::task_create()
 {
     kernel::Task *task = kernel::Task::_task_allocate();
     if (task == nullptr)
@@ -81,7 +81,7 @@ core::Result<kernel::Task *> kernel::Task::task_create()
     return (task);
 }
 
-core::Result<void> kernel::Task::_initialize(CpuContextLaunch params, VmmSpace *target_vspace)
+fc::Result<void> kernel::Task::_initialize(CpuContextLaunch params, VmmSpace *target_vspace)
 {
     try$(_cpu_context->prepare(params));
 

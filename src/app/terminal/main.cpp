@@ -20,7 +20,7 @@ size_t cursor_x = 0;
 bool skip_command = false;
 char display[78][22] = {};
 
-void add_str(core::Str const &str)
+void add_str(fc::Str const &str)
 {
 
     for (size_t i = 0; i < str.len(); i++)
@@ -123,7 +123,7 @@ int main(int, char **)
 
     fmt::log$("window size: {}x{}", size.width, size.height);
 
-    core::WStr wstr = {};
+    fc::WStr wstr = {};
 
     // size_t frame = 0;
 
@@ -135,14 +135,14 @@ int main(int, char **)
                               0)
                               .unwrap());
 
-    auto receiver_pipe = (prot::ReceiverPipe::from(core::move(pipes.connection_receiver))
+    auto receiver_pipe = (prot::ReceiverPipe::from(fc::move(pipes.connection_receiver))
                               .unwrap());
 
     StartupInfo args = {};
     args.stdout_handle = pipes.connection_sender.handle;
     execute_program_from_path(space, "/bin/hello-wingos", args);
 
-    wstr = core::WStr::own((char *)malloc(256), 0, 256);
+    wstr = fc::WStr::own((char *)malloc(256), 0, 256);
 
     while (true)
     {
@@ -172,7 +172,7 @@ int main(int, char **)
             if (!res.is_error())
             {
                 auto msg = res.take();
-                add_str(core::Str((const char *)msg.raw_buffer, msg.len));
+                add_str(fc::Str((const char *)msg.raw_buffer, msg.len));
             }
             else
             {

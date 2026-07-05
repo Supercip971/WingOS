@@ -12,7 +12,7 @@
 // any further allocation
 static bool unstable_memory = false;
 
-namespace core
+namespace fc
 {
 
 static inline Result<void *> mem_alloc(size_t bytes)
@@ -130,4 +130,4 @@ concept MemAllocator = requires(T a) {
 
 static_assert(MemAllocator<DefaultAllocator>);
 
-} // namespace core
+} // namespace fc

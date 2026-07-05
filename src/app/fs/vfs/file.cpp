@@ -12,12 +12,12 @@
 #include "protocols/vfs/file.hpp"
 #include "wingos-headers/ipc.h"
 
-core::Vec<MountedFs> mounted_filesystems = {};
-core::Vec<VfsFileEndpoint *> opened_file_endpoints = {};
+fc::Vec<MountedFs> mounted_filesystems = {};
+fc::Vec<VfsFileEndpoint *> opened_file_endpoints = {};
 
 MountedFs _root;
 
-core::Result<void> mount_fs(IpcServerHandle device_name, core::WStr &&mount_path)
+fc::Result<void> mount_fs(IpcServerHandle device_name, fc::WStr &&mount_path)
 {
     for (auto &mnt : mounted_filesystems)
     {
@@ -27,7 +27,7 @@ core::Result<void> mount_fs(IpcServerHandle device_name, core::WStr &&mount_path
         }
     }
 
-    if (mount_path.view() == core::Str("/"))
+    if (mount_path.view() == fc::Str("/"))
     {
         fmt::log$("VFS: signaled init that root fs is available");
         prot::InitConnection init_conn = prot::InitConnection::connect().unwrap();
@@ -36,19 +36,19 @@ core::Result<void> mount_fs(IpcServerHandle device_name, core::WStr &&mount_path
 
     MountedFs mnt = {};
     mnt.endpoint = prot::DiskFsImplementationConnection::connect(device_name).unwrap();
-    mnt.path = core::move(mount_path);
-    mounted_filesystems.push(core::move(mnt));
+    mnt.path = fc::move(mount_path);
+    mounted_filesystems.push(fc::move(mnt));
 
     return {};
 }
 
-core::Result<VfsFileEndpoint *> VfsFileEndpoint::open_root()
+fc::Result<VfsFileEndpoint *> VfsFileEndpoint::open_root()
 {
     fmt::log$("VfsFileEndpoint::open_root: searching for root filesystem, {} mounted", mounted_filesystems.len());
     for (size_t i = 0; i < mounted_filesystems.len(); i++)
     {
         fmt::log$("VfsFileEndpoint::open_root: checking mount {}: path={}", i, mounted_filesystems[i].path.view());
-        if (mounted_filesystems[i].path.view() == (core::Str("/")))
+        if (mounted_filesystems[i].path.view() == (fc::Str("/")))
         {
             VfsFileEndpoint *endpoint = new VfsFileEndpoint();
 
@@ -61,7 +61,7 @@ core::Result<VfsFileEndpoint *> VfsFileEndpoint::open_root()
                 delete endpoint;
                 return connect_res.error();
             }
-            endpoint->connection_to_fs = core::move(connect_res.unwrap());
+            endpoint->connection_to_fs = fc::move(connect_res.unwrap());
 
             fmt::log$("VFS: connected to root fs, client handle: {}", endpoint->connection_to_fs.raw_client().handle);
 
@@ -73,7 +73,7 @@ core::Result<VfsFileEndpoint *> VfsFileEndpoint::open_root()
                 delete endpoint;
                 return server_res.error();
             }
-            endpoint->server = core::move(server_res.unwrap());
+            endpoint->server = fc::move(server_res.unwrap());
 
             fmt::log$("VFS: created root endpoint server with addr: {}", endpoint->server.addr());
             opened_file_endpoints.push(endpoint);
@@ -83,7 +83,7 @@ core::Result<VfsFileEndpoint *> VfsFileEndpoint::open_root()
     }
 
     fmt::err$("VfsFileEndpoint::open_root: no root filesystem mounted");
-    return core::Result<VfsFileEndpoint *>::error("no root filesystem mounted");
+    return fc::Result<VfsFileEndpoint *>::error("no root filesystem mounted");
 }
 
 void close_endpoint(VfsFileEndpoint *endpoint)
@@ -122,7 +122,7 @@ void update_all_endpoints()
 
         if (!received.is_error())
         {
-            auto msg = core::move(received.unwrap());
+            auto msg = fc::move(received.unwrap());
 
             if (msg.received.flags & IPC_MESSAGE_FLAG_DISCONNECT)
             {
@@ -138,7 +138,7 @@ void update_all_endpoints()
             {
                 IpcMessage reply = {};
                 size_t filename_len = msg.received.len;
-                core::WStr filename = {};
+                fc::WStr filename = {};
                 for (size_t i = 0; i < filename_len; i++)
                 {
                     filename.put(msg.received.raw_buffer[i]);
@@ -152,19 +152,19 @@ void update_all_endpoints()
                     reply.data[0].data = 0; // failure
                     reply.data[1].data = 0;
                     fmt::err$("VfsFileEndpoint: failed to open file {}: {}", filename.view(), file_res.error());
-                    endpoint->server.reply(core::move(msg), reply);
+                    endpoint->server.reply(fc::move(msg), reply);
                 }
                 else
                 {
                     VfsFileEndpoint *nendpoint = new VfsFileEndpoint();
 
-                    nendpoint->connection_to_fs = core::move(file_res.unwrap());
-                    nendpoint->server = core::move(prot::ManagedServer::create_server().unwrap());
+                    nendpoint->connection_to_fs = fc::move(file_res.unwrap());
+                    nendpoint->server = fc::move(prot::ManagedServer::create_server().unwrap());
                     reply.data[0].data = 1; // success
                     reply.data[1].data = nendpoint->server.addr();
 
                     fmt::log$("VfsFileEndpoint: open file {}", filename.view());
-                    endpoint->server.reply(core::move(msg), reply);
+                    endpoint->server.reply(fc::move(msg), reply);
                     opened_file_endpoints.push(nendpoint);
 
                     // early return because we loop over endpoints that we pushed
@@ -193,8 +193,8 @@ void update_all_endpoints()
                     auto received_fs = endpoint->connection_to_fs.raw_client().receive_reply(forward_handle);
                     if (!received_fs.is_error())
                     {
-                        auto fs_msg = core::move(received_fs.unwrap());
-                        auto reply_res = endpoint->server.reply(core::move(msg), fs_msg);
+                        auto fs_msg = fc::move(received_fs.unwrap());
+                        auto reply_res = endpoint->server.reply(fc::move(msg), fs_msg);
                         if (reply_res.is_error())
                         {
                             fmt::err$("VfsFileEndpoint: failed to send reply back to client: {}", reply_res.error());

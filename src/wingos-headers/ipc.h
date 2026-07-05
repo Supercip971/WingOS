@@ -51,7 +51,7 @@ extern "C"
     };
 
 #ifdef __cplusplus
-    struct IpcMessage : public core::NoCopy
+    struct IpcMessage : public fc::NoCopy
     {
         constexpr IpcMessage() : message_id(0), flags(0), data{}, len(0)
         {

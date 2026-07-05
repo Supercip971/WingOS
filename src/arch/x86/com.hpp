@@ -12,9 +12,9 @@
 namespace arch::x86
 {
 
-class Com : public core::Writer, public core::NoCopy
+class Com : public fc::Writer, public fc::NoCopy
 {
-    core::Lock _lock = {};
+    fc::Lock _lock = {};
 
 public:
     Com() = default;
@@ -98,13 +98,13 @@ public:
 
     void wait_write();
 
-    core::Result<void> write(const char *data, size_t size) override;
+    fc::Result<void> write(const char *data, size_t size) override;
 
-    static core::Result<Com> initialize(Com::Port port);
+    static fc::Result<Com> initialize(Com::Port port);
 
-    template <core::Viewable T>
-    constexpr core::Result<void> write(T view)
-        requires(core::Viewable<T>)
+    template <fc::Viewable T>
+    constexpr fc::Result<void> write(T view)
+        requires(fc::Viewable<T>)
     {
         _lock.lock();
         auto res = write(view.data(), view.len());

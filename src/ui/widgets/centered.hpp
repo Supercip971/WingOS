@@ -14,7 +14,7 @@ class Centered : public Widget
 {
 
 public:
-    core::SharedPtr<Widget> child;
+    fc::SharedPtr<Widget> child;
 
     ~Centered() override = default;
 
@@ -45,12 +45,12 @@ public:
     }
 
     template <typename T>
-    static core::SharedPtr<Widget> construct(T args)
+    static fc::SharedPtr<Widget> construct(T args)
     {
-        return core::SharedPtr<Centered>::make(args).template static_pointer_cast<Widget>();
+        return fc::SharedPtr<Centered>::make(args).template static_pointer_cast<Widget>();
     }
 
-    core::SharedPtr<Widget> build(UiContext const &v) override
+    fc::SharedPtr<Widget> build(UiContext const &v) override
     {
         (void)v;
         return child;

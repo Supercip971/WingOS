@@ -333,7 +333,7 @@ struct PciDevice
 
 struct PciController
 {
-    core::Vec<PciDevice> devices;
+    fc::Vec<PciDevice> devices;
 
 public:
     void scan_dev(uint8_t bus, uint8_t dev);

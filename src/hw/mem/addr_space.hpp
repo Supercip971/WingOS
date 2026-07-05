@@ -230,5 +230,5 @@ constexpr inline VirtRange toVirtRange(PhysRange range)
 
 template <typename Fn>
 concept MappCallbackFn = requires(uintptr_t addr, size_t size, Fn fn) {
-    { fn(addr, size) } -> core::IsConvertibleTo<core::Result<uintptr_t>>;
+    { fn(addr, size) } -> fc::IsConvertibleTo<fc::Result<uintptr_t>>;
 };

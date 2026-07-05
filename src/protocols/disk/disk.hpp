@@ -29,7 +29,7 @@ class DiskConnection
 public:
     Wingos::IpcClient &raw_client() { return connection; }
 
-    core::Result<size_t> read_small(void *buffer, uint64_t lba, uint64_t len)
+    fc::Result<size_t> read_small(void *buffer, uint64_t lba, uint64_t len)
     {
         if (len > MAX_IPC_BUFFER_SIZE)
         {
@@ -61,7 +61,7 @@ public:
         }
     }
 
-    core::Result<size_t> read(Wingos::MemoryAsset &asset, uint64_t lba, uint64_t len, uint64_t asset_start = 0)
+    fc::Result<size_t> read(Wingos::MemoryAsset &asset, uint64_t lba, uint64_t len, uint64_t asset_start = 0)
     {
         if (len < MAX_IPC_BUFFER_SIZE)
         {
@@ -109,10 +109,10 @@ public:
         }
         // swap back
         (void)message_handle;
-        return core::Result<size_t>::success(0);
+        return fc::Result<size_t>::success(0);
     }
 
-    core::Result<Wingos::VirtualMemoryAsset> read_buf(uint64_t lba, uint64_t count)
+    fc::Result<Wingos::VirtualMemoryAsset> read_buf(uint64_t lba, uint64_t count)
     {
 
         Wingos::MemoryAsset asset = Wingos::Space::self().allocate_physical_memory(math::alignUp<size_t>(count, 4096), false);
@@ -130,7 +130,7 @@ public:
         if (bytes_read < aligned_len)
         {
             Wingos::Space::self().release_asset(asset);
-            return core::Result<Wingos::VirtualMemoryAsset>::error("disk read returned too few bytes");
+            return fc::Result<Wingos::VirtualMemoryAsset>::error("disk read returned too few bytes");
         }
 
         Wingos::VirtualMemoryAsset vasset = Wingos::Space::self().map_memory(asset, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
@@ -138,7 +138,7 @@ public:
         return vasset;
     }
 
-    core::Result<void> write_small(void *buffer, uint64_t lba, uint64_t len)
+    fc::Result<void> write_small(void *buffer, uint64_t lba, uint64_t len)
     {
         if (len > MAX_IPC_BUFFER_SIZE)
         {
@@ -165,7 +165,7 @@ public:
         return {};
     }
 
-    core::Result<void> write(Wingos::MemoryAsset &asset, uint64_t lba, uint64_t len)
+    fc::Result<void> write(Wingos::MemoryAsset &asset, uint64_t lba, uint64_t len)
     {
         if (len < MAX_IPC_BUFFER_SIZE)
         {
@@ -190,7 +190,7 @@ public:
         return {};
     }
 
-    static core::Result<DiskConnection> connect(core::Str dev_name)
+    static fc::Result<DiskConnection> connect(fc::Str dev_name)
     {
         DiskConnection conn;
         auto init_conn = try$(prot::InitConnection::connect());
@@ -204,7 +204,7 @@ public:
         return conn;
     }
 
-    static core::Result<DiskConnection> connect(IpcServerHandle disk_endpoint)
+    static fc::Result<DiskConnection> connect(IpcServerHandle disk_endpoint)
     {
         DiskConnection conn;
         conn.connection = Wingos::Space::self().connect_to_ipc_server(disk_endpoint);

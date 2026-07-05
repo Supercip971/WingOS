@@ -46,28 +46,28 @@ struct SchedulerControlBlock
 
     long queue() const
     {
-        return core::clamp(weight() + (long)TASK_QUEUE_COUNT / 2, 0, (long)TASK_QUEUE_COUNT - 1);
+        return fc::clamp(weight() + (long)TASK_QUEUE_COUNT / 2, 0, (long)TASK_QUEUE_COUNT - 1);
     }
 };
 
-core::Result<void> scheduler_init(int cpu_count);
+fc::Result<void> scheduler_init(int cpu_count);
 
-core::Result<void> scheduler_start();
+fc::Result<void> scheduler_start();
 
-core::Result<Task *> next_task_select(CoreId core);
+fc::Result<Task *> next_task_select(CoreId core);
 
-core::Result<void> scheduler_tick();
+fc::Result<void> scheduler_tick();
 
-core::Result<void> task_run(TUID task_id, CoreId core = 0);
+fc::Result<void> task_run(TUID task_id, CoreId core = 0);
 
-core::Result<Task *> schedule(Task *current, void *state, CoreId core, bool soft = false);
-core::Result<void> dump_current_running_task(bool complete);
+fc::Result<Task *> schedule(Task *current, void *state, CoreId core, bool soft = false);
+fc::Result<void> dump_current_running_task(bool complete);
 
-core::Result<void> dump_all_current_running_tasks();
+fc::Result<void> dump_all_current_running_tasks();
 
-core::Result<void> block_current_task(BlockEvent event);
+fc::Result<void> block_current_task(BlockEvent event);
 
-core::Result<void> resolve_blocked_tasks();
+fc::Result<void> resolve_blocked_tasks();
 
 void schedule_if_task_blocked();
 

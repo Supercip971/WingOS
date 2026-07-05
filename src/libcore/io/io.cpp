@@ -5,18 +5,18 @@
 #include "void.hpp"
 #include "writer.hpp"
 
-core::Reader::~Reader()
+fc::Reader::~Reader()
 {
 }
 
-core::Seeker::~Seeker()
+fc::Seeker::~Seeker()
 {
 }
 
-core::VoidRW::~VoidRW()
+fc::VoidRW::~VoidRW()
 {
 }
 
-core::Writer::~Writer()
+fc::Writer::~Writer()
 {
 }

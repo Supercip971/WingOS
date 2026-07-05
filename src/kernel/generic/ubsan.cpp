@@ -82,7 +82,7 @@ struct nonnull_arg_data
     source_location loc;
 };
 
-core::Lock locker = {};
+fc::Lock locker = {};
 
 void dump_source_location(source_location *loc)
 {

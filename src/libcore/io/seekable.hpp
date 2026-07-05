@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-namespace core
+namespace fc
 {
 
 enum class SeekFrom
@@ -63,4 +63,4 @@ concept Seekable = requires(T *x) {
 
 static_assert(Seekable<Seeker>);
 
-} // namespace core
+} // namespace fc

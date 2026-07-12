@@ -254,7 +254,7 @@ static constexpr TestGroup resultTests = {
                     if (ResultTestObject::construct_count != 1)
                         return "construct_count should be 1";
 
-                    fc::Result<ResultTestObject, const char *> result = fc::move(obj);
+                    fc::Result<ResultTestObject, const char *> result = std::move(obj);
                     // Constructor + move constructor
                     if (ResultTestObject::construct_count != 2)
                         return "construct_count should be 2 after move to result";
@@ -279,7 +279,7 @@ static constexpr TestGroup resultTests = {
                     if (ResultTestError::construct_count != 1)
                         return "construct_count should be 1";
 
-                    fc::Result<int, ResultTestError> result = fc::move(err);
+                    fc::Result<int, ResultTestError> result = std::move(err);
                     // Constructor + move constructor
                     if (ResultTestError::construct_count != 2)
                         return "construct_count should be 2 after move to result";
@@ -304,7 +304,7 @@ static constexpr TestGroup resultTests = {
                     if (ResultTestObject::construct_count != 2)
                         return "construct_count should be 2";
 
-                    fc::Result<ResultTestObject, const char *> result2 = fc::move(result1);
+                    fc::Result<ResultTestObject, const char *> result2 = std::move(result1);
                     if (ResultTestObject::construct_count != 3)
                         return "construct_count should be 3 after move constructor";
                     if (ResultTestObject::move_construct_count != 2)
@@ -332,7 +332,7 @@ static constexpr TestGroup resultTests = {
                     if (ResultTestError::construct_count != 2)
                         return "construct_count should be 2";
 
-                    fc::Result<int, ResultTestError> result2 = fc::move(result1);
+                    fc::Result<int, ResultTestError> result2 = std::move(result1);
                     if (ResultTestError::construct_count != 3)
                         return "construct_count should be 3 after move constructor";
                     if (ResultTestError::move_construct_count != 2)
@@ -362,7 +362,7 @@ static constexpr TestGroup resultTests = {
                     int before_construct = ResultTestObject::construct_count;
                     int before_destruct = ResultTestObject::destruct_count;
 
-                    result2 = fc::move(result1);
+                    result2 = std::move(result1);
 
                     // One destruction (old value in result2) + one construction (move)
                     if (ResultTestObject::destruct_count != before_destruct + 1)
@@ -394,7 +394,7 @@ static constexpr TestGroup resultTests = {
                     int before_construct = ResultTestError::construct_count;
                     int before_destruct = ResultTestError::destruct_count;
 
-                    result2 = fc::move(result1);
+                    result2 = std::move(result1);
 
                     // One destruction (old error in result2) + one construction (move)
                     if (ResultTestError::destruct_count != before_destruct + 1)
@@ -429,7 +429,7 @@ static constexpr TestGroup resultTests = {
                     if (!result2.is_error())
                         return "result2 should be error";
 
-                    result2 = fc::move(result1);
+                    result2 = std::move(result1);
 
                     if (result2.is_error())
                         return "result2 should not be error after move";
@@ -460,7 +460,7 @@ static constexpr TestGroup resultTests = {
                     if (result2.is_error())
                         return "result2 should not be error";
 
-                    result2 = fc::move(result1);
+                    result2 = std::move(result1);
 
                     if (!result2.is_error())
                         return "result2 should be error after move";
@@ -487,7 +487,7 @@ static constexpr TestGroup resultTests = {
                     int before_construct = ResultTestObject::construct_count;
                     int before_destruct = ResultTestObject::destruct_count;
 
-                    result = fc::move(result);
+                    result = std::move(result);
 
                     // Self assignment should not create or destroy anything
                     if (ResultTestObject::construct_count != before_construct)
@@ -540,7 +540,7 @@ static constexpr TestGroup resultTests = {
 
                 {
                     fc::Result<void, ResultTestError> result1 = ResultTestError(123);
-                    fc::Result<void, ResultTestError> result2 = fc::move(result1);
+                    fc::Result<void, ResultTestError> result2 = std::move(result1);
 
                     if (!result2.is_error())
                         return "result2 should be error";
@@ -563,7 +563,7 @@ static constexpr TestGroup resultTests = {
                     fc::Result<void, ResultTestError> result1 = ResultTestError(100);
                     fc::Result<void, ResultTestError> result2 = ResultTestError(200);
 
-                    result2 = fc::move(result1);
+                    result2 = std::move(result1);
 
                     if (!result2.is_error())
                         return "result2 should be error";
@@ -665,7 +665,7 @@ static constexpr TestGroup resultTests = {
                     };
 
                     auto result = make_result();
-                    ResultTestObject obj = fc::move(result).unwrap();
+                    ResultTestObject obj = std::move(result).unwrap();
                     if (obj.value != 42)
                         return "unwrapped value should be 42";
                 }

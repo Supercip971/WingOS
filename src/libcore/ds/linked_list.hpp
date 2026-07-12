@@ -79,16 +79,16 @@ public:
 
     LinkedList(LinkedList &&other)
     {
-        fc::swap(head, other.head);
-        fc::swap(tail, other.tail);
-        fc::swap(_count, other._count);
+        std::swap(head, other.head);
+        std::swap(tail, other.tail);
+        std::swap(_count, other._count);
     }
 
     LinkedList &operator=(LinkedList &&other)
     {
-        fc::swap(head, other.head);
-        fc::swap(tail, other.tail);
-        fc::swap(_count, other._count);
+        std::swap(head, other.head);
+        std::swap(tail, other.tail);
+        std::swap(_count, other._count);
         return *this;
     }
 
@@ -143,8 +143,8 @@ public:
     {
         auto node = (Node *)malloc(sizeof(Node));
 
-        new (&node->data) Storage<T>(fc::forward<F>(v));
-        // node->data = fc::forward<F>(v);
+        new (&node->data) Storage<T>(std::forward<F>(v));
+        // node->data = std::forward<F>(v);
         node->next = nullptr;
 
         if (tail != nullptr)
@@ -169,7 +169,7 @@ public:
             unreachable$();
         }
 
-        T res = fc::move(head->data.take());
+        T res = std::move(head->data.take());
         auto next = head->next;
 
         if (tail == head)

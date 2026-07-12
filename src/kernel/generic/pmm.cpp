@@ -115,7 +115,7 @@ fc::Result<void> Pmm::_fill(const mcx::MachineContext *context)
             toVirt(bitmaps_start).as<uint8_t>(),
             section.range.len() / page_size_byte);
 
-        section.bitmap = fc::Bitmap(fc::move(bitmap_mem));
+        section.bitmap = fc::Bitmap(std::move(bitmap_mem));
         section.bitmap.fill(false);
 
         if (_section_location == i)

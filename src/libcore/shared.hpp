@@ -24,7 +24,7 @@ public:
 
         template <typename... Args>
         ControlBlock(Args... args)
-            : ref_count(0), data(fc::forward<Args>(args)...)
+            : ref_count(0), data(std::forward<Args>(args)...)
         {
         }
     };
@@ -47,7 +47,7 @@ public:
     static SharedPtr<T> make(Args... args)
     {
         SharedPtr<T> ptr = {};
-        ptr.control_block = new ControlBlock(fc::forward<Args>(args)...);
+        ptr.control_block = new ControlBlock(std::forward<Args>(args)...);
 
         ptr.control_block->ref_count = 1;
         return ptr;

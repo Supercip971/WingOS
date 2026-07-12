@@ -189,7 +189,7 @@ static constexpr TestGroup sharedPtrTests = {
                 {
                     auto ptr1 = fc::SharedPtr<TestObject>::make(99);
 
-                    auto ptr2 = fc::move(ptr1); // Move constructor
+                    auto ptr2 = std::move(ptr1); // Move constructor
 
                     if (TestObject::construct_count != 1)
                     {
@@ -219,7 +219,7 @@ static constexpr TestGroup sharedPtrTests = {
                     auto ptr1 = fc::SharedPtr<TestObject>::make(111);
                     auto ptr2 = fc::SharedPtr<TestObject>::make(222);
 
-                    ptr2 = fc::move(ptr1); // Move assignment
+                    ptr2 = std::move(ptr1); // Move assignment
 
                     // ptr2's old object should be destroyed
                     if (TestObject::destruct_count != 1)

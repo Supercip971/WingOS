@@ -685,7 +685,7 @@ fc::Result<size_t> ksyscall_ipc_call(kernel::Task *caller, SyscallIpcCall *call)
 
     auto received_message = (res.take());
 
-    *try$(syscall_check_ptr(caller, call->returned_message)) = fc::move(received_message);
+    *try$(syscall_check_ptr(caller, call->returned_message)) = std::move(received_message);
     call->has_reply = true;
     // call->returned_msg_handle = received_message.uid;
 

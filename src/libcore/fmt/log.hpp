@@ -29,7 +29,7 @@ constexpr void log_impl(S &&arg, Args &&...args)
 template <typename Fmt, typename... Args>
 constexpr void log(Fmt &&fmt, Args &&...args)
 {
-    fmt::format(*log_target(), (fmt), fc::forward<Args>(args)...);
+    fmt::format(*log_target(), (fmt), std::forward<Args>(args)...);
 }
 
 inline constexpr fc::Str file_name(const char *s)

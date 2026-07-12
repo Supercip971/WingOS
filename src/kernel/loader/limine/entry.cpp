@@ -92,7 +92,7 @@ void _start(void)
     {
         done();
     }
-    auto com2 = fc::move(c.take());
+    auto com2 = c.take();
 
     fmt::provide_log_target(&com2);
 

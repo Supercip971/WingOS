@@ -13,7 +13,7 @@ public:
     bool transferTo(Widget &other) override
     {
         static_cast<Statefull<State> &>(other).State::operator=(static_cast<const State &>(*this));
-        other.childs = fc::move(childs);
+        other.childs = std::move(childs);
         return true;
     }
 

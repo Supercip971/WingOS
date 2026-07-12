@@ -157,7 +157,7 @@ constexpr fc::Result<int> format_v(Targ &target, FormatFlags<T> &&v)
     }
     if (v.is_hex)
     {
-        auto r = format_v_hex(target, fc::forward<T>(v.value), {v.is_hex, v.pad_size, v.pad_char});
+        auto r = format_v_hex(target, std::forward<T>(v.value), {v.is_hex, v.pad_size, v.pad_char});
 
         if (v.color != Color::NONE)
         {
@@ -167,7 +167,7 @@ constexpr fc::Result<int> format_v(Targ &target, FormatFlags<T> &&v)
     }
     else
     {
-        auto r = format_v(target, fc::forward<T>(v.value), {v.is_hex, v.pad_size, v.pad_char});
+        auto r = format_v(target, std::forward<T>(v.value), {v.is_hex, v.pad_size, v.pad_char});
         if (v.color != Color::NONE)
         {
             target.write("\033[0m", 4);
@@ -187,7 +187,7 @@ constexpr fc::Result<int> format_v(Targ &target, const FormatFlags<T> &v)
     }
     if (v.is_hex)
     {
-        auto r = format_v_hex(target, fc::forward<T>(v.value), {v.is_hex, v.pad_size, v.pad_char});
+        auto r = format_v_hex(target, std::forward<T>(v.value), {v.is_hex, v.pad_size, v.pad_char});
 
         if (v.color != Color::NONE)
         {
@@ -197,7 +197,7 @@ constexpr fc::Result<int> format_v(Targ &target, const FormatFlags<T> &v)
     }
     else
     {
-        auto r = format_v(target, fc::forward<T>(v.value), {v.is_hex, v.pad_size, v.pad_char});
+        auto r = format_v(target, std::forward<T>(v.value), {v.is_hex, v.pad_size, v.pad_char});
         if (v.color != Color::NONE)
         {
             target.write("\033[0m", 4);

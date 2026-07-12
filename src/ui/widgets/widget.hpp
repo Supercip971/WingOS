@@ -73,7 +73,7 @@ public:
     static fc::SharedPtr<Widget> $(Args &&...args)
     {
         return fc::SharedPtr<T>::make(
-                   fc::forward<Args>(args)...)
+                   std::forward<Args>(args)...)
             .template static_pointer_cast<Widget>();
     }
 
@@ -352,7 +352,7 @@ public:
         other._layout = _layout;
         other._old_render_layout = _old_render_layout;
         other.rendering = rendering;
-        other.childs = fc::move(childs);
+        other.childs = std::move(childs);
         return false;
     }
 
@@ -470,14 +470,14 @@ public:
             }
         }
 
-        childs = fc::move(new_childs);
+        childs = std::move(new_childs);
     }
 };
 
 template <typename T, typename... Args>
 fc::SharedPtr<Widget> mount(UiContext const &ctx, Args &&...args)
 {
-    return T::construct(ctx, fc::forward<Args>(args)...);
+    return T::construct(ctx, std::forward<Args>(args)...);
 }
 
 } // namespace fc

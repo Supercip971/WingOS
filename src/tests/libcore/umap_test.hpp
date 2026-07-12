@@ -423,7 +423,7 @@ static constexpr TestGroup umapTests = {
                         return "incorrect live value count after rehash";
                     }
 
-                    auto moved = fc::UMap<UMapTestKey, UMapTestValue>(fc::move(map));
+                    auto moved = fc::UMap<UMapTestKey, UMapTestValue>(std::move(map));
 
                     if (UMapTestKey::live_count() != 80)
                     {

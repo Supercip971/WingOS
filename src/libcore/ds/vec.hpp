@@ -64,9 +64,9 @@ public:
         {
             return *this;
         }
-        fc::swap(_data, other._data);
-        fc::swap(_count, other._count);
-        fc::swap(_capacity, other._capacity);
+        std::swap(_data, other._data);
+        std::swap(_count, other._count);
+        std::swap(_capacity, other._capacity);
         return *this;
     }
 
@@ -90,8 +90,8 @@ public:
         reserve(_count + other._count);
         for (long i = 0; i < other._count; i++)
         {
-            new (&_data[_count + i]) T(fc::move(other._data[i]));
-            //  _data[_count + i] = fc::move(other._data[i]);
+            new (&_data[_count + i]) T(std::move(other._data[i]));
+            //  _data[_count + i] = std::move(other._data[i]);
         }
         _count += other._count;
         fc::mem_free(other._data);
@@ -168,7 +168,7 @@ public:
     Result<void> push(T &&value)
     {
         try$(reserve(_count + 1));
-        new (&_data[_count]) T(fc::move(value));
+        new (&_data[_count]) T(std::move(value));
         _count++;
         return Result<void>();
     }
@@ -196,7 +196,7 @@ public:
         try$(reserve(_count + arr.len()));
         for (size_t i = 0; i < arr.len(); i++)
         {
-            new (&_data[_count + i]) T(fc::move(arr[i]));
+            new (&_data[_count + i]) T(std::move(arr[i]));
         }
         _count += arr.len();
         return Result<void>{};
@@ -257,7 +257,7 @@ public:
         {
             _count--;
 
-            auto v = fc::move(_data[_count]);
+            auto v = std::move(_data[_count]);
 
             _data[_count].~T();
 
@@ -275,11 +275,11 @@ public:
             unreachable$();
         }
 
-        T value = fc::move(_data[id]);
+        T value = std::move(_data[id]);
 
         for (long i = id; i < _count - 1; i++)
         {
-            _data[i] = fc::move(_data[i + 1]);
+            _data[i] = std::move(_data[i + 1]);
         }
 
         _data[_count - 1].~T();
@@ -302,7 +302,7 @@ public:
 
         for (long i = _count; i > (long)id; i--)
         {
-            _data[i] = fc::move(_data[i - 1]);
+            _data[i] = std::move(_data[i - 1]);
         }
 
         new (&_data[id]) T(el);
@@ -413,11 +413,11 @@ public:
             {
 
                 sI++;
-                fc::swap(_data[sI], _data[j]);
+                std::swap(_data[sI], _data[j]);
             }
         }
 
-        fc::swap(_data[sI + 1], _data[r]);
+        std::swap(_data[sI + 1], _data[r]);
         quick_sort(AminusB, l, sI);
         quick_sort(AminusB, sI + 2, r);
     }

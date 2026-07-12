@@ -42,7 +42,7 @@ struct FormatFlags
             color,
             pad_char,
             pad_size,
-            fc::forward<C>(new_value)};
+            std::forward<C>(new_value)};
     }
 };
 
@@ -64,33 +64,33 @@ constexpr FormatFlags<T> operator|(T &&a, FmtFlag flag)
             .color = Color::NONE,
             .pad_char = ' ',
             .pad_size = 8,
-            .value = fc::forward<T>(a),
+            .value = std::forward<T>(a),
         };
     case FMT_PAD_ZERO:
         return FormatFlags<T>{
             .color = Color::NONE,
             .pad_char = '0',
             .pad_size = 8,
-            .value = fc::forward<T>(a),
+            .value = std::forward<T>(a),
         };
     case FMT_CYAN:
         return FormatFlags<T>{
             .color = Color::CYAN,
-            .value = fc::forward<T>(a),
+            .value = std::forward<T>(a),
         };
     case FMT_HEX:
         return FormatFlags<T>{
 
             .is_hex = true,
             .color = Color::NONE,
-            .value = fc::forward<T>(a),
+            .value = std::forward<T>(a),
         };
     default:
         break;
     }
     return FormatFlags<T>{
         .is_hex = false,
-        .value = fc::forward<T>(a),
+        .value = std::forward<T>(a),
     };
 }
 
@@ -115,7 +115,7 @@ constexpr FormatFlags<T> operator|(const FormatFlags<T> &a, FmtFlag flag)
     default:
         break;
     }
-    return fc::forward<FormatFlags<T>>(b);
+    return std::forward<FormatFlags<T>>(b);
 }
 
 template <typename T>
@@ -138,7 +138,7 @@ constexpr FormatFlags<T> operator|(FormatFlags<T> &&a, FmtFlag flag)
     default:
         break;
     }
-    return fc::forward<FormatFlags<T>>(a);
+    return std::forward<FormatFlags<T>>(a);
 }
 
 } // namespace fmt

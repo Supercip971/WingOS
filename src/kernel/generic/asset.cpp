@@ -82,7 +82,7 @@ void Asset::release(Asset *asset)
 
             server->server->connections.release();
 
-            saved_self = fc::move(server->server->self);
+            saved_self = std::move(server->server->self);
         }
     }
 
@@ -196,7 +196,7 @@ void Asset::deref(Asset *asset)
                 // spinlock) -> deadlock.  By moving it out we let the
                 // destructor run after `delete asset` below (or at end of
                 // scope) when the lock is no longer held.
-                auto deferred_self = fc::move(server->server->self);
+                auto deferred_self = std::move(server->server->self);
 
                 delete server->server;
                 server->server = nullptr;
@@ -461,13 +461,13 @@ fc::Result<AssetRef<AssetConnection>> Space::create_ipc_connection(AssetIpcConne
         return ("failed to copy asset to server space");
     }
 
-    auto ptr_in_server = fc::move(copy_res.unwrap());
+    auto ptr_in_server = std::move(copy_res.unwrap());
 
     // Now lock server asset to modify connections.
     // server_self.asset is guaranteed non-null (checked above).
     server_self.asset->lock.lock();
     auto server_ptr = server_self.asset->casted<AssetServer>()->server;
-    try$(server_ptr->connections.push(fc::move(ptr_in_server)));
+    try$(server_ptr->connections.push(std::move(ptr_in_server)));
     server_self.asset->lock.release();
 
     return ptr;

@@ -89,7 +89,7 @@ public:
         for (long i = capacity - 1; i >= _head + delta_cap; i--)
         {
             // _data[p'] = _data[p]
-            _data[i] = fc::move(_data[i - delta_cap]);
+            _data[i] = std::move(_data[i - delta_cap]);
         }
         _head = capacity - _capacity + _head;
         _capacity = capacity;
@@ -103,7 +103,7 @@ public:
             resize((len() + 2) + (len() + 2) / 2);
         }
 
-        new (&_data[_tail]) T(fc::move(value));
+        new (&_data[_tail]) T(std::move(value));
 
         _tail = (_tail + 1) % _capacity;
         _len++;
@@ -130,7 +130,7 @@ public:
             unreachable$();
         }
 
-        T value = fc::move(_data[_head]);
+        T value = std::move(_data[_head]);
 
         _data[_head].~T();
 

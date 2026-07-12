@@ -30,7 +30,7 @@ struct JsonChilds
     JsonChilds() : values(), keys() {};
 
     JsonChilds(JsonChilds &&other) noexcept
-        : values(fc::move(other.values)), keys(fc::move(other.keys))
+        : values(std::move(other.values)), keys(std::move(other.keys))
     {
     }
 
@@ -43,8 +43,8 @@ struct JsonChilds
     {
         if (this != &other)
         {
-            fc::swap(values, other.values);
-            fc::swap(keys, other.keys);
+            std::swap(values, other.values);
+            std::swap(keys, other.keys);
         }
         return *this;
     }
@@ -76,7 +76,7 @@ struct JsonStorage
           boolean(other.boolean),
           number(other.number),
           integer(other.integer),
-          childs(fc::move(other.childs))
+          childs(std::move(other.childs))
     {
     }
 
@@ -94,11 +94,11 @@ struct JsonStorage
     {
         if (this != &other)
         {
-            fc::swap(raw, other.raw);
+            std::swap(raw, other.raw);
             boolean = other.boolean;
             number = other.number;
             integer = other.integer;
-            fc::swap(childs, other.childs);
+            std::swap(childs, other.childs);
         }
         return *this;
     }
@@ -127,7 +127,7 @@ struct JsonValue
     JsonValue() : type(JsonType::Null), storage() {};
 
     JsonValue(JsonValue &&other) noexcept
-        : type(other.type), storage(fc::move(other.storage))
+        : type(other.type), storage(std::move(other.storage))
     {
         other.type = JsonType::Null;
     }
@@ -142,7 +142,7 @@ struct JsonValue
         if (this != &other)
         {
             type = other.type;
-            fc::swap(storage, other.storage);
+            std::swap(storage, other.storage);
         }
         return *this;
     }

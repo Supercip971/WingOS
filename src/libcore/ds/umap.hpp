@@ -165,7 +165,7 @@ class UMap
 public:
     UMap() {};
 
-    UMap(UMap &&other) : _buckets(fc::move(other._buckets)), _count(other._count) {}
+    UMap(UMap &&other) : _buckets(std::move(other._buckets)), _count(other._count) {}
 
     template <IsConvertibleTo<KeyT> KeyT2, IsConvertibleTo<ValueT> ValueT2>
     void insert(KeyT2 &&key, ValueT2 &&value)
@@ -192,9 +192,9 @@ public:
 #endif
         _buckets[h].push((BucketEntry){
             (decltype(BucketEntry::key))
-                fc::forward<decltype(key)>(key),
+                std::forward<decltype(key)>(key),
             (decltype(BucketEntry::value))
-                fc::forward<decltype(value)>(value)});
+                std::forward<decltype(value)>(value)});
         _count++;
         maybe_rehash();
     }
@@ -260,7 +260,7 @@ public:
             return;
         }
 
-        auto old_buckets = fc::move(_buckets);
+        auto old_buckets = std::move(_buckets);
         _buckets = fc::Vec<fc::Vec<BucketEntry>>();
         _buckets.reserve(old_buckets.len() * 2);
         for (size_t i = 0; i < old_buckets.len() * 2; i++)
@@ -273,7 +273,7 @@ public:
             while (bucket.len() != 0)
             {
                 auto entry = bucket.pop();
-                insert(fc::move(entry.key), fc::move(entry.value));
+                insert(std::move(entry.key), std::move(entry.value));
             }
         }
     }

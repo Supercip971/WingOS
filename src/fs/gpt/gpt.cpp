@@ -72,9 +72,9 @@ fc::Result<Wingos::GPTDiskParseResult> Wingos::parse_gpt(fc::Str &device)
         fmt::log$("Found partition: {} (LBA {} - {})", part_name.view(), fc::copy(entry->lba_start), fc::copy(entry->lba_end));
 
         GPTDiskParseEntry parse_entry = {};
-        parse_entry.name = fc::move(part_name);
+        parse_entry.name = std::move(part_name);
         parse_entry.entry = entry;
-        result.entries.push(fc::move(parse_entry));
+        result.entries.push(std::move(parse_entry));
     }
 
     return (result);

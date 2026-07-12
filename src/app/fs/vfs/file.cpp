@@ -36,8 +36,8 @@ fc::Result<void> mount_fs(IpcServerHandle device_name, fc::WStr &&mount_path)
 
     MountedFs mnt = {};
     mnt.endpoint = prot::DiskFsImplementationConnection::connect(device_name).unwrap();
-    mnt.path = fc::move(mount_path);
-    mounted_filesystems.push(fc::move(mnt));
+    mnt.path = std::move(mount_path);
+    mounted_filesystems.push(std::move(mnt));
 
     return {};
 }
@@ -61,7 +61,7 @@ fc::Result<VfsFileEndpoint *> VfsFileEndpoint::open_root()
                 delete endpoint;
                 return connect_res.error();
             }
-            endpoint->connection_to_fs = fc::move(connect_res.unwrap());
+            endpoint->connection_to_fs = std::move(connect_res.unwrap());
 
             fmt::log$("VFS: connected to root fs, client handle: {}", endpoint->connection_to_fs.raw_client().handle);
 
@@ -73,7 +73,7 @@ fc::Result<VfsFileEndpoint *> VfsFileEndpoint::open_root()
                 delete endpoint;
                 return server_res.error();
             }
-            endpoint->server = fc::move(server_res.unwrap());
+            endpoint->server = std::move(server_res.unwrap());
 
             fmt::log$("VFS: created root endpoint server with addr: {}", endpoint->server.addr());
             opened_file_endpoints.push(endpoint);
@@ -122,7 +122,7 @@ void update_all_endpoints()
 
         if (!received.is_error())
         {
-            auto msg = fc::move(received.unwrap());
+            auto msg = std::move(received.unwrap());
 
             if (msg.received.flags & IPC_MESSAGE_FLAG_DISCONNECT)
             {
@@ -152,7 +152,7 @@ void update_all_endpoints()
                     reply.data[0].data = 0; // failure
                     reply.data[1].data = 0;
                     fmt::err$("VfsFileEndpoint: failed to open file {}: {}", filename.view(), file_res.error());
-                    endpoint->server.reply(fc::move(msg), reply);
+                    endpoint->server.reply(std::move(msg), reply);
                 }
                 else
                 {
@@ -164,7 +164,7 @@ void update_all_endpoints()
                     reply.data[1].data = nendpoint->server.addr();
 
                     fmt::log$("VfsFileEndpoint: open file {}", filename.view());
-                    endpoint->server.reply(fc::move(msg), reply);
+                    endpoint->server.reply(std::move(msg), reply);
                     opened_file_endpoints.push(nendpoint);
 
                     // early return because we loop over endpoints that we pushed
@@ -193,8 +193,8 @@ void update_all_endpoints()
                     auto received_fs = endpoint->connection_to_fs.raw_client().receive_reply(forward_handle);
                     if (!received_fs.is_error())
                     {
-                        auto fs_msg = fc::move(received_fs.unwrap());
-                        auto reply_res = endpoint->server.reply(fc::move(msg), fs_msg);
+                        auto fs_msg = std::move(received_fs.unwrap());
+                        auto reply_res = endpoint->server.reply(std::move(msg), fs_msg);
                         if (reply_res.is_error())
                         {
                             fmt::err$("VfsFileEndpoint: failed to send reply back to client: {}", reply_res.error());

@@ -135,7 +135,7 @@ int main(int, char **)
                               0)
                               .unwrap());
 
-    auto receiver_pipe = (prot::ReceiverPipe::from(fc::move(pipes.connection_receiver))
+    auto receiver_pipe = (prot::ReceiverPipe::from(std::move(pipes.connection_receiver))
                               .unwrap());
 
     StartupInfo args = {};

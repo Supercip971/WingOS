@@ -131,7 +131,7 @@ public:
 
     // Enable move
     FsFile(FsFile &&other)
-        : connection(other.connection), keep_alive(other.keep_alive), cache_entries(fc::move(other.cache_entries))
+        : connection(other.connection), keep_alive(other.keep_alive), cache_entries(std::move(other.cache_entries))
     {
     }
 
@@ -147,10 +147,10 @@ public:
             }
             cache_entries.clear();
 
-            fc::swap(connection, other.connection);
-            fc::swap(keep_alive, other.keep_alive);
+            std::swap(connection, other.connection);
+            std::swap(keep_alive, other.keep_alive);
 
-            cache_entries = fc::move(other.cache_entries);
+            cache_entries = std::move(other.cache_entries);
         }
         return *this;
     }
@@ -324,7 +324,7 @@ public:
             auto received = connection.receive_reply(message_handle);
             if (!received.is_error())
             {
-                auto msg = fc::move(received.unwrap());
+                auto msg = std::move(received.unwrap());
 
                 DirListEntry entry;
                 size_t name_len = msg.len;
@@ -350,7 +350,7 @@ public:
             return l.error();
         }
 
-        FileInfo info = fc::move(l.unwrap());
+        FileInfo info = std::move(l.unwrap());
         if (!info.is_directory)
         {
             return ("not a directory");
@@ -365,7 +365,7 @@ public:
             {
                 break;
             }
-            dir_list.entries.push(fc::move(entry_res.unwrap()));
+            dir_list.entries.push(std::move(entry_res.unwrap()));
         }
 
         return dir_list;
@@ -388,7 +388,7 @@ public:
 
         auto received = connection.call(message);
 
-        auto msg = fc::move(received.unwrap());
+        auto msg = std::move(received.unwrap());
 
         if (msg.data[0].data == 0)
         {

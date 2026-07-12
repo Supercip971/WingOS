@@ -19,7 +19,7 @@ public:
     MemAccess<uint8_t> _data;
 
     Bitmap() = default;
-    Bitmap(MemAccess<uint8_t> &&data) : _cache_latest_free(0), _data{fc::move(data)} {};
+    Bitmap(MemAccess<uint8_t> &&data) : _cache_latest_free(0), _data{std::move(data)} {};
 
     constexpr uint8_t byte(size_t index) const
     {

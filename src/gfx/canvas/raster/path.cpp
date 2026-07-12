@@ -224,13 +224,13 @@ void wgfx::RasterCanvas::pathLineFlat(Vec2 start, Vec2 end, Rgba8 color)
     // Swap x and y if y has a greater difference than x
     if (steep)
     {
-        fc::swap(end.x, end.y);
-        fc::swap(start.x, start.y);
+        std::swap(end.x, end.y);
+        std::swap(start.x, start.y);
     }
     // Set the smaller x value to x0
     if (start.x > end.x)
     {
-        fc::swap(start, end);
+        std::swap(start, end);
     }
     delta = end - start;
 

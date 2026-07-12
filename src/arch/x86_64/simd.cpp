@@ -87,7 +87,7 @@ fc::Result<SimdContext> SimdContext::create()
 
     memcpy((void *)context._data, (void *)initial_context_data, context._data_size);
 
-    return fc::Result<SimdContext>::success(fc::move(context));
+    return fc::Result<SimdContext>::success(std::move(context));
 }
 
 fc::Result<void> SimdContext::initialize_cpu()

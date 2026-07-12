@@ -76,7 +76,7 @@ int _main(StartupInfo *context)
         return -1;
     }
 
-    prot::ManagedServer server = fc::move(server_r.unwrap());
+    prot::ManagedServer server = std::move(server_r.unwrap());
 
     fmt::log$("started clock service");
     while (true)
@@ -97,7 +97,7 @@ int _main(StartupInfo *context)
             {
                 IpcMessage reply = {};
                 reply.data[0].data = 0; // success
-                server.reply(fc::move(w.msg), reply).unwrap();
+                server.reply(std::move(w.msg), reply).unwrap();
                 waiters.pop(i);
                 i--;
             }
@@ -106,7 +106,7 @@ int _main(StartupInfo *context)
         auto received = server.try_receive();
         if (!received.is_error())
         {
-            auto msg = fc::move(received.unwrap());
+            auto msg = std::move(received.unwrap());
 
             switch (msg.received.data[0].data)
             {
@@ -117,7 +117,7 @@ int _main(StartupInfo *context)
                 //         fmt::log$("hpet: system time: {}ms", ms.value());
                 reply.data[1].data = ms.value() / 1000;
                 reply.data[2].data = ms.value();
-                server.reply(fc::move(msg), reply).unwrap();
+                server.reply(std::move(msg), reply).unwrap();
                 break;
             }
             case prot::CLOCK_SLEEP_MS:
@@ -130,8 +130,8 @@ int _main(StartupInfo *context)
                 Waiter w = {};
                 w.start_time = start;
                 w.end_time = end;
-                w.msg = fc::move(msg);
-                waiters.push(fc::move(w));
+                w.msg = std::move(msg);
+                waiters.push(std::move(w));
                 break;
             }
             default:

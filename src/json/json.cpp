@@ -46,7 +46,7 @@ fc::Result<JsonValue> parse_json_value(fc::Scanner<char> &scanner)
             auto val = try$(parse_json_value(scanner));
 
             result.storage.childs.keys.push(fc::Str(key));
-            result.storage.childs.values.push(fc::move(val));
+            result.storage.childs.values.push(std::move(val));
 
             if (!try$(scanner.skip_spaced(',')))
             {
@@ -81,7 +81,7 @@ fc::Result<JsonValue> parse_json_value(fc::Scanner<char> &scanner)
             auto val = try$(parse_json_value(scanner));
             scanner.skip_spaces();
 
-            result.storage.childs.values.push(fc::move(val));
+            result.storage.childs.values.push(std::move(val));
 
             if (!scanner.skip_spaced(',').unwrap())
             {

@@ -53,21 +53,21 @@ public:
 
     constexpr Result(const ValueType &value) : _value(value), _is_error(false) {}
 
-    constexpr Result(ValueType &&value) : _value(fc::move(value)), _is_error(false) {}
+    constexpr Result(ValueType &&value) : _value(std::move(value)), _is_error(false) {}
 
     constexpr Result(const ErrorType &error) : _error(error), _is_error(true) {}
 
-    constexpr Result(ErrorType &&error) : _error(fc::move(error)), _is_error(true) {}
+    constexpr Result(ErrorType &&error) : _error(std::move(error)), _is_error(true) {}
 
     constexpr Result(Result &&other) : _is_error(other._is_error)
     {
         if (_is_error)
         {
-            new (&_error) ErrorType(fc::move(other._error));
+            new (&_error) ErrorType(std::move(other._error));
         }
         else
         {
-            new (&_value) ValueType(fc::move(other._value));
+            new (&_value) ValueType(std::move(other._value));
         }
     }
 
@@ -90,11 +90,11 @@ public:
         _is_error = other._is_error;
         if (_is_error)
         {
-            new (&_error) ErrorType(fc::move(other._error));
+            new (&_error) ErrorType(std::move(other._error));
         }
         else
         {
-            new (&_value) ValueType(fc::move(other._value));
+            new (&_value) ValueType(std::move(other._value));
         }
         return *this;
     }
@@ -105,7 +105,7 @@ public:
     {
         Result<ValT, ErrT> res{};
         res._is_error = false;
-        res._value = (fc::forward<U>(val));
+        res._value = (std::forward<U>(val));
         return res;
     }
 
@@ -115,7 +115,7 @@ public:
     {
         Result<ValT, ErrT> res{};
         res._is_error = true;
-        res._error = (fc::forward<E>(err));
+        res._error = (std::forward<E>(err));
         return res;
     }
 
@@ -135,13 +135,13 @@ public:
     ValT const &&unwrap() const &&
     {
         assert();
-        return fc::move(_value);
+        return std::move(_value);
     }
 
     ValT &&unwrap() &&
     {
         assert();
-        return fc::move(_value);
+        return std::move(_value);
     }
 
     ValT const &unwrap() const &bounded$
@@ -159,7 +159,7 @@ public:
     ValT take()
     {
         assert();
-        return fc::move(_value);
+        return std::move(_value);
     }
 
     explicit constexpr operator bool() const
@@ -201,14 +201,14 @@ public:
 
     constexpr Result(const ErrT &error) : _error(error), _is_error(true) {}
 
-    constexpr Result(ErrT &&error) : _error(fc::move(error)), _is_error(true) {}
+    constexpr Result(ErrT &&error) : _error(std::move(error)), _is_error(true) {}
 
-    constexpr Result(Result &&other) : _error(fc::move(other._error)), _is_error(other._is_error) {}
+    constexpr Result(Result &&other) : _error(std::move(other._error)), _is_error(other._is_error) {}
 
     constexpr Result &operator=(Result &&other)
     {
         _is_error = other._is_error;
-        _error = fc::move(other._error);
+        _error = std::move(other._error);
         return *this;
     }
 

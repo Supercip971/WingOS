@@ -22,8 +22,8 @@ struct Duplex
         try$(Wingos::IpcClient::pipe_create(sender_space.handle, client_sender, receiver_space.handle, client_receiver, flags));
 
         Duplex result = {};
-        result.connection_sender = fc::move(client_sender);
-        result.connection_receiver = fc::move(client_receiver);
+        result.connection_sender = std::move(client_sender);
+        result.connection_receiver = std::move(client_receiver);
         return fc::Result<Duplex>::success(result);
     }
 };
@@ -56,13 +56,13 @@ public:
     static fc::Result<SenderPipe> from(Wingos::IpcClient connection)
     {
         SenderPipe pipe;
-        pipe._connection = fc::move(connection);
-        return fc::Result<SenderPipe>::success(fc::move(pipe));
+        pipe._connection = std::move(connection);
+        return fc::Result<SenderPipe>::success(std::move(pipe));
     }
 
     SenderPipe() = default;
 
-    SenderPipe(Wingos::IpcClient &&connection) : _connection(fc::move(connection))
+    SenderPipe(Wingos::IpcClient &&connection) : _connection(std::move(connection))
     {
     }
 
@@ -78,14 +78,14 @@ public:
     {
         ReceiverPipe pipe;
         pipe._connection = Wingos::IpcClient::from(space.handle, handle);
-        return fc::Result<ReceiverPipe>::success(fc::move(pipe));
+        return fc::Result<ReceiverPipe>::success(std::move(pipe));
     }
 
     static fc::Result<ReceiverPipe> from(Wingos::IpcClient connection)
     {
         ReceiverPipe pipe;
-        pipe._connection = fc::move(connection);
-        return fc::Result<ReceiverPipe>::success(fc::move(pipe));
+        pipe._connection = std::move(connection);
+        return fc::Result<ReceiverPipe>::success(std::move(pipe));
     }
 
     fc::Result<IpcMessage> receive_message()
@@ -97,7 +97,7 @@ public:
             return "failed to receive message";
         }
 
-        return fc::Result<IpcMessage>::success(fc::move(res.unwrap().received));
+        return fc::Result<IpcMessage>::success(std::move(res.unwrap().received));
     }
 
     fc::Result<size_t> receive(void *buffer, size_t len)
@@ -114,7 +114,7 @@ public:
             return "failed to receive message";
         }
 
-        auto received_message = fc::move(res.unwrap().received);
+        auto received_message = std::move(res.unwrap().received);
 
         size_t mlen = received_message.len;
         if (len < mlen)

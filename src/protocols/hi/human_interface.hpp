@@ -57,7 +57,7 @@ class HIEventQueue
 public:
     HIEventQueue() = default;
 
-    HIEventQueue(ReceiverPipe &&rpipe) : _rpipe(fc::move(rpipe))
+    HIEventQueue(ReceiverPipe &&rpipe) : _rpipe(std::move(rpipe))
     {
     }
 
@@ -111,10 +111,10 @@ public:
             return "failed to send HI start listen message";
         }
 
-        auto msg = fc::move(res.unwrap());
+        auto msg = std::move(res.unwrap());
 
         auto rpipe = try$(ReceiverPipe::from(Wingos::Space::self(), msg.data[0].asset_handle));
-        _event_queue = HIEventQueue(fc::move(rpipe));
+        _event_queue = HIEventQueue(std::move(rpipe));
 
         return {};
     }

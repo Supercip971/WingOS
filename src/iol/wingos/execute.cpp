@@ -83,5 +83,5 @@ fc::Result<size_t> execute_program_from_path(Wingos::Space &subspace, const fc::
     auto range = VirtRange((uintptr_t)file_mapped.ptr(), (uintptr_t)file_mapped.ptr() + read_bytes);
     elf::ElfLoader prog = try$(elf::ElfLoader::load(range));
 
-    return execute_program_from_mem(subspace, fc::move(prog), args);
+    return execute_program_from_mem(subspace, std::move(prog), args);
 }

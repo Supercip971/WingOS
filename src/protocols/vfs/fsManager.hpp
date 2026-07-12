@@ -44,7 +44,7 @@ public:
         auto handle = try$(v.get_server(fc::Str(fs_name), 1, 0)).endpoint;
         conn.connection = Wingos::Space::self().connect_to_ipc_server(handle);
         conn.connection.wait_for_accept();
-        return fc::Result<DiskFsManagerConnection>::success(fc::move(conn));
+        return fc::Result<DiskFsManagerConnection>::success(std::move(conn));
     }
 
     static fc::Result<DiskFsManagerConnection> connect(IpcServerHandle fs_endpoint)
@@ -52,7 +52,7 @@ public:
         DiskFsManagerConnection conn = {};
         conn.connection = Wingos::Space::self().connect_to_ipc_server(fs_endpoint);
         conn.connection.wait_for_accept();
-        return fc::Result<DiskFsManagerConnection>::success(fc::move(conn));
+        return fc::Result<DiskFsManagerConnection>::success(std::move(conn));
     }
 
     Wingos::IpcClient &raw_client() { return connection; }
@@ -101,7 +101,7 @@ public:
         DiskFsImplementationConnection conn;
         conn.connection = Wingos::Space::self().connect_to_ipc_server(fs_endpoint);
         conn.connection.wait_for_accept();
-        return fc::Result<DiskFsImplementationConnection>::success(fc::move(conn));
+        return fc::Result<DiskFsImplementationConnection>::success(std::move(conn));
     }
 
     fc::Result<IpcServerHandle> create_root_endpoint()

@@ -642,7 +642,7 @@ int main(int, char **)
             fmt::log$("Registered endpoint {} with uid {} (ip: {})", ep.name.view(), ep.uid, ep.server.addr());
 
             vfs.register_device(ep.name.view(), ep.server.addr()).assert();
-            endpoints.push(fc::move(ep));
+            endpoints.push(std::move(ep));
         }
     }
 
@@ -699,7 +699,7 @@ int main(int, char **)
                 reply.data[1].is_asset = true;
                 reply.data[1].asset_handle = asset.handle;
 
-                ep.server.reply(fc::move(msg), reply).assert();
+                ep.server.reply(std::move(msg), reply).assert();
                 break;
             }
             case prot::DISK_WRITE_SECTORS:
@@ -726,7 +726,7 @@ int main(int, char **)
                 reply.data[0].data = size; // number of bytes written
                 reply.data[0].is_asset = false;
 
-                ep.server.reply(fc::move(msg), reply).assert();
+                ep.server.reply(std::move(msg), reply).assert();
                 break;
             }
 

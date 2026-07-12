@@ -188,9 +188,9 @@ int iol_change_cwd(const char *path)
         {
             return -1;
         }
-        auto new_f = fc::move(n.unwrap());
+        auto new_f = std::move(n.unwrap());
 
-        fc::swap(new_f, *_pwd);
+        std::swap(new_f, *_pwd);
 
         new_f.close();
     }

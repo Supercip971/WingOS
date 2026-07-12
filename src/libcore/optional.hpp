@@ -41,7 +41,7 @@ union Storage
     }
 
     constexpr Storage(T &&value bounded$)
-        : _val(fc::move(value))
+        : _val(std::move(value))
     {
     }
 
@@ -53,7 +53,7 @@ union Storage
 
     constexpr Storage &operator=(Storage &&other)
     {
-        this->value() = fc::move(other.value());
+        this->value() = std::move(other.value());
         return *this;
     }
 
@@ -78,7 +78,7 @@ union Storage
 
     constexpr T take()
     {
-        T val = fc::move(_val);
+        T val = std::move(_val);
         destruct();
         return val;
     }
@@ -102,7 +102,7 @@ union Storage
     }
 
     // template<typename ...Args>
-    // constexpr Storage(Args&&... args) : _value(fc::forward(args)...) {}
+    // constexpr Storage(Args&&... args) : _value(std::forward(args)...) {}
 };
 
 class NoneValue
@@ -126,7 +126,7 @@ public:
 
     constexpr Optional(const Type &value) : _value(value), _contain_value(true) {}
 
-    constexpr Optional(Type &&value) : _value(fc::move(value)), _contain_value(true) {}
+    constexpr Optional(Type &&value) : _value(std::move(value)), _contain_value(true) {}
 
     explicit constexpr Optional([[maybe_unused]] NoneValue v) : _contain_value(false) {};
 
@@ -142,7 +142,7 @@ public:
     {
         if (other._contain_value)
         {
-            _value = (Storage<Type>(fc::move(other._value.value())));
+            _value = (Storage<Type>(std::move(other._value.value())));
             other._contain_value = false;
         }
     }
@@ -189,11 +189,11 @@ public:
     {
         if (_contain_value)
         {
-            _value.value() = fc::move(value);
+            _value.value() = std::move(value);
         }
         else
         {
-            new (&_value) Storage<Type>(fc::move(value));
+            new (&_value) Storage<Type>(std::move(value));
             _contain_value = true;
         }
         return *this;
@@ -208,12 +208,12 @@ public:
 
         if (other.has_value() && _contain_value)
         {
-            _value.value() = fc::move(other._value.value());
+            _value.value() = std::move(other._value.value());
             other._contain_value = false;
         }
         else if (other.has_value() && !_contain_value)
         {
-            new (&_value) Storage<Type>(fc::move(other._value.value()));
+            new (&_value) Storage<Type>(std::move(other._value.value()));
             other._contain_value = false;
             _contain_value = true;
         }
@@ -263,7 +263,7 @@ public:
     constexpr Type take()
     {
         _contain_value = false;
-        return fc::move(_value.value());
+        return std::move(_value.value());
     }
 
     constexpr Type &unwrap()

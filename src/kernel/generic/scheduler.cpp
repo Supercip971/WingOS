@@ -363,11 +363,11 @@ static void update_runned_tasks()
     {
         if (i == 0)
         {
-            task_queues[i] += fc::move(task_queues[i + 1]);
+            task_queues[i] += std::move(task_queues[i + 1]);
         }
         else
         {
-            task_queues[i] = fc::move(task_queues[i + 1]);
+            task_queues[i] = std::move(task_queues[i + 1]);
         }
     }
 
@@ -611,7 +611,7 @@ fc::Result<void> schedule_all()
 
         // we retry for task with a lower priority by swapping the retried task,
 
-        fc::swap(choosen_ptr, retried_ptr);
+        std::swap(choosen_ptr, retried_ptr);
         retried_ptr->clear();
     }
 

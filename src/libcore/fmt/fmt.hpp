@@ -48,13 +48,13 @@ constexpr fc::Result<void> format_impl(Targ &target, fc::Str fmt, int _c, Arg &&
     if (c + 1 < fmt.len() && fmt[c] == '{' && fmt[c + 1] == '}')
     {
 
-        format_v(target, fc::forward<Arg>(a));
+        format_v(target, std::forward<Arg>(a));
         return format_impl(target, fmt, c + 2);
     }
     else
     {
         c++;
-        return format_impl(target, fmt, c, fc::forward<Arg>(a));
+        return format_impl(target, fmt, c, std::forward<Arg>(a));
     }
 }
 
@@ -81,8 +81,8 @@ constexpr fc::Result<void> format_impl(Targ &target, fc::Str fmt, int _c, Arg &&
     {
         if constexpr (sizeof...(args) > 0)
         {
-            format_v(target, fc::forward<Arg>(a));
-            return format_impl(target, fmt, c + 2, fc::forward<Args>(args)...);
+            format_v(target, std::forward<Arg>(a));
+            return format_impl(target, fmt, c + 2, std::forward<Args>(args)...);
         }
         else
         {
@@ -92,14 +92,14 @@ constexpr fc::Result<void> format_impl(Targ &target, fc::Str fmt, int _c, Arg &&
     else
     {
         c++;
-        return format_impl(target, fmt, c, fc::forward<Arg>(a), fc::forward<Args>(args)...);
+        return format_impl(target, fmt, c, std::forward<Arg>(a), std::forward<Args>(args)...);
     }
 }
 
 template <fc::Writable Targ, fc::IsConvertibleTo<fc::Str> Fmt, typename... Args>
 constexpr fc::Result<void> format(Targ &target, Fmt &&fmt, Args &&...args)
 {
-    return format_impl(target, fc::Str(fmt), 0, fc::forward<Args>(args)...);
+    return format_impl(target, fc::Str(fmt), 0, std::forward<Args>(args)...);
 }
 
 } // namespace fmt

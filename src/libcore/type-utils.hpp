@@ -1,5 +1,6 @@
 #pragma once
 #include <libcore/type/trait.hpp>
+#include <utility>
 
 namespace fc
 {
@@ -22,37 +23,11 @@ public:
     NoMove() = default;
 };
 
-template <class T>
-constexpr T &&forward(RemoveReference<T> &t)
-{
-    return static_cast<T &&>(t);
-}
-
-template <class T>
-constexpr T &&forward(RemoveReference<T> &&t)
-{
-    return static_cast<T &&>(t);
-}
-
-template <class T>
-constexpr RemoveReference<T> &&move(T &&t)
-{
-    return static_cast<RemoveReference<T> &&>(t);
-}
-
 // copy
 template <class T>
 constexpr T copy(T const &t)
 {
     return t;
-}
-
-template <typename T>
-constexpr void swap(T &a, T &b)
-{
-    T c = fc::move(a);
-    a = fc::move(b);
-    b = fc::move(c);
 }
 
 } // namespace fc

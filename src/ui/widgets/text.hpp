@@ -28,7 +28,7 @@ public:
 
     TextWidget(fc::Str from, fc::SharedPtr<wgfx::Font> _font) : val(fc::WStr::copy(from)), font(_font) {}
 
-    TextWidget(fc::WStr &&from, fc::SharedPtr<wgfx::Font> _font) : val(fc::move(from)), font(_font) {}
+    TextWidget(fc::WStr &&from, fc::SharedPtr<wgfx::Font> _font) : val(std::move(from)), font(_font) {}
 
     wgfx::Vec2 preferred_size(wgfx::Vec2 constraint) const override
     {

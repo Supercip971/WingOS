@@ -82,7 +82,7 @@ struct IpcServer : public UAsset
         if (res.contain_response)
         {
             MessageServerReceived msg = {};
-            msg.received = fc::move(res_message);
+            msg.received = std::move(res_message);
             msg.received.message_id = res.returned_msg_handle;
             return msg;
         }
@@ -122,7 +122,7 @@ struct IpcServer : public UAsset
             {
                 continue; // try next connection
             }
-            auto v = fc::move(res.unwrap());
+            auto v = std::move(res.unwrap());
             v.connection = connection;
 
             return v;
@@ -237,16 +237,16 @@ public:
         if (res.contain_response)
         {
 
-            msg.received = fc::move(res_message);
+            msg.received = std::move(res_message);
             msg.received.message_id = res.returned_msg_handle;
-            return fc::Result<MessageServerReceived>::success(fc::move(msg));
+            return fc::Result<MessageServerReceived>::success(std::move(msg));
         }
 
         if (res.is_disconnect)
         {
             msg.received.flags |= IPC_MESSAGE_FLAG_DISCONNECT;
 
-            return fc::Result<MessageServerReceived>::success(fc::move(msg));
+            return fc::Result<MessageServerReceived>::success(std::move(msg));
         }
         return fc::Result<MessageServerReceived>::error("failed to receive message");
     }

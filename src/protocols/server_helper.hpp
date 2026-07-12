@@ -126,7 +126,7 @@ public:
 
     fc::Result<void> reply(Wingos::MessageServerReceived &&to, IpcMessage &message)
     {
-        return ipc_server.reply(fc::move(to), message);
+        return ipc_server.reply(std::move(to), message);
     }
 };
 } // namespace prot

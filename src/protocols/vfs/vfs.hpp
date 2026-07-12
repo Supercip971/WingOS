@@ -192,7 +192,7 @@ public:
 
         fmt::log$("opening path {}", path.view());
         auto root_res = try$(open_root());
-        auto current_dir = fc::move(root_res);
+        auto current_dir = std::move(root_res);
         auto components = path.substr(1).split('/');
 
         for (size_t i = 0; i < components.len(); i++)
@@ -203,7 +203,7 @@ public:
         {
             auto next_dir_res = try$(current_dir.open_file(components[i]));
             current_dir.close();
-            current_dir = fc::move(next_dir_res);
+            current_dir = std::move(next_dir_res);
         }
 
         return current_dir;

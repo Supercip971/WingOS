@@ -54,7 +54,7 @@ public:
             fmt::err$("compositor: failed to send create window message");
         }
 
-        auto msg = fc::move(sended_message.unwrap());
+        auto msg = std::move(sended_message.unwrap());
         IpcServerHandle window_endpoint = msg.data[0].data;
 
         fmt::log$("compositor: created window with endpoint {}", window_endpoint);

@@ -89,7 +89,7 @@ void try_create_disk_endpoint()
 
                     mounted_devices_count++;
 
-                    mount_fs(mdev.endpoint, fc::move(mdev.path)).unwrap();
+                    mount_fs(mdev.endpoint, std::move(mdev.path)).unwrap();
 
                     fmt::log$("detected partition {} of device {} with fs {}", part.part_name.view(), part.part_dev_name.view(), part.fs_name.view());
                     break;
@@ -128,7 +128,7 @@ int main(int, char **)
 
         if (!received.is_error())
         {
-            auto msg = fc::move(received.unwrap());
+            auto msg = std::move(received.unwrap());
 
             if (msg.received.flags & IPC_MESSAGE_FLAG_DISCONNECT)
             {
@@ -174,10 +174,10 @@ int main(int, char **)
 
                     fmt::log$("(server) detected partition: {} -> (LBA {} - {})", part.part_name.view(), part.part_dev_name.view(), part.begin, part.end);
 
-                    device.partitions.push(fc::move(part));
+                    device.partitions.push(std::move(part));
                 }
 
-                registered_services.push(fc::move(device));
+                registered_services.push(std::move(device));
                 (void)v2;
 
                 recheck_mount = true;
@@ -231,7 +231,7 @@ int main(int, char **)
                     reply.data[1].data = 0;
                 }
 
-                auto send_res = server.reply(fc::move(msg), reply);
+                auto send_res = server.reply(std::move(msg), reply);
                 if (send_res.is_error())
                 {
                     fmt::err$("(server) failed to send root access reply: {}", send_res.error());

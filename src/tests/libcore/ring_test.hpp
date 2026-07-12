@@ -235,7 +235,7 @@ static constexpr TestGroup ringTests = {
                     ring.push(i);
                 }
 
-                auto ring2 = fc::Ring<int>(fc::move(ring));
+                auto ring2 = fc::Ring<int>(std::move(ring));
 
                 if (ring.len() != 0)
                 {
@@ -457,7 +457,7 @@ static constexpr TestGroup ringTests = {
                         ring.push(RingTestObject(i));
                     }
 
-                    auto ring2 = fc::Ring<RingTestObject>(fc::move(ring));
+                    auto ring2 = fc::Ring<RingTestObject>(std::move(ring));
 
                     if (ring.len() != 0)
                     {

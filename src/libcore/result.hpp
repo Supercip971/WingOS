@@ -132,21 +132,28 @@ public:
         }
     }
 
+    ValT const &&unwrap() const &&
+    {
+        assert();
+        return fc::move(_value);
+    }
+
+    ValT &&unwrap() &&
+    {
+        assert();
+        return fc::move(_value);
+    }
+
+    ValT const &unwrap() const &bounded$
+    {
+        assert();
+        return _value;
+    }
+
     ValT &unwrap() & bounded$
     {
         assert();
         return _value;
-    }
-
-    ValT copied() const
-    {
-        return _value;
-    }
-
-    ValT unwrap() && bounded$
-    {
-        assert();
-        return fc::move(_value);
     }
 
     ValT take()

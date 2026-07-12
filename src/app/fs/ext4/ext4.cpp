@@ -45,7 +45,7 @@ fc::Result<void *> Ext4Filesystem::read_block_tmp(size_t block_num)
     {
         Ext4CacheNode node;
         node.block_num = block_num;
-        node.data = fc::mem_alloc(block_size).copied();
+        node.data = fc::mem_alloc(block_size).take();
         memcpy(node.data, mapped_disk_asset.ptr(), block_size);
         node.score = 1;
         cache_nodes.push(node);

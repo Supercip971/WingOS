@@ -518,7 +518,7 @@ fc::Result<size_t> ksyscall_server_receive(kernel::Task *caller, SyscallIpcServe
         return fc::Result<size_t>::error("no current space");
     }
 
-    auto connection = (space->by_handle<AssetConnection>(receive->connection_handle)).copied();
+    auto connection = (space->by_handle<AssetConnection>(receive->connection_handle)).take();
 
     if (!connection.asset->accepted)
     {

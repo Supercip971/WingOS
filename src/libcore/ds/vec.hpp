@@ -48,7 +48,7 @@ public:
     {
         if (other._count != 0)
         {
-            _data = fc::mem_alloc<T>(other._capacity).copied();
+            _data = fc::mem_alloc<T>(other._capacity).take();
             _capacity = other._capacity;
             for (long i = 0; i < other._count; i++)
             {

@@ -245,7 +245,7 @@ fc::Result<void> update_endpoints(Ext4FsEndpoint *dev)
             IpcMessage reply = {};
             reply.data[0].data = 1; // success
             Ext4FileEndpoint *new_endpoint = new Ext4FileEndpoint{
-                .inode = dev->attached_fs->read_inode(2).copied(),
+                .inode = dev->attached_fs->read_inode(2).take(),
                 .file_server = try$(prot::ManagedServer::create_server()),
             };
             reply.data[1].data = new_endpoint->file_server.addr();

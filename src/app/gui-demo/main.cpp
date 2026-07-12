@@ -33,7 +33,6 @@
 
 struct MyState
 {
-
     int counter;
 };
 
@@ -43,7 +42,6 @@ class CustomWidget2 : public fc::Statefull<MyState>
 public:
     fc::SharedPtr<fc::Widget> build(const fc::UiContext &ctx) override
     {
-
         auto res = fmt::format_str("Counter 2: {}", counter | fmt::FMT_PAD_ZERO);
 
         return $<fc::VFlex>(
@@ -63,8 +61,8 @@ public:
                 fc::AutoCallback$([](CustomWidget2 *w2)
                                   { w2->setState([&]()
                                                  { w2->counter++; }); }),
-                $<fc::LPadded>(fc::Padded().horizontal(16 * ctx.dpi).down(100.f), $<fc::TextWidget>("hello world! j  @g",
-                                                                                                    fc::FontsRepo::the().find("oswald@96")))));
+                $<fc::LPadded>(fc::Padded().horizontal(16 * ctx.dpi).down(10.f), $<fc::TextWidget>("hello world!",
+                                                                                                   fc::FontsRepo::the().find("oswald@96")))));
     }
 };
 
@@ -98,14 +96,12 @@ int main(int argc, char **argv)
 
     wgfx::initialize_platform();
 
-    auto window = wgfx::PlatformWindow::create_native(wgfx::BackendsKinds::BACKEND_KIND_RASTER).copied();
+    auto window = wgfx::PlatformWindow::create_native(wgfx::BackendsKinds::BACKEND_KIND_RASTER).take();
 
     window->attach();
 
     fc::TextureRepo::the().load(fc::WStr::copy("liquid-blue"), "/meta/assets/pawel-czerwinski-blue-liquid-halfres.png");
     fc::FontsRepo::the().load(fc::WStr::copy("oswald@96"), "/meta/assets/oswald.ttf", 96 * window->dpi());
-
-    float l = 0.f;
 
     auto vwidgt = fc::SharedPtr<CustomWidget>::make().static_pointer_cast<fc::Widget>();
 
@@ -146,42 +142,7 @@ int main(int argc, char **argv)
 
         vwidgt->update_layout(ctx, wgfx::GRect(0, 0, window->width(), window->height()));
 
-        //   fmt::log$("green: l:{} - a:{} - b:{}", (long)(wgfx::GREEN.lightness * 100), (long)(wgfx::GREEN.a_green_rediness * 100), (long)(wgfx::GREEN.b_blue_yelowness * 100));
-
-        //   fmt::log$("red: {}", wgfx::RED.toRgba8());
-
-        //   fmt::log$("blue: {}", wgfx::BLUE.toRgba8());
-
-        //   fmt::log$("green: {}", wgfx::GREEN.toRgba8());
-
-        l += 0.5;
-        (void)l;
-        // wgfx::CompositeColor color = wgfx::CompositeColor::fromOklch(70.4f/100.f, 0.295, l);
-
         vwidgt->render_dirty(ctx, *frame);
-
-        // vwidgt->dump();
-        // frame->drawRect(wgfx::GRect(x, y, 256, 256), wgfx::CompositeColor::fromOklch((float)63.7/100, 0, 0));
-
-        //  frame->drawContour(font.shapes['@'].gfx_contour, wgfx::CompositeColor::fromOklch(63.7/100, 0, 0), wgfx::Vec2(x,y));
-        //
-
-        // frame->drawText(wgfx::Vec2(200.f * window->dpi(),150.f * window->dpi()), "@Hello World ", sfont, wgfx::RED);
-
-        // frame->drawText(wgfx::Vec2(200.f * window->dpi(),250.f * window->dpi()), "@Hello World ", sfont, wgfx::GREEN);
-
-        // frame->drawText(wgfx::Vec2(200.f * window->dpi(),350.f * window->dpi()), "@Hello World ", sfont, wgfx::BLUE);
-
-        // frame->drawText(wgfx::Vec2(200.f * window->dpi(),450.f * window->dpi()), "@Hello World ", sfont, wgfx::CYAN);
-
-        // frame->drawText(wgfx::Vec2(200.f * window->dpi(),550.f * window->dpi()), "@Hello World ", sfont, wgfx::YELLOW);
-
-        // frame->drawText(wgfx::Vec2(200.f * window->dpi(),650.f * window->dpi()), "@Hello World ", sfont, color);
-
-        // frame->drawRect(
-        //      wgfx::GRect::from_size(800.f * window->dpi(), 300.f * window->dpi(), 256.f * window->dpi(), 256.f * window->dpi()),
-        //      wgfx::Painter::stroked(wgfx::FUCHSIA, 10.f),
-        //      (cosf(l*0.001f) +1.f)/2.f);
 
         window->end_frame(frame);
     }

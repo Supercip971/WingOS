@@ -165,7 +165,7 @@ int main(int, char **)
                     RegisteredDevicePartition part{};
                     part.id = part_id++;
                     part.endpoint = device.endpoint;
-                    fc::WStr part_name = fc::move(fmt::format_str("{}-{}", device.name, part.id).unwrap());
+                    fc::WStr part_name = fmt::format_str("{}-{}", device.name, part.id).take();
                     part.part_dev_name = fc::WStr::copy(part_name.view());
                     part.part_name = fc::WStr::copy(entry.name.view());
                     part.has_fs = false;

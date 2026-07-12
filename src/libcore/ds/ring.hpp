@@ -26,7 +26,7 @@ public:
 
     Ring(const Ring &rhs)
     {
-        _data = mem_alloc<T>(rhs._capacity).copied();
+        _data = mem_alloc<T>(rhs._capacity).take();
         _capacity = rhs._capacity;
         _head = rhs._head;
         _tail = rhs._tail;
@@ -62,12 +62,12 @@ public:
 
         if (_capacity == 0)
         {
-            _data = fc::mem_alloc<T>(capacity).copied();
+            _data = fc::mem_alloc<T>(capacity).take();
             _capacity = capacity;
             return;
         }
 
-        _data = fc::mem_realloc<T>(_data, capacity).copied();
+        _data = fc::mem_realloc<T>(_data, capacity).take();
         // old data:
         // ..........
         //   ^

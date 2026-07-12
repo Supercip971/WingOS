@@ -158,8 +158,8 @@ void update_all_endpoints()
                 {
                     VfsFileEndpoint *nendpoint = new VfsFileEndpoint();
 
-                    nendpoint->connection_to_fs = fc::move(file_res.unwrap());
-                    nendpoint->server = fc::move(prot::ManagedServer::create_server().unwrap());
+                    nendpoint->connection_to_fs = (file_res.take());
+                    nendpoint->server = prot::ManagedServer::create_server().take();
                     reply.data[0].data = 1; // success
                     reply.data[1].data = nendpoint->server.addr();
 

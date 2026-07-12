@@ -25,7 +25,7 @@ public:
 
         fmt::log$("loading font({}): {}", name.view(), path);
         auto fpath = fc::finalizePath(path);
-        auto t = wgfx::Typeface::from_file(fpath.view()).copied();
+        auto t = wgfx::Typeface::from_file(fpath.view()).take();
 
         _fonts.insert(
             fc::WStr::copy(name.view()),

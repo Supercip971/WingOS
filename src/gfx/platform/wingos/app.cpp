@@ -130,13 +130,13 @@ struct WingosWindowImpl : public wgfx::PlatformWindow
         case wgfx::BACKEND_KIND_RASTER:
         {
 
-            auto nsize = g_window->get_attribute_size().copied();
+            auto nsize = g_window->get_attribute_size().take();
 
             raster_width = nsize.width;
             raster_height = nsize.height;
             raster_buffer = new uint32_t[raster_height * raster_width];
 
-            back_buffer = g_window->get_framebuffer().copied().ptr();
+            back_buffer = g_window->get_framebuffer().take().ptr();
             raster_canvas = new RasterCanvas();
             break;
         }
@@ -220,9 +220,9 @@ wgfx::PlatformWindow::create_native(wgfx::BackendsKinds preferred_backend)
     SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN, true);
     //  SDL_SetWindowProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, (preferred_backend == BackendsKinds::BACKEND_KIND_OPENGL ? SDL_WINDOW_OPENGL : 0) | SDL_WINDOW_HIGH_PIXEL_DENSITY);
 */
-    window->g_window = new prot::WindowConnection(prot::WindowConnection::create(true).copied());
-    window->g_inputs = new prot::HIConnection(prot::HIConnection::connect().copied());
-    window->g_clock = new prot::ClockConnection(prot::ClockConnection::connect().copied());
+    window->g_window = new prot::WindowConnection(prot::WindowConnection::create(true).take());
+    window->g_inputs = new prot::HIConnection(prot::HIConnection::connect().take());
+    window->g_clock = new prot::ClockConnection(prot::ClockConnection::connect().take());
 
     return window.static_pointer_cast<wgfx::PlatformWindow>();
 }

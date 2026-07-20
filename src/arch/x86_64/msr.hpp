@@ -11,6 +11,14 @@ enum class MsrReg : uint32_t
 {
 
     APIC = 0x1B,
+    FEATURE_CONTROL = 0x3A,
+
+    VMX_BASIC = 0x480,
+    VM_CR0_FIXED_TO_0 = 0x486,
+    VM_CR0_FIXED_TO_1 = 0x487,
+    VM_CR4_FIXED_TO_0 = 0x488,
+    VM_CR4_FIXED_TO_1 = 0x489,
+
     LAPIC_CPU_ID = 0x802,
     EFER = 0xC0000080,
     STAR = 0xC0000081,
@@ -28,6 +36,13 @@ enum MsrApicBits : uint64_t
     MSR_BOOTSTRAP_CPU = 1 << 8,
     MSR_APIC_ENABLE = 1 << 11,
     MSR_X2APIC_ENABLE = 1 << 10,
+};
+
+enum MsrFeatControlBits : uint64_t
+{
+    MSR_LOCKED = 1 << 0,              // unable to write feat control
+    MSR_VMX_ENABLE_WITH_SMX = 1 << 1, // requires SMX, (trusted execution)
+    MSR_VMX_ENABLE = 1 << 2,          // does not requires SMX
 };
 
 ENUM_OP$(MsrApicBits);

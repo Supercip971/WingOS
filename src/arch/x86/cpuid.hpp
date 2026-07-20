@@ -27,6 +27,7 @@ struct Cpuid
     enum CpuidFeatureBits
     {
         // ECX
+        CPUID_VMX_SUPPORT = (1 << 5),
         CPUID_SSSE3_SUPPORT = (1 << 9),
         CPUID_SSE41_SUPPORT = (1 << 19),
         CPUID_SSE42_SUPPORT = (1 << 20),
@@ -63,6 +64,11 @@ struct Cpuid
     static inline uint32_t xsave_size(void)
     {
         return query(CPUID_PROC_EXTENDED_STATE_ENUMERATION, 0).ecx;
+    }
+
+    static inline bool has_vmx(void)
+    {
+        return (query(CPUID_FEATURE_IDENTIFIER, 0).ecx & CPUID_VMX_SUPPORT) == CPUID_VMX_SUPPORT;
     }
 };
 } // namespace arch::x86

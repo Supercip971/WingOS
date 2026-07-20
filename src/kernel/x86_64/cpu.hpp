@@ -5,6 +5,7 @@
 #include "arch/x86_64/tss.hpp"
 #include "hw/mem/addr_space.hpp"
 
+#include "hypervisor/vmx/vmx.hpp"
 #include "kernel/generic/cpu.hpp"
 #include "libcore/result.hpp"
 
@@ -18,7 +19,11 @@ class CpuImpl : public Cpu
     int _lapic;
     PhysAddr _trampoline_stack;
 
+    VmxSystemState vmx_state;
+
 public:
+    VmxSystemState *vmx() { return &vmx_state; }
+
     Gdt *gdt();
     Gdtr *gdtr();
     Tss *tss();

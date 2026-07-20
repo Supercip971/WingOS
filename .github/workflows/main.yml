@@ -29,7 +29,7 @@ jobs:
           git submodule update --init --recursive
           sudo apt install -y make build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo nasm
           sudo apt install -y mtools wget unzip fuse libfuse-dev
-          sudo apt install -y uuid-dev
+          sudo apt install -y uuid-dev ninja-build
           sudo apt install -y gcc binutils parted dosfstools g++ libffi-dev libncurses5-dev libx11-dev libxext-dev libxrender-dev libxrandr-dev libxpm-dev
           sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)" llvm 22 all
 
@@ -70,6 +70,7 @@ jobs:
 
       - name: OS
         run: |
+          ls -la meta/build/sysroot/lib/
           ck prep
 
       - uses: actions/upload-artifact@v7

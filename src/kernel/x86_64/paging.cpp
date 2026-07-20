@@ -46,7 +46,6 @@ constexpr arch::amd64::Page page_create(PageFlags flags, PhysAddr addr)
 
 void VmmSpace::use()
 {
-
     asm volatile("mov %0, %%cr3" ::"r"(self_addr()) : "memory");
 }
 

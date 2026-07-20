@@ -7,6 +7,7 @@
 
 #include "hw/mem/addr_space.hpp"
 
+#include "hypervisor/hypervisor.hpp"
 #include "kernel/generic/cpu.hpp"
 #include "kernel/generic/execute.hpp"
 #include "kernel/generic/scheduler.hpp"
@@ -73,6 +74,12 @@ void kernel_entry(const mcx::MachineContext *context)
     (void)context;
 
     fmt::log$("started kernel");
+
+    if (hyper::hypervisor_suppor())
+    {
+        fmt::log$("hypervisor supported, initializing");
+        hyper::hypervisor_init();
+    }
 
     kernel::scheduler_init(Cpu::count()).assert();
 

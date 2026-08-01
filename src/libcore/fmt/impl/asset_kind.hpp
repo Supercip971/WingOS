@@ -29,8 +29,8 @@ constexpr fc::Result<void> format_v(Targ &target, C &&value)
         return format_v(target, fc::Str("OBJECT_KIND_SPACE"));
     case OBJECT_KIND_TASK:
         return format_v(target, fc::Str("OBJECT_KIND_TASK"));
-    case OBJECT_KIND_IPC_SERVER:
-        return format_v(target, fc::Str("OBJECT_KIND_IPC_SERVER"));
+    case OBJECT_KIND_IPC_ENDPOINT:
+        return format_v(target, fc::Str("OBJECT_KIND_IPC_ENDPOINT"));
     case OBJECT_KIND_IPC_CONNECTION:
         return format_v(target, fc::Str("OBJECT_KIND_IPC_CONNECTION"));
     default:
@@ -54,8 +54,8 @@ constexpr fc::Result<void> format_v(Targ &target, fmt::FormatFlags<C> flagged)
         return format_v(target, flagged.forward_flags(fc::Str("OBJECT_KIND_SPACE")));
     case OBJECT_KIND_TASK:
         return format_v(target, flagged.forward_flags(fc::Str("OBJECT_KIND_TASK")));
-    case OBJECT_KIND_IPC_SERVER:
-        return format_v(target, flagged.forward_flags(fc::Str("OBJECT_KIND_IPC_SERVER")));
+    case OBJECT_KIND_IPC_ENDPOINT:
+        return format_v(target, flagged.forward_flags(fc::Str("OBJECT_KIND_IPC_ENDPOINT")));
     case OBJECT_KIND_IPC_CONNECTION:
         return format_v(target, flagged.forward_flags(fc::Str("OBJECT_KIND_IPC_CONNECTION")));
     default:

@@ -12,9 +12,9 @@ extern "C"
         OBJECT_KIND_SPACE = 3000,
         OBJECT_KIND_TASK = 4000,
 
-        OBJECT_KIND_IPC_SERVER = 5000,     // IPC object, used for inter process communication
-        OBJECT_KIND_IPC_CONNECTION = 6000, // IPC object, used for inter process communication
-
+        OBJECT_KIND_IPC_ENDPOINT = 5000,    // IPC object, used for inter process communication
+        OBJECT_KIND_IPC_CONNECTION = 6000,  // IPC object, used for inter process communication
+        OBJECT_KIND_IPC_RETURN_TASK = 7000, // IPC object, used for IPC when receiving a call message to reply to
     } AssetKind;
 
     typedef enum
@@ -41,10 +41,12 @@ static inline const char *assetKind2Str(AssetKind kind)
         return "SPACE";
     case OBJECT_KIND_TASK:
         return "TASK";
-    case OBJECT_KIND_IPC_SERVER:
+    case OBJECT_KIND_IPC_ENDPOINT:
         return "IPC_SERVER";
     case OBJECT_KIND_IPC_CONNECTION:
         return "IPC_CONNECTION";
+    case OBJECT_KIND_IPC_RETURN_TASK:
+        return "IPC_RETURN_TASK";
     default:
         return "INVALID_KIND";
     }

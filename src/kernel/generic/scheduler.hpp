@@ -4,6 +4,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "iol/lock_context.h"
+
 #include "kernel/generic/cpu.hpp"
 #include "libcore/logic.hpp"
 #include "libcore/result.hpp"
@@ -23,7 +25,6 @@ struct SchedulerControlBlock
     CoreId old_cpu_affinity = CpuCoreNone;
     size_t total_cycles = 0;
     BlockEvent block_event = {};
-    BlockEvent incoming_block_event = {};
 
     // note that running and sleeping are not counted in terms of ticks but rather are weighted
     long running = 0;
@@ -65,11 +66,14 @@ fc::Result<void> dump_current_running_task(bool complete);
 
 fc::Result<void> dump_all_current_running_tasks();
 
-fc::Result<void> block_current_task(BlockEvent event);
+fc::Result<void> block_current_task();
 
+// block current and unblock next
+
+bool try_disable_scheduler();
+
+void reenable_scheduler();
 fc::Result<void> resolve_blocked_tasks();
-
-void schedule_if_task_blocked();
 
 } // namespace kernel
 

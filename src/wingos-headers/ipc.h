@@ -1,8 +1,8 @@
 #pragma once
 
+#include "libcore/type-utils.hpp"
 #ifdef __cplusplus
 
-#    include "libcore/type-utils.hpp"
 #    include "math/align.hpp"
 extern "C"
 {
@@ -12,6 +12,10 @@ extern "C"
 #include <stdint.h>
 
     typedef uint64_t MessageHandle;
+
+    typedef uint32_t IpcServerAddress;
+    typedef uint32_t IpcServerPort;
+
     typedef uint64_t IpcServerHandle;
     typedef uint64_t IpcConnectionHandle;
 
@@ -50,23 +54,26 @@ extern "C"
 #endif
     };
 
+#define IPC_MESSAGE_ARGUMENTS_COUNT 6
+
+    struct IpcMessageArguments
+    {
 #ifdef __cplusplus
+        static constexpr size_t DataCount = IPC_MESSAGE_ARGUMENTS_COUNT;
+#endif
+        IpcData data[IPC_MESSAGE_ARGUMENTS_COUNT]; // data for the message, can be used for IPC payload
+    };
+#ifdef __cplusplus
+
     struct IpcMessage : public fc::NoCopy
     {
-        constexpr IpcMessage() : message_id(0), flags(0), data{}, len(0)
+        constexpr IpcMessage() : arguments(), port(0), len(0), is_null(false)
         {
         }
 
         constexpr IpcMessage(IpcMessage &&other) noexcept
-            : message_id(other.message_id), flags(other.flags), len(other.len)
+            : arguments(other.arguments), port(other.port), len(other.len), is_null(other.is_null)
         {
-
-            for (size_t i = 0; i < 8; i++)
-            {
-                data[i] = other.data[i];
-                data[i].is_asset = other.data[i].is_asset;
-                data[i].data = other.data[i].data;
-            }
             for (size_t i = 0; i < math::alignUp((size_t)other.len, sizeof(uint64_t)) / sizeof(uint64_t); i++)
             {
                 buffer[i] = other.buffer[i];
@@ -77,16 +84,11 @@ extern "C"
         {
             if (this != &other)
             {
-                message_id = other.message_id;
-                flags = other.flags;
-                len = other.len;
+                this->arguments = other.arguments;
+                this->port = other.port;
+                this->len = other.len;
+                this->is_null = other.is_null;
 
-                for (size_t i = 0; i < 8; i++)
-                {
-                    data[i] = other.data[i];
-                    data[i].is_asset = other.data[i].is_asset;
-                    data[i].data = other.data[i].data;
-                }
                 for (size_t i = 0; i < math::alignUp((size_t)other.len, sizeof(uint64_t)) / sizeof(uint64_t); i++)
                 {
                     buffer[i] = other.buffer[i];
@@ -98,15 +100,11 @@ extern "C"
         constexpr static IpcMessage copy(const IpcMessage &other)
         {
             IpcMessage msg;
-            msg.message_id = other.message_id;
-            msg.flags = other.flags;
+            msg.arguments = other.arguments;
+            msg.port = other.port;
             msg.len = other.len;
-            for (size_t i = 0; i < 8; i++)
-            {
-                msg.data[i] = other.data[i];
-                msg.data[i].is_asset = other.data[i].is_asset;
-                msg.data[i].data = other.data[i].data;
-            }
+            msg.is_null = other.is_null;
+
             for (size_t i = 0; i < math::alignUp((size_t)other.len, sizeof(uint64_t)) / sizeof(uint64_t); i++)
             {
                 msg.buffer[i] = other.buffer[i];
@@ -117,11 +115,11 @@ extern "C"
 struct IpcMessage
 {
 #endif
-        uint64_t message_id; // unique id of the message
-        uint64_t flags;      // flags for the message
-        IpcData data[8];     // data for the message, can be used for IPC payload
 
+        IpcMessageArguments arguments;
+        uint64_t port;
         uint16_t len;
+        bool is_null;
 
         union
         {

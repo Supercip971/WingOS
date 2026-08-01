@@ -77,10 +77,11 @@ struct Asset : public fc::NoCopy
     static void release(Asset *asset);
 };
 
-template <typename T = Asset>
+// disable check is for pre-
+template <typename T = Asset, bool disableCheck = false>
+    requires(disableCheck || T::IDENT != -1)
 struct AssetRef
 {
-    static_assert(T::IDENT != -1);
     T *asset{nullptr};
     uint64_t handle{(uint64_t)-1};
     bool write{true};
@@ -152,6 +153,15 @@ struct AssetRef
         }
     }
 
+    void release_ref()
+    {
+        if (asset != nullptr)
+        {
+            Asset::deref(reinterpret_cast<Asset *>(asset));
+            asset = nullptr;
+        }
+    }
+
     AssetRef &operator=(AssetRef const &other)
     {
         if (this != &other)
@@ -199,6 +209,16 @@ struct AssetRef
         }
 
         return *this;
+    }
+
+    T const *operator->() const bounded$
+    {
+        return reinterpret_cast<T *>(asset);
+    }
+
+    T *operator->() bounded$
+    {
+        return reinterpret_cast<T *>(asset);
     }
 
     // Returns the raw asset pointer for use in functions that need Asset*

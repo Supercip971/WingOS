@@ -1,6 +1,8 @@
 #pragma once
 #include <stdint.h>
 
+#include "kernel/generic/asset_types.hpp"
+
 #include "kernel/generic/context.hpp"
 #include "kernel/generic/paging.hpp"
 #include "libcore/bound.hpp"
@@ -34,17 +36,20 @@ enum TaskPriority : uint32_t
 
 struct SchedulerControlBlock;
 
-class Task
+class Task : public Asset
 {
     TUID _uid = 0;
     TaskState _state = TaskState::TASK_NONE;
     CpuContext *_cpu_context = nullptr;
     SchedulerControlBlock _scheduler_block;
 
-    Task() = default;
     static Task *_task_allocate();
 
 public:
+    Task() : Asset(AssetKind::OBJECT_KIND_TASK) {}
+
+    static constexpr size_t IDENT = AssetKind::OBJECT_KIND_TASK;
+
     bool should_run() const
     {
         return !_scheduler_block.is_idle;
@@ -66,7 +71,7 @@ public:
 
     void state(TaskState state) { _state = state; }
 
-    Task(TUID uid) : _uid(uid) {};
+    Task(TUID uid) : Asset(AssetKind::OBJECT_KIND_TASK), _uid(uid) {};
 
     fc::Result<void> _initialize(CpuContextLaunch params, VmmSpace *target_vspace);
 

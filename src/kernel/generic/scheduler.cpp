@@ -65,7 +65,7 @@ static inline void add_entity_to_queue(Task *task)
         return;
     }
 
-    if (task->sched().block_event.type != BlockEvent::Type::NONE)
+    if (task->sched().block_event.mutex().mutex_value())
     {
         blocked_tasks.push(task);
         return;
@@ -908,7 +908,30 @@ fc::Result<Task *> schedule(Task *current, void *state, CoreId core, bool soft)
     return next;
 }
 
-fc::Result<void> block_current_task(BlockEvent event)
+bool try_disable_scheduler()
+{
+
+    arch::amd64::interrupt_hold();
+
+    while (!srwlock_try_write_acquire$(scheduler_lock))
+    {
+        arch::amd64::interrupt_release();
+
+        asm volatile("pause");
+
+        arch::amd64::interrupt_hold();
+    }
+
+    return true;
+}
+
+void reenable_scheduler()
+{
+    arch::amd64::interrupt_release();
+    scheduler_lock.read_release();
+}
+
+fc::Result<void> block_current_task()
 {
 
     // there are two problems:
@@ -925,32 +948,32 @@ fc::Result<void> block_current_task(BlockEvent event)
     //
 
     arch::amd64::interrupt_hold();
-    while (!srwlock_try_write_acquire$(scheduler_lock))
-    {
-        arch::amd64::interrupt_release();
-        if (event.liberated())
-        {
-            return {};
-        }
-
-        asm volatile("pause");
-
-        arch::amd64::interrupt_hold();
-    }
 
     auto cur = Cpu::current()->currentTask();
 
-    if (cur == nullptr)
+    if (cur == nullptr) [[unlikely]]
     {
         fmt::err$("block_current_task: cpu_running[{}] is null, refusing to block", Cpu::currentId());
 
-        scheduler_lock.write_release();
         arch::amd64::interrupt_release();
 
         return {};
     }
 
-    cur->sched().block_event = event;
+    while (!srwlock_try_write_acquire$(scheduler_lock))
+    {
+        if (cur->sched().block_event.liberated())
+        {
+            arch::amd64::interrupt_release();
+            return {};
+        }
+
+        arch::amd64::interrupt_release();
+
+        asm volatile("pause");
+
+        arch::amd64::interrupt_hold();
+    }
 
     // why re enabling interrupt here ? Because an interrupt can occur between the lock acquire and
     // int 101 and the interrupt won't be able to handle the lock.
@@ -967,11 +990,6 @@ fc::Result<void> block_current_task(BlockEvent event)
 fc::Result<void> resolve_blocked_tasks()
 {
     // Fast path: if no blocked tasks, skip locking entirely
-    if (blocked_tasks.len() == 0)
-    {
-        return {};
-    }
-
     blocked_task_dirty = true;
     return {};
 }
@@ -1003,12 +1021,12 @@ void scheduler_dump_all()
     for (size_t i = 0; i < blocked_tasks.len(); i++)
     {
         auto &task = blocked_tasks[i];
-        fmt::log$("  Blocked Task UID: {}, State: {}, Weight: {}, CPU Affinity: {}, Block Event Type: {}",
+        fmt::log$("  Blocked Task UID: {}, State: {}, Weight: {}, CPU Affinity: {}, is blocked ?: {}",
                   (int)task->uid(),
                   (int)task->state(),
                   task->sched().weight(),
                   task->sched().cpu_affinity,
-                  (int)task->sched().block_event.type);
+                  (int)task->sched().block_event.mutex().mutex_value());
     }
 
     for (size_t i = 0; i < running_cpu_count; i++)

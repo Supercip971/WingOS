@@ -42,52 +42,28 @@ struct BlockMutex
 
 struct BlockEvent
 {
-    enum class Type
-    {
-        NONE,
-        SLEEP,
-        MUTEX
-    };
     bool resolved;
-
-    Type type = Type::NONE;
-
     uintptr_t id = 0;
 
-    union
+    BlockMutex _mutex;
+
+    BlockMutex &mutex()
     {
-        long dt;
-        BlockMutex *mtx;
-    };
+        return _mutex;
+    }
 
     bool liberated()
     {
-        switch (type)
-        {
-        case Type::MUTEX:
-        {
-            bool v = mtx->mutex_value();
+        bool v = _mutex.mutex_value();
 
-            if (mtx->acquire_uid != id)
-            {
-                return true;
-            }
-            return !v;
-        }
-        case Type::NONE:
+        if (_mutex.acquire_uid != id)
         {
             return true;
         }
-        default:
-        {
-            return false;
-        }
-        }
+        return v;
     }
 };
 
-BlockEvent create_block(BlockEvent::Type type, uintptr_t data = 0);
-
-BlockEvent create_mutex_block(BlockMutex *msg);
+BlockEvent create_block();
 
 } // namespace kernel

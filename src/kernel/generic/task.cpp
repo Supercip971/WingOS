@@ -13,7 +13,7 @@
 #include "libcore/lock/rwlock.hpp"
 #include "libcore/result.hpp"
 
-fc::LinkedList<kernel::Task> task_list = {};
+fc::LinkedList<kernel::Task *> task_list = {};
 bool loaded = false;
 std::atomic<kernel::TUID> next_uid = 1;
 fc::RWLock _task_lock = {};
@@ -30,14 +30,15 @@ kernel::Task *kernel::Task::_task_allocate()
     }
     fc::lock_scope_writer$(_task_lock);
 
-    kernel::Task task{};
+    kernel::Task *task = new kernel::Task();
 
-    task.uid(next_uid++);
-    task.state(kernel::TaskState::TASK_EMBRYO);
+    task->uid(next_uid++);
+    task->state(kernel::TaskState::TASK_EMBRYO);
 
+    task->ref_count++;
     task_list.push(task);
 
-    return task_list.last();
+    return task;
 }
 
 kernel::Task *kernel::Task::by_id_unsafe(kernel::TUID uid)
@@ -46,9 +47,9 @@ kernel::Task *kernel::Task::by_id_unsafe(kernel::TUID uid)
 
     for (auto b = task_list.begin(); b != task_list.end(); ++b)
     {
-        if ((*b)._uid == uid)
+        if ((*b)->_uid == uid)
         {
-            return b._ptr->data.as_ptr();
+            return *b;
         }
     }
 

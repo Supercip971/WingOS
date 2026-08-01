@@ -6,7 +6,9 @@
 #include <wingos-headers/ipc.h>
 
 #include "kernel/generic/asset_types.hpp"
+#include "kernel/generic/ipc_asset.hpp"
 
+#include "asset.hpp"
 #include "kernel/generic/context.hpp"
 #include "kernel/generic/cpu.hpp"
 #include "kernel/generic/paging.hpp"
@@ -45,55 +47,6 @@
     IpcConnection *ipc_connection;
 };*/
 
-struct AssetMemory : public Asset
-{
-
-    static constexpr size_t IDENT = AssetKind::OBJECT_KIND_MEMORY;
-    size_t size;
-    size_t addr;
-    bool allocated;
-
-    AssetMemory(size_t size_value, size_t addr_value, bool allocated_value)
-        : Asset(AssetKind::OBJECT_KIND_MEMORY), size(size_value), addr(addr_value), allocated(allocated_value) {}
-};
-
-struct AssetMapping : public Asset
-{
-    static constexpr size_t IDENT = AssetKind::OBJECT_KIND_MAPPING;
-    size_t start;
-    size_t end;
-    AssetRef<AssetMemory> physical_mem; // the physical memory that this mapping is based on
-    bool writable;
-    bool executable;
-
-    AssetMapping(size_t start_value, size_t end_value, AssetRef<AssetMemory> physical_mem_value, bool writable_value, bool executable_value)
-        : Asset(AssetKind::OBJECT_KIND_MAPPING), start(start_value), end(end_value), physical_mem(physical_mem_value), writable(writable_value), executable(executable_value) {}
-};
-
-struct AssetTask : public Asset
-{
-    static constexpr size_t IDENT = AssetKind::OBJECT_KIND_TASK;
-    kernel::Task *task;
-
-    AssetTask(kernel::Task *task_value)
-        : Asset(AssetKind::OBJECT_KIND_TASK), task(task_value) {}
-};
-
-struct KernelIpcServer;
-
-struct AssetServer : public Asset
-{
-    KernelIpcServer *server;
-
-    static constexpr size_t IDENT = AssetKind::OBJECT_KIND_IPC_SERVER;
-
-    AssetServer(KernelIpcServer *server_value)
-        : Asset(AssetKind::OBJECT_KIND_IPC_SERVER), server(server_value) {}
-};
-
-struct IpcConnection;
-using AssetConnection = IpcConnection;
-
 struct AssetMemoryCreateParams
 {
     size_t size;
@@ -116,20 +69,20 @@ struct AssetTaskCreateParams
     kernel::CpuContextLaunch launch;
 };
 
-struct AssetIpcServerCreateParams
+struct AssetIpcReturnTaskCreateParams
 {
-    bool is_root; // if true, the server will be created as a root server, otherwise it will be created as a child server
+    AssetRef<AssetTask> task;
+};
+
+struct AssetIpcEndpointCreateParams
+{
+    bool publish;
+    bool is_root;
 };
 
 struct AssetIpcConnectionCreateParams
 {
-    IpcServerHandle server_handle; // the handle of the server to connect to
-    uint64_t flags;                // flags for the connection
-};
-
-struct AssetIpcConnectionPipeCreateParams
-{
-    uint64_t flags; // flags for the connection
+    AssetRef<kernel::IpcEndpoint> endpoint;
 };
 
 struct AssetIpcConnectionPipeCreateResult
@@ -289,6 +242,25 @@ struct Space : public Asset
         return ("asset not found");
     }
 
+    template <typename T>
+    fc::Result<AssetRef<T>> add_asset(T *res)
+    {
+
+        res->lock.lock(); // Lock the asset before adding to space
+
+        lock.lock();
+
+        alloc_uid++;
+        size_t nhandle = alloc_uid;
+        AssetRef<T> ref = AssetRef<T>(res, nhandle, true, true, true);
+
+        assets.push(ref.to_untyped());
+        lock.release();
+
+        // Asset lock is still held - caller must release after initialization
+        return ref;
+    }
+
     template <typename T, typename... Args>
     fc::Result<AssetRef<T>> allocate_asset(Args &&...args)
     {
@@ -340,14 +312,11 @@ struct Space : public Asset
 
     fc::Result<AssetRef<AssetTask>> create_task(AssetTaskCreateParams params);
 
-    fc::Result<AssetRef<AssetServer>> create_ipc_server(
-        AssetIpcServerCreateParams params);
+    fc::Result<AssetRef<kernel::IpcMessageReturnTask>> create_ipc_return_task(AssetIpcReturnTaskCreateParams const &params);
 
-    fc::Result<AssetRef<AssetConnection>> create_ipc_connection(
-        AssetIpcConnectionCreateParams params);
+    fc::Result<AssetRef<kernel::IpcEndpointConnection>> create_ipc_connection(AssetIpcConnectionCreateParams const &params);
 
-    static fc::Result<AssetIpcConnectionPipeCreateResult> create_ipc_connections(
-        Space *sender, Space *receiver, AssetIpcConnectionPipeCreateParams params);
+    fc::Result<AssetRef<kernel::IpcEndpoint>> create_ipc_endpoint(AssetIpcEndpointCreateParams const &params);
 
     template <typename T>
     static fc::Result<AssetRef<>> asset_move(
@@ -405,9 +374,9 @@ struct Space : public Asset
 
     template <typename T>
     static fc::Result<AssetRef<>> asset_copy(
-        Space *from, Space *to, AssetRef<T> const &asset)
+        Space *to, AssetRef<T> const &asset)
     {
-        if (from == nullptr || to == nullptr)
+        if (to == nullptr)
         {
             return "from or to space is null";
         }
@@ -459,8 +428,5 @@ struct Space : public Asset
         }
     }
 };
-
-struct KernelIpcServer;
-struct IpcConnection;
 
 // fc::Result<AssetRef> space_create(Space *parent, uint64_t flags, uint64_t rights);

@@ -3,6 +3,7 @@
 #include "arch/x86_64/paging.hpp"
 #include "hw/mem/addr_space.hpp"
 #include "kernel/generic/asset_types.hpp"
+#include "kernel/generic/ipc_asset.hpp"
 
 #include "arch/x86/port.hpp"
 #include "kernel/generic/asset.hpp"
@@ -300,14 +301,13 @@ fc::Result<size_t> ksyscall_task_launch(kernel::Task *caller, SyscallTaskLaunch 
     }
 
     auto task_asset = try$(space->by_handle<AssetTask>(task_launch->task_handle));
-    auto task = task_asset.asset->task;
 
-    if (task == nullptr)
+    if (task_asset.asset == nullptr)
     {
         return fc::Result<size_t>::error("task asset has no task");
     }
 
-    try$(kernel::task_run(task->uid()));
+    try$(kernel::task_run(task_asset->uid()));
 
     return 0ul;
 }
@@ -354,7 +354,7 @@ fc::Result<size_t> ksyscall_asset_move(kernel::Task *caller, SyscallAssetMove *a
     return (uint64_t)moved_asset.handle;
 }
 
-fc::Result<size_t> ksyscall_create_server(kernel::Task *caller, SyscallIpcCreateServer *create)
+fc::Result<size_t> ksyscall_create_endpoint(kernel::Task *caller, SyscallIpcCreateEndpoint *create)
 {
     Space *space = nullptr;
     if (create->space_handle != 0)
@@ -373,70 +373,20 @@ fc::Result<size_t> ksyscall_create_server(kernel::Task *caller, SyscallIpcCreate
         return fc::Result<size_t>::error("no current space");
     }
 
-    auto asset = try$(space->create_ipc_server({
+    auto asset = try$(space->create_ipc_endpoint({
+        .publish = create->publish,
         .is_root = create->is_root,
     }));
 
     // Userspace expects the server handle as an "addr" out-param.
-    create->returned_addr = (uintptr_t)asset.asset->server->handle;
+    create->returned_addr = (uintptr_t)asset->uuid;
     create->returned_handle = asset.handle;
 
     return (uint64_t)asset.handle;
 }
 
-fc::Result<size_t> ksyscall_create_pipe_connection(kernel::Task *caller, SyscallIpcConnect *create)
-{
-
-    Space *space_sender = nullptr;
-    Space *space_receiver = nullptr;
-
-    if (create->sender_space_handle != 0)
-    {
-        space_sender = try$(
-                           caller->space()->by_handle<Space>(create->sender_space_handle))
-                           .asset;
-    }
-    else
-    {
-        space_sender = caller->space();
-    }
-    if (create->receiver_space_handle != 0)
-    {
-
-        space_receiver = try$(
-                             caller->space()->by_handle<Space>(create->receiver_space_handle))
-                             .asset;
-    }
-    else
-    {
-        space_receiver = caller->space();
-    }
-
-    if (space_sender == nullptr || space_receiver == nullptr)
-    {
-        return fc::Result<size_t>::error("no current space");
-    }
-
-    auto assetref = try$(Space::create_ipc_connections(
-        space_sender,
-        space_receiver,
-        (AssetIpcConnectionPipeCreateParams){
-            .flags = create->flags,
-        }));
-
-    create->returned_handle_sender = assetref.sender_connection.handle;
-    create->returned_handle_receiver = assetref.receiver_connection.handle;
-
-    return {0ul};
-}
-
 fc::Result<size_t> ksyscall_create_connection(kernel::Task *caller, SyscallIpcConnect *create)
 {
-
-    if (create->flags & IPC_CONNECTION_FLAG_PIPE)
-    {
-        return ksyscall_create_pipe_connection(caller, create);
-    }
 
     Space *space = nullptr;
     if (create->sender_space_handle != 0)
@@ -456,14 +406,31 @@ fc::Result<size_t> ksyscall_create_connection(kernel::Task *caller, SyscallIpcCo
         return fc::Result<size_t>::error("no current space");
     }
 
-    auto asset = try$(space->create_ipc_connection((AssetIpcConnectionCreateParams){
-        .server_handle = create->server_handle,
-        .flags = create->flags,
-    }));
+    AssetRef<kernel::IpcEndpointConnection> conn{};
+    if (create->connect_by_address)
+    {
+        auto endpoint = query_server(create->server_address);
+        if (endpoint.is_error())
+        {
+            fmt::err$("server not found: {}", endpoint.error());
+            return fc::Result<size_t>::error(endpoint.error());
+        }
+        conn = try$(space->create_ipc_connection((AssetIpcConnectionCreateParams){
+            .endpoint = endpoint.unwrap(),
+        }));
+    }
+    else
+    {
+        auto endpoint = try$(space->by_handle<kernel::IpcEndpoint>(create->endpoint_handle));
 
-    create->returned_handle_sender = asset.handle;
+        conn = try$(space->create_ipc_connection((AssetIpcConnectionCreateParams){
+            .endpoint = endpoint,
+        }));
+    }
 
-    return (uint64_t)asset.handle;
+    create->returned_handle_sender = conn.handle;
+    create->port_used = conn->port;
+    return (uint64_t)conn.handle;
 }
 
 fc::Result<size_t> ksyscall_send(kernel::Task *caller, SyscallIpcSend *send)
@@ -480,26 +447,29 @@ fc::Result<size_t> ksyscall_send(kernel::Task *caller, SyscallIpcSend *send)
     {
         space = caller->space();
     }
+    AssetRef<Space> space_ref = AssetRef<Space>(space, -1);
+    AssetRef<AssetTask> return_task = AssetRef<AssetTask>(caller, -1);
 
     if (space == nullptr)
     {
         return fc::Result<size_t>::error("no current space");
     }
 
-    auto connection = try$(space->by_handle<AssetConnection>(send->connection_handle));
+    auto connection = try$(space->by_handle<kernel::IpcEndpointConnection>(send->connection_handle));
 
-    if (!connection.asset->accepted)
+    if (send->async)
     {
-        return fc::Result<size_t>::error("SEND: connection is not accepted");
+        try$(kernel::ipc_send_async(space_ref, return_task, connection, send->message));
+    }
+    else
+    {
+        try$(kernel::ipc_send(space_ref, return_task, connection, send->message, false));
     }
 
-    auto res = try$(server_send_message(connection, try$(syscall_check_ptr(caller, send->message)), send->expect_reply));
-
-    send->returned_msg_handle = res;
-    return (size_t)res;
+    return (size_t)0;
 }
 
-fc::Result<size_t> ksyscall_server_receive(kernel::Task *caller, SyscallIpcServerReceive *receive)
+fc::Result<size_t> ksyscall_receive(kernel::Task *caller, SyscallIpcReceive *receive)
 {
     Space *space = nullptr;
     if (receive->space_handle != 0)
@@ -518,143 +488,28 @@ fc::Result<size_t> ksyscall_server_receive(kernel::Task *caller, SyscallIpcServe
         return fc::Result<size_t>::error("no current space");
     }
 
-    auto connection = (space->by_handle<AssetConnection>(receive->connection_handle)).take();
+    AssetRef<Space> space_ref = AssetRef<Space>(space, -1);
+    AssetRef<AssetTask> return_task = AssetRef<AssetTask>(caller, -1);
 
-    if (!connection.asset->accepted)
+    auto endpoint = (space->by_handle<kernel::IpcEndpoint>(receive->endpoint_handle)).take();
+
+    if (receive->async)
     {
-        fmt::err$("for ipc connection: ({}): {}", space->uid, receive->connection_handle);
-
-        fmt::err$("for server: {}", receive->server_handle);
-        fmt::err$("in space: {}", space->uid);
-        fmt::log$("connection is not accepted");
-        return fc::Result<size_t>::error("connection is not accepted");
-    }
-
-    // DEBUG: Verify the connection belongs to the server we're receiving from
-    // This catches potential bugs where a connection is being accessed by the wrong server
-    if (receive->server_handle != 0)
-    {
-        auto server_asset_res = space->by_handle<AssetServer>(receive->server_handle);
-        if (!server_asset_res.is_error())
-        {
-            auto server_asset = server_asset_res.unwrap();
-            auto kernel_server = server_asset.asset->server;
-            if (kernel_server != nullptr)
-            {
-                if (connection.asset->server_handle != kernel_server->handle)
-                {
-                    fmt::err$("[IPC-BUG] Server mismatch detected!");
-                    fmt::err$("  Connection thinks it belongs to server: {}", connection.asset->server_handle);
-                    fmt::err$("  But receive is being called from server: {}", kernel_server->handle);
-                    fmt::err$("  Connection handle: {}, Server asset handle: {}", receive->connection_handle, receive->server_handle);
-                    fmt::err$("  Client space: {}, Server space: {}", connection.asset->client_space_handle, connection.asset->server_space_handle);
-                    return fc::Result<size_t>::error("connection belongs to different server");
-                }
-            }
-        }
-    }
-
-    auto res = (server_receive_message(connection));
-
-    if (res.is_error())
-    {
-        return fc::Result<size_t>(res.error());
-    }
-
-    auto received_message = res.unwrap();
-
-    if (received_message.is_null)
-    {
-        receive->returned_msg_handle = 0;
-        receive->contain_response = false;
-        return 0ul;
-    }
-
-    if (received_message.is_disconnect)
-    {
-        receive->returned_msg_handle = 0;
-        receive->contain_response = false;
-        receive->is_disconnect = true;
-        return 0ul;
-    }
-
-    receive->returned_msg_handle = received_message.uid;
-    *try$(syscall_check_ptr(caller, receive->returned_message)) = received_message.message_sended.to_server();
-    receive->contain_response = true;
-
-    return (size_t)received_message.uid;
-}
-
-fc::Result<size_t> ksyscall_client_receive_reply(kernel::Task *caller, SyscallIpcClientReceiveReply *receive)
-{
-    Space *space = nullptr;
-    if (receive->space_handle != 0)
-    {
-
-        space = try$(caller->space()->by_handle<Space>(receive->space_handle)).asset;
+        try$(kernel::ipc_receive_async(space_ref, endpoint, receive->returned_message));
     }
     else
     {
-        space = caller->space();
+        try$(kernel::ipc_receive(space_ref, return_task, endpoint, receive->returned_message));
     }
-
-    if (space == nullptr)
-    {
-        return fc::Result<size_t>::error("no current space");
-    }
-
-    auto r_connection = space->by_handle<AssetConnection>(receive->connection_handle);
-
-    if (r_connection.is_error())
-    {
-        fmt::log$("in space({}), handle {}", receive->space_handle, receive->connection_handle);
-        fmt::err$("Connection not found: {}", r_connection.error());
-        return fc::Result<size_t>::error("CLIENT RECEIVE: connection not found");
-    }
-    auto connection = r_connection.unwrap();
-
-    if (!connection.asset->accepted)
-    {
-
-        fmt::err$("for server: {}", connection.asset->server_handle);
-        fmt::err$("in space: (client) {}", connection.asset->client_space_handle);
-        fmt::err$("in space: (server) {}", connection.asset->server_space_handle);
-
-        fmt::log$("connection is not accepted");
-        return fc::Result<size_t>::error("connection is not accepted");
-    }
-
-    auto res = client_receive_response(connection, receive->message);
-
-    if (res.is_error())
-    {
-        return fc::Result<size_t>(res.error());
-    }
-
-    auto received_message = res.unwrap();
-
-    if (received_message.is_null)
-    {
-
-        receive->returned_message = {};
-        receive->contain_response = false;
-        return 0ul;
-    }
-
-    // receive->returned_msg_handle = received_message.uid;
-
-    *try$(syscall_check_ptr(caller, receive->returned_message)) = received_message.message_responded.to_client();
-    receive->contain_response = true;
-
-    return (size_t)received_message.uid;
+    return {};
 }
 
 fc::Result<size_t> ksyscall_ipc_call(kernel::Task *caller, SyscallIpcCall *call)
 {
+
     Space *space = nullptr;
     if (call->space_handle != 0)
     {
-
         space = try$(
                     caller->space()->by_handle<Space>(call->space_handle))
                     .asset;
@@ -663,87 +518,24 @@ fc::Result<size_t> ksyscall_ipc_call(kernel::Task *caller, SyscallIpcCall *call)
     {
         space = caller->space();
     }
+    AssetRef<Space> space_ref = AssetRef<Space>(space, -1);
+    AssetRef<AssetTask> return_task = AssetRef<AssetTask>(caller, -1);
 
     if (space == nullptr)
     {
         return fc::Result<size_t>::error("no current space");
     }
 
-    auto connection = try$(space->by_handle<AssetConnection>(call->connection_handle));
+    auto connection = try$(space->by_handle<kernel::IpcEndpointConnection>(call->connection_handle));
 
-    if (!connection.asset->accepted)
-    {
-        return fc::Result<size_t>::error("connection is not accepted");
-    }
-
-    auto res = call_server_and_wait(connection, call->message);
-
-    if (res.is_error())
-    {
-        return fc::Result<size_t>(res.error());
-    }
-
-    auto received_message = (res.take());
-
-    *try$(syscall_check_ptr(caller, call->returned_message)) = std::move(received_message);
-    call->has_reply = true;
-    // call->returned_msg_handle = received_message.uid;
+    try$(kernel::ipc_send(space_ref, return_task, connection, call->message, true));
 
     return 0ul;
 }
 
-fc::Result<size_t> ksyscall_ipc_accept(kernel::Task *caller, SyscallIpcAccept *accept)
+fc::Result<size_t> ksyscall_ipc_reply(kernel::Task *caller, SyscallIpcReply *reply)
 {
-    Space *space = nullptr;
-    if (accept->space_handle != 0)
-    {
-        space = try$(
-                    caller->space()->by_handle<Space>(accept->space_handle))
-                    .asset;
-    }
-    else
-    {
-        space = caller->space();
-    }
 
-    if (space == nullptr)
-    {
-        return fc::Result<size_t>::error("no current space");
-    }
-
-    auto server = try$(space->by_handle<AssetServer>(accept->server_handle));
-
-    auto ipc_server = server.asset->server;
-    if (ipc_server == nullptr)
-    {
-        return fc::Result<size_t>::error("ACCEPT: server has no ipc object");
-    }
-
-    auto res = server_accept_connection(ipc_server);
-
-    if (res.is_error())
-    {
-        accept->accepted_connection = false;
-        return 0ul;
-    }
-
-    auto connection = res.unwrap();
-
-    if (connection.asset == nullptr)
-    {
-        accept->accepted_connection = false;
-        return 0ul;
-    }
-    // space->dump_assets();
-
-    accept->connection_handle = connection.handle;
-    accept->accepted_connection = true;
-
-    return (size_t)connection.handle;
-}
-
-fc::Result<size_t> ksyscall_ipc_server_reply(kernel::Task *caller, SyscallIpcReply *reply)
-{
     Space *space = nullptr;
     if (reply->space_handle != 0)
     {
@@ -760,62 +552,11 @@ fc::Result<size_t> ksyscall_ipc_server_reply(kernel::Task *caller, SyscallIpcRep
     {
         return fc::Result<size_t>::error("no current space");
     }
+    AssetRef<Space> space_ref = AssetRef<Space>(space, -1);
 
-    auto msg = try$(syscall_check_ptr(caller, reply->message));
+    auto ret_task = try$(space->by_handle<kernel::IpcMessageReturnTask>(reply->return_task_handle));
 
-    auto connection = try$(space->by_handle<AssetConnection>(reply->connection_handle));
-
-    if (!connection.asset->accepted)
-    {
-        return fc::Result<size_t>::error("connection is not accepted");
-    }
-
-    auto res = server_reply_message(connection, reply->message_handle, msg);
-
-    if (res.is_error())
-    {
-        return fc::Result<size_t>(res.error());
-    }
-
-    return 0ul;
-}
-
-fc::Result<size_t> ksyscall_ipc_status(kernel::Task *caller, SyscallIpcStatus *status)
-{
-    Space *space = nullptr;
-
-    status->returned_is_accepted = false;
-    if (status->space_handle != 0)
-    {
-        space = try$(
-                    caller->space()->by_handle<Space>(status->space_handle))
-                    .asset;
-        fmt::log$("using custom space handle: {}", status->space_handle);
-    }
-    else
-    {
-        space = caller->space();
-    }
-
-    if (space == nullptr)
-    {
-        return fc::Result<size_t>::error("no current space");
-    }
-
-    auto connection = try$(space->by_handle<AssetConnection>(status->connection_handle));
-
-    connection.asset->lock.lock();
-
-    if (!connection.asset->accepted)
-    {
-        status->returned_is_accepted = false;
-    }
-    else
-    {
-        status->returned_is_accepted = true;
-    }
-
-    connection.asset->lock.release();
+    try$(kernel::ipc_reply(space_ref, ret_task, reply->message));
 
     return 0ul;
 }
@@ -984,10 +725,10 @@ fc::Result<size_t> syscall_handle(SyscallInterface syscall, kernel::Task *caller
         SyscallAssetMove *asset_move = try$(syscall_check_ptr<SyscallAssetMove>(caller, syscall.arg1));
         return ksyscall_asset_move(caller, asset_move);
     }
-    case SYSCALL_IPC_CREATE_SERVER_ID:
+    case SYSCALL_IPC_CREATE_ENDPOINT_ID:
     {
-        SyscallIpcCreateServer *create = try$(syscall_check_ptr<SyscallIpcCreateServer>(caller, syscall.arg1));
-        return ksyscall_create_server(caller, create);
+        SyscallIpcCreateEndpoint *create = try$(syscall_check_ptr<SyscallIpcCreateEndpoint>(caller, syscall.arg1));
+        return ksyscall_create_endpoint(caller, create);
     }
     case SYSCALL_IPC_CONNECT_ID:
     {
@@ -999,35 +740,20 @@ fc::Result<size_t> syscall_handle(SyscallInterface syscall, kernel::Task *caller
         SyscallIpcSend *send = try$(syscall_check_ptr<SyscallIpcSend>(caller, syscall.arg1));
         return ksyscall_send(caller, send);
     }
-    case SYSCALL_IPC_SERVER_RECEIVE_ID:
+    case SYSCALL_IPC_RECEIVE_ID:
     {
-        SyscallIpcServerReceive *receive = try$(syscall_check_ptr<SyscallIpcServerReceive>(caller, syscall.arg1));
-        return ksyscall_server_receive(caller, receive);
-    }
-    case SYSCALL_IPC_CLIENT_RECEIVE_REPLY_ID:
-    {
-        SyscallIpcClientReceiveReply *receive = try$(syscall_check_ptr<SyscallIpcClientReceiveReply>(caller, syscall.arg1));
-        return ksyscall_client_receive_reply(caller, receive);
+        SyscallIpcReceive *receive = try$(syscall_check_ptr<SyscallIpcReceive>(caller, syscall.arg1));
+        return ksyscall_receive(caller, receive);
     }
     case SYSCALL_IPC_CALL_ID:
     {
         SyscallIpcCall *call = try$(syscall_check_ptr<SyscallIpcCall>(caller, syscall.arg1));
         return ksyscall_ipc_call(caller, call);
     }
-    case SYSCALL_IPC_ACCEPT_ID:
-    {
-        SyscallIpcAccept *accept = try$(syscall_check_ptr<SyscallIpcAccept>(caller, syscall.arg1));
-        return ksyscall_ipc_accept(caller, accept);
-    }
     case SYSCALL_IPC_REPLY_ID:
     {
         SyscallIpcReply *reply = try$(syscall_check_ptr<SyscallIpcReply>(caller, syscall.arg1));
-        return ksyscall_ipc_server_reply(caller, reply);
-    }
-    case SYSCALL_IPC_STATUS_ID:
-    {
-        SyscallIpcStatus *status = try$(syscall_check_ptr<SyscallIpcStatus>(caller, syscall.arg1));
-        return ksyscall_ipc_status(caller, status);
+        return ksyscall_ipc_reply(caller, reply);
     }
     case SYSCALL_ASSET_INFO_ID:
     {

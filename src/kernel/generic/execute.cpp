@@ -75,8 +75,7 @@ fc::Result<void> start_module_execution(elf::ElfLoader loaded, mcx::MachineConte
     }
 
     auto task_asset_ptr = task_asset_res.unwrap();
-    auto task_asset = task_asset_ptr.asset;
-    auto task = task_asset->task;
+    auto task = task_asset_ptr.asset;
 
     for (size_t i = 0; i < loaded.program_count(); i++)
     {

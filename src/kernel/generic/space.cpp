@@ -2,9 +2,9 @@
 #include <atomic>
 
 #include "kernel/generic/asset_types.hpp"
+#include "kernel/generic/ipc_asset.hpp"
 
 #include "kernel/generic/asset.hpp"
-#include "kernel/generic/ipc.hpp"
 #include "kernel/generic/paging.hpp"
 #include "libcore/ds/vec.hpp"
 #include "libcore/fmt/flags.hpp"
@@ -56,16 +56,16 @@ void Space::dump_assets()
     for (size_t i = 0; i < assets.len(); i++)
     {
         fmt::log$("  Asset[{}]: handle={}, kind={}", i, assets[i].handle, assetKind2Str(assets[i].asset->kind));
-        if (assets[i].asset->kind == OBJECT_KIND_IPC_SERVER)
+        if (assets[i].asset->kind == OBJECT_KIND_IPC_ENDPOINT)
         {
-            auto server = assets[i].asset->casted<AssetServer>();
-            fmt::log$("    parent: {} | server handle: {} | connections: {}", server->server->parent_space, server->server->handle, server->server->connections.len());
+            auto server = assets[i].asset->casted<kernel::IpcEndpoint>();
+            fmt::log$("    uuid: {} | endpoint handle: {} (messages sync: {}, async: {})", server->uuid, server->target_message_space->uid, server->sync_queue.len(), server->async_queue.len());
         }
 
         if (assets[i].asset->kind == OBJECT_KIND_IPC_CONNECTION)
         {
-            auto conn = assets[i].asset->casted<AssetConnection>();
-            fmt::log$("     accepted: {} | closed: {} | server: {} | msg count: {}", conn->accepted, (int)conn->closed_status, (int)conn->server_handle, conn->message_sent.len());
+            auto conn = assets[i].asset->casted<kernel::IpcEndpointConnection>();
+            fmt::log$("     target: {} (port: {})", conn->connection_to->uuid, conn->port);
         }
         if (assets[i].asset->kind == OBJECT_KIND_MEMORY)
         {

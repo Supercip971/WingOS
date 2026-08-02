@@ -154,14 +154,19 @@ struct Space
         return copy;
     }
 
-    IpcServer create_ipc_server(bool is_root = false)
+    RawIpcEndpoint create_ipc_server(bool is_root = false)
     {
-        return IpcServer::create(handle, is_root);
+        return RawIpcEndpoint::create(handle, is_root);
     }
 
-    IpcClient connect_to_ipc_server(uint64_t server_address, bool block = false, uint64_t flags = 0)
+    IpcClient connect_by_addr(uint64_t endpoint_address)
     {
-        return IpcClient::connect(handle, server_address, block, flags);
+        return IpcClient::connect_by_addr(handle, endpoint_address);
+    }
+
+    IpcClient connect_by_handle(uint64_t endpoint_handle)
+    {
+        return IpcClient::connect_to_object(handle, endpoint_handle);
     }
 };
 } // namespace Wingos

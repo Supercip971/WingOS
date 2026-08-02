@@ -45,7 +45,7 @@ public:
     fc::Result<ClockTime> get_system_time()
     {
         IpcMessage message = {};
-        message.data[0].data = CLOCK_GET_SYSTEM_TIME;
+        message.arguments.data[0].data = CLOCK_GET_SYSTEM_TIME;
 
         auto sended_message = connection.call(message);
         if (sended_message.is_error())
@@ -55,8 +55,8 @@ public:
 
         auto &msg = sended_message.unwrap();
         ClockTime time{};
-        time.seconds = msg.data[1].data;
-        time.milliseconds = msg.data[2].data;
+        time.seconds = message.arguments.data[1].data;
+        time.milliseconds = message.arguments.data[2].data;
 
         return time;
     }
@@ -64,8 +64,8 @@ public:
     fc::Result<void> sleep_ms(uint64_t ms)
     {
         IpcMessage message = {};
-        message.data[0].data = CLOCK_SLEEP_MS;
-        message.data[1].data = ms;
+        message.arguments.data[0].data = CLOCK_SLEEP_MS;
+        message.arguments.data[1].data = ms;
 
         auto sended_message = connection.call(message);
         if (sended_message.is_error())

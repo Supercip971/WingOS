@@ -1,7 +1,8 @@
 #pragma once
 
 #include "iol/wingos/ipc.hpp"
-#include "libcore/fmt/log.hpp"
+#include "libcore/ds/umap.hpp"
+#include "libcore/optional.hpp"
 #include "libcore/result.hpp"
 #include "libcore/str.hpp"
 #include "libcore/type-utils.hpp"
@@ -10,22 +11,83 @@
 
 namespace prot
 {
+
+typedef enum : uint64_t
+{
+    PROT_SIGNAL_DISCONNECT = (uint64_t)-1
+} GenericProtMessage;
+
+class ManagedServerConnectionHandler
+{
+
+protected:
+    uint64_t _port;
+    Wingos::RawIpcEndpoint *_endpoint; // Set by ManagedServer::do_receive() for access to the server endpoint
+
+public:
+    void set_port(uint64_t port) { this->_port = port; }
+
+    void set_endpoint(Wingos::RawIpcEndpoint *endpoint) { this->_endpoint = endpoint; }
+
+    uint64_t get_port() const { return _port; }
+
+    virtual bool init() = 0;
+
+    virtual void signal_disconnect(IpcMessage &msg) { (void)msg; };
+
+    // return true on reply
+    virtual bool call_received(IpcMessage &msg, fc::Optional<Wingos::IpcReplyObject> reply_obj) = 0;
+
+    fc::Result<void> reply(IpcMessage &msg, fc::Optional<Wingos::IpcReplyObject> reply_obj)
+    {
+        if (reply_obj.has_value())
+        {
+
+            return reply_obj->reply(&msg);
+        }
+
+        return "tried to reply to a client not expecting a reply";
+    }
+
+    fc::Result<void> reply(IpcMessage &msg, Wingos::IpcReplyObject &reply_obj)
+    {
+        return reply_obj.reply(&msg);
+    }
+
+    virtual ~ManagedServerConnectionHandler() = default;
+};
+
 class ManagedServer : public fc::NoCopy
 {
 
-    IpcServerHandle self_endpoint;
-    Wingos::IpcServer ipc_server;
+protected:
+    Wingos::RawIpcEndpoint endpoint;
 
-    bool loaded = false;
+    fc::UMap<uint64_t, ManagedServerConnectionHandler *> connections;
+
+    // supporting generic
+    // DISCONNECT msg
+    bool support_generic_prot = true;
 
 public:
-    auto addr() const { return self_endpoint; }
+    auto addr() const { return endpoint.published_addr; }
 
-    size_t connection_count() const { return ipc_server.connections.len(); }
-
-    static fc::Result<ManagedServer> create_registered_server(fc::Str name, uint64_t major = 1, uint64_t minor = 0)
+    virtual fc::Result<ManagedServerConnectionHandler *> on_connect(IpcMessage &initiator)
     {
-        ManagedServer server = {};
+        (void)initiator;
+        return "unregistered connection error";
+    }
+
+    ~ManagedServer()
+    {
+        connections.clear();
+        endpoint.remove();
+    }
+
+    template <typename ServerImpl>
+    static fc::Result<ServerImpl> create_registered_server(fc::Str name, uint64_t major = 1, uint64_t minor = 0)
+    {
+        ServerImpl server = {};
 
         auto init_conn = InitConnection::connect();
         if (init_conn.is_error())
@@ -39,7 +101,7 @@ public:
         name.copy_to((char *)reg.name, 80);
         reg.major = major;
         reg.minor = minor;
-        reg.endpoint = ipc_server.addr;
+        reg.endpoint = ipc_server.published_addr;
 
         auto res = v.register_server(reg);
 
@@ -48,85 +110,77 @@ public:
             return "failed to register server with init";
         }
 
-        server.self_endpoint = ipc_server.addr;
+        server.endpoint = ipc_server;
 
-        server.ipc_server = (ipc_server);
-        server.loaded = true;
-        // TODO:
-        // v.disconnect();
+        v.raw_client().disconnect();
         return (server);
     }
 
-    static fc::Result<ManagedServer> create_server()
+    template <typename ServerImpl = ManagedServer>
+    static fc::Result<ServerImpl> create_server(bool is_root = false)
     {
-        ManagedServer server = {};
-        auto ipc_server = Wingos::Space::self().create_ipc_server();
-        server.self_endpoint = ipc_server.addr;
-        server.ipc_server = (ipc_server);
-        server.loaded = true;
+        ServerImpl server = {};
+        auto ipc_server = Wingos::Space::self().create_ipc_server(is_root);
+        server.endpoint = ipc_server;
 
         return (server);
     }
 
-    bool accept_connection()
+    const auto &raw_server() const { return endpoint; }
+
+    void disconnect(uint64_t port)
     {
-
-        if (!loaded)
-        {
-            fmt::err$("ManagedServer: accept_connection called before server was fully initialized");
-            while (true)
-            {
-            };
-        }
-
-        auto c = ipc_server.accept();
-
-        if (c.is_error())
-        {
-            return false;
-        }
-        return true;
-    }
-
-    Wingos::IpcServer &raw_server() { return ipc_server; }
-
-    void disconnect(Wingos::IpcConnection *connection)
-    {
+        connections.remove(port);
 
         // Then disconnect from the raw server (which will delete the connection)
-        ipc_server.disconnect(connection);
     }
 
     void close()
     {
-        if (!loaded)
-        {
-            fmt::err$("ManagedServer: close called before server was fully initialized");
-            return;
-        }
-
-        // Clear our local list but don't delete - ipc_server.remove() will handle
-        // releasing assets and deleting the IpcConnection objects
-
-        ipc_server.remove();
+        endpoint.remove();
     }
 
-    fc::Result<Wingos::MessageServerReceived> try_receive()
+    fc::Result<void> do_receive()
     {
+        IpcMessage msg;
+        auto res = try$(endpoint.receive(&msg));
 
-        auto msg = ipc_server.receive();
-
-        if (msg.is_error())
+        if (!connections.has(msg.port))
         {
-            return fc::Result<Wingos::MessageServerReceived>::error("no message received");
+            auto connection = try$(on_connect(msg));
+            connection->set_port(msg.port);
+            connection->set_endpoint(&endpoint);
+            connection->init();
+            connections.insert(msg.port, connection);
         }
 
-        return msg;
-    }
+        if (msg.arguments.data[0].data == PROT_SIGNAL_DISCONNECT)
+        {
+            connections[msg.port]->signal_disconnect(msg);
+            connections.remove(msg.port);
+        }
+        else
+        {
 
-    fc::Result<void> reply(Wingos::MessageServerReceived &&to, IpcMessage &message)
+            if (res.handle == 0)
+            {
+                connections[msg.port]->call_received(msg, fc::novalue);
+            }
+            else
+            {
+                connections[msg.port]->call_received(msg, res);
+            }
+        }
+
+        return {};
+    };
+
+    void loop()
     {
-        return ipc_server.reply(std::move(to), message);
+        while (true)
+        {
+            do_receive();
+        }
     }
 };
 } // namespace prot

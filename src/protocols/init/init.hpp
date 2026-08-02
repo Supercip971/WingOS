@@ -67,28 +67,23 @@ public:
 
     static fc::Result<InitConnection> connect()
     {
-        fmt::log$("connectin'");
         InitConnection conn{};
-        conn.connection = Wingos::Space::self().connect_to_ipc_server(0);
-
-        conn.connection.wait_for_accept();
-
+        conn.connection = Wingos::Space::self().connect_by_addr(0);
         return conn;
     }
 
     void end()
     {
-        // FIXME: add a disconnect syscall
-        // connection.();
+        connection.disconnect();
     }
 
     fc::Result<void> register_server(InitRegisterServer const &reg)
     {
         IpcMessage message = {};
-        message.data[0].data = INIT_REGISTER_SERVER;
-        message.data[1].data = reg.endpoint;
-        message.data[2].data = reg.major;
-        message.data[3].data = reg.minor;
+        message.arguments.data[0].data = INIT_REGISTER_SERVER;
+        message.arguments.data[1].data = reg.endpoint;
+        message.arguments.data[2].data = reg.major;
+        message.arguments.data[3].data = reg.minor;
         size_t i;
 
         for (i = 0; i < 80 && reg.name[i] != 0; i++)
@@ -102,16 +97,9 @@ public:
 
         fmt::log$("Register server {START} ");
 
-        auto sended_message = connection.send(message, true);
+        auto sended_message = connection.send(message);
 
         fmt::log$("Register server {END } ");
-
-        auto message_handle = sended_message.unwrap();
-        if (sended_message.is_error())
-        {
-            return ("failed to send register server message");
-        }
-        (void)message_handle;
 
         return {};
     }
@@ -119,29 +107,22 @@ public:
     fc::Result<void> unregister_server(InitUnregisterServer const &reg)
     {
         IpcMessage message = {};
-        message.data[0].data = INIT_UNREGISTER_SERVER;
+        message.arguments.data[0].data = INIT_UNREGISTER_SERVER;
         for (size_t i = 0; i < 80 && reg.name[i] != 0; i++)
         {
             message.raw_buffer[i] = reg.name[i];
         }
 
-        auto sended_message = connection.send(message, false);
-        auto message_handle = sended_message.unwrap();
-        if (sended_message.is_error())
-        {
-            return ("failed to send unregister server message");
-        }
-        (void)message_handle;
-
+        connection.send(message);
         return {};
     }
 
     fc::Result<InitGetServerResponse> get_server(InitGetServer const &reg)
     {
         IpcMessage message = {};
-        message.data[0].data = INIT_GET_SERVER;
-        message.data[1].data = reg.major;
-        message.data[2].data = reg.minor;
+        message.arguments.data[0].data = INIT_GET_SERVER;
+        message.arguments.data[1].data = reg.major;
+        message.arguments.data[2].data = reg.minor;
         size_t i;
         for (i = 0; i < 80 && reg.name[i] != 0; i++)
         {
@@ -151,34 +132,6 @@ public:
         message.raw_buffer[i] = 0;
         message.len = i + 1;
 
-        //   auto sended_message = connection.send(message, true);
-        // auto message_handle = sended_message.unwrap();
-        //  if (sended_message.is_error())
-        //  {
-        //      return ("failed to send get server message");
-        //  }
-        /*
-                    while (true)
-                    {
-
-                        auto received = connection.receive_reply(message_handle);
-                        if (!received.is_error())
-                        {
-                            auto msg = received.take();
-                            InitGetServerResponse resp {};
-                            resp.endpoint = msg.data[0].data;
-
-                            if(resp.endpoint == 0)
-                            {
-                                return ("server not found");
-                            }
-                            resp.major = msg.data[1].data;
-                            resp.minor = msg.data[2].data;
-                            return (resp);
-                        }
-                    }
-        */
-
         fmt::log$("Querying server {START} ");
 
         auto res = connection.call(message);
@@ -186,15 +139,14 @@ public:
         fmt::log$("Querying server {END  } ");
         if (!res.is_error())
         {
-            auto msg = res.take();
             InitGetServerResponse resp{};
-            resp.endpoint = msg.data[0].data;
+            resp.endpoint = message.arguments.data[0].data;
             if (resp.endpoint == 0)
             {
                 return ("server not found");
             }
-            resp.major = msg.data[1].data;
-            resp.minor = msg.data[2].data;
+            resp.major = message.arguments.data[1].data;
+            resp.minor = message.arguments.data[2].data;
             fmt::log$("got server response: endpoint={}, major={}, minor={}", resp.endpoint, resp.major, resp.minor);
             return (resp);
         }
@@ -220,15 +172,9 @@ public:
     fc::Result<void> signal_fs_available()
     {
         IpcMessage message = {};
-        message.data[0].data = INIT_SIGNAL_FS_AVAILABLE;
+        message.arguments.data[0].data = INIT_SIGNAL_FS_AVAILABLE;
 
-        auto sended_message = connection.send(message, false);
-        auto message_handle = sended_message.unwrap();
-        if (sended_message.is_error())
-        {
-            return ("failed to send signal fs available message");
-        }
-        (void)message_handle;
+        connection.send(message);
 
         return {};
     }
@@ -236,16 +182,15 @@ public:
     fc::Result<InitQueryFbResponse> query_framebuffer()
     {
         IpcMessage message = {};
-        message.data[0].data = INIT_QUERY_FB;
+        message.arguments.data[0].data = INIT_QUERY_FB;
 
         auto res = connection.call(message);
         if (!res.is_error())
         {
-            auto msg = res.take();
             InitQueryFbResponse resp{};
-            resp.framebuffer_addr = msg.data[0].data;
-            resp.framebuffer_width = msg.data[1].data;
-            resp.framebuffer_height = msg.data[2].data;
+            resp.framebuffer_addr = message.arguments.data[0].data;
+            resp.framebuffer_width = message.arguments.data[1].data;
+            resp.framebuffer_height = message.arguments.data[2].data;
             return (resp);
         }
         return ("failed to receive framebuffer info");

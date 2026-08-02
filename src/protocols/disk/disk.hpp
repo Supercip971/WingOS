@@ -37,9 +37,9 @@ public:
         }
 
         IpcMessage message = {};
-        message.data[0].data = DISK_READ_SMALL;
-        message.data[1].data = lba;
-        message.data[2].data = len;
+        message.arguments.data[0].data = DISK_READ_SMALL;
+        message.arguments.data[1].data = lba;
+        message.arguments.data[2].data = len;
         auto sended_message = connection.send(message, true);
         auto message_handle = sended_message.unwrap();
         if (sended_message.is_error())
@@ -74,13 +74,13 @@ public:
         }
 
         IpcMessage message = {};
-        message.data[0].data = DISK_READ_SECTORS;
-        message.data[1].data = lba;
-        message.data[2].data = len;
+        message.arguments.data[0].data = DISK_READ_SECTORS;
+        message.arguments.data[1].data = lba;
+        message.arguments.data[2].data = len;
 
-        message.data[3].is_asset = true;
-        message.data[3].asset_handle = asset.handle;
-        message.data[4].data = asset_start;
+        message.arguments.data[3].is_asset = true;
+        message.arguments.data[3].asset_handle = asset.handle;
+        message.arguments.data[4].data = asset_start;
         auto sended_message = connection.send(message, true);
         auto message_handle = sended_message.unwrap();
 
@@ -95,7 +95,7 @@ public:
             if (!received.is_error())
             {
                 auto msg = received.take();
-                size_t bytes_read = msg.data[0].data;
+                size_t bytes_read = message.arguments.data[0].data;
                 if (len > 0 && bytes_read == 0)
                 {
                     return "disk read returned no data";
@@ -146,9 +146,9 @@ public:
         }
 
         IpcMessage message = {};
-        message.data[0].data = DISK_WRITE_SMALL;
-        message.data[1].data = lba;
-        message.data[2].data = len;
+        message.arguments.data[0].data = DISK_WRITE_SMALL;
+        message.arguments.data[1].data = lba;
+        message.arguments.data[2].data = len;
         for (size_t i = 0; i < len; i++)
         {
             message.raw_buffer[i] = ((uint8_t *)buffer)[i];
@@ -173,11 +173,11 @@ public:
         }
 
         IpcMessage message = {};
-        message.data[0].data = DISK_WRITE_SECTORS;
-        message.data[1].data = lba;
-        message.data[2].data = len;
-        message.data[3].is_asset = true;
-        message.data[3].asset_handle = asset.handle;
+        message.arguments.data[0].data = DISK_WRITE_SECTORS;
+        message.arguments.data[1].data = lba;
+        message.arguments.data[2].data = len;
+        message.arguments.data[3].is_asset = true;
+        message.arguments.data[3].asset_handle = asset.handle;
         auto sended_message = connection.send(message, false);
         auto message_handle = sended_message.unwrap();
         if (sended_message.is_error())

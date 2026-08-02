@@ -101,8 +101,8 @@ public:
     fc::Result<void> start_listen()
     {
         IpcMessage message = {};
-        message.data[0].data = HI_START_LISTEN;
-        message.data[1].data = HI_EVENT_TYPE_MOUSE | HI_EVENT_TYPE_KEYBOARD;
+        message.arguments.data[0].data = HI_START_LISTEN;
+        message.arguments.data[1].data = HI_EVENT_TYPE_MOUSE | HI_EVENT_TYPE_KEYBOARD;
 
         auto res = connection.call(message);
 
@@ -113,7 +113,7 @@ public:
 
         auto msg = std::move(res.unwrap());
 
-        auto rpipe = try$(ReceiverPipe::from(Wingos::Space::self(), msg.data[0].asset_handle));
+        auto rpipe = try$(ReceiverPipe::from(Wingos::Space::self(), message.arguments.data[0].asset_handle));
         _event_queue = HIEventQueue(std::move(rpipe));
 
         return {};

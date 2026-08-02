@@ -298,9 +298,11 @@ extern "C"
         uint64_t endpoint_handle;
 
         bool async;
+
         // RETURN:
-        IpcMessage *returned_message; // the message received
-        uint64_t returned_port;       // if is a server, the port used by the connection
+
+        IpcMessage *returned_message;   // the message received
+        uint64_t return_context_handle; // if is a server, the port used by the connection
     } SyscallIpcReceive;
 
     static inline SyscallInterface syscall_ipc_receive_encode(SyscallIpcReceive *receive)

@@ -87,8 +87,8 @@ public:
     fc::Result<void> register_device(fc::Str name, IpcServerHandle endpoint)
     {
         IpcMessage message = {};
-        message.data[0].data = VFS_REGISTER;
-        message.data[1].data = endpoint;
+        message.arguments.data[0].data = VFS_REGISTER;
+        message.arguments.data[1].data = endpoint;
 
         if (name.len() > 80)
         {
@@ -101,23 +101,14 @@ public:
         }
         message.raw_buffer[name.len()] = 0;
         message.len = name.len();
-        auto sended_message = connection.send(message, false);
-        auto message_handle = sended_message.unwrap();
-        if (sended_message.is_error())
-        {
-            return "failed to send register device message";
-        }
-        (void)message_handle;
-
+        connection.send(message);
         return {};
     }
 
     static fc::Result<VfsConnection> connect(IpcServerHandle handle)
     {
         VfsConnection vfs_conn;
-        vfs_conn.connection = Wingos::Space::self().connect_to_ipc_server(handle);
-        vfs_conn.connection.wait_for_accept();
-        vfs_conn.connected = true;
+        vfs_conn.connection = Wingos::Space::self().connect_by_addr(handle);
         return vfs_conn;
     }
 
@@ -132,17 +123,15 @@ public:
         auto v = reg.unwrap();
         auto handle = try$(v.get_server(fc::Str("vfs"), 1, 0)).endpoint;
 
-        vfs_conn.connection = Wingos::Space::self().connect_to_ipc_server(handle);
-        vfs_conn.connection.wait_for_accept();
-        vfs_conn.connected = true;
+        vfs_conn.connection = Wingos::Space::self().connect_by_addr(handle);
         return vfs_conn;
     }
 
     fc::Result<void> register_fs(fc::Str name, IpcServerHandle endpoint)
     {
         IpcMessage message = {};
-        message.data[0].data = VFS_REGISTER_FS;
-        message.data[1].data = endpoint;
+        message.arguments.data[0].data = VFS_REGISTER_FS;
+        message.arguments.data[1].data = endpoint;
 
         if (name.len() > 80)
         {
@@ -155,27 +144,21 @@ public:
         }
         message.raw_buffer[name.len()] = 0;
         message.len = name.len();
-        auto sended_message = connection.send(message, false);
-
-        if (sended_message.is_error())
-        {
-            return "failed to send register fs message";
-        }
-
+        auto sended_message = connection.send(message);
         return {};
     }
 
     fc::Result<FsFile> open_root()
     {
         IpcMessage message = {};
-        message.data[0].data = VFS_ROOT_ACCESS;
-        auto msg = try$(connection.call(message));
+        message.arguments.data[0].data = VFS_ROOT_ACCESS;
+        try$(connection.call(message));
 
-        if (msg.data[0].data == 0)
+        if (message.arguments.data[0].data == 0)
         {
             return ("failed to obtain root access");
         }
-        IpcServerHandle file_endpoint = msg.data[1].data;
+        IpcServerHandle file_endpoint = message.arguments.data[1].data;
         auto file_res = FsFile::connect(file_endpoint);
 
         return file_res;

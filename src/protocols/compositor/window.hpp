@@ -49,15 +49,15 @@ public:
     fc::Result<WindowGetAttributeSize> get_attribute_size()
     {
         IpcMessage message = {};
-        message.data[0].data = WINDOW_GET_ATTRIBUTE_SIZE;
+        message.arguments.data[0].data = WINDOW_GET_ATTRIBUTE_SIZE;
 
         auto res = connection.call(message);
         if (!res.is_error())
         {
             auto msg = res.take();
             WindowGetAttributeSize resp{};
-            resp.width = msg.data[0].data;
-            resp.height = msg.data[1].data;
+            resp.width = message.arguments.data[0].data;
+            resp.height = message.arguments.data[1].data;
             return (resp);
         }
         return ("failed to receive attribute size");
@@ -66,13 +66,13 @@ public:
     fc::Result<Wingos::VirtualMemoryAsset> get_framebuffer()
     {
         IpcMessage message = {};
-        message.data[0].data = WINDOW_GET_FRAMEBUFFER;
+        message.arguments.data[0].data = WINDOW_GET_FRAMEBUFFER;
 
         auto res = connection.call(message);
         if (!res.is_error())
         {
             auto msg = res.take();
-            mem_asset.handle = msg.data[0].data;
+            mem_asset.handle = message.arguments.data[0].data;
 
             mem_asset = Wingos::MemoryAsset::from_handle(mem_asset.handle);
             virt_asset = Wingos::Space::self().map_memory(mem_asset, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
@@ -96,7 +96,7 @@ public:
             has_swap = false;
         }
         IpcMessage message = {};
-        message.data[0].data = WINDOW_SWAP_BUFFERS;
+        message.arguments.data[0].data = WINDOW_SWAP_BUFFERS;
 
         auto sended_message = connection.send(message, true);
 

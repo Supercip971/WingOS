@@ -175,14 +175,14 @@ public:
     fc::Result<size_t> read(Wingos::MemoryAsset &asset, size_t offset, size_t len)
     {
         IpcMessage message = {};
-        message.data[0].data = FS_READ;
-        message.data[1].data = offset;
-        message.data[2].data = len;
-        message.data[3].is_asset = true;
-        message.data[3].asset_handle = asset.handle;
-        message.data[4].data = 0;
+        message.arguments.data[0].data = FS_READ;
+        message.arguments.data[1].data = offset;
+        message.arguments.data[2].data = len;
+        message.arguments.data[3].is_asset = true;
+        message.arguments.data[3].asset_handle = asset.handle;
+        message.arguments.data[4].data = 0;
         auto msg = try$(connection.call(message));
-        size_t received_len = msg.data[1].data;
+        size_t received_len = message.arguments.data[1].data;
         asset = Wingos::MemoryAsset::from_handle(msg.data[2].asset_handle);
         return received_len;
     }
@@ -246,14 +246,14 @@ public:
             }
         }
         IpcMessage message = {};
-        message.data[0].data = FS_WRITE;
-        message.data[1].data = offset;
-        message.data[2].data = len;
-        message.data[3].is_asset = true;
-        message.data[3].asset_handle = asset.handle;
-        message.data[4].data = 0;
+        message.arguments.data[0].data = FS_WRITE;
+        message.arguments.data[1].data = offset;
+        message.arguments.data[2].data = len;
+        message.arguments.data[3].is_asset = true;
+        message.arguments.data[3].asset_handle = asset.handle;
+        message.arguments.data[4].data = 0;
         auto msg = try$(connection.call(message));
-        size_t received_len = msg.data[1].data;
+        size_t received_len = message.arguments.data[1].data;
         return received_len;
     }
 
@@ -287,15 +287,15 @@ public:
     fc::Result<FileInfo> get_info()
     {
         IpcMessage message = {};
-        message.data[0].data = FS_GET_INFO;
+        message.arguments.data[0].data = FS_GET_INFO;
         auto msg = try$(connection.call(message));
 
         FileInfo info = {};
-        info.size = msg.data[1].data;
-        info.created_at = msg.data[2].data;
-        info.modified_at = msg.data[3].data;
-        info.accessed_at = msg.data[4].data;
-        info.is_directory = msg.data[5].data;
+        info.size = message.arguments.data[1].data;
+        info.created_at = message.arguments.data[2].data;
+        info.modified_at = message.arguments.data[3].data;
+        info.accessed_at = message.arguments.data[4].data;
+        info.is_directory = message.arguments.data[5].data;
         size_t name_len = msg.len;
         char name_buf[110] = {0};
         for (size_t i = 0; i < name_len && i < 110; i++)
@@ -310,8 +310,8 @@ public:
     fc::Result<DirListEntry> list_dir_entry(size_t index)
     {
         IpcMessage message = {};
-        message.data[0].data = FS_LIST_DIR;
-        message.data[1].data = index;
+        message.arguments.data[0].data = FS_LIST_DIR;
+        message.arguments.data[1].data = index;
         auto sended_message = connection.send(message, true);
         auto message_handle = sended_message.unwrap();
         if (sended_message.is_error())
@@ -334,7 +334,7 @@ public:
                     name_buf[i] = msg.raw_buffer[i];
                 }
                 entry.name = fc::WStr::copy(fc::Str(name_buf, name_len));
-                entry.is_directory = msg.data[1].data != 0;
+                entry.is_directory = message.arguments.data[1].data != 0;
 
                 return entry;
             }
@@ -374,7 +374,7 @@ public:
     fc::Result<FsFile> open_file(fc::Str path)
     {
         IpcMessage message = {};
-        message.data[0].data = FS_OPEN_FILE;
+        message.arguments.data[0].data = FS_OPEN_FILE;
         size_t path_len = path.len();
         if (path_len > 100)
         {
@@ -395,7 +395,7 @@ public:
             return ("failed to open file");
         }
 
-        IpcServerHandle file_endpoint = msg.data[1].data;
+        IpcServerHandle file_endpoint = message.arguments.data[1].data;
         auto file_res = FsFile::connect(file_endpoint);
         return file_res;
     }

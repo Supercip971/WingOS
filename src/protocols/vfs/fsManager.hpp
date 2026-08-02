@@ -60,11 +60,11 @@ public:
     fc::Result<MountedDiskResult> mount_if_device_valid(fc::Str name, IpcServerHandle endpoint, size_t begin_lba, size_t end_lba, size_t part_id)
     {
         IpcMessage message = {};
-        message.data[0].data = DISK_FS_ATTEMPT_INITIALIZE_DISK;
-        message.data[1].data = endpoint;
-        message.data[2].data = begin_lba;
-        message.data[3].data = end_lba;
-        message.data[4].data = part_id; // part id
+        message.arguments.data[0].data = DISK_FS_ATTEMPT_INITIALIZE_DISK;
+        message.arguments.data[1].data = endpoint;
+        message.arguments.data[2].data = begin_lba;
+        message.arguments.data[3].data = end_lba;
+        message.arguments.data[4].data = part_id; // part id
 
         if (name.len() > 80)
         {
@@ -82,11 +82,11 @@ public:
         message.raw_buffer[name.len()] = 0;
         message.len = name.len();
 
-        auto msg = try$(connection.call(message));
+        try$(connection.call(message));
 
         MountedDiskResult result{};
-        result.fs_endpoint = msg.data[1].data;
-        result.success = msg.data[0].data != 0;
+        result.fs_endpoint = message.arguments.data[1].data;
+        result.success = message.arguments.data[0].data != 0;
         return result;
     };
 };
@@ -99,19 +99,18 @@ public:
     static fc::Result<DiskFsImplementationConnection> connect(IpcServerHandle fs_endpoint)
     {
         DiskFsImplementationConnection conn;
-        conn.connection = Wingos::Space::self().connect_to_ipc_server(fs_endpoint);
-        conn.connection.wait_for_accept();
+        conn.connection = Wingos::Space::self().connect_by_addr(fs_endpoint);
         return fc::Result<DiskFsImplementationConnection>::success(std::move(conn));
     }
 
     fc::Result<IpcServerHandle> create_root_endpoint()
     {
         IpcMessage message = {};
-        message.data[0].data = DISK_CREATE_ROOT_ENDPOINT;
+        message.arguments.data[0].data = DISK_CREATE_ROOT_ENDPOINT;
 
         auto msg = try$(connection.call(message));
 
-        IpcServerHandle endpoint = msg.data[1].data;
+        IpcServerHandle endpoint = message.arguments.data[1].data;
         return endpoint;
     };
 };

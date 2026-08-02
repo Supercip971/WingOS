@@ -33,7 +33,7 @@ struct IpcSyncMsgEntry
 struct IpcAsyncMsgEntry
 {
     IpcMessage target_msg;
-    uint64_t added_tick;
+    long added_tick;
 };
 
 struct IpcEndpoint : public Asset

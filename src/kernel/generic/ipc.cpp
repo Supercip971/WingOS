@@ -43,8 +43,9 @@ static fc::Result<void> update_inplace_message(IpcMessageArguments *message, Ass
     return {};
 }
 
-fc::Result<void> kernel::ipc_receive_async(AssetRef<Space> &space, AssetRef<IpcEndpoint> &endpoint, IpcMessage *target)
+fc::Result<void> kernel::ipc_receive_async(AssetRef<Space> &space, AssetRef<IpcEndpoint> &endpoint, IpcMessage *target, uint64_t *ret_task_handle)
 {
+    *ret_task_handle = 0;
     endpoint.lock();
 
     if (!endpoint->has_message())
@@ -74,7 +75,8 @@ fc::Result<void> kernel::ipc_receive_async(AssetRef<Space> &space, AssetRef<IpcE
 
     if (sync_entry.is_call)
     {
-        space->create_ipc_return_task({sync_entry.callee});
+        auto ret_task = try$(space->create_ipc_return_task({sync_entry.callee}));
+        *ret_task_handle = ret_task.handle;
     }
     else
     {
@@ -88,11 +90,13 @@ fc::Result<void> kernel::ipc_receive_async(AssetRef<Space> &space, AssetRef<IpcE
     return {};
 }
 
-fc::Result<void> kernel::ipc_receive(AssetRef<Space> &space, AssetRef<AssetTask> &callee, AssetRef<IpcEndpoint> &endpoint, IpcMessage *target)
+fc::Result<void> kernel::ipc_receive(AssetRef<Space> &space, AssetRef<AssetTask> &callee, AssetRef<IpcEndpoint> &endpoint, IpcMessage *target, uint64_t *ret_task_handle)
 {
     endpoint.lock();
     endpoint->awaiting_server = callee;
     endpoint.unlock();
+
+    *ret_task_handle = 0;
 
     while (!endpoint->has_message())
     {
@@ -131,7 +135,8 @@ fc::Result<void> kernel::ipc_receive(AssetRef<Space> &space, AssetRef<AssetTask>
 
     if (sync_entry.is_call)
     {
-        space->create_ipc_return_task({sync_entry.callee});
+        auto ret_task = try$(space->create_ipc_return_task({sync_entry.callee}));
+        *ret_task_handle = ret_task.handle;
     }
     else
     {
@@ -201,7 +206,7 @@ fc::Result<void> kernel::ipc_reply(AssetRef<Space> &space, AssetRef<IpcMessageRe
     return {};
 }
 
-fc::Result<void> kernel::ipc_send_async(AssetRef<Space> &source_space, AssetRef<AssetTask> &callee, AssetRef<IpcEndpointConnection> &connection, IpcMessage *msg)
+fc::Result<void> kernel::ipc_send_async(AssetRef<Space> &source_space, AssetRef<IpcEndpointConnection> &connection, IpcMessage *msg)
 {
     auto &endpoint = connection->connection_to;
 
@@ -214,13 +219,11 @@ fc::Result<void> kernel::ipc_send_async(AssetRef<Space> &source_space, AssetRef<
     }
 
     endpoint.lock();
-    IpcSyncMsgEntry sync_entry = {
-        .msg = msg,
-        .callee = callee,
-        .is_call = false,
+    IpcAsyncMsgEntry sync_entry = {
+        .target_msg = IpcMessage::copy(*msg),
         .added_tick = endpoint->tick,
     };
-    endpoint->sync_queue.push(sync_entry);
+    endpoint->async_queue.push(sync_entry);
     endpoint->update_msg_ticks();
     endpoint->tick++;
 

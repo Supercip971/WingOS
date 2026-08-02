@@ -495,11 +495,11 @@ fc::Result<size_t> ksyscall_receive(kernel::Task *caller, SyscallIpcReceive *rec
 
     if (receive->async)
     {
-        try$(kernel::ipc_receive_async(space_ref, endpoint, receive->returned_message));
+        try$(kernel::ipc_receive_async(space_ref, endpoint, receive->returned_message, &receive->return_context_handle));
     }
     else
     {
-        try$(kernel::ipc_receive(space_ref, return_task, endpoint, receive->returned_message));
+        try$(kernel::ipc_receive(space_ref, return_task, endpoint, receive->returned_message, &receive->return_context_handle));
     }
     return {};
 }

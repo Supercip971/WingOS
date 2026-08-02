@@ -2,10 +2,13 @@
 
 #include <libcore/bound.hpp>
 #include <libcore/type-utils.hpp>
+#include <utility>
 // NOLINTBEGIN
 #include <libcore/core.hpp>
+
 // NOLINTEND
 
+#include "libcore/type/trait.hpp"
 #include "libcore/unreachable.h"
 
 void assert_dump(const char *error);
@@ -181,6 +184,11 @@ public:
     {
         return _is_error;
     }
+
+    constexpr bool is_ok() const
+    {
+        return !is_error();
+    }
 };
 
 template <typename ErrT>
@@ -253,6 +261,11 @@ public:
     constexpr bool is_error() const
     {
         return _is_error;
+    }
+
+    constexpr bool is_ok() const
+    {
+        return !is_error();
     }
 };
 

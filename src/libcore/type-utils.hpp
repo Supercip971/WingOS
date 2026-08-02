@@ -1,6 +1,4 @@
 #pragma once
-#include <libcore/type/trait.hpp>
-#include <utility>
 
 namespace fc
 {

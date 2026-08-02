@@ -124,6 +124,8 @@ public:
 public:
     constexpr Optional() : _contain_value(false) {}
 
+    constexpr Optional(NoneValue const &) : _contain_value(false) {}
+
     constexpr Optional(const Type &value) : _value(value), _contain_value(true) {}
 
     constexpr Optional(Type &&value) : _value(std::move(value)), _contain_value(true) {}

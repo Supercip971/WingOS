@@ -140,6 +140,16 @@ public:
         return value;
     }
 
+    auto &head()
+    {
+        return _data[_head];
+    }
+
+    auto &back()
+    {
+        return _data[(_tail - 1 + _capacity) % _capacity];
+    }
+
     ~Ring()
     {
         for (size_t i = 0; i < _len; i++)

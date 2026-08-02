@@ -217,6 +217,12 @@ public:
         }
     }
 
+    void clear()
+    {
+        _buckets.clear();
+        _count = 0;
+    }
+
     template <IsComparable<KeyT> T>
     ValueT const &operator[](T const &key) const
     {

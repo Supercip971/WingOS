@@ -2,6 +2,7 @@
 
 #include "iol/wingos/ipc.hpp"
 #include "libcore/ds/umap.hpp"
+#include "libcore/fmt/log.hpp"
 #include "libcore/optional.hpp"
 #include "libcore/result.hpp"
 #include "libcore/str.hpp"
@@ -25,6 +26,8 @@ protected:
     Wingos::RawIpcEndpoint *_endpoint; // Set by ManagedServer::do_receive() for access to the server endpoint
 
 public:
+    fc::Optional<Wingos::IpcReplyObject> current_reply_obj;
+
     void set_port(uint64_t port) { this->_port = port; }
 
     void set_endpoint(Wingos::RawIpcEndpoint *endpoint) { this->_endpoint = endpoint; }
@@ -36,7 +39,19 @@ public:
     virtual void signal_disconnect(IpcMessage &msg) { (void)msg; };
 
     // return true on reply
-    virtual bool call_received(IpcMessage &msg, fc::Optional<Wingos::IpcReplyObject> reply_obj) = 0;
+    virtual fc::Result<void> call_received(IpcMessage &msg, fc::Optional<Wingos::IpcReplyObject> reply_obj) = 0;
+
+    fc::Result<void> ret(IpcMessage &msg)
+    {
+
+        if (current_reply_obj.has_value())
+        {
+
+            return current_reply_obj->reply(&msg);
+        }
+
+        return {};
+    }
 
     fc::Result<void> reply(IpcMessage &msg, fc::Optional<Wingos::IpcReplyObject> reply_obj)
     {
@@ -52,6 +67,12 @@ public:
     fc::Result<void> reply(IpcMessage &msg, Wingos::IpcReplyObject &reply_obj)
     {
         return reply_obj.reply(&msg);
+    }
+
+    fc::Result<void> ack(auto reply_obj)
+    {
+        IpcMessage empty_msg = {};
+        reply(empty_msg, reply_obj);
     }
 
     virtual ~ManagedServerConnectionHandler() = default;
@@ -140,6 +161,12 @@ public:
         endpoint.remove();
     }
 
+    virtual fc::Result<void> after_receive()
+    {
+
+        return {};
+    }
+
     fc::Result<void> do_receive()
     {
         IpcMessage msg;
@@ -154,6 +181,8 @@ public:
             connections.insert(msg.port, connection);
         }
 
+        fc::Result<void> err;
+
         if (msg.arguments.data[0].data == PROT_SIGNAL_DISCONNECT)
         {
             connections[msg.port]->signal_disconnect(msg);
@@ -164,14 +193,25 @@ public:
 
             if (res.handle == 0)
             {
-                connections[msg.port]->call_received(msg, fc::novalue);
+                connections[msg.port]->current_reply_obj = fc::novalue;
+                err = connections[msg.port]->call_received(msg, fc::novalue);
             }
             else
             {
-                connections[msg.port]->call_received(msg, res);
+                connections[msg.port]->current_reply_obj = res;
+                err = connections[msg.port]->call_received(msg, res);
             }
         }
 
+        if (err.is_error())
+        {
+            fmt::err$("IPC error: {}, disconnecting : {}", err.error(), msg.port);
+            connections.remove(msg.port);
+
+            return err;
+        }
+
+        try$(after_receive());
         return {};
     };
 

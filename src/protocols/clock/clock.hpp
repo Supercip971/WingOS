@@ -35,9 +35,7 @@ public:
         auto reg = try$(InitConnection::connect());
 
         auto handle = try$(reg.get_server(fc::Str("clock"), 1, 0)).endpoint;
-        conn.connection = Wingos::Space::self().connect_to_ipc_server(handle, 1, 0);
-
-        conn.connection.wait_for_accept();
+        conn.connection = Wingos::Space::self().connect_by_addr(handle);
 
         return conn;
     }
@@ -53,7 +51,6 @@ public:
             return ("clock: failed to send get system time message");
         }
 
-        auto &msg = sended_message.unwrap();
         ClockTime time{};
         time.seconds = message.arguments.data[1].data;
         time.milliseconds = message.arguments.data[2].data;

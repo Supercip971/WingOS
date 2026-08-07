@@ -390,6 +390,12 @@ extern "C"
                 bool executable;
             } mapping;
 
+            struct
+            {
+
+                uint64_t port;
+            } connection;
+
             // other asset types can be added here
         } returned_info;
     } SyscallAssetInfo;

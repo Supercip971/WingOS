@@ -1,0 +1,10 @@
+---
+CheckOptions:
+      misc-include-cleander.IgnoreHeaders: >
+        cstdlib;
+        cstdint;
+        cstddef;
+        cstring;
+        cmath;
+        cstdarg;
+        cstdio

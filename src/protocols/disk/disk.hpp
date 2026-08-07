@@ -19,6 +19,7 @@ enum DiskMessageType
     DISK_WRITE_SECTORS = 2,
     DISK_READ_SMALL = 3,
     DISK_WRITE_SMALL = 4,
+    DISK_FORK_CONNECTION = 5,
 };
 
 class DiskConnection
@@ -28,6 +29,15 @@ class DiskConnection
 
 public:
     Wingos::IpcClient &raw_client() { return connection; }
+
+    fc::Result<DiskConnection> fork_client()
+    {
+        IpcMessage message = {};
+        message.arg(0, DISK_FORK_CONNECTION);
+        connection.call(message);
+
+        return DiskConnection::use_asset(message.asset(0));
+    }
 
     fc::Result<size_t> read_small(void *buffer, uint64_t lba, uint64_t len)
     {
@@ -40,25 +50,12 @@ public:
         message.arguments.data[0].data = DISK_READ_SMALL;
         message.arguments.data[1].data = lba;
         message.arguments.data[2].data = len;
-        auto sended_message = connection.send(message, true);
-        auto message_handle = sended_message.unwrap();
-        if (sended_message.is_error())
+        auto sended_message = connection.call(message);
+        for (size_t i = 0; i < len; i++)
         {
-            return ("failed to send read small sectors message");
+            ((uint8_t *)buffer)[i] = message.raw_buffer[i];
         }
-        while (true)
-        {
-            auto received = connection.receive_reply(message_handle);
-            if (!received.is_error())
-            {
-                auto msg = received.take();
-                for (size_t i = 0; i < len; i++)
-                {
-                    ((uint8_t *)buffer)[i] = msg.raw_buffer[i];
-                }
-                return len;
-            }
-        }
+        return len;
     }
 
     fc::Result<size_t> read(Wingos::MemoryAsset &asset, uint64_t lba, uint64_t len, uint64_t asset_start = 0)
@@ -81,35 +78,18 @@ public:
         message.arguments.data[3].is_asset = true;
         message.arguments.data[3].asset_handle = asset.handle;
         message.arguments.data[4].data = asset_start;
-        auto sended_message = connection.send(message, true);
-        auto message_handle = sended_message.unwrap();
-
-        if (sended_message.is_error())
+        auto sended_message = connection.call(message);
+        size_t bytes_read = message.arguments.data[0].data;
+        if (len > 0 && bytes_read == 0)
         {
-            return ("failed to send read sectors message");
+            return "disk read returned no data";
         }
-        while (true)
+        if (message.arguments.data[1].is_asset)
         {
-
-            auto received = connection.receive_reply(message_handle);
-            if (!received.is_error())
-            {
-                auto msg = received.take();
-                size_t bytes_read = message.arguments.data[0].data;
-                if (len > 0 && bytes_read == 0)
-                {
-                    return "disk read returned no data";
-                }
-                if (msg.data[1].is_asset)
-                {
-                    asset = Wingos::MemoryAsset::from_handle(msg.data[1].asset_handle);
-                }
-                return bytes_read;
-            }
+            asset = Wingos::MemoryAsset::from_handle(message.arguments.data[1].asset_handle);
         }
+        return bytes_read;
         // swap back
-        (void)message_handle;
-        return fc::Result<size_t>::success(0);
     }
 
     fc::Result<Wingos::VirtualMemoryAsset> read_buf(uint64_t lba, uint64_t count)
@@ -154,14 +134,7 @@ public:
             message.raw_buffer[i] = ((uint8_t *)buffer)[i];
         }
         message.len = len;
-        auto sended_message = connection.send(message, false);
-        auto message_handle = sended_message.unwrap();
-        if (sended_message.is_error())
-        {
-            return ("failed to send write small sectors message");
-        }
-
-        (void)message_handle;
+        auto sended_message = connection.send_async(message);
         return {};
     }
 
@@ -178,15 +151,7 @@ public:
         message.arguments.data[2].data = len;
         message.arguments.data[3].is_asset = true;
         message.arguments.data[3].asset_handle = asset.handle;
-        auto sended_message = connection.send(message, false);
-        auto message_handle = sended_message.unwrap();
-        if (sended_message.is_error())
-        {
-            return ("failed to send write sectors message");
-        }
-
-        (void)message_handle;
-        (void)sended_message;
+        connection.send_async(message);
         return {};
     }
 
@@ -197,19 +162,26 @@ public:
 
         auto v = try$(init_conn.get_server(dev_name, 1, 0));
 
-        conn.connection = Wingos::Space::self().connect_to_ipc_server(v.endpoint);
+        conn.connection = Wingos::Space::self().connect_by_addr(v.endpoint);
 
-        conn.connection.wait_for_accept();
         fmt::log$("Connected to disk server at address: {} ({})", v.endpoint, conn.connection.associated_space_handle);
         return conn;
     }
 
-    static fc::Result<DiskConnection> connect(IpcServerHandle disk_endpoint)
+    static fc::Result<DiskConnection> use_asset(uint64_t conn_handle)
     {
         DiskConnection conn;
-        conn.connection = Wingos::Space::self().connect_to_ipc_server(disk_endpoint);
+        conn.connection = Wingos::Space::self().connect_by_handle(conn_handle);
 
-        conn.connection.wait_for_accept();
+        fmt::log$("Connected to disk server at address: {} ({})", conn_handle, conn.connection.associated_space_handle);
+        return conn;
+    }
+
+    static fc::Result<DiskConnection> connect_by_addr(IpcServerHandle disk_endpoint)
+    {
+        DiskConnection conn;
+        conn.connection = Wingos::Space::self().connect_by_addr(disk_endpoint);
+
         fmt::log$("Connected to disk server at address: {} ({})", disk_endpoint, conn.connection.associated_space_handle);
         return conn;
     }

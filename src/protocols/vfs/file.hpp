@@ -45,12 +45,10 @@ struct DirList
 
 enum FsFileMessageType
 {
-
     FS_GET_INFO = 0,
     // file operations
     FS_READ = 1,
     FS_WRITE = 2,
-    FS_CLOSE = 3,
     // directory operations
 
     FS_LIST_DIR = 13,
@@ -61,7 +59,6 @@ enum FsFileMessageType
     FS_SET_INFO = 12,
 
     FS_CREATE_DIR = 14,
-
 };
 
 struct FsFileCacheEntry
@@ -159,15 +156,37 @@ public:
 
     Wingos::IpcClient &raw_client() { return connection; }
 
-    static fc::Result<FsFile> connect(IpcServerHandle fs_endpoint, bool keep_alive = false)
+    static fc::Result<FsFile> use_connection(uint64_t connection_handle, bool keep_alive = false)
+    {
+        FsFile file = {};
+        file.connection = Wingos::Space::self().from_already_connected(connection_handle);
+        fmt::log$("FsFile::connect: created connection handle {}, waiting for accept...", file.connection.handle);
+        file.keep_alive = keep_alive;
+        fmt::log$("FsFile::connect: connection {} accepted", file.connection.port);
+
+        return (file);
+    }
+
+    static fc::Result<FsFile> connect_by_handle(uint64_t fs_endpoint, bool keep_alive = false)
     {
         fmt::log$("FsFile::connect: connecting to server endpoint {}", fs_endpoint);
         FsFile file = {};
-        file.connection = Wingos::Space::self().connect_to_ipc_server(fs_endpoint);
+        file.connection = Wingos::Space::self().connect_by_handle(fs_endpoint);
         fmt::log$("FsFile::connect: created connection handle {}, waiting for accept...", file.connection.handle);
         file.keep_alive = keep_alive;
-        file.connection.wait_for_accept();
-        fmt::log$("FsFile::connect: connection {} accepted", file.connection.handle);
+        fmt::log$("FsFile::connect: connection {} accepted", file.connection.port);
+
+        return (file);
+    }
+
+    static fc::Result<FsFile> connect_by_addr(IpcServerHandle fs_endpoint, bool keep_alive = false)
+    {
+        fmt::log$("FsFile::connect: connecting to server endpoint {}", fs_endpoint);
+        FsFile file = {};
+        file.connection = Wingos::Space::self().connect_by_addr(fs_endpoint);
+        fmt::log$("FsFile::connect: created connection handle {}, waiting for accept...", file.connection.handle);
+        file.keep_alive = keep_alive;
+        fmt::log$("FsFile::connect: connection {} accepted", file.connection.port);
 
         return (file);
     }
@@ -181,9 +200,9 @@ public:
         message.arguments.data[3].is_asset = true;
         message.arguments.data[3].asset_handle = asset.handle;
         message.arguments.data[4].data = 0;
-        auto msg = try$(connection.call(message));
+        try$(connection.call(message));
         size_t received_len = message.arguments.data[1].data;
-        asset = Wingos::MemoryAsset::from_handle(msg.data[2].asset_handle);
+        asset = Wingos::MemoryAsset::from_handle(message.asset(2));
         return received_len;
     }
 
@@ -252,7 +271,7 @@ public:
         message.arguments.data[3].is_asset = true;
         message.arguments.data[3].asset_handle = asset.handle;
         message.arguments.data[4].data = 0;
-        auto msg = try$(connection.call(message));
+        try$(connection.call(message));
         size_t received_len = message.arguments.data[1].data;
         return received_len;
     }
@@ -288,7 +307,7 @@ public:
     {
         IpcMessage message = {};
         message.arguments.data[0].data = FS_GET_INFO;
-        auto msg = try$(connection.call(message));
+        try$(connection.call(message));
 
         FileInfo info = {};
         info.size = message.arguments.data[1].data;
@@ -296,11 +315,11 @@ public:
         info.modified_at = message.arguments.data[3].data;
         info.accessed_at = message.arguments.data[4].data;
         info.is_directory = message.arguments.data[5].data;
-        size_t name_len = msg.len;
+        size_t name_len = message.len;
         char name_buf[110] = {0};
         for (size_t i = 0; i < name_len && i < 110; i++)
         {
-            name_buf[i] = msg.raw_buffer[i];
+            name_buf[i] = message.raw_buffer[i];
         }
         info.name = fc::WStr::copy(fc::Str(name_buf, name_len));
 
@@ -312,33 +331,19 @@ public:
         IpcMessage message = {};
         message.arguments.data[0].data = FS_LIST_DIR;
         message.arguments.data[1].data = index;
-        auto sended_message = connection.send(message, true);
-        auto message_handle = sended_message.unwrap();
-        if (sended_message.is_error())
+        connection.send(message);
+
+        DirListEntry entry;
+        size_t name_len = message.len;
+        char name_buf[110] = {0};
+        for (size_t i = 0; i < name_len && i < 110; i++)
         {
-            return ("failed to send list dir entry message");
+            name_buf[i] = message.raw_buffer[i];
         }
+        entry.name = fc::WStr::copy(fc::Str(name_buf, name_len));
+        entry.is_directory = message.arguments.data[1].data != 0;
 
-        while (true)
-        {
-            auto received = connection.receive_reply(message_handle);
-            if (!received.is_error())
-            {
-                auto msg = std::move(received.unwrap());
-
-                DirListEntry entry;
-                size_t name_len = msg.len;
-                char name_buf[110] = {0};
-                for (size_t i = 0; i < name_len && i < 110; i++)
-                {
-                    name_buf[i] = msg.raw_buffer[i];
-                }
-                entry.name = fc::WStr::copy(fc::Str(name_buf, name_len));
-                entry.is_directory = message.arguments.data[1].data != 0;
-
-                return entry;
-            }
-        }
+        return entry;
     }
 
     fc::Result<DirList> list_dir()
@@ -386,17 +391,15 @@ public:
         }
         message.len = path_len;
 
-        auto received = connection.call(message);
+        connection.call(message);
 
-        auto msg = std::move(received.unwrap());
-
-        if (msg.data[0].data == 0)
+        if (message.arg(0) == 0)
         {
             return ("failed to open file");
         }
 
-        IpcServerHandle file_endpoint = message.arguments.data[1].data;
-        auto file_res = FsFile::connect(file_endpoint);
+        IpcServerHandle file_endpoint = message.arg(1);
+        auto file_res = FsFile::connect_by_handle(file_endpoint);
         return file_res;
     }
 };

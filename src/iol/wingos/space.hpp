@@ -164,6 +164,11 @@ struct Space
         return IpcClient::connect_by_addr(handle, endpoint_address);
     }
 
+    IpcClient from_already_connected(uint64_t endpoint_handle)
+    {
+        return IpcClient::already_connected(handle, endpoint_handle);
+    }
+
     IpcClient connect_by_handle(uint64_t endpoint_handle)
     {
         return IpcClient::connect_to_object(handle, endpoint_handle);

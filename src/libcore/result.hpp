@@ -197,7 +197,6 @@ struct Result<void, ErrT> : public NoCopy
 public:
     union
     {
-
         ErrT _error;
     };
 

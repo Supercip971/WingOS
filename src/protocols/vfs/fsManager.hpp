@@ -1,29 +1,51 @@
 #pragma once
 
 #include "iol/wingos/ipc.hpp"
+#include "iol/wingos/space.hpp"
 #include "libcore/result.hpp"
 #include "libcore/str.hpp"
 #include "libcore/type-utils.hpp"
 #include "protocols/init/init.hpp"
+#include "protocols/vfs/vfs.hpp"
 #include "wingos-headers/ipc.h"
 
 namespace prot
 {
-enum DiskFsManagerMessageType
-{
 
-    DISK_FS_ATTEMPT_INITIALIZE_DISK = 1, // mount a fs associated with a device, create a new endpoint for it
-    DISK_FS_UNMOUNT = 2,
-};
-
-enum DiskImplementationMessageType
+class DiskFsImplementationConnection
 {
-    DISK_CREATE_ROOT_ENDPOINT = 1,
+    Wingos::IpcClient connection;
+
+public:
+    static fc::Result<DiskFsImplementationConnection> connect(IpcServerHandle fs_endpoint)
+    {
+        DiskFsImplementationConnection conn;
+        conn.connection = Wingos::Space::self().connect_by_addr(fs_endpoint);
+        return fc::Result<DiskFsImplementationConnection>::success(std::move(conn));
+    }
+
+    static fc::Result<DiskFsImplementationConnection> use(IpcConnectionHandle conn)
+    {
+        DiskFsImplementationConnection imp;
+        imp.connection = Wingos::Space::self().from_already_connected(conn);
+        return imp;
+    }
+
+    fc::Result<IpcServerHandle> create_root_endpoint()
+    {
+        IpcMessage message = {};
+        message.arguments.data[0].data = VFS_ACCESS_ROOT;
+
+        try$(connection.call(message));
+
+        IpcServerHandle endpoint = message.asset(1);
+        return endpoint;
+    };
 };
 
 struct MountedDiskResult
 {
-    IpcServerHandle fs_endpoint;
+    prot::DiskFsImplementationConnection fs_endpoint;
     bool success;
 };
 
@@ -42,16 +64,14 @@ public:
         }
         auto v = reg.unwrap();
         auto handle = try$(v.get_server(fc::Str(fs_name), 1, 0)).endpoint;
-        conn.connection = Wingos::Space::self().connect_to_ipc_server(handle);
-        conn.connection.wait_for_accept();
+        conn.connection = Wingos::Space::self().connect_by_addr(handle);
         return fc::Result<DiskFsManagerConnection>::success(std::move(conn));
     }
 
-    static fc::Result<DiskFsManagerConnection> connect(IpcServerHandle fs_endpoint)
+    static fc::Result<DiskFsManagerConnection> connect_by_addr(IpcServerHandle fs_endpoint)
     {
         DiskFsManagerConnection conn = {};
-        conn.connection = Wingos::Space::self().connect_to_ipc_server(fs_endpoint);
-        conn.connection.wait_for_accept();
+        conn.connection = Wingos::Space::self().connect_by_addr(fs_endpoint);
         return fc::Result<DiskFsManagerConnection>::success(std::move(conn));
     }
 
@@ -60,7 +80,7 @@ public:
     fc::Result<MountedDiskResult> mount_if_device_valid(fc::Str name, IpcServerHandle endpoint, size_t begin_lba, size_t end_lba, size_t part_id)
     {
         IpcMessage message = {};
-        message.arguments.data[0].data = DISK_FS_ATTEMPT_INITIALIZE_DISK;
+        message.arguments.data[0].data = VFS_DISK_ATTEMPT_INITIALIZE;
         message.arguments.data[1].data = endpoint;
         message.arguments.data[2].data = begin_lba;
         message.arguments.data[3].data = end_lba;
@@ -85,34 +105,9 @@ public:
         try$(connection.call(message));
 
         MountedDiskResult result{};
-        result.fs_endpoint = message.arguments.data[1].data;
+        result.fs_endpoint = DiskFsImplementationConnection::use(message.asset(1)).take();
         result.success = message.arguments.data[0].data != 0;
         return result;
     };
 };
-
-class DiskFsImplementationConnection
-{
-    Wingos::IpcClient connection;
-
-public:
-    static fc::Result<DiskFsImplementationConnection> connect(IpcServerHandle fs_endpoint)
-    {
-        DiskFsImplementationConnection conn;
-        conn.connection = Wingos::Space::self().connect_by_addr(fs_endpoint);
-        return fc::Result<DiskFsImplementationConnection>::success(std::move(conn));
-    }
-
-    fc::Result<IpcServerHandle> create_root_endpoint()
-    {
-        IpcMessage message = {};
-        message.arguments.data[0].data = DISK_CREATE_ROOT_ENDPOINT;
-
-        auto msg = try$(connection.call(message));
-
-        IpcServerHandle endpoint = message.arguments.data[1].data;
-        return endpoint;
-    };
-};
-
 } // namespace prot

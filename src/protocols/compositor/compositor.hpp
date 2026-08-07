@@ -35,9 +35,9 @@ public:
         auto reg = try$(InitConnection::connect());
 
         auto handle = try$(reg.get_server(fc::Str("compositor"), 1, 0)).endpoint;
-        conn.connection = Wingos::Space::self().connect_to_ipc_server(handle, 1, 0);
+        conn.connection = Wingos::Space::self().connect_by_addr(handle);
 
-        conn.connection.wait_for_accept();
+        reg.end();
 
         return conn;
     }
@@ -54,7 +54,6 @@ public:
             fmt::err$("compositor: failed to send create window message");
         }
 
-        auto msg = std::move(sended_message.unwrap());
         IpcServerHandle window_endpoint = message.arguments.data[0].data;
 
         fmt::log$("compositor: created window with endpoint {}", window_endpoint);

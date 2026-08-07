@@ -62,12 +62,14 @@ struct IpcClient : public UAsset
 {
 
 public:
+    uint64_t port;
     uint64_t associated_space_handle; // the space the client belongs to
 
-    static IpcClient from(uint64_t space_handle, uint64_t connection)
+    static IpcClient from(uint64_t space_handle, uint64_t connection, uint64_t port)
     {
         IpcClient client = {};
         client.handle = connection;
+        client.port = port;
         client.associated_space_handle = space_handle;
         return client;
     }
@@ -82,7 +84,19 @@ public:
             return client;
         }
         client.handle = res.returned_handle_sender;
+        client.port = res.port_used;
         client.associated_space_handle = space_handle;
+        return client;
+    }
+
+    static IpcClient already_connected(uint64_t space_handle, uint64_t endpoint_handle)
+    {
+        IpcClient client = {};
+        client.handle = endpoint_handle;
+        client.associated_space_handle = space_handle;
+        auto info = sys$ipc_asset_info(space_handle, endpoint_handle);
+        client.port = info.returned_info.connection.port;
+
         return client;
     }
 
@@ -96,6 +110,7 @@ public:
             return client;
         }
         client.handle = res.returned_handle_sender;
+        client.port = res.port_used;
         client.associated_space_handle = space_handle;
         return client;
     }

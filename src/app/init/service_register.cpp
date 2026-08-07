@@ -2,15 +2,11 @@
 
 #include "app/init/module_startup.hpp"
 
-#include "iol/wingos/ipc.hpp"
 #include "libcore/ds/vec.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/result.hpp"
 #include "libcore/str.hpp"
-#include "protocols/init/init.hpp"
 #include "wingos-headers/ipc.h"
-
-fc::Vec<Wingos::IpcConnection *> connections = {};
 
 struct RegisteredService
 {

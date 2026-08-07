@@ -602,6 +602,12 @@ fc::Result<size_t> ksyscall_ipc_asset_info(kernel::Task *caller, SyscallAssetInf
         info->returned_info.mapping.executable = map->executable;
         break;
     }
+    case OBJECT_KIND_IPC_CONNECTION:
+    {
+        auto conn = asset.asset->casted<kernel::IpcEndpointConnection>();
+        info->returned_info.connection.port = conn->port;
+        break;
+    }
     default:
         fmt::warn$("Asset info for kind {} not implemented", asset.asset->kind);
         break;

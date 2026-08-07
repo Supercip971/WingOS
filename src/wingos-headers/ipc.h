@@ -1,5 +1,7 @@
 #pragma once
 
+#include "libcore/fmt/log.hpp"
+#include "libcore/unreachable.h"
 #ifdef __cplusplus
 
 #    include "libcore/type-utils.hpp"
@@ -118,13 +120,31 @@ struct IpcMessage : public fc::NoCopy
     }
 
     template <typename T = uint64_t>
+    constexpr void move_handle(unsigned int id, T val)
+    {
+        arguments.data[id].asset_handle = val;
+        arguments.data[id].is_asset = true;
+        arguments.data[id].copy_asset = false;
+    }
+
+    template <typename T = uint64_t>
     constexpr T arg(unsigned int id) const
     {
+        if (arguments.data[id].is_asset)
+        {
+            fmt::warn$("arg {} is an asset use asset() instead", id);
+            unreachable$();
+        }
         return (T)arguments.data[id].data;
     }
 
     constexpr uint64_t asset(unsigned int id)
     {
+        if (!arguments.data[id].is_asset)
+        {
+            fmt::warn$("arg {} is not an asset use arg() instead", id);
+            unreachable$();
+        }
         return arguments.data[id].asset_handle;
     }
 #else

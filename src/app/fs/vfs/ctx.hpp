@@ -2,8 +2,10 @@
 
 #include "libcore/str_writer.hpp"
 
+#include "iol/wingos/ipc.hpp"
 #include "libcore/ds/umap.hpp"
 #include "libcore/result.hpp"
+#include "protocols/disk/disk.hpp"
 #include "protocols/vfs/file.hpp"
 #include "protocols/vfs/fsManager.hpp"
 
@@ -13,25 +15,24 @@ struct RegisteredDevicePartition
     size_t end;
 
     uint64_t id;
-    IpcServerHandle endpoint;
+    prot::DiskConnection disk;
     fc::WStr part_name;
     fc::WStr part_dev_name;
     bool has_fs;
     fc::WStr fs_name;
-    IpcServerHandle fs_endpoint;
 };
 
 struct RegisteredDevice
 {
     char name[80];
-    IpcServerHandle endpoint;
+    prot::DiskConnection connection_handle;
     bool has_partitions;
     fc::Vec<RegisteredDevicePartition> partitions;
 };
 
 struct MountedDevice
 {
-    IpcServerHandle endpoint;
+    prot::DiskFsImplementationConnection endpoint;
     fc::WStr path;
 };
 
@@ -60,7 +61,7 @@ struct VfsServerCtx
 
     fc::UMap<uint64_t, prot::FsFile *> openned_file;
 
-    fc::Result<void> mount_fs(IpcServerHandle device_name, fc::WStr &&mount_path)
+    fc::Result<void> mount_fs(prot::DiskFsImplementationConnection &dev, fc::WStr &&mount_path)
     {
         for (auto &mnt : mounted_filesystems)
         {
@@ -79,7 +80,7 @@ struct VfsServerCtx
         }
 
         MountedFs mnt = {};
-        mnt.endpoint = prot::DiskFsImplementationConnection::connect(device_name).unwrap();
+        mnt.endpoint = dev;
         mnt.path = std::move(mount_path);
         mounted_filesystems.push(std::move(mnt));
 

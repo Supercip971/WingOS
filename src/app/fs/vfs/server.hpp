@@ -53,14 +53,14 @@ public:
                 for (auto &fs : ctx.registered_fs)
                 {
 
-                    fmt::log$("trying to mount partition {} of device {} with fs {} on {}", part.part_name.view(), part.part_dev_name.view(), fc::Str(fs.name), device.endpoint);
+                    fmt::log$("trying to mount partition {} of device {} with fs {} on {}", part.part_name.view(), part.part_dev_name.view(), fc::Str(fs.name));
 
-                    auto res = fs.endpoint_to_fs.mount_if_device_valid(fc::Str(device.name), device.endpoint, part.begin, part.end, part.id).unwrap();
+                    auto res = fs.endpoint_to_fs.mount_if_device_valid(fc::Str(device.name), try$(device.connection_handle.fork_client()).raw_client().handle, part.begin, part.end, part.id).unwrap();
 
                     if (res.success)
                     {
                         part.has_fs = true;
-                        part.fs_endpoint = res.fs_endpoint;
+                        part.= res.fs_endpoint;
                         part.fs_name = fc::WStr::copy(fc::Str(fs.name));
 
                         MountedDevice mdev{};

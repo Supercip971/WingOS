@@ -6,6 +6,7 @@
 #include "app/fs/vfs/ctx.hpp"
 #include "app/fs/vfs/file.hpp"
 #include "fs/gpt/gpt.hpp"
+#include "protocols/disk/disk.hpp"
 #include "protocols/vfs/vfs.hpp"
 
 class VfsServerAdministration : public prot::ManagedServerConnectionHandler
@@ -60,7 +61,7 @@ public:
             IpcMessage reply_msg{};
 
             reply_msg.arg(0, 1); // success
-            reply_msg.arg(1, root_endpoint.unwrap()->client_to_be_given->handle);
+            reply_msg.move_handle(1, root_endpoint.unwrap()->client_to_be_given->handle);
             reply(reply_msg, reply_obj);
             return {};
         }
@@ -72,10 +73,10 @@ public:
             {
                 device.name[i] = msg.raw_buffer[i];
             }
-            device.endpoint = msg.arg(1);
+            device.connection_handle = try$(prot::DiskConnection::use_asset(msg.asset(1)));
             device.has_partitions = false;
 
-            fmt::log$("(server) registered device: {} with endpoint: {}", device.name, device.endpoint);
+            fmt::log$("(server) registered device: {}", device.name);
 
             fc::Str v = fc::Str(device.name);
             auto v2_res = Wingos::parse_gpt(v);
@@ -86,7 +87,7 @@ public:
             {
                 RegisteredDevicePartition part{};
                 part.id = part_id++;
-                part.endpoint = device.endpoint;
+                part.disk = device.connection_handle;
                 fc::WStr part_name = fmt::format_str("{}-{}", device.name, part.id).take();
                 part.part_dev_name = fc::WStr::copy(part_name.view());
                 part.part_name = fc::WStr::copy(entry.name.view());

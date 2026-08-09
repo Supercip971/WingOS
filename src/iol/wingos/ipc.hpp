@@ -74,6 +74,11 @@ public:
         return client;
     }
 
+    static IpcClient from(uint64_t space_handle, uint64_t endpoint_handle)
+    {
+        return IpcClient::already_connected(space_handle, endpoint_handle);
+    }
+
     static IpcClient connect_by_addr(uint64_t space_handle, uint64_t endpoint_address)
     {
         IpcClient client = {};

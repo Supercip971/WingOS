@@ -58,7 +58,7 @@ public:
         return WStr::own(buffer, from.len());
     }
 
-    WStr copy()
+    WStr copy() const
     {
         return WStr::copy(view());
     }

@@ -3,10 +3,9 @@
     "id": "wingos-clock",
     "type": "exe",
     "description": "HPET (x86) server time implementation",
-    
+
     "props": {
-        "pkgname": "wingos-clock",
-        "exported": "disk"
+        "pkgname": "wingos-clock"
     },
     "requires": [
         "libcore",

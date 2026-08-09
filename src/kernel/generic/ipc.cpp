@@ -150,7 +150,7 @@ fc::Result<void> kernel::ipc_receive(AssetRef<Space> &space, AssetRef<AssetTask>
     return {};
 }
 
-fc::Result<void> kernel::ipc_send(AssetRef<Space> &source_space, AssetRef<AssetTask> &callee, AssetRef<IpcEndpointConnection> &connection, IpcMessage *msg, bool is_call)
+fc::Result<void> kernel::ipc_send(AssetRef<Space> &source_space, AssetRef<AssetTask> &callee, AssetRef<IpcEndpointConnection> connection, IpcMessage *msg, bool is_call)
 {
     auto &endpoint = connection->connection_to;
     msg->port = connection->port;
@@ -206,7 +206,7 @@ fc::Result<void> kernel::ipc_reply(AssetRef<Space> &space, AssetRef<IpcMessageRe
     return {};
 }
 
-fc::Result<void> kernel::ipc_send_async(AssetRef<Space> &source_space, AssetRef<IpcEndpointConnection> &connection, IpcMessage *msg)
+fc::Result<void> kernel::ipc_send_async(AssetRef<Space> &source_space, AssetRef<IpcEndpointConnection> connection, IpcMessage *msg)
 {
     auto &endpoint = connection->connection_to;
 

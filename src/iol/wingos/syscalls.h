@@ -112,7 +112,7 @@ extern "C"
 
     static inline SyscallIpcCreateEndpoint sys$ipc_create_endpoint(uint64_t space_handle, bool is_root, bool publish)
     {
-        SyscallIpcCreateEndpoint create = {space_handle, is_root, publish, 0};
+        SyscallIpcCreateEndpoint create = {space_handle, is_root, publish, 0, 0};
         SyscallInterface interface = syscall_ipc_create_endpoint_encode(&create);
         uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
         (void)result;
@@ -121,10 +121,7 @@ extern "C"
 
     static inline SyscallIpcConnect sys$ipc_connect(uint64_t space_handle, bool is_using_server_address, uint64_t id)
     {
-        SyscallIpcConnect connect = {
-            .sender_space_handle = space_handle,
-            .connect_by_address = is_using_server_address,
-        };
+        SyscallIpcConnect connect = {space_handle, is_using_server_address, 0, 0, 0};
 
         if (is_using_server_address)
         {

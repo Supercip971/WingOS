@@ -46,7 +46,7 @@ public:
 
         return $<fc::VFlex>(
 
-            $<fc::TextWidget>(std::move(res.take()),
+            $<fc::TextWidget>((res.take()),
                               fc::FontsRepo::the().find("oswald@96")),
             $<fc::Button>(
 

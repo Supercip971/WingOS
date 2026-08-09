@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 #include <string.h>
+#include <utility>
 
 #include "libcore/alloc/alloc.hpp"
 #include "libcore/ds/vec.hpp"
@@ -95,7 +96,8 @@ public:
         _capacity = capacity;
     }
 
-    void push(T &&value)
+    template <typename U>
+    void push(U &&value)
     {
         // i * 1.5
         if (len() + 1 >= _capacity)
@@ -104,20 +106,6 @@ public:
         }
 
         new (&_data[_tail]) T(std::move(value));
-
-        _tail = (_tail + 1) % _capacity;
-        _len++;
-    }
-
-    void push(T const &value)
-    {
-        // i * 1.5
-        if (len() + 1 >= _capacity)
-        {
-            resize((len() + 2) + (len() + 2) / 2);
-        }
-
-        new (&_data[_tail]) T(value);
 
         _tail = (_tail + 1) % _capacity;
         _len++;

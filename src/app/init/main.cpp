@@ -25,7 +25,7 @@ int _main(StartupInfo *info)
     fmt::log$("hello world from init!");
 
     auto server = prot::ManagedServer::create_server<InitIpcServer>(true).take();
-    fmt::log$("created server with handle: {}", server.addr());
+    fmt::log$("created server with handle: {}", server->addr());
 
     startup_module(context);
 
@@ -35,8 +35,8 @@ int _main(StartupInfo *info)
     shared.framebuffer_width = context->_framebuffer.width;
     shared.framebuffer_height = context->_framebuffer.height;
     shared.framebuffer_addr = (uintptr_t)context->_framebuffer.address - 0xffff800000000000;
-    server.mcx_shared(shared);
-    server.loop();
+    server->mcx_shared(shared);
+    server->loop();
 
     return 1;
 }

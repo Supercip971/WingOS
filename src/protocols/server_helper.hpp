@@ -1,6 +1,7 @@
 #pragma once
 
 #include "iol/wingos/ipc.hpp"
+#include "iol/wingos/space.hpp"
 #include "libcore/ds/umap.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/optional.hpp"
@@ -72,7 +73,7 @@ public:
     fc::Result<void> ack(auto reply_obj)
     {
         IpcMessage empty_msg = {};
-        reply(empty_msg, reply_obj);
+        return reply(empty_msg, reply_obj);
     }
 
     virtual ~ManagedServerConnectionHandler() = default;
@@ -105,14 +106,27 @@ public:
         endpoint.remove();
     }
 
-    template <typename ServerImpl>
-    static fc::Result<ServerImpl> create_registered_server(fc::Str name, uint64_t major = 1, uint64_t minor = 0)
+    template <typename T>
+    fc::Result<Wingos::IpcClient>
+    create_connection(T *connection)
     {
-        ServerImpl server = {};
+        auto handle = Wingos::Space::self().connect_by_handle(endpoint.handle);
+        connections.insert(handle.port, connection);
+        connection->set_port(handle.port);
+        connection->set_endpoint(&endpoint);
+        connection->init();
+        return fc::Result<Wingos::IpcClient>::success(handle);
+    }
+
+    template <typename ServerImpl>
+    static fc::Result<ServerImpl *> create_registered_server(fc::Str name, uint64_t major = 1, uint64_t minor = 0)
+    {
+        ServerImpl *server = new ServerImpl();
 
         auto init_conn = InitConnection::connect();
         if (init_conn.is_error())
         {
+            delete server;
             return "failed to connect to init";
         }
         auto v = init_conn.unwrap();
@@ -128,23 +142,24 @@ public:
 
         if (res.is_error())
         {
+            delete server;
             return "failed to register server with init";
         }
 
-        server.endpoint = ipc_server;
+        server->endpoint = ipc_server;
 
         v.raw_client().disconnect();
-        return (server);
+        return fc::Result<ServerImpl *>::success(server);
     }
 
     template <typename ServerImpl = ManagedServer>
-    static fc::Result<ServerImpl> create_server(bool is_root = false)
+    static fc::Result<ServerImpl *> create_server(bool is_root = false)
     {
-        ServerImpl server = {};
+        ServerImpl *server = new ServerImpl();
         auto ipc_server = Wingos::Space::self().create_ipc_server(is_root);
-        server.endpoint = ipc_server;
+        server->endpoint = ipc_server;
 
-        return (server);
+        return fc::Result<ServerImpl *>::success(server);
     }
 
     const auto &raw_server() const { return endpoint; }

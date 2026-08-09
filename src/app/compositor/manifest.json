@@ -3,14 +3,13 @@
     "id": "sys-compositor",
     "type": "exe",
     "description": "WingOS compositor",
-    
+
     "props": {
-        "pkgname": "compositor",
-        "exported": "disk"
+        "pkgname": "compositor"
     },
     "requires": [
         "libcore"
-        
+
     ],
     "enableIf": {
         "sys": [

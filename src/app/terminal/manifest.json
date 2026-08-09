@@ -3,11 +3,9 @@
     "id": "terminal",
     "type": "exe",
     "description": "Terminal App",
-    
+
     "props": {
-        "pkgname": "terminal",
-        "exported": "disk"
-    },
+        "pkgname": "terminal"},
     "requires": [
         "libcore"
     ],

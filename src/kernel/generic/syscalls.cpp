@@ -459,7 +459,7 @@ fc::Result<size_t> ksyscall_send(kernel::Task *caller, SyscallIpcSend *send)
 
     if (send->async)
     {
-        try$(kernel::ipc_send_async(space_ref, return_task, connection, send->message));
+        try$(kernel::ipc_send_async(space_ref, connection, send->message));
     }
     else
     {

@@ -4,6 +4,7 @@
 #include "protocols/server_helper.hpp"
 
 #include "app/fs/vfs/administration.hpp"
+#include "protocols/disk/disk.hpp"
 #include "protocols/vfs/fsManager.hpp"
 #include "protocols/vfs/vfs.hpp"
 #include "wingos-headers/ipc.h"
@@ -60,7 +61,6 @@ public:
                     if (res.success)
                     {
                         part.has_fs = true;
-                        part.= res.fs_endpoint;
                         part.fs_name = fc::WStr::copy(fc::Str(fs.name));
 
                         MountedDevice mdev{};

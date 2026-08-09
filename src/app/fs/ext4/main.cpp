@@ -31,11 +31,11 @@ int main(int, char **)
 
     prot::VfsConnection vfs = prot::VfsConnection::connect().take();
 
-    vfs.register_fs(fc::Str("ext4"), serv.addr()).unwrap();
+    vfs.register_fs(fc::Str("ext4"), serv->addr()).unwrap();
     fmt::log$("ext4: registered fs manager with vfs");
     fmt::log$("ext4: entering main loop");
     while (true)
     {
-        serv.loop();
+        serv->loop();
     }
 }

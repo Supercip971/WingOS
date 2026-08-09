@@ -245,8 +245,13 @@ public:
             ret.move_handle(1, client.handle);
 
             reply(ret, reply_obj);
+            break;
         }
-            // else forward to filesystem
+        default:
+        {
+            fmt::warn$("ext4: unknown partition message received: {}", msg.arg(0));
+            break;
+        }
         }
         return {};
     }

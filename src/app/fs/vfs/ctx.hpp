@@ -15,7 +15,6 @@ struct RegisteredDevicePartition
     size_t end;
 
     uint64_t id;
-    prot::DiskConnection disk;
     fc::WStr part_name;
     fc::WStr part_dev_name;
     bool has_fs;

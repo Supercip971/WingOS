@@ -35,7 +35,7 @@ public:
         return true;
     }
 
-    virtual bool call_received(IpcMessage &msg, fc::Optional<Wingos::IpcReplyObject> reply_obj)
+    virtual fc::Result<void> call_received(IpcMessage &msg, fc::Optional<Wingos::IpcReplyObject> reply_obj) final
     {
         switch (msg.arg(0))
         {

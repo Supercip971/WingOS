@@ -18,5 +18,5 @@ int main(int, char **)
     }
 
     auto server = server_r.take();
-    server.loop();
+    server->loop();
 }

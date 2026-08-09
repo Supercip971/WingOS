@@ -87,7 +87,6 @@ public:
             {
                 RegisteredDevicePartition part{};
                 part.id = part_id++;
-                part.disk = device.connection_handle;
                 fc::WStr part_name = fmt::format_str("{}-{}", device.name, part.id).take();
                 part.part_dev_name = fc::WStr::copy(part_name.view());
                 part.part_name = fc::WStr::copy(entry.name.view());
@@ -105,6 +104,11 @@ public:
             ctx.dirty_mount = true;
 
             ack(reply_obj);
+            break;
+        }
+        default:
+        {
+            fmt::warn$("vfs: unknown admin message received: {}", msg.arg(0));
             break;
         }
         }

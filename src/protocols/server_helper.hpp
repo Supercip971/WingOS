@@ -131,7 +131,7 @@ public:
         }
         auto v = init_conn.unwrap();
 
-        auto ipc_server = Wingos::Space::self().create_ipc_server();
+        auto ipc_server = Wingos::Space::self().create_public_ipc_server();
         InitRegisterServer reg = {};
         name.copy_to((char *)reg.name, 80);
         reg.major = major;
@@ -156,7 +156,7 @@ public:
     static fc::Result<ServerImpl *> create_server(bool is_root = false)
     {
         ServerImpl *server = new ServerImpl();
-        auto ipc_server = Wingos::Space::self().create_ipc_server(is_root);
+        auto ipc_server = Wingos::Space::self().create_public_ipc_server(is_root);
         server->endpoint = ipc_server;
 
         return fc::Result<ServerImpl *>::success(server);

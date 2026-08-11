@@ -40,30 +40,4 @@ struct BlockMutex
     }
 };
 
-struct BlockEvent
-{
-    bool resolved;
-    uintptr_t id = 0;
-
-    BlockMutex _mutex;
-
-    BlockMutex &mutex()
-    {
-        return _mutex;
-    }
-
-    bool liberated()
-    {
-        bool v = _mutex.mutex_value();
-
-        if (_mutex.acquire_uid != id)
-        {
-            return true;
-        }
-        return v;
-    }
-};
-
-BlockEvent create_block();
-
 } // namespace kernel

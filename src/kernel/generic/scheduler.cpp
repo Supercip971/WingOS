@@ -65,7 +65,7 @@ static inline void add_entity_to_queue(Task *task)
         return;
     }
 
-    if (task->sched().block_event.mutex().mutex_value())
+    if (task->sched().mutex.mutex_value())
     {
         blocked_tasks.push(task);
         return;
@@ -331,9 +331,9 @@ fc::Result<size_t> resolve_blocked_tasks_scheduler()
 
         auto &task = blocked_tasks[i];
 
-        if (task->sched().block_event.liberated())
+        if (!task->sched().mutex.mutex_value())
         {
-            task->sched().block_event = {};
+            task->sched().mutex = {};
 
             add_entity_to_queue(task);
             unblocked_count++;
@@ -928,7 +928,7 @@ bool try_disable_scheduler()
 void reenable_scheduler()
 {
     arch::amd64::interrupt_release();
-    scheduler_lock.read_release();
+    scheduler_lock.write_release();
 }
 
 fc::Result<void> block_current_task()
@@ -962,7 +962,7 @@ fc::Result<void> block_current_task()
 
     while (!srwlock_try_write_acquire$(scheduler_lock))
     {
-        if (cur->sched().block_event.liberated())
+        if (!cur->sched().mutex.mutex_value())
         {
             arch::amd64::interrupt_release();
             return {};
@@ -1001,6 +1001,18 @@ kernel::Task *Cpu::currentTask() const
     return _current_task;
 }
 
+void kernel::SchedulerControlBlock::block()
+{
+    this->mutex.mutex_acquire();
+    blocked_task_dirty = true;
+}
+
+void kernel::SchedulerControlBlock::unblock()
+{
+    this->mutex.mutex_release();
+    blocked_task_dirty = true;
+}
+
 void scheduler_dump_all()
 {
 
@@ -1026,7 +1038,7 @@ void scheduler_dump_all()
                   (int)task->state(),
                   task->sched().weight(),
                   task->sched().cpu_affinity,
-                  (int)task->sched().block_event.mutex().mutex_value());
+                  (int)task->sched().mutex.mutex_value());
     }
 
     for (size_t i = 0; i < running_cpu_count; i++)

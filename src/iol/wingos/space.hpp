@@ -154,9 +154,14 @@ struct Space
         return copy;
     }
 
-    RawIpcEndpoint create_ipc_server(bool is_root = false)
+    RawIpcEndpoint create_public_ipc_server(bool is_root = false)
     {
-        return RawIpcEndpoint::create(handle, is_root);
+        return RawIpcEndpoint::create(handle, true, is_root);
+    }
+
+    RawIpcEndpoint create_private_ipc_server()
+    {
+        return RawIpcEndpoint::create(handle, false);
     }
 
     IpcClient connect_by_addr(uint64_t endpoint_address)

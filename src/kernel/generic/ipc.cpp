@@ -1,16 +1,31 @@
 #include "ipc.hpp"
+#include <cstdint>
 
+#include "hw/mem/addr_space.hpp"
 #include "kernel/generic/ipc_registry.hpp"
 #include <arch/x86_64/barrier.hpp>
 
+#include "kernel/generic/paging.hpp"
 #include "kernel/generic/scheduler.hpp"
 #include "kernel/generic/space.hpp"
+#include "libcore/fmt/flags.hpp"
 #include "libcore/type-utils.hpp"
 #include "wingos-headers/ipc.h"
 
 kernel::IpcEndpoint *kernel::create_ipc_endpoint()
 {
     return new kernel::IpcEndpoint();
+}
+
+void dump_message(IpcMessage const &msg)
+{
+    fmt::log$(" msg.port = {}", msg.port);
+    fmt::log$(" msg.len = {}", msg.len);
+    fmt::log$(" msg.is_onull = {}", msg.is_null);
+    for (size_t i = 0; i < IpcMessageArguments::DataCount; i++)
+    {
+        fmt::log$(" msg.arguments[{}] = {}", i, msg.arguments.data[i].data);
+    }
 }
 
 template <bool disableCheck = false>
@@ -80,10 +95,10 @@ fc::Result<void> kernel::ipc_receive_async(AssetRef<Space> &space, AssetRef<IpcE
     }
     else
     {
-        sync_entry.callee->sched().block_event.mutex().mutex_release();
+        sync_entry.callee->sched().unblock();
     }
 
-    *target = std::move(*sync_entry.msg);
+    *target = std::move(*sync_entry.kernel_mem_msg);
 
     endpoint.unlock();
 
@@ -101,7 +116,7 @@ fc::Result<void> kernel::ipc_receive(AssetRef<Space> &space, AssetRef<AssetTask>
     while (!endpoint->has_message())
     {
         callee.lock();
-        callee->sched().block_event = create_block();
+        callee->sched().block();
 
         resolve_blocked_tasks();
 
@@ -122,8 +137,16 @@ fc::Result<void> kernel::ipc_receive(AssetRef<Space> &space, AssetRef<AssetTask>
         {
             endpoint->last_async_msg_tick = endpoint->async_queue.head().added_tick;
         }
+        fmt::log$("received async message: {}", (uintptr_t)target | fmt::FMT_HEX);
         endpoint.unlock();
         return {};
+    }
+
+    if (endpoint->sync_queue.len() == 0)
+    {
+        fmt::err$("ipc_receive: sync_queue is empty");
+        endpoint.unlock();
+        return " empty queue return from ipc_receive";
     }
 
     auto sync_entry = endpoint.asset->sync_queue.pop();
@@ -133,6 +156,11 @@ fc::Result<void> kernel::ipc_receive(AssetRef<Space> &space, AssetRef<AssetTask>
         endpoint->last_sync_msg_tick = endpoint->sync_queue.head().added_tick;
     }
 
+    fmt::log$("received message: {}", (uintptr_t)sync_entry.kernel_mem_msg | fmt::FMT_HEX);
+    dump_message(*sync_entry.kernel_mem_msg);
+
+    *target = std::move(*sync_entry.kernel_mem_msg);
+
     if (sync_entry.is_call)
     {
         auto ret_task = try$(space->create_ipc_return_task({sync_entry.callee}));
@@ -140,10 +168,12 @@ fc::Result<void> kernel::ipc_receive(AssetRef<Space> &space, AssetRef<AssetTask>
     }
     else
     {
-        sync_entry.callee->sched().block_event.mutex().mutex_release();
-    }
+        fmt::log$("releasing mutex for async message: {}", (uintptr_t)sync_entry.kernel_mem_msg | fmt::FMT_HEX);
+        sync_entry.callee->sched().unblock();
 
-    *target = std::move(*sync_entry.msg);
+        *ret_task_handle = 0;
+        resolve_blocked_tasks();
+    }
 
     endpoint.unlock();
 
@@ -159,27 +189,44 @@ fc::Result<void> kernel::ipc_send(AssetRef<Space> &source_space, AssetRef<AssetT
     if (update_inplace_message(&msg->arguments, target_space, source_space).is_error())
     {
         msg->arguments = {}; // clear argument to avoid sending converted space handle
+        fmt::err$("failed to update inplace message");
         return "failed to update inplace message";
     }
 
     endpoint.lock();
+
+    auto phys = callee->space()->vmm_space.get_phys((uintptr_t)msg);
+    if (phys.is_error())
+    {
+        fmt::err$("failed to get phys addr of message");
+        return "failed to get phys addr of message";
+    }
+
+    // now use kernel mem:
+    auto kernel_mem_msg = toVirt(phys.take()).as<IpcMessage>();
+
+    fmt::log$("sent message: (is call?: {}) ", is_call);
+    fmt::log$("sent message: {}", (uintptr_t)kernel_mem_msg | fmt::FMT_HEX);
+    dump_message(*kernel_mem_msg);
     IpcSyncMsgEntry sync_entry = {
-        .msg = msg,
+        .kernel_mem_msg = kernel_mem_msg,
         .callee = callee,
         .is_call = is_call,
         .added_tick = endpoint->tick,
     };
+
     endpoint->sync_queue.push(sync_entry);
     endpoint->update_msg_ticks();
+    fmt::log$("sync queue: head={} tail={} len={}", endpoint->sync_queue.head().added_tick, endpoint->sync_queue.back().added_tick, endpoint->sync_queue.len());
     endpoint->tick++;
 
     try_disable_scheduler();
+
+    callee->sched().block();
     if (endpoint->awaiting_server.asset)
     {
-        endpoint->awaiting_server->sched().block_event.mutex().mutex_release();
+        endpoint->awaiting_server->sched().unblock();
     }
-
-    callee->sched().block_event.mutex().mutex_acquire();
     endpoint.unlock(); // can actually schedule here ! and will read the message before blocking current task
 
     resolve_blocked_tasks();
@@ -187,6 +234,7 @@ fc::Result<void> kernel::ipc_send(AssetRef<Space> &source_space, AssetRef<AssetT
     reenable_scheduler();
     block_current_task();
 
+    fmt::log$("exited from hell");
     // If we are here, the call responded / was acquired
     return {};
 }
@@ -199,7 +247,7 @@ fc::Result<void> kernel::ipc_reply(AssetRef<Space> &space, AssetRef<IpcMessageRe
         return "failed to update inplace message";
     }
 
-    return_task->target->sched().block_event.mutex().mutex_release();
+    return_task->target->sched().unblock();
     space->asset_release(return_task);
     resolve_blocked_tasks();
 
@@ -219,6 +267,7 @@ fc::Result<void> kernel::ipc_send_async(AssetRef<Space> &source_space, AssetRef<
     }
 
     endpoint.lock();
+    fmt::log$("sending async message: {}", (uintptr_t)msg | fmt::FMT_HEX);
     IpcAsyncMsgEntry sync_entry = {
         .target_msg = IpcMessage::copy(*msg),
         .added_tick = endpoint->tick,
@@ -230,7 +279,7 @@ fc::Result<void> kernel::ipc_send_async(AssetRef<Space> &source_space, AssetRef<
     try_disable_scheduler();
     if (endpoint->awaiting_server.asset)
     {
-        endpoint->awaiting_server->sched().block_event.mutex().mutex_release();
+        endpoint->awaiting_server->sched().unblock();
     }
 
     endpoint.unlock(); // can actually schedule here ! and will read the message before blocking current task

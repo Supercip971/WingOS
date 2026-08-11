@@ -100,6 +100,7 @@ fc::Result<AssetRef<kernel::IpcEndpoint>> query_server(IpcServerHandle handle)
     }
     ipc_server_lock.release();
 
+    fmt::warn$("query_server: server not found: {}", handle);
     return ("server not found");
 }
 

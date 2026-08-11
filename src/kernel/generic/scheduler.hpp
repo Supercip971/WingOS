@@ -24,7 +24,10 @@ struct SchedulerControlBlock
     CoreId cpu_affinity = CpuCoreNone;
     CoreId old_cpu_affinity = CpuCoreNone;
     size_t total_cycles = 0;
-    BlockEvent block_event = {};
+    BlockMutex mutex = {};
+
+    void block();
+    void unblock();
 
     // note that running and sleeping are not counted in terms of ticks but rather are weighted
     long running = 0;

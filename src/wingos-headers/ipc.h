@@ -99,7 +99,7 @@ struct IpcMessage : public fc::NoCopy
 
     constexpr static IpcMessage copy(const IpcMessage &other)
     {
-        IpcMessage msg;
+        IpcMessage msg = {};
 
         msg.arguments = other.arguments;
         msg.port = other.port;

@@ -35,6 +35,8 @@ public:
         return true;
     }
 
+    void mcx_shared(MachineContextShared *val) { shared = val; }
+
     virtual fc::Result<void> call_received(IpcMessage &msg, fc::Optional<Wingos::IpcReplyObject> reply_obj) final
     {
         switch (msg.arg(0))
@@ -127,7 +129,9 @@ public:
     virtual fc::Result<prot::ManagedServerConnectionHandler *> on_connect(IpcMessage &initiator) final
     {
         (void)initiator;
-        return {new InitIpcConnection{}};
+        auto my_conn = new InitIpcConnection{};
+        my_conn->mcx_shared(&shared_ctx);
+        return {my_conn};
     }
 
     virtual ~InitIpcServer() = default;

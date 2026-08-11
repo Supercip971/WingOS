@@ -24,7 +24,7 @@ struct IpcMessageReturnTask : public Asset
 
 struct IpcSyncMsgEntry
 {
-    IpcMessage *msg;
+    IpcMessage *kernel_mem_msg;
     AssetRef<AssetTask> callee;
     bool is_call;
     long added_tick;
@@ -39,17 +39,17 @@ struct IpcAsyncMsgEntry
 struct IpcEndpoint : public Asset
 {
     static constexpr size_t IDENT = AssetKind::OBJECT_KIND_IPC_ENDPOINT;
-    long tick;
-    fc::Ring<IpcAsyncMsgEntry> async_queue; // only sent, no result
-    long last_async_msg_tick;
-    fc::Ring<IpcSyncMsgEntry> sync_queue; // sync sent + sync call
-    long last_sync_msg_tick;
+    long tick = 1;
+    fc::Ring<IpcAsyncMsgEntry> async_queue{}; // only sent, no result
+    long last_async_msg_tick = LONG_MAX;
+    fc::Ring<IpcSyncMsgEntry> sync_queue{}; // sync sent + sync call
+    long last_sync_msg_tick = LONG_MAX;
 
-    AssetRef<Space, true> target_message_space;
-    AssetRef<AssetTask> awaiting_server;
+    AssetRef<Space, true> target_message_space = {};
+    AssetRef<AssetTask> awaiting_server = {};
 
-    long uuid;
-    long last_port;
+    long uuid = 0;
+    long last_port = 16;
 
     IpcEndpoint() : Asset(AssetKind::OBJECT_KIND_IPC_ENDPOINT)
     {

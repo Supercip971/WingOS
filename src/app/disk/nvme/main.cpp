@@ -15,7 +15,6 @@ int main(int, char **)
     device_uid = 0;
 
     fc::Vec<NvmeController> disks = {};
-    fc::Vec<ControllerEndpoint> endpoints = {};
     for (auto &dev : pci_controller.devices)
     {
         if (dev.class_code() == 0x01 && dev.subclass() == 0x08) // storage controller, NVMe

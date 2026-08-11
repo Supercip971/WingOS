@@ -501,7 +501,7 @@ fc::Result<size_t> ksyscall_receive(kernel::Task *caller, SyscallIpcReceive *rec
     {
         try$(kernel::ipc_receive(space_ref, return_task, endpoint, receive->returned_message, &receive->return_context_handle));
     }
-    return {};
+    return 0ul;
 }
 
 fc::Result<size_t> ksyscall_ipc_call(kernel::Task *caller, SyscallIpcCall *call)

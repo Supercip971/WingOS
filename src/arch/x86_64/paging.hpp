@@ -229,6 +229,34 @@ public:
         }
     }
 
+    fc::Result<PhysAddr> physical_addr(VirtAddr addr)
+    {
+        auto &page = page_from_addr(addr);
+        if (!page.present())
+        {
+            return "Page not present";
+        }
+
+        if (!page.user())
+        {
+            return "Page not user accessible";
+        }
+
+        if (!page.writeable())
+        {
+            return "Page is not writable";
+        }
+
+        if constexpr (level <= 1)
+        {
+            return PhysAddr(page.address()) + (addr._addr % PAGE_SIZE);
+        }
+        else
+        {
+            return table_from_addr(addr)->physical_addr(addr);
+        }
+    }
+
     fc::Result<void> verify(VirtAddr vaddr, size_t size)
     {
         auto begin = math::alignDown(vaddr._addr, (size_t)PAGE_SIZE);

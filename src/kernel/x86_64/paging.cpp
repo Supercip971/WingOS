@@ -131,3 +131,9 @@ fc::Result<void> VmmSpace::verify(VirtAddr virt, size_t size)
 
     return root->verify(virt, size);
 }
+
+fc::Result<PhysAddr> VmmSpace::get_phys(VirtAddr virt)
+{
+    auto root = as_root(*this);
+    return root->physical_addr(virt);
+}

@@ -266,7 +266,6 @@ public:
     {
         switch (initiator.arg(0))
         {
-
         case prot::VFS_DISK_ATTEMPT_INITIALIZE:
             return new Ext4Partition();
             // case prot::VFS_ACCESS_PWD:

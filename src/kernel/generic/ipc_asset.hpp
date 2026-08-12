@@ -18,6 +18,7 @@ struct IpcMessageReturnTask : public Asset
 {
     static constexpr size_t IDENT = AssetKind::OBJECT_KIND_IPC_RETURN_TASK;
     AssetRef<AssetTask> target;
+    IpcMessage *floating_msg;
 
     IpcMessageReturnTask(AssetRef<AssetTask> const &target_value) : Asset(AssetKind::OBJECT_KIND_IPC_RETURN_TASK), target(target_value) {}
 };

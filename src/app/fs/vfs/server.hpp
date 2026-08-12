@@ -28,6 +28,7 @@ public:
             break;
 
         default:
+            fmt::log$("invalid open access for vfs: {}", initiator.arg(0));
             return "invalid open access for vfs";
         }
         return "invalid open access for vfs";

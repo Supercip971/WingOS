@@ -151,6 +151,7 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
         fmt::log$("gs[0x0]: {}", gs0 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
         fmt::log$("gs[0x8]: {}", gs8 | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
 
+        fmt::log$("task id: {}", Cpu::current()->currentTask()->uid());
         // kernel::dump_current_running_task(frame->interrupt_number != 2);
 
         inside_error = false;

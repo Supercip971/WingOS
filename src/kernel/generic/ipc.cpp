@@ -19,13 +19,14 @@ kernel::IpcEndpoint *kernel::create_ipc_endpoint()
 
 void dump_message(IpcMessage const &msg)
 {
-    fmt::log$(" msg.port = {}", msg.port);
-    fmt::log$(" msg.len = {}", msg.len);
-    fmt::log$(" msg.is_onull = {}", msg.is_null);
-    for (size_t i = 0; i < IpcMessageArguments::DataCount; i++)
-    {
-        fmt::log$(" msg.arguments[{}] = {}", i, msg.arguments.data[i].data);
-    }
+    (void)msg;
+    // fmt::log$(" msg.port = {}", msg.port);
+    // fmt::log$(" msg.len = {}", msg.len);
+    // fmt::log$(" msg.is_onull = {}", msg.is_null);
+    // for (size_t i = 0; i < IpcMessageArguments::DataCount; i++)
+    // {
+    //     fmt::log$(" msg.arguments[{}] = {}", i, msg.arguments.data[i].data);
+    // }
 }
 
 template <bool disableCheck = false>
@@ -91,6 +92,7 @@ fc::Result<void> kernel::ipc_receive_async(AssetRef<Space> &space, AssetRef<IpcE
     if (sync_entry.is_call)
     {
         auto ret_task = try$(space->create_ipc_return_task({sync_entry.callee}));
+        ret_task->floating_msg = sync_entry.kernel_mem_msg;
         *ret_task_handle = ret_task.handle;
     }
     else
@@ -156,8 +158,8 @@ fc::Result<void> kernel::ipc_receive(AssetRef<Space> &space, AssetRef<AssetTask>
         endpoint->last_sync_msg_tick = endpoint->sync_queue.head().added_tick;
     }
 
-    fmt::log$("received message: {}", (uintptr_t)sync_entry.kernel_mem_msg | fmt::FMT_HEX);
-    dump_message(*sync_entry.kernel_mem_msg);
+    //    fmt::log$("received message: {} (is call?: {})", (uintptr_t)sync_entry.kernel_mem_msg | fmt::FMT_HEX, sync_entry.is_call);
+    //    dump_message(*sync_entry.kernel_mem_msg);
 
     *target = std::move(*sync_entry.kernel_mem_msg);
 
@@ -165,6 +167,7 @@ fc::Result<void> kernel::ipc_receive(AssetRef<Space> &space, AssetRef<AssetTask>
     {
         auto ret_task = try$(space->create_ipc_return_task({sync_entry.callee}));
         *ret_task_handle = ret_task.handle;
+        ret_task->floating_msg = sync_entry.kernel_mem_msg; // use a moved trashed state don't care
     }
     else
     {
@@ -234,7 +237,7 @@ fc::Result<void> kernel::ipc_send(AssetRef<Space> &source_space, AssetRef<AssetT
     reenable_scheduler();
     block_current_task();
 
-    fmt::log$("exited from hell");
+    fmt::log$("exited from hell: {}", (int)callee->sched().mutex.mutex_value());
     // If we are here, the call responded / was acquired
     return {};
 }
@@ -247,6 +250,7 @@ fc::Result<void> kernel::ipc_reply(AssetRef<Space> &space, AssetRef<IpcMessageRe
         return "failed to update inplace message";
     }
 
+    *return_task->floating_msg = std::move(*target);
     return_task->target->sched().unblock();
     space->asset_release(return_task);
     resolve_blocked_tasks();

@@ -43,13 +43,15 @@ public:
         {
         case prot::INIT_REGISTER_SERVER:
         {
-            fmt::log$("registered server: {}");
+            fmt::log$("registered server: {}", msg.arg(1), fc::Str((char *)msg.raw_buffer, msg.len - 1));
             service_register(
                 msg.arg(1),
                 fc::Str((char *)msg.raw_buffer, msg.len - 1),
                 msg.arg(2),
                 msg.arg(3))
                 .assert();
+
+            ack(reply_obj);
             break;
         }
         case prot::INIT_UNREGISTER_SERVER:
@@ -90,6 +92,8 @@ public:
         {
             fmt::log$("(server) received signal fs available");
             service_startup_callback("@fs");
+
+            ack(reply_obj);
             break;
         }
 

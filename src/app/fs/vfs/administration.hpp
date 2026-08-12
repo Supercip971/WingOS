@@ -26,6 +26,12 @@ public:
     {
         switch (msg.arg(0))
         {
+
+        case prot::VFS_ACCESS_ADMINISTRATION:
+        {
+            ack(reply_obj);
+            return {};
+        }
         case prot::VFS_REGISTER_FS:
         {
 

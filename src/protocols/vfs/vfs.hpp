@@ -118,6 +118,9 @@ public:
     {
         VfsConnection vfs_conn;
         vfs_conn.connection = Wingos::Space::self().connect_by_addr(handle);
+        IpcMessage message = {};
+        message.arguments.data[0].data = VFS_ACCESS_ADMINISTRATION;
+        vfs_conn.connection.send(message);
         return vfs_conn;
     }
 
@@ -133,6 +136,10 @@ public:
         auto handle = try$(v.get_server(fc::Str("vfs"), 1, 0)).endpoint;
 
         vfs_conn.connection = Wingos::Space::self().connect_by_addr(handle);
+        IpcMessage message = {};
+        message.arguments.data[0].data = VFS_ACCESS_ADMINISTRATION;
+        vfs_conn.connection.send(message);
+
         return vfs_conn;
     }
 
@@ -167,7 +174,7 @@ public:
         {
             return ("failed to obtain root access");
         }
-        IpcServerHandle file_endpoint = message.arguments.data[1].data;
+        IpcServerHandle file_endpoint = message.asset(1);
         auto file_res = FsFile::connect_by_handle(file_endpoint);
 
         return file_res;

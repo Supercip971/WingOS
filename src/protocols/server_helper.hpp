@@ -200,7 +200,11 @@ public:
 
         if (msg.arguments.data[0].data == PROT_SIGNAL_DISCONNECT)
         {
-            connections[msg.port]->signal_disconnect(msg);
+            fmt::log$("disconnect signal received from port {}", msg.port);
+            if (connections[msg.port])
+            {
+                connections[msg.port]->signal_disconnect(msg);
+            }
             connections.remove(msg.port);
         }
         else

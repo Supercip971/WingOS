@@ -171,7 +171,7 @@ public:
     static fc::Result<DiskConnection> use_asset(uint64_t conn_handle)
     {
         DiskConnection conn;
-        conn.connection = Wingos::Space::self().connect_by_handle(conn_handle);
+        conn.connection = Wingos::Space::self().from_already_connected(conn_handle);
 
         fmt::log$("Connected to disk server at address: {} ({})", conn_handle, conn.connection.associated_space_handle);
         return conn;

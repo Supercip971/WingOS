@@ -160,9 +160,7 @@ public:
     {
         FsFile file = {};
         file.connection = Wingos::Space::self().from_already_connected(connection_handle);
-        fmt::log$("FsFile::connect: created connection handle {}, waiting for accept...", file.connection.handle);
         file.keep_alive = keep_alive;
-        fmt::log$("FsFile::connect: connection {} accepted", file.connection.port);
 
         return (file);
     }
@@ -172,9 +170,7 @@ public:
         fmt::log$("FsFile::connect: connecting to server endpoint {}", fs_endpoint);
         FsFile file = {};
         file.connection = Wingos::Space::self().connect_by_handle(fs_endpoint);
-        fmt::log$("FsFile::connect: created connection handle {}, waiting for accept...", file.connection.handle);
         file.keep_alive = keep_alive;
-        fmt::log$("FsFile::connect: connection {} accepted", file.connection.port);
 
         return (file);
     }
@@ -184,9 +180,7 @@ public:
         fmt::log$("FsFile::connect: connecting to server endpoint {}", fs_endpoint);
         FsFile file = {};
         file.connection = Wingos::Space::self().connect_by_addr(fs_endpoint);
-        fmt::log$("FsFile::connect: created connection handle {}, waiting for accept...", file.connection.handle);
         file.keep_alive = keep_alive;
-        fmt::log$("FsFile::connect: connection {} accepted", file.connection.port);
 
         return (file);
     }
@@ -398,8 +392,8 @@ public:
             return ("failed to open file");
         }
 
-        IpcServerHandle file_endpoint = message.arg(1);
-        auto file_res = FsFile::connect_by_handle(file_endpoint);
+        IpcServerHandle file_endpoint = message.asset(1);
+        auto file_res = FsFile::use_connection(file_endpoint);
         return file_res;
     }
 };

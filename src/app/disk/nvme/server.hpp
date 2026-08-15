@@ -6,11 +6,28 @@
 #include "app/disk/nvme/controller.hpp"
 #include "iol/wingos/ipc.hpp"
 #include "protocols/disk/disk.hpp"
+#include "wingos-headers/ipc.h"
+
+class NvmeServer : public prot::ManagedServer
+{
+
+public:
+    virtual fc::Result<prot::ManagedServerConnectionHandler *> on_connect(IpcMessage &initiator) final
+    {
+        (void)initiator;
+        return "can't create connection by itself, connections must be made by forking or mounting";
+    };
+
+    virtual ~NvmeServer()
+    {
+    }
+};
 
 class NvmeDiskConnection : public prot::ManagedServerConnectionHandler
 {
 
 public:
+    NvmeServer *parent;
     NvmeController *controller;
     uint32_t uid;
     fc::WStr name;
@@ -88,6 +105,21 @@ public:
             break;
         }
 
+        case prot::DISK_FORK_CONNECTION:
+        {
+
+            auto disk_conn =
+                new NvmeDiskConnection(controller, uid, name.copy(), device_id);
+            disk_conn->parent = parent;
+            auto conn = parent->create_connection<NvmeDiskConnection>(disk_conn)
+                            .take();
+
+            IpcMessage reply = {};
+            reply.move_handle(0, conn.handle);
+            ret(reply).assert();
+            break;
+        }
+
         default:
             fmt::warn$("Unknown IPC command received: {}", msg.arg(0) | fmt::FMT_HEX);
             break;
@@ -96,19 +128,4 @@ public:
     }
 
     virtual ~NvmeDiskConnection() = default;
-};
-
-class NvmeServer : public prot::ManagedServer
-{
-
-public:
-    virtual fc::Result<prot::ManagedServerConnectionHandler *> on_connect(IpcMessage &initiator) final
-    {
-        (void)initiator;
-        return "can't create connection by itself, connections must be made by forking or mounting";
-    };
-
-    virtual ~NvmeServer()
-    {
-    }
 };

@@ -1,6 +1,5 @@
 #pragma once
 
-#define NNFAST
 #ifdef NNFAST
 #    define unreachable$()           \
         do                           \

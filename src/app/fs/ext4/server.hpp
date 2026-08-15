@@ -30,14 +30,14 @@ class Ext4InodeEndpoint : public prot::ManagedServerConnectionHandler
 public:
     Ext4OpennedFileCtx *self;
     Ext4Ctx *fs;
-    Ext4InodeEndpoint(Ext4OpennedFileCtx *ctx, Ext4Ctx *_fs) : self(ctx), fs(_fs) {};
+    prot::ManagedServer *parent;
+    Ext4InodeEndpoint(Ext4OpennedFileCtx *ctx, Ext4Ctx *_fs, prot::ManagedServer *_parent) : self(ctx), fs(_fs), parent(_parent) {};
 
     virtual bool init() { return true; }
 
     virtual void signal_disconnect(IpcMessage &msg)
     {
         (void)msg;
-        fs->connections.remove(this->_port);
         delete self;
     }
 
@@ -92,15 +92,22 @@ public:
                 fmt::log$("ext4: opened file {} with inode {}", path.view(), file_inode.inode_id);
                 // create new endpoint for this file
                 reply.arg(0, 1);
-                Wingos::IpcClient client = Wingos::IpcClient::connect_to_object(0, fs->core_endpoint_handle);
 
-                Ext4OpennedFileCtx op = {};
-                op.used_fs = this->self->used_fs;
-                op.inode = file_inode;
-                op.port = client.port;
+                Ext4InodeEndpoint *child = new Ext4InodeEndpoint(self, fs, parent);
 
-                reply.move_handle(1, client.handle);
+                Ext4OpennedFileCtx *op = new Ext4OpennedFileCtx();
+                op->used_fs = this->self->used_fs;
+                op->inode = file_inode;
+                op->port = child->get_port();
+                child->self = op;
+
+                child->fs = fs;
+
+                auto forked = try$(parent->create_connection<Ext4InodeEndpoint>(child));
+
+                reply.move_handle(1, forked.handle);
                 fmt::log$("ext4: provided file endpoint {} for file {}", reply.asset(1), path.view());
+                ret(reply);
                 return {};
             }
 
@@ -153,6 +160,8 @@ public:
     virtual ~Ext4InodeEndpoint() {};
 };
 
+class Ext4CoreServer;
+
 class Ext4Partition : public prot::ManagedServerConnectionHandler
 
 {
@@ -160,8 +169,10 @@ public:
     fc::Optional<Wingos::IpcClient> client_to_be_given;
     Ext4Filesystem *fs_init_result;
     Ext4Ctx *ctx;
+    prot::ManagedServer *parent;
 
     Ext4Partition() {};
+    Ext4Partition(prot::ManagedServer *_parent) : parent(_parent) {};
 
     virtual bool init() { return true; }
 
@@ -218,10 +229,16 @@ public:
 
             auto dfs_res = dfs.unwrap();
 
-            this->fs_init_result = new Ext4Filesystem(dfs.unwrap());
+            Ext4Partition *child = new Ext4Partition();
+            child->fs_init_result = new Ext4Filesystem(dfs_res);
+            child->ctx = ctx;
+            child->parent = parent;
+
+            auto forked = try$(parent->create_connection<Ext4Partition>(child));
 
             IpcMessage reply_msg = {};
             reply_msg.arg(0, 1); // success
+            reply_msg.move_handle(1, forked.handle);
 
             // reply.data[1].data = ext4_file_roots[ext4_file_roots.len() - 1]->root_server.addr();
             (void)end_lba;
@@ -235,14 +252,15 @@ public:
             IpcMessage ret;
 
             ret.arg(0, 1);
-            Wingos::IpcClient client = Wingos::IpcClient::connect_to_object(0, ctx->core_endpoint_handle);
 
             Ext4OpennedFileCtx op = {};
             op.used_fs = this->fs_init_result;
             op.inode = this->fs_init_result->read_inode(2).take();
-            op.port = client.port;
 
-            ret.move_handle(1, client.handle);
+            Ext4InodeEndpoint *ep = new Ext4InodeEndpoint(new Ext4OpennedFileCtx(op), this->ctx, this->parent);
+            auto forked = try$(parent->create_connection<Ext4InodeEndpoint>(ep));
+
+            ret.move_handle(1, forked.handle);
 
             reply(ret, reply_obj);
             break;
@@ -267,7 +285,7 @@ public:
         switch (initiator.arg(0))
         {
         case prot::VFS_DISK_ATTEMPT_INITIALIZE:
-            return new Ext4Partition();
+            return new Ext4Partition(this);
             // case prot::VFS_ACCESS_PWD:
             // unimplemented
             break;

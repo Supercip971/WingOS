@@ -97,7 +97,8 @@ public:
     {
         IpcMessage message = {};
         message.arguments.data[0].data = VFS_REGISTER_DISK;
-        message.arguments.data[1].data = endpoint;
+        message.arguments.data[1].asset_handle = endpoint;
+        message.arguments.data[1].is_asset = true;
 
         if (name.len() > 80)
         {
@@ -175,7 +176,7 @@ public:
             return ("failed to obtain root access");
         }
         IpcServerHandle file_endpoint = message.asset(1);
-        auto file_res = FsFile::connect_by_handle(file_endpoint);
+        auto file_res = FsFile::use_connection(file_endpoint);
 
         return file_res;
     }

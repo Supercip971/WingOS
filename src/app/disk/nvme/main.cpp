@@ -62,6 +62,7 @@ int main(int, char **)
 
             auto disk_conn =
                 new NvmeDiskConnection(&disk, dev.sys_id, fmt_str_res.copy(), dev.sys_id);
+            disk_conn->parent = nvme;
             auto conn = nvme->create_connection<NvmeDiskConnection>(disk_conn)
                             .take();
 
@@ -72,4 +73,9 @@ int main(int, char **)
     }
 
     fmt::log$("Entering main NVMe IPC loop");
+
+    while (true)
+    {
+        nvme->loop();
+    }
 }

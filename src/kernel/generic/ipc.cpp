@@ -131,8 +131,14 @@ fc::Result<void> kernel::ipc_receive(AssetRef<Space> &space, AssetRef<AssetTask>
 
     endpoint->awaiting_server.release_ref();
 
-    if (endpoint->last_async_msg_tick < endpoint->last_sync_msg_tick && endpoint->async_queue.len() != 0)
+    if ((endpoint->last_async_msg_tick < endpoint->last_sync_msg_tick && endpoint->async_queue.len() != 0) || endpoint->sync_queue.len() == 0)
     {
+        if (endpoint->async_queue.len() == 0)
+        {
+            fmt::err$("ipc_receive: async_queue is empty && sync_queue is empty");
+            endpoint.unlock();
+            return "async_queue is empty";
+        }
         auto async_entry = (endpoint->async_queue.pop());
         *target = std::move(async_entry.target_msg);
         if (endpoint->async_queue.len() != 0)
@@ -144,7 +150,7 @@ fc::Result<void> kernel::ipc_receive(AssetRef<Space> &space, AssetRef<AssetTask>
         return {};
     }
 
-    if (endpoint->sync_queue.len() == 0)
+    if (endpoint->sync_queue.len() == 0 && endpoint->async_queue.len() == 0)
     {
         fmt::err$("ipc_receive: sync_queue is empty");
         endpoint.unlock();
@@ -208,8 +214,8 @@ fc::Result<void> kernel::ipc_send(AssetRef<Space> &source_space, AssetRef<AssetT
     // now use kernel mem:
     auto kernel_mem_msg = toVirt(phys.take()).as<IpcMessage>();
 
-    fmt::log$("sent message: (is call?: {}) ", is_call);
-    fmt::log$("sent message: {}", (uintptr_t)kernel_mem_msg | fmt::FMT_HEX);
+    //  fmt::log$("sent message: (is call?: {}) ", is_call);
+    //  fmt::log$("sent message: {}", (uintptr_t)kernel_mem_msg | fmt::FMT_HEX);
     dump_message(*kernel_mem_msg);
     IpcSyncMsgEntry sync_entry = {
         .kernel_mem_msg = kernel_mem_msg,
@@ -220,7 +226,7 @@ fc::Result<void> kernel::ipc_send(AssetRef<Space> &source_space, AssetRef<AssetT
 
     endpoint->sync_queue.push(sync_entry);
     endpoint->update_msg_ticks();
-    fmt::log$("sync queue: head={} tail={} len={}", endpoint->sync_queue.head().added_tick, endpoint->sync_queue.back().added_tick, endpoint->sync_queue.len());
+    //   fmt::log$("sync queue: head={} tail={} len={}", endpoint->sync_queue.head().added_tick, endpoint->sync_queue.back().added_tick, endpoint->sync_queue.len());
     endpoint->tick++;
 
     try_disable_scheduler();
@@ -237,7 +243,7 @@ fc::Result<void> kernel::ipc_send(AssetRef<Space> &source_space, AssetRef<AssetT
     reenable_scheduler();
     block_current_task();
 
-    fmt::log$("exited from hell: {}", (int)callee->sched().mutex.mutex_value());
+    // fmt::log$("exited from hell: {}", (int)callee->sched().mutex.mutex_value());
     // If we are here, the call responded / was acquired
     return {};
 }

@@ -81,7 +81,8 @@ public:
     {
         IpcMessage message = {};
         message.arguments.data[0].data = VFS_DISK_ATTEMPT_INITIALIZE;
-        message.arguments.data[1].data = endpoint;
+        message.arguments.data[1].asset_handle = endpoint;
+        message.arguments.data[1].is_asset = true;
         message.arguments.data[2].data = begin_lba;
         message.arguments.data[3].data = end_lba;
         message.arguments.data[4].data = part_id; // part id
@@ -105,8 +106,11 @@ public:
         try$(connection.call(message));
 
         MountedDiskResult result{};
-        result.fs_endpoint = DiskFsImplementationConnection::use(message.asset(1)).take();
         result.success = message.arguments.data[0].data != 0;
+        if (result.success)
+        {
+            result.fs_endpoint = DiskFsImplementationConnection::use(message.asset(1)).take();
+        }
         return result;
     };
 };

@@ -53,8 +53,10 @@ public:
         case prot::VFS_ACCESS_ROOT:
         {
 
+            fmt::log$("access root");
             if (ctx.mounted_devices_count == 0)
             {
+                fmt::err$("no mounted devices to access root");
                 return "no mounted devices";
             }
 
@@ -67,7 +69,7 @@ public:
             IpcMessage reply_msg{};
 
             reply_msg.arg(0, 1); // success
-            reply_msg.move_handle(1, root_endpoint.unwrap()->client_to_be_given->handle);
+            reply_msg.move_handle(1, root_endpoint.unwrap().handle);
             reply(reply_msg, reply_obj);
             return {};
         }
@@ -84,8 +86,7 @@ public:
 
             fmt::log$("(server) registered device: {}", device.name);
 
-            fc::Str v = fc::Str(device.name);
-            auto v2_res = Wingos::parse_gpt(v);
+            auto v2_res = Wingos::parse_gpt(device.connection_handle);
             auto v2 = v2_res.take();
 
             size_t part_id = 0;

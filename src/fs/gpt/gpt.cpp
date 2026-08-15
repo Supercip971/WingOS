@@ -10,11 +10,9 @@
 #include "math/align.hpp"
 #include "wingos-headers/asset.h"
 
-fc::Result<Wingos::GPTDiskParseResult> Wingos::parse_gpt(fc::Str &device)
+fc::Result<Wingos::GPTDiskParseResult> Wingos::parse_gpt(prot::DiskConnection &connection)
 {
     Wingos::GPTDiskParseResult result = {};
-
-    auto connection = try$(prot::DiskConnection::connect(device));
 
     Wingos::MemoryAsset header_asset = (Wingos::Space::self().allocate_physical_memory(4096));
 

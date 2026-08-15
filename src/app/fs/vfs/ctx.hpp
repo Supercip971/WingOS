@@ -1,6 +1,7 @@
 #pragma once
 
 #include "libcore/str_writer.hpp"
+#include "protocols/server_helper.hpp"
 
 #include "iol/wingos/ipc.hpp"
 #include "libcore/ds/umap.hpp"
@@ -50,6 +51,7 @@ struct MountedFs
 struct VfsServerCtx
 {
 
+    prot::ManagedServer *root_vfs;
     fc::Vec<RegisteredDevice> registered_services{};
     fc::Vec<RegisteredFs> registered_fs{};
 
@@ -57,8 +59,6 @@ struct VfsServerCtx
     size_t mounted_devices_count = 0;
     uint64_t server_handle = 0;
     bool dirty_mount = false;
-
-    fc::UMap<uint64_t, prot::FsFile *> openned_file;
 
     fc::Result<void> mount_fs(prot::DiskFsImplementationConnection &dev, fc::WStr &&mount_path)
     {

@@ -15,6 +15,11 @@ class VfsServer : public prot::ManagedServer
     VfsServerCtx ctx;
 
 public:
+    VfsServer()
+    {
+        ctx.root_vfs = this;
+    }
+
     virtual fc::Result<prot::ManagedServerConnectionHandler *> on_connect(IpcMessage &initiator) final
     {
         switch (initiator.arg(0))

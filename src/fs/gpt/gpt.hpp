@@ -6,6 +6,8 @@
 
 #include <libcore/str_writer.hpp>
 
+#include "protocols/disk/disk.hpp"
+
 namespace Wingos
 {
 
@@ -49,6 +51,6 @@ struct GPTDiskParseResult
     fc::Vec<GPTDiskParseEntry> entries;
 };
 
-fc::Result<GPTDiskParseResult> parse_gpt(fc::Str &device);
+fc::Result<GPTDiskParseResult> parse_gpt(prot::DiskConnection &connection);
 
 }; // namespace Wingos

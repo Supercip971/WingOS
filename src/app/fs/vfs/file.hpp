@@ -18,13 +18,12 @@ class VfsConnectionFile : public prot::ManagedServerConnectionHandler
 
 public:
     prot::FsFile *connection_to_fs = {};
-    fc::Optional<Wingos::IpcClient> client_to_be_given;
 
     VfsConnectionFile(VfsServerCtx &_ctx) : ctx(_ctx) {}
 
     virtual bool init() { return true; }
 
-    static fc::Result<VfsConnectionFile *> open_root(VfsServerCtx &ctx);
+    static fc::Result<Wingos::IpcClient> open_root(VfsServerCtx &ctx);
 
     virtual void signal_disconnect(IpcMessage &msg)
     {
@@ -51,12 +50,14 @@ public:
 
             auto raw_file = new prot::FsFile(try$(connection_to_fs->open_file(filename.view())));
             // connect to ourselves
-            auto file = Wingos::Space::self().connect_by_handle(ctx.server_handle);
 
-            ctx.openned_file.insert(file.port, raw_file);
+            VfsConnectionFile *forked = new VfsConnectionFile(ctx);
+            forked->connection_to_fs = raw_file;
+
+            auto client = try$(ctx.root_vfs->create_connection<VfsConnectionFile>(forked));
 
             reply_msg.arg(0, 1);
-            reply_msg.move_handle(1, file.handle);
+            reply_msg.move_handle(1, client.handle);
 
             fmt::log$("VfsFileEndpoint: open file {}", filename.view());
 

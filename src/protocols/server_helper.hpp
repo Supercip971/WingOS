@@ -94,6 +94,10 @@ protected:
 public:
     auto addr() const { return endpoint.published_addr; }
 
+    auto &connected_clients() { return connections; }
+
+    auto const &connected_clients() const { return connections; }
+
     virtual fc::Result<ManagedServerConnectionHandler *> on_connect(IpcMessage &initiator)
     {
         (void)initiator;
@@ -178,9 +182,64 @@ public:
 
     virtual fc::Result<void> after_receive()
     {
-
         return {};
     }
+
+    fc::Result<void> do_receive_async()
+    {
+        IpcMessage msg;
+        auto res = try$(endpoint.receive(&msg, false));
+        if (msg.is_null)
+        {
+            return {};
+        }
+
+        if (!connections.has(msg.port))
+        {
+            auto connection = try$(on_connect(msg));
+            connection->set_port(msg.port);
+            connection->set_endpoint(&endpoint);
+            connection->init();
+            connections.insert(msg.port, connection);
+        }
+
+        fc::Result<void> err;
+
+        if (msg.arguments.data[0].data == PROT_SIGNAL_DISCONNECT)
+        {
+            fmt::log$("disconnect signal received from port {}", msg.port);
+            if (connections[msg.port])
+            {
+                connections[msg.port]->signal_disconnect(msg);
+            }
+            connections.remove(msg.port);
+        }
+        else
+        {
+
+            if (res.handle == 0)
+            {
+                connections[msg.port]->current_reply_obj = fc::novalue;
+                err = connections[msg.port]->call_received(msg, fc::novalue);
+            }
+            else
+            {
+                connections[msg.port]->current_reply_obj = res;
+                err = connections[msg.port]->call_received(msg, res);
+            }
+        }
+
+        if (err.is_error())
+        {
+            fmt::err$("IPC error: {}, disconnecting : {}", err.error(), msg.port);
+            connections.remove(msg.port);
+
+            return err;
+        }
+
+        try$(after_receive());
+        return {};
+    };
 
     fc::Result<void> do_receive()
     {

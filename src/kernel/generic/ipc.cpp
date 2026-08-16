@@ -62,14 +62,14 @@ static fc::Result<void> update_inplace_message(IpcMessageArguments *message, Ass
 fc::Result<void> kernel::ipc_receive_async(AssetRef<Space> &space, AssetRef<IpcEndpoint> &endpoint, IpcMessage *target, uint64_t *ret_task_handle)
 {
     *ret_task_handle = 0;
-    endpoint.lock();
 
     if (!endpoint->has_message())
     {
-        endpoint.unlock();
+        target->is_null = true;
         return {};
     }
 
+    endpoint.lock();
     if (endpoint->last_async_msg_tick < endpoint->last_sync_msg_tick && endpoint->async_queue.len() != 0)
     {
         auto async_entry = (endpoint->async_queue.pop());
@@ -81,7 +81,12 @@ fc::Result<void> kernel::ipc_receive_async(AssetRef<Space> &space, AssetRef<IpcE
         endpoint.unlock();
         return {};
     }
-
+    if (endpoint->sync_queue.len() == 0 && endpoint->async_queue.len() == 0)
+    {
+        fmt::err$("ipc_receive: sync_queue is empty");
+        endpoint.unlock();
+        return " empty queue return from ipc_receive";
+    }
     auto sync_entry = endpoint.asset->sync_queue.pop();
 
     if (endpoint->sync_queue.len() != 0)
@@ -89,6 +94,7 @@ fc::Result<void> kernel::ipc_receive_async(AssetRef<Space> &space, AssetRef<IpcE
         endpoint->last_sync_msg_tick = endpoint->sync_queue.head().added_tick;
     }
 
+    *target = std::move(*sync_entry.kernel_mem_msg);
     if (sync_entry.is_call)
     {
         auto ret_task = try$(space->create_ipc_return_task({sync_entry.callee}));
@@ -98,9 +104,10 @@ fc::Result<void> kernel::ipc_receive_async(AssetRef<Space> &space, AssetRef<IpcE
     else
     {
         sync_entry.callee->sched().unblock();
-    }
 
-    *target = std::move(*sync_entry.kernel_mem_msg);
+        *ret_task_handle = 0;
+        resolve_blocked_tasks();
+    }
 
     endpoint.unlock();
 
@@ -145,7 +152,6 @@ fc::Result<void> kernel::ipc_receive(AssetRef<Space> &space, AssetRef<AssetTask>
         {
             endpoint->last_async_msg_tick = endpoint->async_queue.head().added_tick;
         }
-        fmt::log$("received async message: {}", (uintptr_t)target | fmt::FMT_HEX);
         endpoint.unlock();
         return {};
     }
@@ -177,7 +183,6 @@ fc::Result<void> kernel::ipc_receive(AssetRef<Space> &space, AssetRef<AssetTask>
     }
     else
     {
-        fmt::log$("releasing mutex for async message: {}", (uintptr_t)sync_entry.kernel_mem_msg | fmt::FMT_HEX);
         sync_entry.callee->sched().unblock();
 
         *ret_task_handle = 0;
@@ -277,7 +282,6 @@ fc::Result<void> kernel::ipc_send_async(AssetRef<Space> &source_space, AssetRef<
     }
 
     endpoint.lock();
-    fmt::log$("sending async message: {}", (uintptr_t)msg | fmt::FMT_HEX);
     IpcAsyncMsgEntry sync_entry = {
         .target_msg = IpcMessage::copy(*msg),
         .added_tick = endpoint->tick,

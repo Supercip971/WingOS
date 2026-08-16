@@ -1,6 +1,8 @@
 
+
 #include "libcore/fmt/log.hpp"
 #include "libcore/result.hpp"
+#include "protocols/clock/clock.hpp"
 #include "protocols/vfs/vfs.hpp"
 
 int main(int, char **)
@@ -24,6 +26,16 @@ int main(int, char **)
     fmt::log$("read {} bytes from /boot/config/init-services.json:", res);
 
     fmt::log$("{}", fc::Str((const char *)data_ptr.ptr(), res));
+
+    auto clock = prot::ClockConnection::connect().unwrap();
+    int i = 0;
+    while (true)
+    {
+        fmt::log$("OUGA {}", i);
+
+        clock.sleep_ms(1000);
+        i++;
+    }
 
     /*
 

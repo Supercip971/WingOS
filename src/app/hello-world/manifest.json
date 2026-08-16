@@ -3,7 +3,7 @@
     "id": "hello-wingos",
     "type": "exe",
     "description": "WingOS App",
-    
+
     "props": {
         "pkgname": "hello-world",
         "exported": "disk"

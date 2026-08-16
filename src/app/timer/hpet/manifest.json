@@ -5,6 +5,7 @@
     "description": "HPET (x86) server time implementation",
 
     "props": {
+      "exported": "disk",
         "pkgname": "wingos-clock"
     },
     "requires": [

@@ -2,6 +2,7 @@
 #include <libcore/bound.hpp>
 #include <libcore/type-utils.hpp>
 #include <stdint.h>
+#include <utility>
 
 #include "libcore/type/trait.hpp"
 
@@ -129,8 +130,6 @@ public:
     constexpr Optional(const Type &value) : _value(value), _contain_value(true) {}
 
     constexpr Optional(Type &&value) : _value(std::move(value)), _contain_value(true) {}
-
-    explicit constexpr Optional([[maybe_unused]] NoneValue v) : _contain_value(false) {};
 
     constexpr Optional(const Optional &other) : _contain_value(other._contain_value)
     {

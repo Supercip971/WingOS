@@ -3,7 +3,7 @@
 #include "iol/wingos/ipc.hpp"
 #include "iol/wingos/space.hpp"
 #include "libcore/result.hpp"
-#include "protocols/compositor/compositor.hpp"
+#include "protocols/init/init.hpp"
 #include "wingos-headers/asset.h"
 #include "wingos-headers/ipc.h"
 
@@ -11,6 +11,7 @@ namespace prot
 {
 enum WindowMessageType
 {
+    COMPOSITOR_CREATE_WINDOW,
     WINDOW_GET_ATTRIBUTE_SIZE,
     WINDOW_GET_FRAMEBUFFER,
     WINDOW_SWAP_BUFFERS,
@@ -25,7 +26,6 @@ struct WindowGetAttributeSize
 class WindowConnection
 {
     bool has_swap;
-    MessageHandle last_swap_handle;
     Wingos::IpcClient connection;
 
     Wingos::MemoryAsset mem_asset = {};
@@ -34,16 +34,43 @@ class WindowConnection
 public:
     Wingos::IpcClient &raw_client() { return connection; }
 
-    static fc::Result<WindowConnection> create(bool take_fb = false)
+    static fc::Result<WindowConnection> connect()
     {
         WindowConnection conn{};
-        auto comp = try$(CompositorConnection::connect());
 
-        auto window_endpoint = comp.create_window(take_fb);
-        conn.connection = Wingos::Space::self().connect_to_ipc_server(window_endpoint);
-        conn.connection.wait_for_accept();
+        auto reg = try$(InitConnection::connect());
+
+        auto handle = try$(reg.get_server(fc::Str("compositor"), 1, 0)).endpoint;
+        conn.connection = Wingos::Space::self().connect_by_addr(handle);
+
+        reg.end();
 
         return conn;
+    }
+
+    IpcServerHandle create_window(bool take_fb = false)
+    {
+        IpcMessage message = {};
+        message.arguments.data[0].data = COMPOSITOR_CREATE_WINDOW;
+        message.arguments.data[1].data = take_fb ? 1 : 0;
+
+        auto sended_message = connection.call(message);
+        if (sended_message.is_error())
+        {
+            fmt::err$("compositor: failed to send create window message");
+        }
+
+        fmt::log$("compositor: created window with endpoint {}", connection.handle);
+        return connection.handle;
+    }
+
+    static fc::Result<WindowConnection> create(bool take_fb = false)
+    {
+        auto comp = try$(WindowConnection::connect());
+
+        comp.create_window(take_fb);
+
+        return comp;
     }
 
     fc::Result<WindowGetAttributeSize> get_attribute_size()
@@ -54,7 +81,6 @@ public:
         auto res = connection.call(message);
         if (!res.is_error())
         {
-            auto msg = res.take();
             WindowGetAttributeSize resp{};
             resp.width = message.arguments.data[0].data;
             resp.height = message.arguments.data[1].data;
@@ -71,8 +97,7 @@ public:
         auto res = connection.call(message);
         if (!res.is_error())
         {
-            auto msg = res.take();
-            mem_asset.handle = message.arguments.data[0].data;
+            mem_asset.handle = message.asset(0);
 
             mem_asset = Wingos::MemoryAsset::from_handle(mem_asset.handle);
             virt_asset = Wingos::Space::self().map_memory(mem_asset, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
@@ -85,22 +110,11 @@ public:
     fc::Result<void> swap_buffers()
     {
 
-        if (has_swap)
-        {
-            // wait for last swap to complete
-            auto res = connection.receive_reply(last_swap_handle, true);
-            if (res.is_error())
-            {
-                return {};
-            }
-            has_swap = false;
-        }
         IpcMessage message = {};
         message.arguments.data[0].data = WINDOW_SWAP_BUFFERS;
 
-        auto sended_message = connection.send(message, true);
+        auto sended_message = connection.send(message);
 
-        last_swap_handle = sended_message.unwrap();
         has_swap = true;
         return {};
     }

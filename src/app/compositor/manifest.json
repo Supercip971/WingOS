@@ -5,7 +5,8 @@
     "description": "WingOS compositor",
 
     "props": {
-        "pkgname": "compositor"
+        "pkgname": "compositor",
+        "exported": "disk"
     },
     "requires": [
         "libcore"

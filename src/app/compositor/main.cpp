@@ -2,6 +2,7 @@
 
 #include "protocols/server_helper.hpp"
 
+#include "app/compositor/server.hpp"
 #include "iol/wingos/asset.hpp"
 #include "iol/wingos/ipc.hpp"
 #include "iol/wingos/space.hpp"
@@ -9,7 +10,6 @@
 #include "libcore/ds/vec.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/type-utils.hpp"
-#include "protocols/compositor/compositor.hpp"
 #include "protocols/compositor/window.hpp"
 #include "protocols/init/init.hpp"
 #include "wingos-headers/asset.h"
@@ -22,103 +22,15 @@ struct FramebufferInfo
     size_t framebuffer_height;
 };
 
-int cdepth = 0;
-
 int mdepth = 0; // manager depth
 
-struct Window
-{
-    prot::ManagedServer server;
-
-    size_t width;
-    size_t height;
-    bool is_framebuffer_taken;
-
-    Wingos::MemoryAsset framebuffer_asset;
-    int depth;
-
-    Wingos::VirtualMemoryAsset framebuffer_mapped;
-};
-
-fc::Vec<Window> windows = {};
-
 void *framebuffer_mapped = nullptr;
-
-bool update_window(Window &window)
-{
-
-    if (window.server.connection_count() == 0)
-    {
-
-        window.server.accept_connection();
-        return false;
-    }
-
-    fc::Vec<Wingos::MessageServerReceived> msgs = {};
-
-    auto received = window.server.try_receive();
-
-    if (received.is_error())
-    {
-        return false;
-    }
-
-    auto msg = received.take();
-
-    if (msg.received.flags & IPC_MESSAGE_FLAG_DISCONNECT)
-    {
-        fmt::log$("compositor: disconnecting window");
-        window.server.disconnect(msg.connection);
-        return true;
-    }
-
-    switch (msg.received.data[0].data)
-    {
-    case prot::WINDOW_GET_ATTRIBUTE_SIZE:
-    {
-        prot::WindowGetAttributeSize resp{};
-        resp.width = window.width;
-        resp.height = window.height;
-
-        IpcMessage reply = {};
-        reply.data[0].data = resp.width;
-        reply.data[1].data = resp.height;
-
-        window.server.reply(std::move(msg), reply).unwrap();
-        break;
-    }
-    case prot::WINDOW_GET_FRAMEBUFFER:
-    {
-        IpcMessage reply = {};
-        auto fb_asset = window.framebuffer_asset;
-        reply.data[0].data = fb_asset.handle;
-        reply.data[0].is_asset = true;
-        reply.data[0].copy_asset = true;
-        window.server.reply(std::move(msg), reply).unwrap();
-        break;
-    }
-    case prot::WINDOW_SWAP_BUFFERS:
-    {
-        IpcMessage reply = {}; // ack message
-        memcpy((void *)framebuffer_mapped, (void *)window.framebuffer_mapped.ptr(), window.width * window.height * 4);
-        window.server.reply(std::move(msg), reply).unwrap();
-        break;
-    }
-    default:
-    {
-        fmt::warn$("compositor: unknown window message type received: {}", msg.received.data[0].data);
-        break;
-    }
-    }
-
-    return false;
-}
 
 int main(int, char **)
 {
     fc::Alive alive{"compositor"};
 
-    auto serv_g = prot::ManagedServer::create_registered_server("compositor", 1, 0);
+    auto serv_g = prot::ManagedServer::create_registered_server<CompositorServer>("compositor", 1, 0);
 
     auto init_info = prot::InitConnection::connect().unwrap();
 
@@ -136,86 +48,13 @@ int main(int, char **)
     {
         ((uint8_t *)framebuffer_mapped)[i] = 0xff; // white
     }
+
+    serv->fb = fb;
+    serv->mapped_fb = framebuffer_mapped;
     while (true)
     {
         // alive.tick();
-        size_t idx = 0;
-        for (auto &window : windows)
-        {
-            if (update_window(window))
-            {
-                // window closed
-                windows.pop(idx);
-                break;
-            }
-            idx++;
-        }
-
-        serv.accept_connection();
-
-        auto received = serv.try_receive();
-        if (received.is_error())
-        {
-            continue;
-        }
-        auto msg = std::move(received.unwrap());
-
-        if (msg.received.flags & IPC_MESSAGE_FLAG_DISCONNECT)
-        {
-            fmt::log$("compositor: disconnecting from client");
-            serv.disconnect(msg.connection);
-            continue;
-        }
-
-        switch (msg.received.data[0].data)
-        {
-
-        case prot::COMPOSITOR_CREATE_WINDOW:
-        {
-            bool take_fb = msg.received.data[1].data != 0;
-            prot::CompositorCreateWindow resp{};
-            auto window_conn_r = prot::ManagedServer::create_server();
-            if (window_conn_r.is_error())
-            {
-                fmt::err$("compositor: failed to create window server: {}", window_conn_r.error());
-                resp.window_endpoint = 0;
-            }
-            else
-            {
-                auto window_conn = std::move(window_conn_r.unwrap());
-                resp.window_endpoint = window_conn.addr();
-
-                auto window_mem = Wingos::Space::self().allocate_physical_memory(fb.framebuffer_width * fb.framebuffer_height * 4);
-                auto window_map = Wingos::Space::self().map_memory(window_mem, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
-
-                mdepth = cdepth + 1;
-                windows.push(Window{
-                    .server = std::move(window_conn),
-                    .width = fb.framebuffer_width,
-                    .height = fb.framebuffer_height,
-                    .is_framebuffer_taken = take_fb,
-                    .framebuffer_asset = window_mem,
-                    .depth = cdepth++,
-                    .framebuffer_mapped = window_map,
-                });
-
-                fmt::log$("compositor: created window with endpoint {}, take_fb={}", resp.window_endpoint, take_fb);
-            }
-
-            IpcMessage reply = {};
-            reply.data[0].data = resp.window_endpoint;
-            serv.reply(std::move(msg), reply).unwrap();
-
-            break;
-        }
-
-        default:
-        {
-            fmt::warn$("compositor: unknown message type received: {}", msg.received.data[0].data);
-
-            break;
-        }
-        }
+        serv->loop();
     }
     return 0;
 }

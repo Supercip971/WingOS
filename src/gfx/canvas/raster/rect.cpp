@@ -485,10 +485,11 @@ void wgfx::RasterCanvas::blurArea(GRect area, float factor)
     for (long y = 0; y < area.height(); y++)
     {
         for (long x = 0; x < area.width(); x++)
-
         {
             auto c = buffer[(x + (long)area.start.x) + (y + (long)area.start.y) * width];
-            _backdrop_workspace1[x + y * area.width()] = c;
+
+            if (x + y * area.width() < _backdrop_workspace1.len())
+                _backdrop_workspace1[x + y * area.width()] = c;
         }
     }
 
@@ -500,7 +501,8 @@ void wgfx::RasterCanvas::blurArea(GRect area, float factor)
     {
         for (long x = 0; x < area.width(); x++)
         {
-            buffer[(x + (long)area.start.x) + (y + (long)area.start.y) * width] = _backdrop_workspace1[x + y * area.width()];
+            if (x + y * area.width() < _backdrop_workspace1.len())
+                buffer[(x + (long)area.start.x) + (y + (long)area.start.y) * width] = _backdrop_workspace1[x + y * area.width()];
         }
     }
 }

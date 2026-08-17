@@ -5,5 +5,6 @@
   "description": "WingOS gui demo",
   "requires": ["libcore", "libc", "iol", "json", "gfx-backend", "fly-catcher"],
   "props": {
-    "pkgname": "gui-demo"}
+    "pkgname": "gui-demo",
+  "exported": "disk"}
 }

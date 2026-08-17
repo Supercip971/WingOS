@@ -30,6 +30,7 @@ struct _IO_FILE
     union
     {
         prot::FsFile *file;
+
         prot::SenderPipe *output;
         prot::ReceiverPipe *input;
         fc::Writer *writer;

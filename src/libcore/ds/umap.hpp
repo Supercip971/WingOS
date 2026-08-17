@@ -206,6 +206,10 @@ public:
             return;
         }
         auto h = contained_hash(key);
+        if (_buckets.len() <= h)
+        {
+            return;
+        }
         for (size_t i = 0; i < _buckets[h].len(); i++)
         {
             if (_buckets[h][i].key == key)

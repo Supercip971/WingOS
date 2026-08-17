@@ -1,5 +1,6 @@
 
 
+#include <cstdint>
 #include <libcore/fmt/log.hpp>
 #include <stdio.h>
 #include <string.h>
@@ -7,13 +8,13 @@
 #include "libc/stdio_fs.hpp"
 #include "libcore/str_writer.hpp"
 
-#include "iol/wingos/ipc.hpp"
+#include "iol/wingos/asset.hpp"
+#include "iol/wingos/space.hpp"
 #include "iol/wingos/syscalls.h"
 #include "libcore/fmt/flags.hpp"
 #include "libcore/io/reader.hpp"
 #include "libcore/io/writer.hpp"
 #include "libcore/result.hpp"
-#include "libcore/type-utils.hpp"
 #include "protocols/pipe/pipe.hpp"
 #include "protocols/vfs/file.hpp"
 #include "protocols/vfs/vfs.hpp"
@@ -78,7 +79,7 @@ public:
 
                 if (use_stdout)
                 {
-                    _stdout_pipe.send(_buffer, _index);
+                    _stdout_pipe.send((uint8_t *)_buffer, _index);
                 }
                 else
                 {
@@ -229,11 +230,11 @@ extern "C" __attribute__((weak)) void _entry_point(StartupInfo *context)
 
     if (context->stdout_handle != 0)
     {
-        _stdout_pipe = (prot::SenderPipe::from(
-                            Wingos::IpcClient::from(
-                                Wingos::Space::self().handle,
-                                context->stdout_handle)))
+        _stdout_pipe = (prot::SenderPipe::from_mem(
+                            Wingos::Space::self(),
+                            Wingos::MemoryAsset::from_handle(context->stdout_handle)))
                            .unwrap();
+
         use_stdout = true;
         set_stdout_pipe(&_stdout_pipe);
     }
@@ -245,10 +246,9 @@ extern "C" __attribute__((weak)) void _entry_point(StartupInfo *context)
     }
     if (context->stderr_handle != 0)
     {
-        _stderr_pipe = (prot::SenderPipe::from(
-                            Wingos::IpcClient::from(
-                                Wingos::Space::self().handle,
-                                context->stderr_handle)))
+        _stderr_pipe = (prot::SenderPipe::from_mem(
+                            Wingos::Space::self(),
+                            Wingos::MemoryAsset::from_handle(context->stderr_handle)))
                            .unwrap();
         set_stderr_pipe(&_stderr_pipe);
     }
@@ -262,10 +262,9 @@ extern "C" __attribute__((weak)) void _entry_point(StartupInfo *context)
     if (context->stdin_handle != 0)
     {
 
-        _stdin_pipe = (prot::ReceiverPipe::from(
-                           Wingos::IpcClient::from(
-                               Wingos::Space::self().handle,
-                               context->stdin_handle)))
+        _stdin_pipe = (prot::ReceiverPipe::from_mem(
+                           Wingos::Space::self(),
+                           Wingos::MemoryAsset::from_handle(context->stdin_handle)))
                           .unwrap();
         set_stdin_pipe(&_stdin_pipe);
     }

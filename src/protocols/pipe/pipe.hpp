@@ -3,7 +3,10 @@
 #include "iol/wingos/asset.hpp"
 #include "iol/wingos/ipc.hpp"
 #include "iol/wingos/space.hpp"
+#include "libcore/ds/pcring.hpp"
 #include "libcore/result.hpp"
+#include "math/align.hpp"
+#include "wingos-headers/asset.h"
 #include "wingos-headers/ipc.h"
 
 namespace prot
@@ -11,79 +14,52 @@ namespace prot
 
 // EMPTY DUPLEX USED FOR BUILD TIME FOR NOW, WILLE BE REWORKED LATER
 
+template <typename T>
 struct Duplex
 {
-    Wingos::UAsset connection_sender;
-    Wingos::UAsset connection_receiver;
+    Wingos::MemoryAsset ring_phys_asset;
+    Wingos::VirtualMemoryAsset ring_virt_asset;
+    fc::PCRing<T> *ring = nullptr;
 
-    static fc::Result<Duplex> create(Wingos::Space, Wingos::Space, uint64_t)
+    static fc::Result<Duplex<T>> create(Wingos::Space creator_space, size_t ring_size = 4096)
     {
         Duplex d = {};
-        d.connection_sender.handle = 0;
-        d.connection_receiver.handle = 0;
+        d.ring_phys_asset = creator_space.allocate_physical_memory(
+            math::alignUp<size_t>(ring_size, 4096));
+        d.ring_virt_asset = creator_space.map_memory(d.ring_phys_asset, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
+
+        d.ring = fc::PCRing<T>::create_from_mem(d.ring_virt_asset.ptr(), ring_size);
         return d;
     }
-};
 
-class SenderPipe
-{
-    Wingos::IpcClient connection;
-
-public:
-    SenderPipe() = default;
-
-    SenderPipe(Wingos::IpcClient &&c) : connection(std::move(c)) {}
-
-    static fc::Result<SenderPipe> from(Wingos::IpcClient &&c)
+    static fc::Result<Duplex<T>> from_mem(Wingos::Space space, Wingos::MemoryAsset const &mem_asset)
     {
-        SenderPipe p(std::move(c));
-        return p;
+        Duplex d = {};
+        d.ring_phys_asset = mem_asset;
+        d.ring_virt_asset = space.map_memory(d.ring_phys_asset, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
+
+        d.ring = fc::PCRing<T>::use_already_constructed_from_mem(d.ring_virt_asset.ptr());
+        return d;
     }
 
-    fc::Result<void> send(const void *data, size_t len)
+    void send(T *ptr, size_t count)
     {
-        IpcMessage msg = {};
-        if (len > MAX_IPC_BUFFER_SIZE)
+        for (size_t i = 0; i < count; i++)
         {
-            len = MAX_IPC_BUFFER_SIZE;
+            ring->produce(ptr[i]);
         }
-        memcpy(msg.raw_buffer, data, len);
-        msg.len = (uint16_t)len;
-        connection.send(msg);
-        return {};
     }
 
-    Wingos::IpcClient &raw_connection() { return connection; }
+    void receive(T *ptr, size_t count)
+    {
+        for (size_t i = 0; i < count; i++)
+        {
+            ptr[i] = ring->consume();
+        }
+    }
 };
 
-class ReceiverPipe
-{
-    Wingos::IpcClient connection;
-
-public:
-    ReceiverPipe() = default;
-
-    ReceiverPipe(Wingos::IpcClient &&c) : connection(std::move(c)) {}
-
-    static fc::Result<ReceiverPipe> from(Wingos::IpcClient &&c)
-    {
-        ReceiverPipe p(std::move(c));
-        return p;
-    }
-
-    fc::Result<size_t> receive(void *buffer, size_t len)
-    {
-        (void)buffer;
-        (void)len;
-        return fc::Result<size_t>::error("no data");
-    }
-
-    fc::Result<IpcMessage> receive_message()
-    {
-        return fc::Result<IpcMessage>::error("no data");
-    }
-
-    Wingos::IpcClient &raw_connection() { return connection; }
-};
+using ReceiverPipe = Duplex<uint8_t>;
+using SenderPipe = Duplex<uint8_t>;
 
 } // namespace prot

@@ -128,6 +128,14 @@ struct IpcMessage : public fc::NoCopy
     }
 
     template <typename T = uint64_t>
+    constexpr void copy_handle(unsigned int id, T val)
+    {
+        arguments.data[id].asset_handle = val;
+        arguments.data[id].is_asset = true;
+        arguments.data[id].copy_asset = true;
+    }
+
+    template <typename T = uint64_t>
     constexpr T arg(unsigned int id) const
     {
         if (arguments.data[id].is_asset)

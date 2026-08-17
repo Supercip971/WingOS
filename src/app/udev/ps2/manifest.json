@@ -5,7 +5,8 @@
     "description": "PS2 mouse/keyboard driver",
 
     "props": {
-        "pkgname": "ps2"
+        "pkgname": "ps2",
+        "exported": "disk"
     },
     "requires": [
         "libcore"

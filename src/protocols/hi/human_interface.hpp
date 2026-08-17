@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 
+#include "iol/wingos/asset.hpp"
 #include "iol/wingos/ipc.hpp"
 #include "iol/wingos/space.hpp"
 #include "libcore/ds/vec.hpp"
@@ -51,13 +52,13 @@ struct HIEvent
 
 class HIEventQueue
 {
-    ReceiverPipe _rpipe = {};
+    Duplex<HIEvent> _rpipe = {};
     fc::Vec<HIEvent> _events = {};
 
 public:
     HIEventQueue() = default;
 
-    HIEventQueue(ReceiverPipe &&rpipe) : _rpipe(std::move(rpipe))
+    HIEventQueue(Duplex<HIEvent> &&rpipe) : _rpipe(std::move(rpipe))
     {
     }
 
@@ -78,12 +79,12 @@ public:
     void update_event()
     {
         HIEvent event;
-        auto res = _rpipe.receive(&event, sizeof(HIEvent));
+        auto res = _rpipe.ring->try_consume(&event);
         while (!res.is_error())
         {
 
             push_event(event);
-            res = _rpipe.receive(&event, sizeof(HIEvent));
+            res = _rpipe.ring->try_consume(&event);
         }
     }
 };
@@ -111,10 +112,8 @@ public:
             return "failed to send HI start listen message";
         }
 
-        auto msg = std::move(res.unwrap());
-
-        auto rpipe = try$(ReceiverPipe::from(Wingos::Space::self(), message.arguments.data[0].asset_handle));
-        _event_queue = HIEventQueue(std::move(rpipe));
+        auto rpipe = (Wingos::MemoryAsset::from_handle(message.asset(0)));
+        _event_queue = HIEventQueue(Duplex<HIEvent>::from_mem(Wingos::Space::self(), rpipe).unwrap());
 
         return {};
     }
@@ -129,8 +128,7 @@ public:
         }
         auto v = reg.unwrap();
         auto handle = try$(v.get_server(fc::Str("human-interface"), 1, 0)).endpoint;
-        hi_conn.connection = Wingos::Space::self().connect_to_ipc_server(handle);
-        hi_conn.connection.wait_for_accept();
+        hi_conn.connection = Wingos::Space::self().connect_by_addr(handle);
         return hi_conn;
     }
 };

@@ -7,6 +7,7 @@
 #include "app/udev/ps2/controller.hpp"
 #include "app/udev/ps2/keyboard.hpp"
 #include "app/udev/ps2/mouse.hpp"
+#include "app/udev/ps2/server.hpp"
 #include "iol/wingos/space.hpp"
 #include "libcore/ds/vec.hpp"
 #include "libcore/fmt/log.hpp"
@@ -16,8 +17,8 @@
 // source: derived from brutal OS but
 // I wrote the brutal PS2 code
 
-fc::Vec<prot::SenderPipe *> mouse_pipes = {};
-fc::Vec<prot::SenderPipe *> keyboard_pipes = {};
+fc::Vec<prot::Duplex<prot::HIEvent> *> mouse_pipes = {};
+fc::Vec<prot::Duplex<prot::HIEvent> *> keyboard_pipes = {};
 
 int main(int, char **)
 {
@@ -25,7 +26,7 @@ int main(int, char **)
     keyboard_pipes = {};
     fmt::log$("Start ps2 app");
 
-    auto server_r = prot::ManagedServer::create_registered_server("human-interface", 1, 0);
+    auto server_r = prot::ManagedServer::create_registered_server<Ps2Server>("human-interface", 1, 0);
 
     if (server_r.is_error())
     {
@@ -33,7 +34,7 @@ int main(int, char **)
         return -1;
     }
 
-    prot::ManagedServer server = std::move(server_r.unwrap());
+    auto server = std::move(server_r.unwrap());
 
     fmt::log$("started ps2 service");
 
@@ -46,58 +47,7 @@ int main(int, char **)
     controller.flush();
     while (true)
     {
-
-        server.accept_connection();
-
-        auto received = server.try_receive();
-        if (!received.is_error())
-        {
-            auto msg = (received.take());
-
-            switch (msg.received.data[0].data)
-            {
-            case prot::HI_START_LISTEN:
-            {
-                uint32_t event_types = (uint32_t)msg.received.data[1].data;
-
-                auto pipe = prot::Duplex::create(Wingos::Space::self(), Wingos::Space::self());
-
-                if (pipe.is_error())
-                {
-                    fmt::err$("hio: failed to create duplex pipe: {}", pipe.error());
-                    break;
-                }
-
-                auto duplex = std::move(pipe.unwrap());
-
-                fmt::log$("hio: duplex handles: {} {}", duplex.connection_sender.handle, duplex.connection_receiver.handle);
-                prot::SenderPipe *sender = new prot::SenderPipe(std::move(duplex.connection_sender));
-
-                if (event_types & prot::HI_EVENT_TYPE_MOUSE)
-                {
-                    mouse_pipes.push(sender);
-                    fmt::log$("hio: added mouse pipe: {}", sender->raw_connection().handle);
-                }
-
-                if (event_types & prot::HI_EVENT_TYPE_KEYBOARD)
-                {
-                    keyboard_pipes.push(sender);
-                    fmt::log$("hio: added keyboard pipe");
-                }
-
-                IpcMessage resp = {};
-                resp.data[0].asset_handle = duplex.connection_receiver.handle;
-                fmt::log$("hio: replying with receiver handle: {}", resp.data[0].asset_handle);
-                resp.data[0].is_asset = true;
-                server.reply(std::move(msg), resp).unwrap();
-
-                break;
-            }
-            default:
-                fmt::warn$("hio: unknown message type received: {}", msg.received.data[0].data);
-                break;
-            }
-        }
+        server->do_receive_async();
 
         if (mouse.handle_event())
         {
@@ -105,17 +55,22 @@ int main(int, char **)
             while (!ev_res.is_error())
             {
                 auto mouse_ev = ev_res.take();
-                fmt::log$("mouse event: dx={} dy={}", mouse_ev.offx, mouse_ev.offy);
+                // fmt::log$("mouse event: dx={} dy={}", mouse_ev.offx, mouse_ev.offy);
                 prot::HIEvent event = {};
                 event.type = prot::HI_EVENT_TYPE_MOUSE;
                 event.mouse.dx = mouse_ev.offx;
                 event.mouse.dy = mouse_ev.offy;
                 event.mouse.buttons = (mouse_ev.left ? 1 : 0) | (mouse_ev.right ? 2 : 0) | (mouse_ev.middle ? 4 : 0);
 
-                for (size_t i = 0; i < mouse_pipes.len(); i++)
+                for (auto &conn : server->connected_clients())
                 {
-                    mouse_pipes[i]->send(&event, sizeof(event));
+                    Ps2Connection *ps = dynamic_cast<Ps2Connection *>(conn.value);
+                    if (ps && ps->event_types & prot::HI_EVENT_TYPE_MOUSE)
+                    {
+                        ps->pipe.ring->produce(event);
+                    }
                 }
+
                 ev_res = mouse.poll_event();
             }
         }
@@ -131,9 +86,13 @@ int main(int, char **)
                 event.type = prot::HI_EVENT_TYPE_KEYBOARD;
                 event.keyboard.keycode = kb_ev.key;
                 event.keyboard.pressed = kb_ev.down;
-                for (size_t i = 0; i < keyboard_pipes.len(); i++)
+                for (auto &conn : server->connected_clients())
                 {
-                    keyboard_pipes[i]->send(&event, sizeof(event));
+                    Ps2Connection *ps = dynamic_cast<Ps2Connection *>(conn.value);
+                    if (ps && ps->event_types & prot::HI_EVENT_TYPE_KEYBOARD)
+                    {
+                        ps->pipe.ring->produce(event);
+                    }
                 }
                 ev_res = keyboard.poll_event();
             }

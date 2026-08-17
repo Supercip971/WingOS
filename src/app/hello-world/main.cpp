@@ -1,5 +1,7 @@
 
 
+#include "protocols/hi/human_interface.hpp"
+
 #include "libcore/fmt/log.hpp"
 #include "libcore/result.hpp"
 #include "protocols/clock/clock.hpp"
@@ -27,18 +29,6 @@ int main(int, char **)
 
     fmt::log$("{}", fc::Str((const char *)data_ptr.ptr(), res));
 
-    auto clock = prot::ClockConnection::connect().unwrap();
-    int i = 0;
-    while (true)
-    {
-        fmt::log$("OUGA {}", i);
-
-        clock.sleep_ms(1000);
-        i++;
-    }
-
-    /*
-
     prot::HIConnection hi_conn = prot::HIConnection::connect().unwrap();
     hi_conn.start_listen().unwrap();
 
@@ -63,5 +53,5 @@ int main(int, char **)
             }
             event_res = hi_conn.event_queue().poll_event();
         }
-        };*/
+    };
 }

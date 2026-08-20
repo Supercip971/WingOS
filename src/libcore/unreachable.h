@@ -9,9 +9,9 @@
 
 #else
 
-#    define unreachable$()       \
-        do                       \
-        {                        \
-            asm volatile("ud2"); \
+#    define unreachable$()               \
+        do                               \
+        {                                \
+            __asm__ __volatile__("ud2"); \
         } while (1)
 #endif

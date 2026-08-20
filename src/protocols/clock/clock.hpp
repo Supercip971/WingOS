@@ -52,8 +52,8 @@ public:
         }
 
         ClockTime time{};
-        time.seconds = message.arguments.data[1].data;
-        time.milliseconds = message.arguments.data[2].data;
+        time.seconds = message.arguments.data[0].data;
+        time.milliseconds = message.arguments.data[1].data;
 
         return time;
     }

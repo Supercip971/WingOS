@@ -20,7 +20,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v7
 
       # Runs a single command using the runners shell
       - name: setup_1
@@ -30,7 +30,7 @@ jobs:
           sudo apt install -y make build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo nasm
           sudo apt install -y mtools wget unzip fuse libfuse-dev
           sudo apt install -y uuid-dev ninja-build
-          sudo apt install -y gcc binutils parted dosfstools g++ libffi-dev libncurses5-dev libx11-dev libxext-dev libxrender-dev libxrandr-dev libxpm-dev
+          sudo apt install -y gcc binutils parted dosfstools g++ libffi-dev libncurses5-dev libx11-dev libxext-dev libxrender-dev libxrandr-dev libxpm-dev gdisk e2fsprogs
           sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)" llvm 22 all
 
       - name: Set up Python
@@ -38,21 +38,28 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: cache-toolchain
-        uses: actions/cache@v6
-        env:
-          cache-name: cached-cross-compiler
+      - name: cache-toolchain-restore
+        uses: actions/cache/restore@v6
+        id: cache-toolchain-restore
         with:
           path: |
-            **/meta/build/
+            ${{ github.workspace }}/meta/build/
           key: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/meta/build/make_cross_compilers.sh', '**/meta/build/toolchains/gcc.patch', '**/meta/build/toolchains/binutils.patch') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/meta/build/make_cross_compilers.sh', '**/meta/build/toolchains/gcc.patch', '**/meta/build/toolchains/binutils.patch') }}
+            ${{ runner.os }}-build-toolchains-${{ hashFiles('**/meta/build/make_cross_compilers.sh', '**/meta/build/toolchains/gcc.patch', '**/meta/build/toolchains/binutils.patch') }}
 
       - name: setup_toolchain
         run: |
           bash meta/build/make_cross_compilers.sh
+
+      - name: cache-toolchains-save
+        id: cache-primes-save
+        uses: actions/cache/save@v6
+        if: always() && steps.cache-toolchain-restore.outputs.cache-hit != 'true'
+        with:
+          path: |
+            ${{ github.workspace }}/meta/build/
+          key: |
+              ${{ runner.os }}-build-toolchains-${{ hashFiles('**/meta/build/make_cross_compilers.sh', '**/meta/build/toolchains/gcc.patch', '**/meta/build/toolchains/binutils.patch') }}
 
       # Runs a single command using the runners shell
       - name: setup_cutekit

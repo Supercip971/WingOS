@@ -38,10 +38,14 @@ public:
 
     inline constexpr void blend(Rgba8 to)
     {
-        r = (uint8_t)(((uint16_t)r * a + (uint16_t)to.r * to.a) / ((uint16_t)a + (uint16_t)to.a));
-        g = (uint8_t)(((uint16_t)g * a + (uint16_t)to.g * to.a) / ((uint16_t)a + (uint16_t)to.a));
-        b = (uint8_t)(((uint16_t)b * a + (uint16_t)to.b * to.a) / ((uint16_t)a + (uint16_t)to.a));
-        a = (uint8_t)(((uint16_t)a));
+        if (a && to.a == 0)
+        {
+            return;
+        }
+        r = (uint8_t)(((uint16_t)r * (255 - (uint16_t)a) + (uint16_t)to.r * to.a) / ((uint16_t)(255 - a) + (uint16_t)to.a));
+        g = (uint8_t)(((uint16_t)g * (255 - (uint16_t)a) + (uint16_t)to.g * to.a) / ((uint16_t)(255 - a) + (uint16_t)to.a));
+        b = (uint8_t)(((uint16_t)b * (255 - (uint16_t)a) + (uint16_t)to.b * to.a) / ((uint16_t)(255 - a) + (uint16_t)to.a));
+        a = (uint8_t)(((uint16_t)a * (255 - (uint16_t)a) + (uint16_t)to.a * to.a) / ((uint16_t)(255 - a) + (uint16_t)to.a));
     }
 
     inline constexpr void blendGamma(Rgba8 to, float alpha)

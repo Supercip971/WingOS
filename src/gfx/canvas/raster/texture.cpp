@@ -19,7 +19,7 @@ void wgfx::RasterCanvas::texturePixelAlignedFlat(TextureCommand const &cmd)
             long u = (ix);
 
             auto color = image.data()[static_cast<long>(v) * image.width() + static_cast<long>(u)];
-            buffer[static_cast<long>(y) * width + static_cast<long>(x)] = color;
+            buffer[static_cast<long>(y) * width + static_cast<long>(x)].blend(color);
         }
     }
 }
@@ -41,7 +41,7 @@ void wgfx::RasterCanvas::texture(TextureCommand const &cmd)
                 float u = (ix / (cmd.rect.end.x - cmd.rect.start.x)) * image.width();
 
                 auto color = image.data()[static_cast<long>(v) * image.width() + static_cast<long>(u)];
-                buffer[static_cast<long>(y) * width + static_cast<long>(x)] = color;
+                buffer[static_cast<long>(y) * width + static_cast<long>(x)].blend(color);
             }
         }
     }

@@ -27,6 +27,7 @@
 #include "ui/widgets/text.hpp"
 #include "ui/widgets/vflex.hpp"
 #include "ui/widgets/widget.hpp"
+#include "ui/widgets/window.hpp"
 
 struct MyState
 {
@@ -63,6 +64,29 @@ public:
     }
 };
 
+;
+
+class WingosWidget : public fc::Widget
+{
+
+public:
+    fc::SharedPtr<fc::Widget> build(const fc::UiContext &ctx) override
+    {
+        auto res = fmt::format_str("Wingos - An open source microkernel based operating system");
+
+        return $<fc::VFlex>(
+            $<fc::LPadded>(fc::Padded().horizontal(16 * ctx.dpi).vertical(16.f * ctx.dpi),
+                           $<fc::TextWidget>(res.take(),
+                                             fc::FontsRepo::the().find("oswald@32"))),
+            $<fc::LPadded>(fc::Padded().horizontal(16 * ctx.dpi).vertical(16.f * ctx.dpi),
+
+                           $<fc::ImageWidget>(
+                               fc::TextureRepo::the().find("logo-dark-low")))
+
+        );
+    }
+};
+
 class CustomWidget : public fc::Statefull<MyState>
 {
 
@@ -76,11 +100,18 @@ public:
                             $<fc::Stacked>(
                                 $<fc::ImageWidget>(
                                     fc::TextureRepo::the().find("liquid-blue")),
-                                $<fc::DrageableContainer>(
+                                $<fc::WindowWidget>(
 
-                                    fc::DrageableContainerParams(1800, 800),
+                                    fc::WindowWidgetParams(1800, 800).title(
+                                        "button window"),
 
-                                    $<fc::Centered>($<CustomWidget2>()))));
+                                    $<fc::Centered>($<CustomWidget2>())),
+                                $<fc::WindowWidget>(
+
+                                    fc::WindowWidgetParams(1800, 800).title(
+                                        "about"),
+
+                                    ($<WingosWidget>()))));
     }
 };
 
@@ -98,7 +129,11 @@ int main(int argc, char **argv)
     window->attach();
 
     fc::TextureRepo::the().load(fc::WStr::copy("liquid-blue"), "/meta/assets/pawel-czerwinski-blue-liquid-halfres.png");
+    fc::TextureRepo::the().load(fc::WStr::copy("logo-dark-low"), "/meta/assets/logo-dark-low.png");
+
     fc::FontsRepo::the().load(fc::WStr::copy("oswald@96"), "/meta/assets/oswald.ttf", 96 * window->dpi());
+
+    fc::FontsRepo::the().load(fc::WStr::copy("oswald@32"), "/meta/assets/oswald.ttf", 32 * window->dpi());
 
     auto vwidgt = fc::SharedPtr<CustomWidget>::make().static_pointer_cast<fc::Widget>();
 

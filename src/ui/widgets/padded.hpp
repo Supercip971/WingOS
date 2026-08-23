@@ -101,6 +101,8 @@ public:
                 c.x += _parms._pleft + _parms._pright;
                 c.y += _parms._ptop + _parms._pdown;*/
 
+        constraint.x -= _parms._pleft + _parms._pright;
+        constraint.y -= _parms._ptop + _parms._pdown;
         auto c = child->preferred_size(constraint);
         c.x += _parms._pleft + _parms._pright;
         c.y += _parms._ptop + _parms._pdown;
@@ -120,9 +122,8 @@ public:
         inner_constraint.start.y += _parms._ptop;
         inner_constraint.end.x -= _parms._pright;
         inner_constraint.end.y -= _parms._pdown;
-        auto csize = child->preferred_size(inner_constraint.size());
 
-        child->relayout(ctx, inner_constraint.with_size(csize));
+        child->relayout(ctx, inner_constraint);
 
         return constraint;
     }

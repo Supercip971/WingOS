@@ -95,10 +95,23 @@ public:
 
     virtual wgfx::Vec2 preferred_size(wgfx::Vec2 constraint) const
     {
-        if (childs.len() == 1)
+        fc::Optional<wgfx::Vec2> constraint_opt = {};
+
+        for (auto &child : childs)
         {
-            return childs[0]->preferred_size(constraint);
+            auto psize = child->preferred_size(constraint);
+            if (constraint_opt.has_value())
+            {
+                constraint_opt->x = fc::max(constraint_opt->x, psize.x);
+                constraint_opt->y = fc::max(constraint_opt->y, psize.y);
+            }
+            else
+                constraint_opt = psize;
         }
+
+        if (constraint_opt.has_value())
+            return constraint_opt.value();
+
         return constraint;
     }
 
@@ -110,11 +123,20 @@ public:
 
         (void)ctx;
 
-        auto s = constraint.with_size(preferred_size(constraint.size()));
+        auto psize = preferred_size(constraint.size());
+        auto s = constraint.with_size(psize);
+        fc::Optional<wgfx::GRect> layout = {};
         for (auto &child : childs)
         {
-            child->update_layout(ctx, s);
+            child->relayout(ctx, s);
+            if (layout.has_value())
+                layout = layout->merge(child->_layout);
+            else
+                layout = child->_layout;
         }
+
+        if (layout.has_value())
+            return layout.value();
 
         return s;
     }
@@ -173,7 +195,9 @@ public:
     {
         fmt::log$("relayout: {} - {} {} {} {}", name(), (long)constraint.start.x, (long)constraint.start.y, (long)constraint.end.x, (long)constraint.end.y);
         // manage how to layout childs
-        auto nlayout = layout(ctx, constraint);
+        //
+        wgfx::GRect preferred_rect = constraint.with_size(preferred_size(constraint.size()));
+        auto nlayout = layout(ctx, preferred_rect);
         //  fmt::log$("relayout: {} - {} {} {} {}", name(), (long)nlayout.start.x, (long)nlayout.start.y, (long)nlayout.end.x, (long)nlayout.end.y);
 
         if (_layout != nlayout)
@@ -323,7 +347,6 @@ public:
 
     virtual void update_layout(UiContext const &ctx, wgfx::GRect constraint)
     {
-
         if (_layout_dirty)
         {
             relayout(ctx, constraint);

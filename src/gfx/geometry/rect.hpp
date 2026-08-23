@@ -55,6 +55,13 @@ struct GRect
         return end - start;
     }
 
+    GRect with_min_size(const Vec2 &size) const
+    {
+        return GRect(start.x, start.y,
+                     fc::min(start.x + size.x, end.x),
+                     fc::min(start.y + size.y, end.y));
+    }
+
     GRect with_size(const Vec2 &size) const
     {
         return GRect(start, start + size);

@@ -96,8 +96,6 @@ public:
         // dump();
         fmt::log$("Constraint: ({}x{} - {}x{})", (long)constraint.start.x, (long)constraint.start.y, (long)constraint.end.x, (long)constraint.end.y);
 
-        (void)ctx;
-
         wgfx::GRect child_constraint = constraint.with_size(preferred_size(constraint.size()));
         child->relayout(ctx, child_constraint);
 

@@ -131,8 +131,7 @@ int main(int argc, char **argv)
 
             if (ev.kind != wgfx::UEvent::Kind::NONE)
             {
-                fmt::log$("Event: {} at ({}, {})", (long)ev.kind, (long)ev.at.x, (long)ev.at.y);
-                vwidgt->acquireEvent(ev);
+                vwidgt->distributeEvent(ev);
             }
         } while (ev.kind != wgfx::UEvent::Kind::NONE);
 

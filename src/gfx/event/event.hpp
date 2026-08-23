@@ -27,7 +27,7 @@ public:
         hw::MouseEvent mouse;
     };
 
-    UEvent() : kind(Kind::NONE), at(0, 0), mouse({0, 0, 0, false, false, false}) {};
+    UEvent() : kind(Kind::NONE), at(0, 0), mouse({0, 0, 0, 0, 0, false, false, false}) {};
 };
 
 } // namespace wgfx

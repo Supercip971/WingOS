@@ -49,7 +49,7 @@ public:
 
     auto name() const { return typeid(*this).name(); };
 
-    virtual bool acquireEvent(wgfx::UEvent ev)
+    bool distributeEvent(wgfx::UEvent ev)
     {
         if (ev.kind == wgfx::UEvent::Kind::MOUSE_MOVE || ev.kind == wgfx::UEvent::Kind::MOUSE_CLICK)
         {
@@ -61,11 +61,18 @@ public:
         }
         for (auto &child : childs)
         {
-            if (child->acquireEvent(ev))
+            if (child->distributeEvent(ev))
             {
                 return true;
             }
         }
+        return acquireEvent(ev);
+    }
+
+    virtual bool acquireEvent(wgfx::UEvent ev)
+    {
+        (void)ev;
+
         return false;
     }
 

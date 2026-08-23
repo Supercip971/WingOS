@@ -225,6 +225,9 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
 
                 mouse.mouse.offx = ev.motion.xrel * this->dpi();
                 mouse.mouse.offy = ev.motion.yrel * this->dpi();
+                mouse.mouse.absx = ev.motion.x * this->dpi();
+                mouse.mouse.absy = ev.motion.y * this->dpi();
+
                 mouse.at.x = ev.motion.x * this->dpi();
                 mouse.at.y = ev.motion.y * this->dpi();
 
@@ -239,6 +242,9 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
                 mouse.mouse.left = ev.button.button == SDL_BUTTON_LEFT;
                 mouse.mouse.right = ev.button.button == SDL_BUTTON_RIGHT;
                 mouse.mouse.middle = ev.button.button == SDL_BUTTON_MIDDLE;
+
+                mouse.mouse.absx = ev.motion.x * this->dpi();
+                mouse.mouse.absy = ev.motion.y * this->dpi();
 
                 mouse.at.x = ev.button.x * this->dpi();
                 mouse.at.y = ev.motion.y * this->dpi();

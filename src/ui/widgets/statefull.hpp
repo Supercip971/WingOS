@@ -10,6 +10,8 @@ class Statefull : public Widget, public State
 {
 
 public:
+    Statefull() : Widget(), State() {}
+
     bool transferTo(Widget &other) override
     {
         static_cast<Statefull<State> &>(other).State::operator=(static_cast<const State &>(*this));

@@ -7,24 +7,21 @@
 #include "gfx/canvas/canvas.hpp"
 #include "gfx/color.hpp"
 #include "gfx/event/event.hpp"
-#include "gfx/geometry/vec2.hpp"
 #include "gfx/platform/app.hpp"
 #include "gfx/platform/window.hpp"
 #include "libcore/fmt/flags.hpp"
 #include "libcore/result.hpp"
 #include "libcore/shared.hpp"
-#include "libcore/type-utils.hpp"
 #include "ui/context.hpp"
 #include "ui/font-manager.hpp"
 #include "ui/image-manager.hpp"
 #include "ui/widgets/button.hpp"
 #include "ui/widgets/callback.hpp"
 #include "ui/widgets/centered.hpp"
-#include "ui/widgets/container.hpp"
+#include "ui/widgets/drageable.hpp"
 #include "ui/widgets/image.hpp"
 #include "ui/widgets/padded.hpp"
 #include "ui/widgets/root.hpp"
-#include "ui/widgets/sized.hpp"
 #include "ui/widgets/stacked.hpp"
 #include "ui/widgets/statefull.hpp"
 #include "ui/widgets/text.hpp"
@@ -72,18 +69,18 @@ class CustomWidget : public fc::Statefull<MyState>
 public:
     fc::SharedPtr<fc::Widget> build(const fc::UiContext &ctx) override
     {
+        (void)ctx;
 
         return $<fc::_Root>(wgfx::BLUE,
 
                             $<fc::Stacked>(
                                 $<fc::ImageWidget>(
                                     fc::TextureRepo::the().find("liquid-blue")),
-                                $<fc::Centered>(
-                                    $<fc::Sized>(
-                                        fc::LayoutSize(300.f * ctx.dpi, 300.f * ctx.dpi).min_width(200 * ctx.dpi).max_width(800 * ctx.dpi),
-                                        $<fc::Container>(
-                                            fc::ContainerParms().bg(wgfx::CONTAINER_FILL.transparentize(0.3)).border(wgfx::CONTAINER_BORDER, 1).radius(8),
-                                            $<fc::Centered>($<CustomWidget2>()))))));
+                                $<fc::DrageableContainer>(
+
+                                    fc::DrageableContainerParams(1800, 800),
+
+                                    $<fc::Centered>($<CustomWidget2>()))));
     }
 };
 

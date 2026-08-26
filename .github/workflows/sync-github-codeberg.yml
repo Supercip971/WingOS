@@ -1,0 +1,27 @@
+# This is a basic workflow to help you get started with Actions
+
+name: sync-github-codeberg
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on: [push]
+
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Sync with Codeberg
+        uses: yesolutions/mirror-action@master
+        with:
+          REMOTE: https://codeberg.org/cyp/WingOS.git
+          GIT_USERNAME: cyp
+          GIT_PASSWORD: ${{ secrets.GIT_PASSWORD }}

@@ -89,6 +89,11 @@ Now do `ck s` to start the build and run.
 
 Do `ck p` to build ports (now no ports are buildable, do a git clone recursive to get all ports).
 
+## Codeberg 
+
+The project is synced to [codeberg](https://codeberg.org/cyp/WingOS) (github <-> codeberg), you can either use github or codeberg. Note that in the future the project aims to be fully ported to codeberg.
+
+
 # Made by human
 
 <a href="https://github.com/Supercip971/by-human">

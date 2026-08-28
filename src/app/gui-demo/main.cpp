@@ -102,13 +102,13 @@ public:
                                     fc::TextureRepo::the().find("liquid-blue")),
                                 $<fc::WindowWidget>(
 
-                                    fc::WindowWidgetParams(1800, 800).title(
+                                    fc::WindowWidgetParams(900, 500).title(
                                         "button window"),
 
                                     $<fc::Centered>($<CustomWidget2>())),
                                 $<fc::WindowWidget>(
 
-                                    fc::WindowWidgetParams(1800, 800).title(
+                                    fc::WindowWidgetParams(900, 500).title(
                                         "about"),
 
                                     ($<WingosWidget>()))));

@@ -93,6 +93,13 @@ public:
 
     virtual ~Widget() {}
 
+    virtual void insertChild(fc::SharedPtr<Widget> child)
+    {
+        // by default do nothing;
+        (void)child;
+        fmt::warn$("buildChild against a leaf node: {}", child->name());
+    }
+
     virtual wgfx::Vec2 preferred_size(wgfx::Vec2 constraint) const
     {
         fc::Optional<wgfx::Vec2> constraint_opt = {};

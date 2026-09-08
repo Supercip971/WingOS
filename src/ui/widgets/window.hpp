@@ -1,84 +1,55 @@
 #pragma once
 
-#include "libcore/str_writer.hpp"
-
 #include "gfx/canvas/canvas.hpp"
-#include "gfx/canvas/cmd.hpp"
-#include "gfx/color.hpp"
-#include "gfx/event/event.hpp"
 #include "gfx/geometry/rect.hpp"
 #include "gfx/geometry/vec2.hpp"
 #include "libcore/shared.hpp"
 #include "ui/context.hpp"
 #include "ui/font-manager.hpp"
+#include "ui/widgets/button.hpp"
+#include "ui/widgets/centered.hpp"
 #include "ui/widgets/container.hpp"
 #include "ui/widgets/drageable.hpp"
 #include "ui/widgets/padded.hpp"
-#include "ui/widgets/statefull.hpp"
 #include "ui/widgets/text.hpp"
 #include "ui/widgets/vflex.hpp"
-#include "widget.hpp"
+#include "ui/widgets/widget.hpp"
 
 namespace fc
 {
 
 struct WindowWidgetParams
 {
-    wgfx::CompositeColor _bg = wgfx::CONTAINER_FILL;
-    wgfx::CompositeColor _border = wgfx::CONTAINER_BORDER;
-    float _radius = 16.f;
-    float _elevation = 12.0f;
-    fc::Str _title = "window";
     float _width = 0;
     float _height = 0;
+    fc::Str _title = "";
 
-    constexpr WindowWidgetParams()
+    WindowWidgetParams() = default;
+
+    constexpr WindowWidgetParams(float width, float height)
+        : _width(width), _height(height)
     {
     }
 
-    constexpr WindowWidgetParams(
-        float initial_width,
-        float initial_height
-
-    )
+    constexpr WindowWidgetParams width(float w) const
     {
-        _width = initial_width;
-        _height = initial_height;
-    };
-
-    constexpr WindowWidgetParams bg(wgfx::CompositeColor bg) const
-    {
-        WindowWidgetParams p = *this;
-        p._bg = bg;
-        return p;
+        WindowWidgetParams s = *this;
+        s._width = w;
+        return s;
     }
 
-    constexpr WindowWidgetParams border(wgfx::CompositeColor border) const
+    constexpr WindowWidgetParams height(float h) const
     {
-        WindowWidgetParams p = *this;
-        p._border = border;
-        return p;
+        WindowWidgetParams s = *this;
+        s._height = h;
+        return s;
     }
 
-    constexpr WindowWidgetParams radius(float radius) const
+    WindowWidgetParams title(fc::Str const &str) const
     {
-        WindowWidgetParams p = *this;
-        p._radius = radius;
-        return p;
-    }
-
-    constexpr WindowWidgetParams elevation(float elevation) const
-    {
-        WindowWidgetParams p = *this;
-        p._elevation = elevation;
-        return p;
-    }
-
-    constexpr WindowWidgetParams title(fc::Str title) const
-    {
-        WindowWidgetParams p = *this;
-        p._title = title;
-        return p;
+        WindowWidgetParams s = *this;
+        s._title = str;
+        return s;
     }
 };
 
@@ -90,6 +61,24 @@ public:
     fc::SharedPtr<Widget> child;
 
     ~WindowWidget() override = default;
+
+    WindowWidget() = default;
+
+    WindowWidget(WindowWidgetParams parms)
+    {
+        _params = parms;
+    }
+
+    template <typename T>
+    WindowWidget(T args)
+    {
+        child = (args);
+    }
+
+    void insertChild(fc::SharedPtr<Widget> _child) override
+    {
+        child = _child;
+    }
 
     template <typename T>
     WindowWidget(WindowWidgetParams parms, T args)
@@ -104,18 +93,20 @@ public:
         auto text = $<fc::TextWidget>(_params._title,
                                       fc::FontsRepo::the().find("oswald@32"));
 
-        return $<DrageableContainer>(
-            DrageableContainerParams(
-                _params._width,
-                _params._height)
-                .bg(
-                    wgfx::CONTAINER_BORDER),
-            $<VFlex>(
-                $<fc::LPadded>(
-                    fc::Padded().horizontal(16 * ctx.dpi).top(4 * ctx.dpi),
-                    text),
-                $<fc::LPadded>(
-                    fc::Padded().horizontal(2 * ctx.dpi).vertical(2 * ctx.dpi), $<Container>(ContainerParms(), child))));
+        return fc::DrageableContainer(
+                   DrageableContainerParams(
+                       _params._width,
+                       _params._height)
+                       .bg(
+                           wgfx::CONTAINER_BORDER))
+            .vflex()
+            .pad(
+                fc::Padded().horizontal(16 * ctx.dpi).top(4 * ctx.dpi),
+                text)
+            .pad(
+                fc::Padded().horizontal(2 * ctx.dpi).vertical(2 * ctx.dpi),
+                $<Container>(ContainerParms(), child))
+            .end();
     };
 };
 

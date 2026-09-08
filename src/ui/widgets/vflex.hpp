@@ -25,6 +25,11 @@ public:
         elements = fc::Vec<fc::SharedPtr<Widget>>(args...);
     }
 
+    void insertChild(fc::SharedPtr<Widget> child) override
+    {
+        elements.push(child);
+    }
+
     wgfx::Vec2 preferred_size(wgfx::Vec2 constraint) const override
     {
         wgfx::Vec2 current_constraint = {};

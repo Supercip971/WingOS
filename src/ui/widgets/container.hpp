@@ -72,6 +72,11 @@ public:
         // dirty_depenced_around(8.f);
     }
 
+    void insertChild(fc::SharedPtr<Widget> _child) override
+    {
+        child = _child;
+    }
+
     virtual wgfx::Vec2 preferred_size(wgfx::Vec2 constraint) const override
     {
         return constraint;

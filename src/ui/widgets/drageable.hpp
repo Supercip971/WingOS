@@ -10,6 +10,7 @@
 #include "gfx/geometry/vec2.hpp"
 #include "libcore/shared.hpp"
 #include "ui/context.hpp"
+#include "ui/widgets/builder.hpp"
 #include "ui/widgets/statefull.hpp"
 #include "widget.hpp"
 
@@ -89,16 +90,28 @@ struct DrageableState
     float old_mouse_y = 0;
 };
 
-class DrageableContainer : public Statefull<DrageableState>
+class _DrageableContainer : public Statefull<DrageableState>
 {
 
 public:
     fc::SharedPtr<Widget> child;
 
-    ~DrageableContainer() override = default;
+    ~_DrageableContainer() override = default;
+
+    _DrageableContainer() = default;
+
+    _DrageableContainer(DrageableContainerParams parms)
+    {
+        _parms = parms;
+        this->width = parms._width;
+        off_x = 100;
+        off_y = 100;
+        this->height = parms._height;
+        child = {};
+    }
 
     template <typename T>
-    DrageableContainer(DrageableContainerParams parms, T args)
+    _DrageableContainer(DrageableContainerParams parms, T args)
     {
         _parms = parms;
         this->width = parms._width;
@@ -108,12 +121,22 @@ public:
         child = (args);
     }
 
+    void insertChild(fc::SharedPtr<Widget> _child) override
+    {
+        child = _child;
+    }
+
     virtual wgfx::Vec2 preferred_size(wgfx::Vec2) const override
     {
         wgfx::Vec2 c = {
             this->width,
             this->height,
         };
+
+        if (!child)
+        {
+            return c;
+        }
 
         return child->preferred_size(c);
     }
@@ -123,7 +146,10 @@ public:
         wgfx::GRect child_constraint = constraint.with_size(preferred_size(constraint.size()));
         child_constraint.start += wgfx::Vec2(off_x, off_y);
         child_constraint.end += wgfx::Vec2(off_x, off_y);
-        this->child->relayout(ctx, child_constraint);
+        if (this->child)
+        {
+            this->child->relayout(ctx, child_constraint);
+        }
 
         return child_constraint;
     }
@@ -202,7 +228,7 @@ public:
     template <typename T>
     static fc::SharedPtr<Widget> construct(DrageableContainerParams params, T args)
     {
-        return fc::SharedPtr<DrageableContainerParams>::make(params, args).template static_pointer_cast<Widget>();
+        return fc::SharedPtr<_DrageableContainer>::make(params, args).template static_pointer_cast<Widget>();
     }
 
     fc::SharedPtr<Widget> build(UiContext const &) override
@@ -210,5 +236,12 @@ public:
         return child;
     };
 };
+
+template <typename... Args>
+static auto DrageableContainer(Args &&...args)
+{
+    return fc::WidgetBuilder<_DrageableContainer>::create(
+        std::forward<Args>(args)...);
+}
 
 } // namespace fc

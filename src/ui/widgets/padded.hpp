@@ -76,17 +76,28 @@ class LPadded : public Widget
 {
 
 public:
-    fc::SharedPtr<Widget> child;
+    fc::SharedPtr<Widget> child = {};
 
-    Padded _parms;
+    Padded _parms = {};
 
     ~LPadded() override = default;
 
+    LPadded() = default;
+
+    LPadded(Padded parms)
+        : child({}), _parms(parms)
+    {
+    }
+
     template <typename T>
     LPadded(Padded parms, T args)
-        : _parms(parms)
+        : child(args), _parms(parms)
     {
-        child = (args);
+    }
+
+    void insertChild(fc::SharedPtr<Widget> _child) override
+    {
+        child = _child;
     }
 
     virtual wgfx::Vec2 preferred_size(wgfx::Vec2 constraint) const override
@@ -103,6 +114,10 @@ public:
 
         constraint.x -= _parms._pleft + _parms._pright;
         constraint.y -= _parms._ptop + _parms._pdown;
+        if (!child)
+        {
+            return {_parms._pleft + _parms._pright, _parms._ptop + _parms._pdown};
+        }
         auto c = child->preferred_size(constraint);
         c.x += _parms._pleft + _parms._pright;
         c.y += _parms._ptop + _parms._pdown;
@@ -123,7 +138,10 @@ public:
         inner_constraint.end.x -= _parms._pright;
         inner_constraint.end.y -= _parms._pdown;
 
-        child->relayout(ctx, inner_constraint);
+        if (child)
+        {
+            child->relayout(ctx, inner_constraint);
+        }
 
         return constraint;
     }
@@ -137,7 +155,7 @@ public:
     template <typename T>
     static fc::SharedPtr<Widget> construct(Padded params, T args)
     {
-        return fc::SharedPtr<Padded>::make(params, args).template static_pointer_cast<Widget>();
+        return fc::SharedPtr<LPadded>::make(params, args).template static_pointer_cast<Widget>();
     }
 
     fc::SharedPtr<Widget> build(UiContext const &v) override

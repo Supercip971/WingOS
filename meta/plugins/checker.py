@@ -81,7 +81,7 @@ def checkSystem(args: model.TargetArgs, genCompileCommands=False):
 
     vt100.title("Components")
     vt100.p(f"{components}")
-    for pkg in filter(lambda m: const.EXTERN_DIR not in m.dirname(), components):
+    for pkg in filter(lambda m: const.EXTERNS_DIR not in m.dirname(), components):
         if (
             pkg.type == model.Kind.EXE
             and pkg.id != "kernel-loader-limine"

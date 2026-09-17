@@ -122,6 +122,7 @@ INTERRUPT_NOERR 31
     section .data
     global __interrupt_vector
 
+align 16
 __interrupt_vector:
 %assign i 0
 %rep 256

@@ -7,6 +7,7 @@
 #include "kernel/generic/asset_types.hpp"
 #include "kernel/generic/ipc_asset.hpp"
 #include "kernel/generic/ipc_registry.hpp"
+#include "kernel/generic/signal_asset.hpp"
 #include <arch/x86_64/barrier.hpp>
 
 // Make sure IPC public types (e.g. IpcServerHandle) are visible before this TU
@@ -283,6 +284,15 @@ fc::Result<AssetRef<kernel::IpcMessageReturnTask>> Space::create_ipc_return_task
 }
 
 // asset_move and asset_copy are now template functions defined in space.hpp
+
+fc::Result<AssetRef<kernel::SignalEndpoint>> Space::create_signal_endpoint()
+{
+    auto ptr = try$(allocate_asset<kernel::SignalEndpoint>());
+
+    Asset::own(ptr.asset);
+    ptr.asset->lock.release();
+    return ptr;
+}
 
 fc::Result<AssetRef<kernel::IpcEndpoint>> Space::create_ipc_endpoint(AssetIpcEndpointCreateParams const &params)
 {

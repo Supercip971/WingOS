@@ -7,6 +7,7 @@
 
 #include "kernel/generic/asset_types.hpp"
 #include "kernel/generic/ipc_asset.hpp"
+#include "kernel/generic/signal_asset.hpp"
 
 #include "asset.hpp"
 #include "kernel/generic/context.hpp"
@@ -317,6 +318,8 @@ struct Space : public Asset
     fc::Result<AssetRef<kernel::IpcEndpointConnection>> create_ipc_connection(AssetIpcConnectionCreateParams const &params);
 
     fc::Result<AssetRef<kernel::IpcEndpoint>> create_ipc_endpoint(AssetIpcEndpointCreateParams const &params);
+
+    fc::Result<AssetRef<kernel::SignalEndpoint>> create_signal_endpoint();
 
     template <typename T>
     static fc::Result<AssetRef<>> asset_move(

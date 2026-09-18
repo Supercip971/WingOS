@@ -11,10 +11,11 @@ extern "C"
         OBJECT_KIND_MAPPING = 2000, // mapping object, used for memory mapping
         OBJECT_KIND_SPACE = 3000,
         OBJECT_KIND_TASK = 4000,
+        OBJECT_KIND_SIGNAL_ENDPOINT = 5000,
 
-        OBJECT_KIND_IPC_ENDPOINT = 5000,    // IPC object, used for inter process communication
-        OBJECT_KIND_IPC_CONNECTION = 6000,  // IPC object, used for inter process communication
-        OBJECT_KIND_IPC_RETURN_TASK = 7000, // IPC object, used for IPC when receiving a call message to reply to
+        OBJECT_KIND_IPC_ENDPOINT = 6000,    // IPC object, used for inter process communication
+        OBJECT_KIND_IPC_CONNECTION = 7000,  // IPC object, used for inter process communication
+        OBJECT_KIND_IPC_RETURN_TASK = 8000, // IPC object, used for IPC when receiving a call message to reply to
     } AssetKind;
 
     typedef enum

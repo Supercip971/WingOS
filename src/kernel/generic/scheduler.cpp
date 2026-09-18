@@ -933,6 +933,7 @@ void reenable_scheduler()
 
 fc::Result<void> block_current_task()
 {
+    // fixme!(2026-09-14), maybe consider scheduler blocked in before callign block_current_task
 
     // there are two problems:
     // CPU 0:

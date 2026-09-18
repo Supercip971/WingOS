@@ -9,6 +9,7 @@
 #include "app/udev/ps2/mouse.hpp"
 #include "app/udev/ps2/server.hpp"
 #include "iol/wingos/space.hpp"
+#include "iol/wingos/syscalls.h"
 #include "libcore/ds/vec.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/type-utils.hpp"
@@ -47,15 +48,13 @@ int main(int, char **)
     controller.flush();
     while (true)
     {
-        server->do_receive_async();
-
         if (mouse.handle_event())
         {
             auto ev_res = mouse.poll_event();
             while (!ev_res.is_error())
             {
                 auto mouse_ev = ev_res.take();
-                // fmt::log$("mouse event: dx={} dy={}", mouse_ev.offx, mouse_ev.offy);
+                fmt::log$("mouse event: dx={} dy={}", mouse_ev.offx, mouse_ev.offy);
                 prot::HIEvent event = {};
                 event.type = prot::HI_EVENT_TYPE_MOUSE;
                 event.mouse.dx = mouse_ev.offx;
@@ -97,5 +96,9 @@ int main(int, char **)
                 ev_res = keyboard.poll_event();
             }
         }
+
+        fmt::log$("WAITIN'");
+        server->do_receive_async();
+        sys$ipc_wait_for_interrupt(12);
     }
 }

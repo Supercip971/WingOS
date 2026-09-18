@@ -160,11 +160,26 @@ extern "C"
         return send;
     }
 
+    static inline SyscallIpcReceive sys$ipc_wait_for_interrupt(uint64_t internal_signal_id)
+    {
+        SyscallIpcReceive receive = {
+            SYSCALL_IPC_RECEIVE_INTERNAL_SPACE,
+            {internal_signal_id},
+            0,
+            0,
+            0,
+        };
+        SyscallInterface interface = syscall_ipc_receive_encode(&receive);
+        uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
+        (void)result;
+        return receive;
+    }
+
     static inline SyscallIpcReceive sys$ipc_receive(uint64_t space_handle, uint64_t endpoint_handle, IpcMessage *returned_message, bool async)
     {
         SyscallIpcReceive receive = {
             space_handle,
-            endpoint_handle,
+            {endpoint_handle},
             async,
             returned_message,
             0,

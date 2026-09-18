@@ -290,12 +290,18 @@ extern "C"
     // ------- SYSCALL IPC SERVER RECEIVE ----
 
 #define SYSCALL_IPC_RECEIVE_ID 0x0000000B
+#define SYSCALL_IPC_RECEIVE_INTERNAL_SPACE ((uint64_t)-1)
 
     typedef struct SyscallIpcReceive
     {
 
-        uint64_t space_handle;
-        uint64_t endpoint_handle;
+        uint64_t space_handle; // if -1 uses the kernel internal notification/interrupt
+
+        union
+        {
+            uint64_t endpoint_handle;    //
+            uint64_t internal_signal_id; //
+        };
 
         bool async;
 

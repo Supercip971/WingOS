@@ -11,6 +11,7 @@
 #include "kernel/generic/cpu.hpp"
 #include "kernel/generic/execute.hpp"
 #include "kernel/generic/scheduler.hpp"
+#include "kernel/generic/signal.hpp"
 #include "kernel/generic/space.hpp"
 #include "kernel/generic/task.hpp"
 #include "libcore/lock/lock.hpp"
@@ -114,6 +115,7 @@ void kernel_entry(const mcx::MachineContext *context)
 
     auto v = Space::global_space_by_handle(0);
 
+    kernel::internal_signal_register(Space::global_space_by_handle(0).unwrap()).assert();
     if (v.is_error())
     {
         fmt::err$("unable to get global space: {}", v.error());

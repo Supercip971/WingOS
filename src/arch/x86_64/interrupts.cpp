@@ -9,6 +9,7 @@
 #include "hw/acpi/lapic.hpp"
 #include "kernel/generic/cpu.hpp"
 #include "kernel/generic/scheduler.hpp"
+#include "kernel/generic/signal.hpp"
 #include "kernel/generic/task.hpp"
 #include "libcore/encourage.hpp"
 #include "libcore/fmt/flags.hpp"
@@ -62,6 +63,7 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
     if (Cpu::current()->in_interrupt())
     {
         fmt::log_release();
+
         fmt::warn$("already in an interrupt {}", Cpu::currentId());
     }
 
@@ -197,15 +199,26 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
         }
     }
 
-    Cpu::current()->in_interrupt(false);
-    hw::acpi::Lapic::the().eoi();
-
-    Cpu::current()->interrupt_release(false);
-
     if (frame->interrupt_number != 2)
     {
 
         int_lock.read_release();
     }
+
+    if (frame->interrupt_number >= 33 && frame->interrupt_number <= 64)
+    {
+        auto v = kernel::signal_interrupt_query(frame->interrupt_number - 32);
+
+        if (v.raw() != nullptr)
+        {
+            kernel::signal_trigger(v);
+        }
+    }
+
+    Cpu::current()->in_interrupt(false);
+    hw::acpi::Lapic::the().eoi();
+
+    Cpu::current()->interrupt_release(false);
+
     return stack;
 }

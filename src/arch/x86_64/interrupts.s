@@ -68,6 +68,7 @@ extern interrupt_handler
 
 __interrupt_common:
     cld
+    cli
     push_all
 
     mov rdi, rsp

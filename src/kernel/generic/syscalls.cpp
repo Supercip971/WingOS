@@ -10,6 +10,7 @@
 #include "kernel/generic/cpu.hpp"
 #include "kernel/generic/ipc.hpp"
 #include "kernel/generic/scheduler.hpp"
+#include "kernel/generic/signal.hpp"
 #include "kernel/generic/space.hpp"
 #include "kernel/generic/task.hpp"
 #include "libcore/fmt/flags.hpp"
@@ -469,20 +470,42 @@ fc::Result<size_t> ksyscall_send(kernel::Task *caller, SyscallIpcSend *send)
     return (size_t)0;
 }
 
+fc::Result<size_t> ksyscall_receive_internal(kernel::Task *caller, SyscallIpcReceive *receive)
+{
+
+    AssetRef<AssetTask> return_task = AssetRef<AssetTask>(caller, -1);
+
+    auto endpoint = kernel::signal_interrupt_query(receive->internal_signal_id);
+    if (endpoint.asset == nullptr)
+    {
+        return fc::Result<size_t>::error("no signal endpoint");
+    }
+
+    auto signal_endpoint = endpoint.casted<kernel::SignalEndpoint>();
+    kernel::signal_await(signal_endpoint, return_task);
+
+    return 0ul;
+}
+
 fc::Result<size_t> ksyscall_receive(kernel::Task *caller, SyscallIpcReceive *receive)
 {
     Space *space = nullptr;
+
+    if (receive->space_handle == SYSCALL_IPC_RECEIVE_INTERNAL_SPACE)
+    {
+        return ksyscall_receive_internal(caller, receive);
+    }
+
     if (receive->space_handle != 0)
     {
         space = try$(
                     caller->space()->by_handle<Space>(receive->space_handle))
                     .asset;
     }
-    else
+    else if (receive->space_handle == 0)
     {
         space = caller->space();
     }
-
     if (space == nullptr)
     {
         return fc::Result<size_t>::error("no current space");
@@ -491,15 +514,31 @@ fc::Result<size_t> ksyscall_receive(kernel::Task *caller, SyscallIpcReceive *rec
     AssetRef<Space> space_ref = AssetRef<Space>(space, -1);
     AssetRef<AssetTask> return_task = AssetRef<AssetTask>(caller, -1);
 
-    auto endpoint = (space->by_handle<kernel::IpcEndpoint>(receive->endpoint_handle)).take();
+    auto endpoint = (space->by_handle(receive->endpoint_handle)).take();
 
-    if (receive->async)
+    if (endpoint->kind == AssetKind::OBJECT_KIND_SIGNAL_ENDPOINT)
     {
-        try$(kernel::ipc_receive_async(space_ref, endpoint, receive->returned_message, &receive->return_context_handle));
+        auto signal_endpoint = endpoint.casted<kernel::SignalEndpoint>();
+        kernel::signal_await(signal_endpoint, return_task);
+    }
+    else if (endpoint->kind == AssetKind::OBJECT_KIND_IPC_ENDPOINT)
+    {
+        auto ipc_endpoint = endpoint.casted<kernel::IpcEndpoint>();
+
+        if (receive->async)
+        {
+            try$(kernel::ipc_receive_async(space_ref, ipc_endpoint, receive->returned_message, &receive->return_context_handle));
+        }
+        else
+        {
+            try$(kernel::ipc_receive(space_ref, return_task, ipc_endpoint, receive->returned_message, &receive->return_context_handle));
+        }
     }
     else
     {
-        try$(kernel::ipc_receive(space_ref, return_task, endpoint, receive->returned_message, &receive->return_context_handle));
+        fmt::err$("invalid endpoint kind: {}", endpoint->kind);
+
+        return fc::Result<size_t>::error("invalid endpoint kind");
     }
     return 0ul;
 }

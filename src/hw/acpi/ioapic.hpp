@@ -67,13 +67,14 @@ class IOApic
 
     VirtAddr _base;
     MadtEntryIoapic _entry;
+    bool _loaded = false;
 
 public:
     IOApic() = default;
 
     IOApic(VirtAddr base) : _base(base) {}
 
-    IOApic(MadtEntryIoapic entry, VirtAddr base) : _base(base), _entry(entry) {}
+    IOApic(MadtEntryIoapic entry, VirtAddr base) : _base(base), _entry(entry), _loaded(true) {}
 
     template <typename T = uint32_t>
     T read(size_t reg)
@@ -112,6 +113,7 @@ public:
     static fc::Result<IOApicIndex> query_from_irq(size_t irq);
 
     static fc::Result<void> initialize(IOApicIndex index, MadtEntryIoapic const *entry);
+    static void reset_validity();
 };
 
 }; // namespace hw::acpi

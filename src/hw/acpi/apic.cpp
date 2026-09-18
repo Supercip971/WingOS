@@ -119,6 +119,12 @@ fc::Result<void> apic_initialize(mcx::MachineContext const *context, CpuDetected
     madt->foreach_entry<MadtEntryIso>([](auto *value)
                                       { update_interrupt_source_override(value); });
 
+    // init legacy
+    for (size_t leg_irq = 0; leg_irq < 32; leg_irq++)
+    {
+        redirect_interrupt(0, leg_irq, leg_irq + 32, true);
+    }
+
     // will disable PIC
     // will enable APIC
     Lapic::initialize(madt);
@@ -132,6 +138,10 @@ fc::Result<void> _raw_redirect_interrupt(LCpuId cpu, uint8_t vector, bool enable
 
     auto *ioapic = try$(IOApic::get(ioapic_index));
 
+    if (ioapic == nullptr)
+    {
+        return {};
+    }
     IoapicRedirectionReg final = {0};
 
     final.val.vector = vector;

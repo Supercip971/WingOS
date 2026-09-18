@@ -25,6 +25,14 @@ fc::Result<IOApic *> IOApic::get(IOApicIndex index)
     return &ioapics[index];
 }
 
+void IOApic::reset_validity()
+{
+    for (auto &ioapic : ioapics)
+    {
+        ioapic._loaded = false;
+    }
+}
+
 fc::Result<void> IOApic::initialize(IOApicIndex index, MadtEntryIoapic const *entry)
 {
     if (index >= max_ioapic)
@@ -36,7 +44,7 @@ fc::Result<void> IOApic::initialize(IOApicIndex index, MadtEntryIoapic const *en
 
     ioapic = IOApic(*entry, toVirt(entry->ioapic_addr));
 
-    fmt::log$("ioapic[{}]: ", entry->ioapic_id);
+    fmt::log$("ioapic[{}]: {} ", entry->ioapic_id);
     fmt::log$("  id: {}", ioapic.read(IOAPIC_REG_ID));
     fmt::log$("  max redirect: {}", ioapic.max_redirect());
     fmt::log$("  interrupt base: {}", ioapic.interrupt_base());
@@ -52,6 +60,10 @@ fc::Result<IOApicIndex> IOApic::query_from_irq(size_t irq)
     for (size_t i = 0; i < max_ioapic; i++)
     {
         auto &ioapic = ioapics[i];
+        if (!ioapic._loaded)
+        {
+            continue;
+        }
         if (ioapic.interrupt_base() <= irq && ioapic.interrupt_base() + ioapic.max_redirect() > irq)
         {
             return i;

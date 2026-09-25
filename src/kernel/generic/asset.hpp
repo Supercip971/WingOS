@@ -12,7 +12,6 @@ struct Space;
 
 struct AssetMemory : public Asset
 {
-
     static constexpr size_t IDENT = AssetKind::OBJECT_KIND_MEMORY;
     size_t size;
     size_t addr;

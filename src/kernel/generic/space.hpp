@@ -321,6 +321,8 @@ struct Space : public Asset
 
     fc::Result<AssetRef<kernel::SignalEndpoint>> create_signal_endpoint();
 
+    fc::Result<AssetRef<kernel::SignalAttached>> create_attached_signal(AssetRef<kernel::SignalEndpoint> &attached_to);
+
     template <typename T>
     static fc::Result<AssetRef<>> asset_move(
         Space *from, Space *to, AssetRef<T> const &asset)

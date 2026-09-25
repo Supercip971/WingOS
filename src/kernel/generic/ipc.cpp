@@ -122,7 +122,7 @@ fc::Result<void> kernel::ipc_receive(AssetRef<Space> &space, AssetRef<AssetTask>
 
     *ret_task_handle = 0;
 
-    while (!endpoint->has_message())
+    while (!endpoint->has_message() && !callee->signaled)
     {
         callee.lock();
         callee->sched().block();
@@ -137,6 +137,16 @@ fc::Result<void> kernel::ipc_receive(AssetRef<Space> &space, AssetRef<AssetTask>
     endpoint.lock();
 
     endpoint->awaiting_server.release_ref();
+    if (callee->signaled)
+    {
+        callee->signaled = false;
+        *target = {};
+        target->interrupted = true;
+        target->copy_handle(0, callee->signaled_by);
+
+        endpoint.unlock();
+        return {};
+    }
 
     if ((endpoint->last_async_msg_tick < endpoint->last_sync_msg_tick && endpoint->async_queue.len() != 0) || endpoint->sync_queue.len() == 0)
     {

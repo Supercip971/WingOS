@@ -112,8 +112,3 @@ fc::Result<void> kernel::Task::_initialize(CpuContextLaunch params, VmmSpace *ta
 
     return {};
 }
-
-namespace kernel
-{
-
-}

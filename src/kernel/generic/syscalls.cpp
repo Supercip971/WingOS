@@ -470,7 +470,7 @@ fc::Result<size_t> ksyscall_send(kernel::Task *caller, SyscallIpcSend *send)
     return (size_t)0;
 }
 
-fc::Result<size_t> ksyscall_receive_internal(kernel::Task *caller, SyscallIpcReceive *receive)
+fc::Result<size_t> ksyscall_receive_internal(kernel::Task *caller, SyscallIpcReceive *receive, AssetRef<Space> &space)
 {
 
     AssetRef<AssetTask> return_task = AssetRef<AssetTask>(caller, -1);
@@ -482,7 +482,13 @@ fc::Result<size_t> ksyscall_receive_internal(kernel::Task *caller, SyscallIpcRec
     }
 
     auto signal_endpoint = endpoint.casted<kernel::SignalEndpoint>();
-    kernel::signal_await(signal_endpoint, return_task);
+
+    auto res = kernel::signal_await(signal_endpoint, return_task, receive->async, space);
+
+    if (res.is_ok())
+    {
+        receive->return_asset_id = res.unwrap().get_handle();
+    }
 
     return 0ul;
 }
@@ -490,19 +496,13 @@ fc::Result<size_t> ksyscall_receive_internal(kernel::Task *caller, SyscallIpcRec
 fc::Result<size_t> ksyscall_receive(kernel::Task *caller, SyscallIpcReceive *receive)
 {
     Space *space = nullptr;
-
-    if (receive->space_handle == SYSCALL_IPC_RECEIVE_INTERNAL_SPACE)
-    {
-        return ksyscall_receive_internal(caller, receive);
-    }
-
-    if (receive->space_handle != 0)
+    if (receive->space_handle != 0 && receive->space_handle != SYSCALL_IPC_RECEIVE_INTERNAL_SPACE)
     {
         space = try$(
                     caller->space()->by_handle<Space>(receive->space_handle))
                     .asset;
     }
-    else if (receive->space_handle == 0)
+    else
     {
         space = caller->space();
     }
@@ -512,6 +512,11 @@ fc::Result<size_t> ksyscall_receive(kernel::Task *caller, SyscallIpcReceive *rec
     }
 
     AssetRef<Space> space_ref = AssetRef<Space>(space, -1);
+    if (receive->space_handle == SYSCALL_IPC_RECEIVE_INTERNAL_SPACE)
+    {
+        return ksyscall_receive_internal(caller, receive, space_ref);
+    }
+
     AssetRef<AssetTask> return_task = AssetRef<AssetTask>(caller, -1);
 
     auto endpoint = (space->by_handle(receive->endpoint_handle)).take();
@@ -519,7 +524,7 @@ fc::Result<size_t> ksyscall_receive(kernel::Task *caller, SyscallIpcReceive *rec
     if (endpoint->kind == AssetKind::OBJECT_KIND_SIGNAL_ENDPOINT)
     {
         auto signal_endpoint = endpoint.casted<kernel::SignalEndpoint>();
-        kernel::signal_await(signal_endpoint, return_task);
+        kernel::signal_await(signal_endpoint, return_task, !receive->async, space_ref);
     }
     else if (endpoint->kind == AssetKind::OBJECT_KIND_IPC_ENDPOINT)
     {

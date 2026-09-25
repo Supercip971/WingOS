@@ -67,12 +67,12 @@ struct IpcMessageArguments
 
 struct IpcMessage : public fc::NoCopy
 {
-    constexpr IpcMessage() : arguments(), port(0), len(0), is_null(false)
+    constexpr IpcMessage() : arguments(), port(0), len(0), is_null(false), interrupted(false)
     {
     }
 
     constexpr IpcMessage(IpcMessage &&other) noexcept
-        : arguments(other.arguments), port(other.port), len(other.len), is_null(other.is_null)
+        : arguments(other.arguments), port(other.port), len(other.len), is_null(other.is_null), interrupted(other.interrupted)
     {
         for (size_t i = 0; i < math::alignUp((size_t)other.len, sizeof(uint64_t)) / sizeof(uint64_t); i++)
         {
@@ -88,6 +88,7 @@ struct IpcMessage : public fc::NoCopy
             this->port = other.port;
             this->len = other.len;
             this->is_null = other.is_null;
+            this->interrupted = other.interrupted;
 
             for (size_t i = 0; i < math::alignUp((size_t)other.len, sizeof(uint64_t)) / sizeof(uint64_t); i++)
             {
@@ -105,6 +106,7 @@ struct IpcMessage : public fc::NoCopy
         msg.port = other.port;
         msg.len = other.len;
         msg.is_null = other.is_null;
+        msg.interrupted = other.interrupted;
 
         for (size_t i = 0; i < math::alignUp((size_t)other.len, sizeof(uint64_t)) / sizeof(uint64_t); i++)
         {
@@ -164,6 +166,7 @@ struct IpcMessage
     uint64_t port;
     uint16_t len;
     bool is_null;
+    bool interrupted;
 
     union
     {

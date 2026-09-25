@@ -6,12 +6,13 @@
 
 #include "kernel/generic/asset.hpp"
 #include "kernel/generic/space.hpp"
+#include "libcore/result.hpp"
 
 namespace kernel
 {
 void signal_trigger(AssetRef<SignalEndpoint> &endpoint);
 
-void signal_await(AssetRef<SignalEndpoint> &endpoint, AssetRef<AssetTask> &task);
+fc::Result<AssetRef<SignalAttached>> signal_await(AssetRef<SignalEndpoint> &endpoint, AssetRef<AssetTask> &task, bool async, AssetRef<Space> &attached);
 
 fc::Result<void> internal_signal_register(AssetRef<Space> root_space);
 

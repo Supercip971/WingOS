@@ -167,7 +167,22 @@ extern "C"
             {internal_signal_id},
             0,
             0,
+            {},
+        };
+        SyscallInterface interface = syscall_ipc_receive_encode(&receive);
+        uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
+        (void)result;
+        return receive;
+    }
+
+    static inline SyscallIpcReceive sys$ipc_wait_for_interrupt_async(uint64_t internal_signal_id)
+    {
+        SyscallIpcReceive receive = {
+            SYSCALL_IPC_RECEIVE_INTERNAL_SPACE,
+            {internal_signal_id},
+            1,
             0,
+            {},
         };
         SyscallInterface interface = syscall_ipc_receive_encode(&receive);
         uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);

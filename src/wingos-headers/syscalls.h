@@ -307,8 +307,14 @@ extern "C"
 
         // RETURN:
 
-        IpcMessage *returned_message;   // the message received
-        uint64_t return_context_handle; // if is a server, the port used by the connection
+        IpcMessage *returned_message; // the message received
+
+        union
+        {
+            uint64_t return_context_handle; // if is a server, the port used by the connection
+            uint64_t return_asset_id;
+        };
+
     } SyscallIpcReceive;
 
     static inline SyscallInterface syscall_ipc_receive_encode(SyscallIpcReceive *receive)

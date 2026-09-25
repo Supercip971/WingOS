@@ -36,6 +36,8 @@ enum TaskPriority : uint32_t
 
 struct SchedulerControlBlock;
 
+class SignalEndpoint;
+
 class Task : public Asset
 {
     TUID _uid = 0;
@@ -46,6 +48,9 @@ class Task : public Asset
     static Task *_task_allocate();
 
 public:
+    uint64_t signaled_by;
+    bool signaled;
+
     Task() : Asset(AssetKind::OBJECT_KIND_TASK) {}
 
     static constexpr size_t IDENT = AssetKind::OBJECT_KIND_TASK;

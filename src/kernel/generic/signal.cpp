@@ -1,8 +1,10 @@
 #include <stdint.h>
 
+#include "kernel/generic/asset_types.hpp"
 #include "kernel/generic/signal_asset.hpp"
 
 #include "kernel/generic/scheduler.hpp"
+#include "kernel/generic/space.hpp"
 #include "libcore/ds/umap.hpp"
 #include "signal.hpp"
 
@@ -19,12 +21,27 @@ void kernel::signal_trigger(AssetRef<SignalEndpoint> &endpoint)
     }
     endpoint.lock();
 
-    for (auto &awaiter : endpoint->_awaiters)
+    size_t index = 0;
+    while (index < endpoint->_awaiters.len())
     {
-        if (awaiter.asset)
-            awaiter->sched().unblock();
+        auto &elt = endpoint->_awaiters[index];
+        if (!elt.task.asset)
+        {
+            index++;
+            continue;
+        }
+        elt.task.asset->signaled = true;
+        elt.task.asset->signaled_by = elt.attachement.get_handle();
+        elt.task->sched().unblock();
+
+        if (elt.kind == WaiterKind::WAITER_KIND_SYNC)
+        {
+            endpoint->_awaiters.pop(index);
+            continue;
+        }
+        index++;
     }
-    endpoint->_awaiters.clear();
+
     endpoint.unlock();
     resolve_blocked_tasks();
 }
@@ -56,8 +73,10 @@ void kernel::signal_trigger_from_irq(AssetRef<SignalEndpoint> &endpoint)
     resolve_blocked_tasks();
     }*/
 
-void kernel::signal_await(AssetRef<SignalEndpoint> &endpoint, AssetRef<AssetTask> &task)
+fc::Result<AssetRef<kernel::SignalAttached>> kernel::signal_await(AssetRef<SignalEndpoint> &endpoint, AssetRef<AssetTask> &task, bool async, AssetRef<Space> &host_space)
 {
+
+    auto attached = try$(host_space->create_attached_signal(endpoint));
 
     Cpu::current()->interrupt_hold();
     while (!endpoint->lock.retry_try_lock())
@@ -68,10 +87,13 @@ void kernel::signal_await(AssetRef<SignalEndpoint> &endpoint, AssetRef<AssetTask
     }
     auto wait_id = endpoint->_counter.load();
 
-    endpoint->_awaiters.push(task);
+    endpoint->_awaiters.push({task, async ? WAITER_KIND_ASYNC : WAITER_KIND_SYNC, attached});
 
     endpoint->lock.release();
     Cpu::current()->interrupt_release();
+
+    if (async)
+        return attached;
 
     while (endpoint->_counter.load() == wait_id)
     {
@@ -84,6 +106,9 @@ void kernel::signal_await(AssetRef<SignalEndpoint> &endpoint, AssetRef<AssetTask
 
         block_current_task();
     }
+
+    host_space->asset_release(attached);
+    return {};
 }
 
 fc::Result<void> kernel::internal_signal_register(AssetRef<Space> root_space)

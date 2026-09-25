@@ -294,6 +294,15 @@ fc::Result<AssetRef<kernel::SignalEndpoint>> Space::create_signal_endpoint()
     return ptr;
 }
 
+fc::Result<AssetRef<kernel::SignalAttached>> Space::create_attached_signal(AssetRef<kernel::SignalEndpoint> &attached_to)
+{
+    auto ptr = try$(allocate_asset<kernel::SignalAttached>(attached_to));
+
+    Asset::own(ptr.asset);
+    ptr.asset->lock.release();
+    return ptr;
+}
+
 fc::Result<AssetRef<kernel::IpcEndpoint>> Space::create_ipc_endpoint(AssetIpcEndpointCreateParams const &params)
 {
     auto ptr = try$(allocate_asset<kernel::IpcEndpoint>());

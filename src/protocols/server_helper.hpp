@@ -14,6 +14,8 @@
 namespace prot
 {
 
+using InterruptedByHandle = uint64_t;
+
 typedef enum : uint64_t
 {
     PROT_SIGNAL_DISCONNECT = (uint64_t)-1
@@ -241,11 +243,15 @@ public:
         return {};
     };
 
-    fc::Result<void> do_receive()
+    fc::Result<InterruptedByHandle> do_receive()
     {
         IpcMessage msg;
         auto res = try$(endpoint.receive(&msg));
 
+        if (msg.interrupted)
+        {
+            return {msg.asset(0)};
+        }
         if (!connections.has(msg.port))
         {
             auto connection = try$(on_connect(msg));
@@ -286,11 +292,11 @@ public:
             fmt::err$("IPC error: {}, disconnecting : {}", err.error(), msg.port);
             connections.remove(msg.port);
 
-            return err;
+            return err.error();
         }
 
         try$(after_receive());
-        return {};
+        return 0ul;
     };
 
     void loop()

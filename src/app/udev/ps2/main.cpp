@@ -37,8 +37,6 @@ int main(int, char **)
 
     auto server = std::move(server_r.unwrap());
 
-    fmt::log$("started ps2 service");
-
     Ps2::Controller controller = Ps2::Controller();
     Ps2::Ps2Keyboard keyboard(controller);
     keyboard.init();
@@ -46,6 +44,11 @@ int main(int, char **)
     mouse.init();
 
     controller.flush();
+
+    auto int12 = sys$ipc_wait_for_interrupt_async(12);
+    auto int1 = sys$ipc_wait_for_interrupt_async(1);
+
+    fmt::log$("started ps2 service");
     while (true)
     {
         if (mouse.handle_event())
@@ -98,7 +101,17 @@ int main(int, char **)
         }
 
         fmt::log$("WAITIN'");
-        server->do_receive_async();
-        sys$ipc_wait_for_interrupt(12);
+        auto interrupted_by = server->do_receive();
+        if (interrupted_by.is_ok() && interrupted_by.unwrap() != 0)
+        {
+            if (interrupted_by.unwrap() == int1.return_asset_id)
+            {
+                fmt::log$("keyboard int");
+            }
+            else if (interrupted_by.unwrap() == int12.return_asset_id)
+            {
+                fmt::log$("mouse int");
+            }
+        }
     }
 }

@@ -6,9 +6,9 @@
 
 # Wingos
 
-WingOS is a small hobbyist 64 bit kernel made with <3 in C++ 
+WingOS is a small hobbyist microkernel based operating system made with <3 in C++ 
 
-[latest milestone](https://cyp.sh/blog/wingos-milestone-1/) - [blog](https://cyp.sh/blog/) - [old branch](https://github.com/Supercip971/WingOS/tree/old)
+[latest milestone](https://cyp.sh/blog/wingos-milestone-3/) - [blog](https://cyp.sh/blog/) - [website](https://wingos.org)
 
 </div>
 
@@ -32,6 +32,7 @@ Wingos screenshot running DOOM in userspace
 
 ## Milestones
 
+- [milestone 3 blog post](https://cyp.sh/blog/wingos-milestone-3/)
 - [milestone 2 blog post](https://cyp.sh/blog/wingos-milestone-2/)
 - [milestone 1 blog post](https://cyp.sh/blog/wingos-milestone-1/)
 
@@ -68,9 +69,10 @@ For now the kernel is still in development, but it has a few key features:
 - [x] Blocking IPC
 - [x] Graphics support (VESA, framebuffer, ...)
 - [x] Input support (keyboard, mouse, ...)
-    - [ ] Interrupt handling in userspace 
+    - [x] Interrupt handling in userspace 
 - [x] Port DOOM
-- [ ] Signals 
+- [x] Signals 
+- [ ] basic POSIX server
 - [ ] Create a shell 
 - [ ] Above and beyond 
 

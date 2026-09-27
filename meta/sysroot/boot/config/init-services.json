@@ -28,6 +28,16 @@
       "name": "wingos-clock",
       "path": "/bin/wingos-clock",
       "requires": ["@fs"]
+    },
+    {
+      "name": "hello-wingos",
+      "path": "/bin/hello-wingos",
+      "requires": ["@fs", "humming-bird"]
+    },
+    {
+      "name": "humming-bird",
+      "path": "/bin/humming-bird",
+      "requires": ["@fs"]
     }
   ],
   "drivers": [

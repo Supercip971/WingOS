@@ -1,0 +1,18 @@
+{
+    "$schema": "https://schemas.cute.engineering/stable/cutekit.manifest.component.v1",
+    "id": "humming-bird",
+    "type": "exe",
+    "description": "WingOS posix compatiblity layer",
+    "props": {
+        "pkgname": "humming-bird",
+        "exported": "disk"
+    },
+    "requires": [
+        "libcore"
+    ],
+    "enableIf": {
+        "sys": [
+            "wingos"
+        ]
+    }
+}

@@ -115,6 +115,7 @@ def portFunc(args: model.TargetArgs):
             os.path.join(SYSROOT_LIB_PATH, "libc_liballoc.a"),
             os.path.join(SYSROOT_LIB_PATH, "libc_libcore.a"),
             os.path.join(SYSROOT_LIB_PATH, "libc_libarch.a"),
+            os.path.join(SYSROOT_LIB_PATH, "libsupc++.a"),
         ]
     )
 

@@ -180,7 +180,11 @@ fc::Result<AssetRef<AssetMemory>> Space::create_memory(AssetMemoryCreateParams p
                 {
                     Pmm::the().own(PhysAddr{params.addr}, params.size);
                 }
-                else if (map.type != mcx::MemoryMap::Type::FREE)
+                else if (map.type != mcx::MemoryMap::Type::FREE && map.type != mcx::MemoryMap::Type::RESERVED)
+                {
+                    // pass maybe do right checking later
+                }
+                else
                 {
                     fmt::err$("asset_create_memory: memory range {} is not free ({})", range, (int)map.type);
                 }

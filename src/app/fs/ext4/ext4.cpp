@@ -213,7 +213,6 @@ fc::Result<uint64_t> Ext4Filesystem::inode_find_block(Ext4InodeRef const &inode,
 fc::Result<size_t> Ext4Filesystem::inode_read(Ext4InodeRef const &inode, Wingos::MemoryAsset &out, size_t off, size_t len, size_t mem_asset_off)
 
 {
-    fmt::log$("inode_read: inode={}, off={}, len={}", inode.inode_id, off, len);
     size_t const file_size = (size_t)inode.inode.size_lo;
     if (off >= file_size)
     {
@@ -506,7 +505,7 @@ fc::Result<Ext4InodeRef> Ext4Filesystem::get_subdir(Ext4InodeRef const &dir_inod
     size_t block_size_ = block_size();
     size_t dir_size = dir_inode.inode.size_lo;
     size_t total_blocks = (dir_size + block_size_ - 1) / block_size_;
-    fmt::log$("ext4: searching for entry '{}' in directory inode {}", name.view(), dir_inode.inode_id);
+    // fmt::log$("ext4: searching for entry '{}' in directory inode {}", name.view(), dir_inode.inode_id);
 
     for (size_t b = 0; b < total_blocks; b++)
     {

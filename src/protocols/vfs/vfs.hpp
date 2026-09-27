@@ -190,15 +190,10 @@ public:
             return ("only absolute paths are supported");
         }
 
-        fmt::log$("opening path {}", path.view());
         auto root_res = try$(open_root());
         auto current_dir = std::move(root_res);
         auto components = path.substr(1).split('/');
 
-        for (size_t i = 0; i < components.len(); i++)
-        {
-            fmt::log$("path component {}: {}", i, components[i].view());
-        }
         for (size_t i = 0; i < components.len(); i++)
         {
             auto next_dir_res = try$(current_dir.open_file(components[i]));

@@ -13,7 +13,6 @@ namespace fc
 
 struct Padded
 {
-
     float _pleft = 0;
     float _pright = 0;
     float _pdown = 0;
@@ -128,7 +127,7 @@ public:
     {
         // fmt::log$("== LAYOUT == ");
         // dump();
-        fmt::log$("Constraint: ({}x{} - {}x{})", (long)constraint.start.x, (long)constraint.start.y, (long)constraint.end.x, (long)constraint.end.y);
+        // fmt::log$("Constraint: ({}x{} - {}x{})", (long)constraint.start.x, (long)constraint.start.y, (long)constraint.end.x, (long)constraint.end.y);
 
         (void)ctx;
 

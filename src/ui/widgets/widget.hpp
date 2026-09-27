@@ -126,7 +126,7 @@ public:
     {
         // fmt::log$("== LAYOUT == ");
         // dump();
-        fmt::log$("Constraint: ({}x{} - {}x{})", (long)constraint.start.x, (long)constraint.start.y, (long)constraint.end.x, (long)constraint.end.y);
+        // fmt::log$("Constraint: ({}x{} - {}x{})", (long)constraint.start.x, (long)constraint.start.y, (long)constraint.end.x, (long)constraint.end.y);
 
         (void)ctx;
 
@@ -200,12 +200,10 @@ public:
 
     virtual void relayout(UiContext const &ctx, wgfx::GRect constraint)
     {
-        fmt::log$("relayout: {} - {} {} {} {}", name(), (long)constraint.start.x, (long)constraint.start.y, (long)constraint.end.x, (long)constraint.end.y);
-        // manage how to layout childs
-        //
+        // fmt::log$("relayout: {} - {} {} {} {}", name(), (long)constraint.start.x, (long)constraint.start.y, (long)constraint.end.x, (long)constraint.end.y);
+
         wgfx::GRect preferred_rect = constraint.with_size(preferred_size(constraint.size()));
         auto nlayout = layout(ctx, preferred_rect);
-        //  fmt::log$("relayout: {} - {} {} {} {}", name(), (long)nlayout.start.x, (long)nlayout.start.y, (long)nlayout.end.x, (long)nlayout.end.y);
 
         if (_layout != nlayout)
         {
@@ -416,8 +414,8 @@ public:
         _render_dirty = true;
         auto rebuild_widget = (build_childs(ctx)); // rebuild the new widget
 
-        fmt::log$("==== REBUILDING ====");
-        dump();
+        // fmt::log$("==== REBUILDING ====");
+        // dump();
         // leaf
         if (rebuild_widget.len() == 1 && childs.len() == 1)
         {

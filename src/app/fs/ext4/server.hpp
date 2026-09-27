@@ -48,10 +48,6 @@ public:
 
         case prot::FS_GET_INFO:
         {
-            fmt::log$("ext4: get_info request for inode {}", self->inode.inode_id);
-
-            fmt::log$("    indode size: {}", fc::copy(self->inode.inode.size_lo));
-            fmt::log$("    inode type: {}", (int)self->inode.inode.file_type);
             IpcMessage reply_msg = {};
             reply_msg.arg(0, 1); // success
             reply_msg.arg(1, self->inode.inode.size_lo);
@@ -73,15 +69,14 @@ public:
                 path_buf[i] = msg.raw_buffer[i];
             }
             path = fc::Str(path_buf, msg.len);
-            fmt::log$("ext4: open file request for path: {}", path.view());
 
             auto file_res = self->used_fs->get_subdir(
                 self->inode, path);
 
-            fmt::log$("ext4: get_subdir result for path {}: {}", path.view(), file_res.is_error() ? file_res.error() : "success");
+            // fmt::log$("ext4: get_subdir result for path {}: {}", path.view(), file_res.is_error() ? file_res.error() : "success");
             if (file_res.is_error())
             {
-                fmt::err$("ext4: failed to open file {}: {}", path.view(), file_res.error());
+                fmt::warn$("ext4: failed to open file {}: {}", path.view(), file_res.error());
                 reply.arg(0, 0); // failure
                 reply.arg(1, 0);
                 ret(reply);
@@ -89,7 +84,7 @@ public:
             else
             {
                 auto file_inode = file_res.unwrap();
-                fmt::log$("ext4: opened file {} with inode {}", path.view(), file_inode.inode_id);
+                //  fmt::log$("ext4: opened file {} with inode {}", path.view(), file_inode.inode_id);
                 // create new endpoint for this file
                 reply.arg(0, 1);
 
@@ -106,7 +101,7 @@ public:
                 auto forked = try$(parent->create_connection<Ext4InodeEndpoint>(child));
 
                 reply.move_handle(1, forked.handle);
-                fmt::log$("ext4: provided file endpoint {} for file {}", reply.asset(1), path.view());
+                //   fmt::log$("ext4: provided file endpoint {} for file {}", reply.asset(1), path.view());
                 ret(reply);
                 return {};
             }

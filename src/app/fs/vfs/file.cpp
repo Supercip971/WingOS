@@ -14,10 +14,8 @@ MountedFs _root;
 
 fc::Result<Wingos::IpcClient> VfsConnectionFile::open_root(VfsServerCtx &ctx)
 {
-    fmt::log$("VfsConnectionFile::open_root: searching for root filesystem, {} mounted", ctx.mounted_filesystems.len());
     for (size_t i = 0; i < ctx.mounted_filesystems.len(); i++)
     {
-        fmt::log$("VfsFileEndpoint::open_root: checking mount {}: path={}", i, ctx.mounted_filesystems[i].path.view());
         if (ctx.mounted_filesystems[i].path.view() == (fc::Str("/")))
         {
 
@@ -39,6 +37,5 @@ fc::Result<Wingos::IpcClient> VfsConnectionFile::open_root(VfsServerCtx &ctx)
         }
     }
 
-    fmt::err$("VfsFileEndpoint::open_root: no root filesystem mounted");
     return ("no root filesystem mounted");
 }

@@ -112,6 +112,10 @@ void dump_type_descriptor(type_descriptor *type)
     {
         fmt::err$("Kind: {}", __kinds[type->kind]);
     }
+    else
+    {
+        fmt::err$("Kind: {}", type->kind);
+    }
     fmt::err$("Info: {}", type->info);
 }
 
@@ -176,6 +180,7 @@ extern "C" void __ubsan_handle_type_mismatch_v1(type_mismatch_data *data,
         fmt::err$("(v1) UBSan type mismatch");
         dump_source_location(&data->loc);
         dump_type_descriptor(data->type);
+        asm volatile("ud2");
     }
     else if ((ptr & ((1 << data->alignment) - 1)) && data->alignment != 0)
     {

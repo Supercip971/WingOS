@@ -212,7 +212,6 @@ public:
             auto &entry = cache_entries[i];
             if (offset >= entry.offset && (offset + len) <= (entry.offset + entry.size))
             {
-                fmt::log$("cache hit: offset={} len={}", offset, len);
                 size_t cache_offset = offset - entry.offset;
 
                 memcpy(buffer, (void *)((uintptr_t)entry.mapped.ptr() + cache_offset), len);

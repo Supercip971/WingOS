@@ -53,7 +53,6 @@ public:
         case prot::VFS_ACCESS_ROOT:
         {
 
-            fmt::log$("access root");
             if (ctx.mounted_devices_count == 0)
             {
                 fmt::err$("no mounted devices to access root");

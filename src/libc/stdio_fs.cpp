@@ -127,7 +127,6 @@ size_t fread(void *__restrict ptr, size_t size, size_t n, FILE *__restrict file)
             size_t available = file->end - file->cursor;
             size_t to_read = (total - done < available) ? (total - done) : available;
 
-            fmt::log$("from size: {} to reading {} + {}", size * n, to_read, done);
             auto read_result = file->file->read(dst + done, file->cursor, to_read);
             if (!read_result.is_error())
             {
@@ -263,7 +262,6 @@ int fclose(FILE *stream)
         fmt::err$("fclose: file already closed (double-fclose detected!)");
         return -1;
     }
-    fmt::log$("calling fclose: {}", stream->buffer.view());
     switch (stream->kind)
     {
     case FILE_KIND_FILE:

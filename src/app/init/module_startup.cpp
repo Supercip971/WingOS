@@ -58,19 +58,15 @@ fc::Result<size_t> start_service(mcx::MachineContext *context, mcx::MachineConte
 
     auto v = execute_module(context, loaded.unwrap());
 
-    fmt::log$("[INIT] started boot module: {}", mod.path);
     return v;
 }
 
 fc::Result<size_t> start_service_fs(mcx::MachineContext *context, fc::Str const &path)
 {
-    fmt::log$("[INIT] starting module from fs: {}", path);
 
     auto vfs_endpoint = try$(service_get("vfs"));
-    fmt::log$("[INIT] got vfs endpoint: {}", vfs_endpoint);
 
     auto vfs_service = prot::VfsConnection::connect(vfs_endpoint).take();
-    fmt::log$("[INIT] connected to vfs for: {}", path);
 
     auto file_res = vfs_service.open_path(path);
     if (file_res.is_error())
@@ -79,7 +75,6 @@ fc::Result<size_t> start_service_fs(mcx::MachineContext *context, fc::Str const 
         return file_res.error();
     }
     auto file = file_res.take();
-    fmt::log$("[INIT] opened {}", path);
 
     auto info_res = file.get_info();
     if (info_res.is_error())
@@ -88,7 +83,6 @@ fc::Result<size_t> start_service_fs(mcx::MachineContext *context, fc::Str const 
         return info_res.error();
     }
     auto d = info_res.take();
-    fmt::log$("[INIT] {} size={} is_dir={}", path, d.size, d.is_directory);
 
     if (d.is_directory != 8)
     {
@@ -105,7 +99,6 @@ fc::Result<size_t> start_service_fs(mcx::MachineContext *context, fc::Str const 
         fmt::err$("[INIT] read failed for {}: {}", path, read_res.error());
         return read_res.error();
     }
-    fmt::log$("[INIT] read {} bytes from {}", d.size, path);
 
     auto mapped = Wingos::Space::self().map_memory(mem, ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);
 
@@ -134,8 +127,6 @@ fc::Result<size_t> start_service(mcx::MachineContext *context, fc::Str path)
             return start_service(context, mod);
         }
     }
-
-    fmt::warn$("[INIT] no module found with path: {}", path);
 
     return start_service_fs(context, path);
 }
@@ -234,8 +225,6 @@ fc::Result<void> load_module_config(mcx::MachineContext *context)
     for (wjson::JsonValue &l : modules)
     {
         auto name = try$(l["name"].as_string());
-
-        fmt::log$("l-module: {}", name);
         auto path = try$(l["path"].as_string());
 
         fmt::log$("module: {}, path: {}", name, path);
@@ -246,28 +235,17 @@ fc::Result<void> load_module_config(mcx::MachineContext *context)
         {
             auto deps_array_r = (deps_json.take());
             {
-
                 fc::Vec<wjson::JsonValue> deps_array = try$(deps_array_r.as_array());
                 {
-
                     for (auto d : deps_array)
                     {
-
                         ml.deps.push(try$(d.as_string()));
                     }
-                    fmt::log$("AAAA");
                 }
-                fmt::log$("destructing deps_array: {}", deps_array.len());
             }
-            fmt::log$("destructing deps_array_r: {}", deps_array_r.storage.raw);
         }
         module_to_launch.push(ml);
-
-        fmt::log$("nl-module: {}", name);
-        // module_service.push(fc::Str(path));
     }
-    fmt::log$("A:");
-
     return {};
 }
 
@@ -283,7 +261,6 @@ fc::Result<bool> try_startup_modules_cycle_one(mcx::MachineContext *context)
             if (!started_services.contain(mod.deps[d]))
             {
                 can_start = false;
-                fmt::log$("[try_startup] Module '{}' waiting for dependency '{}'", mod.name, mod.deps[d]);
                 break;
             }
         }
@@ -342,15 +319,12 @@ fc::Result<void> startup_module(mcx::MachineContext *context)
 
 fc::Result<void> service_startup_callback(fc::Str service_name)
 {
-    fmt::log$("[service_startup_callback] Service registered: {}", service_name);
-
     if (gmcx == nullptr)
     {
         return "machine context is null";
     }
     started_services.push(service_name);
 
-    fmt::log$("[service_startup_callback] Attempting to start pending modules (count: {})", module_to_launch.len());
     auto res = try_startup_modules_cycle(gmcx);
 
     if (res.is_error())
@@ -358,8 +332,6 @@ fc::Result<void> service_startup_callback(fc::Str service_name)
         fmt::err$("[service_startup_callback] Failed to start modules: {}", res.error());
         return res;
     }
-
-    fmt::log$("[service_startup_callback] Module startup cycle complete, remaining modules: {}", module_to_launch.len());
 
     return {};
 }

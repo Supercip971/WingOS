@@ -95,11 +95,7 @@ public:
 
         message.len = i + 1;
 
-        fmt::log$("Register server {START} ");
-
         auto sended_message = connection.send(message);
-
-        fmt::log$("Register server {END } ");
 
         return {};
     }
@@ -132,11 +128,8 @@ public:
         message.raw_buffer[i] = 0;
         message.len = i + 1;
 
-        fmt::log$("Querying server {START} ");
-
         auto res = connection.call(message);
 
-        fmt::log$("Querying server {END  } ");
         if (!res.is_error())
         {
             InitGetServerResponse resp{};
@@ -147,7 +140,6 @@ public:
             }
             resp.major = message.arguments.data[1].data;
             resp.minor = message.arguments.data[2].data;
-            fmt::log$("got server response: endpoint={}, major={}, minor={}", resp.endpoint, resp.major, resp.minor);
             return (resp);
         }
         fmt::log$("failed to get server response");

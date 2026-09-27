@@ -59,14 +59,10 @@ public:
             reply_msg.arg(0, 1);
             reply_msg.move_handle(1, client.handle);
 
-            fmt::log$("VfsFileEndpoint: open file {}", filename.view());
-
             reply(reply_msg, reply_obj);
 
             // early return because we loop over endpoints that we pushed
             return {};
-
-            break;
         }
             // else forward to filesystem
 

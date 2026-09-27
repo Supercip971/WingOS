@@ -154,8 +154,8 @@ public:
             shape.bearing = left_side_bearing * rscale;
             if (shape.num_vertices > 0)
             {
-                char str[3] = {shape.c, 0};
-                fmt::log$("loading font: char {}", str);
+                // char str[3] = {shape.c, 0};
+                //   fmt::log$("loading font: char {}", str);
                 shape.gfx_contour = fc::SharedPtr<Contour>::make(Font::from_stbtt_vertices(rscale, shape.vertices, shape.num_vertices));
             }
             else

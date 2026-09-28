@@ -78,7 +78,6 @@ fc::Result<kernel::Task *> kernel::Task::task_create()
 
     task->_cpu_context = try$(kernel::CpuContext::create_empty());
 
-    fmt::log$("created task with id: {}", task->uid());
     return (task);
 }
 

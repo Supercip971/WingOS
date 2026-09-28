@@ -675,7 +675,6 @@ fc::Result<size_t> ksyscall_ipc_asset_info(kernel::Task *caller, SyscallAssetInf
         break;
     }
     default:
-        fmt::warn$("Asset info for kind {} not implemented", asset.asset->kind);
         break;
     }
 

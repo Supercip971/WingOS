@@ -1,5 +1,6 @@
 #pragma once
 
+#include <sys/types.h>
 #ifdef __cplusplus
 extern "C"
 {
@@ -10,6 +11,8 @@ extern "C"
     int chdir(const char *path);
 
     void _exit(int status);
+
+    pid_t fork();
 
 #ifdef __cplusplus
 }

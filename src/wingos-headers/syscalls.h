@@ -381,9 +381,16 @@ extern "C"
     typedef struct SyscallAssetInfo
     {
         uint64_t space_handle;
-        uint64_t asset_handle;
+        bool use_index;
 
-        AssetKind returned_kind; // the kind of the asset
+        union
+        {
+            uint64_t asset_handle;
+            uint64_t asset_index;
+        };
+
+        AssetKind returned_kind;        // the kind of the asset
+        uint64_t returned_asset_handle; // if using asset_index
 
         union
         {
@@ -407,6 +414,11 @@ extern "C"
 
                 uint64_t port;
             } connection;
+
+            struct
+            {
+                uint64_t element_count;
+            } space;
 
             // other asset types can be added here
         } returned_info;

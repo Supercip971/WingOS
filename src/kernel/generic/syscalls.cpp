@@ -624,9 +624,25 @@ fc::Result<size_t> ksyscall_ipc_asset_info(kernel::Task *caller, SyscallAssetInf
         return fc::Result<size_t>::error("no current space");
     }
 
-    auto asset = try$(space->by_handle<Asset>(info->asset_handle));
+    AssetRef<Asset> asset;
+    if (!info->use_index && info->asset_handle == 0)
+    {
+        asset = AssetRef<>(caller->space(), 0);
+    }
+    else if (info->use_index)
+    {
+        asset = try$(space->by_index(info->asset_handle));
+    }
+    else
+    {
+        asset = try$(space->by_handle(info->asset_index));
+    }
 
     info->returned_kind = asset.asset->kind;
+    if (info->use_index)
+    {
+        info->returned_asset_handle = asset.handle;
+    }
 
     switch (asset.asset->kind)
     {
@@ -650,6 +666,12 @@ fc::Result<size_t> ksyscall_ipc_asset_info(kernel::Task *caller, SyscallAssetInf
     {
         auto conn = asset.asset->casted<kernel::IpcEndpointConnection>();
         info->returned_info.connection.port = conn->port;
+        break;
+    }
+    case OBJECT_KIND_SPACE:
+    {
+        auto _space = asset.asset->casted<Space>();
+        info->returned_info.space.element_count = _space->assets.len();
         break;
     }
     default:

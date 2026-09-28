@@ -178,5 +178,20 @@ struct Space
     {
         return IpcClient::connect_to_object(handle, endpoint_handle);
     }
+
+    size_t iterate_through_assets(auto fn)
+    {
+        auto asset_count = sys$ipc_asset_info_by_handle(this->handle, 0).returned_info.space.element_count;
+
+        for (size_t i = 0; i < asset_count; i++)
+        {
+            auto asset_info = sys$ipc_asset_info_by_index(this->handle, i);
+            if (asset_info.returned_kind != 0)
+            {
+                fn(asset_info);
+            }
+        }
+        return asset_count;
+    }
 };
 } // namespace Wingos

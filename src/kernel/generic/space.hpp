@@ -166,6 +166,20 @@ struct Space : public Asset
         return "asset not found";
     }
 
+    fc::Result<AssetRef<>> by_index(uint64_t index)
+    {
+        lock.lock();
+        if (assets.len() < index)
+        {
+            lock.release();
+            return "index > asset.len()";
+        }
+
+        auto aref = assets[index];
+        lock.release();
+        return aref;
+    }
+
     template <typename T>
     fc::Result<AssetRef<T>> by_handle(uint64_t handle)
     {

@@ -33,6 +33,10 @@ constexpr fc::Result<void> format_v(Targ &target, C &&value)
         return format_v(target, fc::Str("OBJECT_KIND_IPC_ENDPOINT"));
     case OBJECT_KIND_IPC_CONNECTION:
         return format_v(target, fc::Str("OBJECT_KIND_IPC_CONNECTION"));
+    case OBJECT_KIND_SIGNAL_ENDPOINT:
+        return format_v(target, fc::Str("OBJECT_KIND_SIGNAL_ENDPOINT"));
+    case OBJECT_KIND_SIGNAL_ATTACHED:
+        return format_v(target, fc::Str("OBJECT_KIND_SIGNAL_ATTACHED"));
     default:
         return format_v(target, fc::Str("UNKNOWN_ASSET_KIND"));
     }
@@ -58,6 +62,10 @@ constexpr fc::Result<void> format_v(Targ &target, fmt::FormatFlags<C> flagged)
         return format_v(target, flagged.forward_flags(fc::Str("OBJECT_KIND_IPC_ENDPOINT")));
     case OBJECT_KIND_IPC_CONNECTION:
         return format_v(target, flagged.forward_flags(fc::Str("OBJECT_KIND_IPC_CONNECTION")));
+    case OBJECT_KIND_SIGNAL_ENDPOINT:
+        return format_v(target, flagged.forward_flags(fc::Str("OBJECT_KIND_SIGNAL_ENDPOINT")));
+    case OBJECT_KIND_SIGNAL_ATTACHED:
+        return format_v(target, flagged.forward_flags(fc::Str("OBJECT_KIND_SIGNAL_ATTACHED")));
     default:
         return format_v(target, flagged.forward_flags(fc::Str("UNKNOWN_ASSET_KIND")));
     }

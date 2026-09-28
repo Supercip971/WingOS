@@ -12,7 +12,7 @@ extern "C"
         OBJECT_KIND_SPACE = 3000,
         OBJECT_KIND_TASK = 4000,
         OBJECT_KIND_SIGNAL_ENDPOINT = 5000,
-        OBJECT_KIND_SIGNAL_ATTACHED = 600,
+        OBJECT_KIND_SIGNAL_ATTACHED = 6000,
 
         OBJECT_KIND_IPC_ENDPOINT = 7000,    // IPC object, used for inter process communication
         OBJECT_KIND_IPC_CONNECTION = 8000,  // IPC object, used for inter process communication
@@ -49,6 +49,10 @@ static inline const char *assetKind2Str(AssetKind kind)
         return "IPC_CONNECTION";
     case OBJECT_KIND_IPC_RETURN_TASK:
         return "IPC_RETURN_TASK";
+    case OBJECT_KIND_SIGNAL_ENDPOINT:
+        return "SIGNAL_ENDPOINT";
+    case OBJECT_KIND_SIGNAL_ATTACHED:
+        return "SIGNAL_ATTACHED";
     default:
         return "INVALID_KIND";
     }

@@ -74,7 +74,7 @@ struct VirtualMemoryAsset : public UAsset
         VirtualMemoryAsset asset = {};
         asset.handle = handle;
 
-        auto v = sys$ipc_asset_info(0, handle);
+        auto v = sys$ipc_asset_info_by_handle(0, handle);
 
         if (v.returned_kind != AssetKind::OBJECT_KIND_MAPPING)
         {
@@ -118,7 +118,7 @@ struct MemoryAsset : public UAsset
         MemoryAsset asset = {};
         asset.handle = handle;
 
-        auto v = sys$ipc_asset_info(0, handle);
+        auto v = sys$ipc_asset_info_by_handle(0, handle);
 
         if (v.returned_kind != AssetKind::OBJECT_KIND_MEMORY)
         {

@@ -99,7 +99,7 @@ public:
         IpcClient client = {};
         client.handle = endpoint_handle;
         client.associated_space_handle = space_handle;
-        auto info = sys$ipc_asset_info(space_handle, endpoint_handle);
+        auto info = sys$ipc_asset_info_by_handle(space_handle, endpoint_handle);
         client.port = info.returned_info.connection.port;
 
         return client;

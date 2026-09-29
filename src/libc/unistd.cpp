@@ -76,6 +76,8 @@ extern "C" pid_t fork()
 
             auto moved_memory = Wingos::Space::self().move_to(subspace, memory);
             subspace.map_memory(mapping.start, mapping.end, moved_memory, ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);
+
+            Wingos::Space::self().release_asset(mapped_self);
         });
 
     subspace.launch_task(task_asset);

@@ -84,7 +84,18 @@ public:
         return *this;
     }
 
-    Vec &operator+=(Vec &other)
+    void soft_add(Vec &rhs)
+    {
+        reserve(_count + rhs._count);
+        for (long i = 0; i < rhs._count; i++)
+        {
+            new (&_data[_count + i]) T(std::move(rhs._data[i]));
+        }
+        _count += rhs._count;
+        rhs.clear();
+    }
+
+    Vec &operator+=(Vec &&other)
     {
 
         reserve(_count + other._count);

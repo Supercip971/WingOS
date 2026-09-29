@@ -24,6 +24,9 @@ std::atomic<bool> blocked_task_dirty = false;
 fc::Vec<size_t> _choosen = {};
 fc::Vec<size_t> _retried = {};
 
+// blocked and in queue task
+std::atomic<size_t> awaiting_task_count = 0;
+
 fc::Vec<CoreId> _blocked_cores_idle_candidates = {};
 
 fc::Vec<kernel::Task *> scheduler_idles = {};
@@ -67,6 +70,7 @@ static inline void add_entity_to_queue(Task *task)
 
     if (task->sched().mutex.mutex_value())
     {
+        awaiting_task_count.fetch_add(1);
         blocked_tasks.push(task);
         return;
     }
@@ -76,6 +80,7 @@ static inline void add_entity_to_queue(Task *task)
     }
 
     task_queues[task->sched().queue()].push(task);
+    awaiting_task_count.fetch_add(1);
 }
 
 void idle()
@@ -203,8 +208,10 @@ fc::Result<void> task_run(TUID task_id, CoreId core)
 }
 
 // FIXME: store it as a global variable instead of recalculating it
+/*
 static inline size_t scheduled_task_count()
 {
+    return running_task_count.load();
     size_t count = 0;
     for (size_t i = 0; i < TASK_QUEUE_COUNT; i++)
     {
@@ -221,7 +228,7 @@ static inline size_t scheduled_task_count()
     count += blocked_tasks.len();
 
     return count;
-}
+}*/
 
 static fc::Result<size_t> query_nearest_task(size_t queue_id, CoreId core, bool consider_siblings = false)
 {
@@ -363,7 +370,7 @@ static void update_runned_tasks()
     {
         if (i == 0)
         {
-            task_queues[i] += std::move(task_queues[i + 1]);
+            task_queues[i].soft_add(task_queues[i + 1]);
         }
         else
         {
@@ -383,7 +390,7 @@ static void update_runned_tasks()
 
     auto sum = summed_weights();
 
-    long count = scheduled_task_count();
+    long count = awaiting_task_count.load();
 
     if (count != 0)
     {
@@ -398,10 +405,10 @@ static void update_runned_tasks()
             }
         }
 
-        //   for (auto &task : blocked_tasks)
-        //   {
-        // task->sched().sleeping += avg_sleep_time;
-        //   }
+        for (auto &task : blocked_tasks)
+        {
+            task->sched().sleeping += avg_sleep_time;
+        }
     }
 
     for (size_t i = 0; i < running_cpu_count; i++)
@@ -490,6 +497,7 @@ static fc::Result<void> fix_sched_affinity()
 void run_task_queued(CoreId cpu, size_t queue_id, size_t queue_offset)
 {
     auto task = (task_queues[queue_id].pop(queue_offset));
+    awaiting_task_count.fetch_sub(1);
 
     if (task == nullptr)
     {
@@ -507,7 +515,7 @@ void run_task_queued(CoreId cpu, size_t queue_id, size_t queue_offset)
 fc::Result<void> schedule_one(CoreId cpu)
 {
     bool found_task = false;
-    auto c = scheduled_task_count();
+    auto c = awaiting_task_count.load();
 
     if (c == 0)
     {
@@ -564,7 +572,7 @@ fc::Result<void> schedule_all()
     auto *retried_ptr = &_retried;
     choosen_ptr->clear();
     retried_ptr->clear();
-    auto c = scheduled_task_count();
+    auto c = awaiting_task_count.load();
     if (c == 0)
     {
         // fmt::log$("no task to schedule");

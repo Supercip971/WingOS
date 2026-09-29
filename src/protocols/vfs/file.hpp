@@ -74,52 +74,10 @@ class FsFile
 {
     Wingos::IpcClient connection;
     bool keep_alive = false;
-    fc::Vec<FsFileCacheEntry> cache_entries;
-
-    void add_cache_entry(uint64_t offset, uint64_t size, Wingos::MemoryAsset &asset, Wingos::VirtualMemoryAsset &mapped)
-    {
-        FsFileCacheEntry entry = {};
-        entry.offset = offset;
-        entry.size = size;
-        entry.asset = asset;
-        entry.mapped = mapped;
-        entry.score = 1;
-
-        if (cache_entries.len() > 256)
-        {
-            // evict lowest score
-            size_t lowest_score_index = 0;
-            int lowest_score = cache_entries[0].score;
-
-            for (size_t i = 1; i < cache_entries.len(); i++)
-            {
-                if (cache_entries[i].score < lowest_score)
-                {
-                    lowest_score = cache_entries[i].score;
-                    lowest_score_index = i;
-                }
-            }
-
-            Wingos::Space::self().release_asset(cache_entries[lowest_score_index].mapped);
-            Wingos::Space::self().release_asset(cache_entries[lowest_score_index].asset);
-            cache_entries[lowest_score_index] = entry;
-        }
-        else
-        {
-
-            cache_entries.push(entry);
-        }
-    }
 
 public:
     ~FsFile()
     {
-        for (size_t i = 0; i < cache_entries.len(); i++)
-        {
-            Wingos::Space::self().release_asset(cache_entries[i].mapped);
-            Wingos::Space::self().release_asset(cache_entries[i].asset);
-        }
-        cache_entries.clear();
     }
 
     // Disable copy to prevent double-close issues
@@ -128,7 +86,7 @@ public:
 
     // Enable move
     FsFile(FsFile &&other)
-        : connection(other.connection), keep_alive(other.keep_alive), cache_entries(std::move(other.cache_entries))
+        : connection(other.connection), keep_alive(other.keep_alive)
     {
     }
 
@@ -136,18 +94,8 @@ public:
     {
         if (this != &other)
         {
-            // Clean up our existing cache entries
-            for (size_t i = 0; i < cache_entries.len(); i++)
-            {
-                Wingos::Space::self().release_asset(cache_entries[i].mapped);
-                Wingos::Space::self().release_asset(cache_entries[i].asset);
-            }
-            cache_entries.clear();
-
             std::swap(connection, other.connection);
             std::swap(keep_alive, other.keep_alive);
-
-            cache_entries = std::move(other.cache_entries);
         }
         return *this;
     }
@@ -207,18 +155,6 @@ public:
             return fc::Result<size_t>::success(0);
         }
 
-        for (size_t i = 0; i < cache_entries.len(); i++)
-        {
-            auto &entry = cache_entries[i];
-            if (offset >= entry.offset && (offset + len) <= (entry.offset + entry.size))
-            {
-                size_t cache_offset = offset - entry.offset;
-
-                memcpy(buffer, (void *)((uintptr_t)entry.mapped.ptr() + cache_offset), len);
-                entry.score++;
-                return len;
-            }
-        }
         size_t aoffset = math::alignDown(offset, 4096ul);
 
         size_t alen = math::alignUp(len + offset, 4096ul) - aoffset;
@@ -240,23 +176,13 @@ public:
         }
         memcpy(buffer, (void *)((uintptr_t)mapped.ptr() + delta_offset), len);
 
-        this->add_cache_entry(aoffset, alen, masset, mapped);
         return len;
         // return res;
     }
 
     fc::Result<size_t> write(Wingos::MemoryAsset &asset, size_t offset, size_t len)
     {
-        for (size_t i = 0; i < cache_entries.len(); i++)
-        {
-            auto &entry = cache_entries[i];
-            if (offset >= entry.offset && (offset + len) <= (entry.offset + entry.size))
-            {
-                size_t cache_offset = offset - entry.offset;
-                memcpy((void *)((uintptr_t)entry.mapped.ptr() + cache_offset), (void *)((uintptr_t)asset.memory.start() + cache_offset), len);
-                entry.score++;
-            }
-        }
+
         IpcMessage message = {};
         message.arguments.data[0].data = FS_WRITE;
         message.arguments.data[1].data = offset;

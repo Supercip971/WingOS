@@ -262,7 +262,7 @@ static fc::Result<size_t> query_nearest_task(size_t queue_id, CoreId core, bool 
     return "no task found";
 }
 
-static long summed_weights()
+long summed_weights()
 {
     long sum = 0;
     for (size_t i = 0; i < TASK_QUEUE_COUNT; i++)
@@ -346,6 +346,7 @@ fc::Result<size_t> resolve_blocked_tasks_scheduler()
             unblocked_count++;
 
             blocked_tasks.pop(i);
+            awaiting_task_count.fetch_sub(1);
             continue;
         }
         i++;
@@ -395,7 +396,7 @@ static void update_runned_tasks()
     if (count != 0)
     {
 
-        long avg_sleep_time = sum / count; // integer ceil (TODO: check)
+        long avg_sleep_time = fc::max(sum / count, 1l); // integer ceil (TODO: check)
         for (size_t i = 0; i < TASK_QUEUE_COUNT; i++)
         {
             for (size_t j = 0; j < task_queues[i].len(); j++)
@@ -405,10 +406,10 @@ static void update_runned_tasks()
             }
         }
 
-        for (auto &task : blocked_tasks)
-        {
-            task->sched().sleeping += avg_sleep_time;
-        }
+        //        for (auto &task : blocked_tasks)
+        //      {
+        //   task->sched().sleeping += avg_sleep_time;
+        //      }
     }
 
     for (size_t i = 0; i < running_cpu_count; i++)

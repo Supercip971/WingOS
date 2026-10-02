@@ -55,20 +55,13 @@ public:
             uintptr_t buffer_ptr = asset.memory.start();
             auto &dev = controller->devices[device_id]; // for simplicity only first device
 
-            if (size >= 512)
-            {
+            uint64_t nvme_lba = lba / (dev.lba_size / 512);
+            auto res = controller->read_write_ptr(&dev, false, nvme_lba, size / dev.lba_size, (void *)(buffer_ptr + USERSPACE_VIRT_BASE + mem_asset_off), size);
 
-                auto res = controller->read_write_ptr(&dev, false, lba, size / 512, (void *)(buffer_ptr + USERSPACE_VIRT_BASE + mem_asset_off), size);
-            }
-            else
+            if (res.is_error())
             {
-                auto res = controller->read_write_ptr(&dev, false, lba, size / 512, (void *)(buffer_ptr + USERSPACE_VIRT_BASE + mem_asset_off), size);
-
-                if (res.is_error())
-                {
-                    fmt::err$("Failed to read sectors: {}", res.error());
-                    break;
-                }
+                fmt::err$("Failed to read sectors: {}", res.error());
+                break;
             }
 
             IpcMessage reply = {};
@@ -87,7 +80,8 @@ public:
 
             uintptr_t buffer_ptr = asset.memory.start();
             auto &dev = controller->devices[device_id]; // for simplicity only first device
-            auto res = controller->read_write_ptr(&dev, true, lba, size / 512, (void *)(buffer_ptr + USERSPACE_VIRT_BASE), size);
+            uint64_t nvme_lba = lba / (dev.lba_size / 512);
+            auto res = controller->read_write_ptr(&dev, true, nvme_lba, size / dev.lba_size, (void *)(buffer_ptr + USERSPACE_VIRT_BASE), size);
 
             if (res.is_error())
             {

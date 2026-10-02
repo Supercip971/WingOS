@@ -17,22 +17,23 @@ union [[gnu::packed]] ControllerCap
 {
     struct [[gnu::packed]]
     {
-        uint16_t max_queue_entries;
-        uint8_t contiguous_queue_req : 1;
-        uint8_t arbitration_mechanism : 2;
-        uint8_t _reserved : 5;
-        uint8_t timeout;
-        uint8_t stride : 4;
-        uint8_t reset_support : 1;
-        uint8_t command_set_supported;
-        uint8_t boot_partition_support : 1;
-        uint8_t controller_power_scope : 2;
-        uint8_t memory_page_size_minimum : 4;
-        uint8_t memory_page_size_maximum : 4;
-        uint8_t persistent_memory_region_supported : 1;
-        uint8_t controller_memory_buffer_supported : 1;
-        uint8_t nvm_subsystem_shutdown_supported : 1;
-        uint8_t controller_ready_mode_supported : 2;
+        uint64_t max_queue_entries : 16;
+        uint64_t contiguous_queue_req : 1;
+        uint64_t arbitration_mechanism : 2;
+        uint64_t _reserved : 5;
+        uint64_t timeout : 8;
+        uint64_t stride : 4;
+        uint64_t reset_support : 1;
+        uint64_t command_set_supported : 8;
+        uint64_t boot_partition_support : 1;
+        uint64_t controller_power_scope : 2;
+        uint64_t memory_page_size_minimum : 4;
+        uint64_t memory_page_size_maximum : 4;
+        uint64_t persistent_memory_region_supported : 1;
+        uint64_t controller_memory_buffer_supported : 1;
+        uint64_t nvm_subsystem_shutdown_supported : 1;
+        uint64_t controller_ready_mode_supported : 2;
+        uint64_t _reserved2 : 3;
     };
 
     struct
@@ -40,6 +41,8 @@ union [[gnu::packed]] ControllerCap
         uint32_t raw_value_0;
         uint32_t raw_value_1;
     };
+
+    uint64_t raw_value;
 };
 
 union [[gnu::packed]] NvmeConfig
@@ -47,15 +50,16 @@ union [[gnu::packed]] NvmeConfig
     struct [[gnu::packed]]
     {
         // name used in figure 78 (3.1.5) of the NVMe spec
-        uint8_t en : 1; // enable
-        uint8_t _reserved : 3;
-        uint8_t css : 3;  // IO Command Set Selected
-        uint8_t mps : 4;  // memory page size
-        uint16_t ams : 3; // arbitration mechanism selected
+        uint32_t en : 1; // enable
+        uint32_t _reserved : 3;
+        uint32_t css : 3; // IO Command Set Selected
+        uint32_t mps : 4; // memory page size
+        uint32_t ams : 3; // arbitration mechanism selected
 
-        uint8_t shn : 2;    // shutdown notification
-        uint8_t iosqes : 4; // I/O Submission Queue Entry Size
-        uint8_t iocqes : 4; // I/O Completion Queue Entry Size
+        uint32_t shn : 2;    // shutdown notification
+        uint32_t iosqes : 4; // I/O Submission Queue Entry Size
+        uint32_t iocqes : 4; // I/O Completion Queue Entry Size
+        uint32_t _reserved2 : 8;
     };
 
     uint32_t raw_value;

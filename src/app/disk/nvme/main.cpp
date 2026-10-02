@@ -22,6 +22,7 @@ int main(int, char **)
             fmt::log$("Found NVMe device: Bus {}, Device {}, Function {}, Vendor ID: {}, Device ID: {}",
                       dev.bus, dev.device, dev.function,
                       dev.vendor_id() | fmt::FMT_HEX, dev.device_id() | fmt::FMT_HEX);
+
             auto disk = NvmeController::setup(dev);
             if (!disk.is_error())
             {

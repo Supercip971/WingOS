@@ -4,6 +4,7 @@
 
 #include "iol/wingos/asset.hpp"
 #include "libcore/alloc/alloc.hpp"
+#include "libcore/ds/vec.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/logic.hpp"
 #include "libcore/result.hpp"
@@ -22,7 +23,36 @@ fc::Result<void *> Ext4Filesystem::read_block_tmp(Wingos::MemoryAsset &target, s
     return mapped_disk_asset.ptr();
 }
 
-fc::Result<void *> Ext4Filesystem::read_block_tmp(size_t block_num)
+fc::Result<void> Ext4Filesystem::read_contiguous_blocks(Wingos::MemoryAsset &target, size_t block_num, size_t block_count, size_t mem_asset_off)
+{
+    size_t block_bytes = (1024 << superblock.log_block_size);
+
+    size_t const max_chunk_blocks = 1024 * 1024 * 2; // 2Mib * 1024 max per chunk
+    // this limit should not be reached
+    size_t remaining_blocks = block_count;
+    size_t cur_block_num = block_num;
+    size_t cur_asset_off = mem_asset_off;
+
+    while (remaining_blocks > 0)
+    {
+        size_t chunk_blocks = (remaining_blocks > max_chunk_blocks) ? max_chunk_blocks : remaining_blocks;
+        size_t chunk_bytes = chunk_blocks * block_bytes;
+
+        auto bytes_read = try$(disk.read(target, start_lba + (cur_block_num * block_bytes) / disk_block_size, chunk_bytes, cur_asset_off));
+        if (bytes_read != chunk_bytes)
+        {
+            return "short disk read for block";
+        }
+
+        remaining_blocks -= chunk_blocks;
+        cur_block_num += chunk_blocks;
+        cur_asset_off += chunk_bytes;
+    }
+
+    return {};
+}
+
+fc::Result<void *> Ext4Filesystem::read_block_tmp(size_t block_num, bool cacheable)
 {
     for (size_t i = 0; i < cache_nodes.len(); i++)
     {
@@ -40,8 +70,13 @@ fc::Result<void *> Ext4Filesystem::read_block_tmp(size_t block_num)
         return "short disk read for cached block";
     }
 
+    if (!cacheable)
+    {
+        return mapped_disk_asset.ptr();
+    }
+
     // add to cache
-    if (cache_nodes.len() < 128)
+    if (cache_nodes.len() < 2048)
     {
         Ext4CacheNode node;
         node.block_num = block_num;
@@ -92,7 +127,7 @@ fc::Result<void> Ext4Filesystem::write_blockgroup_descriptor(BlockGroupId bg_id,
     size_t block_group_entry_size = this->block_desc_size;
     size_t local_block_offset = (bg_id * block_group_entry_size) % block_size();
     size_t disk_sector = (bg_id * block_group_entry_size) / block_size();
-    auto bgd_block_res = try$(read_block_tmp(bgd_table_start_block + disk_sector));
+    auto bgd_block_res = try$(read_block_tmp(bgd_table_start_block + disk_sector, true));
     auto bgd_ptr = (uint8_t *)bgd_block_res;
 
     bgd_ptr += local_block_offset;
@@ -108,7 +143,7 @@ fc::Result<Ext4BlockGroupDescriptor> Ext4Filesystem::read_blockgroup_descriptor(
     size_t block_group_entry_size = this->block_desc_size;
     size_t local_block_offset = (bg_id * block_group_entry_size) % block_size();
     size_t disk_sector = (bg_id * block_group_entry_size) / block_size();
-    auto bgd_block_res = try$(read_block_tmp(bgd_table_start_block + disk_sector));
+    auto bgd_block_res = try$(read_block_tmp(bgd_table_start_block + disk_sector, true));
     auto bgd_ptr = (uint8_t *)bgd_block_res;
 
     bgd_ptr += local_block_offset;
@@ -125,7 +160,7 @@ fc::Result<Ext4InodeRef> Ext4Filesystem::read_inode(InodeId inode)
     size_t local_block_offset = (inode_index * superblock.inode_size) % block_size();
     size_t disk_sector = (inode_index * superblock.inode_size) / block_size();
 
-    auto inode_block_res = try$(read_block_tmp(inode_table_block + disk_sector));
+    auto inode_block_res = try$(read_block_tmp(inode_table_block + disk_sector, true));
     auto inode_ptr = (uint8_t *)inode_block_res;
     inode_ptr += local_block_offset;
 
@@ -133,6 +168,95 @@ fc::Result<Ext4InodeRef> Ext4Filesystem::read_inode(InodeId inode)
     inode_ref.inode_id = inode;
     inode_ref.inode = *(Ext4Inode *)inode_ptr;
     return inode_ref;
+}
+
+fc::Result<void> Ext4Filesystem::inode_find_blocks(Ext4InodeRef const &inode, uint64_t block_start, uint64_t block_end, fc::Vec<uint64_t> *out)
+{
+    // blocks_lo is in 512-byte sectors, convert to filesystem blocks
+    size_t blocks_in_sectors = inode.inode.blocks_lo;
+    // Convert from 512-byte sectors to filesystem blocks
+    size_t filesystem_blocks = (blocks_in_sectors * 512) / block_size();
+
+    if (block_start > block_end || block_end > filesystem_blocks)
+    {
+        fmt::err$("inode_find_blocks: block_end {} out of range (filesystem_blocks: {})", block_end, filesystem_blocks);
+        return "block out of range";
+    }
+
+    uint64_t current = block_start;
+
+    while (current < block_end)
+    {
+        if (current < 12)
+        {
+            while (current < block_end && current < 12)
+            {
+                out->push(inode.inode.block[current]);
+                current++;
+            }
+        }
+        else if (current < 12 + (block_size() / sizeof(uint32_t)))
+        {
+            // single indirect
+            if (inode.inode.block[12] == 0)
+            {
+                return "sparse indirect block (block[12] is 0)";
+            }
+            auto indirect_block_res = try$(read_block_tmp(inode.inode.block[12], true));
+            auto block_entries = (uint32_t *)indirect_block_res;
+
+            while (current < block_end && current < 12 + (block_size() / sizeof(uint32_t)))
+            {
+                auto block_ptr = block_entries[current - 12];
+                out->push(block_ptr);
+                current++;
+            }
+        }
+        else if (current < 12 + (block_size() / sizeof(uint32_t)) + (block_size() / sizeof(uint32_t)) * (block_size() / sizeof(uint32_t)))
+        {
+            // double indirect
+            size_t double_indirect_index = current - 12 - (block_size() / sizeof(uint32_t));
+            size_t first_level_index = double_indirect_index / (block_size() / sizeof(uint32_t));
+            size_t second_level_index = double_indirect_index % (block_size() / sizeof(uint32_t));
+
+            if (inode.inode.block[13] == 0)
+            {
+                return "sparse double indirect block (block[13] is 0)";
+            }
+            auto first_level_block_res = try$(read_block_tmp(inode.inode.block[13], true));
+            auto first_level_entries = (uint32_t *)first_level_block_res;
+
+            if (first_level_entries[first_level_index] == 0)
+            {
+                return "sparse double indirect block (first level entry is 0)";
+            }
+
+            // Copy the block number before the next cache read, as it may evict
+            // the cache entry that first_level_entries points to
+            uint32_t second_level_block_num = first_level_entries[first_level_index];
+
+            auto second_level_block_res = try$(read_block_tmp(second_level_block_num, true));
+            auto second_level_entries = (uint32_t *)second_level_block_res;
+
+            size_t stcurrent = current;
+            while (current < block_end && current < stcurrent + (block_size() / sizeof(uint32_t)))
+            {
+                auto block_ptr = second_level_entries[second_level_index];
+                out->push(block_ptr);
+                current++;
+
+                double_indirect_index = current - 12 - (block_size() / sizeof(uint32_t));
+                first_level_index = double_indirect_index / (block_size() / sizeof(uint32_t));
+                second_level_index = double_indirect_index % (block_size() / sizeof(uint32_t));
+            }
+        }
+        else
+        {
+            fmt::warn$("triple indirect blocks not supported yet");
+            return "triple indirect blocks not supported yet";
+        }
+    }
+    return {};
 }
 
 fc::Result<uint64_t> Ext4Filesystem::inode_find_block(Ext4InodeRef const &inode, size_t block)
@@ -162,7 +286,7 @@ fc::Result<uint64_t> Ext4Filesystem::inode_find_block(Ext4InodeRef const &inode,
         {
             return "sparse indirect block (block[12] is 0)";
         }
-        auto indirect_block_res = try$(read_block_tmp(inode.inode.block[12]));
+        auto indirect_block_res = try$(read_block_tmp(inode.inode.block[12], true));
         auto block_entries = (uint32_t *)indirect_block_res;
 
         block_ptr = block_entries[indirect_block_index];
@@ -178,7 +302,7 @@ fc::Result<uint64_t> Ext4Filesystem::inode_find_block(Ext4InodeRef const &inode,
         {
             return "sparse double indirect block (block[13] is 0)";
         }
-        auto first_level_block_res = try$(read_block_tmp(inode.inode.block[13]));
+        auto first_level_block_res = try$(read_block_tmp(inode.inode.block[13], true));
         auto first_level_entries = (uint32_t *)first_level_block_res;
 
         if (first_level_entries[first_level_index] == 0)
@@ -190,7 +314,7 @@ fc::Result<uint64_t> Ext4Filesystem::inode_find_block(Ext4InodeRef const &inode,
         // the cache entry that first_level_entries points to
         uint32_t second_level_block_num = first_level_entries[first_level_index];
 
-        auto second_level_block_res = try$(read_block_tmp(second_level_block_num));
+        auto second_level_block_res = try$(read_block_tmp(second_level_block_num, true));
         auto second_level_entries = (uint32_t *)second_level_block_res;
 
         block_ptr = second_level_entries[second_level_index];
@@ -210,9 +334,11 @@ fc::Result<uint64_t> Ext4Filesystem::inode_find_block(Ext4InodeRef const &inode,
     return block_ptr;
 }
 
-fc::Result<size_t> Ext4Filesystem::inode_read(Ext4InodeRef const &inode, Wingos::MemoryAsset &out, size_t off, size_t len, size_t mem_asset_off)
+fc::Vec<uint64_t> inodeOff2PhysicalDisk = {};
 
+fc::Result<size_t> Ext4Filesystem::inode_read(Ext4InodeRef const &inode, Wingos::MemoryAsset &out, size_t off, size_t len, size_t mem_asset_off)
 {
+    fmt::log$("inode read: inode={}, off={}, len={}", inode.inode_id, off, len);
     size_t const file_size = (size_t)inode.inode.size_lo;
     if (off >= file_size)
     {
@@ -235,9 +361,16 @@ fc::Result<size_t> Ext4Filesystem::inode_read(Ext4InodeRef const &inode, Wingos:
         return fc::Result<size_t>::success(0);
     }
     size_t block_size_ = block_size();
+
+    inodeOff2PhysicalDisk.clear();
+
     size_t start_block = off / block_size_;
     size_t end_block = (off + len) / block_size_;
     size_t block_offset = off % block_size_;
+
+    size_t start_range = start_block;
+
+    try$(inode_find_blocks(inode, start_block, end_block + 1, &inodeOff2PhysicalDisk));
 
     //  fmt::log$("inode_read: inode={}, off={}, len={}, start_block={}, end_block={}, block_offset={}", inode.inode_id, off, len, start_block, end_block, block_offset);
     size_t bytes_read = 0;
@@ -247,7 +380,9 @@ fc::Result<size_t> Ext4Filesystem::inode_read(Ext4InodeRef const &inode, Wingos:
     // first_block
     if (block_offset != 0)
     {
-        auto block_data_res = try$(inode_read_tmp(inode, start_block));
+        auto block_num_res = inodeOff2PhysicalDisk[0];
+        auto block_data_res = try$(read_block_tmp(block_num_res, false));
+
         //                v end here
         // ##------------- ############# <- Another block
         //      | len      #      |    #
@@ -259,19 +394,29 @@ fc::Result<size_t> Ext4Filesystem::inode_read(Ext4InodeRef const &inode, Wingos:
 
     // middle blocks
 
-    for (size_t b = start_block; b < end_block; b++)
+    for (size_t b = start_block; b < end_block;)
     {
-        try$(inode_read_blck_off(inode, out, b * block_size_, bytes_read + mem_asset_off));
-        //    auto block_data_res = try$(inode_read_tmp(inode, b));
-        //   memcpy((uint8_t *)vfile.ptr() + bytes_read + mem_asset_off, (uint8_t *)block_data_res, block_size_);
-        bytes_read += block_size_;
+        auto block_num_res = inodeOff2PhysicalDisk[b - start_range];
+
+        auto cnt = 1;
+        while (inodeOff2PhysicalDisk[b - start_range + (cnt - 1)] + 1 == inodeOff2PhysicalDisk[b - start_range + cnt] &&
+               b + cnt < end_block)
+        {
+            cnt++;
+        }
+
+        try$(read_contiguous_blocks(out, block_num_res, cnt, mem_asset_off + bytes_read));
+        bytes_read += block_size_ * cnt;
+        b += cnt;
     }
 
     // last block
     size_t remaining = len - bytes_read;
     if (remaining > 0)
     {
-        auto block_data_res = try$(inode_read_tmp(inode, end_block));
+
+        auto block_num_res = inodeOff2PhysicalDisk[end_block - start_range];
+        auto block_data_res = try$(read_block_tmp(block_num_res, false));
         memcpy((uint8_t *)vfile.ptr() + bytes_read + mem_asset_off, (uint8_t *)block_data_res, remaining);
         bytes_read += remaining;
     }
@@ -319,7 +464,7 @@ fc::Result<uint64_t> Ext4Filesystem::allocate_block(BlockGroupId bg_id)
 
     for (size_t i = block_bitmap_start; i < block_bitmap_end; i++)
     {
-        auto block_bitmap_data_res = try$(read_block_tmp(i));
+        auto block_bitmap_data_res = try$(read_block_tmp(i, true));
         auto block_bitmap = (uint8_t *)block_bitmap_data_res;
         size_t block_bitmap_size = superblock.blocks_per_group / 8;
         for (size_t byte = 0; byte < block_bitmap_size; byte++)
@@ -377,7 +522,7 @@ fc::Result<void> Ext4Filesystem::inode_add_block(Ext4InodeRef &inode)
             auto indirect_block_num = try$(allocate_block(bg_id));
             inode.inode.block[12] = (uint32_t)indirect_block_num;
 
-            indirect_block_entries = (uint32_t *)try$(read_block_tmp(indirect_block_num));
+            indirect_block_entries = (uint32_t *)try$(read_block_tmp(indirect_block_num, true));
             memset(indirect_block_entries, 0, block_size());
         }
         else
@@ -407,7 +552,7 @@ fc::Result<void> Ext4Filesystem::write_inode(InodeId inode, Ext4Inode const &dat
     size_t inode_index = blockgroup_inode_index(inode);
     size_t local_block_offset = (inode_index * superblock.inode_size) % block_size();
     size_t disk_sector = (inode_index * superblock.inode_size) / block_size();
-    auto inode_block_res = try$(read_block_tmp(inode_table_block + disk_sector));
+    auto inode_block_res = try$(read_block_tmp(inode_table_block + disk_sector, true));
     auto inode_ptr = (uint8_t *)inode_block_res;
     inode_ptr += local_block_offset;
     *(Ext4Inode *)inode_ptr = data;
@@ -496,7 +641,7 @@ fc::Result<void *> Ext4Filesystem::inode_read_tmp(Ext4InodeRef const &inode, siz
     size_t block_off = block;
 
     auto block_num_res = try$(inode_find_block(inode, block_off));
-    auto block_data_res = try$(read_block_tmp(block_num_res));
+    auto block_data_res = try$(read_block_tmp(block_num_res, false));
     return block_data_res;
 }
 

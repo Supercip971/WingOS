@@ -103,7 +103,6 @@ enum Ext4ReqFeature : uint32_t
     EXT4_FEAT_INLINE_DATA = 0x8000,
     EXT4_FEAT_ENCRYPT = 0x10000,
     EXT4_FEAT_CASEFOLD = 0x20000,
-
 };
 
 struct [[gnu::packed]] Ext4BlockGroupDescriptor
@@ -209,8 +208,10 @@ class Ext4Filesystem
 
 public:
     // use temp buffer
-    fc::Result<void *> read_block_tmp(size_t block_num);
+    fc::Result<void *> read_block_tmp(size_t block_num, bool cacheable);
     fc::Result<void *> read_block_tmp(Wingos::MemoryAsset &target, size_t block_num, size_t mem_asset_off);
+
+    fc::Result<void> read_contiguous_blocks(Wingos::MemoryAsset &target, size_t block_num, size_t block_count, size_t mem_asset_off);
 
     fc::Result<void> write_block_tmp(size_t block_num, void *data);
 
@@ -229,7 +230,8 @@ public:
     fc::Result<void> inode_add_block(Ext4InodeRef &inode);
 
     fc::Result<uint64_t> inode_find_block(Ext4InodeRef const &inode, size_t block);
-
+    // warning! the returned part range may be bigger than the asked range
+    fc::Result<void> inode_find_blocks(Ext4InodeRef const &inode, uint64_t block_start, uint64_t block_end_ex, fc::Vec<uint64_t> *out);
     fc::Result<void> dump_subdir(Ext4InodeRef const &dir_inode, int depth);
 
     size_t block_size() const

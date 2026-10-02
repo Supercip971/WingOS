@@ -13,6 +13,7 @@
 #include "libcore/ds/vec.hpp"
 #include "libcore/fmt/flags.hpp"
 #include "libcore/fmt/log.hpp"
+#include "libcore/logic.hpp"
 #include "libcore/result.hpp"
 #include "libcore/str.hpp"
 #include "libcore/type-utils.hpp"
@@ -230,14 +231,22 @@ class NvmeController
                 status = completion->status;
                 break;
             }
-            asm volatile("pause");
+            asm volatile("pause" ::: "memory");
         }
 
         write(NVME_QUEUE_TAIL_DOORBELL_BASE + (2 * queues.id + 1) * (4 << stride), queues.complete_queue.tail);
 
         if (status != 0)
         {
+            // figure 101, p146 rev 2.4
+            // status code type: 27-25
+            // status code: 24-17 (starting at 17)
+
+            auto status_code = (status >> 0) & 0b11111111;
+            auto status_code_type = (status >> (25 - 17)) & 0b111;
             fmt::err$("NVMe command failed with status: {}", status | fmt::FMT_HEX);
+            fmt::err$("- status code: {}", status_code | fmt::FMT_HEX);
+            fmt::err$("- status code type: {}", status_code_type | fmt::FMT_HEX);
             return "nvme command failed";
         }
 
@@ -372,11 +381,28 @@ public:
             return "buffer too small for requested nlb";
         }
 
-        if (nlb * dev->lba_size > max_transfer)
-        {
-            fmt::err$("requested nlb {} blocks of size {} exceeds max transfer {}", nlb, dev->lba_size, max_transfer);
+        // PRP list must fit in one 4K page
+        // (512 entries * 4096 = 2MB), also respect controller's max transfer size
+        size_t max_size_per_cmd = fc::min(dev->max_phys_rpgs * 4096, max_transfer);
+        uint16_t max_nlb_per_cmd = (uint16_t)(max_size_per_cmd / dev->lba_size);
 
-            return "requested nlb too large for max transfer";
+        if (nlb > max_nlb_per_cmd)
+        {
+            // recursively split the transfer into multiple commands
+            uint16_t remaining = nlb;
+            uint64_t current_lba = lba;
+            uint8_t *current_buf = (uint8_t *)buffer;
+
+            while (remaining > 0)
+            {
+                uint16_t blk_count = fc::min(remaining, max_nlb_per_cmd);
+                size_t blk_bytes = (size_t)blk_count * dev->lba_size;
+                try$(read_write_ptr(dev, is_write, current_lba, blk_count, (void *)current_buf, blk_bytes));
+                remaining -= blk_count;
+                current_lba += blk_count;
+                current_buf += blk_bytes;
+            }
+            return {};
         }
 
         uintptr_t phys_addr = (uintptr_t)buffer - USERSPACE_VIRT_BASE;

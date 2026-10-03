@@ -16,7 +16,6 @@ public:
         MOUSE_MOVE,
         MOUSE_CLICK,
         MOUSE_RELEASE,
-
     };
 
     Kind kind;

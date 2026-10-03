@@ -79,7 +79,6 @@ enum PciHeaderType : uint8_t
     HEADER_TYPE_NORMAL = 0x00,            // Normal device
     HEADER_TYPE_PCI_TO_PCI_BRIDGE = 0x01, // PCI-to-PCI bridge
     HEADER_TYPE_CARDBUS_BRIDGE = 0x02,    // CardBus bridge
-
 };
 
 constexpr uint32_t pci_reg_dev_BAR0 = 0x10;

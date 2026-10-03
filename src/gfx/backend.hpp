@@ -9,4 +9,4 @@ enum BackendsKinds
     BACKEND_KIND_VULKAN,
     BACKEND_KIND_RASTER,
 };
-}
+} // namespace wgfx

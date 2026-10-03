@@ -26,7 +26,6 @@ enum EventType : uint32_t
 enum HIMessageType : uint32_t
 {
     HI_START_LISTEN = 0,
-
 };
 
 struct HIEvent

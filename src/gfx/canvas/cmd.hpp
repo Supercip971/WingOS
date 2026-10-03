@@ -87,7 +87,6 @@ enum class RenderCommandKind
     RENDER_KIND_SHAPE,
     RENDER_KIND_SCISSOR,
     RENDER_KIND_TEXTURE,
-
 };
 
 struct FillCommand

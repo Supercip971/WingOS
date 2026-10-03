@@ -28,7 +28,6 @@ enum class MsrReg : uint32_t
     FS_BASE = 0xC0000100,
     GS_BASE = 0xC0000101,
     KERNEL_GS_BASE = 0xC0000102,
-
 };
 
 enum MsrApicBits : uint64_t

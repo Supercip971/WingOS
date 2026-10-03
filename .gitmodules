@@ -7,3 +7,6 @@
 [submodule "src/ports/wingos-doomgeneric"]
 	path = src/ports/wingos-doomgeneric
 	url = https://github.com/Supercip971/wingos-doomgeneric.git
+[submodule "src/ports/wingos-bash"]
+	path = src/ports/wingos-bash
+	url = https://github.com/Supercip971/wingos-bash.git

@@ -199,6 +199,11 @@ public:
         maybe_rehash();
     }
 
+    auto count() const
+    {
+        return _count;
+    }
+
     void remove(KeyT const &key)
     {
         if (_buckets.len() == 0)

@@ -33,6 +33,10 @@ extern "C"
 
     void *memmove(void *dest, const void *str, size_t n);
 
+    size_t strspn(const char *s, const char *accept);
+    size_t strcspn(const char *s, const char *reject);
+
+    char *strcpy(char *dest, const char *src);
 #ifdef __cplusplus
 }
 #endif

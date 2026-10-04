@@ -1,4 +1,5 @@
 #include "string.h"
+#include <stdbool.h>
 #include <stdlib.h>
 #ifndef __clang__
 
@@ -265,4 +266,74 @@ const char *strstr(const char *haystack, const char *needle)
     }
 
     return NULL;
+}
+
+char *strcpy(char *dest, const char *src)
+{
+    char *d = dest;
+
+    while (*src != '\0')
+    {
+        *d = *src;
+        d++;
+        src++;
+    }
+    *d = '\0';
+    return dest;
+}
+
+size_t strspn(const char *s, const char *accept)
+{
+    size_t count = 0;
+    while (*s)
+    {
+        const char *accepted_chr = accept;
+        bool found = false;
+        while (*accepted_chr)
+        {
+            if (*s == *accepted_chr)
+            {
+                found = true;
+                break;
+            }
+            accepted_chr++;
+        }
+
+        if (!found)
+        {
+            break;
+        }
+
+        count++;
+        s++;
+    }
+    return count;
+}
+
+size_t strcspn(const char *s, const char *reject)
+{
+    size_t count = 0;
+    while (*s)
+    {
+        const char *reject_chr = reject;
+        bool found = false;
+        while (*reject_chr)
+        {
+            if (*s == *reject_chr)
+            {
+                found = true;
+                break;
+            }
+            reject_chr++;
+        }
+
+        if (found)
+        {
+            break;
+        }
+
+        count++;
+        s++;
+    }
+    return count;
 }

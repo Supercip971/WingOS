@@ -82,7 +82,6 @@ extern "C" size_t fwrite(const void *__restrict ptr, size_t size, size_t n, FILE
 }
 
 size_t fread(void *__restrict ptr, size_t size, size_t n, FILE *__restrict file)
-
 {
 #if defined(__GNUC__)
 #    pragma GCC diagnostic push

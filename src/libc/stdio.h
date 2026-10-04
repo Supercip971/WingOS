@@ -30,12 +30,17 @@ extern "C"
     int fgetc(FILE *stream);
     int ungetc(int c, FILE *stream);
 
+    char *fgets(char *__restrict str, int n, FILE *__restrict stream);
+
     int feof(FILE *stream);
     int ferror(FILE *stream);
 
     void fflush(FILE *stream);
 
     int puts(const char *str);
+    int fputc(int c, FILE *stream);
+    int putc(int c, FILE *stream);
+    int fputs(const char *__restrict str, FILE *__restrict stream);
 
     int sscanf(const char *__restrict str, const char *__restrict format, ...);
 
@@ -45,6 +50,8 @@ extern "C"
 
     int vfprintf(FILE *__restrict stream, const char *__restrict format, va_list arg);
     int vsnprintf(char *__restrict s, size_t n, const char *__restrict format, va_list arg);
+
+    int sprintf(char *__restrict s, const char *__restrict format, ...);
 
     FILE *fopen(const char *filename, const char *mode);
     int fclose(FILE *stream);

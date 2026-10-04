@@ -1,6 +1,7 @@
 #include <libcore/fmt/log.hpp>
 
 #include "libcore/grp_tests.hpp"
+#include "tests/libc/mbrtowc_test.hpp"
 #include "tests/parser/parser_test.hpp"
 #include "unit-test-tests/grp_tests.hpp"
 
@@ -13,7 +14,8 @@ TestGroup v = {
         libcoreTests,
         unitTestTests,
         parserTest,
-        jsonTests),
+        jsonTests,
+        mbrtowcTests),
 
 };
 

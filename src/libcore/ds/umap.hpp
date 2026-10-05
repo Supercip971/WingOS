@@ -43,6 +43,18 @@ static inline constexpr Hash hash(fc::WStr const &str_hash)
     return hash(str_hash.view());
 }
 
+template <typename T>
+concept SelfHashable = requires(T const &key) {
+    {
+        key.hash()
+    } -> fc::IsConvertibleTo<Hash>;
+};
+
+static inline constexpr Hash hash(SelfHashable auto const &s)
+{
+    return s.hash();
+}
+
 template <typename K>
 concept Hashable =
 
@@ -204,6 +216,29 @@ public:
         return _count;
     }
 
+    ValueT moveOut(KeyT const &key)
+    {
+        if (_buckets.len() == 0)
+        {
+            unreachable$();
+        }
+        auto h = contained_hash(key);
+        if (_buckets.len() <= h)
+        {
+            unreachable$();
+        }
+        for (size_t i = 0; i < _buckets[h].len(); i++)
+        {
+            if (_buckets[h][i].key == key)
+            {
+                auto value = _buckets[h].pop(i);
+                _count--;
+                return value.value;
+            }
+        }
+        unreachable$();
+    }
+
     void remove(KeyT const &key)
     {
         if (_buckets.len() == 0)
@@ -288,7 +323,8 @@ public:
             while (bucket.len() != 0)
             {
                 auto entry = bucket.pop();
-                insert(std::move(entry.key), std::move(entry.value));
+                auto h = contained_hash(entry.key);
+                _buckets[h].push(std::move(entry));
             }
         }
     }

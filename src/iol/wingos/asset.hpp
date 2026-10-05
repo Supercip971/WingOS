@@ -16,7 +16,7 @@ namespace Wingos
 
 struct UAsset
 {
-    uint64_t handle;
+    AssetHandle handle;
 };
 
 struct VirtualMemoryAsset : public UAsset
@@ -24,7 +24,7 @@ struct VirtualMemoryAsset : public UAsset
 
     mcx::MemoryRange memory; // the virtual memory range of the asset
 
-    static VirtualMemoryAsset create(uint64_t space_handle, uint64_t start, uint64_t end, uint64_t physical_mem_handle, uint64_t flags)
+    static VirtualMemoryAsset create(AssetHandle space_handle, uint64_t start, uint64_t end, AssetHandle physical_mem_handle, uint64_t flags)
     {
         VirtualMemoryAsset asset = {};
 
@@ -33,10 +33,10 @@ struct VirtualMemoryAsset : public UAsset
             fmt::err$("VirtualMemoryAsset::create: invalid range start={}, end={} (space_handle={}, phys_handle={}, flags={})",
                       start | fmt::FMT_HEX,
                       end | fmt::FMT_HEX,
-                      space_handle,
-                      physical_mem_handle,
+                      space_handle.id(),
+                      physical_mem_handle.id(),
                       flags | fmt::FMT_HEX);
-            asset.handle = 0;
+            asset.handle = AssetHandle::invalid();
             asset.memory = mcx::MemoryRange(0, 0);
             return asset;
         }
@@ -50,35 +50,35 @@ struct VirtualMemoryAsset : public UAsset
                       asset.memory.end() | fmt::FMT_HEX,
                       start | fmt::FMT_HEX,
                       end | fmt::FMT_HEX);
-            asset.handle = 0;
+            asset.handle = AssetHandle::invalid();
             asset.memory = mcx::MemoryRange(0, 0);
             return asset;
         }
 
         asset.handle = sys$map_create(space_handle, asset.memory.start(), asset.memory.end(), physical_mem_handle, flags).returned_handle;
 
-        if (asset.handle == 0)
+        if (asset.handle == AssetHandle::invalid())
         {
             fmt::err$("VirtualMemoryAsset::create: mapping syscall failed (start={}, end={}, phys_handle={}, flags={})",
                       asset.memory.start() | fmt::FMT_HEX,
                       asset.memory.end() | fmt::FMT_HEX,
-                      physical_mem_handle,
+                      physical_mem_handle.id(),
                       flags | fmt::FMT_HEX);
         }
 
         return asset;
     }
 
-    static fc::Result<VirtualMemoryAsset> from_handle(uint64_t handle)
+    static fc::Result<VirtualMemoryAsset> from_handle(AssetHandle handle)
     {
         VirtualMemoryAsset asset = {};
         asset.handle = handle;
 
-        auto v = sys$ipc_asset_info_by_handle(0, handle);
+        auto v = sys$ipc_asset_info_by_handle(AssetHandle::selfSpace(), handle);
 
         if (v.returned_kind != AssetKind::OBJECT_KIND_MAPPING)
         {
-            fmt::warn$("Tried to create MemoryAsset from handle {}, but asset kind is {}", handle, v.returned_kind);
+            fmt::warn$("Tried to create MemoryAsset from handle {}, but asset kind is {}", handle.id(), v.returned_kind);
             return "asset kind is not mapping";
         }
         asset.memory = mcx::MemoryRange(v.returned_info.mapping.start, v.returned_info.mapping.end).growAlign(4096);
@@ -99,7 +99,7 @@ struct MemoryAsset : public UAsset
 
     bool allocated; // if true, the memory has been allocated by the kernel
 
-    static MemoryAsset allocate(uint64_t space_handle, uint64_t size, [[maybe_unused]] bool lower_half = false)
+    static MemoryAsset allocate(AssetHandle space_handle, uint64_t size, [[maybe_unused]] bool lower_half = false)
     {
         MemoryAsset asset = {};
 
@@ -113,16 +113,16 @@ struct MemoryAsset : public UAsset
         return asset;
     }
 
-    static MemoryAsset from_handle(uint64_t handle)
+    static MemoryAsset from_handle(AssetHandle handle)
     {
         MemoryAsset asset = {};
         asset.handle = handle;
 
-        auto v = sys$ipc_asset_info_by_handle(0, handle);
+        auto v = sys$ipc_asset_info_by_handle(AssetHandle::selfSpace(), handle);
 
         if (v.returned_kind != AssetKind::OBJECT_KIND_MEMORY)
         {
-            fmt::warn$("Tried to create MemoryAsset from handle {}, but asset kind is {}", handle, v.returned_kind);
+            fmt::warn$("Tried to create MemoryAsset from handle {}, but asset kind is {}", handle.id(), v.returned_kind);
             return asset; // return empty asset
         }
         asset.memory = mcx::MemoryRange::from_begin_len(v.returned_info.memory.addr, v.returned_info.memory.size).growAlign(4096);
@@ -130,7 +130,7 @@ struct MemoryAsset : public UAsset
         return asset;
     }
 
-    static MemoryAsset own(uint64_t space_handle, uint64_t addr, uint64_t size)
+    static MemoryAsset own(AssetHandle space_handle, uint64_t addr, uint64_t size)
     {
         MemoryAsset asset;
         asset.memory = mcx::MemoryRange::from_begin_len(addr, size).growAlign(4096);
@@ -146,7 +146,7 @@ struct TaskAsset : public UAsset
     uint64_t launch_addr;
     uint64_t args[4];
 
-    static TaskAsset create(uint64_t space_handle, uint64_t launch_addr, uint64_t args[4])
+    static TaskAsset create(AssetHandle space_handle, uint64_t launch_addr, uint64_t args[4])
     {
         TaskAsset asset;
         asset.launch_addr = launch_addr;

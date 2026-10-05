@@ -29,7 +29,7 @@ fc::Result<size_t> execute_module(mcx::MachineContext *mcx, elf::ElfLoader loade
     auto vasset = subspace.map_memory(moved_startup_info, ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_READ);
     auto task_asset = subspace.create_task((uintptr_t)loaded.entry_point(), (uintptr_t)vasset.ptr());
 
-    if (task_asset.handle == 0)
+    if (task_asset.handle == AssetHandle::invalid())
     {
         fmt::err$("failed to create task asset: {}", task_asset.handle);
         return fc::Result<size_t>::error("failed to create task asset");

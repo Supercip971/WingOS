@@ -9,7 +9,7 @@ namespace kernel
 {
 
 IpcServerHandle publish_server(AssetRef<kernel::IpcEndpoint> &endpoint, bool is_root);
-void unregister_server(IpcServerHandle handle, uint64_t space_handle);
+void unregister_server(IpcServerHandle handle, AssetHandle space_handle);
 uint64_t get_next_ipc_server_handle();
 
 } // namespace kernel

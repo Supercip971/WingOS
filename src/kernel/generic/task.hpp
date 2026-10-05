@@ -48,7 +48,7 @@ class Task : public Asset
     static Task *_task_allocate();
 
 public:
-    uint64_t signaled_by;
+    AssetHandle signaled_by;
     bool signaled;
 
     Task() : Asset(AssetKind::OBJECT_KIND_TASK) {}

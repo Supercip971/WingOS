@@ -48,20 +48,20 @@ static fc::Result<void> update_inplace_message(IpcMessageArguments *message, Ass
 
             if (!message->data[i].copy_asset)
             {
-                message->data[i].asset_handle = try$(Space::asset_move(source_space.asset, target_space.asset, asset_ptr)).handle;
+                message->data[i].asset_handle = try$(Space::asset_move(source_space.asset, target_space.asset, asset_ptr)).handle.id();
             }
             else
             {
-                message->data[i].asset_handle = try$(Space::asset_copy(target_space.asset, asset_ptr)).handle;
+                message->data[i].asset_handle = try$(Space::asset_copy(target_space.asset, asset_ptr)).handle.id();
             }
         }
     }
     return {};
 }
 
-fc::Result<void> kernel::ipc_receive_async(AssetRef<Space> &space, AssetRef<IpcEndpoint> &endpoint, IpcMessage *target, uint64_t *ret_task_handle)
+fc::Result<void> kernel::ipc_receive_async(AssetRef<Space> &space, AssetRef<IpcEndpoint> &endpoint, IpcMessage *target, AssetHandle *ret_task_handle)
 {
-    *ret_task_handle = 0;
+    *ret_task_handle = AssetHandle::invalid();
 
     if (!endpoint->has_message())
     {
@@ -105,7 +105,7 @@ fc::Result<void> kernel::ipc_receive_async(AssetRef<Space> &space, AssetRef<IpcE
     {
         sync_entry.callee->sched().unblock();
 
-        *ret_task_handle = 0;
+        *ret_task_handle = AssetHandle::invalid();
         resolve_blocked_tasks();
     }
 
@@ -114,13 +114,13 @@ fc::Result<void> kernel::ipc_receive_async(AssetRef<Space> &space, AssetRef<IpcE
     return {};
 }
 
-fc::Result<void> kernel::ipc_receive(AssetRef<Space> &space, AssetRef<AssetTask> &callee, AssetRef<IpcEndpoint> &endpoint, IpcMessage *target, uint64_t *ret_task_handle)
+fc::Result<void> kernel::ipc_receive(AssetRef<Space> &space, AssetRef<AssetTask> &callee, AssetRef<IpcEndpoint> &endpoint, IpcMessage *target, AssetHandle *ret_task_handle)
 {
     endpoint.lock();
     endpoint->awaiting_server = callee;
     endpoint.unlock();
 
-    *ret_task_handle = 0;
+    *ret_task_handle = AssetHandle::invalid();
 
     while (!endpoint->has_message() && !callee->signaled)
     {
@@ -195,7 +195,7 @@ fc::Result<void> kernel::ipc_receive(AssetRef<Space> &space, AssetRef<AssetTask>
     {
         sync_entry.callee->sched().unblock();
 
-        *ret_task_handle = 0;
+        *ret_task_handle = AssetHandle::invalid();
         resolve_blocked_tasks();
     }
 

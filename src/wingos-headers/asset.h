@@ -1,4 +1,5 @@
 #pragma once
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -29,6 +30,38 @@ extern "C"
 #ifdef __cplusplus
 }
 
+#endif
+
+#define ASSET_HANDLE_ID_INVALID ((uint64_t)-1)
+#define ASSET_HANDLE_ID_SELF_SPACE ((uint64_t)0)
+
+typedef struct AssetHandle
+{
+    uint64_t _id;
+
+#ifdef __cplusplus
+
+    constexpr AssetHandle() : _id(ASSET_HANDLE_ID_INVALID) {}
+
+    constexpr AssetHandle(uint64_t id) : _id(id) {}
+
+    static constexpr AssetHandle invalid() { return {ASSET_HANDLE_ID_INVALID}; }
+
+    static constexpr AssetHandle selfSpace() { return {ASSET_HANDLE_ID_SELF_SPACE}; }
+
+    constexpr bool operator==(const AssetHandle &other) const { return _id == other._id; }
+
+    constexpr bool operator!=(const AssetHandle &other) const { return _id != other._id; }
+
+    constexpr uint64_t id() const { return _id; }
+
+#endif
+} AssetHandle;
+
+typedef uint64_t SpaceId;
+
+static_assert(sizeof(AssetHandle) == sizeof(uint64_t), "assets handle shouldn't have different size than uint64_t");
+
 static inline const char *assetKind2Str(AssetKind kind)
 {
     switch (kind)
@@ -57,5 +90,3 @@ static inline const char *assetKind2Str(AssetKind kind)
         return "INVALID_KIND";
     }
 }
-
-#endif

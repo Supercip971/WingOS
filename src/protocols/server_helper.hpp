@@ -9,12 +9,13 @@
 #include "libcore/str.hpp"
 #include "libcore/type-utils.hpp"
 #include "protocols/init/init.hpp"
+#include "wingos-headers/asset.h"
 #include "wingos-headers/ipc.h"
 
 namespace prot
 {
 
-using InterruptedByHandle = uint64_t;
+using InterruptedByHandle = AssetHandle;
 
 typedef enum : uint64_t
 {
@@ -219,7 +220,7 @@ public:
         else
         {
 
-            if (res.handle == 0)
+            if (res.handle == AssetHandle::invalid())
             {
                 connections[msg.port]->current_reply_obj = fc::novalue;
                 err = connections[msg.port]->call_received(msg, fc::novalue);
@@ -275,7 +276,7 @@ public:
         else
         {
 
-            if (res.handle == 0)
+            if (res.handle == AssetHandle::invalid())
             {
                 connections[msg.port]->current_reply_obj = fc::novalue;
                 err = connections[msg.port]->call_received(msg, fc::novalue);

@@ -83,7 +83,7 @@ template <typename T = Asset, bool disableCheck = false>
 struct AssetRef
 {
     T *asset{nullptr};
-    uint64_t handle{(uint64_t)-1};
+    AssetHandle handle{AssetHandle::invalid()};
     bool write{true};
     bool read{true};
     bool share{true};
@@ -105,13 +105,13 @@ struct AssetRef
         }
     }
 
-    AssetRef(T *asset_value, uint64_t handle_value)
+    AssetRef(T *asset_value, AssetHandle handle_value)
         : asset(asset_value), handle(handle_value), write(true), read(true), share(true)
     {
         Asset::own(reinterpret_cast<Asset *>(asset_value));
     }
 
-    AssetRef(T *asset_value, uint64_t handle_value, bool write_value, bool read_value, bool share_value)
+    AssetRef(T *asset_value, AssetHandle handle_value, bool write_value, bool read_value, bool share_value)
         : asset(asset_value), handle(handle_value), write(write_value), read(read_value), share(share_value)
     {
         Asset::own(reinterpret_cast<Asset *>(asset_value));
@@ -138,7 +138,7 @@ struct AssetRef
           share(other.share)
     {
         other.asset = nullptr;
-        other.handle = 0;
+        other.handle = AssetHandle::invalid();
         other.write = false;
         other.read = false;
         other.share = false;
@@ -202,7 +202,7 @@ struct AssetRef
             share = other.share;
 
             other.asset = nullptr;
-            other.handle = 0;
+            other.handle = AssetHandle::invalid();
             other.write = false;
             other.read = false;
             other.share = false;
@@ -229,7 +229,7 @@ struct AssetRef
     }
 
     // Returns just the handle - useful for lookups without ownership transfer
-    uint64_t get_handle() const
+    auto get_handle() const
     {
         return handle;
     }

@@ -2,6 +2,7 @@
 
 #include "libcore/fmt/log.hpp"
 #include "libcore/unreachable.h"
+#include "wingos-headers/asset.h"
 #ifdef __cplusplus
 
 #    include "libcore/type-utils.hpp"
@@ -17,7 +18,7 @@ typedef uint32_t IpcServerAddress;
 typedef uint32_t IpcServerPort;
 
 typedef uint64_t IpcServerHandle;
-typedef uint64_t IpcConnectionHandle;
+typedef AssetHandle IpcConnectionHandle;
 
 // first IPC server manager,
 // each server is a string and a handle and
@@ -124,7 +125,7 @@ struct IpcMessage : public fc::NoCopy
     template <typename T = uint64_t>
     constexpr void move_handle(unsigned int id, T val)
     {
-        arguments.data[id].asset_handle = val;
+        arguments.data[id].asset_handle = AssetHandle(val).id();
         arguments.data[id].is_asset = true;
         arguments.data[id].copy_asset = false;
     }
@@ -132,7 +133,7 @@ struct IpcMessage : public fc::NoCopy
     template <typename T = uint64_t>
     constexpr void copy_handle(unsigned int id, T val)
     {
-        arguments.data[id].asset_handle = val;
+        arguments.data[id].asset_handle = AssetHandle(val).id();
         arguments.data[id].is_asset = true;
         arguments.data[id].copy_asset = true;
     }
@@ -148,14 +149,14 @@ struct IpcMessage : public fc::NoCopy
         return (T)arguments.data[id].data;
     }
 
-    constexpr uint64_t asset(unsigned int id)
+    constexpr AssetHandle asset(unsigned int id)
     {
         if (!arguments.data[id].is_asset)
         {
             fmt::warn$("arg {} is not an asset use arg() instead", id);
             unreachable$();
         }
-        return arguments.data[id].asset_handle;
+        return AssetHandle(arguments.data[id].asset_handle);
     }
 #else
 struct IpcMessage

@@ -72,7 +72,7 @@ fc::Result<uintptr_t> ksyscall_mem_own(kernel::Task *caller, SyscallMemOwn *mem_
     if (mem_own->target_space_handle != 0)
     {
         space = try$(
-                    caller->space()->by_handle<Space>(mem_own->target_space_handle))
+                    caller->space()->by_handle<Space>({mem_own->target_space_handle}))
                     .asset;
     }
     else
@@ -93,9 +93,9 @@ fc::Result<uintptr_t> ksyscall_mem_own(kernel::Task *caller, SyscallMemOwn *mem_
 
     mem_own->addr = asset.asset->addr;
 
-    mem_own->returned_handle = asset.handle;
+    mem_own->returned_handle = asset.handle.id();
 
-    return (uint64_t)asset.handle;
+    return (uint64_t)asset.handle.id();
 }
 
 fc::Result<uintptr_t> ksyscall_map(kernel::Task *caller, SyscallMap *map)
@@ -106,7 +106,7 @@ fc::Result<uintptr_t> ksyscall_map(kernel::Task *caller, SyscallMap *map)
     if (map->target_space_handle != 0)
     {
         space = try$(
-                    caller->space()->by_handle<Space>(map->target_space_handle))
+                    caller->space()->by_handle<Space>({map->target_space_handle}))
                     .asset;
     }
     else
@@ -131,7 +131,7 @@ fc::Result<uintptr_t> ksyscall_map(kernel::Task *caller, SyscallMap *map)
         return fc::Result<uintptr_t>::error("invalid mapping range");
     }
 
-    auto phys_asset = try$(space->by_handle<AssetMemory>(map->physical_mem_handle));
+    auto phys_asset = try$(space->by_handle<AssetMemory>({map->physical_mem_handle}));
 
     auto asset = try$(space->create_mapping({
         .start = map->start,
@@ -149,9 +149,9 @@ fc::Result<uintptr_t> ksyscall_map(kernel::Task *caller, SyscallMap *map)
         }
     }
 
-    map->returned_handle = asset.handle;
+    map->returned_handle = asset.handle.id();
 
-    return (uint64_t)asset.handle;
+    return (uint64_t)asset.handle.id();
 }
 
 fc::Result<size_t> ksyscall_task_create(kernel::Task *caller, SyscallTaskCreate *task_create)
@@ -161,7 +161,7 @@ fc::Result<size_t> ksyscall_task_create(kernel::Task *caller, SyscallTaskCreate 
     {
 
         space = try$(
-                    caller->space()->by_handle<Space>(task_create->target_space_handle))
+                    caller->space()->by_handle<Space>({task_create->target_space_handle}))
                     .asset;
     }
     else
@@ -189,9 +189,9 @@ fc::Result<size_t> ksyscall_task_create(kernel::Task *caller, SyscallTaskCreate 
         },
     }));
 
-    task_create->returned_handle = asset.handle;
+    task_create->returned_handle = asset.handle.id();
 
-    return (uint64_t)asset.handle;
+    return (uint64_t)asset.handle.id();
 }
 
 fc::Result<size_t> ksyscall_space_create(kernel::Task *caller, SyscallSpaceCreate *args)
@@ -200,7 +200,7 @@ fc::Result<size_t> ksyscall_space_create(kernel::Task *caller, SyscallSpaceCreat
     if (args->parent_space_handle != 0)
     {
         space = try$(
-                    caller->space()->by_handle<Space>(args->parent_space_handle))
+                    caller->space()->by_handle<Space>({args->parent_space_handle}))
                     .asset;
     }
     else
@@ -215,8 +215,8 @@ fc::Result<size_t> ksyscall_space_create(kernel::Task *caller, SyscallSpaceCreat
 
     auto asset = try$(space->create_space(args->flags, args->rights));
 
-    args->returned_handle = asset.handle;
-    return (uint64_t)asset.handle;
+    args->returned_handle = asset.handle.id();
+    return (uint64_t)asset.handle.id();
 }
 
 fc::Result<size_t> ksyscall_mem_release(kernel::Task *caller, SyscallAssetRelease *release)
@@ -251,7 +251,7 @@ fc::Result<size_t> ksyscall_mem_release(kernel::Task *caller, SyscallAssetReleas
 
 fc::Result<size_t> ksyscall_asset_release(kernel::Task *caller, SyscallAssetRelease *release)
 {
-    if (release->asset_handle == 0 && release->addr != nullptr)
+    if (release->asset_handle == AssetHandle::invalid() && release->addr != nullptr)
     {
         return ksyscall_mem_release(caller, release);
     }
@@ -352,7 +352,7 @@ fc::Result<size_t> ksyscall_asset_move(kernel::Task *caller, SyscallAssetMove *a
 
     asset_move_args->returned_handle_in_space = moved_asset.handle;
 
-    return (uint64_t)moved_asset.handle;
+    return moved_asset.handle.id();
 }
 
 fc::Result<size_t> ksyscall_create_endpoint(kernel::Task *caller, SyscallIpcCreateEndpoint *create)
@@ -383,7 +383,7 @@ fc::Result<size_t> ksyscall_create_endpoint(kernel::Task *caller, SyscallIpcCrea
     create->returned_addr = (uintptr_t)asset->uuid;
     create->returned_handle = asset.handle;
 
-    return (uint64_t)asset.handle;
+    return asset.handle.id();
 }
 
 fc::Result<size_t> ksyscall_create_connection(kernel::Task *caller, SyscallIpcConnect *create)
@@ -431,7 +431,7 @@ fc::Result<size_t> ksyscall_create_connection(kernel::Task *caller, SyscallIpcCo
 
     create->returned_handle_sender = conn.handle;
     create->port_used = conn->port;
-    return (uint64_t)conn.handle;
+    return conn.handle.id();
 }
 
 fc::Result<size_t> ksyscall_send(kernel::Task *caller, SyscallIpcSend *send)
@@ -581,7 +581,7 @@ fc::Result<size_t> ksyscall_ipc_reply(kernel::Task *caller, SyscallIpcReply *rep
 {
 
     Space *space = nullptr;
-    if (reply->space_handle != 0)
+    if (reply->space_handle != AssetHandle::selfSpace())
     {
         space = try$(
                     caller->space()->by_handle<Space>(reply->space_handle))
@@ -625,17 +625,17 @@ fc::Result<size_t> ksyscall_ipc_asset_info(kernel::Task *caller, SyscallAssetInf
     }
 
     AssetRef<Asset> asset;
-    if (!info->use_index && info->asset_handle == 0)
+    if (!info->use_index && info->asset_handle == AssetHandle::selfSpace())
     {
         asset = AssetRef<>(caller->space(), 0);
     }
     else if (info->use_index)
     {
-        asset = try$(space->by_index(info->asset_handle));
+        asset = try$(space->by_index(info->asset_index));
     }
     else
     {
-        asset = try$(space->by_handle(info->asset_index));
+        asset = try$(space->by_handle(info->asset_handle));
     }
 
     info->returned_kind = asset.asset->kind;

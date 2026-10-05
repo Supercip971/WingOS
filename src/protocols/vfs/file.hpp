@@ -104,7 +104,7 @@ public:
 
     Wingos::IpcClient &raw_client() { return connection; }
 
-    static fc::Result<FsFile> use_connection(uint64_t connection_handle, bool keep_alive = false)
+    static fc::Result<FsFile> use_connection(AssetHandle connection_handle, bool keep_alive = false)
     {
         FsFile file = {};
         file.connection = Wingos::Space::self().from_already_connected(connection_handle);
@@ -140,7 +140,7 @@ public:
         message.arguments.data[1].data = offset;
         message.arguments.data[2].data = len;
         message.arguments.data[3].is_asset = true;
-        message.arguments.data[3].asset_handle = asset.handle;
+        message.arguments.data[3].asset_handle = asset.handle.id();
         message.arguments.data[4].data = 0;
         try$(connection.call(message));
         size_t received_len = message.arguments.data[1].data;
@@ -188,7 +188,7 @@ public:
         message.arguments.data[1].data = offset;
         message.arguments.data[2].data = len;
         message.arguments.data[3].is_asset = true;
-        message.arguments.data[3].asset_handle = asset.handle;
+        message.arguments.data[3].asset_handle = asset.handle.id();
         message.arguments.data[4].data = 0;
         try$(connection.call(message));
         size_t received_len = message.arguments.data[1].data;
@@ -317,7 +317,7 @@ public:
             return ("failed to open file");
         }
 
-        IpcServerHandle file_endpoint = message.asset(1);
+        AssetHandle file_endpoint = message.asset(1);
         auto file_res = FsFile::use_connection(file_endpoint);
         return file_res;
     }

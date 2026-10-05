@@ -82,7 +82,7 @@ class NvmeController
             queue.tail = 0;
 
             auto memory = Wingos::Space::self().allocate_physical_memory(len, false);
-            if (memory.handle == 0)
+            if (memory.handle == AssetHandle::invalid())
             {
                 return fc::Result<Queue<T>>::error("failed to allocate memory for queue");
             }

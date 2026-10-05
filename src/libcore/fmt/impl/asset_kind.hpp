@@ -71,4 +71,12 @@ constexpr fc::Result<void> format_v(Targ &target, fmt::FormatFlags<C> flagged)
     }
 }
 
+template <typename C, fc::Writable Targ>
+constexpr fc::Result<void> format_v(Targ &target, C &&value)
+    requires(fc::IsSame<AssetHandle, fc::Pure<C>>)
+{
+    format_v(target, (uint64_t)value.id());
+    return {};
+}
+
 } // namespace fmt

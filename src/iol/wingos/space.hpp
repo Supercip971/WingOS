@@ -14,16 +14,16 @@ namespace Wingos
 {
 struct Space
 {
-    uint64_t handle; // the handle of the space
+    AssetHandle handle; // the handle of the space
 
     static Space self()
     {
         Space space = {};
-        space.handle = 0; // self space handle is 0
+        space.handle = AssetHandle::selfSpace();
         return space;
     }
 
-    static Space from_uid(uint64_t uid)
+    static Space from_uid(AssetHandle uid)
     {
         Space space = {};
         space.handle = uid; // the handle of the space
@@ -32,7 +32,7 @@ struct Space
 
     bool is_self() const
     {
-        return handle == 0; // self space handle is 0
+        return handle == AssetHandle::selfSpace(); // self space handle is 0
     }
 
     MemoryAsset allocate_physical_memory(uint64_t size, bool lower_half = false)
@@ -46,7 +46,7 @@ struct Space
         return MemoryAsset::own(handle, addr, size);
     }
 
-    VirtualMemoryAsset create_virtual_memory(uint64_t start, uint64_t end, uint64_t physical_mem_handle, uint64_t flags)
+    VirtualMemoryAsset create_virtual_memory(uint64_t start, uint64_t end, AssetHandle physical_mem_handle, uint64_t flags)
     {
         return VirtualMemoryAsset::create(handle, start, end, physical_mem_handle, flags);
     }
@@ -65,9 +65,9 @@ struct Space
     VirtualMemoryAsset map_physical_memory(uint64_t start, uint64_t len, uint64_t flags)
     {
         auto phys = own_memory_physical(start, len);
-        if (phys.handle == 0)
+        if (phys.handle == AssetHandle::invalid())
         {
-            fmt::err$("failed to own physical memory: {}", phys.handle);
+            fmt::err$("failed to own physical memory: {}", phys.handle.id());
             return {};
         }
         return VirtualMemoryAsset::create(handle, start + USERSPACE_VIRT_BASE, start + phys.memory.len() + USERSPACE_VIRT_BASE, phys.handle, flags);
@@ -92,9 +92,9 @@ struct Space
     Space create_space()
     {
         auto space_res = sys$space_create(handle, 0, 0);
-        if (space_res.returned_handle == 0)
+        if (space_res.returned_handle == AssetHandle::invalid())
         {
-            fmt::err$("failed to create space: {}", space_res.returned_handle);
+            fmt::err$("failed to create space: {}", space_res.returned_handle.id());
             return Space::self();
         }
         return Space::from_uid(space_res.returned_handle);
@@ -103,9 +103,9 @@ struct Space
     TaskAsset create_task(uint64_t launch, uint64_t arg1 = 0, uint64_t arg2 = 0, uint64_t arg3 = 0, uint64_t arg4 = 0)
     {
         auto task_res = sys$task_create(handle, launch, arg1, arg2, arg3, arg4);
-        if (task_res.returned_handle == 0)
+        if (task_res.returned_handle == AssetHandle::invalid())
         {
-            fmt::err$("failed to create task: {}", task_res.returned_handle);
+            fmt::err$("failed to create task: {}", task_res.returned_handle.id());
             return TaskAsset();
         }
         TaskAsset task_asset;
@@ -125,12 +125,12 @@ struct Space
         sys$task_launch(handle, asset.handle, asset.args[0], asset.args[1], asset.args[2], asset.args[3]);
     }
 
-    UAsset _move_to(Space to, uint64_t moved_handle)
+    UAsset _move_to(Space to, AssetHandle moved_handle)
     {
         auto move_res = sys$asset_move(handle, to.handle, moved_handle);
-        if (move_res.returned_handle_in_space == 0)
+        if (move_res.returned_handle_in_space == AssetHandle::invalid())
         {
-            fmt::err$("failed to move asset: {}", move_res.returned_handle_in_space);
+            fmt::err$("failed to move asset: {}", move_res.returned_handle_in_space.id());
             return {};
         }
 
@@ -143,9 +143,9 @@ struct Space
     T move_to(Space to, const T &asset)
     {
         auto moved_asset = _move_to(to, asset.handle);
-        if (moved_asset.handle == 0)
+        if (moved_asset.handle == AssetHandle::invalid())
         {
-            fmt::err$("failed to move asset: {}", moved_asset.handle);
+            fmt::err$("failed to move asset: {}", moved_asset.handle.id());
             return T();
         }
 
@@ -169,12 +169,12 @@ struct Space
         return IpcClient::connect_by_addr(handle, endpoint_address);
     }
 
-    IpcClient from_already_connected(uint64_t endpoint_handle)
+    IpcClient from_already_connected(AssetHandle endpoint_handle)
     {
         return IpcClient::already_connected(handle, endpoint_handle);
     }
 
-    IpcClient connect_by_handle(uint64_t endpoint_handle)
+    IpcClient connect_by_handle(AssetHandle endpoint_handle)
     {
         return IpcClient::connect_to_object(handle, endpoint_handle);
     }

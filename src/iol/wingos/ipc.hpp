@@ -4,6 +4,7 @@
 #include "iol/wingos/syscalls.h"
 #include "libcore/fmt/log.hpp"
 #include "libcore/result.hpp"
+#include "wingos-headers/asset.h"
 #include "wingos-headers/ipc.h"
 #include "wingos-headers/syscalls.h"
 
@@ -13,7 +14,7 @@ namespace Wingos
 
 struct IpcReplyObject : public UAsset
 {
-    uint64_t space_handle;
+    AssetHandle space_handle = AssetHandle::selfSpace();
 
     fc::Result<void> reply(IpcMessage *message)
     {
@@ -25,10 +26,10 @@ struct IpcReplyObject : public UAsset
 struct RawIpcEndpoint : public UAsset
 {
 
-    uint64_t space_handle;          // the space the server belongs to
-    IpcServerHandle published_addr; // the adress of the server
+    AssetHandle space_handle = AssetHandle::selfSpace(); // the space the server belongs to
+    IpcServerHandle published_addr;                      // the adress of the server
 
-    static RawIpcEndpoint create(uint64_t space_handle, bool publish = false, bool is_root = false)
+    static RawIpcEndpoint create(AssetHandle space_handle, bool publish = false, bool is_root = false)
     {
         RawIpcEndpoint server = {};
         auto res = sys$ipc_create_endpoint(space_handle, is_root, publish);
@@ -63,9 +64,9 @@ struct IpcClient : public UAsset
 
 public:
     uint64_t port;
-    uint64_t associated_space_handle; // the space the client belongs to
+    AssetHandle associated_space_handle; // the space the client belongs to
 
-    static IpcClient from(uint64_t space_handle, uint64_t connection, uint64_t port)
+    static IpcClient from(AssetHandle space_handle, AssetHandle connection, uint64_t port)
     {
         IpcClient client = {};
         client.handle = connection;
@@ -74,18 +75,18 @@ public:
         return client;
     }
 
-    static IpcClient from(uint64_t space_handle, uint64_t endpoint_handle)
+    static IpcClient from(AssetHandle space_handle, AssetHandle endpoint_handle)
     {
         return IpcClient::already_connected(space_handle, endpoint_handle);
     }
 
-    static IpcClient connect_by_addr(uint64_t space_handle, uint64_t endpoint_address)
+    static IpcClient connect_by_addr(AssetHandle space_handle, uint64_t endpoint_address)
     {
         IpcClient client = {};
         auto res = sys$ipc_connect(space_handle, true, endpoint_address);
-        if (res.returned_handle_sender == 0)
+        if (res.returned_handle_sender == AssetHandle::invalid())
         {
-            fmt::err$("failed to connect to server: {}", res.returned_handle_sender);
+            fmt::err$("failed to connect to server: {}", res.returned_handle_sender.id());
             return client;
         }
         client.handle = res.returned_handle_sender;
@@ -94,7 +95,7 @@ public:
         return client;
     }
 
-    static IpcClient already_connected(uint64_t space_handle, uint64_t endpoint_handle)
+    static IpcClient already_connected(AssetHandle space_handle, AssetHandle endpoint_handle)
     {
         IpcClient client = {};
         client.handle = endpoint_handle;
@@ -105,13 +106,13 @@ public:
         return client;
     }
 
-    static IpcClient connect_to_object(uint64_t space_handle, uint64_t endpoint_handle)
+    static IpcClient connect_to_object(AssetHandle space_handle, AssetHandle endpoint_handle)
     {
         IpcClient client = {};
-        auto res = sys$ipc_connect(space_handle, false, endpoint_handle);
-        if (res.returned_handle_sender == 0)
+        auto res = sys$ipc_connect(space_handle, false, endpoint_handle.id());
+        if (res.returned_handle_sender == AssetHandle::invalid())
         {
-            fmt::err$("failed to connect to server: {}", res.returned_handle_sender);
+            fmt::err$("failed to connect to server: {}", res.returned_handle_sender.id());
             return client;
         }
         client.handle = res.returned_handle_sender;

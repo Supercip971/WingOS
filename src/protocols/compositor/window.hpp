@@ -48,7 +48,7 @@ public:
         return conn;
     }
 
-    IpcServerHandle create_window(bool take_fb = false)
+    AssetHandle create_window(bool take_fb = false)
     {
         IpcMessage message = {};
         message.arguments.data[0].data = COMPOSITOR_CREATE_WINDOW;

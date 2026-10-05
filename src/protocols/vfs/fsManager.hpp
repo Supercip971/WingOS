@@ -31,14 +31,14 @@ public:
         return imp;
     }
 
-    fc::Result<IpcServerHandle> create_root_endpoint()
+    fc::Result<AssetHandle> create_root_endpoint()
     {
         IpcMessage message = {};
         message.arguments.data[0].data = VFS_ACCESS_ROOT;
 
         try$(connection.call(message));
 
-        IpcServerHandle endpoint = message.asset(1);
+        AssetHandle endpoint = message.asset(1);
         return endpoint;
     };
 };
@@ -77,11 +77,11 @@ public:
 
     Wingos::IpcClient &raw_client() { return connection; }
 
-    fc::Result<MountedDiskResult> mount_if_device_valid(fc::Str name, IpcServerHandle endpoint, size_t begin_lba, size_t end_lba, size_t part_id)
+    fc::Result<MountedDiskResult> mount_if_device_valid(fc::Str name, AssetHandle endpoint, size_t begin_lba, size_t end_lba, size_t part_id)
     {
         IpcMessage message = {};
         message.arguments.data[0].data = VFS_DISK_ATTEMPT_INITIALIZE;
-        message.arguments.data[1].asset_handle = endpoint;
+        message.arguments.data[1].asset_handle = endpoint.id();
         message.arguments.data[1].is_asset = true;
         message.arguments.data[2].data = begin_lba;
         message.arguments.data[3].data = end_lba;

@@ -95,14 +95,12 @@ fc::Result<void> Lapic::send_sipi(LCpuId id, PhysAddr jump_addr)
 
 size_t Lapic::_timer_tick_in_16ms()
 {
-    write(LAPICReg::TIMER_INITIAL_COUNT, 0xFFFFFFFF);
-
-    // wait for 10ms
-    hpet::hpet_sleep(16);
 
     LAPICLocalVectorTable lvt = {0};
     lvt.val.mask = 1;
 
+    write(LAPICReg::TIMER_INITIAL_COUNT, 0xFFFFFFFF);
+    hpet::hpet_sleep(16);
     write(LAPICReg::LVT_TIMER, lvt.raw);
 
     return 0xFFFFFFFF - read(LAPICReg::TIMER_CURRENT_COUNT);
@@ -126,7 +124,7 @@ fc::Result<void> Lapic::timer_initialize()
     write(LAPICReg::LVT_TIMER, lvt.raw);
     fmt::log$("LVT_TIMER: {}", lvt.raw);
     write(LAPICReg::TIMER_DIVIDE_CONFIGURATION, LAPIC_TIMER_DIVIDE_BY_16);
-    write(LAPICReg::TIMER_INITIAL_COUNT, (ticks) / 32); // 0.1 ms per switch
+    write(LAPICReg::TIMER_INITIAL_COUNT, (ticks) / 32); // 0.16 ms per switch
 
     return {};
 }

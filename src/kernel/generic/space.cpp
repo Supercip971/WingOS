@@ -13,12 +13,12 @@
 #include "libcore/result.hpp"
 #include "wingos-headers/asset.h"
 
-size_t _space_handle = 1;
+SpaceId _space_id = 1;
 
 struct SpacePtr
 {
     Space *space;
-    uint64_t handle; // the handle of the space in the space
+    SpaceId id;
 };
 
 fc::Vec<SpacePtr> _spaces = {};
@@ -111,16 +111,16 @@ fc::Result<AssetRef<Space>> Space::create_space([[maybe_unused]] uint64_t flags,
 
     SpacePtr space_ptr = {};
     space_ptr.space = asset;
-    space_ptr.handle = _space_handle++;
+    space_ptr.id = (_space_id++);
 
     _spaces_lock.lock();
     _spaces.push(space_ptr);
     _spaces_lock.release();
 
-    asset->uid = space_ptr.handle;
+    asset->uid = space_ptr.id;
     // asset->ref_count++; // referencing by itself
 
-    asset->alloc_uid = 16 + 10000 * space_ptr.handle;
+    asset->alloc_uid = 16 + 10000 * space_ptr.id;
 
     asset->lock.release();
 
@@ -131,12 +131,12 @@ fc::Result<AssetRef<Space>> Space::create_space([[maybe_unused]] uint64_t flags,
 }
 
 // FIXME: this is not safe, because it does not check if the space exists in the parent space
-fc::Result<AssetRef<Space>> Space::global_space_by_handle(uint64_t handle)
+fc::Result<AssetRef<Space>> Space::global_space_by_handle(SpaceId handle)
 {
     _spaces_lock.lock();
     for (auto &space_ptr : _spaces)
     {
-        if (space_ptr.handle == handle)
+        if (space_ptr.id == handle)
         {
             auto sp = space_ptr;
             _spaces_lock.release();

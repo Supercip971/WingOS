@@ -33,7 +33,7 @@ enum VfsAdminMessageType
 struct VfsRegister
 {
     fc::Str device_name;
-    IpcServerHandle device_endpoint;
+    AssetHandle device_endpoint;
 };
 
 struct VfsRegisterFs
@@ -93,11 +93,11 @@ public:
 
     VfsConnection() = default;
 
-    fc::Result<void> register_device(fc::Str name, IpcServerHandle endpoint)
+    fc::Result<void> register_device(fc::Str name, AssetHandle endpoint)
     {
         IpcMessage message = {};
         message.arguments.data[0].data = VFS_REGISTER_DISK;
-        message.arguments.data[1].asset_handle = endpoint;
+        message.arguments.data[1].asset_handle = endpoint.id();
         message.arguments.data[1].is_asset = true;
 
         if (name.len() > 80)
@@ -175,7 +175,7 @@ public:
         {
             return ("failed to obtain root access");
         }
-        IpcServerHandle file_endpoint = message.asset(1);
+        AssetHandle file_endpoint = message.asset(1);
         auto file_res = FsFile::use_connection(file_endpoint);
 
         return file_res;

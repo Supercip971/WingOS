@@ -16,10 +16,10 @@ extern "C"
         return syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
     }
 
-    static inline SyscallMemOwn sys$mem_own(uint64_t target_space_handle, size_t size, size_t addr)
+    static inline SyscallMemOwn sys$mem_own(AssetHandle target_space_handle, size_t size, size_t addr)
     {
         SyscallMemOwn create = {
-            target_space_handle, size, addr, 0};
+            target_space_handle, size, addr, AssetHandle::invalid()};
         SyscallInterface interface = syscall_physical_mem_own_encode(&create);
         uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
         (void)result;
@@ -27,9 +27,9 @@ extern "C"
         return create;
     }
 
-    static inline SyscallMap sys$map_create(uint64_t target_space_handle, size_t start, size_t end, uint64_t physical_mem_handle, uint64_t flags)
+    static inline SyscallMap sys$map_create(AssetHandle target_space_handle, size_t start, size_t end, AssetHandle physical_mem_handle, uint64_t flags)
     {
-        SyscallMap create = {target_space_handle, start, end, physical_mem_handle, flags, 0};
+        SyscallMap create = {target_space_handle, start, end, physical_mem_handle, flags, AssetHandle::invalid()};
         SyscallInterface interface = syscall_map_encode(&create);
         uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
         (void)result;
@@ -37,9 +37,9 @@ extern "C"
         return create;
     }
 
-    static inline SyscallTaskCreate sys$task_create(uint64_t target_space_handle, uint64_t launch, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4)
+    static inline SyscallTaskCreate sys$task_create(AssetHandle target_space_handle, uint64_t launch, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4)
     {
-        SyscallTaskCreate create = {target_space_handle, launch, {0, 0, 0, 0}, 0};
+        SyscallTaskCreate create = {target_space_handle, launch, {0, 0, 0, 0}, AssetHandle::invalid()};
 
         create.args[0] = arg1;
         create.args[1] = arg2;
@@ -53,9 +53,9 @@ extern "C"
         return create;
     }
 
-    static inline SyscallSpaceCreate sys$space_create(uint64_t parent_space_handle, uint64_t flags, uint64_t rights)
+    static inline SyscallSpaceCreate sys$space_create(AssetHandle parent_space_handle, uint64_t flags, uint64_t rights)
     {
-        SyscallSpaceCreate create = {parent_space_handle, flags, rights, 0};
+        SyscallSpaceCreate create = {parent_space_handle, flags, rights, AssetHandle::invalid()};
         SyscallInterface interface = syscall_space_create_encode(&create);
         uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
         (void)result;
@@ -63,7 +63,7 @@ extern "C"
         return create;
     }
 
-    static inline SyscallAssetRelease sys$asset_release(uint64_t space_handle, uint64_t asset_handle)
+    static inline SyscallAssetRelease sys$asset_release(AssetHandle space_handle, AssetHandle asset_handle)
     {
         SyscallAssetRelease release = {space_handle, asset_handle, NULL, NULL};
         SyscallInterface interface = syscall_asset_release_encode(&release);
@@ -75,7 +75,7 @@ extern "C"
 
     static inline SyscallAssetRelease sys$asset_release_mem(void *addr, void *end)
     {
-        SyscallAssetRelease release = {.space_handle = 0, .asset_handle = 0, .addr = addr, .end = end};
+        SyscallAssetRelease release = {.space_handle = 0, .asset_handle = AssetHandle::invalid(), .addr = addr, .end = end};
         SyscallInterface interface = syscall_asset_release_encode(&release);
         uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
         (void)result;
@@ -83,7 +83,7 @@ extern "C"
         return release;
     }
 
-    static inline SyscallTaskLaunch sys$task_launch(uint64_t target_space_handle, uint64_t task_handle, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4)
+    static inline SyscallTaskLaunch sys$task_launch(AssetHandle target_space_handle, AssetHandle task_handle, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4)
     {
         SyscallTaskLaunch launch = {target_space_handle, task_handle, {arg1, arg2, arg3, arg4}};
         SyscallInterface interface = syscall_task_launch_encode(&launch);
@@ -92,36 +92,36 @@ extern "C"
         return launch;
     }
 
-    static inline SyscallAssetMove sys$asset_move(uint64_t from_space_handle, uint64_t to_space_handle, uint64_t asset_handle)
+    static inline SyscallAssetMove sys$asset_move(AssetHandle from_space_handle, AssetHandle to_space_handle, AssetHandle asset_handle)
     {
-        SyscallAssetMove move = {from_space_handle, to_space_handle, asset_handle, 0, 0};
+        SyscallAssetMove move = {from_space_handle, to_space_handle, asset_handle, 0, AssetHandle::invalid()};
         SyscallInterface interface = syscall_asset_move_encode(&move);
         uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
         (void)result;
         return move;
     }
 
-    static inline SyscallAssetMove sys$asset_copy(uint64_t from_space_handle, uint64_t to_space_handle, uint64_t asset_handle)
+    static inline SyscallAssetMove sys$asset_copy(AssetHandle from_space_handle, AssetHandle to_space_handle, AssetHandle asset_handle)
     {
-        SyscallAssetMove copy = {from_space_handle, to_space_handle, asset_handle, 1, 0};
+        SyscallAssetMove copy = {from_space_handle, to_space_handle, asset_handle, 1, AssetHandle::invalid()};
         SyscallInterface interface = syscall_asset_move_encode(&copy);
         uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
         (void)result;
         return copy;
     }
 
-    static inline SyscallIpcCreateEndpoint sys$ipc_create_endpoint(uint64_t space_handle, bool is_root, bool publish)
+    static inline SyscallIpcCreateEndpoint sys$ipc_create_endpoint(AssetHandle space_handle, bool is_root, bool publish)
     {
-        SyscallIpcCreateEndpoint create = {space_handle, is_root, publish, 0, 0};
+        SyscallIpcCreateEndpoint create = {space_handle, is_root, publish, 0, AssetHandle::invalid()};
         SyscallInterface interface = syscall_ipc_create_endpoint_encode(&create);
         uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
         (void)result;
         return create;
     }
 
-    static inline SyscallIpcConnect sys$ipc_connect(uint64_t space_handle, bool is_using_server_address, uint64_t id)
+    static inline SyscallIpcConnect sys$ipc_connect(AssetHandle space_handle, bool is_using_server_address, uint64_t id)
     {
-        SyscallIpcConnect connect = {space_handle, is_using_server_address, 0, 0, 0};
+        SyscallIpcConnect connect = {space_handle, is_using_server_address, 0, AssetHandle::invalid(), 0};
 
         if (is_using_server_address)
         {
@@ -146,7 +146,7 @@ extern "C"
         return connect;
     }
 
-    static inline SyscallIpcSend sys$ipc_send(uint64_t space_handle, IpcConnectionHandle connection_handle, IpcMessage *message, bool async)
+    static inline SyscallIpcSend sys$ipc_send(AssetHandle space_handle, IpcConnectionHandle connection_handle, IpcMessage *message, bool async)
     {
         SyscallIpcSend send = {
             .space_handle = space_handle,
@@ -167,7 +167,7 @@ extern "C"
             {internal_signal_id},
             0,
             0,
-            {},
+            {AssetHandle::invalid()},
         };
         SyscallInterface interface = syscall_ipc_receive_encode(&receive);
         uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
@@ -182,7 +182,7 @@ extern "C"
             {internal_signal_id},
             1,
             0,
-            {},
+            {AssetHandle::invalid()},
         };
         SyscallInterface interface = syscall_ipc_receive_encode(&receive);
         uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
@@ -190,14 +190,14 @@ extern "C"
         return receive;
     }
 
-    static inline SyscallIpcReceive sys$ipc_receive(uint64_t space_handle, uint64_t endpoint_handle, IpcMessage *returned_message, bool async)
+    static inline SyscallIpcReceive sys$ipc_receive(AssetHandle space_handle, AssetHandle endpoint_handle, IpcMessage *returned_message, bool async)
     {
         SyscallIpcReceive receive = {
             space_handle,
             {endpoint_handle},
             async,
             returned_message,
-            0,
+            {AssetHandle::invalid()},
         };
         SyscallInterface interface = syscall_ipc_receive_encode(&receive);
         uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
@@ -205,7 +205,7 @@ extern "C"
         return receive;
     }
 
-    static inline SyscallIpcCall sys$ipc_call(uint64_t space_handle, IpcConnectionHandle connection_handle, IpcMessage *message)
+    static inline SyscallIpcCall sys$ipc_call(AssetHandle space_handle, IpcConnectionHandle connection_handle, IpcMessage *message)
     {
         SyscallIpcCall send = {
             .space_handle = space_handle,
@@ -218,7 +218,7 @@ extern "C"
         return send;
     }
 
-    static inline SyscallIpcReply sys$ipc_reply(uint64_t space_handle, uint64_t reply_object_handle, IpcMessage *message)
+    static inline SyscallIpcReply sys$ipc_reply(AssetHandle space_handle, AssetHandle reply_object_handle, IpcMessage *message)
     {
         SyscallIpcReply reply = {
             .space_handle = space_handle,
@@ -232,18 +232,18 @@ extern "C"
         return reply;
     }
 
-    static inline SyscallAssetInfo sys$ipc_asset_info_by_handle(uint64_t space_handle, uint64_t asset_handle)
+    static inline SyscallAssetInfo sys$ipc_asset_info_by_handle(AssetHandle space_handle, AssetHandle asset_handle)
     {
-        SyscallAssetInfo info = {space_handle, false, {asset_handle}, AssetKind::OBJECT_KIND_UNKNOWN, 0, {}};
+        SyscallAssetInfo info = {space_handle, false, {asset_handle}, AssetKind::OBJECT_KIND_UNKNOWN, AssetHandle::invalid(), {}};
         SyscallInterface interface = syscall_ipc_asset_info_encode(&info);
         uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
         (void)result;
         return info;
     }
 
-    static inline SyscallAssetInfo sys$ipc_asset_info_by_index(uint64_t space_handle, uint64_t asset_index)
+    static inline SyscallAssetInfo sys$ipc_asset_info_by_index(AssetHandle space_handle, uint64_t asset_index)
     {
-        SyscallAssetInfo info = {space_handle, true, {asset_index}, AssetKind::OBJECT_KIND_UNKNOWN, 0, {}};
+        SyscallAssetInfo info = {space_handle, true, {asset_index}, AssetKind::OBJECT_KIND_UNKNOWN, AssetHandle::invalid(), {}};
         SyscallInterface interface = syscall_ipc_asset_info_encode(&info);
         uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
         (void)result;

@@ -135,7 +135,7 @@ struct Space : public Asset
         return "not found";
     }
 
-    fc::Result<AssetRef<>> by_handle(uint64_t handle)
+    fc::Result<AssetRef<>> by_handle(AssetHandle handle)
     {
 
         lock.lock();
@@ -149,7 +149,7 @@ struct Space : public Asset
             }
         }
 
-        fmt::log$("Asset not found in space({}) for handle {}", uid, handle);
+        fmt::log$("Asset not found in space({}) for handle {}", uid, handle._id);
 
         auto cur = Cpu::current()->currentTask();
         fmt::log$("task: {}", cur ? cur->uid() : (size_t)-1);
@@ -158,7 +158,7 @@ struct Space : public Asset
 
         for (size_t i = 0; i < assets.len(); i++)
         {
-            fmt::log$("  Asset[{}]: handle={}, kind={}", i, assets[i].handle, assetKind2Str(assets[i].asset->kind));
+            fmt::log$("  Asset[{}]: handle={}, kind={}", i, assets[i].handle._id, assetKind2Str(assets[i].asset->kind));
         }
 
         lock.release();
@@ -181,7 +181,7 @@ struct Space : public Asset
     }
 
     template <typename T>
-    fc::Result<AssetRef<T>> by_handle(uint64_t handle)
+    fc::Result<AssetRef<T>> by_handle(AssetHandle handle)
     {
         lock.lock();
         for (size_t i = 0; i < assets.len(); i++)
@@ -214,7 +214,7 @@ struct Space : public Asset
                         fmt::err$("expected: {}, got: {} for raw id: {} (space: {})",
                                   assetKind2Str((AssetKind)T::IDENT),
                                   found.asset->kind,
-                                  found.handle, this->uid);
+                                  found.handle._id, this->uid);
 
                         return fc::Result<AssetRef<T>>::error("asset kind mismatch");
                     }
@@ -223,7 +223,7 @@ struct Space : public Asset
         }
         asm volatile("cli");
 
-        fmt::log$("Asset not found in space({}) for handle {}", uid, handle);
+        fmt::log$("Asset not found in space({}) for handle {}", uid, handle._id);
 
         auto cur = Cpu::current()->currentTask();
         fmt::log$("task: {}", cur ? cur->uid() : (size_t)-1);
@@ -232,7 +232,7 @@ struct Space : public Asset
 
         for (size_t i = 0; i < assets.len(); i++)
         {
-            fmt::log$("  Asset[{}]: handle={}, kind={}", i, assets[i].handle, assetKind2Str(assets[i].asset->kind));
+            fmt::log$("  Asset[{}]: handle={}, kind={}", i, assets[i].handle._id, assetKind2Str(assets[i].asset->kind));
         }
 
         lock.release();
@@ -240,7 +240,7 @@ struct Space : public Asset
         return fc::Result<AssetRef<T>>::error("asset not found");
     }
 
-    fc::Result<AssetRef<>> by_handle_ptr(uint64_t handle)
+    fc::Result<AssetRef<>> by_handle_ptr(AssetHandle handle)
     {
         lock.lock();
         for (size_t i = 0; i < assets.len(); i++)
@@ -300,9 +300,9 @@ struct Space : public Asset
 
     fc::Result<AssetRef<Space>> create_space(uint64_t flags, uint64_t rights);
 
-    static fc::Result<AssetRef<Space>> global_space_by_handle(uint64_t handle);
+    static fc::Result<AssetRef<Space>> global_space_by_handle(SpaceId id);
 
-    AssetRef<> _asset_remove(uint64_t asset_handle)
+    AssetRef<> _asset_remove(AssetHandle asset_handle)
     {
         lock.lock();
         for (size_t i = 0; i < assets.len(); i++)
@@ -369,7 +369,7 @@ struct Space : public Asset
                 // Move the asset to the new space
                 auto moved_asset = from->assets.pop(i);
                 to->alloc_uid++;
-                moved_asset.handle = to->alloc_uid;
+                moved_asset.handle._id = to->alloc_uid;
                 to->assets.push(moved_asset);
 
                 if (first != second)
@@ -412,7 +412,7 @@ struct Space : public Asset
         to->lock.lock();
 
         to->alloc_uid++;
-        auto nref = AssetRef<>(reinterpret_cast<Asset *>(asset.asset), to->alloc_uid);
+        auto nref = AssetRef<>(reinterpret_cast<Asset *>(asset.asset), AssetHandle(to->alloc_uid.load()));
 
         to->assets.push(nref);
 
@@ -423,10 +423,10 @@ struct Space : public Asset
         return nref;
     }
 
-    void asset_release_by_handle(uint64_t handle)
+    void asset_release_by_handle(AssetHandle handle)
     {
         auto v = _asset_remove(handle);
-        fmt::log$("Releasing asset: {} kind: {}", handle, assetKind2Str(v.asset->kind));
+        fmt::log$("Releasing asset: {} kind: {}", handle._id, assetKind2Str(v.asset->kind));
         Asset::release(v.asset);
     }
 

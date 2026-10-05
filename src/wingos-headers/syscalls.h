@@ -49,10 +49,10 @@ extern "C"
 
     typedef struct SyscallMemOwn
     {
-        uint64_t target_space_handle;
+        AssetHandle target_space_handle;
         size_t size;
         size_t addr; // the address of the memory, if 0, it will be allocated by the kernel, will be set to the allocated address
-        uint64_t returned_handle;
+        AssetHandle returned_handle;
     } SyscallMemOwn;
 
     static inline SyscallInterface syscall_physical_mem_own_encode(SyscallMemOwn *create)
@@ -72,12 +72,12 @@ extern "C"
 
     typedef struct SyscallMap
     {
-        uint64_t target_space_handle;
+        AssetHandle target_space_handle;
         uint64_t start;
         uint64_t end;
-        uint64_t physical_mem_handle; // the handle of the physical memory asset
+        AssetHandle physical_mem_handle; // the handle of the physical memory asset
         uint64_t flags;
-        uint64_t returned_handle; // the handle of the created mapping
+        AssetHandle returned_handle; // the handle of the created mapping
     } SyscallMap;
 
     static inline SyscallInterface syscall_map_encode(SyscallMap *create)
@@ -97,11 +97,11 @@ extern "C"
 
     typedef struct SyscallTaskCreate
     {
-        uint64_t target_space_handle;
+        AssetHandle target_space_handle;
         uint64_t launch; // the launch parameters for the task
 
         uint64_t args[4]; // the arguments for the task, can be used to pass data to the task
-        uint64_t returned_handle;
+        AssetHandle returned_handle;
     } SyscallTaskCreate;
 
     static inline SyscallInterface syscall_task_create_encode(SyscallTaskCreate *create)
@@ -121,10 +121,10 @@ extern "C"
 
     typedef struct SyscallSpaceCreate
     {
-        uint64_t parent_space_handle; // the handle of the parent space
-        uint64_t flags;               // flags for the space creation
-        uint64_t rights;              // rights for the space creation
-        uint64_t returned_handle;     // the handle of the created space
+        AssetHandle parent_space_handle; // the handle of the parent space
+        uint64_t flags;                  // flags for the space creation
+        uint64_t rights;                 // rights for the space creation
+        AssetHandle returned_handle;     // the handle of the created space
     } SyscallSpaceCreate;
 
     static inline SyscallInterface syscall_space_create_encode(SyscallSpaceCreate *create)
@@ -144,10 +144,10 @@ extern "C"
 
     typedef struct SyscallAssetRelease
     {
-        uint64_t space_handle; // the handle of the space, if null, the asset will be released from the kernel
-        uint64_t asset_handle; // the handle of the asset to release
-        void *addr;            // the address of the asset if it is memory
-        void *end;             // the end address of the asset if it is memory
+        AssetHandle space_handle; // the handle of the space, if null, the asset will be released from the kernel
+        AssetHandle asset_handle; // the handle of the asset to release
+        void *addr;               // the address of the asset if it is memory
+        void *end;                // the end address of the asset if it is memory
     } SyscallAssetRelease;
 
     static inline SyscallInterface syscall_asset_release_encode(SyscallAssetRelease *release)
@@ -167,9 +167,9 @@ extern "C"
 
     typedef struct SyscallTaskLaunch
     {
-        uint64_t target_space_handle; // the handle of the space to launch the task in
-        uint64_t task_handle;         // the handle of the task to launch
-        uint64_t args[4];             // the arguments for the task, can be used to pass data to the task
+        AssetHandle target_space_handle; // the handle of the space to launch the task in
+        AssetHandle task_handle;         // the handle of the task to launch
+        uint64_t args[4];                // the arguments for the task, can be used to pass data to the task
     } SyscallTaskLaunch;
 
     static inline SyscallInterface syscall_task_launch_encode(SyscallTaskLaunch *launch)
@@ -189,12 +189,12 @@ extern "C"
 
     typedef struct SyscallAssetMove
     {
-        uint64_t from_space_handle; // the handle of the space to move the asset from
-        uint64_t to_space_handle;   // the handle of the space to move the asset to
-        uint64_t asset_handle;      // the handle of the asset to move
+        AssetHandle from_space_handle; // the handle of the space to move the asset from
+        AssetHandle to_space_handle;   // the handle of the space to move the asset to
+        AssetHandle asset_handle;      // the handle of the asset to move
 
         bool copy; // if true, the asset will be copied, otherwise it will be moved
-        uint64_t returned_handle_in_space;
+        AssetHandle returned_handle_in_space;
     } SyscallAssetMove;
 
     static inline SyscallInterface syscall_asset_move_encode(SyscallAssetMove *move)
@@ -214,11 +214,11 @@ extern "C"
 
     typedef struct SyscallIpcCreateEndpoint
     {
-        uint64_t space_handle;
+        AssetHandle space_handle;
         bool is_root;
         bool publish;
         IpcServerHandle returned_addr; // the published address of the endpoint
-        uint64_t returned_handle;      // the handle of the created endpoint asset
+        AssetHandle returned_handle;   // the handle of the created endpoint asset
     } SyscallIpcCreateEndpoint;
 
     static inline SyscallInterface syscall_ipc_create_endpoint_encode(SyscallIpcCreateEndpoint *create)
@@ -238,17 +238,17 @@ extern "C"
 
     typedef struct SyscallIpcConnect
     {
-        uint64_t sender_space_handle;
+        AssetHandle sender_space_handle;
 
         bool connect_by_address;
 
         union
         {
             IpcServerHandle server_address; // if connecting to registered server, the server's address
-            uint64_t endpoint_handle;       // if not 0, create a connection to a server in local space
+            AssetHandle endpoint_handle;     // if not 0, create a connection to a server in local space
         };
 
-        uint64_t returned_handle_sender; // the handle of the connection (sending)
+        AssetHandle returned_handle_sender; // the handle of the connection (sending)
         uint64_t port_used;
     } SyscallIpcConnect;
 
@@ -269,7 +269,7 @@ extern "C"
 
     typedef struct SyscallIpcSend
     {
-        uint64_t space_handle;
+        AssetHandle space_handle;
 
         bool async;
         IpcConnectionHandle connection_handle; // the handle of the connection to send the message to
@@ -295,11 +295,11 @@ extern "C"
     typedef struct SyscallIpcReceive
     {
 
-        uint64_t space_handle; // if -1 uses the kernel internal notification/interrupt
+        AssetHandle space_handle; // if -1 uses the kernel internal notification/interrupt
 
         union
         {
-            uint64_t endpoint_handle;    //
+            AssetHandle endpoint_handle; //
             uint64_t internal_signal_id; //
         };
 
@@ -311,8 +311,8 @@ extern "C"
 
         union
         {
-            uint64_t return_context_handle; // if is a server, the port used by the connection
-            uint64_t return_asset_id;
+            AssetHandle return_context_handle; // if is a server, the port used by the connection
+            AssetHandle return_asset_id;
         };
 
     } SyscallIpcReceive;
@@ -334,7 +334,7 @@ extern "C"
 
     typedef struct SyscallIpcCall
     {
-        uint64_t space_handle;
+        AssetHandle space_handle;
 
         IpcConnectionHandle connection_handle; // the handle of the connection to send the message to
         IpcMessage *message;                   // the message to send, will be reused for the reply
@@ -357,9 +357,9 @@ extern "C"
 
     typedef struct SyscallIpcReply
     {
-        uint64_t space_handle;
+        AssetHandle space_handle;
 
-        uint64_t return_task_handle; // the handle of the server to reply to
+        AssetHandle return_task_handle; // the handle of the server to reply to
         IpcMessage *message;         // the message to reply with
     } SyscallIpcReply;
 
@@ -380,17 +380,17 @@ extern "C"
 
     typedef struct SyscallAssetInfo
     {
-        uint64_t space_handle;
+        AssetHandle space_handle;
         bool use_index;
 
         union
         {
-            uint64_t asset_handle;
+            AssetHandle asset_handle;
             uint64_t asset_index;
         };
 
-        AssetKind returned_kind;        // the kind of the asset
-        uint64_t returned_asset_handle; // if using asset_index
+        AssetKind returned_kind;           // the kind of the asset
+        AssetHandle returned_asset_handle; // if using asset_index
 
         union
         {
@@ -404,7 +404,7 @@ extern "C"
             {
                 size_t start;
                 size_t end;
-                uint64_t physical_mem_handle;
+                AssetHandle physical_mem_handle;
                 bool writable;
                 bool executable;
             } mapping;
@@ -443,7 +443,7 @@ extern "C"
 
     typedef struct SyscallIpcX86Port
     {
-        uint64_t space_handle;
+        AssetHandle space_handle;
         uint64_t size; // 1 = byte, 2 = word, 4 = dword
         uint16_t port; // the port to read from
         uint8_t write;

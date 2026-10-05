@@ -184,7 +184,7 @@ public:
         {
         case prot::VFS_DISK_ATTEMPT_INITIALIZE:
         {
-            IpcServerHandle endpoint = msg.asset(1);
+            AssetHandle endpoint = msg.asset(1);
             size_t begin_lba = msg.arg(2);
             size_t end_lba = msg.arg(3);
             size_t part_id = msg.arg(4);

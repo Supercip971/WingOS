@@ -76,7 +76,7 @@ public:
         message.arguments.data[2].data = len;
 
         message.arguments.data[3].is_asset = true;
-        message.arguments.data[3].asset_handle = asset.handle;
+        message.arguments.data[3].asset_handle = asset.handle.id();
         message.arguments.data[4].data = asset_start;
         auto sended_message = connection.call(message);
         size_t bytes_read = message.arguments.data[0].data;
@@ -150,7 +150,7 @@ public:
         message.arguments.data[1].data = lba;
         message.arguments.data[2].data = len;
         message.arguments.data[3].is_asset = true;
-        message.arguments.data[3].asset_handle = asset.handle;
+        message.arguments.data[3].asset_handle = asset.handle.id();
         connection.send_async(message);
         return {};
     }
@@ -168,7 +168,7 @@ public:
         return conn;
     }
 
-    static fc::Result<DiskConnection> use_asset(uint64_t conn_handle)
+    static fc::Result<DiskConnection> use_asset(AssetHandle conn_handle)
     {
         DiskConnection conn;
         conn.connection = Wingos::Space::self().from_already_connected(conn_handle);

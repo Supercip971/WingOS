@@ -47,7 +47,7 @@ public:
             uint64_t lba = msg.arg(1);
             uint64_t size = msg.arg(2);
 
-            uint64_t asset_handle = msg.asset(3);
+            AssetHandle asset_handle = msg.asset(3);
             uint64_t mem_asset_off = msg.arg(4);
             // fmt::log$("Read sector off: {}", mem_asset_off);
             auto asset = Wingos::MemoryAsset::from_handle(asset_handle);
@@ -75,7 +75,7 @@ public:
         {
             uint64_t lba = msg.arg(1);
             uint64_t size = msg.arg(2);
-            uint64_t asset_handle = msg.asset(3);
+            AssetHandle asset_handle = msg.asset(3);
             auto asset = Wingos::MemoryAsset::from_handle(asset_handle);
 
             uintptr_t buffer_ptr = asset.memory.start();

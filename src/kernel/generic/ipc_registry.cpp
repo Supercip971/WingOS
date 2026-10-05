@@ -112,7 +112,7 @@ void release_server_lock()
 namespace kernel
 {
 
-void unregister_server(IpcServerHandle handle, uint64_t space_handle)
+void unregister_server(IpcServerHandle handle, AssetHandle space_handle)
 {
     ipc_server_lock.lock();
     for (size_t i = 0; i < registered_servers.len(); i++)
@@ -125,7 +125,7 @@ void unregister_server(IpcServerHandle handle, uint64_t space_handle)
         }
     }
     ipc_server_lock.release();
-    fmt::warn$("unregister_server: server not found: {} {}", handle, space_handle);
+    fmt::warn$("unregister_server: server not found: {} {}", handle, space_handle.id());
 }
 
 uint64_t get_next_ipc_server_handle()

@@ -147,16 +147,15 @@ public:
         return success;
     }
 
+    // FIXME: maybe lock _access_lock ?
     void read_release()
     {
-        _access_lock.lock();
-        _readers -= 1;
+        _readers.fetch_sub(1);
 
         if (_readers < 0)
         {
             unreachable$();
         }
-        _access_lock.release();
     }
 };
 

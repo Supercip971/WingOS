@@ -29,14 +29,16 @@ int main(int, char **)
                                                      fmt::log$("- kind: {}", assetKind2Str(v.returned_kind)); });
 
     auto pid = 0;
-    for (size_t i = 0; i < 50; i++)
+    for (size_t i = 0; i < 3; i++)
     {
 
+        fmt::log$("start fork");
         pid = fork();
         if (pid == 0)
         {
             break;
         }
+        fmt::log$("end fork");
     }
     uintptr_t rsp_forked;
     asm volatile("mov %%rsp, %0" : "=r"(rsp_forked));

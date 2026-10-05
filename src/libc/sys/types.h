@@ -13,3 +13,6 @@ typedef uint32_t uid_t;
 typedef uint32_t gid_t;
 typedef uint64_t blkcnt_t;
 typedef uint32_t blksize_t;
+typedef int64_t clock_t;
+typedef unsigned int u_int;
+typedef unsigned long u_long;

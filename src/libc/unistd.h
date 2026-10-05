@@ -14,6 +14,17 @@ extern "C"
 
     pid_t fork();
 
+    int pipe(int fds[2]);
+
+    int close(int fd); // todo: see difference between fclose and close ?
+
+    int dup2(int oldfd, int newfd);
+
+    int execve(const char *path, char *const argv[],
+               char *const envp[]);
+
+    ssize_t read(int fd, void *buf, size_t len);
+
 #ifdef __cplusplus
 }
 #endif

@@ -14,6 +14,7 @@
 #include "kernel/generic/cpu.hpp"
 #include "kernel/generic/paging.hpp"
 #include "kernel/generic/task.hpp"
+#include "libcore/ds/umap.hpp"
 #include "libcore/ds/vec.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/lock/lock.hpp"
@@ -102,7 +103,7 @@ struct Space : public Asset
     // Space *parent_space_handle; // the space that created this space
     VmmSpace vmm_space; // the virtual memory space of this space
 
-    fc::Vec<AssetRef<>> assets;
+    fc::UMap<AssetHandle, AssetRef<>> assets = {};
 
     Space()
         : Asset(AssetKind::OBJECT_KIND_SPACE), uid(0), alloc_uid(0), vmm_space(), assets()
@@ -116,16 +117,16 @@ struct Space : public Asset
     {
 
         lock.lock();
-        for (size_t i = 0; i < assets.len(); i++)
+        for (auto asset : assets)
         {
-            if (assets[i].asset->kind != (AssetKind)T::IDENT)
+            if (asset.value->kind != (AssetKind)T::IDENT)
             {
                 continue;
             }
 
-            if (fn(assets[i].casted<T>()))
+            if (fn(asset.value.casted<T>()))
             {
-                auto result = assets[i]; // copy under lock (increments refcount)
+                auto result = asset.value; // copy under lock (increments refcount)
                 lock.release();
                 return result.casted<T>();
             }
@@ -135,32 +136,34 @@ struct Space : public Asset
         return "not found";
     }
 
-    fc::Result<AssetRef<>> by_handle(AssetHandle handle)
+    void dump()
     {
-
-        lock.lock();
-        for (size_t i = 0; i < assets.len(); i++)
-        {
-            if (assets[i].handle == handle)
-            {
-                auto result = assets[i]; // copy under lock (increments refcount)
-                lock.release();
-                return result;
-            }
-        }
-
-        fmt::log$("Asset not found in space({}) for handle {}", uid, handle._id);
 
         auto cur = Cpu::current()->currentTask();
         fmt::log$("task: {}", cur ? cur->uid() : (size_t)-1);
 
-        fmt::log$("Assets in space {}:", assets.len());
+        fmt::log$("Assets in space {}:", assets.count());
 
-        for (size_t i = 0; i < assets.len(); i++)
+        for (auto asset : assets)
         {
-            fmt::log$("  Asset[{}]: handle={}, kind={}", i, assets[i].handle._id, assetKind2Str(assets[i].asset->kind));
+            fmt::log$("  Asset: handle={}, kind={}", asset.value.handle._id, assetKind2Str(asset.value.asset->kind));
+        }
+    }
+
+    fc::Result<AssetRef<>> by_handle(AssetHandle handle)
+    {
+
+        lock.lock();
+
+        if (assets.has(handle))
+        {
+            auto result = assets[handle]; // copy under lock (increments refcount)
+            lock.release();
+            return result;
         }
 
+        fmt::log$("Asset not found in space({}) for handle {}", uid, handle._id);
+        dump();
         lock.release();
 
         return "asset not found";
@@ -169,92 +172,85 @@ struct Space : public Asset
     fc::Result<AssetRef<>> by_index(uint64_t index)
     {
         lock.lock();
-        if (assets.len() < index)
+
+        size_t i = 0;
+
+        for (auto &asset : assets)
         {
-            lock.release();
-            return "index > asset.len()";
+            if (i == index)
+            {
+                auto aref = asset.value; // copy under lock (increments refcount)
+                lock.release();
+                return aref;
+            }
+            i++;
         }
 
-        auto aref = assets[index];
         lock.release();
-        return aref;
+        return "index > asset.len()";
     }
 
     template <typename T>
     fc::Result<AssetRef<T>> by_handle(AssetHandle handle)
     {
         lock.lock();
-        for (size_t i = 0; i < assets.len(); i++)
+
+        if (!assets.has(handle))
         {
-            if (assets[i].handle == handle)
-            {
-                AssetRef<> found = assets[i]; // copy under lock (increments refcount)
-                lock.release();
+            fmt::log$("Asset not found in space({}) for handle {}", uid, handle._id);
 
-                // Untyped lookup: allow returning any asset when caller asks for `Asset`.
-                if constexpr (fc::IsSame<T, Asset>)
-                {
+            dump();
 
-                    return found;
-                }
-                else
-                {
-
-                    found.lock();
-                    if (found.asset->kind == (AssetKind)T::IDENT)
-                    {
-                        found.unlock();
-
-                        return found.casted<T>();
-                    }
-                    else
-                    {
-
-                        found.unlock();
-                        fmt::err$("expected: {}, got: {} for raw id: {} (space: {})",
-                                  assetKind2Str((AssetKind)T::IDENT),
-                                  found.asset->kind,
-                                  found.handle._id, this->uid);
-
-                        return fc::Result<AssetRef<T>>::error("asset kind mismatch");
-                    }
-                }
-            }
+            lock.release();
+            return fc::Result<AssetRef<T>>::error("asset not found");
         }
-        asm volatile("cli");
-
-        fmt::log$("Asset not found in space({}) for handle {}", uid, handle._id);
-
-        auto cur = Cpu::current()->currentTask();
-        fmt::log$("task: {}", cur ? cur->uid() : (size_t)-1);
-
-        fmt::log$("Assets in space {}:", assets.len());
-
-        for (size_t i = 0; i < assets.len(); i++)
-        {
-            fmt::log$("  Asset[{}]: handle={}, kind={}", i, assets[i].handle._id, assetKind2Str(assets[i].asset->kind));
-        }
-
+        AssetRef<> found = assets[handle]; // copy under lock (increments refcount)
         lock.release();
 
-        return fc::Result<AssetRef<T>>::error("asset not found");
+        // Untyped lookup: allow returning any asset when caller asks for `Asset`.
+        if constexpr (fc::IsSame<T, Asset>)
+        {
+            return found;
+        }
+
+        found.lock();
+        if (found.asset->kind == (AssetKind)T::IDENT)
+        {
+            found.unlock();
+
+            return found.casted<T>();
+        }
+        else
+        {
+
+            found.unlock();
+            fmt::err$("expected: {}, got: {} for raw id: {} (space: {})",
+                      assetKind2Str((AssetKind)T::IDENT),
+                      found.asset->kind,
+                      found.handle._id, this->uid);
+
+            return fc::Result<AssetRef<T>>::error("asset kind mismatch");
+        }
     }
 
     fc::Result<AssetRef<>> by_handle_ptr(AssetHandle handle)
     {
         lock.lock();
-        for (size_t i = 0; i < assets.len(); i++)
+
+        if (!assets.has(handle))
         {
-            if (assets[i].handle == handle)
-            {
-                auto result = assets[i]; // copy under lock (increments refcount)
-                lock.release();
-                return result;
-            }
+            fmt::log$("Asset not found in space({}) for handle {}", uid, handle._id);
+
+            dump();
+
+            lock.release();
+            return fc::Result<AssetRef<>>::error("asset not found");
         }
+
+        auto r = assets[handle]; // copy under lock (increments refcount)
         lock.release();
 
-        return ("asset not found");
+        return r;
     }
 
     template <typename T>
@@ -269,7 +265,7 @@ struct Space : public Asset
         size_t nhandle = alloc_uid;
         AssetRef<T> ref = AssetRef<T>(res, nhandle, true, true, true);
 
-        assets.push(ref.to_untyped());
+        assets.insert(AssetHandle{nhandle}, ref.to_untyped());
         lock.release();
 
         // Asset lock is still held - caller must release after initialization
@@ -289,7 +285,7 @@ struct Space : public Asset
         size_t nhandle = alloc_uid;
         AssetRef<T> ref = AssetRef<T>(res, nhandle, true, true, true);
 
-        assets.push(ref.to_untyped());
+        assets.insert(AssetHandle{nhandle}, ref.to_untyped());
         lock.release();
 
         // Asset lock is still held - caller must release after initialization
@@ -305,20 +301,19 @@ struct Space : public Asset
     AssetRef<> _asset_remove(AssetHandle asset_handle)
     {
         lock.lock();
-        for (size_t i = 0; i < assets.len(); i++)
+
+        if (!assets.has(asset_handle))
         {
-            if (assets[i].handle == asset_handle)
-            {
-                // pop returns the removed AssetRef, which will be destroyed
-                // and call Asset::deref. This is the only deref we want.
-                auto val = assets.pop(i);
-                lock.release();
-                return (val);
-            }
+            fmt::err$("Asset not found in space({}) for handle {}", uid, asset_handle._id);
+            dump();
+            lock.release();
+            unreachable$();
         }
+
+        auto v = assets.moveOut(asset_handle);
         lock.release();
 
-        unreachable$();
+        return v;
     }
 
     fc::Result<AssetRef<AssetMemory>> create_memory(AssetMemoryCreateParams params);
@@ -354,7 +349,6 @@ struct Space : public Asset
         // Lock spaces in consistent order (by address) to prevent ABBA deadlock
         Space *first = from < to ? from : to;
         Space *second = from < to ? to : from;
-
         first->lock.lock();
         if (first != second)
         {
@@ -362,33 +356,29 @@ struct Space : public Asset
         }
 
         // Check if the asset exists in the from space
-        for (size_t i = 0; i < from->assets.len(); i++)
+        if (!from->assets.has(asset.handle))
         {
-            if (from->assets[i].handle == asset.handle)
+            if (first != second)
             {
-                // Move the asset to the new space
-                auto moved_asset = from->assets.pop(i);
-                to->alloc_uid++;
-                moved_asset.handle._id = to->alloc_uid;
-                to->assets.push(moved_asset);
-
-                if (first != second)
-                {
-                    second->lock.release();
-                }
-                first->lock.release();
-
-                return moved_asset;
+                second->lock.release();
             }
+            first->lock.release();
+            return "asset not found in source space";
         }
+
+        auto v = from->assets.moveOut(asset.handle);
+
+        to->alloc_uid++;
+        v.handle._id = to->alloc_uid;
+
+        to->assets.insert(AssetHandle{to->alloc_uid.load()}, v);
 
         if (first != second)
         {
             second->lock.release();
         }
         first->lock.release();
-
-        return ("asset not found in from space");
+        return v;
     }
 
     template <typename T>
@@ -414,7 +404,7 @@ struct Space : public Asset
         to->alloc_uid++;
         auto nref = AssetRef<>(reinterpret_cast<Asset *>(asset.asset), AssetHandle(to->alloc_uid.load()));
 
-        to->assets.push(nref);
+        to->assets.insert(AssetHandle{to->alloc_uid.load()}, nref);
 
         to->lock.release();
 

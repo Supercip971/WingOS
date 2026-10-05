@@ -671,7 +671,7 @@ fc::Result<size_t> ksyscall_ipc_asset_info(kernel::Task *caller, SyscallAssetInf
     case OBJECT_KIND_SPACE:
     {
         auto _space = asset.asset->casted<Space>();
-        info->returned_info.space.element_count = _space->assets.len();
+        info->returned_info.space.element_count = _space->assets.count();
         break;
     }
     default:

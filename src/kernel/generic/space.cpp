@@ -37,12 +37,14 @@ AssetRef<Space> Space::create_root()
     root_space->vmm_space = vspace.unwrap();
     root_space->uid = 0;
     root_space->alloc_uid = 16;
-    root_space->assets.push(
-        AssetRef<Space>(root_space, 0).to_untyped());
+    auto aref = AssetRef<Space>(root_space, 0, true, true, true);
+    root_space->assets.insert(
+        AssetHandle::selfSpace(),
+        aref);
 
     _spaces.push((SpacePtr){root_space, 0});
-    root_space->assets[0].asset->ref_count.store(99999, std::memory_order_relaxed);
-    return *(AssetRef<Space> *)&root_space->assets[0];
+    aref.asset->ref_count.store(99999, std::memory_order_relaxed);
+    return aref;
 }
 
 // AssetRef is now defined (and fully implemented) in `asset_types.hpp`.
@@ -53,36 +55,38 @@ void Space::dump_assets()
 {
     lock.lock();
     fmt::log$("Assets in space {}:", uid);
-    for (size_t i = 0; i < assets.len(); i++)
+    size_t i = 0;
+    for (auto &asset : assets)
     {
-        fmt::log$("  Asset[{}]: handle={}, kind={}", i, assets[i].handle, assetKind2Str(assets[i].asset->kind));
-        if (assets[i].asset->kind == OBJECT_KIND_IPC_ENDPOINT)
+        fmt::log$("  Asset[{}]: handle={}, kind={}", i, asset.key, assetKind2Str(asset.value->kind));
+        if (asset.value->kind == OBJECT_KIND_IPC_ENDPOINT)
         {
-            auto server = assets[i].asset->casted<kernel::IpcEndpoint>();
+            auto server = asset.value->casted<kernel::IpcEndpoint>();
             fmt::log$("    uuid: {} | endpoint handle: {} (messages sync: {}, async: {})", server->uuid, server->target_message_space->uid, server->sync_queue.len(), server->async_queue.len());
         }
 
-        if (assets[i].asset->kind == OBJECT_KIND_IPC_CONNECTION)
+        if (asset.value->kind == OBJECT_KIND_IPC_CONNECTION)
         {
-            auto conn = assets[i].asset->casted<kernel::IpcEndpointConnection>();
+            auto conn = asset.value->casted<kernel::IpcEndpointConnection>();
             fmt::log$("     target: {} (port: {})", conn->connection_to->uuid, conn->port);
         }
-        if (assets[i].asset->kind == OBJECT_KIND_MEMORY)
+        if (asset.value->kind == OBJECT_KIND_MEMORY)
         {
-            auto mem = assets[i].asset->casted<AssetMemory>();
+            auto mem = asset.value->casted<AssetMemory>();
 
             fmt::log$("    Memory addr: {}-{}", mem->addr | fmt::FMT_HEX,
                       (mem->addr + mem->size) | fmt::FMT_HEX);
             fmt::log$("    Memory allocated: {}", mem->allocated);
         }
 
-        if (assets[i].asset->kind == OBJECT_KIND_MAPPING)
+        if (asset.value->kind == OBJECT_KIND_MAPPING)
         {
-            auto mapping = assets[i].asset->casted<AssetMapping>();
+            auto mapping = asset.value->casted<AssetMapping>();
 
             fmt::log$("    Mapping: {}-{} (W: {}, EX: {})", mapping->start | fmt::FMT_HEX, mapping->end | fmt::FMT_HEX,
                       mapping->writable ? "Y" : "N", mapping->executable ? "Y" : "N");
         }
+        i++;
     }
 
     lock.release();
@@ -124,8 +128,8 @@ fc::Result<AssetRef<Space>> Space::create_space([[maybe_unused]] uint64_t flags,
 
     asset->lock.release();
 
-    asset->assets.push(
-        AssetRef<Space>(asset, 0).to_untyped());
+    asset->assets.insert(AssetHandle::selfSpace(),
+                         AssetRef<Space>(asset, 0).to_untyped());
 
     return ptr;
 }

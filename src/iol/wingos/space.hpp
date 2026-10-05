@@ -179,6 +179,11 @@ struct Space
         return IpcClient::connect_to_object(handle, endpoint_handle);
     }
 
+    auto asset_info(AssetHandle asset_handle)
+    {
+        return sys$ipc_asset_info_by_handle(handle, asset_handle);
+    }
+
     size_t iterate_through_assets(auto fn)
     {
         auto asset_count = sys$ipc_asset_info_by_handle(this->handle, 0).returned_info.space.element_count;

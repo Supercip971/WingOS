@@ -55,6 +55,8 @@ typedef struct AssetHandle
 
     constexpr uint64_t id() const { return _id; }
 
+    constexpr uint64_t hash() const { return _id; }
+
 #endif
 } AssetHandle;
 

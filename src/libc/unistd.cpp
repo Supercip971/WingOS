@@ -6,6 +6,7 @@
 
 #include "iol/wingos/space.hpp"
 #include "libcore/ds/umap.hpp"
+#include "libcore/ds/vec.hpp"
 #include "libcore/shared.hpp"
 #include "protocols/pipe/pipe.hpp"
 #include "stdio.h"
@@ -76,6 +77,22 @@ extern "C" pid_t fork()
     auto task_asset = subspace.create_task((uintptr_t)fork_trampoline);
 
     // copy all memory mappings to the new space
+    //
+    fc::Vec<AssetHandle> assets_to_copy;
+    size_t mapping_count = 0; // need to preallocate vec to avoid realloc during iteration
+
+    Wingos::Space::self().iterate_through_assets(
+        [&](SyscallAssetInfo const &asset)
+        {
+            if (asset.returned_kind == AssetKind::OBJECT_KIND_MAPPING)
+            {
+                mapping_count++;
+            }
+        });
+
+    // add 16 because the reserve could increase the capacity itself
+    assets_to_copy.reserve(mapping_count + 16);
+
     Wingos::Space::self().iterate_through_assets(
         [&](SyscallAssetInfo const &asset)
         {
@@ -83,19 +100,24 @@ extern "C" pid_t fork()
             {
                 return;
             }
-
-            auto mapping = asset.returned_info.mapping;
-            auto memory = Wingos::Space::self().allocate_physical_memory(mapping.end - mapping.start);
-
-            auto mapped_self = Wingos::Space::self().map_memory(memory, ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);
-
-            memcpy(mapped_self.ptr(), (void *)mapping.start, mapping.end - mapping.start);
-
-            auto moved_memory = Wingos::Space::self().move_to(subspace, memory);
-            subspace.map_memory(mapping.start, mapping.end, moved_memory, ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);
-
-            Wingos::Space::self().release_asset(mapped_self);
+            assets_to_copy.push(asset.returned_asset_handle);
         });
+
+    for (AssetHandle hndl : assets_to_copy)
+    {
+        auto asset = Wingos::Space::self().asset_info(hndl);
+        auto mapping = asset.returned_info.mapping;
+        auto memory = Wingos::Space::self().allocate_physical_memory(mapping.end - mapping.start);
+
+        auto mapped_self = Wingos::Space::self().map_memory(memory, ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);
+
+        memcpy(mapped_self.ptr(), (void *)mapping.start, mapping.end - mapping.start);
+
+        auto moved_memory = Wingos::Space::self().move_to(subspace, memory);
+        subspace.map_memory(mapping.start, mapping.end, moved_memory, ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);
+
+        Wingos::Space::self().release_asset(mapped_self);
+    }
 
     subspace.launch_task(task_asset);
 

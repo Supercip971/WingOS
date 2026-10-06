@@ -105,3 +105,57 @@ size_t mbrtowc(wchar_t *pwc, const char *s, size_t n, mbstate_t *ps)
 
     return bytes_read;
 }
+
+wchar_t *wcschr(const wchar_t *wcs, wchar_t wc)
+{
+    size_t i = 0;
+    while (wcs[i] != L'\0')
+    {
+        if (wcs[i] == wc)
+        {
+            return (wchar_t *)wcs + i;
+        }
+        i++;
+    }
+    return NULL;
+}
+
+size_t mbsrtowcs(wchar_t *d, const char **s, size_t l, mbstate_t *ps)
+{
+    size_t cnt = 0;
+    while (l > 1 && **s != '\0')
+    {
+        wchar_t wc;
+        size_t bytes_read = mbrtowc(&wc, *s, l - 1, ps);
+        if (bytes_read == (size_t)-1)
+        {
+            return (size_t)-1; // Invalid multibyte sequence
+        }
+        if (bytes_read == 0)
+        {
+            break; // Null character encountered
+        }
+        if (d != NULL)
+        {
+            *d++ = wc;
+        }
+        *s += bytes_read;
+        l -= 1;
+        cnt++;
+    }
+
+    if (l > 0)
+    {
+        if (d != NULL)
+        {
+            *d = L'\0'; // Null terminate the wide string
+        }
+    }
+
+    return cnt;
+}
+
+int iswspace(wchar_t wc)
+{
+    return (wc == L' ' || wc == L'\t' || wc == L'\n' || wc == L'\v' || wc == L'\f' || wc == L'\r');
+}

@@ -15,6 +15,12 @@ extern "C"
 
     size_t mbrtowc(wchar_t *pwc, const char *s, size_t n, mbstate_t *ps);
 
+    wchar_t *wcschr(const wchar_t *wcs, wchar_t wc);
+
+    size_t mbsrtowcs(wchar_t *d, const char **s, size_t l, mbstate_t *ps);
+
+    int iswspace(wchar_t wc);
+
 #ifdef __cplusplus
 }
 #endif

@@ -250,6 +250,53 @@ extern "C"
         return info;
     }
 
+    static inline SyscallCreateVm sys$create_vm(AssetHandle space_handle)
+    {
+        SyscallCreateVm create = {space_handle, AssetHandle::invalid()};
+        SyscallInterface interface = syscall_create_vm_encode(&create);
+        uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
+        (void)result;
+        return create;
+    }
+
+    static inline SyscallCreateVmMapping sys$ipc_create_vm_mapping(AssetHandle space_handle, AssetHandle vm_handle, uint64_t start, uint64_t end, AssetHandle physical_mem_handle, uint64_t flags)
+    {
+        SyscallCreateVmMapping create = {space_handle, vm_handle, start, end, physical_mem_handle, flags, AssetHandle::invalid()};
+        SyscallInterface interface = syscall_create_vm_mapping_encode(&create);
+        uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
+        (void)result;
+        return create;
+    }
+
+    static inline SyscallVmStart sys$vm_start(AssetHandle space_handle, AssetHandle vm_handle, uint64_t flags)
+    {
+        SyscallVmStart start = {space_handle, vm_handle, flags};
+        SyscallInterface interface = syscall_vm_start_encode(&start);
+        uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
+        (void)result;
+        return start;
+    }
+
+    static inline SyscallVmRegWrite sys$vm_reg_write(AssetHandle space_handle,
+                                                     AssetHandle vm_handle, uint64_t mode, uint64_t address, uint64_t value)
+    {
+        SyscallVmRegWrite write = {space_handle, vm_handle, mode, address, value};
+        SyscallInterface interface = syscall_vm_reg_write(&write);
+        uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
+        (void)result;
+        return write;
+    }
+
+    static inline SyscallVmRegRead sys$vm_reg_read(AssetHandle space_handle,
+                                                   AssetHandle vm_handle, uint64_t mode, uint64_t address)
+    {
+        SyscallVmRegRead read = {space_handle, vm_handle, mode, address, 0};
+        SyscallInterface interface = syscall_vm_reg_read(&read);
+        uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
+        (void)result;
+        return read;
+    }
+
     static inline void sys$ipc_x86_port_out(uint16_t port, uint8_t size, uint32_t data)
     {
         SyscallIpcX86Port port_data = {

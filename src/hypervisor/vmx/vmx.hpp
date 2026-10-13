@@ -4,6 +4,7 @@
 
 #include "hw/mem/addr_space.hpp"
 
+// 4168 page of intel manual
 struct VmxSystemState
 {
 

@@ -245,7 +245,7 @@ extern "C"
         union
         {
             IpcServerHandle server_address; // if connecting to registered server, the server's address
-            AssetHandle endpoint_handle;     // if not 0, create a connection to a server in local space
+            AssetHandle endpoint_handle;    // if not 0, create a connection to a server in local space
         };
 
         AssetHandle returned_handle_sender; // the handle of the connection (sending)
@@ -360,7 +360,7 @@ extern "C"
         AssetHandle space_handle;
 
         AssetHandle return_task_handle; // the handle of the server to reply to
-        IpcMessage *message;         // the message to reply with
+        IpcMessage *message;            // the message to reply with
     } SyscallIpcReply;
 
     static inline SyscallInterface syscall_ipc_reply_encode(SyscallIpcReply *reply)
@@ -433,6 +433,114 @@ extern "C"
     {
         SyscallAssetInfo *status = (SyscallAssetInfo *)interface.arg1;
         return *status;
+    }
+
+    // ------- SYSCALL CREATE VM ----
+#define SYSCALL_VM_CREATE 0x00000012
+
+    typedef struct SyscallCreateVm
+    {
+        AssetHandle space_handle;
+        AssetHandle result_vm;
+    } SyscallCreateVm;
+
+    static inline SyscallInterface syscall_create_vm_encode(SyscallCreateVm *vm)
+    {
+        return SyscallInterface{SYSCALL_VM_CREATE, 0, (uintptr_t)vm, 0, 0, 0, 0, 0};
+    }
+
+    static inline SyscallCreateVm syscall_create_vm_decode(SyscallInterface interface)
+    {
+        SyscallCreateVm *vm = (SyscallCreateVm *)interface.arg1;
+        return *vm;
+    }
+
+    // ------- SYSCALL CREATE VM MAPPING ----
+#define SYSCALL_VM_CREATE_MAPPING 0x00000013
+
+    typedef struct SyscallCreateVmMapping
+    {
+        AssetHandle space_handle;
+        AssetHandle vm_handle; // vm in the space
+        uint64_t start;
+        uint64_t end;
+        AssetHandle physical_mem_handle; // the handle of the physical memory asset
+        uint64_t flags;
+        AssetHandle returned_handle; // the handle of the created mapping
+    } SyscallCreateVmMapping;
+
+    static inline SyscallInterface syscall_create_vm_mapping_encode(SyscallCreateVmMapping *mapping)
+    {
+        return SyscallInterface{SYSCALL_VM_CREATE_MAPPING, 0, (uintptr_t)mapping, 0, 0, 0, 0, 0};
+    }
+
+    static inline SyscallCreateVmMapping syscall_create_vm_mapping_decode(SyscallInterface interface)
+    {
+        return *(SyscallCreateVmMapping *)interface.arg1;
+    }
+
+    // ------- SYSCALL VM START ----
+#define SYSCALL_VM_START 0x00000014
+
+    typedef struct SyscallVmStart
+    {
+        AssetHandle space_handle;
+        AssetHandle vm_handle;
+        uint64_t flags;
+    } SyscallVmStart;
+
+    static inline SyscallInterface syscall_vm_start_encode(SyscallVmStart *vm)
+    {
+        return SyscallInterface{SYSCALL_VM_START, 0, (uintptr_t)vm, 0, 0, 0, 0, 0};
+    }
+
+    static inline SyscallVmStart syscall_vm_start_decode(SyscallInterface interface)
+    {
+        return *(SyscallVmStart *)interface.arg1;
+    }
+
+    // ------- SYSCALL VM REG WRITE ----
+#define SYSCALL_VM_REG_WRITE 0x00000015
+
+    typedef struct SyscallVmRegWrite
+    {
+        AssetHandle space_handle;
+        AssetHandle vm_handle;
+        uint64_t mode;
+        uint64_t address;
+        uint64_t value;
+    } SyscallVmRegWrite;
+
+    static inline SyscallInterface syscall_vm_reg_write(SyscallVmRegWrite *reg)
+    {
+        return SyscallInterface{SYSCALL_VM_REG_WRITE, 0, (uintptr_t)reg, 0, 0, 0, 0, 0};
+    }
+
+    static inline SyscallVmRegWrite syscall_vm_reg_write_decode(SyscallInterface interface)
+    {
+        return *(SyscallVmRegWrite *)interface.arg1;
+    }
+
+    // ------- SYSCALL VM REG READ ----
+#define SYSCALL_VM_REG_READ 0x00000016
+
+    typedef struct SyscallVmRegRead
+    {
+        AssetHandle space_handle;
+        AssetHandle vm_handle;
+        uint64_t mode;
+        uint64_t address;
+        uint64_t value;
+    } SyscallVmRegRead;
+
+    static inline SyscallInterface syscall_vm_reg_read(SyscallVmRegRead *reg)
+    {
+        return SyscallInterface{SYSCALL_VM_REG_READ, 0, (uintptr_t)reg, 0, 0, 0, 0, 0};
+    }
+
+    static inline SyscallVmRegRead syscall_vm_reg_read_decode(SyscallInterface interface)
+    {
+        return *(SyscallVmRegRead *)interface.arg1;
     }
 
     // ------- SYSCALL IPC X86 INB ----

@@ -14,6 +14,7 @@
 #include "kernel/generic/cpu.hpp"
 #include "kernel/generic/paging.hpp"
 #include "kernel/generic/task.hpp"
+#include "kernel/generic/vm.hpp"
 #include "libcore/ds/umap.hpp"
 #include "libcore/ds/vec.hpp"
 #include "libcore/fmt/log.hpp"
@@ -332,6 +333,10 @@ struct Space : public Asset
 
     fc::Result<AssetRef<kernel::SignalAttached>> create_attached_signal(AssetRef<kernel::SignalEndpoint> &attached_to);
 
+    fc::Result<AssetRef<AssetVm>> create_vm();
+
+    fc::Result<AssetRef<AssetVmMapping>> create_vm_mapping(AssetRef<AssetVm> target, AssetMappingCreateParams params);
+
     template <typename T>
     static fc::Result<AssetRef<>> asset_move(
         Space *from, Space *to, AssetRef<T> const &asset)
@@ -438,4 +443,5 @@ struct Space : public Asset
     }
 };
 
+fc::Result<size_t> create_registered_vm(AssetRef<Space> parent);
 // fc::Result<AssetRef> space_create(Space *parent, uint64_t flags, uint64_t rights);

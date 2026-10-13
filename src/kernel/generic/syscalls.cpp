@@ -1,4 +1,5 @@
 #include "syscalls.hpp"
+#include <cstdint>
 
 #include "arch/x86_64/paging.hpp"
 #include "hw/mem/addr_space.hpp"
@@ -681,6 +682,107 @@ fc::Result<size_t> ksyscall_ipc_asset_info(kernel::Task *caller, SyscallAssetInf
     return 0ul;
 }
 
+fc::Result<size_t> ksyscall_vm_create(kernel::Task *caller, SyscallCreateVm *vm_create)
+{
+    Space *space = nullptr;
+    if (vm_create->space_handle != 0)
+    {
+        space = try$(
+                    caller->space()->by_handle<Space>(vm_create->space_handle))
+                    .asset;
+    }
+    else
+    {
+        space = caller->space();
+    }
+
+    if (space == nullptr)
+    {
+        return fc::Result<size_t>::error("no current space");
+    }
+
+    vm_create->result_vm = try$(
+                               space->create_vm())
+                               .handle;
+
+    return fc::Result<size_t>::success(0ul);
+}
+
+fc::Result<size_t> ksyscall_vm_mapping_create(kernel::Task *caller, SyscallCreateVmMapping *mapping_create)
+{
+    Space *space = nullptr;
+    if (mapping_create->space_handle != 0)
+    {
+        space = try$(
+                    caller->space()->by_handle<Space>(mapping_create->space_handle))
+                    .asset;
+    }
+    else
+    {
+        space = caller->space();
+    }
+
+    if (space == nullptr)
+    {
+        return fc::Result<size_t>::error("no current space");
+    }
+
+    AssetRef<AssetVm> vm = try$(space->by_handle(mapping_create->vm_handle));
+    AssetRef<AssetMemory> physical_mem = try$(space->by_handle(mapping_create->physical_mem_handle));
+
+    mapping_create->returned_handle = try$(space->create_vm_mapping(vm, (AssetMappingCreateParams){
+                                                                            .start = mapping_create->start,
+                                                                            .end = mapping_create->end,
+                                                                            .physical_mem = physical_mem,
+                                                                            .writable = true,
+                                                                            .executable = true,
+                                                                        }))
+                                          .handle;
+
+    return fc::Result<size_t>::success(0ul);
+}
+
+fc::Result<size_t> ksyscall_vm_reg_read(kernel::Task *caller, SyscallVmRegRead *write)
+{
+    Space *space = caller->space();
+    if (write->space_handle != 0)
+    {
+        space = try$(
+                    caller->space()->by_handle<Space>(write->space_handle))
+                    .asset;
+    }
+    if (space == nullptr)
+    {
+        return fc::Result<size_t>::error("space not found");
+    }
+    AssetRef<AssetVm> vm = try$(space->by_handle(write->vm_handle));
+
+    uint64_t value = vm->getRegister8(write->address);
+    write->value = value;
+
+    return fc::Result<size_t>::success(0ul);
+}
+
+fc::Result<size_t> ksyscall_vm_reg_write(kernel::Task *caller, SyscallVmRegWrite *write)
+{
+    Space *space = caller->space();
+    if (write->space_handle != 0)
+    {
+        space = try$(
+                    caller->space()->by_handle<Space>(write->space_handle))
+                    .asset;
+    }
+    if (space == nullptr)
+    {
+        return fc::Result<size_t>::error("space not found");
+    }
+    AssetRef<AssetVm> vm = try$(space->by_handle(write->vm_handle));
+
+    vm->setRegister8(write->address, write->value);
+
+    return fc::Result<size_t>::success(0ul);
+}
+
 fc::Result<size_t> ksyscall_ipc_x86_port(kernel::Task *caller, SyscallIpcX86Port *port)
 {
     Space *space = nullptr;
@@ -830,6 +932,26 @@ fc::Result<size_t> syscall_handle(SyscallInterface syscall, kernel::Task *caller
     {
         SyscallAssetInfo *info = try$(syscall_check_ptr<SyscallAssetInfo>(caller, syscall.arg1));
         return ksyscall_ipc_asset_info(caller, info);
+    }
+    case SYSCALL_VM_CREATE:
+    {
+        SyscallCreateVm *vm_create = try$(syscall_check_ptr<SyscallCreateVm>(caller, syscall.arg1));
+        return ksyscall_vm_create(caller, vm_create);
+    }
+    case SYSCALL_VM_CREATE_MAPPING:
+    {
+        SyscallCreateVmMapping *mapping_create = try$(syscall_check_ptr<SyscallCreateVmMapping>(caller, syscall.arg1));
+        return ksyscall_vm_mapping_create(caller, mapping_create);
+    }
+    case SYSCALL_VM_REG_READ:
+    {
+        SyscallVmRegRead *reg_read = try$(syscall_check_ptr<SyscallVmRegRead>(caller, syscall.arg1));
+        return ksyscall_vm_reg_read(caller, reg_read);
+    }
+    case SYSCALL_VM_REG_WRITE:
+    {
+        SyscallVmRegWrite *reg_write = try$(syscall_check_ptr<SyscallVmRegWrite>(caller, syscall.arg1));
+        return ksyscall_vm_reg_write(caller, reg_write);
     }
     case SYSCALL_IPC_X86_PORT:
     {

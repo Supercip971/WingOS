@@ -4,6 +4,7 @@
 #include "protocols/hi/human_interface.hpp"
 
 #include "iol/wingos/space.hpp"
+#include "iol/wingos/syscalls.h"
 #include "libc/unistd.h"
 #include "libcore/fmt/log.hpp"
 #include "libcore/result.hpp"
@@ -28,34 +29,12 @@ int main(int, char **)
                                                  { fmt::log$("Asset {}: handle={}", index++, v.returned_asset_handle);
                                                      fmt::log$("- kind: {}", assetKind2Str(v.returned_kind)); });
 
-    auto pid = 0;
-    for (size_t i = 0; i < 3; i++)
-    {
+    auto vm_res = sys$create_vm(0);
+    fmt::log$("VM created: handle={}", vm_res.result_vm);
 
-        fmt::log$("start fork");
-        pid = fork();
-        if (pid == 0)
-        {
-            break;
-        }
-        fmt::log$("end fork");
-    }
-    uintptr_t rsp_forked;
-    asm volatile("mov %%rsp, %0" : "=r"(rsp_forked));
-
-    if (pid == 0)
-    {
-        fmt::log$("Child process: pid={}", pid);
-        fmt::log$("rsp_forked: {}", rsp_forked);
-    }
-    else
-    {
-        fmt::log$("Parent process: pid={}", pid);
-        fmt::log$("rsp_forked: {}", rsp_forked);
-    }
+    sys$vm_reg_write(0, vm_res.result_vm, 0, 0x0000000000000000, 0x0000000000000000);
     while (true)
     {
     }
-
     return 0;
 }

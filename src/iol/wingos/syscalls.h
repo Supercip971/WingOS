@@ -297,6 +297,24 @@ extern "C"
         return read;
     }
 
+    static inline SyscallSignalCreate sys$signal_create(AssetHandle target_space_handle)
+    {
+        SyscallSignalCreate create = {target_space_handle, AssetHandle::invalid()};
+        SyscallInterface interface = syscall_signal_create_encode(&create);
+        uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
+        (void)result;
+        return create;
+    }
+
+    static inline SyscallSignalPing sys$signal_ping(AssetHandle target_space_handle, AssetHandle handle, uint64_t data)
+    {
+        SyscallSignalPing ping = {target_space_handle, handle, data};
+        SyscallInterface interface = syscall_signal_ping(&ping);
+        uintptr_t result = syscall_execute(interface.id, interface.arg1, interface.arg2, interface.arg3, interface.arg4, interface.arg5, interface.arg6);
+        (void)result;
+        return ping;
+    }
+
     static inline void sys$ipc_x86_port_out(uint16_t port, uint8_t size, uint32_t data)
     {
         SyscallIpcX86Port port_data = {

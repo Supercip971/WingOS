@@ -125,6 +125,20 @@ struct Space
         sys$task_launch(handle, asset.handle, asset.args[0], asset.args[1], asset.args[2], asset.args[3]);
     }
 
+    SignalAsset create_signal_endpoint()
+    {
+        SignalAsset signal;
+        auto res = sys$signal_create(handle);
+        if (res.returned_handle == AssetHandle::invalid())
+        {
+            fmt::err$("failed to create signal endpoint: {}", res.returned_handle.id());
+            return {};
+        }
+        signal.handle = res.returned_handle;
+        signal.space = handle;
+        return signal;
+    }
+
     UAsset _move_to(Space to, AssetHandle moved_handle)
     {
         auto move_res = sys$asset_move(handle, to.handle, moved_handle);

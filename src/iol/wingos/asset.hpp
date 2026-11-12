@@ -9,6 +9,7 @@
 #include "math/align.hpp"
 #include "mcx/mcx.hpp"
 #include "wingos-headers/asset.h"
+#include "wingos-headers/ipc.h"
 #include "wingos-headers/syscalls.h"
 
 namespace Wingos
@@ -89,6 +90,68 @@ struct VirtualMemoryAsset : public UAsset
     void *ptr() const
     {
         return (void *)memory.start();
+    }
+};
+
+struct SignalAssetWaiter : public UAsset
+{
+    AssetHandle space;
+
+    static SignalAssetWaiter create(AssetHandle space_handle, AssetHandle signal_handle)
+    {
+        SignalAssetWaiter waiter = {};
+        waiter.space = space_handle;
+        waiter.handle = signal_handle;
+        return waiter;
+    }
+};
+
+struct SignalAsset : public UAsset
+
+{
+    AssetHandle space;
+
+    static SignalAsset create(AssetHandle space_handle)
+    {
+        SignalAsset asset = {};
+        asset.space = space_handle;
+        asset.handle = sys$signal_create(space_handle).returned_handle;
+        return asset;
+    }
+
+    void ping(uint64_t value = 0)
+    {
+        sys$signal_ping(space, this->handle, value);
+    }
+
+    void wait(uint64_t *value = nullptr)
+    {
+        IpcMessage unused;
+        sys$ipc_receive(space, this->handle, &unused, false);
+
+        if (value == nullptr)
+        {
+            *value = unused.arg(0);
+        }
+    }
+
+    // makes it able to block our thread when waiting for something else
+    SignalAssetWaiter enable_interruption()
+    {
+        IpcMessage ret;
+        SyscallIpcReceive recv = sys$ipc_receive(space, this->handle, &ret, true);
+        SignalAssetWaiter waiter = {};
+        waiter.space = space;
+        waiter.handle = recv.return_asset_id;
+        return waiter;
+    }
+
+    static SignalAsset from_handle(AssetHandle space, AssetHandle handle)
+    {
+        SignalAsset asset = {};
+        asset.handle = handle;
+        asset.space = space;
+        return asset;
     }
 };
 

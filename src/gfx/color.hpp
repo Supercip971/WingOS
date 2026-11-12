@@ -83,6 +83,16 @@ public:
 
         return rgba;
     }
+
+    static constexpr Rgba8 from_u32rgba(uint32_t rgba)
+    {
+        Rgba8 color = Rgba8(
+            (uint8_t)((rgba >> 24) & 0xFF),
+            (uint8_t)((rgba >> 16) & 0xFF),
+            (uint8_t)((rgba >> 8) & 0xFF),
+            (uint8_t)(rgba & 0xFF));
+        return color;
+    }
 } __attribute__((packed));
 
 class Rgba01

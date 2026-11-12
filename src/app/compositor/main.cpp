@@ -1,5 +1,6 @@
 #include <string.h>
 
+#include "protocols/hi/human_interface.hpp"
 #include "protocols/server_helper.hpp"
 
 #include "app/compositor/server.hpp"
@@ -26,6 +27,8 @@ int mdepth = 0; // manager depth
 
 void *framebuffer_mapped = nullptr;
 
+static prot::HIConnection *conn_inputs;
+
 int main(int, char **)
 {
     fc::Alive alive{"compositor"};
@@ -51,10 +54,41 @@ int main(int, char **)
 
     serv->fb = fb;
     serv->mapped_fb = framebuffer_mapped;
+
+    conn_inputs = new prot::HIConnection(prot::HIConnection::connect().take());
+    conn_inputs->start_listen().take();
+    auto res = conn_inputs->enable_signaling().take();
+
+    auto interruption_id = res.enable_interruption();
+
     while (true)
     {
         // alive.tick();
-        serv->loop();
+        auto interrupted_by = serv->do_receive();
+
+        if (interrupted_by.is_ok() && interrupted_by.unwrap() != 0)
+        {
+            if (interrupted_by.unwrap() == interruption_id.handle)
+            {
+                conn_inputs->event_queue().update_event();
+
+                while (true)
+                {
+                    auto ev_res = conn_inputs->event_queue().poll_event();
+                    if (ev_res.is_error())
+                    {
+                        break;
+                    }
+                    auto ev = ev_res.unwrap();
+                    serv->handle_input_event(ev);
+                    fmt::log$("input event: type={}, dx={}, dy={}, keycode={}", (int)ev.type, ev.mouse.dx, ev.mouse.dy, ev.keyboard.keycode);
+                }
+            }
+            else
+            {
+                fmt::err$("Compositor error: interrupted by: {}", interrupted_by.unwrap());
+            }
+        }
     }
     return 0;
 }

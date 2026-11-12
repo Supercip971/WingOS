@@ -1,13 +1,20 @@
 #pragma once
 
+#include <cstdint>
 #include <stddef.h>
 #include <string.h>
 
+#include "protocols/hi/human_interface.hpp"
 #include "protocols/server_helper.hpp"
 
+#include "cursor.hpp"
+#include "gfx/color.hpp"
+#include "gfx/geometry/rect.hpp"
 #include "iol/wingos/asset.hpp"
+#include "libcore/logic.hpp"
 #include "protocols/compositor/window.hpp"
 #include "protocols/init/init.hpp"
+class CompositorServer;
 
 struct Window : public prot::ManagedServerConnectionHandler
 {
@@ -15,6 +22,7 @@ struct Window : public prot::ManagedServerConnectionHandler
     size_t width;
     size_t height;
     bool is_framebuffer_taken;
+    CompositorServer *parent;
 
     Wingos::MemoryAsset framebuffer_asset;
     int depth;
@@ -28,6 +36,8 @@ struct Window : public prot::ManagedServerConnectionHandler
     {
         (void)msg;
     };
+
+    void after_swap(wgfx::GRect const &rendered);
 
     // return true on reply
     virtual fc::Result<void> call_received(IpcMessage &msg, fc::Optional<Wingos::IpcReplyObject> reply_obj [[maybe_unused]])
@@ -64,7 +74,7 @@ struct Window : public prot::ManagedServerConnectionHandler
         case prot::WINDOW_SWAP_BUFFERS:
         {
             IpcMessage reply = {}; // ack message
-            memcpy((void *)screen_buffer, (void *)framebuffer_mapped.ptr(), width * height * 4);
+            after_swap({});
             ret(reply);
             break;
         }
@@ -86,9 +96,59 @@ public:
     size_t cdepth = 0;
     prot::InitQueryFbResponse fb;
     void *mapped_fb;
+    long cursor_x = 0;
+    long cursor_y = 0;
+    Window *main_window = nullptr;
 
     CompositorServer()
     {
+    }
+
+    void swapped_window(Window *wnd, wgfx::GRect const &rendered)
+    {
+        (void)rendered;
+        (void)wnd;
+
+        memcpy((void *)mapped_fb, (void *)wnd->framebuffer_mapped.ptr(), wnd->width * wnd->height * 4);
+        // render cursor
+        wgfx::Rgba8 *fb_ptr = (wgfx::Rgba8 *)mapped_fb;
+        for (size_t cx = 0; cx < ICONS8_CURSOR_32_WIDTH; cx++)
+        {
+            for (size_t cy = 0; cy < ICONS8_CURSOR_32_HEIGHT; cy++)
+            {
+                long fb_x = cursor_x + cx;
+                long fb_y = cursor_y + cy;
+                if (fb_x < 0 || fb_x >= (long)fb.framebuffer_width || fb_y < 0 || fb_y >= (long)fb.framebuffer_height)
+                    continue;
+
+                wgfx::Rgba8 *pixel = &fb_ptr[fb_x + fb_y * fb.framebuffer_width];
+                wgfx::Rgba8 cursor_pixel = wgfx::Rgba8::from_u32rgba(icons8_cursor_32[cy * ICONS8_CURSOR_32_WIDTH + cx]);
+                cursor_pixel.r = 0xff;
+                cursor_pixel.g = 0xff;
+                cursor_pixel.b = 0xff;
+                pixel->blend(cursor_pixel);
+            }
+        }
+    }
+
+    void handle_input_event(prot::HIEvent &ev)
+    {
+        if (ev.type == prot::EventType::HI_EVENT_TYPE_MOUSE)
+        {
+            cursor_x += ev.mouse.dx;
+            cursor_y -= ev.mouse.dy;
+            cursor_x = fc::clamp(cursor_x, 0l, (long)fb.framebuffer_width - 1);
+            cursor_y = fc::clamp(cursor_y, 0l, (long)fb.framebuffer_height - 1);
+            if (main_window != nullptr)
+            {
+                fmt::log$("swapping window: {} {}", cursor_x, cursor_y);
+
+                swapped_window(main_window, {});
+            }
+        }
+        else if (ev.type == prot::EventType::HI_EVENT_TYPE_KEYBOARD)
+        {
+        }
     }
 
     virtual fc::Result<prot::ManagedServerConnectionHandler *> on_connect(IpcMessage &initiator) final
@@ -101,6 +161,7 @@ public:
             bool take_fb = initiator.arg(1) != 0;
 
             auto wnd = new Window();
+            main_window = wnd;
 
             auto window_mem = Wingos::Space::self().allocate_physical_memory(fb.framebuffer_width * fb.framebuffer_height * 4);
             auto window_map = Wingos::Space::self().map_memory(window_mem, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
@@ -112,6 +173,7 @@ public:
             wnd->depth = cdepth++;
             wnd->framebuffer_mapped = window_map;
             wnd->screen_buffer = (void *)mapped_fb;
+            wnd->parent = this;
 
             return wnd;
 
@@ -134,3 +196,8 @@ public:
 
     virtual ~CompositorServer() {}
 };
+
+inline void Window::after_swap(wgfx::GRect const &rendered)
+{
+    parent->swapped_window(this, rendered);
+}

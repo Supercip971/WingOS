@@ -8,6 +8,7 @@
 #include "app/udev/ps2/keyboard.hpp"
 #include "app/udev/ps2/mouse.hpp"
 #include "app/udev/ps2/server.hpp"
+#include "iol/wingos/asset.hpp"
 #include "iol/wingos/space.hpp"
 #include "iol/wingos/syscalls.h"
 #include "libcore/ds/vec.hpp"
@@ -20,6 +21,8 @@
 
 fc::Vec<prot::Duplex<prot::HIEvent> *> mouse_pipes = {};
 fc::Vec<prot::Duplex<prot::HIEvent> *> keyboard_pipes = {};
+Wingos::SignalAsset mouse_signals = {};
+Wingos::SignalAsset keyboard_signals = {};
 
 int main(int, char **)
 {
@@ -37,6 +40,9 @@ int main(int, char **)
 
     auto server = std::move(server_r.unwrap());
 
+    mouse_signals = Wingos::Space::self().create_signal_endpoint();
+    keyboard_signals = Wingos::Space::self().create_signal_endpoint();
+    server->init(&mouse_signals, &keyboard_signals);
     Ps2::Controller controller = Ps2::Controller();
     Ps2::Ps2Keyboard keyboard(controller);
     keyboard.init();
@@ -75,6 +81,7 @@ int main(int, char **)
 
                 ev_res = mouse.poll_event();
             }
+            mouse_signals.ping();
         }
 
         if (keyboard.packet_handle())
@@ -98,9 +105,9 @@ int main(int, char **)
                 }
                 ev_res = keyboard.poll_event();
             }
+            keyboard_signals.ping();
         }
 
-        fmt::log$("WAITIN'");
         auto interrupted_by = server->do_receive();
         if (interrupted_by.is_ok() && interrupted_by.unwrap() != 0)
         {

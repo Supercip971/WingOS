@@ -2,9 +2,13 @@
 
 #include <stdint.h>
 
+#include "protocols/server_helper.hpp"
+
 #include "iol/wingos/asset.hpp"
 #include "iol/wingos/ipc.hpp"
 #include "iol/wingos/space.hpp"
+#include "iol/wingos/syscalls.h"
+#include "kernel/generic/signal.hpp"
 #include "libcore/ds/vec.hpp"
 #include "libcore/result.hpp"
 #include "libcore/str.hpp"
@@ -26,6 +30,7 @@ enum EventType : uint32_t
 enum HIMessageType : uint32_t
 {
     HI_START_LISTEN = 0,
+    HI_ENABLE_SIGNALING = 1,
 };
 
 struct HIEvent
@@ -115,6 +120,24 @@ public:
         _event_queue = HIEventQueue(Duplex<HIEvent>::from_mem(Wingos::Space::self(), rpipe).unwrap());
 
         return {};
+    }
+
+    fc::Result<Wingos::SignalAsset> enable_signaling()
+    {
+        IpcMessage message = {};
+        message.arguments.data[0].data = HI_ENABLE_SIGNALING;
+        message.arguments.data[1].data = HI_EVENT_TYPE_MOUSE;
+
+        auto res = connection.call(message);
+
+        if (res.is_error())
+        {
+            return "failed to send HI start listen message";
+        }
+
+        auto signal = (Wingos::SignalAsset::from_handle(Wingos::Space::self().handle, message.asset(0)));
+
+        return signal;
     }
 
     static fc::Result<HIConnection> connect()

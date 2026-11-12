@@ -543,6 +543,48 @@ extern "C"
         return *(SyscallVmRegRead *)interface.arg1;
     }
 
+// ----- SYSCALL SIGNAL CREATE ----
+#define SYSCALL_SIGNAL_CREATE 0x00000017
+
+    typedef struct SyscallSignalCreate
+    {
+        AssetHandle target_space_handle;
+        AssetHandle returned_handle;
+    } SyscallSignalCreate;
+
+    static inline SyscallInterface syscall_signal_create_encode(SyscallSignalCreate *create)
+    {
+        return SyscallInterface{SYSCALL_SIGNAL_CREATE, 0, (uintptr_t)create, 0, 0, 0, 0, 0};
+    }
+
+    static inline SyscallSignalCreate syscall_signal_create_decode(SyscallInterface interface)
+    {
+        SyscallSignalCreate *create = (SyscallSignalCreate *)interface.arg1;
+        return *create;
+    }
+
+// ----- SYSCALL SIGNAL PING  ----
+#define SYSCALL_SIGNAL_PING 0x00000018
+
+    typedef struct SyscallSignalPing
+    {
+        AssetHandle target_space_handle;
+        AssetHandle handle;
+        uint64_t data; // a single uint64_t of data can be sended
+        // unused for now
+    } SyscallSignalPing;
+
+    static inline SyscallInterface syscall_signal_ping(SyscallSignalPing *ping)
+    {
+        return SyscallInterface{SYSCALL_SIGNAL_PING, 0, (uintptr_t)ping, 0, 0, 0, 0, 0};
+    }
+
+    static inline SyscallSignalPing syscall_signal_ping_decode(SyscallInterface interface)
+    {
+        SyscallSignalPing *ping = (SyscallSignalPing *)interface.arg1;
+        return *ping;
+    }
+
     // ------- SYSCALL IPC X86 INB ----
 
 #define SYSCALL_IPC_X86 0x10000

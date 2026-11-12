@@ -525,7 +525,13 @@ fc::Result<size_t> ksyscall_receive(kernel::Task *caller, SyscallIpcReceive *rec
     if (endpoint->kind == AssetKind::OBJECT_KIND_SIGNAL_ENDPOINT)
     {
         auto signal_endpoint = endpoint.casted<kernel::SignalEndpoint>();
-        kernel::signal_await(signal_endpoint, return_task, !receive->async, space_ref);
+
+        auto res = kernel::signal_await(signal_endpoint, return_task, receive->async, space_ref);
+
+        if (res.is_ok())
+        {
+            receive->return_asset_id = res.unwrap().get_handle();
+        }
     }
     else if (endpoint->kind == AssetKind::OBJECT_KIND_IPC_ENDPOINT)
     {
@@ -783,6 +789,53 @@ fc::Result<size_t> ksyscall_vm_reg_write(kernel::Task *caller, SyscallVmRegWrite
     return fc::Result<size_t>::success(0ul);
 }
 
+fc::Result<size_t> ksyscall_signal_create(kernel::Task *caller, SyscallSignalCreate *start)
+{
+    Space *space = caller->space();
+    if (start->target_space_handle != 0)
+    {
+        space = try$(
+                    caller->space()->by_handle<Space>(start->target_space_handle))
+                    .asset;
+    }
+    if (space == nullptr)
+    {
+        return fc::Result<size_t>::error("space not found");
+    }
+
+    auto asset = try$(space->create_signal_endpoint());
+
+    start->returned_handle = asset.handle;
+    return fc::Result<size_t>::success(0ul);
+}
+
+fc::Result<size_t> ksyscall_signal_ping(kernel::Task *caller, SyscallSignalPing *ping)
+{
+    Space *space = caller->space();
+    if (ping->target_space_handle != 0)
+    {
+        space = try$(
+                    caller->space()->by_handle<Space>(ping->target_space_handle))
+                    .asset;
+    }
+    if (space == nullptr)
+    {
+        return fc::Result<size_t>::error("space not found");
+    }
+
+    auto endpoint = try$(space->by_handle<kernel::SignalEndpoint>(ping->handle));
+
+    // FIXME(security): correctly implement the concept of write/read ptr of assets
+    // if(!endpoint.write)
+    // {
+    //     return fc::Result<size_t>::error("endpoint is not writable");
+    // }
+    // in theory a process that get a way to receive signals should not be able to send back signals
+    kernel::signal_trigger(endpoint);
+
+    return fc::Result<size_t>::success(0ul);
+}
+
 fc::Result<size_t> ksyscall_ipc_x86_port(kernel::Task *caller, SyscallIpcX86Port *port)
 {
     Space *space = nullptr;
@@ -952,6 +1005,16 @@ fc::Result<size_t> syscall_handle(SyscallInterface syscall, kernel::Task *caller
     {
         SyscallVmRegWrite *reg_write = try$(syscall_check_ptr<SyscallVmRegWrite>(caller, syscall.arg1));
         return ksyscall_vm_reg_write(caller, reg_write);
+    }
+    case SYSCALL_SIGNAL_CREATE:
+    {
+        SyscallSignalCreate *create = try$(syscall_check_ptr<SyscallSignalCreate>(caller, syscall.arg1));
+        return ksyscall_signal_create(caller, create);
+    }
+    case SYSCALL_SIGNAL_PING:
+    {
+        SyscallSignalPing *ping = try$(syscall_check_ptr<SyscallSignalPing>(caller, syscall.arg1));
+        return ksyscall_signal_ping(caller, ping);
     }
     case SYSCALL_IPC_X86_PORT:
     {

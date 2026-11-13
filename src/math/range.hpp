@@ -57,9 +57,9 @@ public:
     constexpr Range<T> shrinkAlign(size_t alignment) const
     {
         auto aligned_start = math::alignUp(_start, alignment);
-        auto aligned_len = math::alignDown(len(), alignment);
+        auto aligned_end = math::alignDown(_end, alignment);
 
-        return this->from_begin_len(aligned_start, aligned_len);
+        return Range<T>(aligned_start, aligned_end);
     }
 
     constexpr Range<T> growAlign(size_t alignment) const

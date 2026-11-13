@@ -1,6 +1,7 @@
 #include "smp.hpp"
 #include <string.h>
 
+#include "arch/x86_64/paging.hpp"
 #include "hw/mem/addr_space.hpp"
 #include "iol/mem_flags.h"
 #include "kernel/x86_64/cpu.hpp" // Ensure `CpuImpl` and `max_cpu` are available
@@ -29,7 +30,7 @@ fc::Result<void> arch::amd64::smp_initialize()
 
         CpuImpl *cpu_impl = CpuImpl::getImpl(cpu);
 
-        cpu_impl->syscall_stack = toVirt(Pmm::the().allocate(kernel::kernel_stack_size).unwrap())._addr + kernel::kernel_stack_size;
+        cpu_impl->syscall_stack = toVirt(Pmm::the().allocate(kernel::kernel_stack_size / PAGE_SIZE).unwrap())._addr + kernel::kernel_stack_size;
         fmt::log$("cpu: {} (lapic: {})", cpu, cpu_impl->lapic());
 
         if (cpu_impl->lapic() != CpuImpl::currentId())

@@ -31,7 +31,7 @@ struct stackframe
 void dump_stackframe(void *rbp, uintptr_t abase)
 {
 
-    stackframe *frame = reinterpret_cast<stackframe *>(rbp);
+    auto *frame = reinterpret_cast<stackframe *>(rbp);
     int size = 0;
 
     fmt::log$(" == stackframe == ");
@@ -68,7 +68,7 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
     }
 
     Cpu::current()->in_interrupt(true);
-    arch::amd64::StackFrame *frame = reinterpret_cast<arch::amd64::StackFrame *>(stack);
+    auto *frame = reinterpret_cast<arch::amd64::StackFrame *>(stack);
 
     if (frame->interrupt_number < 32)
     {
@@ -127,17 +127,17 @@ extern "C" uintptr_t interrupt_handler(uintptr_t stack)
         //        Cpu::current()->debug_context.dump();
         // task syscall and user space stack range from cpu task context
 
-        uintptr_t sys_task_stack_start = (uintptr_t)Cpu::current()->currentTask()->cpu_context()->syscall_stack_ptr;
+        auto sys_task_stack_start = (uintptr_t)Cpu::current()->currentTask()->cpu_context()->syscall_stack_ptr;
 
-        uintptr_t sys_task_stack_end = (uintptr_t)Cpu::current()->currentTask()->cpu_context()->syscall_stack_top;
+        auto sys_task_stack_end = (uintptr_t)Cpu::current()->currentTask()->cpu_context()->syscall_stack_top;
 
-        uintptr_t task_stack_start = (uintptr_t)Cpu::current()->currentTask()->cpu_context()->stack_ptr;
+        auto task_stack_start = (uintptr_t)Cpu::current()->currentTask()->cpu_context()->stack_ptr;
 
-        uintptr_t task_stack_end = (uintptr_t)Cpu::current()->currentTask()->cpu_context()->stack_top;
+        auto task_stack_end = (uintptr_t)Cpu::current()->currentTask()->cpu_context()->stack_top;
 
-        uintptr_t kernel_stack_start = (uintptr_t)Cpu::current()->currentTask()->cpu_context()->kernel_stack_ptr;
+        auto kernel_stack_start = (uintptr_t)Cpu::current()->currentTask()->cpu_context()->kernel_stack_ptr;
 
-        uintptr_t kernel_stack_end = (uintptr_t)Cpu::current()->currentTask()->cpu_context()->kernel_stack_top;
+        auto kernel_stack_end = (uintptr_t)Cpu::current()->currentTask()->cpu_context()->kernel_stack_top;
 
         fmt::log$("Syscall task stack range: {}-{}", sys_task_stack_start | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO, sys_task_stack_end | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);
         fmt::log$("Task stack range: {}-{}", task_stack_start | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO, task_stack_end | fmt::FMT_HEX | fmt::FMT_CYAN | fmt::FMT_PAD_8BYTES | fmt::FMT_PAD_ZERO);

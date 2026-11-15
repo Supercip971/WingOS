@@ -32,7 +32,7 @@ struct SchedulerControlBlock
     long sleeping = 0;
     long priority = 0;
 
-    SchedulerControlBlock() : priority(0) {}
+    SchedulerControlBlock() {}
 
     SchedulerControlBlock(size_t _priority) : priority(_priority) {}
 

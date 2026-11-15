@@ -63,9 +63,7 @@ class PosixServer : public prot::ManagedServer
 {
 
 public:
-    PosixServer()
-    {
-    }
+    PosixServer() = default;
 
     virtual fc::Result<prot::ManagedServerConnectionHandler *> on_connect(IpcMessage &initiator) final
     {
@@ -94,5 +92,5 @@ public:
         return {};
     }
 
-    virtual ~PosixServer() {}
+    virtual ~PosixServer() = default;
 };

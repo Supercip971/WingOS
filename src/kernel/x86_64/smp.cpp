@@ -83,7 +83,7 @@ fc::Result<void> _setup_trampoline(hw::acpi::LCpuId cpu_id)
 
     // setting up stack
     PhysAddr stack = try$(Pmm::the().allocate(kernel::kernel_stack_size, IOL_ALLOC_MEMORY_FLAG_LOWER_SPACE));
-    uintptr_t stack_addr = (uintptr_t)stack;
+    auto stack_addr = (uintptr_t)stack;
     fmt::log$("stack addr: {}", stack_addr | fmt::FMT_HEX);
     cpu->trampoline_stack(stack);
 

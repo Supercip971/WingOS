@@ -31,9 +31,7 @@ public:
         (void)msg;
     };
 
-    virtual ~Ps2Connection()
-    {
-    }
+    virtual ~Ps2Connection() = default;
 
     virtual fc::Result<void> call_received(IpcMessage &msg, fc::Optional<Wingos::IpcReplyObject> reply_obj [[maybe_unused]])
     {
@@ -114,7 +112,5 @@ public:
         return res;
     };
 
-    virtual ~Ps2Server()
-    {
-    }
+    virtual ~Ps2Server() = default;
 };

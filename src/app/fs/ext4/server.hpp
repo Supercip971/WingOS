@@ -92,9 +92,9 @@ public:
                 // create new endpoint for this file
                 reply.arg(0, 1);
 
-                Ext4InodeEndpoint *child = new Ext4InodeEndpoint(self, fs, parent);
+                auto *child = new Ext4InodeEndpoint(self, fs, parent);
 
-                Ext4OpennedFileCtx *op = new Ext4OpennedFileCtx();
+                auto *op = new Ext4OpennedFileCtx();
                 op->used_fs = this->self->used_fs;
                 op->inode = file_inode;
                 op->port = child->get_port();
@@ -156,7 +156,7 @@ public:
         return {};
     }
 
-    virtual ~Ext4InodeEndpoint() {};
+    virtual ~Ext4InodeEndpoint() = default;
 };
 
 class Ext4CoreServer;
@@ -170,7 +170,7 @@ public:
     Ext4Ctx *ctx;
     prot::ManagedServer *parent;
 
-    Ext4Partition() {};
+    Ext4Partition() = default;
     Ext4Partition(prot::ManagedServer *_parent) : parent(_parent) {};
 
     virtual bool init() { return true; }
@@ -228,7 +228,7 @@ public:
 
             auto dfs_res = dfs.unwrap();
 
-            Ext4Partition *child = new Ext4Partition();
+            auto *child = new Ext4Partition();
             child->fs_init_result = new Ext4Filesystem(dfs_res);
             child->ctx = ctx;
             child->parent = parent;
@@ -256,7 +256,7 @@ public:
             op.used_fs = this->fs_init_result;
             op.inode = this->fs_init_result->read_inode(2).take();
 
-            Ext4InodeEndpoint *ep = new Ext4InodeEndpoint(new Ext4OpennedFileCtx(op), this->ctx, this->parent);
+            auto *ep = new Ext4InodeEndpoint(new Ext4OpennedFileCtx(op), this->ctx, this->parent);
             auto forked = try$(parent->create_connection<Ext4InodeEndpoint>(ep));
 
             ret.move_handle(1, forked.handle);
@@ -273,7 +273,7 @@ public:
         return {};
     }
 
-    virtual ~Ext4Partition() {}
+    virtual ~Ext4Partition() = default;
 };
 
 class Ext4CoreServer : public prot::ManagedServer
@@ -302,5 +302,5 @@ public:
         return {};
     }
 
-    virtual ~Ext4CoreServer() {}
+    virtual ~Ext4CoreServer() = default;
 };

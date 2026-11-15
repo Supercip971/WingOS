@@ -17,8 +17,8 @@ public:
     Image &operator=(const Image &other) = delete;
 
     Format *_data;
-    size_t _width;
-    size_t _height;
+    size_t _width{0};
+    size_t _height{0};
 
     size_t width() const { return _width; }
 
@@ -26,7 +26,7 @@ public:
 
     Format *data() const { return _data; }
 
-    Image() : _data(nullptr), _width(0), _height(0) {}
+    Image() : _data(nullptr) {}
 
     static Image own(size_t width, size_t height, Format *data)
     {

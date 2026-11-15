@@ -85,14 +85,14 @@ public:
             .template static_pointer_cast<Widget>();
     }
 
-    Widget() {};
+    Widget() = default;
 
     bool is_mutable = false;
     fc::Str _key = "";
 
     fc::Vec<fc::SharedPtr<Widget>> childs;
 
-    virtual ~Widget() {}
+    virtual ~Widget() = default;
 
     virtual void insertChild(fc::SharedPtr<Widget> child)
     {

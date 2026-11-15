@@ -36,9 +36,8 @@ struct JsonChilds
     }
 
     JsonChilds(const JsonChilds &other)
-        : values(other.values), keys(other.keys)
-    {
-    }
+
+        = default;
 
     JsonChilds &operator=(JsonChilds &&other) noexcept
     {
@@ -65,12 +64,12 @@ struct JsonChilds
 struct JsonStorage
 {
     fc::Str raw;
-    bool boolean;
-    double number;
-    int integer;
+    bool boolean{false};
+    double number{0};
+    int integer{0};
     JsonChilds childs;
 
-    JsonStorage() : raw(""), boolean(false), number(0), integer(0), childs() {}
+    JsonStorage() : raw(""), childs() {}
 
     JsonStorage(JsonStorage &&other)
         : raw((other.raw)),
@@ -82,13 +81,8 @@ struct JsonStorage
     }
 
     JsonStorage(const JsonStorage &other)
-        : raw(other.raw),
-          boolean(other.boolean),
-          number(other.number),
-          integer(other.integer),
-          childs(other.childs)
-    {
-    }
+
+        = default;
 
     // Move assignment
     JsonStorage &operator=(JsonStorage &&other) noexcept
@@ -134,9 +128,8 @@ struct JsonValue
     }
 
     JsonValue(const JsonValue &other)
-        : type(other.type), storage(other.storage)
-    {
-    }
+
+        = default;
 
     JsonValue &operator=(JsonValue &&other)
     {
@@ -195,12 +188,12 @@ struct JsonValue
         return fc::Result<JsonValue>::error(("Index out of bounds"));
     }
 
-    bool is_null()
+    bool is_null() const
     {
         return type == JsonType::Null;
     }
 
-    fc::Result<bool> as_bool()
+    fc::Result<bool> as_bool() const
     {
         if (type == JsonType::Boolean)
         {
@@ -209,7 +202,7 @@ struct JsonValue
         return fc::Result<bool>::error("Not a boolean");
     }
 
-    fc::Result<int> as_number()
+    fc::Result<int> as_number() const
     {
         if (type == JsonType::Number)
         {
@@ -218,7 +211,7 @@ struct JsonValue
         return fc::Result<int>::error("Not a number");
     }
 
-    fc::Result<fc::Str> as_string()
+    fc::Result<fc::Str> as_string() const
     {
         if (type == JsonType::String)
         {
@@ -227,7 +220,7 @@ struct JsonValue
         return fc::Result<fc::Str>::error("Not a string");
     }
 
-    fc::Result<fc::Vec<JsonValue>> as_array()
+    fc::Result<fc::Vec<JsonValue>> as_array() const
     {
         if (type == JsonType::Array)
         {

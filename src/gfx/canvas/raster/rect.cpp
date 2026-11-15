@@ -284,7 +284,7 @@ void wgfx::RasterCanvas::rectStrokeRoundedFlatAligned(RectCommand const &cmd2)
     }
 }
 
-void wgfx::RasterCanvas::rectStrokeFlatAligned(RectCommand const &cmdw)
+void wgfx::RasterCanvas::rectStrokeFlatAligned(RectCommand const &cmdw) const
 {
 
     auto cmd = cmdw;

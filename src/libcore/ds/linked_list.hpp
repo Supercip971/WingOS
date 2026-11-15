@@ -29,7 +29,7 @@ public:
     {
         Node *_ptr = nullptr;
 
-        Iterator() {};
+        Iterator() = default;
 
         Iterator(Node *ptr) { _ptr = ptr; };
 
@@ -43,9 +43,7 @@ public:
             return _ptr != other._ptr;
         }
 
-        ~Iterator()
-        {
-        }
+        ~Iterator() = default;
 
         T &operator*()
         {

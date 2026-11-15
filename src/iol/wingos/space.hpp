@@ -35,28 +35,28 @@ struct Space
         return handle == AssetHandle::selfSpace(); // self space handle is 0
     }
 
-    MemoryAsset allocate_physical_memory(uint64_t size, bool lower_half = false)
+    MemoryAsset allocate_physical_memory(uint64_t size, bool lower_half = false) const
     {
         return MemoryAsset::allocate(handle, size, lower_half);
     }
 
-    MemoryAsset own_memory_physical(uint64_t addr, uint64_t size)
+    MemoryAsset own_memory_physical(uint64_t addr, uint64_t size) const
     {
 
         return MemoryAsset::own(handle, addr, size);
     }
 
-    VirtualMemoryAsset create_virtual_memory(uint64_t start, uint64_t end, AssetHandle physical_mem_handle, uint64_t flags)
+    VirtualMemoryAsset create_virtual_memory(uint64_t start, uint64_t end, AssetHandle physical_mem_handle, uint64_t flags) const
     {
         return VirtualMemoryAsset::create(handle, start, end, physical_mem_handle, flags);
     }
 
-    VirtualMemoryAsset map_memory(MemoryAsset mem_asset, uint64_t flags)
+    VirtualMemoryAsset map_memory(MemoryAsset mem_asset, uint64_t flags) const
     {
         return VirtualMemoryAsset::create(handle, mem_asset.memory.start() + USERSPACE_VIRT_BASE, mem_asset.memory.end() + USERSPACE_VIRT_BASE, mem_asset.handle, flags);
     }
 
-    VirtualMemoryAsset map_memory(uint64_t start, uint64_t end, MemoryAsset mem_asset, uint64_t flags)
+    VirtualMemoryAsset map_memory(uint64_t start, uint64_t end, MemoryAsset mem_asset, uint64_t flags) const
     {
 
         return VirtualMemoryAsset::create(handle, start, end, mem_asset.handle, flags);
@@ -84,12 +84,12 @@ struct Space
         sys$asset_release_mem(ptr, (void *)(size + (uintptr_t)ptr));
     }
 
-    void release_asset(UAsset asset)
+    void release_asset(UAsset asset) const
     {
         sys$asset_release(handle, asset.handle);
     }
 
-    Space create_space()
+    Space create_space() const
     {
         auto space_res = sys$space_create(handle, 0, 0);
         if (space_res.returned_handle == AssetHandle::invalid())
@@ -100,7 +100,7 @@ struct Space
         return Space::from_uid(space_res.returned_handle);
     }
 
-    TaskAsset create_task(uint64_t launch, uint64_t arg1 = 0, uint64_t arg2 = 0, uint64_t arg3 = 0, uint64_t arg4 = 0)
+    TaskAsset create_task(uint64_t launch, uint64_t arg1 = 0, uint64_t arg2 = 0, uint64_t arg3 = 0, uint64_t arg4 = 0) const
     {
         auto task_res = sys$task_create(handle, launch, arg1, arg2, arg3, arg4);
         if (task_res.returned_handle == AssetHandle::invalid())
@@ -120,12 +120,12 @@ struct Space
         return task_asset;
     }
 
-    void launch_task(TaskAsset asset)
+    void launch_task(TaskAsset asset) const
     {
         sys$task_launch(handle, asset.handle, asset.args[0], asset.args[1], asset.args[2], asset.args[3]);
     }
 
-    SignalAsset create_signal_endpoint()
+    SignalAsset create_signal_endpoint() const
     {
         SignalAsset signal;
         auto res = sys$signal_create(handle);
@@ -139,7 +139,7 @@ struct Space
         return signal;
     }
 
-    UAsset _move_to(Space to, AssetHandle moved_handle)
+    UAsset _move_to(Space to, AssetHandle moved_handle) const
     {
         auto move_res = sys$asset_move(handle, to.handle, moved_handle);
         if (move_res.returned_handle_in_space == AssetHandle::invalid())
@@ -168,32 +168,32 @@ struct Space
         return copy;
     }
 
-    RawIpcEndpoint create_public_ipc_server(bool is_root = false)
+    RawIpcEndpoint create_public_ipc_server(bool is_root = false) const
     {
         return RawIpcEndpoint::create(handle, true, is_root);
     }
 
-    RawIpcEndpoint create_private_ipc_server()
+    RawIpcEndpoint create_private_ipc_server() const
     {
         return RawIpcEndpoint::create(handle, false);
     }
 
-    IpcClient connect_by_addr(uint64_t endpoint_address)
+    IpcClient connect_by_addr(uint64_t endpoint_address) const
     {
         return IpcClient::connect_by_addr(handle, endpoint_address);
     }
 
-    IpcClient from_already_connected(AssetHandle endpoint_handle)
+    IpcClient from_already_connected(AssetHandle endpoint_handle) const
     {
         return IpcClient::already_connected(handle, endpoint_handle);
     }
 
-    IpcClient connect_by_handle(AssetHandle endpoint_handle)
+    IpcClient connect_by_handle(AssetHandle endpoint_handle) const
     {
         return IpcClient::connect_to_object(handle, endpoint_handle);
     }
 
-    auto asset_info(AssetHandle asset_handle)
+    auto asset_info(AssetHandle asset_handle) const
     {
         return sys$ipc_asset_info_by_handle(handle, asset_handle);
     }

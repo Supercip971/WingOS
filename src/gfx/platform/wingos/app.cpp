@@ -89,7 +89,7 @@ struct WingosWindowImpl : public wgfx::PlatformWindow
         {
         case wgfx::BACKEND_KIND_RASTER:
         {
-            RasterCanvas *cnvas = (RasterCanvas *)frame;
+            auto *cnvas = (RasterCanvas *)frame;
 
             memcpy(back_buffer, cnvas->buffer, cnvas->width * cnvas->height * sizeof(uint32_t));
             g_window->swap_buffers();

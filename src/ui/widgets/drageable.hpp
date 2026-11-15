@@ -27,9 +27,7 @@ struct DrageableContainerParams
     float _width = 0;
     float _height = 0;
 
-    constexpr DrageableContainerParams()
-    {
-    }
+    DrageableContainerParams() = default;
 
     constexpr DrageableContainerParams(
         float initial_width,

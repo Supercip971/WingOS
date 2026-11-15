@@ -5,18 +5,10 @@
 #include "void.hpp"
 #include "writer.hpp"
 
-fc::Reader::~Reader()
-{
-}
+fc::Reader::~Reader() = default;
 
-fc::Seeker::~Seeker()
-{
-}
+fc::Seeker::~Seeker() = default;
 
-fc::VoidRW::~VoidRW()
-{
-}
+fc::VoidRW::~VoidRW() = default;
 
-fc::Writer::~Writer()
-{
-}
+fc::Writer::~Writer() = default;

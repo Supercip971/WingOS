@@ -33,7 +33,7 @@ fc::UMap<uint64_t, IntelVmxKernel *> vms;
 fc::Result<size_t> create_registered_vm(AssetRef<Space> space)
 {
     (void)space;
-    IntelVmxKernel *kvmx = new IntelVmxKernel();
+    auto *kvmx = new IntelVmxKernel();
     _VmGlobalArrayLock.lock();
     kvmx->uid = last_uid;
     last_uid++;
@@ -104,7 +104,7 @@ fc::Result<void> AssetVm::stop()
     return {};
 }
 
-fc::Result<void> AssetVm::_internal_release()
+fc::Result<void> AssetVm::_internal_release() const
 {
     _VmGlobalArrayLock.lock();
     auto kvmx = vms[this->unique_vm_id];

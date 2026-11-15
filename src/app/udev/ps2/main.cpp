@@ -72,7 +72,7 @@ int main(int, char **)
 
                 for (auto &conn : server->connected_clients())
                 {
-                    Ps2Connection *ps = dynamic_cast<Ps2Connection *>(conn.value);
+                    auto *ps = dynamic_cast<Ps2Connection *>(conn.value);
                     if (ps && ps->event_types & prot::HI_EVENT_TYPE_MOUSE)
                     {
                         ps->pipe.ring->produce(event);
@@ -97,7 +97,7 @@ int main(int, char **)
                 event.keyboard.pressed = kb_ev.down;
                 for (auto &conn : server->connected_clients())
                 {
-                    Ps2Connection *ps = dynamic_cast<Ps2Connection *>(conn.value);
+                    auto *ps = dynamic_cast<Ps2Connection *>(conn.value);
                     if (ps && ps->event_types & prot::HI_EVENT_TYPE_KEYBOARD)
                     {
                         ps->pipe.ring->produce(event);

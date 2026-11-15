@@ -78,7 +78,7 @@ public:
 
     CpuSchedStates sched_state = CpuSchedStates::CPU_SCHED_RUNNING;
 
-    bool in_interrupt()
+    bool in_interrupt() const
     {
         return _in_interrupt;
     }

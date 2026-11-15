@@ -77,7 +77,7 @@ int _main(StartupInfo *context)
 
         for (auto &conn : server->connected_clients())
         {
-            HPetConnection *timer = static_cast<HPetConnection *>(conn.value);
+            auto *timer = static_cast<HPetConnection *>(conn.value);
             if (timer->waiting)
             {
                 if (timer->end_time <= now)

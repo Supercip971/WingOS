@@ -135,7 +135,7 @@ struct PciDevice
 
     static inline uint32_t read_config(uint8_t bus, uint8_t slot, uint8_t func, uint8_t off)
     {
-        PciConfigReg reg = {off, func, slot, bus, 0, 1};
+        PciConfigReg reg = {.offset = off, .function = func, .device = slot, .bus = bus, ._reserved = 0, .enable = 1};
 
         union
         {
@@ -191,7 +191,7 @@ struct PciDevice
         return ((uint64_t)high << 32) | low;
     }
 
-    uint64_t get_bar64_size(uint8_t bar_index)
+    uint64_t get_bar64_size(uint8_t bar_index) const
     {
         const uint64_t old_value = get_bar64(bar_index);
         write_config(bar_index, 0xffffffff);
@@ -209,7 +209,7 @@ struct PciDevice
 
     static inline void write_config(uint8_t bus, uint8_t slot, uint8_t func, uint8_t off, uint32_t value)
     {
-        PciConfigReg reg = {off, func, slot, bus, 0, 1};
+        PciConfigReg reg = {.offset = off, .function = func, .device = slot, .bus = bus, ._reserved = 0, .enable = 1};
 
         union
         {

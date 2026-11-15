@@ -97,7 +97,7 @@ struct Space : public Asset
 
     constexpr static size_t IDENT = AssetKind::OBJECT_KIND_SPACE;
     void dump_assets();
-    size_t uid;
+    size_t uid{0};
     std::atomic<size_t> alloc_uid;
     // Space *parent_space_handle; // the space that created this space
     VmmSpace vmm_space; // the virtual memory space of this space
@@ -105,7 +105,7 @@ struct Space : public Asset
     fc::UMap<AssetHandle, AssetRef<>> assets = {};
 
     Space()
-        : Asset(AssetKind::OBJECT_KIND_SPACE), uid(0), alloc_uid(0), vmm_space(), assets()
+        : Asset(AssetKind::OBJECT_KIND_SPACE), alloc_uid(0), vmm_space(), assets()
     {
     }
 
@@ -143,7 +143,7 @@ struct Space : public Asset
 
         fmt::log$("Assets in space {}:", assets.count());
 
-        for (auto asset : assets)
+        for (const auto &asset : assets)
         {
             fmt::log$("  Asset: handle={}, kind={}", asset.value.handle._id, assetKind2Str(asset.value.asset->kind));
         }

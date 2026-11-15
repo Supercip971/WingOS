@@ -26,7 +26,7 @@ struct stackframe
 void dump_stackframe(void *rbp)
 {
 
-    stackframe *frame = reinterpret_cast<stackframe *>(rbp);
+    auto *frame = reinterpret_cast<stackframe *>(rbp);
     int size = 0;
 
     fmt::log$("stackframe: ");

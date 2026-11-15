@@ -24,7 +24,7 @@ class Vec
 public:
     using Type = T;
 
-    Vec() : _data(nullptr), _count(0), _capacity(0) {}
+    Vec() : _data(nullptr) {}
 
     Vec(Vec &&other)
         : _data(other._data),
@@ -44,7 +44,7 @@ public:
     }
 
     Vec(const Vec &other)
-        : _data(nullptr), _count(0), _capacity(0)
+        : _data(nullptr)
     {
         if (other._count != 0)
         {

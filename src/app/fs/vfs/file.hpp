@@ -52,7 +52,7 @@ public:
             auto raw_file = new prot::FsFile(try$(connection_to_fs->open_file(filename.view())));
             // connect to ourselves
 
-            VfsConnectionFile *forked = new VfsConnectionFile(ctx);
+            auto *forked = new VfsConnectionFile(ctx);
             forked->connection_to_fs = raw_file;
 
             auto client = try$(ctx.root_vfs->create_connection<VfsConnectionFile>(forked));
@@ -92,5 +92,5 @@ public:
         return {};
     }
 
-    virtual ~VfsConnectionFile() {}
+    virtual ~VfsConnectionFile() = default;
 };

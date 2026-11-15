@@ -31,9 +31,7 @@ public:
         (void)msg;
     };
 
-    virtual ~HPetConnection()
-    {
-    }
+    virtual ~HPetConnection() = default;
 
     virtual fc::Result<void> call_received(IpcMessage &msg, fc::Optional<Wingos::IpcReplyObject> reply_obj)
     {
@@ -81,7 +79,5 @@ public:
         return new HPetConnection;
     };
 
-    virtual ~HpetServer()
-    {
-    }
+    virtual ~HpetServer() = default;
 };

@@ -165,7 +165,7 @@ class NvmeController
     {
         void *base = mapped_nvme_addr_space.ptr();
 
-        uint32_t volatile *offseted = reinterpret_cast<uint32_t volatile *>((uintptr_t)base + reg);
+        auto volatile *offseted = reinterpret_cast<uint32_t volatile *>((uintptr_t)base + reg);
 
         return *offseted;
     }
@@ -174,7 +174,7 @@ class NvmeController
     {
         void *base = mapped_nvme_addr_space.ptr();
 
-        uint64_t volatile *offseted = reinterpret_cast<uint64_t volatile *>((uintptr_t)base + reg);
+        auto volatile *offseted = reinterpret_cast<uint64_t volatile *>((uintptr_t)base + reg);
 
         return *offseted;
     }
@@ -183,7 +183,7 @@ class NvmeController
     {
         void *base = mapped_nvme_addr_space.ptr();
 
-        uint32_t volatile *offseted = reinterpret_cast<uint32_t volatile *>((uintptr_t)base + reg);
+        auto volatile *offseted = reinterpret_cast<uint32_t volatile *>((uintptr_t)base + reg);
 
         *offseted = val;
     }
@@ -192,7 +192,7 @@ class NvmeController
     {
         void *base = mapped_nvme_addr_space.ptr();
 
-        uint64_t volatile *offseted = reinterpret_cast<uint64_t volatile *>((uintptr_t)base + reg);
+        auto volatile *offseted = reinterpret_cast<uint64_t volatile *>((uintptr_t)base + reg);
 
         *offseted = val;
     }
@@ -377,14 +377,14 @@ public:
         // PRP list must fit in one 4K page
         // (512 entries * 4096 = 2MB), also respect controller's max transfer size
         size_t max_size_per_cmd = fc::min(dev->max_phys_rpgs * 4096, max_transfer);
-        uint16_t max_nlb_per_cmd = (uint16_t)(max_size_per_cmd / dev->lba_size);
+        auto max_nlb_per_cmd = (uint16_t)(max_size_per_cmd / dev->lba_size);
 
         if (nlb > max_nlb_per_cmd)
         {
             // recursively split the transfer into multiple commands
             uint16_t remaining = nlb;
             uint64_t current_lba = lba;
-            uint8_t *current_buf = (uint8_t *)buffer;
+            auto *current_buf = (uint8_t *)buffer;
 
             while (remaining > 0)
             {

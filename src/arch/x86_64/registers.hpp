@@ -123,7 +123,7 @@ struct CpuXCR0
     static inline void write(uint32_t a, uint64_t value)
     {
         uint32_t edx = value >> 32;
-        uint32_t eax = (uint32_t)value;
+        auto eax = (uint32_t)value;
         asm volatile("xsetbv"
                      :
                      : "a"(eax), "d"(edx), "c"(a)

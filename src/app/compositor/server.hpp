@@ -106,18 +106,16 @@ public:
     long cursor_y = 0;
     Window *main_window = nullptr;
 
-    CompositorServer()
-    {
-    }
+    CompositorServer() = default;
 
-    void swapped_window(Window *wnd, wgfx::GRect const &rendered)
+    void swapped_window(Window *wnd, wgfx::GRect const &rendered) const
     {
         (void)rendered;
         (void)wnd;
 
         memcpy((void *)mapped_fb, (void *)wnd->framebuffer_mapped.ptr(), wnd->width * wnd->height * 4);
         // render cursor
-        wgfx::Rgba8 *fb_ptr = (wgfx::Rgba8 *)mapped_fb;
+        auto *fb_ptr = (wgfx::Rgba8 *)mapped_fb;
         for (size_t cx = 0; cx < ICONS8_CURSOR_32_WIDTH; cx++)
         {
             for (size_t cy = 0; cy < ICONS8_CURSOR_32_HEIGHT; cy++)
@@ -200,7 +198,7 @@ public:
         return {};
     }
 
-    virtual ~CompositorServer() {}
+    virtual ~CompositorServer() = default;
 };
 
 inline void Window::after_swap(wgfx::GRect const &rendered)

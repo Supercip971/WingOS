@@ -57,9 +57,9 @@ ENUM_OP$(IDTEntry::Type);
 struct IDT
 {
     static const int _size = 256;
-    IDTEntry _entries[_size];
+    IDTEntry _entries[_size]{};
 
-    constexpr IDT() : _entries{} {};
+    constexpr IDT() {};
 
     template <fc::Viewable T>
     void fill(const T &handler_table, int cs)

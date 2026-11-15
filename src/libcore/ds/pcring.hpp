@@ -60,7 +60,7 @@ public:
             arch::pause();
         }
 
-        new (&_data[_tail]) T(std::move(value));
+        new (&_data[_tail]) T(std::forward<U>(value));
 
         _tail = (_tail + 1) % _capacity;
         _len++;

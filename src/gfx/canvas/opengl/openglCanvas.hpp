@@ -16,12 +16,12 @@ public:
     float width;
     float height;
 
-    constexpr float scaled_x(float v)
+    constexpr float scaled_x(float v) const
     {
         return (v) * 2.0 / width - 1.0;
     }
 
-    constexpr float scaled_y(float v)
+    constexpr float scaled_y(float v) const
     {
 
         return 1.0 - (v) * 2.0 / height;

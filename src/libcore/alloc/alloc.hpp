@@ -67,7 +67,7 @@ class DefaultAllocator : public NoCopy
     [[maybe_unused]] void *state;
 
 public:
-    DefaultAllocator() {};
+    DefaultAllocator() = default;
 
     DefaultAllocator(DefaultAllocator &&) = default;
     DefaultAllocator &operator=(DefaultAllocator &&) = default;

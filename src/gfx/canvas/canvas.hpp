@@ -28,7 +28,7 @@ public:
     wgfx::GRect context_size;
     fc::Vec<wgfx::GRect> scissor_stack;
 
-    virtual ~Canvas() {}
+    virtual ~Canvas() = default;
 
     Canvas record()
     {

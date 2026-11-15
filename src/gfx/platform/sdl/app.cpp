@@ -119,7 +119,7 @@ struct SDLWindowImpl : public wgfx::PlatformWindow
         }
         case wgfx::BACKEND_KIND_RASTER:
         {
-            RasterCanvas *cnvas = (RasterCanvas *)frame;
+            auto *cnvas = (RasterCanvas *)frame;
             SDL_UpdateTexture(raster_texture, NULL, cnvas->buffer, cnvas->width * sizeof(uint32_t));
             SDL_RenderClear(renderer);
 

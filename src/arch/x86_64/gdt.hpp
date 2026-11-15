@@ -64,7 +64,7 @@ struct TssEntry
 
     TssEntry(Tss *tss_ptr)
     {
-        const uintptr_t tss_address = reinterpret_cast<uintptr_t>(tss_ptr);
+        const auto tss_address = reinterpret_cast<uintptr_t>(tss_ptr);
         len = static_cast<uint16_t>(Tss::size() - 1);
         base_low = static_cast<uint16_t>(tss_address & 0xFFFF);
         base_middle = static_cast<uint8_t>((tss_address >> 16) &

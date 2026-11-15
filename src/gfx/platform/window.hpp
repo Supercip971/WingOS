@@ -23,7 +23,7 @@ public:
 
     virtual float dpi() { return 1.f; }
 
-    virtual ~PlatformWindow() {};
+    virtual ~PlatformWindow() = default;
 
     virtual void destroy()
     {

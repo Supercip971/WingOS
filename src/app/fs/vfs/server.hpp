@@ -100,5 +100,5 @@ public:
         return {};
     }
 
-    virtual ~VfsServer() {}
+    virtual ~VfsServer() = default;
 };

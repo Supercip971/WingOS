@@ -13,7 +13,7 @@ namespace fc
 class VoidRW : public Reader, public Writer
 {
 public:
-    VoidRW() {}
+    VoidRW() = default;
 
     virtual Result<size_t> read(char *buffer, size_t size) const override
     {

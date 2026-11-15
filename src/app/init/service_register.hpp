@@ -30,7 +30,7 @@ class InitIpcConnection : public prot::ManagedServerConnectionHandler
     MachineContextShared *shared;
 
 public:
-    InitIpcConnection() {};
+    InitIpcConnection() = default;
 
     bool init() final
     {

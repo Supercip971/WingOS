@@ -21,7 +21,7 @@ fc::Result<size_t> execute_program_from_mem(Wingos::Space &subspace, elf::ElfLoa
 
     auto startup_info_mapped = Wingos::Space::self().map_memory(startup_info_mem, ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_READ);
 
-    StartupInfo *ptr = (StartupInfo *)startup_info_mapped.ptr();
+    auto *ptr = (StartupInfo *)startup_info_mapped.ptr();
 
     memcpy(ptr, &args, sizeof(StartupInfo));
 

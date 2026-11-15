@@ -38,11 +38,11 @@ fc::Result<Wingos::GPTDiskParseResult> Wingos::parse_gpt(prot::DiskConnection &c
     try$(connection.read(partition_entries_asset, gpt_header->lba_start_guid_partition_entry, partition_entries_sectors));
     Wingos::VirtualMemoryAsset partition_entries_mapping = Wingos::Space::self().map_memory(partition_entries_asset, ASSET_MAPPING_FLAG_READ | ASSET_MAPPING_FLAG_WRITE);
 
-    GPTPartitionEntries *partition_entries = (GPTPartitionEntries *)partition_entries_mapping.ptr();
+    auto *partition_entries = (GPTPartitionEntries *)partition_entries_mapping.ptr();
 
     for (size_t i = 0; i < gpt_header->partition_count; i++)
     {
-        GPTPartitionEntries *entry = (GPTPartitionEntries *)((uint8_t *)partition_entries + i * gpt_header->partition_entry_size);
+        auto *entry = (GPTPartitionEntries *)((uint8_t *)partition_entries + i * gpt_header->partition_entry_size);
         // check if partition type GUID is not zero
         bool is_empty = true;
         for (size_t j = 0; j < 16; j++)

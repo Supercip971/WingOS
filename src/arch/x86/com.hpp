@@ -112,9 +112,7 @@ public:
         return res;
     }
 
-    ~Com()
-    {
-    }
+    ~Com() = default;
 
 private:
     Port _port{};

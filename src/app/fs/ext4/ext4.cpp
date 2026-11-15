@@ -339,7 +339,7 @@ fc::Vec<uint64_t> inodeOff2PhysicalDisk = {};
 fc::Result<size_t> Ext4Filesystem::inode_read(Ext4InodeRef const &inode, Wingos::MemoryAsset &out, size_t off, size_t len, size_t mem_asset_off)
 {
     fmt::log$("inode read: inode={}, off={}, len={}", inode.inode_id, off, len);
-    size_t const file_size = (size_t)inode.inode.size_lo;
+    auto const file_size = (size_t)inode.inode.size_lo;
     if (off >= file_size)
     {
         fmt::warn$("inode_read: offset {} beyond file size {} for inode {}", off, file_size, inode.inode_id);
@@ -575,7 +575,7 @@ fc::Result<void> Ext4Filesystem::dump_subdir(Ext4InodeRef const &dir_inode, int 
 
             auto entry_ptr = (uint8_t *)block_data_res + bytes_processed;
 
-            Ext4DirEntry *entry = (Ext4DirEntry *)entry_ptr;
+            auto *entry = (Ext4DirEntry *)entry_ptr;
 
             bytes_processed += entry->rec_len;
             if (entry->inode == 0)
@@ -662,7 +662,7 @@ fc::Result<Ext4InodeRef> Ext4Filesystem::get_subdir(Ext4InodeRef const &dir_inod
 
             auto entry_ptr = (uint8_t *)block_data_res + bytes_processed;
 
-            Ext4DirEntry *entry = (Ext4DirEntry *)entry_ptr;
+            auto *entry = (Ext4DirEntry *)entry_ptr;
 
             bytes_processed += entry->rec_len;
             if (entry->inode == 0)

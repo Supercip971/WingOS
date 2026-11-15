@@ -20,7 +20,7 @@ public:
 
     Callback(Widget *_linked, CallbackType *_callback) : linked(_linked), callback(_callback) {}
 
-    void call()
+    void call() const
     {
         if (callback != nullptr)
         {

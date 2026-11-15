@@ -2,7 +2,7 @@
 #include "gfx/canvas/raster/rasterCanvas.hpp"
 #include "gfx/color.hpp"
 
-void wgfx::RasterCanvas::clearFlat(FillCommand const &cmd)
+void wgfx::RasterCanvas::clearFlat(FillCommand const &cmd) const
 {
     Rgba8 color = cmd.paint.color.toRgba8();
 

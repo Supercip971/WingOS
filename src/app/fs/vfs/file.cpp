@@ -30,7 +30,7 @@ fc::Result<Wingos::IpcClient> VfsConnectionFile::open_root(VfsServerCtx &ctx)
 
             auto connect_ptr = new prot::FsFile(connect_res.take());
 
-            VfsConnectionFile *endpoint = new VfsConnectionFile(ctx);
+            auto *endpoint = new VfsConnectionFile(ctx);
             endpoint->connection_to_fs = connect_ptr;
 
             return ctx.root_vfs->create_connection(endpoint);

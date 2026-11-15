@@ -25,9 +25,7 @@ public:
         return "can't create connection by itself, connections must be made by forking or mounting";
     };
 
-    virtual ~NvmeServer()
-    {
-    }
+    virtual ~NvmeServer() = default;
 };
 
 class NvmeDiskConnection : public prot::ManagedServerConnectionHandler

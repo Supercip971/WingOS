@@ -101,8 +101,8 @@ def dbCreatioun(args: model.TargetArgs, genCompileCommands=True):
     checkSystem(args)
 
 
-def find_all_source() -> list[str]:
-    result: list[str] = []
+def find_all_source() -> set[str]:
+    result: set[str] = set()
 
     for root, _, files in os.walk(const.SRC_DIR):
         for f in files:
@@ -115,7 +115,7 @@ def find_all_source() -> list[str]:
                 and not root.startswith("src/liballoc")
                 and f.endswith((".cpp", ".h", ".hpp", ".c"))
             ):
-                result.append(os.path.join(root, f))
+                result.add(os.path.join(root, f))
 
     # sort for reproducibility
     return sorted(result)
@@ -134,7 +134,10 @@ def qualityCheck(args: model.TargetArgs):
     shell_run(
         [
             "clang-tidy",
-            "-checks=-*,misc-include-cleaner,clang-diagnostic-dangling,-modernize-deprecated-headers",
+            "-checks=-*,misc-include-cleaner,clang-diagnostic-dangling,-modernize-deprecated-headers,"
+            "bugprone-move-forwarding-reference,llvm-include-order,misc-redundant-expression,performance-for-range-copy,readability-make-member-function-const,"
+            "bugprone-copy-constructor-init,bugprone-dangling-handle,modernize-use-auto,modernize-use-designated-initializers,"
+            "modernize-use-default-member-init,modernize-use-equals-default",
             "--fix",
             "--fix-errors",
             "--fix-notes",
@@ -142,10 +145,12 @@ def qualityCheck(args: model.TargetArgs):
             "--extra-arg=-Isrc/",
             "--extra-arg=-Wno-error",
             "--extra-arg=-U__LSP",
-            '--config="{CheckOptions: ['
+            "--config=\"{HeaderFilterRegex: '', CheckOptions: ["
             "{key: misc-include-cleaner.IgnoreHeaders, "
-            "value: '<cerrno>;<cmath>;<cfenv>;<clocale>;<csignal>;<cstring>;<cwctype>;<cstd.*>;src/libc/.*;meta/build/cross/.*'}"
+            "value: '<cerrno>;<cmath>;<utility>;<cfenv>;<clocale>;<csignal>;<cstring>;<cwctype>;<cstd.*>;src/libc/.*;meta/build/cross/.*'}"
             ']}"',
+            "--extra-arg=-std=c++23", 
+            "--extra-arg=-fno-exceptions",
             "--extra-arg=-nostdinc",
             "--extra-arg=-nostdinc++",
             "--extra-arg=-ffreestanding",

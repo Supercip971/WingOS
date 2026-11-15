@@ -76,9 +76,7 @@ class FsFile
     bool keep_alive = false;
 
 public:
-    ~FsFile()
-    {
-    }
+    ~FsFile() = default;
 
     // Disable copy to prevent double-close issues
     FsFile(const FsFile &) = delete;

@@ -19,12 +19,12 @@ enum FILEKind
 
 struct _IO_FILE
 {
-    FILEKind kind;
-    size_t cursor;
+    FILEKind kind{FILE_KIND_VOID};
+    size_t cursor{0};
     size_t end;
-    int eof_flag;
-    int error_flag;
-    int ungetc_buf; // -1 if empty, otherwise the ungotten char
+    int eof_flag{0};
+    int error_flag{0};
+    int ungetc_buf{-1}; // -1 if empty, otherwise the ungotten char
     fc::WStr buffer;
 
     union
@@ -37,7 +37,7 @@ struct _IO_FILE
         fc::Reader *reader;
     };
 
-    _IO_FILE() : kind(FILE_KIND_VOID), cursor(0), eof_flag(0), error_flag(0), ungetc_buf(-1) {};
+    _IO_FILE() {};
 };
 
 void set_stdout_pipe(prot::SenderPipe *pipe);

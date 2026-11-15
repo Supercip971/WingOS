@@ -35,7 +35,7 @@ extern "C"
 
     static inline SyscallInterface syscall_debug_encode(SyscallDebug debug)
     {
-        return SyscallInterface{SYSCALL_DEBUG_LOG_ID, 0, (uintptr_t)debug.message, 0, 0, 0, 0, 0};
+        return SyscallInterface{.id = SYSCALL_DEBUG_LOG_ID, ._zero = 0, .arg1 = (uintptr_t)debug.message, .arg2 = 0, .arg3 = 0, .arg4 = 0, .arg5 = 0, .arg6 = 0};
     }
 
     static inline SyscallDebug syscall_debug_decode(SyscallInterface interface)
@@ -57,12 +57,12 @@ extern "C"
 
     static inline SyscallInterface syscall_physical_mem_own_encode(SyscallMemOwn *create)
     {
-        return SyscallInterface{SYSCALL_PHYSICAL_MEM_OWN_ID, 0, (uintptr_t)create, 0, 0, 0, 0, 0};
+        return SyscallInterface{.id = SYSCALL_PHYSICAL_MEM_OWN_ID, ._zero = 0, .arg1 = (uintptr_t)create, .arg2 = 0, .arg3 = 0, .arg4 = 0, .arg5 = 0, .arg6 = 0};
     }
 
     static inline SyscallMemOwn syscall_physical_mem_own_decode(SyscallInterface interface)
     {
-        SyscallMemOwn *create = (SyscallMemOwn *)interface.arg1;
+        auto *create = (SyscallMemOwn *)interface.arg1;
         return *create;
     }
 
@@ -82,12 +82,12 @@ extern "C"
 
     static inline SyscallInterface syscall_map_encode(SyscallMap *create)
     {
-        return SyscallInterface{SYSCALL_MAPPING_CREATE_ID, 0, (uintptr_t)create, 0, 0, 0, 0, 0};
+        return SyscallInterface{.id = SYSCALL_MAPPING_CREATE_ID, ._zero = 0, .arg1 = (uintptr_t)create, .arg2 = 0, .arg3 = 0, .arg4 = 0, .arg5 = 0, .arg6 = 0};
     }
 
     static inline SyscallMap syscall_map_decode(SyscallInterface interface)
     {
-        SyscallMap *create = (SyscallMap *)interface.arg1;
+        auto *create = (SyscallMap *)interface.arg1;
         return *create;
     }
 
@@ -106,12 +106,12 @@ extern "C"
 
     static inline SyscallInterface syscall_task_create_encode(SyscallTaskCreate *create)
     {
-        return SyscallInterface{SYSCALL_TASK_CREATE_ID, 0, (uintptr_t)create, 0, 0, 0, 0, 0};
+        return SyscallInterface{.id = SYSCALL_TASK_CREATE_ID, ._zero = 0, .arg1 = (uintptr_t)create, .arg2 = 0, .arg3 = 0, .arg4 = 0, .arg5 = 0, .arg6 = 0};
     }
 
     static inline SyscallTaskCreate syscall_task_create_decode(SyscallInterface interface)
     {
-        SyscallTaskCreate *create = (SyscallTaskCreate *)interface.arg1;
+        auto *create = (SyscallTaskCreate *)interface.arg1;
         return *create;
     }
 
@@ -129,12 +129,12 @@ extern "C"
 
     static inline SyscallInterface syscall_space_create_encode(SyscallSpaceCreate *create)
     {
-        return SyscallInterface{SYSCALL_SPACE_CREATE_ID, 0, (uintptr_t)create, 0, 0, 0, 0, 0};
+        return SyscallInterface{.id = SYSCALL_SPACE_CREATE_ID, ._zero = 0, .arg1 = (uintptr_t)create, .arg2 = 0, .arg3 = 0, .arg4 = 0, .arg5 = 0, .arg6 = 0};
     }
 
     static inline SyscallSpaceCreate syscall_space_create_decode(SyscallInterface interface)
     {
-        SyscallSpaceCreate *create = (SyscallSpaceCreate *)interface.arg1;
+        auto *create = (SyscallSpaceCreate *)interface.arg1;
         return *create;
     }
 
@@ -152,12 +152,12 @@ extern "C"
 
     static inline SyscallInterface syscall_asset_release_encode(SyscallAssetRelease *release)
     {
-        return SyscallInterface{SYSCALL_ASSET_RELEASE_ID, 0, (uintptr_t)release, 0, 0, 0, 0, 0};
+        return SyscallInterface{.id = SYSCALL_ASSET_RELEASE_ID, ._zero = 0, .arg1 = (uintptr_t)release, .arg2 = 0, .arg3 = 0, .arg4 = 0, .arg5 = 0, .arg6 = 0};
     }
 
     static inline SyscallAssetRelease syscall_asset_release_decode(SyscallInterface interface)
     {
-        SyscallAssetRelease *release = (SyscallAssetRelease *)interface.arg1;
+        auto *release = (SyscallAssetRelease *)interface.arg1;
         return *release;
     }
 
@@ -174,12 +174,12 @@ extern "C"
 
     static inline SyscallInterface syscall_task_launch_encode(SyscallTaskLaunch *launch)
     {
-        return SyscallInterface{SYSCALL_TASK_LAUNCH_ID, 0, (uintptr_t)launch, 0, 0, 0, 0, 0};
+        return SyscallInterface{.id = SYSCALL_TASK_LAUNCH_ID, ._zero = 0, .arg1 = (uintptr_t)launch, .arg2 = 0, .arg3 = 0, .arg4 = 0, .arg5 = 0, .arg6 = 0};
     }
 
     static inline SyscallTaskLaunch syscall_task_launch_decode(SyscallInterface interface)
     {
-        SyscallTaskLaunch *launch = (SyscallTaskLaunch *)interface.arg1;
+        auto *launch = (SyscallTaskLaunch *)interface.arg1;
         return *launch;
     }
 
@@ -199,12 +199,12 @@ extern "C"
 
     static inline SyscallInterface syscall_asset_move_encode(SyscallAssetMove *move)
     {
-        return SyscallInterface{SYSCALL_ASSET_MOVE, 0, (uintptr_t)move, 0, 0, 0, 0, 0};
+        return SyscallInterface{.id = SYSCALL_ASSET_MOVE, ._zero = 0, .arg1 = (uintptr_t)move, .arg2 = 0, .arg3 = 0, .arg4 = 0, .arg5 = 0, .arg6 = 0};
     }
 
     static inline SyscallAssetMove syscall_asset_move_decode(SyscallInterface interface)
     {
-        SyscallAssetMove *move = (SyscallAssetMove *)interface.arg1;
+        auto *move = (SyscallAssetMove *)interface.arg1;
         return *move;
     }
 
@@ -223,12 +223,12 @@ extern "C"
 
     static inline SyscallInterface syscall_ipc_create_endpoint_encode(SyscallIpcCreateEndpoint *create)
     {
-        return SyscallInterface{SYSCALL_IPC_CREATE_ENDPOINT_ID, 0, (uintptr_t)create, 0, 0, 0, 0, 0};
+        return SyscallInterface{.id = SYSCALL_IPC_CREATE_ENDPOINT_ID, ._zero = 0, .arg1 = (uintptr_t)create, .arg2 = 0, .arg3 = 0, .arg4 = 0, .arg5 = 0, .arg6 = 0};
     }
 
     static inline SyscallIpcCreateEndpoint syscall_ipc_create_endpoint_decode(SyscallInterface interface)
     {
-        SyscallIpcCreateEndpoint *create = (SyscallIpcCreateEndpoint *)interface.arg1;
+        auto *create = (SyscallIpcCreateEndpoint *)interface.arg1;
         return *create;
     }
 
@@ -254,12 +254,12 @@ extern "C"
 
     static inline SyscallInterface syscall_ipc_connect_encode(SyscallIpcConnect *connect)
     {
-        return SyscallInterface{SYSCALL_IPC_CONNECT_ID, 0, (uintptr_t)connect, 0, 0, 0, 0, 0};
+        return SyscallInterface{.id = SYSCALL_IPC_CONNECT_ID, ._zero = 0, .arg1 = (uintptr_t)connect, .arg2 = 0, .arg3 = 0, .arg4 = 0, .arg5 = 0, .arg6 = 0};
     }
 
     static inline SyscallIpcConnect syscall_ipc_connect_decode(SyscallInterface interface)
     {
-        SyscallIpcConnect *connect = (SyscallIpcConnect *)interface.arg1;
+        auto *connect = (SyscallIpcConnect *)interface.arg1;
         return *connect;
     }
 
@@ -278,12 +278,12 @@ extern "C"
 
     static inline SyscallInterface syscall_ipc_send_encode(SyscallIpcSend *send)
     {
-        return SyscallInterface{SYSCALL_IPC_SEND_ID, 0, (uintptr_t)send, 0, 0, 0, 0, 0};
+        return SyscallInterface{.id = SYSCALL_IPC_SEND_ID, ._zero = 0, .arg1 = (uintptr_t)send, .arg2 = 0, .arg3 = 0, .arg4 = 0, .arg5 = 0, .arg6 = 0};
     }
 
     static inline SyscallIpcSend syscall_ipc_send_decode(SyscallInterface interface)
     {
-        SyscallIpcSend *send = (SyscallIpcSend *)interface.arg1;
+        auto *send = (SyscallIpcSend *)interface.arg1;
         return (*send);
     }
 
@@ -319,12 +319,12 @@ extern "C"
 
     static inline SyscallInterface syscall_ipc_receive_encode(SyscallIpcReceive *receive)
     {
-        return SyscallInterface{SYSCALL_IPC_RECEIVE_ID, 0, (uintptr_t)receive, 0, 0, 0, 0, 0};
+        return SyscallInterface{.id = SYSCALL_IPC_RECEIVE_ID, ._zero = 0, .arg1 = (uintptr_t)receive, .arg2 = 0, .arg3 = 0, .arg4 = 0, .arg5 = 0, .arg6 = 0};
     }
 
     static inline SyscallIpcReceive syscall_ipc_receive_decode(SyscallInterface interface)
     {
-        SyscallIpcReceive *receive = (SyscallIpcReceive *)interface.arg1;
+        auto *receive = (SyscallIpcReceive *)interface.arg1;
         return (*receive);
     }
 
@@ -342,12 +342,12 @@ extern "C"
 
     static inline SyscallInterface syscall_ipc_call_encode(SyscallIpcCall *call)
     {
-        return SyscallInterface{SYSCALL_IPC_CALL_ID, 0, (uintptr_t)call, 0, 0, 0, 0, 0};
+        return SyscallInterface{.id = SYSCALL_IPC_CALL_ID, ._zero = 0, .arg1 = (uintptr_t)call, .arg2 = 0, .arg3 = 0, .arg4 = 0, .arg5 = 0, .arg6 = 0};
     }
 
     static inline SyscallIpcCall syscall_ipc_call_decode(SyscallInterface interface)
     {
-        SyscallIpcCall *call = (SyscallIpcCall *)interface.arg1;
+        auto *call = (SyscallIpcCall *)interface.arg1;
         return (*call);
     }
 
@@ -365,12 +365,12 @@ extern "C"
 
     static inline SyscallInterface syscall_ipc_reply_encode(SyscallIpcReply *reply)
     {
-        return SyscallInterface{SYSCALL_IPC_REPLY_ID, 0, (uintptr_t)reply, 0, 0, 0, 0, 0};
+        return SyscallInterface{.id = SYSCALL_IPC_REPLY_ID, ._zero = 0, .arg1 = (uintptr_t)reply, .arg2 = 0, .arg3 = 0, .arg4 = 0, .arg5 = 0, .arg6 = 0};
     }
 
     static inline SyscallIpcReply syscall_ipc_reply_decode(SyscallInterface interface)
     {
-        SyscallIpcReply *reply = (SyscallIpcReply *)interface.arg1;
+        auto *reply = (SyscallIpcReply *)interface.arg1;
         return (*reply);
     }
 
@@ -426,12 +426,12 @@ extern "C"
 
     static inline SyscallInterface syscall_ipc_asset_info_encode(SyscallAssetInfo *status)
     {
-        return SyscallInterface{SYSCALL_ASSET_INFO_ID, 0, (uintptr_t)status, 0, 0, 0, 0, 0};
+        return SyscallInterface{.id = SYSCALL_ASSET_INFO_ID, ._zero = 0, .arg1 = (uintptr_t)status, .arg2 = 0, .arg3 = 0, .arg4 = 0, .arg5 = 0, .arg6 = 0};
     }
 
     static inline SyscallAssetInfo syscall_ipc_asset_info_decode(SyscallInterface interface)
     {
-        SyscallAssetInfo *status = (SyscallAssetInfo *)interface.arg1;
+        auto *status = (SyscallAssetInfo *)interface.arg1;
         return *status;
     }
 
@@ -446,12 +446,12 @@ extern "C"
 
     static inline SyscallInterface syscall_create_vm_encode(SyscallCreateVm *vm)
     {
-        return SyscallInterface{SYSCALL_VM_CREATE, 0, (uintptr_t)vm, 0, 0, 0, 0, 0};
+        return SyscallInterface{.id = SYSCALL_VM_CREATE, ._zero = 0, .arg1 = (uintptr_t)vm, .arg2 = 0, .arg3 = 0, .arg4 = 0, .arg5 = 0, .arg6 = 0};
     }
 
     static inline SyscallCreateVm syscall_create_vm_decode(SyscallInterface interface)
     {
-        SyscallCreateVm *vm = (SyscallCreateVm *)interface.arg1;
+        auto *vm = (SyscallCreateVm *)interface.arg1;
         return *vm;
     }
 
@@ -471,7 +471,7 @@ extern "C"
 
     static inline SyscallInterface syscall_create_vm_mapping_encode(SyscallCreateVmMapping *mapping)
     {
-        return SyscallInterface{SYSCALL_VM_CREATE_MAPPING, 0, (uintptr_t)mapping, 0, 0, 0, 0, 0};
+        return SyscallInterface{.id = SYSCALL_VM_CREATE_MAPPING, ._zero = 0, .arg1 = (uintptr_t)mapping, .arg2 = 0, .arg3 = 0, .arg4 = 0, .arg5 = 0, .arg6 = 0};
     }
 
     static inline SyscallCreateVmMapping syscall_create_vm_mapping_decode(SyscallInterface interface)
@@ -491,7 +491,7 @@ extern "C"
 
     static inline SyscallInterface syscall_vm_start_encode(SyscallVmStart *vm)
     {
-        return SyscallInterface{SYSCALL_VM_START, 0, (uintptr_t)vm, 0, 0, 0, 0, 0};
+        return SyscallInterface{.id = SYSCALL_VM_START, ._zero = 0, .arg1 = (uintptr_t)vm, .arg2 = 0, .arg3 = 0, .arg4 = 0, .arg5 = 0, .arg6 = 0};
     }
 
     static inline SyscallVmStart syscall_vm_start_decode(SyscallInterface interface)
@@ -513,7 +513,7 @@ extern "C"
 
     static inline SyscallInterface syscall_vm_reg_write(SyscallVmRegWrite *reg)
     {
-        return SyscallInterface{SYSCALL_VM_REG_WRITE, 0, (uintptr_t)reg, 0, 0, 0, 0, 0};
+        return SyscallInterface{.id = SYSCALL_VM_REG_WRITE, ._zero = 0, .arg1 = (uintptr_t)reg, .arg2 = 0, .arg3 = 0, .arg4 = 0, .arg5 = 0, .arg6 = 0};
     }
 
     static inline SyscallVmRegWrite syscall_vm_reg_write_decode(SyscallInterface interface)
@@ -535,7 +535,7 @@ extern "C"
 
     static inline SyscallInterface syscall_vm_reg_read(SyscallVmRegRead *reg)
     {
-        return SyscallInterface{SYSCALL_VM_REG_READ, 0, (uintptr_t)reg, 0, 0, 0, 0, 0};
+        return SyscallInterface{.id = SYSCALL_VM_REG_READ, ._zero = 0, .arg1 = (uintptr_t)reg, .arg2 = 0, .arg3 = 0, .arg4 = 0, .arg5 = 0, .arg6 = 0};
     }
 
     static inline SyscallVmRegRead syscall_vm_reg_read_decode(SyscallInterface interface)
@@ -554,12 +554,12 @@ extern "C"
 
     static inline SyscallInterface syscall_signal_create_encode(SyscallSignalCreate *create)
     {
-        return SyscallInterface{SYSCALL_SIGNAL_CREATE, 0, (uintptr_t)create, 0, 0, 0, 0, 0};
+        return SyscallInterface{.id = SYSCALL_SIGNAL_CREATE, ._zero = 0, .arg1 = (uintptr_t)create, .arg2 = 0, .arg3 = 0, .arg4 = 0, .arg5 = 0, .arg6 = 0};
     }
 
     static inline SyscallSignalCreate syscall_signal_create_decode(SyscallInterface interface)
     {
-        SyscallSignalCreate *create = (SyscallSignalCreate *)interface.arg1;
+        auto *create = (SyscallSignalCreate *)interface.arg1;
         return *create;
     }
 
@@ -576,12 +576,12 @@ extern "C"
 
     static inline SyscallInterface syscall_signal_ping(SyscallSignalPing *ping)
     {
-        return SyscallInterface{SYSCALL_SIGNAL_PING, 0, (uintptr_t)ping, 0, 0, 0, 0, 0};
+        return SyscallInterface{.id = SYSCALL_SIGNAL_PING, ._zero = 0, .arg1 = (uintptr_t)ping, .arg2 = 0, .arg3 = 0, .arg4 = 0, .arg5 = 0, .arg6 = 0};
     }
 
     static inline SyscallSignalPing syscall_signal_ping_decode(SyscallInterface interface)
     {
-        SyscallSignalPing *ping = (SyscallSignalPing *)interface.arg1;
+        auto *ping = (SyscallSignalPing *)interface.arg1;
         return *ping;
     }
 
@@ -605,12 +605,12 @@ extern "C"
 
     static inline SyscallInterface syscall_ipc_x86_port(SyscallIpcX86Port *port)
     {
-        return SyscallInterface{SYSCALL_IPC_X86_PORT, 0, (uintptr_t)port, 0, 0, 0, 0, 0};
+        return SyscallInterface{.id = SYSCALL_IPC_X86_PORT, ._zero = 0, .arg1 = (uintptr_t)port, .arg2 = 0, .arg3 = 0, .arg4 = 0, .arg5 = 0, .arg6 = 0};
     }
 
     static inline SyscallIpcX86Port syscall_ipc_x86_port_decode(SyscallInterface interface)
     {
-        SyscallIpcX86Port *port = (SyscallIpcX86Port *)interface.arg1;
+        auto *port = (SyscallIpcX86Port *)interface.arg1;
         return *port;
     }
 #ifdef __cplusplus

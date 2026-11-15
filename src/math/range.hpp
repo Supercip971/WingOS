@@ -16,7 +16,7 @@ private:
 
 public:
     using Type = T;
-    constexpr Range() {};
+    constexpr Range() = default;
 
     constexpr Range(T start, T end) : _start(start), _end(end) {}
 

@@ -90,7 +90,7 @@ fc::Result<AssetRef<kernel::SignalAttached>> kernel::signal_await(AssetRef<Signa
     }
     auto wait_id = endpoint->_counter.load();
 
-    endpoint->_awaiters.push({task, async ? WAITER_KIND_ASYNC : WAITER_KIND_SYNC, attached});
+    endpoint->_awaiters.push({.task = task, .kind = async ? WAITER_KIND_ASYNC : WAITER_KIND_SYNC, .attachement = attached});
 
     endpoint->lock.release();
     Cpu::current()->interrupt_release();

@@ -119,7 +119,7 @@ template <MappCallbackFn T>
 fc::Result<void> prepare_mapping(uintptr_t rsdp_addr, T fn)
 {
     try$(fn(rsdp_addr, sizeof(hw::acpi::Rsdp)));
-    hw::acpi::Rsdp *rsdp = toVirt(rsdp_addr).as<hw::acpi::Rsdp>();
+    auto *rsdp = toVirt(rsdp_addr).as<hw::acpi::Rsdp>();
     auto addr = rsdp->rsdt_phys_addr();
     if (addr.type == hw::acpi::RsdtTypes::RSDT)
     {

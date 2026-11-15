@@ -26,7 +26,7 @@ fc::Lock _spaces_lock = {};
 
 AssetRef<Space> Space::create_root()
 {
-    Space *root_space = new Space();
+    auto *root_space = new Space();
     // root_space->parent_space_handle = AssetRef<Space>(root_space, -1);
     auto vspace = VmmSpace::create(false);
     if (vspace.is_error())
@@ -42,7 +42,7 @@ AssetRef<Space> Space::create_root()
         AssetHandle::selfSpace(),
         aref);
 
-    _spaces.push((SpacePtr){root_space, 0});
+    _spaces.push((SpacePtr){.space = root_space, .id = 0});
     aref.asset->ref_count.store(99999, std::memory_order_relaxed);
     return aref;
 }

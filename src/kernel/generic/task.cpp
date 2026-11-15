@@ -30,7 +30,7 @@ kernel::Task *kernel::Task::_task_allocate()
     }
     fc::lock_scope_writer$(_task_lock);
 
-    kernel::Task *task = new kernel::Task();
+    auto *task = new kernel::Task();
 
     task->uid(next_uid++);
     task->state(kernel::TaskState::TASK_EMBRYO);

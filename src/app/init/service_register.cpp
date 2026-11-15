@@ -23,7 +23,7 @@ fc::Result<void> service_register(uint64_t endpoint, fc::Str const &name, uint64
 
 {
     fmt::log$("registering service: {} ({}.{}) at {}", name, major, minor, endpoint);
-    RegisteredService *service = new RegisteredService();
+    auto *service = new RegisteredService();
     size_t i;
     for (i = 0; i < 80 - 1 && i < name.len(); i++)
     {

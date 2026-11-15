@@ -97,7 +97,7 @@ public:
 
         Wingos::MemoryAsset asset = Wingos::Space::self().allocate_physical_memory(math::alignUp<size_t>(count, 4096), false);
 
-        size_t aligned_len = math::alignUp<size_t>(count, 512);
+        auto aligned_len = math::alignUp<size_t>(count, 512);
         auto read_res = read(asset, lba, aligned_len);
 
         if (read_res.is_error())

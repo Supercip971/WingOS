@@ -31,7 +31,7 @@ class Kasan
     template <typename T>
     constexpr static T use_addr_tag(T addr, KasanTags tag)
     {
-        uintptr_t addr_val = reinterpret_cast<uintptr_t>(addr);
+        auto addr_val = reinterpret_cast<uintptr_t>(addr);
         addr_val = (addr_val & ~SHADOW_TAG_MASK) | (static_cast<uintptr_t>(tag) << 56);
         return reinterpret_cast<T>(addr_val);
     }
@@ -44,7 +44,7 @@ public:
     template <typename T>
     T set_addr_tag(T addr, size_t size, KasanTags tag)
     {
-        uintptr_t addr_val = reinterpret_cast<uintptr_t>(addr);
+        auto addr_val = reinterpret_cast<uintptr_t>(addr);
 
         uintptr_t new_addr_val = (addr_val & ~SHADOW_TAG_MASK) | (static_cast<uintptr_t>(tag) << 56);
 

@@ -144,7 +144,7 @@ struct TextureCommand
 struct RenderCommand
 {
 public:
-    RenderCommandKind kind;
+    RenderCommandKind kind{RenderCommandKind::RENDER_KIND_FILL};
     wgfx::GRect constraint;
 
     union
@@ -159,7 +159,7 @@ public:
     };
 
     // Default constructor
-    RenderCommand() : kind(RenderCommandKind::RENDER_KIND_FILL) {}
+    RenderCommand() {}
 
     // Copy constructor
     RenderCommand(const RenderCommand &other) : kind(other.kind)

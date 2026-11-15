@@ -24,7 +24,7 @@ public:
     size_t height;
     size_t bpp;
 
-    inline constexpr void colorizeChecked(long x, long y, Rgba8 col)
+    inline constexpr void colorizeChecked(long x, long y, Rgba8 col) const
     {
 
         if (x >= 0 && x < (long)width && y >= 0 && y < (long)height)
@@ -33,17 +33,17 @@ public:
         }
     }
 
-    inline constexpr void colorize(long x, long y, Rgba8 col)
+    inline constexpr void colorize(long x, long y, Rgba8 col) const
     {
         buffer[x + y * width] = col;
     }
 
-    inline constexpr void blend(long x, long y, Rgba8 col, float factor)
+    inline constexpr void blend(long x, long y, Rgba8 col, float factor) const
     {
         buffer[x + y * width].blend(col, factor);
     }
 
-    inline constexpr void blendGamma(long x, long y, Rgba8 col, float factor)
+    inline constexpr void blendGamma(long x, long y, Rgba8 col, float factor) const
     {
 
         buffer[x + y * width].blendGamma(col, factor);
@@ -81,7 +81,7 @@ public:
     // - fast: quick path with implementation specific details
     void clear(FillCommand const &fill);
 
-    void clearFlat(FillCommand const &fill);
+    void clearFlat(FillCommand const &fill) const;
 
     void rectRoundedFlatAligned(RectCommand const &cmd);
 
@@ -89,7 +89,7 @@ public:
 
     void rectStrokeRoundedFlatAligned(RectCommand const &cmd);
 
-    void rectStrokeFlatAligned(RectCommand const &cmd);
+    void rectStrokeFlatAligned(RectCommand const &cmd) const;
 
     void rect(RectCommand const &cmd);
 

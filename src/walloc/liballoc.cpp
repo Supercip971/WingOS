@@ -20,10 +20,10 @@ struct WingosAllocNode
 
 void *PREFIX(malloc)(size_t len)
 {
-    size_t tlen = math::alignUp<size_t>(len + sizeof(WingosAllocNode), ALLOC_PAGE_SIZE);
+    auto tlen = math::alignUp<size_t>(len + sizeof(WingosAllocNode), ALLOC_PAGE_SIZE);
 
     liballoc_lock();
-    WingosAllocNode *n = (WingosAllocNode *)liballoc_alloc(tlen / ALLOC_PAGE_SIZE);
+    auto *n = (WingosAllocNode *)liballoc_alloc(tlen / ALLOC_PAGE_SIZE);
     liballoc_unlock();
 
     n->allocated_size = len + sizeof(WingosAllocNode);
@@ -41,7 +41,7 @@ void PREFIX(free)(void *ptr)
     {
         return;
     }
-    WingosAllocNode *n = (WingosAllocNode *)((char *)ptr - sizeof(WingosAllocNode));
+    auto *n = (WingosAllocNode *)((char *)ptr - sizeof(WingosAllocNode));
 
     if (n->magic != ALLOC_MAGIC)
     {
@@ -61,7 +61,7 @@ void *PREFIX(realloc)(void *ptr, size_t len)
         return kmalloc(len);
     }
 
-    WingosAllocNode *n = (WingosAllocNode *)((char *)ptr - sizeof(WingosAllocNode));
+    auto *n = (WingosAllocNode *)((char *)ptr - sizeof(WingosAllocNode));
     if (len + sizeof(WingosAllocNode) < n->allocated_size)
     {
         n->allocated_size = len + sizeof(WingosAllocNode);
@@ -78,8 +78,8 @@ void *PREFIX(realloc)(void *ptr, size_t len)
 
     void *res = kmalloc(len);
 
-    uint8_t *targ = (uint8_t *)res;
-    uint8_t *from = (uint8_t *)ptr;
+    auto *targ = (uint8_t *)res;
+    auto *from = (uint8_t *)ptr;
 
     for (size_t i = 0; i < old_size; i++)
     {

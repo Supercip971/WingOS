@@ -56,5 +56,5 @@ struct AssetVm : public Asset
     fc::Result<void> pause();
     fc::Result<void> stop();
 
-    fc::Result<void> _internal_release();
+    fc::Result<void> _internal_release() const;
 };

@@ -27,7 +27,7 @@ public:
                                                                             a(_a) {};
 
     // FIXME: verify this, this is an easy quick way to do it
-    inline constexpr Rgba8 blended(Rgba8 to)
+    inline constexpr Rgba8 blended(Rgba8 to) const
     {
         return Rgba8(
             (uint8_t)(((uint16_t)r * a + (uint16_t)to.r * to.a) / (a + to.a)),
@@ -64,7 +64,7 @@ public:
         a = (uint8_t)(((uint16_t)a));
     }
 
-    constexpr Rgba8 with_alpha(uint8_t alpha)
+    constexpr Rgba8 with_alpha(uint8_t alpha) const
     {
         return Rgba8(
             r,

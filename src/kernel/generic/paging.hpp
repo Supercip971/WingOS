@@ -16,7 +16,7 @@ struct PageFlags
     // but instead to a custom handler
     bool _custom_map_handler : 1;
 
-    constexpr PageFlags() {};
+    constexpr PageFlags() = default;
 
     constexpr PageFlags present(bool present) const
     {
@@ -76,7 +76,7 @@ public:
 
     static fc::Result<VmmSpace> kernel_initialize(const mcx::MachineContext *ctx);
     // ------- external: implemented in kernel/{ARCH}  -------
-    void use();
+    void use() const;
 
     fc::Result<void> map(VirtRange virt, PhysRange phys, PageFlags flags);
 

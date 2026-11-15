@@ -68,7 +68,7 @@ public:
 
     Space *_space_owner;
 
-    Space *space()
+    Space *space() const
     {
         return _space_owner;
     }

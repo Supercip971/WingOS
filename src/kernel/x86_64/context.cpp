@@ -20,7 +20,7 @@ namespace kernel
 fc::Result<CpuContext *> CpuContext::create_empty()
 {
 
-    arch::amd64::CpuContextAmd64 *data = new arch::amd64::CpuContextAmd64{};
+    auto *data = new arch::amd64::CpuContextAmd64{};
 
     data->lock = {};
     data->await_load = false;
@@ -35,7 +35,7 @@ void CpuContext::load_to(void *state)
 {
     arch::amd64::CpuContextAmd64 const *data = this->as<arch::amd64::CpuContextAmd64>();
 
-    arch::amd64::StackFrame *frame = (arch::amd64::StackFrame *)state;
+    auto *frame = (arch::amd64::StackFrame *)state;
 
     Cpu::current()->syscall_stack = (uintptr_t)data->syscall_stack_top;
     Cpu::current()->debug_saved_syscall_stackframe = data->saved_syscall_stack;
@@ -106,9 +106,9 @@ void CpuContext::dump()
 void CpuContext::save_in(void *state)
 {
 
-    arch::amd64::CpuContextAmd64 *data = this->as<arch::amd64::CpuContextAmd64>();
+    auto *data = this->as<arch::amd64::CpuContextAmd64>();
 
-    arch::amd64::StackFrame *frame = (arch::amd64::StackFrame *)state;
+    auto *frame = (arch::amd64::StackFrame *)state;
 
     data->stackframe(*frame);
 
@@ -127,7 +127,7 @@ void CpuContext::save_in(void *state)
 
 void CpuContext::release()
 {
-    arch::amd64::CpuContextAmd64 *data = this->as<arch::amd64::CpuContextAmd64>();
+    auto *data = this->as<arch::amd64::CpuContextAmd64>();
 
     if (data->stack_ptr != nullptr)
     {

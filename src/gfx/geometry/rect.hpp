@@ -101,7 +101,7 @@ struct GRect
 
     constexpr GRect(const Vec2 &_start, const Vec2 &_end) : start(_start), end(_end) {}
 
-    constexpr GRect() {};
+    constexpr GRect() = default;
 
     static constexpr GRect from_start_end(Vec2 start, Vec2 end)
     {

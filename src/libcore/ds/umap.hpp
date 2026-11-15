@@ -174,7 +174,7 @@ class UMap
     };
 
 public:
-    UMap() {};
+    UMap() = default;
 
     UMap(UMap &&other) : _buckets(std::move(other._buckets)), _count(other._count) {}
 

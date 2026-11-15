@@ -128,7 +128,7 @@ public:
     template <typename ServerImpl>
     static fc::Result<ServerImpl *> create_registered_server(fc::Str name, uint64_t major = 1, uint64_t minor = 0)
     {
-        ServerImpl *server = new ServerImpl();
+        auto *server = new ServerImpl();
 
         auto init_conn = InitConnection::connect();
         if (init_conn.is_error())
@@ -162,7 +162,7 @@ public:
     template <typename ServerImpl = ManagedServer>
     static fc::Result<ServerImpl *> create_server(bool is_root = false)
     {
-        ServerImpl *server = new ServerImpl();
+        auto *server = new ServerImpl();
         auto ipc_server = Wingos::Space::self().create_public_ipc_server(is_root);
         server->endpoint = ipc_server;
 

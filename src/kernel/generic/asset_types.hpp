@@ -107,7 +107,7 @@ struct AssetRef
     }
 
     AssetRef(T *asset_value, AssetHandle handle_value)
-        : asset(asset_value), handle(handle_value), write(true), read(true), share(true)
+        : asset(asset_value), handle(handle_value)
     {
         Asset::own(reinterpret_cast<Asset *>(asset_value));
     }

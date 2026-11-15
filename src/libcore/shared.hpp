@@ -22,7 +22,7 @@ public:
 
         template <typename... Args>
         ControlBlock(Args... args)
-            : ref_count(0), data(std::forward<Args>(args)...)
+            : data(std::forward<Args>(args)...)
         {
         }
     };

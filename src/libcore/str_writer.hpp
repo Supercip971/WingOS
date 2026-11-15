@@ -25,7 +25,7 @@ class WStr : public MemAccess<char>
     }
 
 public:
-    WStr() : MemAccess(nullptr, 0), _capacity(0) {}
+    WStr() : MemAccess(nullptr, 0) {}
 
     WStr(WStr const &) = delete;
     WStr &operator=(WStr const &) = delete;

@@ -47,7 +47,7 @@ struct StrokePoint
 
     constexpr static StrokePoint curved(const Vec2 &pos, const Vec2 &control) { return StrokePoint(pos, Curve{control}); }
 
-    constexpr static StrokePoint cubic_curved(const Vec2 &pos, const Vec2 &control1, const Vec2 &control2) { return StrokePoint(pos, CubicCurve{control1, control2}); }
+    constexpr static StrokePoint cubic_curved(const Vec2 &pos, const Vec2 &control1, const Vec2 &control2) { return StrokePoint(pos, CubicCurve{.control1 = control1, .control2 = control2}); }
 
     union
     {
@@ -136,7 +136,7 @@ public:
         strokes.add_sorted(
             [](RawStroke const &left, RawStroke const &right)
             { return fc::min(left.a.pos.x, left.b.pos.x) - fc::min(right.a.pos.x, right.b.pos.x); },
-            RawStroke{last_stroke, point});
+            RawStroke{.a = last_stroke, .b = point});
         last_stroke = point;
     }
 

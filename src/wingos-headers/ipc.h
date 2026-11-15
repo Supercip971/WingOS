@@ -39,9 +39,9 @@ struct IpcData
     struct [[gnu::packed]]
     {
 
-        bool is_asset : 1;
-        bool copy_asset : 1;
-        bool _reserved_is_mapping : 1; // only used by the kernel
+        bool is_asset : 1 {false};
+        bool copy_asset : 1 {false};
+        bool _reserved_is_mapping : 1 {false}; // only used by the kernel
     };
 
     union
@@ -51,7 +51,7 @@ struct IpcData
     };
 
 #ifdef __cplusplus
-    constexpr IpcData() : is_asset(false), copy_asset(false), _reserved_is_mapping(false), data(0) {}
+    constexpr IpcData() : data(0) {}
 #endif
 };
 
@@ -68,7 +68,7 @@ struct IpcMessageArguments
 
 struct IpcMessage : public fc::NoCopy
 {
-    constexpr IpcMessage() : arguments(), port(0), len(0), is_null(false), interrupted(false)
+    constexpr IpcMessage() : arguments()
     {
     }
 
@@ -164,10 +164,10 @@ struct IpcMessage
 #endif
 
     IpcMessageArguments arguments;
-    uint64_t port;
-    uint16_t len;
-    bool is_null;
-    bool interrupted;
+    uint64_t port{0};
+    uint16_t len{0};
+    bool is_null{false};
+    bool interrupted{false};
 
     union
     {

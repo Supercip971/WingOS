@@ -28,7 +28,7 @@ extern "C" size_t fwrite(const void *__restrict ptr, size_t size, size_t n, FILE
         fmt::err$("fwrite: file handle is invalid (use-after-fclose detected!)");
         return 0;
     }
-    uint8_t *ptr_v = (uint8_t *)ptr;
+    auto *ptr_v = (uint8_t *)ptr;
     switch (file->kind)
     {
     case FILE_KIND_FILE:
@@ -96,13 +96,13 @@ size_t fread(void *__restrict ptr, size_t size, size_t n, FILE *__restrict file)
 #    pragma GCC diagnostic pop
 #endif
 
-    uint8_t *ptr_v = (uint8_t *)ptr;
+    auto *ptr_v = (uint8_t *)ptr;
     switch (file->kind)
     {
     case FILE_KIND_FILE:
     {
         size_t total = size * n;
-        uint8_t *dst = (uint8_t *)ptr;
+        auto *dst = (uint8_t *)ptr;
         size_t done = 0;
 
         // Drain ungetc buffer
@@ -200,7 +200,7 @@ FILE *fopen(const char *filename, const char *mode)
         return nullptr;
     }
 
-    prot::FsFile *file = new prot::FsFile(std::move(path_res.unwrap()));
+    auto *file = new prot::FsFile(std::move(path_res.unwrap()));
 
     FILE *f = new FILE();
     f->kind = FILE_KIND_FILE;

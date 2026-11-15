@@ -40,7 +40,7 @@ public:
 
     bool _is_error = true;
 
-    constexpr Result() : _error("empty result"), _is_error(true) {}
+    constexpr Result() : _error("empty result") {}
 
     constexpr ~Result()
     {
@@ -58,9 +58,9 @@ public:
 
     constexpr Result(ValueType &&value) : _value(std::move(value)), _is_error(false) {}
 
-    constexpr Result(const ErrorType &error) : _error(error), _is_error(true) {}
+    constexpr Result(const ErrorType &error) : _error(error) {}
 
-    constexpr Result(ErrorType &&error) : _error(std::move(error)), _is_error(true) {}
+    constexpr Result(ErrorType &&error) : _error(std::move(error)) {}
 
     constexpr Result(Result &&other) : _is_error(other._is_error)
     {

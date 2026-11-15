@@ -14,7 +14,7 @@ void wgfx::RasterCanvas::textFlat(TextCommand const &cmd)
         Vec2 opos = pos;
         opos.y += /*cmd.font->ascent + cmd.font->descent-*/ cmd.font->line_gap;
         opos.x += shape.bearing - shape.ibound.start.x;
-        pathFillFlat(ContourCommand{cmd.paint, shape.gfx_contour}, opos);
+        pathFillFlat(ContourCommand{.paint = cmd.paint, .contour = shape.gfx_contour}, opos);
 
         if (i < (long)cmd.str.len() - 1)
         {

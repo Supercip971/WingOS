@@ -298,7 +298,7 @@ fc::Result<void> kernel::ipc_send_async(AssetRef<Space> &source_space, AssetRef<
         .target_msg = IpcMessage::copy(*msg),
         .added_tick = endpoint->tick,
     };
-    endpoint->async_queue.push(sync_entry);
+    endpoint->async_queue.push(std::move(sync_entry));
     endpoint->update_msg_ticks();
     endpoint->tick++;
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 #include "iol/wingos/ipc.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/result.hpp"
@@ -7,6 +9,7 @@
 #include "libcore/type-utils.hpp"
 #include "protocols/init/init.hpp"
 #include "protocols/vfs/file.hpp"
+#include "wingos-headers/asset.h"
 #include "wingos-headers/ipc.h"
 
 namespace prot

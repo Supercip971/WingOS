@@ -3,6 +3,7 @@
 #include <atomic>
 #include <stdint.h>
 
+#include "libcore/bound.hpp"
 #include "libcore/lock/lock.hpp"
 #include "libcore/result.hpp"
 #include "libcore/type-utils.hpp"

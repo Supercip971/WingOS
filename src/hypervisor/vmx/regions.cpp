@@ -1,6 +1,8 @@
 #include "regions.hpp"
 #include <string.h>
 
+#include "hw/mem/addr_space.hpp"
+
 #include "hypervisor/vmx/vmx.hpp"
 #include "kernel/generic/paging.hpp"
 #include "kernel/generic/pmm.hpp"

@@ -1,13 +1,22 @@
 #pragma once
 
+#include <utility>
+
 #include "libcore/fmt/fmt_str.hpp"
+#include "libcore/str_writer.hpp"
 #include "protocols/server_helper.hpp"
 
 #include "app/fs/vfs/ctx.hpp"
 #include "app/fs/vfs/file.hpp"
 #include "fs/gpt/gpt.hpp"
+#include "iol/wingos/ipc.hpp"
+#include "libcore/fmt/log.hpp"
+#include "libcore/optional.hpp"
+#include "libcore/result.hpp"
+#include "libcore/str.hpp"
 #include "protocols/disk/disk.hpp"
 #include "protocols/vfs/vfs.hpp"
+#include "wingos-headers/ipc.h"
 
 class VfsServerAdministration : public prot::ManagedServerConnectionHandler
 {

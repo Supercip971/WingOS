@@ -111,6 +111,8 @@ def find_all_source() -> list[str]:
                 not root.startswith("src/ports")
                 and not root.startswith("src/external")
                 and not root.startswith("src/libmath")
+                and not root.startswith("src/tests")
+                and not root.startswith("src/liballoc")
                 and f.endswith((".cpp", ".h", ".hpp", ".c"))
             ):
                 result.append(os.path.join(root, f))
@@ -132,8 +134,25 @@ def qualityCheck(args: model.TargetArgs):
     shell_run(
         [
             "clang-tidy",
-            "-checks=-*,misc-include-cleaner,clang-diagnostic-dangling",
+            "-checks=-*,misc-include-cleaner,clang-diagnostic-dangling,-modernize-deprecated-headers",
+            "--fix",
+            "--fix-errors",
+            "--fix-notes",
+            "--extra-arg-before=-xc++",
             "--extra-arg=-Isrc/",
+            "--extra-arg=-Wno-error",
+            "--extra-arg=-U__LSP",
+            '--config="{CheckOptions: ['
+            "{key: misc-include-cleaner.IgnoreHeaders, "
+            "value: '<cerrno>;<cmath>;<cfenv>;<clocale>;<csignal>;<cstring>;<cwctype>;<cstd.*>;src/libc/.*;meta/build/cross/.*'}"
+            ']}"',
+            "--extra-arg=-nostdinc",
+            "--extra-arg=-nostdinc++",
+            "--extra-arg=-ffreestanding",
+            "--extra-arg=-isystemsrc/libc",
+            "--extra-arg=-isystemmeta/build/cross/x86_64-pc-wingos/include/c++/15.2.0",
+            "--extra-arg=-isystemmeta/build/cross/x86_64-pc-wingos/include/c++/15.2.0/x86_64-pc-wingos",
+            "--extra-arg=-isystemmeta/build/cross/lib/gcc/x86_64-pc-wingos/15.2.0/include",
         ]
         + source_files,
         const.SRC_DIR,

@@ -4,7 +4,10 @@
 
 #include "iol/wingos/asset.hpp"
 #include "iol/wingos/ipc.hpp"
+#include "iol/wingos/space.hpp"
+#include "libcore/fmt/log.hpp"
 #include "libcore/optional.hpp"
+#include "libcore/result.hpp"
 #include "protocols/pipe/pipe.hpp"
 #include "wingos-headers/ipc.h"
 

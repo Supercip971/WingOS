@@ -6,7 +6,6 @@
 #include "gfx/canvas/canvas.hpp"
 #include "gfx/event/event.hpp"
 #include "libcore/fmt/log.hpp"
-#include "libcore/result.hpp"
 #include "libcore/shared.hpp"
 #define EXTERNAL_INCLUDED
 

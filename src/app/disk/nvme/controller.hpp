@@ -3,10 +3,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "libcore/fmt/fmt_str.hpp"
-#include "libcore/str_writer.hpp"
-#include "protocols/server_helper.hpp"
-
 #include "dev/pci/pci.hpp"
 #include "iol/wingos/asset.hpp"
 #include "iol/wingos/space.hpp"
@@ -19,9 +15,6 @@
 #include "libcore/type-utils.hpp"
 #include "libcore/type/trait.hpp"
 #include "math/align.hpp"
-#include "mcx/mcx.hpp"
-#include "protocols/disk/disk.hpp"
-#include "protocols/vfs/vfs.hpp"
 #include "spec.hpp"
 #include "wingos-headers/asset.h"
 extern uint64_t device_uid;

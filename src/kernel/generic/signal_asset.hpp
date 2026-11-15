@@ -6,6 +6,7 @@
 
 #include "kernel/generic/asset.hpp"
 #include "libcore/ds/vec.hpp"
+#include "wingos-headers/asset.h"
 
 struct Space;
 

@@ -1,4 +1,5 @@
 #include <string.h>
+#include <utility>
 
 #include "hw/mem/addr_space.hpp"
 
@@ -8,7 +9,6 @@
 #include "libcore/fmt/log.hpp"
 #include "libcore/result.hpp"
 #include "libcore/str.hpp"
-#include "libcore/type-utils.hpp"
 #include "libelf/elf.hpp"
 #include "math/align.hpp"
 #include "protocols/vfs/vfs.hpp"

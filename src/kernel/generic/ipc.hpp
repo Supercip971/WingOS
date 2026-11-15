@@ -3,8 +3,11 @@
 #include "kernel/generic/asset_types.hpp"
 #include "kernel/generic/ipc_asset.hpp"
 
+#include "kernel/generic/asset.hpp"
 #include "libcore/result.hpp"
 #include "space.hpp"
+#include "wingos-headers/asset.h"
+#include "wingos-headers/ipc.h"
 
 // Forward declarations to avoid pulling `space.hpp` (and its dependencies) into IPC.
 

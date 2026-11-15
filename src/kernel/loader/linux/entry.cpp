@@ -7,7 +7,6 @@
 
 #include "libcore/fmt/log.hpp"
 #include "libcore/io/writer.hpp"
-#include "libcore/result.hpp"
 #include "mcx/mcx.hpp"
 void _start(void);
 

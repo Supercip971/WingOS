@@ -5,10 +5,12 @@
 
 #include "protocols/server_helper.hpp"
 
-#include "iol/wingos/asset.hpp"
-#include "protocols/compositor/window.hpp"
+#include "iol/wingos/ipc.hpp"
+#include "libcore/fmt/log.hpp"
+#include "libcore/optional.hpp"
+#include "libcore/result.hpp"
 #include "protocols/humming-bird/humming-bird.hpp"
-#include "protocols/init/init.hpp"
+#include "wingos-headers/ipc.h"
 
 extern pid_t posix_pid_counter;
 

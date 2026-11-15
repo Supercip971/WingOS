@@ -4,6 +4,9 @@
 
 #include "hw/hpet/hpet.hpp"
 #include "iol/wingos/ipc.hpp"
+#include "libcore/fmt/log.hpp"
+#include "libcore/optional.hpp"
+#include "libcore/result.hpp"
 #include "libcore/time/time.hpp"
 #include "protocols/clock/clock.hpp"
 #include "wingos-headers/ipc.h"

@@ -8,7 +8,6 @@
 #include "kernel/generic/ipc_asset.hpp"
 #include "kernel/generic/ipc_registry.hpp"
 #include "kernel/generic/signal_asset.hpp"
-#include <arch/x86_64/barrier.hpp>
 
 // Make sure IPC public types (e.g. IpcServerHandle) are visible before this TU
 // pulls in headers that depend on them transitively.

@@ -1,15 +1,17 @@
 #include "ipc.hpp"
 #include <cstdint>
+#include <utility>
 
 #include "hw/mem/addr_space.hpp"
-#include "kernel/generic/ipc_registry.hpp"
-#include <arch/x86_64/barrier.hpp>
+#include "kernel/generic/asset_types.hpp"
+#include "kernel/generic/ipc_asset.hpp"
 
+#include "kernel/generic/asset.hpp"
 #include "kernel/generic/paging.hpp"
 #include "kernel/generic/scheduler.hpp"
 #include "kernel/generic/space.hpp"
-#include "libcore/fmt/flags.hpp"
-#include "libcore/type-utils.hpp"
+#include "libcore/fmt/log.hpp"
+#include "libcore/result.hpp"
 #include "wingos-headers/ipc.h"
 
 kernel::IpcEndpoint *kernel::create_ipc_endpoint()

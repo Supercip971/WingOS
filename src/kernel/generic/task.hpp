@@ -8,6 +8,7 @@
 #include "libcore/bound.hpp"
 #include "libcore/result.hpp"
 #include "scheduler.hpp"
+#include "wingos-headers/asset.h"
 
 struct Space;
 

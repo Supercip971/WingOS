@@ -3,7 +3,6 @@
 #include "gfx/canvas/canvas.hpp"
 #include "gfx/geometry/rect.hpp"
 #include "gfx/geometry/vec2.hpp"
-#include "libcore/fmt/log.hpp"
 #include "libcore/shared.hpp"
 #include "ui/context.hpp"
 #include "widget.hpp"

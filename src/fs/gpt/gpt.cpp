@@ -2,6 +2,7 @@
 #include <libcore/fmt/log.hpp>
 #include <libcore/result.hpp>
 #include <protocols/disk/disk.hpp>
+#include <utility>
 
 #include "libcore/str_writer.hpp"
 

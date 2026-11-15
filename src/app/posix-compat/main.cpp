@@ -2,7 +2,7 @@
 
 #include "protocols/server_helper.hpp"
 
-#include "protocols/init/init.hpp"
+#include "libcore/fmt/log.hpp"
 #include "server.hpp"
 
 pid_t posix_pid_counter = 1;

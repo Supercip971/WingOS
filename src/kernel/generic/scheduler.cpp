@@ -1,5 +1,6 @@
 #include "kernel/generic/scheduler.hpp"
 #include <atomic>
+#include <utility>
 
 #include "arch/x86_64/interrupts.hpp"
 #include "kernel/generic/cpu_tree.hpp"
@@ -15,7 +16,6 @@
 #include "libcore/fmt/log.hpp"
 #include "libcore/logic.hpp"
 #include "libcore/result.hpp"
-#include "libcore/type-utils.hpp"
 
 using TaskQueue = fc::Vec<kernel::Task *>;
 

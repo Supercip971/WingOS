@@ -8,7 +8,6 @@
 
 #include "hw/acpi/lapic.hpp"
 #include "kernel/generic/cpu.hpp"
-#include "kernel/generic/ipc.hpp"
 #include "kernel/generic/scheduler.hpp"
 #include "kernel/generic/space.hpp"
 #include "kernel/generic/syscalls.hpp"

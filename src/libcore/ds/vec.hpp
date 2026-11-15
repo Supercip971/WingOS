@@ -2,11 +2,11 @@
 
 #include <libcore/mem/view.hpp>
 #include <stdlib.h>
+#include <utility>
 
 #include "libcore/alloc/alloc.hpp"
 #include "libcore/logic.hpp"
 #include "libcore/result.hpp"
-#include "libcore/type-utils.hpp"
 #include "libcore/unreachable.h"
 
 namespace fc

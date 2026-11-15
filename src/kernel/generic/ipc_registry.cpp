@@ -2,18 +2,13 @@
 
 #include "kernel/generic/asset_types.hpp"
 #include "kernel/generic/ipc_asset.hpp"
-#include <arch/x86_64/barrier.hpp>
 
 #include "asset.hpp"
 #include "kernel/generic/asset.hpp"
-#include "kernel/generic/blocker.hpp"
-#include "kernel/generic/scheduler.hpp"
 #include "libcore/ds/vec.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/lock/lock.hpp"
-#include "libcore/logic.hpp"
 #include "libcore/result.hpp"
-#include "scheduler.hpp"
 #include "space.hpp"
 #include "wingos-headers/asset.h"
 #include "wingos-headers/ipc.h"

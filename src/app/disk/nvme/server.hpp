@@ -4,8 +4,15 @@
 #include "protocols/server_helper.hpp"
 
 #include "app/disk/nvme/controller.hpp"
+#include "iol/wingos/asset.hpp"
 #include "iol/wingos/ipc.hpp"
+#include "iol/wingos/space.hpp"
+#include "libcore/fmt/flags.hpp"
+#include "libcore/fmt/log.hpp"
+#include "libcore/optional.hpp"
+#include "libcore/result.hpp"
 #include "protocols/disk/disk.hpp"
+#include "wingos-headers/asset.h"
 #include "wingos-headers/ipc.h"
 
 class NvmeServer : public prot::ManagedServer

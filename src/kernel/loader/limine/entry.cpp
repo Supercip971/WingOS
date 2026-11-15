@@ -9,7 +9,6 @@
 #include "libcore/io/writer.hpp"
 #include "libcore/mem/view.hpp"
 #include "libcore/result.hpp"
-#include "libcore/type-utils.hpp"
 #include "mcx/mcx.hpp"
 
 // The Limine requests can be placed anywhere, but it is important that

@@ -4,6 +4,8 @@
 #include "kernel/generic/ipc_asset.hpp"
 
 #include "libcore/result.hpp"
+#include "wingos-headers/asset.h"
+#include "wingos-headers/ipc.h"
 
 namespace kernel
 {

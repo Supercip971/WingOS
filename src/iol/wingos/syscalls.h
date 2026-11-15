@@ -121,7 +121,7 @@ extern "C"
 
     static inline SyscallIpcConnect sys$ipc_connect(AssetHandle space_handle, bool is_using_server_address, uint64_t id)
     {
-        SyscallIpcConnect connect = {space_handle, is_using_server_address, 0, AssetHandle::invalid(), 0};
+        SyscallIpcConnect connect = {space_handle, is_using_server_address, {}, AssetHandle::invalid(), 0};
 
         if (is_using_server_address)
         {

@@ -1,5 +1,6 @@
 
 #include <libcore/fmt/log.hpp>
+#include <utility>
 
 #include "hw/mem/addr_space.hpp"
 #include "iol/mem_flags.h"
@@ -8,7 +9,6 @@
 #include "libcore/lock/lock.hpp"
 #include "libcore/mem/mem.hpp"
 #include "libcore/result.hpp"
-#include "libcore/type-utils.hpp"
 #include "libcore/unreachable.h"
 #include "math/align.hpp"
 #include "mcx/mcx.hpp"

@@ -1,8 +1,14 @@
 
+#include "libcore/fmt/fmt_str.hpp"
 #include "protocols/server_helper.hpp"
 
 #include "app/disk/nvme/controller.hpp"
 #include "app/disk/nvme/server.hpp"
+#include "dev/pci/pci.hpp"
+#include "libcore/ds/vec.hpp"
+#include "libcore/fmt/flags.hpp"
+#include "libcore/fmt/log.hpp"
+#include "protocols/vfs/vfs.hpp"
 uint64_t device_uid;
 
 int main(int, char **)

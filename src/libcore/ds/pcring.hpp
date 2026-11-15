@@ -7,8 +7,8 @@
 #include "arch/generic/instruction.hpp"
 #include "libcore/ds/vec.hpp"
 #include "libcore/lock/lock.hpp"
-#include "libcore/mem/mem.hpp"
-#include "libcore/unreachable.h"
+#include "libcore/mem/view.hpp"
+#include "libcore/result.hpp"
 
 namespace fc
 {

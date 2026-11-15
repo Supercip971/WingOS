@@ -4,8 +4,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "iol/lock_context.h"
-
 #include "kernel/generic/cpu.hpp"
 #include "libcore/logic.hpp"
 #include "libcore/result.hpp"

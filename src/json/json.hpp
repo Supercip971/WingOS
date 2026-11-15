@@ -1,10 +1,11 @@
 #pragma once
 
+#include <utility>
+
 #include "libcore/ds/vec.hpp"
 #include "libcore/mem/view.hpp"
 #include "libcore/result.hpp"
 #include "libcore/str.hpp"
-#include "libcore/type-utils.hpp"
 
 namespace wjson
 {

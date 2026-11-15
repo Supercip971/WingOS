@@ -3,13 +3,17 @@
 #include "protocols/server_helper.hpp"
 
 #include "app/fs/ext4/ext4.hpp"
+#include "iol/wingos/asset.hpp"
 #include "iol/wingos/ipc.hpp"
 #include "libcore/ds/umap.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/optional.hpp"
+#include "libcore/result.hpp"
+#include "libcore/str.hpp"
 #include "protocols/disk/disk.hpp"
 #include "protocols/vfs/file.hpp"
 #include "protocols/vfs/vfs.hpp"
+#include "wingos-headers/asset.h"
 #include "wingos-headers/ipc.h"
 
 struct Ext4OpennedFileCtx

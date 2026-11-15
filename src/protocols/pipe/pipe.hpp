@@ -1,13 +1,11 @@
 #pragma once
 
 #include "iol/wingos/asset.hpp"
-#include "iol/wingos/ipc.hpp"
 #include "iol/wingos/space.hpp"
 #include "libcore/ds/pcring.hpp"
 #include "libcore/result.hpp"
 #include "math/align.hpp"
 #include "wingos-headers/asset.h"
-#include "wingos-headers/ipc.h"
 
 namespace prot
 {

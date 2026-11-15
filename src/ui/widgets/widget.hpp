@@ -1,5 +1,6 @@
 #pragma once
 #include <typeinfo>
+#include <utility>
 
 #include "gfx/canvas/canvas.hpp"
 #include "gfx/canvas/cmd.hpp"
@@ -10,10 +11,10 @@
 #include "libcore/ds/vec.hpp"
 #include "libcore/fmt/impl/tabbed.hpp"
 #include "libcore/fmt/log.hpp"
+#include "libcore/logic.hpp"
 #include "libcore/optional.hpp"
 #include "libcore/shared.hpp"
 #include "libcore/str.hpp"
-#include "libcore/type-utils.hpp"
 #include "ui/context.hpp"
 
 namespace fc

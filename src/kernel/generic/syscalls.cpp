@@ -14,11 +14,11 @@
 #include "kernel/generic/signal.hpp"
 #include "kernel/generic/space.hpp"
 #include "kernel/generic/task.hpp"
+#include "kernel/generic/vm.hpp"
 #include "libcore/fmt/flags.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/lock/lock.hpp"
 #include "libcore/result.hpp"
-#include "libcore/type-utils.hpp"
 #include "wingos-headers/asset.h"
 #include "wingos-headers/syscalls.h"
 

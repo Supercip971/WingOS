@@ -4,7 +4,9 @@
 #include "kernel/generic/asset_types.hpp"
 
 #include "kernel/generic/asset.hpp"
+#include "libcore/ds/vec.hpp"
 #include "libcore/result.hpp"
+#include "wingos-headers/asset.h"
 
 enum VmState
 {

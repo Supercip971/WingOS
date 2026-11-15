@@ -1,9 +1,15 @@
 
 #pragma once
 
+#include <utility>
+
 #include "protocols/server_helper.hpp"
 
 #include "app/fs/vfs/administration.hpp"
+#include "app/fs/vfs/ctx.hpp"
+#include "libcore/fmt/log.hpp"
+#include "libcore/result.hpp"
+#include "libcore/str.hpp"
 #include "protocols/disk/disk.hpp"
 #include "protocols/vfs/fsManager.hpp"
 #include "protocols/vfs/vfs.hpp"

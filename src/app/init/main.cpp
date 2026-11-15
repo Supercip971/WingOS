@@ -5,7 +5,6 @@
 #include "app/init/service_register.hpp"
 #include "protocols/server_helper.hpp"
 
-#include "iol/wingos/space.hpp"
 #include "libcore/fmt/flags.hpp"
 #include "libcore/fmt/log.hpp"
 #include "mcx/mcx.hpp"

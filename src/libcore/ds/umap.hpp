@@ -7,7 +7,6 @@
 #include "libcore/ds/vec.hpp"
 #include "libcore/optional.hpp"
 #include "libcore/str.hpp"
-#include "libcore/type-utils.hpp"
 #include "libcore/type/trait.hpp"
 #include "libcore/unreachable.h"
 

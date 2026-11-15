@@ -4,6 +4,7 @@
 #include <libcore/fmt/log.hpp>
 #include <stdio.h>
 #include <string.h>
+#include <utility>
 
 #include "libc/stdio_fs.hpp"
 #include "libcore/str_writer.hpp"

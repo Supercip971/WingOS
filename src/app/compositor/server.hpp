@@ -11,9 +11,15 @@
 #include "gfx/color.hpp"
 #include "gfx/geometry/rect.hpp"
 #include "iol/wingos/asset.hpp"
+#include "iol/wingos/ipc.hpp"
+#include "libcore/fmt/log.hpp"
 #include "libcore/logic.hpp"
+#include "libcore/optional.hpp"
+#include "libcore/result.hpp"
 #include "protocols/compositor/window.hpp"
 #include "protocols/init/init.hpp"
+#include "wingos-headers/asset.h"
+#include "wingos-headers/ipc.h"
 class CompositorServer;
 
 struct Window : public prot::ManagedServerConnectionHandler

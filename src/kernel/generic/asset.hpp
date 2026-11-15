@@ -7,6 +7,7 @@
 #include "kernel/generic/asset_types.hpp"
 
 #include "kernel/generic/task.hpp"
+#include "wingos-headers/asset.h"
 
 struct Space;
 

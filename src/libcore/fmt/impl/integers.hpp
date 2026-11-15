@@ -4,7 +4,6 @@
 #include <libcore/io/writer.hpp>
 
 #include "libcore/result.hpp"
-#include "libcore/type-utils.hpp"
 #include "libcore/type/trait.hpp"
 
 namespace fmt

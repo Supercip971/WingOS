@@ -5,6 +5,7 @@
 
 #include "app/fs/vfs/ctx.hpp"
 #include "iol/wingos/ipc.hpp"
+#include "libcore/fmt/log.hpp"
 #include "libcore/optional.hpp"
 #include "libcore/result.hpp"
 #include "protocols/vfs/file.hpp"

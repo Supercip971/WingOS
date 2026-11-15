@@ -3,9 +3,12 @@
 #include "kernel/generic/asset_types.hpp"
 #include "kernel/generic/signal_asset.hpp"
 
+#include "arch/generic/instruction.hpp"
+#include "kernel/generic/asset.hpp"
 #include "kernel/generic/scheduler.hpp"
 #include "kernel/generic/space.hpp"
 #include "libcore/ds/umap.hpp"
+#include "libcore/result.hpp"
 #include "signal.hpp"
 
 static fc::UMap<int, AssetRef<kernel::SignalEndpoint>> _internal_signal_map = {};

@@ -3,7 +3,6 @@
 #include <atomic>
 #include <stdint.h>
 #include <wingos-headers/asset.h>
-#include <wingos-headers/ipc.h>
 
 #include "kernel/generic/asset_types.hpp"
 #include "kernel/generic/ipc_asset.hpp"
@@ -16,7 +15,6 @@
 #include "kernel/generic/task.hpp"
 #include "kernel/generic/vm.hpp"
 #include "libcore/ds/umap.hpp"
-#include "libcore/ds/vec.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/lock/lock.hpp"
 #include "libcore/result.hpp"

@@ -1,11 +1,9 @@
 
-#include <gfx/platform/app.hpp>
 
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_init.h>
 
 #include "libcore/fmt/log.hpp"
-#include "libcore/result.hpp"
 
 fc::Result<void> wgfx::initialize_platform()
 {

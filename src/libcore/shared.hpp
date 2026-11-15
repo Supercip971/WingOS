@@ -3,8 +3,6 @@
 #include <libcore/bound.hpp>
 #include <stddef.h>
 
-#include "libcore/type-utils.hpp"
-
 namespace fc
 {
 

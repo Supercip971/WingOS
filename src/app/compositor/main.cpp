@@ -5,16 +5,11 @@
 
 #include "app/compositor/server.hpp"
 #include "iol/wingos/asset.hpp"
-#include "iol/wingos/ipc.hpp"
 #include "iol/wingos/space.hpp"
 #include "libcore/alive.hpp"
-#include "libcore/ds/vec.hpp"
 #include "libcore/fmt/log.hpp"
-#include "libcore/type-utils.hpp"
-#include "protocols/compositor/window.hpp"
 #include "protocols/init/init.hpp"
 #include "wingos-headers/asset.h"
-#include "wingos-headers/ipc.h"
 
 struct FramebufferInfo
 {

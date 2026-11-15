@@ -7,6 +7,7 @@
 #include "kernel/generic/space.hpp"
 #include "kernel/generic/vm.hpp"
 #include "libcore/ds/umap.hpp"
+#include "libcore/fmt/log.hpp"
 #include "libcore/lock/lock.hpp"
 #include "libcore/result.hpp"
 

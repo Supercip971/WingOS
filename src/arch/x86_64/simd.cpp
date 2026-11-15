@@ -1,4 +1,5 @@
 #include <string.h>
+#include <utility>
 
 #include "arch/x86_64/paging.hpp"
 #include "arch/x86_64/registers.hpp"
@@ -10,7 +11,6 @@
 #include "libcore/fmt/log.hpp"
 #include "libcore/lock/lock.hpp"
 #include "libcore/result.hpp"
-#include "libcore/type-utils.hpp"
 #include "math/align.hpp"
 
 static __attribute__((aligned(4096))) uint8_t

@@ -1,16 +1,11 @@
 
 
-#include "libcore/fmt/impl/asset_kind.hpp"
-#include "protocols/hi/human_interface.hpp"
-
 #include "iol/wingos/space.hpp"
 #include "iol/wingos/syscalls.h"
 #include "libc/unistd.h"
 #include "libcore/fmt/log.hpp"
 #include "libcore/result.hpp"
-#include "protocols/clock/clock.hpp"
 #include "protocols/humming-bird/humming-bird.hpp"
-#include "protocols/vfs/vfs.hpp"
 #include "wingos-headers/asset.h"
 #include "wingos-headers/syscalls.h"
 

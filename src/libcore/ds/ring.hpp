@@ -6,6 +6,7 @@
 
 #include "libcore/alloc/alloc.hpp"
 #include "libcore/ds/vec.hpp"
+#include "libcore/mem/view.hpp"
 #include "libcore/unreachable.h"
 
 namespace fc

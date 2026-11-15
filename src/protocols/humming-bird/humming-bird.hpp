@@ -6,6 +6,7 @@
 #include "iol/wingos/space.hpp"
 #include "libcore/result.hpp"
 #include "protocols/init/init.hpp"
+#include "wingos-headers/ipc.h"
 
 /**
  * Humming Bird Protocol - meant as a posix compatibility layer

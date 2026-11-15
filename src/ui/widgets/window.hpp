@@ -1,18 +1,14 @@
 #pragma once
 
-#include "gfx/canvas/canvas.hpp"
-#include "gfx/geometry/rect.hpp"
-#include "gfx/geometry/vec2.hpp"
+#include "gfx/color.hpp"
 #include "libcore/shared.hpp"
+#include "libcore/str.hpp"
 #include "ui/context.hpp"
 #include "ui/font-manager.hpp"
-#include "ui/widgets/button.hpp"
-#include "ui/widgets/centered.hpp"
 #include "ui/widgets/container.hpp"
 #include "ui/widgets/drageable.hpp"
 #include "ui/widgets/padded.hpp"
 #include "ui/widgets/text.hpp"
-#include "ui/widgets/vflex.hpp"
 #include "ui/widgets/widget.hpp"
 
 namespace fc

@@ -7,7 +7,6 @@
 #include "iol/wingos/space.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/str.hpp"
-#include "libcore/type-utils.hpp"
 #include "protocols/compositor/window.hpp"
 #include "protocols/pipe/pipe.hpp"
 #include "wingos-headers/startup.hpp"

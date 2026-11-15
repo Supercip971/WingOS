@@ -13,6 +13,7 @@
 #include "libcore/ds/array.hpp"
 #include "libcore/ds/vec.hpp"
 #include "libcore/fmt/log.hpp"
+#include "libcore/logic.hpp"
 #include "libcore/result.hpp"
 #include "libcore/type-utils.hpp"
 
@@ -26,6 +27,7 @@ fc::Vec<size_t> _retried = {};
 
 // blocked and in queue task
 std::atomic<size_t> awaiting_task_count = 0;
+std::atomic<size_t> approx_summed_weights = 0;
 
 fc::Vec<CoreId> _blocked_cores_idle_candidates = {};
 
@@ -198,6 +200,7 @@ fc::Result<void> task_run(TUID task_id, CoreId core)
     auto t = task.unwrap();
 
     t->sched() = SchedulerControlBlock(0);
+    t->sched().running = fc::max(approx_summed_weights / fc::max(awaiting_task_count.load(), 1ul), 1ul);
 
     t->state(TaskState::TASK_RUNNING);
 
@@ -206,29 +209,6 @@ fc::Result<void> task_run(TUID task_id, CoreId core)
     scheduler_lock.write_release();
     return {};
 }
-
-// FIXME: store it as a global variable instead of recalculating it
-/*
-static inline size_t scheduled_task_count()
-{
-    return running_task_count.load();
-    size_t count = 0;
-    for (size_t i = 0; i < TASK_QUEUE_COUNT; i++)
-    {
-        count += task_queues[i].len();
-    }
-
-    for (size_t i = 0; i < cpu_running.len(); i++)
-    {
-        if (cpu_running[i] != nullptr && !cpu_running[i]->sched().is_idle)
-        {
-            count += 1;
-        }
-    }
-    count += blocked_tasks.len();
-
-    return count;
-}*/
 
 static fc::Result<size_t> query_nearest_task(size_t queue_id, CoreId core, bool consider_siblings = false)
 {
@@ -391,6 +371,7 @@ static void update_runned_tasks()
 
     auto sum = summed_weights();
 
+    approx_summed_weights.store(sum);
     long count = awaiting_task_count.load();
 
     if (count != 0)

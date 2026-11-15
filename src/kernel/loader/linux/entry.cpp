@@ -5,10 +5,11 @@
 #include <sys/syscall.h> /* Definition of SYS_* constants */
 #include <unistd.h>
 
+#include "kernel/loader/loader.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/io/writer.hpp"
 #include "mcx/mcx.hpp"
-void _start(void);
+static void _start(void);
 
 extern "C" long syscall(long number, ...);
 

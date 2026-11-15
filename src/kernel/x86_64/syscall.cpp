@@ -23,7 +23,7 @@ struct stackframe
     uint64_t rip;
 } __attribute__((packed));
 
-void dump_stackframe(void *rbp)
+static void dump_stackframe(void *rbp)
 {
 
     auto *frame = reinterpret_cast<stackframe *>(rbp);
@@ -49,7 +49,7 @@ void dump_stackframe(void *rbp)
     }
 }
 
-SRWLock _syscall_lock = {};
+static SRWLock _syscall_lock = {};
 
 extern "C" uint64_t syscall_higher_handler(SyscallStackFrame *sf)
 {

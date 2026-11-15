@@ -6,7 +6,7 @@
 #include "kernel/generic/cpu.hpp"
 #include "libcore/result.hpp"
 
-fc::Result<CpuTreeNode *> _initialize_cpu_tree_impl()
+static fc::Result<CpuTreeNode *> _initialize_cpu_tree_impl()
 {
     return fc::Result<CpuTreeNode *>::error("not implemented, as QEMU don't export an SRAT structure");
 }

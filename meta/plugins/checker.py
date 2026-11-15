@@ -137,7 +137,8 @@ def qualityCheck(args: model.TargetArgs):
             "-checks=-*,misc-include-cleaner,clang-diagnostic-dangling,-modernize-deprecated-headers,"
             "bugprone-move-forwarding-reference,llvm-include-order,misc-redundant-expression,performance-for-range-copy,readability-make-member-function-const,"
             "bugprone-copy-constructor-init,bugprone-dangling-handle,modernize-use-auto,modernize-use-designated-initializers,"
-            "modernize-use-default-member-init,modernize-use-equals-default",
+            "modernize-use-default-member-init,modernize-use-equals-default,"
+            "misc-use-internal-linkage",
             "--fix",
             "--fix-errors",
             "--fix-notes",
@@ -153,7 +154,6 @@ def qualityCheck(args: model.TargetArgs):
             "--extra-arg=-fno-exceptions",
             "--extra-arg=-nostdinc",
             "--extra-arg=-nostdinc++",
-            "--extra-arg=-ffreestanding",
             "--extra-arg=-isystemsrc/libc",
             "--extra-arg=-isystemmeta/build/cross/x86_64-pc-wingos/include/c++/15.2.0",
             "--extra-arg=-isystemmeta/build/cross/x86_64-pc-wingos/include/c++/15.2.0/x86_64-pc-wingos",

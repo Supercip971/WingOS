@@ -30,18 +30,6 @@ extern "C" void __cxa_guard_abort(__guard *)
 }
 } // namespace __cxxabiv1
 
-namespace fc
-{
-void dump_vec(uintptr_t _this, uintptr_t _data, bool start)
-{
-
-    (void)_this;
-    (void)_data;
-    (void)start;
-    // fmt::log$("Vec destructed: {} - {} (begin: {})", (uintptr_t)_this | fmt::FMT_HEX, (uintptr_t)_data | fmt::FMT_HEX, start);
-}
-} // namespace fc
-
 __attribute__((weak)) void *operator new(size_t size)
 {
     return malloc(size);

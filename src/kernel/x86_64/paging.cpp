@@ -20,12 +20,12 @@ VmmSpace &VmmSpace::kernel_page_table()
     return kernel_space;
 }
 
-arch::amd64::Pml4 *as_root(VmmSpace &space)
+static arch::amd64::Pml4 *as_root(VmmSpace &space)
 {
     return reinterpret_cast<arch::amd64::Pml4 *>(space.self());
 };
 
-constexpr arch::amd64::Page page_create(PageFlags flags, PhysAddr addr)
+static constexpr arch::amd64::Page page_create(PageFlags flags, PhysAddr addr)
 {
     auto p = arch::amd64::Page{
         ._present = 1,

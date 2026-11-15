@@ -1,6 +1,7 @@
 
 #include <mcx/mcx.hpp>
 
+#include "kernel/loader/loader.hpp"
 #include "limine.hpp"
 
 __attribute__((used)) static volatile struct limine_memmap_request mmap_request = {

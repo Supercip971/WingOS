@@ -12,21 +12,20 @@
 #include "hw/acpi/madt.hpp"
 #include "hw/acpi/rsdp.hpp"
 #include "hw/acpi/rsdt.hpp"
-#include "hw/pic/pic.hpp"
 #include "libcore/ds/array.hpp"
 #include "libcore/fmt/flags.hpp"
 #include "libcore/result.hpp"
 #include "mcx/mcx.hpp"
 
-size_t _cpu_count;
-hw::acpi::Rsdp *_rsdp;
-hw::acpi::Madt *_madt;
+static size_t _cpu_count;
+static hw::acpi::Rsdp *_rsdp;
+static hw::acpi::Madt *_madt;
 
-size_t current_iso = 0;
+static size_t current_iso = 0;
 
 // CONFIGURABLE
 constexpr int max_iso = 256;
-fc::Array<hw::acpi::MadtEntryIso, max_iso> iso = {};
+static fc::Array<hw::acpi::MadtEntryIso, max_iso> iso = {};
 
 namespace hw::acpi
 {
@@ -52,13 +51,6 @@ fc::Result<void> update_interrupt_source_override(MadtEntryIso const *entry)
     fmt::log$("  irq source: {}", entry->irq_source);
     fmt::log$("  global system interrupt: {}", entry->global_system_interrupt);
     fmt::log$("  flags: {}", entry->flags);
-    return {};
-}
-
-fc::Result<void> apic_enable()
-{
-    try$(Lapic::the().enable());
-    hw::Pic::disable();
     return {};
 }
 
@@ -132,7 +124,7 @@ fc::Result<void> apic_initialize(mcx::MachineContext const *context, CpuDetected
     return {};
 }
 
-fc::Result<void> _raw_redirect_interrupt(LCpuId cpu, uint8_t vector, bool enabled, uint32_t target_gsi, uint16_t flags)
+static fc::Result<void> _raw_redirect_interrupt(LCpuId cpu, uint8_t vector, bool enabled, uint32_t target_gsi, uint16_t flags)
 {
     auto ioapic_index = try$(IOApic::query_from_irq(target_gsi));
 

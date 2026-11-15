@@ -10,7 +10,7 @@
 #include "libcore/str.hpp"
 #include "protocols/vfs/file.hpp"
 
-MountedFs _root;
+static MountedFs _root;
 
 fc::Result<Wingos::IpcClient> VfsConnectionFile::open_root(VfsServerCtx &ctx)
 {

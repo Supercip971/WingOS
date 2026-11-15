@@ -17,7 +17,7 @@ struct RegisteredService
     uint64_t endpoint;
 };
 
-fc::Vec<RegisteredService *> registered_services = {};
+static fc::Vec<RegisteredService *> registered_services = {};
 
 fc::Result<void> service_register(uint64_t endpoint, fc::Str const &name, uint64_t major, uint64_t minor)
 

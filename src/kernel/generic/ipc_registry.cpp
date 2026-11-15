@@ -3,13 +3,10 @@
 #include "kernel/generic/asset_types.hpp"
 #include "kernel/generic/ipc_asset.hpp"
 
-#include "asset.hpp"
-#include "kernel/generic/asset.hpp"
 #include "libcore/ds/vec.hpp"
 #include "libcore/fmt/log.hpp"
 #include "libcore/lock/lock.hpp"
 #include "libcore/result.hpp"
-#include "space.hpp"
 #include "wingos-headers/asset.h"
 #include "wingos-headers/ipc.h"
 
@@ -25,42 +22,6 @@ static uint64_t next_free_ipc_server_handle = 16;
 
 static fc::Lock ipc_server_lock;
 static fc::Vec<RegisteredServer *> registered_servers = {};
-
-RegisteredServer *register_server(IpcServerHandle handle, AssetRef<kernel::IpcEndpoint> &server)
-{
-    auto registered_server = new RegisteredServer();
-    registered_server->handle = handle;
-    registered_server->server = server;
-
-    ipc_server_lock.lock();
-    registered_servers.push(registered_server);
-    ipc_server_lock.release();
-    return registered_server;
-}
-
-RegisteredServer *create_registered_server()
-{
-    auto server = new RegisteredServer();
-    server->handle = next_free_ipc_server_handle++;
-
-    ipc_server_lock.lock();
-    registered_servers.push(server);
-    ipc_server_lock.release();
-
-    return server;
-}
-
-// Allocate a KernelIpcServer WITHOUT making it globally visible.
-// Caller MUST call publish_server() after setting server->self and all
-// other fields.  This two-phase init prevents SMP races where another CPU
-// queries the server (via query_server / query_server_locked) before
-// server->self is initialized
-kernel::IpcEndpoint *allocate_server(AssetRef<Space> &attached_handle)
-{
-    auto *server = new kernel::IpcEndpoint();
-    server->target_message_space = attached_handle;
-    return server;
-}
 
 namespace kernel
 {
@@ -97,11 +58,6 @@ fc::Result<AssetRef<kernel::IpcEndpoint>> query_server(IpcServerHandle handle)
 
     fmt::warn$("query_server: server not found: {}", handle);
     return ("server not found");
-}
-
-void release_server_lock()
-{
-    ipc_server_lock.release();
 }
 
 namespace kernel

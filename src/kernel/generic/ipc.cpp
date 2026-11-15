@@ -19,7 +19,7 @@ kernel::IpcEndpoint *kernel::create_ipc_endpoint()
     return new kernel::IpcEndpoint();
 }
 
-void dump_message(IpcMessage const &msg)
+static void dump_message(IpcMessage const &msg)
 {
     (void)msg;
     // fmt::log$(" msg.port = {}", msg.port);

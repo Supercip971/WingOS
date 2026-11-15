@@ -1,6 +1,7 @@
 
 
 #include "arch/x86_64/interrupts.hpp"
+#include "iol/lock_context.h"
 
 int enter_critical_context()
 {

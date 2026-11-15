@@ -23,7 +23,7 @@
 #include "cpu.hpp"
 #include "libcore/result.hpp"
 
-volatile size_t _running_cpu_count = 0;
+static volatile size_t _running_cpu_count = 0;
 using InitializerPtr = void (*)();
 
 extern "C" InitializerPtr __init_array_start[] __attribute__((weak, visibility("hidden")));

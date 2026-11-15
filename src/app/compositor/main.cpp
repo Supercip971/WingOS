@@ -18,9 +18,7 @@ struct FramebufferInfo
     size_t framebuffer_height;
 };
 
-int mdepth = 0; // manager depth
-
-void *framebuffer_mapped = nullptr;
+static void *framebuffer_mapped = nullptr;
 
 static prot::HIConnection *conn_inputs;
 

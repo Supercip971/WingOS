@@ -45,7 +45,7 @@ VirtRange map_mcx_address(mcx::MemoryRange range)
     return VirtRange((uintptr_t)mem, (uintptr_t)mem + phys.len());
 }
 
-fc::Result<size_t> start_service(mcx::MachineContext *context, mcx::MachineContextModule mod)
+static fc::Result<size_t> start_service(mcx::MachineContext *context, mcx::MachineContextModule mod)
 {
     auto vrange = map_mcx_address(mod.range);
     auto loaded = elf::ElfLoader::load(vrange);
@@ -61,7 +61,7 @@ fc::Result<size_t> start_service(mcx::MachineContext *context, mcx::MachineConte
     return v;
 }
 
-fc::Result<size_t> start_service_fs(mcx::MachineContext *context, fc::Str const &path)
+static fc::Result<size_t> start_service_fs(mcx::MachineContext *context, fc::Str const &path)
 {
 
     auto vfs_endpoint = try$(service_get("vfs"));
@@ -116,7 +116,7 @@ fc::Result<size_t> start_service_fs(mcx::MachineContext *context, fc::Str const 
     return v;
 }
 
-fc::Result<size_t> start_service(mcx::MachineContext *context, fc::Str path)
+static fc::Result<size_t> start_service(mcx::MachineContext *context, fc::Str path)
 {
     for (int i = 0; i < context->_modules_count; i++)
     {
@@ -131,7 +131,7 @@ fc::Result<size_t> start_service(mcx::MachineContext *context, fc::Str path)
     return start_service_fs(context, path);
 }
 
-void start_from_pci(wjson::JsonValue *pjson)
+static void start_from_pci(wjson::JsonValue *pjson)
 {
     fmt::log$("Starting from PCI scan...");
 
@@ -183,7 +183,7 @@ void start_from_pci(wjson::JsonValue *pjson)
     }
 }
 
-fc::Result<void> load_module_config(mcx::MachineContext *context)
+static fc::Result<void> load_module_config(mcx::MachineContext *context)
 {
     module_service = {};
     disk_service = {};
@@ -237,7 +237,7 @@ fc::Result<void> load_module_config(mcx::MachineContext *context)
             {
                 fc::Vec<wjson::JsonValue> deps_array = try$(deps_array_r.as_array());
                 {
-                    for (auto d : deps_array)
+                    for (const auto &d : deps_array)
                     {
                         ml.deps.push(try$(d.as_string()));
                     }
@@ -249,7 +249,7 @@ fc::Result<void> load_module_config(mcx::MachineContext *context)
     return {};
 }
 
-fc::Result<bool> try_startup_modules_cycle_one(mcx::MachineContext *context)
+static fc::Result<bool> try_startup_modules_cycle_one(mcx::MachineContext *context)
 {
     for (size_t i = 0; i < module_to_launch.len(); i++)
     {
@@ -288,7 +288,7 @@ fc::Result<bool> try_startup_modules_cycle_one(mcx::MachineContext *context)
     return false;
 }
 
-fc::Result<void> try_startup_modules_cycle(mcx::MachineContext *context)
+static fc::Result<void> try_startup_modules_cycle(mcx::MachineContext *context)
 {
     while (try$(try_startup_modules_cycle_one(context)))
     {
@@ -297,7 +297,7 @@ fc::Result<void> try_startup_modules_cycle(mcx::MachineContext *context)
     return {};
 }
 
-mcx::MachineContext *gmcx = nullptr;
+static mcx::MachineContext *gmcx = nullptr;
 
 fc::Result<void> startup_module(mcx::MachineContext *context)
 {

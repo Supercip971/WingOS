@@ -42,7 +42,7 @@ fc::Result<void> arch::amd64::smp_initialize()
     return {};
 }
 
-void smp_entry_other(void)
+static void smp_entry_other(void)
 {
     fmt::log$("cpu booted!");
     arch::amd64::other_cpu_entry(_ready);
@@ -56,7 +56,7 @@ extern "C" uintptr_t start_cpu_entry;
 extern "C" uintptr_t end_cpu_entry;
 extern "C" uint64_t trampoline_start, trampoline_end;
 
-fc::Result<void> _setup_trampoline(hw::acpi::LCpuId cpu_id)
+static fc::Result<void> _setup_trampoline(hw::acpi::LCpuId cpu_id)
 {
     arch::amd64::CpuImpl *cpu = arch::amd64::CpuImpl::getImpl(cpu_id);
     uint64_t trampoline_len = (uintptr_t)&trampoline_end - (uintptr_t)&trampoline_start;

@@ -37,7 +37,7 @@ struct PrintIntegerFlags
     int precision;
 };
 
-int print_integer(PrintTarget *targ, unsigned long long value, struct PrintIntegerFlags flags)
+static int print_integer(PrintTarget *targ, unsigned long long value, struct PrintIntegerFlags flags)
 {
     char buf[64] = {0};
     int digit_count = 0;

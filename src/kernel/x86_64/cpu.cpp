@@ -12,7 +12,7 @@
 #include "libcore/ds/array.hpp"
 #include "libcore/lock/lock.hpp"
 #include "libcore/result.hpp"
-fc::Array<arch::amd64::CpuImpl, arch::amd64::max_cpu> cpus = {};
+static fc::Array<arch::amd64::CpuImpl, arch::amd64::max_cpu> cpus = {};
 
 static int initialized_count = 0;
 
@@ -30,7 +30,7 @@ void Cpu::interrupt_hold()
     this->interrupt_depth++;
 }
 
-fc::Lock _locker = {};
+static fc::Lock _locker = {};
 
 bool Cpu::begin_syscall()
 {
@@ -160,13 +160,4 @@ CoreId Cpu::currentId()
         return 0;
     }
     return hw::acpi::Lapic::the().id();
-}
-
-void reschedule_self()
-{
-
-    asm volatile("sti");
-
-    asm volatile("int $101");
-    // hw::acpi::Lapic::the().send_interrupt(Cpu::currentId(), 101);
 }

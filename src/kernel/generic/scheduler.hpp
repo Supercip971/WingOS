@@ -32,7 +32,7 @@ struct SchedulerControlBlock
     long sleeping = 0;
     long priority = 0;
 
-    SchedulerControlBlock() {}
+    SchedulerControlBlock() = default;
 
     SchedulerControlBlock(size_t _priority) : priority(_priority) {}
 
@@ -82,6 +82,7 @@ fc::Result<void> resolve_blocked_tasks();
 void trigger_reschedule(CoreId cpu);
 void trigger_reschedule_unblocked(CoreId cpu);
 
-void reschedule_self();
+uintptr_t _scheduler_impl_soft(uintptr_t stack);
+uintptr_t _scheduler_impl(uintptr_t stack);
 
 void scheduler_dump_all();

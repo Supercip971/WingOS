@@ -59,7 +59,7 @@ struct IDT
     static const int _size = 256;
     IDTEntry _entries[_size]{};
 
-    constexpr IDT() {};
+    constexpr IDT() = default;
 
     template <fc::Viewable T>
     void fill(const T &handler_table, int cs)

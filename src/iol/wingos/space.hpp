@@ -62,7 +62,7 @@ struct Space
         return VirtualMemoryAsset::create(handle, start, end, mem_asset.handle, flags);
     }
 
-    VirtualMemoryAsset map_physical_memory(uint64_t start, uint64_t len, uint64_t flags)
+    VirtualMemoryAsset map_physical_memory(uint64_t start, uint64_t len, uint64_t flags) const
     {
         auto phys = own_memory_physical(start, len);
         if (phys.handle == AssetHandle::invalid())
@@ -73,7 +73,7 @@ struct Space
         return VirtualMemoryAsset::create(handle, start + USERSPACE_VIRT_BASE, start + phys.memory.len() + USERSPACE_VIRT_BASE, phys.handle, flags);
     }
 
-    VirtualMemoryAsset allocate_memory(uint64_t size, bool lower_half = false)
+    VirtualMemoryAsset allocate_memory(uint64_t size, bool lower_half = false) const
     {
         auto mem_asset = allocate_physical_memory(size, lower_half);
         return VirtualMemoryAsset::create(handle, mem_asset.memory.start() + USERSPACE_VIRT_BASE, mem_asset.memory.end() + USERSPACE_VIRT_BASE, mem_asset.handle, ASSET_MAPPING_FLAG_WRITE | ASSET_MAPPING_FLAG_EXECUTE);

@@ -10,7 +10,7 @@
 namespace wjson
 {
 
-fc::Result<JsonValue> parse_json_value(fc::Scanner<char> &scanner)
+static fc::Result<JsonValue> parse_json_value(fc::Scanner<char> &scanner)
 {
     JsonValue result{};
     if (scanner.skip_spaced('{').unwrap())

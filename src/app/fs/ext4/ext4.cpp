@@ -334,7 +334,7 @@ fc::Result<uint64_t> Ext4Filesystem::inode_find_block(Ext4InodeRef const &inode,
     return block_ptr;
 }
 
-fc::Vec<uint64_t> inodeOff2PhysicalDisk = {};
+static fc::Vec<uint64_t> inodeOff2PhysicalDisk = {};
 
 fc::Result<size_t> Ext4Filesystem::inode_read(Ext4InodeRef const &inode, Wingos::MemoryAsset &out, size_t off, size_t len, size_t mem_asset_off)
 {

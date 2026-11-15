@@ -9,6 +9,7 @@
 #include "libc/stdio_fs.hpp"
 #include "libcore/str_writer.hpp"
 
+#include "iol/iol.h"
 #include "iol/wingos/asset.hpp"
 #include "iol/wingos/space.hpp"
 #include "iol/wingos/syscalls.h"
@@ -212,7 +213,7 @@ extern "C"
     return 0;
 }
 
-__attribute__((weak)) void *__dso_handle;
+extern "C" __attribute__((weak)) void *__dso_handle;
 
 extern "C" __attribute__((weak)) void _entry_point(StartupInfo *context)
 {

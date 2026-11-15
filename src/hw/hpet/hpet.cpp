@@ -13,12 +13,12 @@
 static VirtAddr hpet_base = 0;
 static uint64_t hpet_tick = 0;
 
-uint64_t _hpet_read(uintptr_t reg)
+static uint64_t _hpet_read(uintptr_t reg)
 {
     return (hpet_base + reg).vread<uint64_t>();
 }
 
-void _hpet_write(uintptr_t reg, uint64_t value)
+static void _hpet_write(uintptr_t reg, uint64_t value)
 {
     (hpet_base + reg).vwrite<uint64_t>(value);
 }

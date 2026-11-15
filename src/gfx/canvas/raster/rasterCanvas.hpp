@@ -79,7 +79,7 @@ public:
     // - flatx: unique color for the x span (fast aligned fill)
     // - aligned: no rotation applied
     // - fast: quick path with implementation specific details
-    void clear(FillCommand const &fill);
+    void clear(FillCommand const &fill) const;
 
     void clearFlat(FillCommand const &fill) const;
 
@@ -98,14 +98,14 @@ public:
 
     // https://fr.wikipedia.org/wiki/Algorithme_de_trac%C3%A9_de_segment_de_Xiaolin_Wu
 
-    void pathFillFlat(ContourCommand const &shape, Vec2 off);
+    void pathFillFlat(ContourCommand const &shape, Vec2 off) const;
 
     void pathLineFlat(Vec2 start, Vec2 end, Rgba8 color);
     void contour(ContourCommand const &cmd);
 
-    void textFlat(TextCommand const &cmd);
+    void textFlat(TextCommand const &cmd) const;
 
-    void text(TextCommand const &cmd)
+    void text(TextCommand const &cmd) const
     {
         textFlat(cmd);
     }

@@ -13,7 +13,7 @@
 #include "libcore/result.hpp"
 #include "wingos-headers/asset.h"
 
-SpaceId _space_id = 1;
+static SpaceId _space_id = 1;
 
 struct SpacePtr
 {
@@ -21,8 +21,8 @@ struct SpacePtr
     SpaceId id;
 };
 
-fc::Vec<SpacePtr> _spaces = {};
-fc::Lock _spaces_lock = {};
+static fc::Vec<SpacePtr> _spaces = {};
+static fc::Lock _spaces_lock = {};
 
 AssetRef<Space> Space::create_root()
 {

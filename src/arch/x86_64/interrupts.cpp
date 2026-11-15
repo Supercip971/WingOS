@@ -14,12 +14,12 @@
 #include "libcore/encourage.hpp"
 #include "libcore/fmt/flags.hpp"
 #include "libcore/lock/rwlock.hpp"
-uint64_t ccount;
-volatile bool inside_error = false;
+static uint64_t ccount;
+static volatile bool inside_error = false;
 extern uintptr_t _scheduler_impl(uintptr_t stack);
 extern uintptr_t _scheduler_impl_soft(uintptr_t stack);
 
-fc::RWLock int_lock = {};
+static fc::RWLock int_lock = {};
 void interrupt_release();
 
 struct stackframe
@@ -28,7 +28,7 @@ struct stackframe
     uint64_t rip;
 } __attribute__((packed));
 
-void dump_stackframe(void *rbp, uintptr_t abase)
+static void dump_stackframe(void *rbp, uintptr_t abase)
 {
 
     auto *frame = reinterpret_cast<stackframe *>(rbp);

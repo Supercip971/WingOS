@@ -13,10 +13,10 @@
 #include "libcore/lock/rwlock.hpp"
 #include "libcore/result.hpp"
 
-fc::LinkedList<kernel::Task *> task_list = {};
-bool loaded = false;
-std::atomic<kernel::TUID> next_uid = 1;
-fc::RWLock _task_lock = {};
+static fc::LinkedList<kernel::Task *> task_list = {};
+static bool loaded = false;
+static std::atomic<kernel::TUID> next_uid = 1;
+static fc::RWLock _task_lock = {};
 
 kernel::Task *kernel::Task::_task_allocate()
 {

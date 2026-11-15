@@ -16,3 +16,5 @@ struct StartupInfo
     size_t argc;
     char **argv;
 };
+
+int _main(StartupInfo *context);

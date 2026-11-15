@@ -19,10 +19,10 @@
 // source: derived from brutal OS but
 // I wrote the brutal PS2 code
 
-fc::Vec<prot::Duplex<prot::HIEvent> *> mouse_pipes = {};
-fc::Vec<prot::Duplex<prot::HIEvent> *> keyboard_pipes = {};
-Wingos::SignalAsset mouse_signals = {};
-Wingos::SignalAsset keyboard_signals = {};
+static fc::Vec<prot::Duplex<prot::HIEvent> *> mouse_pipes = {};
+static fc::Vec<prot::Duplex<prot::HIEvent> *> keyboard_pipes = {};
+static Wingos::SignalAsset mouse_signals = {};
+static Wingos::SignalAsset keyboard_signals = {};
 
 int main(int, char **)
 {

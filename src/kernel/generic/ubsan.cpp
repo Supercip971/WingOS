@@ -82,9 +82,9 @@ struct nonnull_arg_data
     source_location loc;
 };
 
-fc::Lock locker = {};
+static fc::Lock locker = {};
 
-void dump_source_location(source_location *loc)
+static void dump_source_location(source_location *loc)
 {
     // In a real kernel, you would look up the file and line number in debug info.
     // Here, we just print the raw information.
@@ -104,7 +104,7 @@ static const char *__kinds[] = {
     "cast to virtual base of",
 };
 
-void dump_type_descriptor(type_descriptor *type)
+static void dump_type_descriptor(type_descriptor *type)
 {
     fmt::err$("Type descriptor: {}", type->name);
 

@@ -3,7 +3,7 @@
 #include "gfx/canvas/raster/rasterCanvas.hpp"
 #include "gfx/geometry/vec2.hpp"
 
-void wgfx::RasterCanvas::textFlat(TextCommand const &cmd)
+void wgfx::RasterCanvas::textFlat(TextCommand const &cmd) const
 {
     Vec2 pos = cmd.pos;
     for (long i = 0; i < (long)cmd.str.len(); ++i)

@@ -9,7 +9,7 @@
 namespace fmt
 {
 
-fc::Lock _log_lock = {};
+static fc::Lock _log_lock = {};
 static fc::VoidRW default_target{};
 static fc::Writer *target = &default_target;
 

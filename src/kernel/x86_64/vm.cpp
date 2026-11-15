@@ -24,9 +24,9 @@ struct IntelVmxKernel
     size_t uid;
 };
 
-fc::Lock _VmGlobalArrayLock;
-uint64_t last_uid = 16;
-fc::UMap<uint64_t, IntelVmxKernel *> vms;
+static fc::Lock _VmGlobalArrayLock;
+static uint64_t last_uid = 16;
+static fc::UMap<uint64_t, IntelVmxKernel *> vms;
 
 // arch specific offset
 

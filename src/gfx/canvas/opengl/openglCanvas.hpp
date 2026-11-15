@@ -27,7 +27,7 @@ public:
         return 1.0 - (v) * 2.0 / height;
     }
 
-    void rect(RectCommand const &cmd)
+    void rect(RectCommand const &cmd) const
     {
 
         Rgba01 color = cmd.paint.color.toRgba01();

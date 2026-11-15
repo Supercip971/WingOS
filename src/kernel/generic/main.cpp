@@ -16,58 +16,7 @@
 #include "kernel/generic/task.hpp"
 #include "libcore/lock/lock.hpp"
 #include "mcx/mcx.hpp"
-fc::Lock kernel_lock;
-
-void fun1()
-{
-    while (true)
-    {
-        lock_scope$(kernel_lock);
-        fmt::log$("fun1 {}", Cpu::currentId());
-        asm volatile("pause");
-    }
-}
-
-void fun2()
-{
-    while (true)
-    {
-        lock_scope$(kernel_lock);
-        fmt::log$("fun2 {}", Cpu::currentId());
-        asm volatile("pause");
-    }
-}
-
-void fun3()
-{
-    while (true)
-    {
-        lock_scope$(kernel_lock);
-        fmt::log$("fun3 {}", Cpu::currentId());
-        asm volatile("pause");
-    }
-}
-
-void fun4()
-{
-    while (true)
-    {
-        lock_scope$(kernel_lock);
-        fmt::log$("fun4 {}", Cpu::currentId());
-        asm volatile("pause");
-    }
-}
-
-void fun5()
-{
-    while (true)
-    {
-        lock_scope$(kernel_lock);
-        fmt::log$("fun5 {}", Cpu::currentId());
-
-        asm volatile("pause");
-    }
-}
+static fc::Lock kernel_lock;
 
 void kernel_entry(const mcx::MachineContext *context)
 {

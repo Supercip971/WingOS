@@ -11,7 +11,6 @@
 
 namespace fc
 {
-void dump_vec(uintptr_t _this, uintptr_t _data, bool start);
 
 template <typename T>
 class Vec
@@ -324,12 +323,7 @@ public:
 
     ~Vec()
     {
-
-        // dump_vec((uintptr_t)this, (uintptr_t)_data, true);
-
         release();
-
-        // dump_vec((uintptr_t)this, (uintptr_t)_data, false);
     }
 
     static Result<Vec> with_capacity(size_t capacity)

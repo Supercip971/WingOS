@@ -43,8 +43,6 @@ void Asset::release(Asset *asset)
     // `saved_self` destructor runs at end of scope
 }
 
-uintptr_t last_asset = 0;
-
 void Asset::deref(Asset *asset)
 {
     if (asset == nullptr)

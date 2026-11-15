@@ -5,14 +5,6 @@
 #include "libcore/result.hpp"
 #include "protocols/vfs/vfs.hpp"
 
-bool is_ext4_filesystem(uint8_t *data)
-{
-    // check for ext4 magic number at offset 0x438
-
-    uint16_t magic = *(uint16_t *)(data + 0x38);
-    return magic == 0xEF53;
-}
-
 int main(int, char **)
 {
     // auto serv_r = prot::ManagedServer::crea("fs:ext4:manager", 1, 0);

@@ -15,7 +15,7 @@
 // the compiler does not optimise them away, so, usually, they should
 // be made volatile or equivalent.
 
-void _start(void);
+static void _start(void);
 
 __attribute__((used)) static volatile struct limine_entry_point_request entry_point_request = {
     .id = LIMINE_ENTRY_POINT_REQUEST,

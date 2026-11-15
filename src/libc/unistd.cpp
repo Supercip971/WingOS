@@ -21,7 +21,7 @@ struct PosixFile
     PosixFile(FILE *_fd) : fd(_fd) {}
 };
 
-fc::UMap<int, fc::SharedPtr<PosixFile>> compat_files;
+static fc::UMap<int, fc::SharedPtr<PosixFile>> compat_files;
 
 extern "C" char *getcwd(
     char *buf, size_t size)
@@ -50,9 +50,9 @@ int chdir(const char *path)
     return res;
 }
 
-void *forked_stack;
-void *temp_stack;
-uintptr_t stack_ptr;
+static void *forked_stack;
+static void *temp_stack;
+static uintptr_t stack_ptr;
 
 extern "C" pid_t fork_trampoline()
 {

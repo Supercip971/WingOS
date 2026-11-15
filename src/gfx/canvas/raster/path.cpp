@@ -11,7 +11,7 @@
 #include "rasterCanvas.hpp"
 
 // https://terathon.com/i3d2018_lengyel.pdf public domain
-constexpr inline wgfx::Vec2 solvePoly(wgfx::Vec2 p1, wgfx::Vec2 p2, wgfx::Vec2 p3, float y_sample, bool &intersect1, bool &intersect2)
+static constexpr inline wgfx::Vec2 solvePoly(wgfx::Vec2 p1, wgfx::Vec2 p2, wgfx::Vec2 p3, float y_sample, bool &intersect1, bool &intersect2)
 {
     wgfx::Vec2 a = p1 - p2 * 2.0f + p3;
     wgfx::Vec2 b = (p2 - p1) * 2.0f;
@@ -77,7 +77,7 @@ constexpr inline wgfx::Vec2 solvePoly(wgfx::Vec2 p1, wgfx::Vec2 p2, wgfx::Vec2 p
 
 // https://fr.wikipedia.org/wiki/Algorithme_de_trac%C3%A9_de_segment_de_Xiaolin_Wu
 
-void wgfx::RasterCanvas::pathFillFlat(ContourCommand const &shape, Vec2 off)
+void wgfx::RasterCanvas::pathFillFlat(ContourCommand const &shape, Vec2 off) const
 {
     fc::SharedPtr<Contour> const &c = shape.contour;
 

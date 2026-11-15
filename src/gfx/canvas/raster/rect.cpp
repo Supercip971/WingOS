@@ -339,7 +339,7 @@ void wgfx::RasterCanvas::rectStrokeFlatAligned(RectCommand const &cmdw) const
 
 // https://blog.ivank.net/fastest-gaussian-blur.html
 
-void compute_gauss_size(float sigma, float &s1, float &s2, float &s3)
+static void compute_gauss_size(float sigma, float &s1, float &s2, float &s3)
 {
     static constexpr int n = 3;
 

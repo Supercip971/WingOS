@@ -1,4 +1,4 @@
-
+#include "iol/lock_context.h"
 
 int enter_critical_context()
 {

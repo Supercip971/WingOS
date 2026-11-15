@@ -14,12 +14,12 @@
 #define ASCII_FONT_IMPLEMENTATION
 #include "ascii_font.h"
 
-size_t cursor_y = 0;
-size_t cursor_x = 0;
-bool skip_command = false;
-char display[78][22] = {};
+static size_t cursor_y = 0;
+static size_t cursor_x = 0;
+static bool skip_command = false;
+static char display[78][22] = {};
 
-void add_str(fc::Str const &str)
+static void add_str(fc::Str const &str)
 {
 
     for (size_t i = 0; i < str.len(); i++)
@@ -80,7 +80,7 @@ void add_str(fc::Str const &str)
     }
 }
 
-void draw_char(void *fb, size_t x, size_t y, char c, size_t window_width)
+static void draw_char(void *fb, size_t x, size_t y, char c, size_t window_width)
 {
     for (size_t cy = 0; cy < ASCII_FONT_HEIGHT; cy++)
     {
